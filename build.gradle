@@ -22,9 +22,13 @@ repositories {
 ext {
     set('sentryVersion', "8.27.0")
     set('springCloudVersion', "2025.1.1")
+    set('jMolecules', "2025.0.2")
 }
 
 dependencies {
+    // BOM
+    implementation platform("org.jmolecules:jmolecules-bom:${jMolecules}")
+
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-liquibase'
@@ -43,6 +47,9 @@ dependencies {
     implementation 'systems.uom:systems-unicode:2.2'
     implementation 'systems.uom:systems-ucum:2.2'
     //
+    implementation 'org.jmolecules:jmolecules-ddd'
+    implementation 'org.jmolecules:jmolecules-events'
+    //
     implementation 'org.apache.commons:commons-lang3:3.20.0'
 
     compileOnly 'org.projectlombok:lombok'
@@ -60,6 +67,7 @@ dependencies {
     testImplementation 'org.testcontainers:testcontainers-grafana'
     testImplementation 'org.testcontainers:testcontainers-junit-jupiter'
     testImplementation 'org.testcontainers:testcontainers-postgresql'
+    testImplementation("org.assertj:assertj-core:4.0.0-M1")
     testCompileOnly 'org.projectlombok:lombok'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     testAnnotationProcessor 'org.projectlombok:lombok'
