@@ -1,0 +1,20 @@
+name: cap
+services:
+  postgres:
+    image: "postgres:18-alpine"
+    volumes:
+      - cap-postgres-data:/var/lib/postgresql/cap
+    ports:
+      - "5732:5432"
+    environment:
+      - POSTGRES_DB=cap_db
+      - POSTGRES_USER=username
+      - POSTGRES_PASSWORD=password
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U credentials" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  cap-postgres-data:

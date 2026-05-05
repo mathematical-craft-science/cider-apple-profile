@@ -12,7 +12,7 @@ import static java.util.Objects.requireNonNull;
 
 @Repository
 @RequiredArgsConstructor
-final class JpaAppleVarietyRepository implements AppleVarietyRepository {
+class JpaAppleVarietyRepository implements AppleVarietyRepository {
 
   private final SpringDataAppleVarietyJpaRepository repository;
 

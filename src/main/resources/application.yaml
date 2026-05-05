@@ -1,9 +1,20 @@
+server:
+  shutdown: graceful
+
 spring:
   application:
-    name: cap
+    name: cider-apple-profile
   liquibase:
     change-log: db/changelog/master-changelog.xml
     drop-first: true
   jpa:
     hibernate:
       ddl-auto: validate
+    open-in-view: true
+  datasource:
+    url: jdbc:postgresql://localhost:5732/cap_db
+    username: username
+    password: password
+
+sentry:
+  enabled: false
