@@ -1,12 +1,13 @@
 package org.craft.mcs.cap.appleprofile.application.usecase;
 
 import java.util.function.Supplier;
-import org.craft.mcs.cap.appleprofile.application.port.in.CreateAppleVarietyCommand;
-import org.craft.mcs.cap.appleprofile.application.port.out.AppleVarietyRepository;
-import org.craft.mcs.cap.appleprofile.domain.model.AppleVariety;
-import org.craft.mcs.cap.appleprofile.domain.model.ChemicalProfile;
-import org.craft.mcs.cap.appleprofile.domain.model.ExactMeasurement;
-import org.craft.mcs.cap.appleprofile.domain.model.SugarConcentration;
+import org.craft.mcs.cap.core.appleprofile.application.port.in.CreateAppleVarietyCommand;
+import org.craft.mcs.cap.core.appleprofile.application.port.out.AppleVarietyRepository;
+import org.craft.mcs.cap.core.appleprofile.application.usecase.CreateAppleVarietyService;
+import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVariety;
+import org.craft.mcs.cap.shared.domain.chemical.ChemicalProfile;
+import org.craft.mcs.cap.shared.domain.measurement.value.ExactMeasurement;
+import org.craft.mcs.cap.core.appleprofile.domain.model.SugarConcentration;
 import org.craft.mcs.cap.shared.application.TransactionHelper;
 import org.craft.mcs.cap.shared.domain.measurement.value.SpecificGravityValue;
 import org.junit.jupiter.api.BeforeEach;

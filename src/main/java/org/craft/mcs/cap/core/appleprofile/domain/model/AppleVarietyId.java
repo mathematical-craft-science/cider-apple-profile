@@ -1,4 +1,4 @@
-package org.craft.mcs.cap.appleprofile.domain.model;
+package org.craft.mcs.cap.core.appleprofile.domain.model;
 
 import java.util.UUID;
 import org.jmolecules.ddd.annotation.ValueObject;

@@ -1,5 +1,11 @@
 package org.craft.mcs.cap.appleprofile.domain.model;
 
+import org.craft.mcs.cap.shared.domain.chemical.ChemicalProfile;
+import org.craft.mcs.cap.shared.domain.measurement.value.ExactMeasurement;
+import org.craft.mcs.cap.shared.domain.measurement.value.MeasuredCharacteristic;
+import org.craft.mcs.cap.shared.domain.measurement.value.RangeMeasurement;
+import org.craft.mcs.cap.shared.domain.measurement.value.StatisticalMeasurement;
+import org.craft.mcs.cap.core.appleprofile.domain.model.SugarConcentration;
 import org.craft.mcs.cap.shared.domain.measurement.value.PhValue;
 import org.craft.mcs.cap.shared.domain.measurement.value.SpecificGravityValue;
 import org.craft.mcs.cap.shared.domain.measurement.value.TanninityValue;

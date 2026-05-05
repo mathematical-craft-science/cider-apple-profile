@@ -1,4 +1,4 @@
-package org.craft.mcs.cap.appleprofile.domain.model;
+package org.craft.mcs.cap.core.appleprofile.domain.model;
 
 import org.craft.mcs.cap.shared.domain.measurement.value.SpecificGravityValue;
 import org.jmolecules.ddd.annotation.ValueObject;

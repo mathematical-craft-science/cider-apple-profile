@@ -1,4 +1,4 @@
-package org.craft.mcs.cap.appleprofile.domain.model;
+package org.craft.mcs.cap.shared.domain.measurement.value;
 
 import java.math.BigDecimal;
 import java.util.Optional;

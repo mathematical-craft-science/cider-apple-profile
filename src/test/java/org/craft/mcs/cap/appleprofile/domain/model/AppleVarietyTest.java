@@ -2,6 +2,13 @@ package org.craft.mcs.cap.appleprofile.domain.model;
 
 import java.math.BigDecimal;
 import java.util.UUID;
+import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVariety;
+import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyId;
+import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyName;
+import org.craft.mcs.cap.shared.domain.chemical.ChemicalProfile;
+import org.craft.mcs.cap.shared.domain.measurement.value.ExactMeasurement;
+import org.craft.mcs.cap.shared.domain.measurement.value.MeasuredCharacteristic;
+import org.craft.mcs.cap.core.appleprofile.domain.model.SugarConcentration;
 import org.craft.mcs.cap.shared.domain.measurement.value.SpecificGravityValue;
 import org.junit.jupiter.api.Test;
 
@@ -47,7 +54,7 @@ class AppleVarietyTest {
         )))
         .build();
 
-    final var updated = appleVariety.withChemicalProfile(updatedProfile);
+    final var updated = appleVariety.changeChemicalProfile(updatedProfile);
 
     assertThat(updated).isNotSameAs(appleVariety);
     assertThat(updated.chemicalProfile()).isEqualTo(updatedProfile);

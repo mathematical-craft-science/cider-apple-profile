@@ -1,4 +1,4 @@
-package org.craft.mcs.cap.appleprofile.domain.model;
+package org.craft.mcs.cap.core.appleprofile.domain.model;
 
 import org.jmolecules.ddd.annotation.ValueObject;
 import org.jspecify.annotations.NonNull;

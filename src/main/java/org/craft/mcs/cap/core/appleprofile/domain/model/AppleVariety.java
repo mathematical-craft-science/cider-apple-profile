@@ -1,5 +1,6 @@
-package org.craft.mcs.cap.appleprofile.domain.model;
+package org.craft.mcs.cap.core.appleprofile.domain.model;
 
+import org.craft.mcs.cap.shared.domain.chemical.ChemicalProfile;
 import org.jmolecules.ddd.annotation.AggregateRoot;
 import org.jmolecules.ddd.annotation.Identity;
 import org.jspecify.annotations.NonNull;
@@ -10,9 +11,11 @@ import static java.util.Objects.requireNonNull;
 public final class AppleVariety {
 
   @Identity
-  private final AppleVarietyId varietyId;
-  private final AppleVarietyName name;
-  private final ChemicalProfile chemicalProfile;
+  private final @NonNull AppleVarietyId varietyId;
+
+  private @NonNull AppleVarietyName name;
+
+  private @NonNull ChemicalProfile chemicalProfile;
 
   private AppleVariety(
       @NonNull AppleVarietyId varietyId,
@@ -24,8 +27,7 @@ public final class AppleVariety {
     this.chemicalProfile = requireNonNull(chemicalProfile, "chemical profile cannot be null");
   }
 
-  @NonNull
-  public static AppleVariety create(
+  public static @NonNull AppleVariety create(
       @NonNull AppleVarietyId varietyId,
       @NonNull AppleVarietyName name,
       @NonNull ChemicalProfile chemicalProfile
@@ -33,23 +35,25 @@ public final class AppleVariety {
     return new AppleVariety(varietyId, name, chemicalProfile);
   }
 
-  @NonNull
-  public AppleVarietyId varietyId() {
+  public @NonNull AppleVarietyId varietyId() {
     return varietyId;
   }
 
-  @NonNull
-  public AppleVarietyName name() {
+  public @NonNull AppleVarietyName name() {
     return name;
   }
 
-  @NonNull
-  public ChemicalProfile chemicalProfile() {
+  public @NonNull ChemicalProfile chemicalProfile() {
     return chemicalProfile;
   }
 
-  @NonNull
-  public AppleVariety withChemicalProfile(@NonNull ChemicalProfile chemicalProfile) {
-    return new AppleVariety(varietyId, name, chemicalProfile);
+  public @NonNull AppleVariety rename(@NonNull AppleVarietyName name) {
+    this.name = requireNonNull(name, "apple variety name cannot be null");
+    return this;
+  }
+
+  public @NonNull AppleVariety changeChemicalProfile(@NonNull ChemicalProfile chemicalProfile) {
+    this.chemicalProfile = requireNonNull(chemicalProfile, "chemical profile cannot be null");
+    return this;
   }
 }

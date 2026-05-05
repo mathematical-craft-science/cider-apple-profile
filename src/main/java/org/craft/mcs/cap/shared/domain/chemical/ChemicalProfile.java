@@ -1,6 +1,8 @@
-package org.craft.mcs.cap.appleprofile.domain.model;
+package org.craft.mcs.cap.shared.domain.chemical;
 
 import java.util.Optional;
+import org.craft.mcs.cap.core.appleprofile.domain.model.SugarConcentration;
+import org.craft.mcs.cap.shared.domain.measurement.value.MeasuredCharacteristic;
 import org.craft.mcs.cap.shared.domain.measurement.value.PhValue;
 import org.craft.mcs.cap.shared.domain.measurement.value.TanninityValue;
 import org.craft.mcs.cap.shared.domain.measurement.value.TitratableAcidityValue;

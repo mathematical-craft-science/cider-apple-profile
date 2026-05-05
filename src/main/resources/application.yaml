@@ -1,3 +1,9 @@
 spring:
   application:
     name: cap
+  liquibase:
+    change-log: db/changelog/master-changelog.xml
+    drop-first: true
+  jpa:
+    hibernate:
+      ddl-auto: validate
