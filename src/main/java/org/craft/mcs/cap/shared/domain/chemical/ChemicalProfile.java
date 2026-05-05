@@ -17,7 +17,9 @@ public record ChemicalProfile(
     @NonNull Optional<@NonNull MeasuredCharacteristic<SugarConcentration>> sugar,
     @NonNull Optional<@NonNull MeasuredCharacteristic<PhValue>> ph,
     @NonNull Optional<@NonNull MeasuredCharacteristic<TitratableAcidityValue>> titratableAcidity,
-    @NonNull Optional<@NonNull MeasuredCharacteristic<TanninityValue>> tanninity
+    @NonNull Optional<@NonNull MeasuredCharacteristic<TanninityValue>> tanninity,
+
+    @Nullable ChemicalProfileSource source, @Nullable ConfidenceLevel confidence
 ) {
 
   public ChemicalProfile {
@@ -31,59 +33,60 @@ public record ChemicalProfile(
     }
   }
 
-  @NonNull
-  public static Builder builder() {
+  public static @NonNull Builder builder() {
     return new Builder();
   }
 
   public static final class Builder {
 
-    @Nullable
-    private MeasuredCharacteristic<SugarConcentration> sugar;
+    private @Nullable MeasuredCharacteristic<SugarConcentration> sugar;
+    private @Nullable MeasuredCharacteristic<PhValue> ph;
+    private @Nullable MeasuredCharacteristic<TitratableAcidityValue> titratableAcidity;
+    private @Nullable MeasuredCharacteristic<TanninityValue> tanninity;
 
-    @Nullable
-    private MeasuredCharacteristic<PhValue> ph;
+    private @Nullable ChemicalProfileSource source;
+    private @Nullable ConfidenceLevel confidence;
 
-    @Nullable
-    private MeasuredCharacteristic<TitratableAcidityValue> titratableAcidity;
+    private Builder() {
+    }
 
-    @Nullable
-    private MeasuredCharacteristic<TanninityValue> tanninity;
-
-    @NonNull
-    public Builder sugar(@NonNull MeasuredCharacteristic<SugarConcentration> sugar) {
-      this.sugar = requireNonNull(sugar, "sugar characteristic cannot be null");
+    public @NonNull Builder sugar(@NonNull MeasuredCharacteristic<SugarConcentration> sugar) {
+      this.sugar = requireNonNull(sugar);
       return this;
     }
 
-    @NonNull
-    public Builder ph(@NonNull MeasuredCharacteristic<PhValue> ph) {
-      this.ph = requireNonNull(ph, "pH characteristic cannot be null");
+    public @NonNull Builder ph(@NonNull MeasuredCharacteristic<PhValue> ph) {
+      this.ph = requireNonNull(ph);
       return this;
     }
 
-    @NonNull
-    public Builder titratableAcidity(
+    public @NonNull Builder titratableAcidity(
         @NonNull MeasuredCharacteristic<TitratableAcidityValue> titratableAcidity
     ) {
-      this.titratableAcidity =
-          requireNonNull(titratableAcidity, "titratable acidity characteristic cannot be null");
+      this.titratableAcidity = requireNonNull(titratableAcidity);
       return this;
     }
 
-    @NonNull
-    public Builder tanninity(@NonNull MeasuredCharacteristic<TanninityValue> tanninity) {
-      this.tanninity = requireNonNull(tanninity, "tanninity characteristic cannot be null");
+    public @NonNull Builder tanninity(@NonNull MeasuredCharacteristic<TanninityValue> tanninity) {
+      this.tanninity = requireNonNull(tanninity);
       return this;
     }
 
-    @NonNull
-    public ChemicalProfile build() {
+    public @NonNull Builder source(@Nullable ChemicalProfileSource source) {
+      this.source = source;
+      return this;
+    }
+
+    public @NonNull Builder confidence(@Nullable ConfidenceLevel confidence) {
+      this.confidence = confidence;
+      return this;
+    }
+
+    public @NonNull ChemicalProfile build() {
       return new ChemicalProfile(
           Optional.ofNullable(sugar),
           Optional.ofNullable(ph),
-          Optional.ofNullable(titratableAcidity),
-          Optional.ofNullable(tanninity)
+          Optional.ofNullable(titratableAcidity), Optional.ofNullable(tanninity), source, confidence
       );
     }
   }

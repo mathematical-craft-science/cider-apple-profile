@@ -39,6 +39,9 @@ CREATE TABLE  IF NOT EXISTS apple_varieties
     tanninity_standard_deviation NUMERIC(12, 4),
     tanninity_sample_size        INTEGER,
 
+    chemical_profile_source     VARCHAR(255),
+    chemical_profile_confidence VARCHAR(32),
+
     created_at                   TIMESTAMP WITH TIME ZONE NOT NULL,
     updated_at                   TIMESTAMP WITH TIME ZONE NOT NULL,
     version                      BIGINT                   NOT NULL

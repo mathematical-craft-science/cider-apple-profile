@@ -3,6 +3,7 @@ package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jpa.feedstock;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.feedstock.application.port.out.FeedstockSampleRepository;
 import org.craft.mcs.cap.core.feedstock.domain.model.FeedstockSample;
+import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jpa.feedstock.entity.FeedstockSampleJpaMapper;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Repository;
 

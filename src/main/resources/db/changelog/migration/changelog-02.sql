@@ -43,6 +43,9 @@ CREATE TABLE IF NOT EXISTS feedstock_samples
     tanninity_standard_deviation NUMERIC(12, 4),
     tanninity_sample_size        INTEGER,
 
+    chemical_profile_source     VARCHAR(255),
+    chemical_profile_confidence VARCHAR(32),
+
     version                      BIGINT                   NOT NULL DEFAULT 0,
     created_at                   TIMESTAMP WITH TIME ZONE NOT NULL,
     updated_at                   TIMESTAMP WITH TIME ZONE NOT NULL

@@ -1,0 +1,161 @@
+[
+  {
+    "name": "Dabinett",
+    "source": "Curated cider apple dataset",
+    "confidence": "MEDIUM",
+    "sugar": { "kind": "EXACT", "unit": "SPECIFIC_GRAVITY", "value": "1.048" },
+    "ph": { "kind": "RANGE", "unit": "PH", "min": "3.50", "max": "3.80" },
+    "titratableAcidity": { "kind": "STATISTICAL", "unit": "GRAM_PER_LITER_AS_MALIC_ACID", "mean": "4.50" },
+    "tanninity": { "kind": "EXACT", "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID", "value": "2200.0000" }
+  },
+  {
+    "name": "Yarlington Mill",
+    "source": "Curated cider apple dataset",
+    "confidence": "MEDIUM",
+    "sugar": { "kind": "EXACT", "unit": "SPECIFIC_GRAVITY", "value": "1.050" },
+    "ph": { "kind": "RANGE", "unit": "PH", "min": "3.40", "max": "3.70" },
+    "titratableAcidity": { "kind": "STATISTICAL", "unit": "GRAM_PER_LITER_AS_MALIC_ACID", "mean": "4.80" },
+    "tanninity": { "kind": "EXACT", "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID", "value": "2000.0000" }
+  },
+  {
+    "name": "Michelin",
+    "source": "Curated cider apple dataset",
+    "confidence": "MEDIUM",
+    "sugar": { "kind": "EXACT", "unit": "SPECIFIC_GRAVITY", "value": "1.046" },
+    "ph": { "kind": "RANGE", "unit": "PH", "min": "3.50", "max": "3.80" },
+    "titratableAcidity": { "kind": "STATISTICAL", "unit": "GRAM_PER_LITER_AS_MALIC_ACID", "mean": "3.80" },
+    "tanninity": { "kind": "EXACT", "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID", "value": "1800.0000" }
+  },
+  {
+    "name": "Brown Snout",
+    "source": "Curated cider apple dataset",
+    "confidence": "MEDIUM",
+    "sugar": { "kind": "EXACT", "unit": "SPECIFIC_GRAVITY", "value": "1.047" },
+    "ph": { "kind": "RANGE", "unit": "PH", "min": "3.60", "max": "3.90" },
+    "titratableAcidity": { "kind": "STATISTICAL", "unit": "GRAM_PER_LITER_AS_MALIC_ACID", "mean": "3.50" },
+    "tanninity": { "kind": "EXACT", "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID", "value": "2500.0000" }
+  },
+  {
+    "name": "Chisel Jersey",
+    "source": "Curated cider apple dataset",
+    "confidence": "MEDIUM",
+    "sugar": { "kind": "EXACT", "unit": "SPECIFIC_GRAVITY", "value": "1.049" },
+    "ph": { "kind": "RANGE", "unit": "PH", "min": "3.50", "max": "3.80" },
+    "titratableAcidity": { "kind": "STATISTICAL", "unit": "GRAM_PER_LITER_AS_MALIC_ACID", "mean": "4.20" },
+    "tanninity": { "kind": "EXACT", "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID", "value": "2300.0000" }
+  },
+  {
+    "name": "Harry Masters Jersey",
+    "source": "Curated cider apple dataset",
+    "confidence": "MEDIUM",
+    "sugar": { "kind": "EXACT", "unit": "SPECIFIC_GRAVITY", "value": "1.048" },
+    "ph": { "kind": "RANGE", "unit": "PH", "min": "3.50", "max": "3.80" },
+    "titratableAcidity": { "kind": "STATISTICAL", "unit": "GRAM_PER_LITER_AS_MALIC_ACID", "mean": "4.00" },
+    "tanninity": { "kind": "EXACT", "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID", "value": "2100.0000" }
+  },
+  {
+    "name": "Somerset Redstreak",
+    "source": "Curated cider apple dataset",
+    "confidence": "MEDIUM",
+    "sugar": { "kind": "EXACT", "unit": "SPECIFIC_GRAVITY", "value": "1.050" },
+    "ph": { "kind": "RANGE", "unit": "PH", "min": "3.40", "max": "3.70" },
+    "titratableAcidity": { "kind": "STATISTICAL", "unit": "GRAM_PER_LITER_AS_MALIC_ACID", "mean": "4.50" },
+    "tanninity": { "kind": "EXACT", "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID", "value": "1700.0000" }
+  },
+  {
+    "name": "Sweet Coppin",
+    "source": "Curated cider apple dataset",
+    "confidence": "MEDIUM",
+    "sugar": { "kind": "EXACT", "unit": "SPECIFIC_GRAVITY", "value": "1.045" },
+    "ph": { "kind": "RANGE", "unit": "PH", "min": "3.70", "max": "4.00" },
+    "titratableAcidity": { "kind": "STATISTICAL", "unit": "GRAM_PER_LITER_AS_MALIC_ACID", "mean": "3.20" },
+    "tanninity": { "kind": "EXACT", "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID", "value": "2000.0000" }
+  },
+  {
+    "name": "Slack-ma-Girdle",
+    "source": "Curated cider apple dataset",
+    "confidence": "MEDIUM",
+    "sugar": { "kind": "EXACT", "unit": "SPECIFIC_GRAVITY", "value": "1.049" },
+    "ph": { "kind": "RANGE", "unit": "PH", "min": "3.30", "max": "3.60" },
+    "titratableAcidity": { "kind": "STATISTICAL", "unit": "GRAM_PER_LITER_AS_MALIC_ACID", "mean": "6.00" },
+    "tanninity": { "kind": "EXACT", "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID", "value": "1200.0000" }
+  },
+  {
+    "name": "Foxwhelp",
+    "source": "Curated cider apple dataset",
+    "confidence": "MEDIUM",
+    "sugar": { "kind": "EXACT", "unit": "SPECIFIC_GRAVITY", "value": "1.052" },
+    "ph": { "kind": "RANGE", "unit": "PH", "min": "3.00", "max": "3.30" },
+    "titratableAcidity": { "kind": "STATISTICAL", "unit": "GRAM_PER_LITER_AS_MALIC_ACID", "mean": "9.00" },
+    "tanninity": { "kind": "EXACT", "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID", "value": "900.0000" }
+  },
+  {
+    "name": "Kingston Black Seedling",
+    "source": "Curated cider apple dataset",
+    "confidence": "LOW",
+    "sugar": { "kind": "EXACT", "unit": "SPECIFIC_GRAVITY", "value": "1.050" }
+  },
+  {
+    "name": "Porter's Perfection",
+    "source": "Curated cider apple dataset",
+    "confidence": "MEDIUM",
+    "sugar": { "kind": "EXACT", "unit": "SPECIFIC_GRAVITY", "value": "1.049" },
+    "ph": { "kind": "RANGE", "unit": "PH", "min": "3.40", "max": "3.70" },
+    "titratableAcidity": { "kind": "STATISTICAL", "unit": "GRAM_PER_LITER_AS_MALIC_ACID", "mean": "5.00" },
+    "tanninity": { "kind": "EXACT", "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID", "value": "2200.0000" }
+  },
+  {
+    "name": "Stembridge Jersey",
+    "source": "Curated cider apple dataset",
+    "confidence": "MEDIUM",
+    "sugar": { "kind": "EXACT", "unit": "SPECIFIC_GRAVITY", "value": "1.047" },
+    "ph": { "kind": "RANGE", "unit": "PH", "min": "3.50", "max": "3.80" },
+    "titratableAcidity": { "kind": "STATISTICAL", "unit": "GRAM_PER_LITER_AS_MALIC_ACID", "mean": "4.00" },
+    "tanninity": { "kind": "EXACT", "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID", "value": "2100.0000" }
+  },
+  {
+    "name": "Ashton Bitter",
+    "source": "Curated cider apple dataset",
+    "confidence": "MEDIUM",
+    "sugar": { "kind": "EXACT", "unit": "SPECIFIC_GRAVITY", "value": "1.048" },
+    "ph": { "kind": "RANGE", "unit": "PH", "min": "3.40", "max": "3.70" },
+    "titratableAcidity": { "kind": "STATISTICAL", "unit": "GRAM_PER_LITER_AS_MALIC_ACID", "mean": "4.50" },
+    "tanninity": { "kind": "EXACT", "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID", "value": "2000.0000" }
+  },
+  {
+    "name": "Vilberie",
+    "source": "Curated cider apple dataset",
+    "confidence": "MEDIUM",
+    "sugar": { "kind": "EXACT", "unit": "SPECIFIC_GRAVITY", "value": "1.046" },
+    "ph": { "kind": "RANGE", "unit": "PH", "min": "3.30", "max": "3.60" },
+    "titratableAcidity": { "kind": "STATISTICAL", "unit": "GRAM_PER_LITER_AS_MALIC_ACID", "mean": "5.50" },
+    "tanninity": { "kind": "EXACT", "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID", "value": "1500.0000" }
+  },
+  {
+    "name": "Frequin Rouge",
+    "source": "Curated cider apple dataset",
+    "confidence": "MEDIUM",
+    "sugar": { "kind": "EXACT", "unit": "SPECIFIC_GRAVITY", "value": "1.048" },
+    "ph": { "kind": "RANGE", "unit": "PH", "min": "3.40", "max": "3.70" },
+    "titratableAcidity": { "kind": "STATISTICAL", "unit": "GRAM_PER_LITER_AS_MALIC_ACID", "mean": "4.50" },
+    "tanninity": { "kind": "EXACT", "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID", "value": "1700.0000" }
+  },
+  {
+    "name": "Bedan",
+    "source": "Curated cider apple dataset",
+    "confidence": "MEDIUM",
+    "sugar": { "kind": "EXACT", "unit": "SPECIFIC_GRAVITY", "value": "1.047" },
+    "ph": { "kind": "RANGE", "unit": "PH", "min": "3.40", "max": "3.70" },
+    "titratableAcidity": { "kind": "STATISTICAL", "unit": "GRAM_PER_LITER_AS_MALIC_ACID", "mean": "4.20" },
+    "tanninity": { "kind": "EXACT", "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID", "value": "1600.0000" }
+  },
+  {
+    "name": "Binet Rouge",
+    "source": "Curated cider apple dataset",
+    "confidence": "MEDIUM",
+    "sugar": { "kind": "EXACT", "unit": "SPECIFIC_GRAVITY", "value": "1.048" },
+    "ph": { "kind": "RANGE", "unit": "PH", "min": "3.40", "max": "3.70" },
+    "titratableAcidity": { "kind": "STATISTICAL", "unit": "GRAM_PER_LITER_AS_MALIC_ACID", "mean": "4.30" },
+    "tanninity": { "kind": "EXACT", "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID", "value": "1800.0000" }
+  }
+]

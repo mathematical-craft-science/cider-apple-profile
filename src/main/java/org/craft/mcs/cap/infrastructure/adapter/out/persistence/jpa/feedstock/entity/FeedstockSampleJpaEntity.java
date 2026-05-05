@@ -1,4 +1,4 @@
-package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jpa.feedstock;
+package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jpa.feedstock.entity;
 
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.AttributeOverrides;
@@ -15,6 +15,7 @@ import java.time.Instant;
 import java.util.UUID;
 import org.craft.mcs.cap.core.feedstock.domain.model.value.FeedstockType;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jpa.common.MeasurementJpaEmbeddable;
+import org.craft.mcs.cap.shared.domain.chemical.ConfidenceLevel;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.data.annotation.CreatedDate;
@@ -27,7 +28,7 @@ import static java.util.Objects.requireNonNull;
 @Entity
 @Table(name = "feedstock_samples")
 @EntityListeners(AuditingEntityListener.class)
-class FeedstockSampleJpaEntity {
+public class FeedstockSampleJpaEntity {
 
   @Id
   @NonNull
@@ -119,6 +120,15 @@ class FeedstockSampleJpaEntity {
   )
   MeasurementJpaEmbeddable tanninity;
 
+  @Nullable
+  @Column(name = "chemical_profile_source", length = 255)
+  String chemicalProfileSource;
+
+  @Nullable
+  @Enumerated(EnumType.STRING)
+  @Column(name = "chemical_profile_confidence", length = 32)
+  ConfidenceLevel chemicalProfileConfidence;
+
   @NonNull
   @CreatedDate
   @Column(name = "created_at", nullable = false, updatable = false)
@@ -147,7 +157,9 @@ class FeedstockSampleJpaEntity {
       @Nullable MeasurementJpaEmbeddable sugar,
       @Nullable MeasurementJpaEmbeddable ph,
       @Nullable MeasurementJpaEmbeddable titratableAcidity,
-      @Nullable MeasurementJpaEmbeddable tanninity
+      @Nullable MeasurementJpaEmbeddable tanninity,
+      @Nullable String chemicalProfileSource,
+      @Nullable ConfidenceLevel chemicalProfileConfidence
   ) {
     this.sampleId = requireNonNull(sampleId, "feedstock sample id cannot be null");
     this.ciderMakerId = requireNonNull(ciderMakerId, "cider maker id cannot be null");
@@ -159,10 +171,21 @@ class FeedstockSampleJpaEntity {
     this.ph = ph;
     this.titratableAcidity = titratableAcidity;
     this.tanninity = tanninity;
+    this.chemicalProfileSource = normalize(chemicalProfileSource);
+    this.chemicalProfileConfidence = chemicalProfileConfidence;
   }
 
   @NonNull
   UUID id() {
     return requireNonNull(sampleId, "feedstock sample id cannot be null");
+  }
+
+  private static @Nullable String normalize(@Nullable String value) {
+    if (value == null) {
+      return null;
+    }
+
+    final var normalized = value.strip();
+    return normalized.isEmpty() ? null : normalized;
   }
 }

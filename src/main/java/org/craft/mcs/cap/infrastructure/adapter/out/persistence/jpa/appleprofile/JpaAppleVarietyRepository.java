@@ -3,7 +3,7 @@ package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jpa.appleprofil
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.appleprofile.application.port.out.AppleVarietyRepository;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVariety;
-import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jpa.appleprofile.entity.AppleVarietyJpaEntity;
+import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jpa.appleprofile.entity.AppleVarietyJpaMapper;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Repository;
 
@@ -21,9 +21,9 @@ class JpaAppleVarietyRepository implements AppleVarietyRepository {
   public AppleVariety save(@NonNull AppleVariety appleVariety) {
     requireNonNull(appleVariety, "apple variety cannot be null");
 
-    final var entity = AppleVarietyJpaEntity.fromDomain(appleVariety);
+    final var entity = AppleVarietyJpaMapper.fromDomain(appleVariety);
     final var saved = repository.save(entity);
 
-    return saved.toDomain();
+    return AppleVarietyJpaMapper.toDomain(saved);
   }
 }
