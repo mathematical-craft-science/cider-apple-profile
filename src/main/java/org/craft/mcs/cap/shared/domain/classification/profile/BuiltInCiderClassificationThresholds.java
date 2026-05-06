@@ -3,6 +3,7 @@ package org.craft.mcs.cap.shared.domain.classification.profile;
 import org.craft.mcs.cap.shared.domain.classification.profile.french.FrenchThresholds;
 import org.craft.mcs.cap.shared.domain.classification.profile.longashton.LongAshton4Thresholds;
 import org.craft.mcs.cap.shared.domain.classification.profile.longashton.LongAshton7Thresholds;
+import org.craft.mcs.cap.shared.domain.classification.profile.northamerical.NorthAmericanThresholds;
 import org.craft.mcs.cap.shared.domain.classification.profile.spanish.SpanishThresholds;
 import org.craft.mcs.cap.shared.domain.classification.rule.AxisRange;
 import org.jspecify.annotations.NonNull;
@@ -11,6 +12,32 @@ import org.jspecify.annotations.NonNull;
 public class BuiltInCiderClassificationThresholds {
 
   private BuiltInCiderClassificationThresholds() {
+  }
+
+  // =========================
+  // NORTH AMERICAN
+  // =========================
+
+  public static @NonNull NorthAmericanThresholds northAmerican() {
+    return new NorthAmericanThresholds(
+
+        // Sugar (Specific Gravity)
+        AxisRange.lessThan("1.045"),
+        AxisRange.between("1.045", "1.060"),
+        AxisRange.between("1.060", "1.070"),
+        AxisRange.atLeast("1.070"),
+
+        // Acidity (g/L malic)
+        AxisRange.lessThan("4.5"),
+        AxisRange.between("4.5", "7.5"),
+        AxisRange.between("7.5", "11.0"),
+        AxisRange.atLeast("11.0"),
+
+        // Tannin (mg/L TAE)
+        AxisRange.lessThan("1500"),
+        AxisRange.between("1500", "2500"),
+        AxisRange.atLeast("2500")
+    );
   }
 
   // =========================

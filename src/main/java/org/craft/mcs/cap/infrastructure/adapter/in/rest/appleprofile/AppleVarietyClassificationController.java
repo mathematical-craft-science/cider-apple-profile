@@ -2,11 +2,14 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile;
 
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.craft.mcs.cap.core.appleprofile.application.port.in.ClassifyAppleVarietyNorthAmericanUseCase;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.dto.AppleVarietyClassificationResponse;
 import org.craft.mcs.cap.core.appleprofile.application.port.in.AppleVarietyClassificationSystem;
 import org.craft.mcs.cap.core.appleprofile.application.port.in.ClassifyAppleVarietyUseCase;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyId;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.dto.AppleVarietyNorthAmericanResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.mapper.AppleVarietyClassificationRestMapper;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.mapper.AppleVarietyNorthAmericanRestMapper;
 import org.jspecify.annotations.NonNull;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 public final class AppleVarietyClassificationController {
 
   private final @NonNull ClassifyAppleVarietyUseCase classifyAppleVarietyUseCase;
+  private final @NonNull ClassifyAppleVarietyNorthAmericanUseCase classifyAppleVarietyNorthAmericanUseCase;
 
   @GetMapping("/apple-varieties/{varietyId}/classification")
   public @NonNull ResponseEntity<@NonNull AppleVarietyClassificationResponse> classify(
@@ -33,6 +37,19 @@ public final class AppleVarietyClassificationController {
 
     return ResponseEntity.ok(
         AppleVarietyClassificationRestMapper.toResponse(classification)
+    );
+  }
+
+  @GetMapping("/apple-varieties/{varietyId}/north-american")
+  public @NonNull ResponseEntity<@NonNull AppleVarietyNorthAmericanResponse> classifyNorthAmerican(
+      @PathVariable @NonNull UUID varietyId
+  ) {
+    final var result = classifyAppleVarietyNorthAmericanUseCase.classify(
+        AppleVarietyId.of(varietyId)
+    );
+
+    return ResponseEntity.ok(
+        AppleVarietyNorthAmericanRestMapper.toResponse(result)
     );
   }
 }
