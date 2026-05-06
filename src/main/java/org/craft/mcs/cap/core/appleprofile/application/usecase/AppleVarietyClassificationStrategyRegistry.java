@@ -2,8 +2,8 @@ package org.craft.mcs.cap.core.appleprofile.application.usecase;
 
 import java.util.Map;
 import org.craft.mcs.cap.core.appleprofile.application.port.in.AppleVarietyClassificationSystem;
-import org.craft.mcs.cap.shared.domain.classification.core.ClassificationStrategy;
-import org.craft.mcs.cap.shared.domain.classification.profile.english.EnglishClassificationStrategy;
+import org.craft.mcs.cap.shared.domain.classification.engine.ClassificationStrategy;
+import org.craft.mcs.cap.shared.domain.classification.profile.BuiltInCiderClassificationThresholds;
 import org.craft.mcs.cap.shared.domain.classification.profile.french.FrenchClassificationStrategy;
 import org.craft.mcs.cap.shared.domain.classification.profile.longashton.LongAshton4ClassificationStrategy;
 import org.craft.mcs.cap.shared.domain.classification.profile.longashton.LongAshton7ClassificationStrategy;
@@ -11,21 +11,37 @@ import org.craft.mcs.cap.shared.domain.classification.profile.spanish.SpanishCla
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 
+import static java.util.Objects.requireNonNull;
+
 
 @Component
 public class AppleVarietyClassificationStrategyRegistry {
 
-  private final @NonNull Map<AppleVarietyClassificationSystem, ClassificationStrategy<?>> strategies =
-      Map.of(
-          AppleVarietyClassificationSystem.ENGLISH, new EnglishClassificationStrategy(),
-          AppleVarietyClassificationSystem.FRENCH, new FrenchClassificationStrategy(),
-          AppleVarietyClassificationSystem.SPANISH, new SpanishClassificationStrategy(),
-          AppleVarietyClassificationSystem.LONG_ASHTON_4, new LongAshton4ClassificationStrategy(),
-          AppleVarietyClassificationSystem.LONG_ASHTON_7, new LongAshton7ClassificationStrategy()
-      );
 
-  @NonNull
-  ClassificationStrategy<?> get(@NonNull AppleVarietyClassificationSystem system) {
+  private final @NonNull Map<@NonNull AppleVarietyClassificationSystem, @NonNull ClassificationStrategy<?>> strategies;
+
+  public AppleVarietyClassificationStrategyRegistry() {
+    this.strategies = Map.of(
+
+        AppleVarietyClassificationSystem.FRENCH,
+        new FrenchClassificationStrategy(BuiltInCiderClassificationThresholds.french()),
+
+        AppleVarietyClassificationSystem.SPANISH,
+        new SpanishClassificationStrategy(BuiltInCiderClassificationThresholds.spanish()),
+
+        AppleVarietyClassificationSystem.LONG_ASHTON_4,
+        new LongAshton4ClassificationStrategy(BuiltInCiderClassificationThresholds.longAshton4()),
+
+        AppleVarietyClassificationSystem.LONG_ASHTON_7,
+        new LongAshton7ClassificationStrategy(BuiltInCiderClassificationThresholds.longAshton7())
+    );
+  }
+
+  public @NonNull ClassificationStrategy<?> get(
+      @NonNull AppleVarietyClassificationSystem system
+  ) {
+    requireNonNull(system, "apple variety classification system cannot be null");
+
     final var strategy = strategies.get(system);
 
     if (strategy == null) {

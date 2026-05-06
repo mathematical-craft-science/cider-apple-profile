@@ -1,4 +1,4 @@
-package org.craft.mcs.cap.shared.domain.classification.core;
+package org.craft.mcs.cap.shared.domain.classification.axis;
 
 import java.util.EnumMap;
 import java.util.Map;

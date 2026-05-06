@@ -1,18 +1,22 @@
 package org.craft.mcs.cap.shared.domain.classification.profile.french;
 
 import java.util.List;
-import org.craft.mcs.cap.shared.domain.classification.core.AxisRange;
-import org.craft.mcs.cap.shared.domain.classification.core.ClassificationProfile;
-import org.craft.mcs.cap.shared.domain.classification.core.ClassificationRule;
-import org.craft.mcs.cap.shared.domain.classification.core.ClassificationStrategy;
+import org.craft.mcs.cap.shared.domain.classification.engine.ClassificationStrategy;
+import org.craft.mcs.cap.shared.domain.classification.rule.ClassificationProfile;
+import org.craft.mcs.cap.shared.domain.classification.rule.ClassificationRule;
 import org.jspecify.annotations.NonNull;
+
+import static java.util.Objects.requireNonNull;
 
 
 public final class FrenchClassificationStrategy
     implements ClassificationStrategy<FrenchCiderAppleClass> {
 
-  private static final AxisRange LOW_TANNIN = AxisRange.lessThan("2000");
-  private static final AxisRange HIGH_TANNIN = AxisRange.atLeast("2000");
+  private final FrenchThresholds thresholds;
+
+  public FrenchClassificationStrategy(@NonNull FrenchThresholds thresholds) {
+    this.thresholds = requireNonNull(thresholds);
+  }
 
   @Override
   public @NonNull String code() {
@@ -24,12 +28,21 @@ public final class FrenchClassificationStrategy
     return new ClassificationProfile<>(
         code(),
         List.of(
-            ClassificationRule.of(FrenchCiderAppleClass.DOUCE, null, AxisRange.lessThan("3.0"), LOW_TANNIN),
-            ClassificationRule.of(FrenchCiderAppleClass.DOUCE_AMERE, null, AxisRange.lessThan("3.0"), HIGH_TANNIN),
-            ClassificationRule.of(FrenchCiderAppleClass.AMERE, null, AxisRange.between("3.0", "4.5"), HIGH_TANNIN),
-            ClassificationRule.of(FrenchCiderAppleClass.ACIDULEE, null, AxisRange.between("3.0", "4.5"), LOW_TANNIN),
-            ClassificationRule.of(FrenchCiderAppleClass.AIGRE, null, AxisRange.atLeast("4.5"), LOW_TANNIN),
-            ClassificationRule.of(FrenchCiderAppleClass.AIGRE_AMERE, null, AxisRange.atLeast("4.5"), HIGH_TANNIN)
+
+            // LOW ACID
+            ClassificationRule.of(FrenchCiderAppleClass.DOUCE, null, thresholds.lowAcid(), thresholds.lowTannin()),
+            ClassificationRule.of(FrenchCiderAppleClass.DOUCE_AMERE, null, thresholds.lowAcid(),
+                thresholds.mediumTannin()),
+            ClassificationRule.of(FrenchCiderAppleClass.AMERE, null, thresholds.lowAcid(), thresholds.highTannin()),
+
+            // MEDIUM ACID
+            ClassificationRule.of(FrenchCiderAppleClass.ACIDULEE, null, thresholds.mediumAcid(),
+                thresholds.lowTannin()),
+
+            // HIGH ACID
+            ClassificationRule.of(FrenchCiderAppleClass.AIGRE, null, thresholds.highAcid(), thresholds.lowTannin()),
+            ClassificationRule.of(FrenchCiderAppleClass.AIGRE_AMERE, null, thresholds.highAcid(),
+                thresholds.highTannin())
         )
     );
   }

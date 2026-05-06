@@ -2,7 +2,7 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.dto;
 
 
 import java.util.List;
-import org.craft.mcs.cap.shared.domain.classification.core.ClassificationConfidence;
+import org.craft.mcs.cap.shared.domain.classification.result.ClassificationConfidence;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

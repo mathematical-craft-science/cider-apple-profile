@@ -1,4 +1,4 @@
-package org.craft.mcs.cap.shared.domain.classification.core;
+package org.craft.mcs.cap.shared.domain.classification.rule;
 
 import java.math.BigDecimal;
 import org.jspecify.annotations.NonNull;

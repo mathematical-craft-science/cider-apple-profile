@@ -1,20 +1,20 @@
-package org.craft.mcs.cap.shared.domain.classification.core.service;
+package org.craft.mcs.cap.shared.domain.classification.engine;
 
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
-import org.craft.mcs.cap.shared.domain.classification.core.AxisRange;
-import org.craft.mcs.cap.shared.domain.classification.core.AxisValue;
-import org.craft.mcs.cap.shared.domain.classification.core.BorderlineEvidence;
-import org.craft.mcs.cap.shared.domain.classification.core.BorderlineReason;
-import org.craft.mcs.cap.shared.domain.classification.core.ChemicalAxis;
-import org.craft.mcs.cap.shared.domain.classification.core.ChemicalProfileAxes;
-import org.craft.mcs.cap.shared.domain.classification.core.ClassificationAssessment;
-import org.craft.mcs.cap.shared.domain.classification.core.ClassificationConfidence;
-import org.craft.mcs.cap.shared.domain.classification.core.ClassificationRule;
-import org.craft.mcs.cap.shared.domain.classification.core.MeasurementValueKind;
+import org.craft.mcs.cap.shared.domain.classification.rule.AxisRange;
+import org.craft.mcs.cap.shared.domain.classification.axis.AxisValue;
+import org.craft.mcs.cap.shared.domain.classification.result.BorderlineEvidence;
+import org.craft.mcs.cap.shared.domain.classification.result.BorderlineReason;
+import org.craft.mcs.cap.shared.domain.classification.axis.ChemicalAxis;
+import org.craft.mcs.cap.shared.domain.classification.axis.ChemicalProfileAxes;
+import org.craft.mcs.cap.shared.domain.classification.result.ClassificationAssessment;
+import org.craft.mcs.cap.shared.domain.classification.result.ClassificationConfidence;
+import org.craft.mcs.cap.shared.domain.classification.rule.ClassificationRule;
+import org.craft.mcs.cap.shared.domain.classification.axis.MeasurementValueKind;
 import org.jmolecules.ddd.annotation.Service;
 import org.jspecify.annotations.NonNull;
 

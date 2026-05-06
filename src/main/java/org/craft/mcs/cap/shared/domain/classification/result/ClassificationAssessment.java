@@ -1,4 +1,4 @@
-package org.craft.mcs.cap.shared.domain.classification.core;
+package org.craft.mcs.cap.shared.domain.classification.result;
 
 import java.util.List;
 import org.jspecify.annotations.NonNull;

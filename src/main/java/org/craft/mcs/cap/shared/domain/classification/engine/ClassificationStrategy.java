@@ -1,5 +1,6 @@
-package org.craft.mcs.cap.shared.domain.classification.core;
+package org.craft.mcs.cap.shared.domain.classification.engine;
 
+import org.craft.mcs.cap.shared.domain.classification.rule.ClassificationProfile;
 import org.jspecify.annotations.NonNull;
 
 

@@ -1,13 +1,9 @@
-package org.craft.mcs.cap.shared.domain.classification.core.service;
+package org.craft.mcs.cap.shared.domain.classification.axis;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.function.Function;
 import org.craft.mcs.cap.shared.domain.chemical.ChemicalProfile;
-import org.craft.mcs.cap.shared.domain.classification.core.AxisValue;
-import org.craft.mcs.cap.shared.domain.classification.core.ChemicalAxis;
-import org.craft.mcs.cap.shared.domain.classification.core.ChemicalProfileAxes;
-import org.craft.mcs.cap.shared.domain.classification.core.MeasurementValueKind;
 import org.craft.mcs.cap.shared.domain.measurement.value.ExactMeasurement;
 import org.craft.mcs.cap.shared.domain.measurement.value.MeasuredCharacteristic;
 import org.craft.mcs.cap.shared.domain.measurement.value.RangeMeasurement;

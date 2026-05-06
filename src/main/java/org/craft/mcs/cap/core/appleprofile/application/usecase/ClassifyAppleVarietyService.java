@@ -7,9 +7,9 @@ import org.craft.mcs.cap.core.appleprofile.application.port.in.ClassifyAppleVari
 import org.craft.mcs.cap.core.appleprofile.application.port.out.AppleVarietyRepository;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyId;
 import org.craft.mcs.cap.shared.domain.chemical.ChemicalProfile;
-import org.craft.mcs.cap.shared.domain.classification.core.ClassificationResult;
-import org.craft.mcs.cap.shared.domain.classification.core.ClassificationStrategy;
-import org.craft.mcs.cap.shared.domain.classification.core.service.ChemicalProfileClassifier;
+import org.craft.mcs.cap.shared.domain.classification.result.ClassificationResult;
+import org.craft.mcs.cap.shared.domain.classification.engine.ClassificationStrategy;
+import org.craft.mcs.cap.shared.domain.classification.engine.ChemicalProfileClassifier;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 
@@ -43,7 +43,7 @@ public final class ClassifyAppleVarietyService
         variety.name(),
         result.profileCode(),
         result.classified(),
-        result.appleClass() == null ? null : result.appleClass().name(),
+        result.appleClass() == null ? null : result.appleClass().name(), // NOSONAR
         result.confidence(),
         result.borderline(),
         result.borderlineEvidence()
