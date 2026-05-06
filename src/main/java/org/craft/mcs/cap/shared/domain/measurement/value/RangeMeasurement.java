@@ -1,10 +1,10 @@
 package org.craft.mcs.cap.shared.domain.measurement.value;
 
-import java.util.Optional;
 import org.jmolecules.ddd.annotation.ValueObject;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
+
 
 @ValueObject
 public record RangeMeasurement<T extends Comparable<T>>(
@@ -29,9 +29,4 @@ public record RangeMeasurement<T extends Comparable<T>>(
     return new RangeMeasurement<>(min, max);
   }
 
-  @Override
-  @NonNull
-  public Optional<@NonNull T> representativeValue() {
-    return min.compareTo(max) == 0 ? Optional.of(min) : Optional.empty();
-  }
 }

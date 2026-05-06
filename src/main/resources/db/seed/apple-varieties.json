@@ -90,12 +90,6 @@
     "tanninity": { "kind": "EXACT", "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID", "value": "900.0000" }
   },
   {
-    "name": "Kingston Black Seedling",
-    "source": "Curated cider apple dataset",
-    "confidence": "LOW",
-    "sugar": { "kind": "EXACT", "unit": "SPECIFIC_GRAVITY", "value": "1.050" }
-  },
-  {
     "name": "Porter's Perfection",
     "source": "Curated cider apple dataset",
     "confidence": "MEDIUM",

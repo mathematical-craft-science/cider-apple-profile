@@ -12,7 +12,6 @@ import org.jspecify.annotations.Nullable;
 
 import static java.util.Objects.requireNonNull;
 
-
 public final class MeasurementJpaMapperSupport {
 
   private MeasurementJpaMapperSupport() {
@@ -53,15 +52,16 @@ public final class MeasurementJpaMapperSupport {
         return embeddable;
       }
       case StatisticalMeasurement<T>(
-          T mean, Optional<T> median, Optional<BigDecimal> standardDeviation, Optional<Integer> sampleSize
+          T mean,
+          T median,
+          BigDecimal standardDeviation,
+          Integer sampleSize
       ) -> {
         embeddable.kind = MeasurementKind.STATISTICAL;
         embeddable.meanValue = valueExtractor.apply(mean);
-        embeddable.medianValue = median
-            .map(valueExtractor)
-            .orElse(null);
-        embeddable.standardDeviation = standardDeviation.orElse(null);
-        embeddable.sampleSize = sampleSize.orElse(null);
+        embeddable.medianValue = median == null ? null : valueExtractor.apply(median);
+        embeddable.standardDeviation = standardDeviation;
+        embeddable.sampleSize = sampleSize;
         return embeddable;
       }
       default -> {
@@ -91,11 +91,11 @@ public final class MeasurementJpaMapperSupport {
           valueFactory.apply(requireNonNull(source.minValue, "range minimum value cannot be null")),
           valueFactory.apply(requireNonNull(source.maxValue, "range maximum value cannot be null"))
       ));
-      case STATISTICAL -> Optional.of(new StatisticalMeasurement<>(
+      case STATISTICAL -> Optional.of(StatisticalMeasurement.of(
           valueFactory.apply(requireNonNull(source.meanValue, "statistical mean value cannot be null")),
-          Optional.ofNullable(source.medianValue).map(valueFactory),
-          Optional.ofNullable(source.standardDeviation),
-          Optional.ofNullable(source.sampleSize)
+          source.medianValue == null ? null : valueFactory.apply(source.medianValue),
+          source.standardDeviation,
+          source.sampleSize
       ));
     };
   }
