@@ -41,7 +41,12 @@ public final class ClassifyAppleVarietyService
     return new AppleVarietyClassification(
         variety.varietyId(),
         variety.name(),
-        result
+        result.profileCode(),
+        result.classified(),
+        result.appleClass() == null ? null : result.appleClass().name(),
+        result.confidence(),
+        result.borderline(),
+        result.borderlineEvidence()
     );
   }
 

@@ -1,22 +1,22 @@
 package org.craft.mcs.cap.core.appleprofile.application.port.in;
 
+import java.util.List;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyId;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyName;
-import org.craft.mcs.cap.shared.domain.classification.core.ClassificationResult;
+import org.craft.mcs.cap.shared.domain.classification.core.BorderlineEvidence;
+import org.craft.mcs.cap.shared.domain.classification.core.ClassificationConfidence;
 import org.jspecify.annotations.NonNull;
-
-import static java.util.Objects.requireNonNull;
+import org.jspecify.annotations.Nullable;
 
 
 public record AppleVarietyClassification(
     @NonNull AppleVarietyId varietyId,
     @NonNull AppleVarietyName varietyName,
-    @NonNull ClassificationResult<?> result
+    @NonNull String profileCode,
+    boolean classified,
+    @Nullable String appleClass,
+    @NonNull ClassificationConfidence confidence,
+    boolean borderline,
+    @NonNull List<@NonNull BorderlineEvidence> borderlineEvidence
 ) {
-
-  public AppleVarietyClassification {
-    requireNonNull(varietyId, "apple variety id cannot be null");
-    requireNonNull(varietyName, "apple variety name cannot be null");
-    requireNonNull(result, "classification result cannot be null");
-  }
 }
