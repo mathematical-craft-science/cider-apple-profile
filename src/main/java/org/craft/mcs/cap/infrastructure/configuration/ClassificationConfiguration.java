@@ -5,7 +5,8 @@ import org.craft.mcs.cap.shared.domain.classification.axis.ChemicalProfileAxisEx
 import org.craft.mcs.cap.shared.domain.classification.engine.ChemicalProfileClassifier;
 import org.craft.mcs.cap.shared.domain.classification.engine.ClassificationConfidencePolicy;
 import org.craft.mcs.cap.shared.domain.classification.profile.BuiltInCiderClassificationThresholds;
-import org.craft.mcs.cap.shared.domain.classification.profile.northamerical.NorthAmericanProfileCalculator;
+import org.craft.mcs.cap.shared.domain.classification.profile.northamerican.NorthAmericanProfileCalculator;
+import org.craft.mcs.cap.shared.domain.classification.profile.sugaracidity.SugarAcidityZoneAssessor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -38,6 +39,13 @@ class ClassificationConfiguration {
   NorthAmericanProfileCalculator northAmericanProfileCalculator() {
     return new NorthAmericanProfileCalculator(
         BuiltInCiderClassificationThresholds.northAmerican()
+    );
+  }
+
+  @Bean
+  SugarAcidityZoneAssessor sugarAcidityZoneAssessor() {
+    return new SugarAcidityZoneAssessor(
+        BuiltInCiderClassificationThresholds.sugarAcidityZones()
     );
   }
 }

@@ -3,10 +3,10 @@ package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jpa.common;
 import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.function.Function;
-import org.craft.mcs.cap.shared.domain.measurement.value.ExactMeasurement;
-import org.craft.mcs.cap.shared.domain.measurement.value.MeasuredCharacteristic;
-import org.craft.mcs.cap.shared.domain.measurement.value.RangeMeasurement;
-import org.craft.mcs.cap.shared.domain.measurement.value.StatisticalMeasurement;
+import org.craft.mcs.cap.shared.domain.measurement.ExactMeasurement;
+import org.craft.mcs.cap.shared.domain.measurement.MeasuredCharacteristic;
+import org.craft.mcs.cap.shared.domain.measurement.RangeMeasurement;
+import org.craft.mcs.cap.shared.domain.measurement.StatisticalMeasurement;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

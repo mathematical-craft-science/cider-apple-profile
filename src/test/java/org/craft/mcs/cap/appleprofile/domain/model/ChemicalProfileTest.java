@@ -1,14 +1,14 @@
 package org.craft.mcs.cap.appleprofile.domain.model;
 
-import org.craft.mcs.cap.core.appleprofile.domain.model.SugarConcentration;
+import org.craft.mcs.cap.shared.domain.sugar.SugarConcentration;
 import org.craft.mcs.cap.shared.domain.chemical.ChemicalProfile;
-import org.craft.mcs.cap.shared.domain.measurement.value.ExactMeasurement;
-import org.craft.mcs.cap.shared.domain.measurement.value.PhValue;
-import org.craft.mcs.cap.shared.domain.measurement.value.RangeMeasurement;
-import org.craft.mcs.cap.shared.domain.measurement.value.SpecificGravityValue;
-import org.craft.mcs.cap.shared.domain.measurement.value.TanninityValue;
-import org.craft.mcs.cap.shared.domain.measurement.value.TitratableAcidityValue;
-import org.craft.mcs.cap.shared.domain.measurement.value.StatisticalMeasurement;
+import org.craft.mcs.cap.shared.domain.measurement.ExactMeasurement;
+import org.craft.mcs.cap.shared.domain.chemical.value.PhValue;
+import org.craft.mcs.cap.shared.domain.measurement.RangeMeasurement;
+import org.craft.mcs.cap.shared.domain.sugar.SpecificGravityValue;
+import org.craft.mcs.cap.shared.domain.chemical.value.TanninityValue;
+import org.craft.mcs.cap.shared.domain.chemical.value.TitratableAcidityValue;
+import org.craft.mcs.cap.shared.domain.measurement.StatisticalMeasurement;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;

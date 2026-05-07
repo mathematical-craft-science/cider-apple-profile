@@ -1,6 +1,7 @@
 package org.craft.mcs.cap.core.appleprofile.application.usecase;
 
 import lombok.RequiredArgsConstructor;
+import org.craft.mcs.cap.core.appleprofile.application.port.in.AppleVarietyCreated;
 import org.craft.mcs.cap.core.appleprofile.application.port.in.CreateAppleVarietyCommand;
 import org.craft.mcs.cap.core.appleprofile.application.port.in.CreateAppleVarietyUseCase;
 import org.craft.mcs.cap.core.appleprofile.application.port.out.AppleVarietyRepository;
@@ -19,20 +20,26 @@ import static java.util.Objects.requireNonNull;
 public final class CreateAppleVarietyService
     implements CreateAppleVarietyUseCase {
 
-  private final AppleVarietyRepository appleVarietyRepository;
-  private final TransactionHelper transactionHelper;
+  private final @NonNull AppleVarietyRepository appleVarietyRepository;
+  private final @NonNull TransactionHelper transactionHelper;
 
   @Override
-  @NonNull
-  public AppleVariety create(@NonNull CreateAppleVarietyCommand command) {
+  public @NonNull AppleVarietyCreated create(@NonNull CreateAppleVarietyCommand command) {
     requireNonNull(command, "create apple variety command cannot be null");
 
-    final var appleVariety = AppleVariety.create(
-        AppleVarietyId.newId(),
-        AppleVarietyName.of(command.name()),
-        command.chemicalProfile()
-    );
+    return transactionHelper.callInTransactionNonNull(() -> {
+      final var appleVariety = AppleVariety.create(
+          AppleVarietyId.newId(),
+          AppleVarietyName.of(command.name()),
+          command.chemicalProfile()
+      );
 
-    return transactionHelper.callInTransactionNonNull(() -> appleVarietyRepository.save(appleVariety));
+      final var saved = appleVarietyRepository.save(appleVariety);
+
+      return new AppleVarietyCreated(
+          saved.varietyId(),
+          saved.name()
+      );
+    });
   }
 }

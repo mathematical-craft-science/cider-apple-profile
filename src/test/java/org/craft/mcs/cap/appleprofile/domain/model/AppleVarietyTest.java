@@ -4,10 +4,10 @@ import java.util.UUID;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVariety;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyId;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyName;
-import org.craft.mcs.cap.core.appleprofile.domain.model.SugarConcentration;
+import org.craft.mcs.cap.shared.domain.sugar.SugarConcentration;
 import org.craft.mcs.cap.shared.domain.chemical.ChemicalProfile;
-import org.craft.mcs.cap.shared.domain.measurement.value.ExactMeasurement;
-import org.craft.mcs.cap.shared.domain.measurement.value.SpecificGravityValue;
+import org.craft.mcs.cap.shared.domain.measurement.ExactMeasurement;
+import org.craft.mcs.cap.shared.domain.sugar.SpecificGravityValue;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;

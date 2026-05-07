@@ -1,0 +1,85 @@
+package org.craft.mcs.cap.shared.domain.classification.profile.northamerican;
+
+import java.math.BigDecimal;
+import org.craft.mcs.cap.shared.domain.classification.axis.ChemicalAxis;
+import org.craft.mcs.cap.shared.domain.classification.axis.ChemicalProfileAxes;
+import org.craft.mcs.cap.shared.domain.classification.rule.AxisRange;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
+import static java.util.Objects.requireNonNull;
+
+
+public final class NorthAmericanProfileCalculator {
+
+  private final @NonNull NorthAmericanThresholds thresholds;
+
+  public NorthAmericanProfileCalculator(@NonNull NorthAmericanThresholds thresholds) {
+    this.thresholds = requireNonNull(thresholds);
+  }
+
+  private static @NonNull NorthAmericanLevel levelOf(
+      @NonNull BigDecimal value,
+      @NonNull AxisRange low,
+      @NonNull AxisRange medium,
+      @NonNull AxisRange high,
+      @Nullable AxisRange veryHigh
+  ) {
+    requireNonNull(value, "axis value cannot be null");
+    requireNonNull(low, "low range cannot be null");
+    requireNonNull(medium, "medium range cannot be null");
+    requireNonNull(high, "high range cannot be null");
+
+    if (low.contains(value)) {
+      return NorthAmericanLevel.LOW;
+    }
+    if (medium.contains(value)) {
+      return NorthAmericanLevel.MEDIUM;
+    }
+    if (high.contains(value)) {
+      return NorthAmericanLevel.HIGH;
+    }
+    if (veryHigh != null && veryHigh.contains(value)) {
+      return NorthAmericanLevel.VERY_HIGH;
+    }
+
+    throw new IllegalStateException("value does not fit any range: " + value);
+  }
+
+  private static @NonNull BigDecimal axisValue(
+      @NonNull ChemicalProfileAxes axes,
+      @NonNull ChemicalAxis axis
+  ) {
+    return axes.valueOf(axis)
+        .orElseThrow(() -> new IllegalArgumentException("missing required axis: " + axis))
+        .value();
+  }
+
+  public @NonNull NorthAmericanProfile calculate(@NonNull ChemicalProfileAxes axes) {
+    requireNonNull(axes, "chemical profile axes cannot be null");
+
+    return new NorthAmericanProfile(
+        levelOf(
+            axisValue(axes, ChemicalAxis.SUGAR),
+            thresholds.lowSugar(),
+            thresholds.mediumSugar(),
+            thresholds.highSugar(),
+            thresholds.veryHighSugar()
+        ),
+        levelOf(
+            axisValue(axes, ChemicalAxis.ACIDITY),
+            thresholds.lowAcidity(),
+            thresholds.mediumAcidity(),
+            thresholds.highAcidity(),
+            thresholds.veryHighAcidity()
+        ),
+        levelOf(
+            axisValue(axes, ChemicalAxis.TANNINITY),
+            thresholds.lowTannin(),
+            thresholds.mediumTannin(),
+            thresholds.highTannin(),
+            null
+        )
+    );
+  }
+}

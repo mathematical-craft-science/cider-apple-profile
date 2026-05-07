@@ -6,7 +6,7 @@ import org.craft.mcs.cap.core.appleprofile.application.port.in.ClassifyAppleVari
 import org.craft.mcs.cap.core.appleprofile.application.port.out.AppleVarietyRepository;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyId;
 import org.craft.mcs.cap.shared.domain.classification.axis.ChemicalProfileAxisExtractor;
-import org.craft.mcs.cap.shared.domain.classification.profile.northamerical.NorthAmericanProfileCalculator;
+import org.craft.mcs.cap.shared.domain.classification.profile.northamerican.NorthAmericanProfileCalculator;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 

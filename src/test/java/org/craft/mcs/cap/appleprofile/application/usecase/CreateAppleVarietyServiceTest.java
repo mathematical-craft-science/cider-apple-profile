@@ -6,13 +6,14 @@ import org.craft.mcs.cap.core.appleprofile.application.port.out.AppleVarietyRepo
 import org.craft.mcs.cap.core.appleprofile.application.usecase.CreateAppleVarietyService;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVariety;
 import org.craft.mcs.cap.shared.domain.chemical.ChemicalProfile;
-import org.craft.mcs.cap.shared.domain.measurement.value.ExactMeasurement;
-import org.craft.mcs.cap.core.appleprofile.domain.model.SugarConcentration;
+import org.craft.mcs.cap.shared.domain.measurement.ExactMeasurement;
+import org.craft.mcs.cap.shared.domain.sugar.SugarConcentration;
 import org.craft.mcs.cap.shared.application.TransactionHelper;
-import org.craft.mcs.cap.shared.domain.measurement.value.SpecificGravityValue;
+import org.craft.mcs.cap.shared.domain.sugar.SpecificGravityValue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -53,10 +54,12 @@ class CreateAppleVarietyServiceTest {
     ));
 
     verify(transactionHelper).callInTransactionNonNull(any());
+    final var savedCaptor = ArgumentCaptor.forClass(AppleVariety.class);
+    verify(appleVarietyRepository).save(savedCaptor.capture());
 
     assertThat(created.varietyId()).isNotNull();
     assertThat(created.name().value()).isEqualTo("Yarlington Mill");
-    assertThat(created.chemicalProfile()).isEqualTo(chemicalProfile);
+    assertThat(savedCaptor.getValue().chemicalProfile()).isEqualTo(chemicalProfile);
   }
 
   private static Object executeSupplier(Supplier<?> supplier) {
