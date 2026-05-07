@@ -34,6 +34,19 @@ public final class SugarAcidityZoneAssessor {
     return axes.valueOf(axis).map(AxisValue::value);
   }
 
+  private static @NonNull SugarAcidityAxisPoint pointOf(@NonNull AxisValue axisValue) {
+    requireNonNull(axisValue, "axis value cannot be null");
+
+    return new SugarAcidityAxisPoint(
+        axisValue.value(),
+        axisValue.valueKind(),
+        axisValue.min(),
+        axisValue.max(),
+        axisValue.standardDeviation(),
+        axisValue.sampleSize()
+    );
+  }
+
   private static @NonNull SugarAcidityLevel levelOf(
       @NonNull BigDecimal value,
       @NonNull AxisRange low,
@@ -70,6 +83,11 @@ public final class SugarAcidityZoneAssessor {
       return Optional.empty();
     }
 
+    final var point = new SugarAcidityProfilePoint(
+        axes.valueOf(ChemicalAxis.SUGAR).map(SugarAcidityZoneAssessor::pointOf).orElseThrow(),
+        axes.valueOf(ChemicalAxis.ACIDITY).map(SugarAcidityZoneAssessor::pointOf).orElseThrow(),
+        axes.valueOf(ChemicalAxis.TANNINITY).map(SugarAcidityZoneAssessor::pointOf).orElse(null) // NOSONAR
+    );
     final var sugar = levelOf(
         sugarValue.orElseThrow(),
         thresholds.lowSugar(),
@@ -89,7 +107,8 @@ public final class SugarAcidityZoneAssessor {
           SugarAcidityZone.LOW_ACIDITY_APPLES,
           sugar,
           acidity,
-          tannin
+          tannin,
+          point
       ));
     }
 
@@ -98,7 +117,8 @@ public final class SugarAcidityZoneAssessor {
           SugarAcidityZone.LOW_SUGAR_APPLES,
           sugar,
           acidity,
-          tannin
+          tannin,
+          point
       ));
     }
 
@@ -107,7 +127,8 @@ public final class SugarAcidityZoneAssessor {
           SugarAcidityZone.MEDIUM_SUGAR_APPLES,
           sugar,
           acidity,
-          tannin
+          tannin,
+          point
       ));
     }
 
@@ -116,7 +137,8 @@ public final class SugarAcidityZoneAssessor {
           SugarAcidityZone.SUGAR_RICH_APPLES,
           sugar,
           acidity,
-          tannin
+          tannin,
+          point
       ));
     }
 
@@ -125,14 +147,16 @@ public final class SugarAcidityZoneAssessor {
           SugarAcidityZone.PERFECT_APPLES,
           sugar,
           acidity,
-          tannin
+          tannin,
+          point
       ));
     }
 
     return Optional.of(SugarAcidityZoneAssessment.unclassified(
         sugar,
         acidity,
-        tannin
+        tannin,
+        point
     ));
   }
 

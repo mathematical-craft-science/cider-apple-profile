@@ -11,7 +11,8 @@ public record SugarAcidityZoneAssessment(
     @Nullable SugarAcidityZone zone,
     @NonNull SugarAcidityLevel sugar,
     @NonNull SugarAcidityLevel acidity,
-    @Nullable SugarAcidityLevel tannin
+    @Nullable SugarAcidityLevel tannin,
+    @NonNull SugarAcidityProfilePoint point
 ) {
 
   public SugarAcidityZoneAssessment {
@@ -20,28 +21,32 @@ public record SugarAcidityZoneAssessment(
     }
     requireNonNull(sugar, "sugar level cannot be null");
     requireNonNull(acidity, "acidity level cannot be null");
+    requireNonNull(point, "sugar-acidity profile point cannot be null");
   }
 
   public static @NonNull SugarAcidityZoneAssessment classified(
       @NonNull SugarAcidityZone zone,
       @NonNull SugarAcidityLevel sugar,
       @NonNull SugarAcidityLevel acidity,
-      @Nullable SugarAcidityLevel tannin
+      @Nullable SugarAcidityLevel tannin,
+      @NonNull SugarAcidityProfilePoint point
   ) {
     return new SugarAcidityZoneAssessment(
         true,
         requireNonNull(zone, "sugar-acidity zone cannot be null"),
         sugar,
         acidity,
-        tannin
+        tannin,
+        point
     );
   }
 
   public static @NonNull SugarAcidityZoneAssessment unclassified(
       @NonNull SugarAcidityLevel sugar,
       @NonNull SugarAcidityLevel acidity,
-      @Nullable SugarAcidityLevel tannin
+      @Nullable SugarAcidityLevel tannin,
+      @NonNull SugarAcidityProfilePoint point
   ) {
-    return new SugarAcidityZoneAssessment(false, null, sugar, acidity, tannin);
+    return new SugarAcidityZoneAssessment(false, null, sugar, acidity, tannin, point);
   }
 }

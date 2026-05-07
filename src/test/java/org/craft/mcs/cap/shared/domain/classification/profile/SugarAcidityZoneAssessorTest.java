@@ -8,6 +8,8 @@ import org.craft.mcs.cap.shared.domain.classification.profile.sugaracidity.Sugar
 import org.craft.mcs.cap.shared.domain.classification.profile.sugaracidity.SugarAcidityZoneAssessment;
 import org.craft.mcs.cap.shared.domain.classification.profile.sugaracidity.SugarAcidityZoneAssessor;
 import org.craft.mcs.cap.shared.domain.measurement.ExactMeasurement;
+import org.craft.mcs.cap.shared.domain.measurement.RangeMeasurement;
+import org.craft.mcs.cap.shared.domain.classification.axis.MeasurementValueKind;
 import org.craft.mcs.cap.shared.domain.sugar.SpecificGravityValue;
 import org.craft.mcs.cap.shared.domain.sugar.SugarConcentration;
 import org.jspecify.annotations.NonNull;
@@ -74,6 +76,26 @@ class SugarAcidityZoneAssessorTest {
 
     assertThat(assessment.classified()).isFalse();
     assertThat(assessment.zone()).isNull();
+  }
+
+  @Test
+  void exposesGraphPointValues() {
+    final var assessment = assess(ChemicalProfile.builder()
+        .sugar(RangeMeasurement.of(
+            SugarConcentration.ofSpecificGravity(SpecificGravityValue.of("1.050")),
+            SugarConcentration.ofSpecificGravity(SpecificGravityValue.of("1.060"))
+        ))
+        .titratableAcidity(ExactMeasurement.of(TitratableAcidityValue.of("5.0")))
+        .tanninity(ExactMeasurement.of(TanninityValue.of("1800")))
+        .build());
+
+    assertThat(assessment.point().sugar().value()).isEqualByComparingTo("1.055000");
+    assertThat(assessment.point().sugar().min()).isEqualByComparingTo("1.050");
+    assertThat(assessment.point().sugar().max()).isEqualByComparingTo("1.060");
+    assertThat(assessment.point().sugar().valueKind()).isEqualTo(MeasurementValueKind.RANGE_MIDPOINT);
+    assertThat(assessment.point().acidity().value()).isEqualByComparingTo("5.0");
+    assertThat(assessment.point().tannin()).isNotNull();
+    assertThat(assessment.point().tannin().value()).isEqualByComparingTo("1800");
   }
 
   @NonNull
