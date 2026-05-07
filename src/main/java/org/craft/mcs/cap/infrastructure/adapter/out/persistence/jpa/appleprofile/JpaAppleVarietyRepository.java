@@ -1,5 +1,6 @@
 package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jpa.appleprofile;
 
+import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.appleprofile.application.port.out.AppleVarietyRepository;
@@ -35,5 +36,13 @@ class JpaAppleVarietyRepository implements AppleVarietyRepository {
 
     return repository.findById(varietyId.value())
         .map(AppleVarietyJpaMapper::toDomain);
+  }
+
+  @Override
+  public @NonNull List<@NonNull AppleVariety> findAll() {
+    return repository.findAll()
+        .stream()
+        .map(AppleVarietyJpaMapper::toDomain)
+        .toList();
   }
 }

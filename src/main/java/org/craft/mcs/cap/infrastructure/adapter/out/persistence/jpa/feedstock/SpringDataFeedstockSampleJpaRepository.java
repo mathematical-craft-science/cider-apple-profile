@@ -1,5 +1,6 @@
 package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jpa.feedstock;
 
+import java.util.List;
 import java.util.UUID;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jpa.feedstock.entity.FeedstockSampleJpaEntity;
 import org.jspecify.annotations.NonNull;
@@ -8,4 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 interface SpringDataFeedstockSampleJpaRepository
     extends JpaRepository<FeedstockSampleJpaEntity, @NonNull UUID> {
+
+  @NonNull
+  List<@NonNull FeedstockSampleJpaEntity> findAllByCiderMakerId(@NonNull UUID ciderMakerId);
 }

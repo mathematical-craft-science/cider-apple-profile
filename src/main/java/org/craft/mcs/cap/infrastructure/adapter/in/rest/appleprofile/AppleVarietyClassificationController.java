@@ -1,5 +1,6 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile;
 
+import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.appleprofile.application.port.in.AssessAppleVarietySugarAcidityZoneUseCase;
@@ -8,6 +9,7 @@ import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.dto.AppleVa
 import org.craft.mcs.cap.core.appleprofile.application.port.in.AppleVarietyClassificationSystem;
 import org.craft.mcs.cap.core.appleprofile.application.port.in.ClassifyAppleVarietyUseCase;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyId;
+import org.craft.mcs.cap.core.appleprofile.application.port.in.ListAppleVarietySugarAcidityZonePointsUseCase;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.dto.AppleVarietyNorthAmericanResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.dto.AppleVarietySugarAcidityZoneResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.mapper.AppleVarietyClassificationRestMapper;
@@ -28,6 +30,7 @@ public final class AppleVarietyClassificationController {
   private final @NonNull ClassifyAppleVarietyUseCase classifyAppleVarietyUseCase;
   private final @NonNull ClassifyAppleVarietyNorthAmericanUseCase classifyAppleVarietyNorthAmericanUseCase;
   private final @NonNull AssessAppleVarietySugarAcidityZoneUseCase assessAppleVarietySugarAcidityZoneUseCase;
+  private final @NonNull ListAppleVarietySugarAcidityZonePointsUseCase listAppleVarietySugarAcidityZonePointsUseCase;
 
   @GetMapping("/apple-varieties/{varietyId}/classification")
   public @NonNull ResponseEntity<@NonNull AppleVarietyClassificationResponse> classify(
@@ -68,5 +71,15 @@ public final class AppleVarietyClassificationController {
     return ResponseEntity.ok(
         AppleVarietySugarAcidityZoneRestMapper.toResponse(result)
     );
+  }
+
+  @GetMapping("/apple-varieties/sugar-acidity-zone-points")
+  public @NonNull ResponseEntity<@NonNull List<@NonNull AppleVarietySugarAcidityZoneResponse>> listSugarAcidityZonePoints() {
+    final var results = listAppleVarietySugarAcidityZonePointsUseCase.list()
+        .stream()
+        .map(AppleVarietySugarAcidityZoneRestMapper::toResponse)
+        .toList();
+
+    return ResponseEntity.ok(results);
   }
 }

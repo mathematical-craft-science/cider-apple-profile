@@ -1,10 +1,12 @@
 package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jpa.feedstock;
 
+import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.feedstock.application.port.out.FeedstockSampleRepository;
 import org.craft.mcs.cap.core.feedstock.domain.model.FeedstockSample;
 import org.craft.mcs.cap.core.feedstock.domain.model.FeedstockSampleId;
+import org.craft.mcs.cap.core.feedstock.domain.model.value.CiderMakerId;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jpa.feedstock.entity.FeedstockSampleJpaMapper;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Repository;
@@ -35,5 +37,15 @@ class JpaFeedstockSampleRepository
 
     return repository.findById(sampleId.value())
         .map(FeedstockSampleJpaMapper::toDomain);
+  }
+
+  @Override
+  public @NonNull List<@NonNull FeedstockSample> findAllByCiderMakerId(@NonNull CiderMakerId ciderMakerId) {
+    requireNonNull(ciderMakerId, "cider maker id cannot be null");
+
+    return repository.findAllByCiderMakerId(ciderMakerId.value())
+        .stream()
+        .map(FeedstockSampleJpaMapper::toDomain)
+        .toList();
   }
 }
