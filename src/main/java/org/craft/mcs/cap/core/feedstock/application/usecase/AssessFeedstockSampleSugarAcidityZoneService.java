@@ -2,10 +2,12 @@ package org.craft.mcs.cap.core.feedstock.application.usecase;
 
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.feedstock.application.port.in.AssessFeedstockSampleSugarAcidityZoneUseCase;
-import org.craft.mcs.cap.core.feedstock.application.port.in.FeedstockSampleSugarAcidityZoneAssessment;
+import org.craft.mcs.cap.core.feedstock.application.port.in.FeedstockSampleSugarAcidityZoneResult;
 import org.craft.mcs.cap.core.feedstock.application.port.out.FeedstockSampleRepository;
 import org.craft.mcs.cap.core.feedstock.domain.model.FeedstockSampleId;
 import org.craft.mcs.cap.shared.domain.classification.axis.ChemicalProfileAxisExtractor;
+import org.craft.mcs.cap.shared.domain.chemical.capability.ChemicalProfileCapability;
+import org.craft.mcs.cap.shared.domain.chemical.capability.ChemicalProfileCapabilityAssessor;
 import org.craft.mcs.cap.shared.domain.sugaracidity.assessment.SugarAcidityZoneAssessor;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
@@ -20,26 +22,46 @@ public final class AssessFeedstockSampleSugarAcidityZoneService
 
   private final @NonNull FeedstockSampleRepository feedstockSampleRepository;
   private final @NonNull ChemicalProfileAxisExtractor axisExtractor;
+  private final @NonNull ChemicalProfileCapabilityAssessor capabilityAssessor;
   private final @NonNull SugarAcidityZoneAssessor assessor;
 
   @Override
-  public @NonNull FeedstockSampleSugarAcidityZoneAssessment assess(
+  public @NonNull FeedstockSampleSugarAcidityZoneResult assess(
       @NonNull FeedstockSampleId sampleId
   ) {
     requireNonNull(sampleId, "feedstock sample id cannot be null");
 
     final var sample = feedstockSampleRepository.findById(sampleId)
         .orElseThrow(() -> new IllegalArgumentException("feedstock sample not found: " + sampleId.value()));
-    final var assessment = assessor.assess(axisExtractor.extract(sample.chemicalProfile()))
-        .orElseThrow(() -> new IllegalArgumentException(
-            "feedstock sample chemical profile must have sugar and acidity axes: " + sampleId.value()
+    final var axes = axisExtractor.extract(sample.chemicalProfile());
+    final var capability = capabilityAssessor.assess(
+        axes,
+        ChemicalProfileCapability.SUGAR_ACIDITY_PLOT
+    );
+
+    if (!capability.capable()) {
+      return new FeedstockSampleSugarAcidityZoneResult(
+          sample.sampleId(),
+          sample.ciderMakerId(),
+          sample.name(),
+          false,
+          null,
+          capability
+      );
+    }
+
+    final var assessment = assessor.assess(axes)
+        .orElseThrow(() -> new IllegalStateException(
+            "sugar-acidity assessor did not assess capable feedstock sample profile: " + sampleId.value()
         ));
 
-    return new FeedstockSampleSugarAcidityZoneAssessment(
+    return new FeedstockSampleSugarAcidityZoneResult(
         sample.sampleId(),
         sample.ciderMakerId(),
         sample.name(),
-        assessment
+        true,
+        assessment,
+        capability
     );
   }
 }

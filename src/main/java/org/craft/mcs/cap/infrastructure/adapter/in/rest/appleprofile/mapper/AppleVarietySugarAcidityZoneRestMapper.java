@@ -2,6 +2,7 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.mapper;
 
 import org.craft.mcs.cap.core.appleprofile.application.port.in.AppleVarietySugarAcidityZoneAssessment;
 import org.craft.mcs.cap.core.appleprofile.application.port.in.AppleVarietySugarAcidityZonePointBatch;
+import org.craft.mcs.cap.core.appleprofile.application.port.in.AppleVarietySugarAcidityZoneResult;
 import org.craft.mcs.cap.core.appleprofile.application.port.in.UnplottableAppleVarietySugarAcidityZonePoint;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.dto.AppleVarietySugarAcidityZonePointBatchResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.dto.AppleVarietySugarAcidityZoneResponse;
@@ -27,6 +28,20 @@ public final class AppleVarietySugarAcidityZoneRestMapper {
         assessment.varietyId().value().toString(),
         assessment.varietyName().value(),
         SugarAcidityZoneRestMapper.toResponse(assessment.assessment())
+    );
+  }
+
+  public static @NonNull AppleVarietySugarAcidityZoneResponse toResponse(
+      @NonNull AppleVarietySugarAcidityZoneResult result
+  ) {
+    requireNonNull(result, "apple variety sugar-acidity zone result cannot be null");
+
+    return new AppleVarietySugarAcidityZoneResponse(
+        result.varietyId().value().toString(),
+        result.varietyName().value(),
+        result.plottable(),
+        result.assessment() == null ? null : SugarAcidityZoneRestMapper.toResponse(result.assessment()), // NOSONAR
+        ChemicalProfileCapabilityRestMapper.toResponse(result.capabilityAssessment())
     );
   }
 

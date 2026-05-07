@@ -7,5 +7,5 @@ import org.jspecify.annotations.NonNull;
 public interface AssessAppleVarietySugarAcidityZoneUseCase {
 
   @NonNull
-  AppleVarietySugarAcidityZoneAssessment assess(@NonNull AppleVarietyId varietyId);
+  AppleVarietySugarAcidityZoneResult assess(@NonNull AppleVarietyId varietyId);
 }

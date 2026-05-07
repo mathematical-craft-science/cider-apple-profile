@@ -2,6 +2,7 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.mapper;
 
 import org.craft.mcs.cap.core.feedstock.application.port.in.FeedstockSampleSugarAcidityZoneAssessment;
 import org.craft.mcs.cap.core.feedstock.application.port.in.FeedstockSampleSugarAcidityZonePointBatch;
+import org.craft.mcs.cap.core.feedstock.application.port.in.FeedstockSampleSugarAcidityZoneResult;
 import org.craft.mcs.cap.core.feedstock.application.port.in.UnplottableFeedstockSampleSugarAcidityZonePoint;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.mapper.ChemicalProfileCapabilityRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.mapper.SugarAcidityZoneRestMapper;
@@ -28,6 +29,21 @@ public final class FeedstockSampleSugarAcidityZoneRestMapper {
         assessment.ciderMakerId().value().toString(),
         assessment.sampleName().value(),
         SugarAcidityZoneRestMapper.toResponse(assessment.assessment())
+    );
+  }
+
+  public static @NonNull FeedstockSampleSugarAcidityZoneResponse toResponse(
+      @NonNull FeedstockSampleSugarAcidityZoneResult result
+  ) {
+    requireNonNull(result, "feedstock sample sugar-acidity zone result cannot be null");
+
+    return new FeedstockSampleSugarAcidityZoneResponse(
+        result.sampleId().value().toString(),
+        result.ciderMakerId().value().toString(),
+        result.sampleName().value(),
+        result.plottable(),
+        result.assessment() == null ? null : SugarAcidityZoneRestMapper.toResponse(result.assessment()), // NOSONAR
+        ChemicalProfileCapabilityRestMapper.toResponse(result.capabilityAssessment())
     );
   }
 
