@@ -6,10 +6,10 @@ import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.dto.Stat
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.dto.SugarAcidityAxisPointResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.dto.SugarAcidityProfilePointResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.dto.SugarAcidityZoneAssessmentResponse;
-import org.craft.mcs.cap.shared.domain.classification.profile.sugaracidity.SugarAcidityAxisPoint;
-import org.craft.mcs.cap.shared.domain.classification.profile.sugaracidity.SugarAcidityLevel;
-import org.craft.mcs.cap.shared.domain.classification.profile.sugaracidity.SugarAcidityProfilePoint;
-import org.craft.mcs.cap.shared.domain.classification.profile.sugaracidity.SugarAcidityZoneAssessment;
+import org.craft.mcs.cap.shared.domain.sugaracidity.point.SugarAcidityAxisPoint;
+import org.craft.mcs.cap.shared.domain.sugaracidity.assessment.SugarAcidityLevel;
+import org.craft.mcs.cap.shared.domain.sugaracidity.point.SugarAcidityProfilePoint;
+import org.craft.mcs.cap.shared.domain.sugaracidity.assessment.SugarAcidityZoneAssessment;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

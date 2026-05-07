@@ -1,4 +1,4 @@
-package org.craft.mcs.cap.shared.domain.classification.profile.sugaracidity;
+package org.craft.mcs.cap.shared.domain.sugaracidity.point;
 
 import java.math.BigDecimal;
 import org.craft.mcs.cap.shared.domain.classification.axis.MeasurementValueKind;

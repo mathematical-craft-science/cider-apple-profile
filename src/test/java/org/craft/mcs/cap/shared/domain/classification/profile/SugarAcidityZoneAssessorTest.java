@@ -4,9 +4,12 @@ import org.craft.mcs.cap.shared.domain.chemical.ChemicalProfile;
 import org.craft.mcs.cap.shared.domain.chemical.value.TanninityValue;
 import org.craft.mcs.cap.shared.domain.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.domain.classification.axis.ChemicalProfileAxisExtractor;
-import org.craft.mcs.cap.shared.domain.classification.profile.sugaracidity.SugarAcidityZone;
-import org.craft.mcs.cap.shared.domain.classification.profile.sugaracidity.SugarAcidityZoneAssessment;
-import org.craft.mcs.cap.shared.domain.classification.profile.sugaracidity.SugarAcidityZoneAssessor;
+import org.craft.mcs.cap.shared.domain.sugaracidity.assessment.BuiltInSugarAcidityZoneProfiles;
+import org.craft.mcs.cap.shared.domain.sugaracidity.assessment.EllipseSugarAcidityZoneAssessor;
+import org.craft.mcs.cap.shared.domain.sugaracidity.assessment.RectangleSugarAcidityZoneAssessor;
+import org.craft.mcs.cap.shared.domain.sugaracidity.assessment.SugarAcidityZone;
+import org.craft.mcs.cap.shared.domain.sugaracidity.assessment.SugarAcidityZoneAssessment;
+import org.craft.mcs.cap.shared.domain.sugaracidity.assessment.SugarAcidityZoneAssessor;
 import org.craft.mcs.cap.shared.domain.measurement.ExactMeasurement;
 import org.craft.mcs.cap.shared.domain.measurement.RangeMeasurement;
 import org.craft.mcs.cap.shared.domain.classification.axis.MeasurementValueKind;
@@ -21,8 +24,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 class SugarAcidityZoneAssessorTest {
 
   private final ChemicalProfileAxisExtractor extractor = new ChemicalProfileAxisExtractor();
-  private final SugarAcidityZoneAssessor assessor = new SugarAcidityZoneAssessor(
-      BuiltInCiderClassificationThresholds.sugarAcidityZones()
+  private final SugarAcidityZoneAssessor assessor = new RectangleSugarAcidityZoneAssessor(
+      BuiltInSugarAcidityZoneProfiles.thresholds(),
+      BuiltInSugarAcidityZoneProfiles.rectangularGraphMetadata()
   );
 
   @NonNull
@@ -100,6 +104,21 @@ class SugarAcidityZoneAssessorTest {
     assertThat(assessment.point().acidity().value()).isEqualByComparingTo("5.0");
     assertThat(assessment.point().tannin()).isNotNull();
     assertThat(assessment.point().tannin().value()).isEqualByComparingTo("1800");
+  }
+
+  @Test
+  void ellipticalAssessorUsesEllipseGeometry() {
+    final var ellipticalAssessor = new EllipseSugarAcidityZoneAssessor(
+        BuiltInSugarAcidityZoneProfiles.thresholds(),
+        BuiltInSugarAcidityZoneProfiles.ellipticalGraphMetadata()
+    );
+
+    final var assessment = ellipticalAssessor.assess(
+        extractor.extract(profile("1.065", "5.9", "1800"))
+    ).orElseThrow();
+
+    assertThat(assessment.zone()).isEqualTo(SugarAcidityZone.PERFECT_APPLES);
+    assertThat(assessment.balancedForSingleVariety()).isTrue();
   }
 
   @NonNull

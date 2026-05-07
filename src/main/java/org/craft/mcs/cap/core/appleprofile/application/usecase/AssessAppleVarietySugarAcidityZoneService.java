@@ -6,7 +6,7 @@ import org.craft.mcs.cap.core.appleprofile.application.port.in.AssessAppleVariet
 import org.craft.mcs.cap.core.appleprofile.application.port.out.AppleVarietyRepository;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyId;
 import org.craft.mcs.cap.shared.domain.classification.axis.ChemicalProfileAxisExtractor;
-import org.craft.mcs.cap.shared.domain.classification.profile.sugaracidity.SugarAcidityZoneAssessor;
+import org.craft.mcs.cap.shared.domain.sugaracidity.assessment.SugarAcidityZoneAssessor;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 

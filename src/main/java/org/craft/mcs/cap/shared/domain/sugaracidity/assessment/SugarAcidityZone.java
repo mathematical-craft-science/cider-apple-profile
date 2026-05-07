@@ -1,4 +1,4 @@
-package org.craft.mcs.cap.shared.domain.classification.profile.sugaracidity;
+package org.craft.mcs.cap.shared.domain.sugaracidity.assessment;
 
 public enum SugarAcidityZone {
   PERFECT_APPLES,

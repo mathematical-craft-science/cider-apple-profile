@@ -2,7 +2,7 @@ package org.craft.mcs.cap.core.appleprofile.application.port.in;
 
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyId;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyName;
-import org.craft.mcs.cap.shared.domain.classification.profile.sugaracidity.SugarAcidityZoneAssessment;
+import org.craft.mcs.cap.shared.domain.sugaracidity.assessment.SugarAcidityZoneAssessment;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;

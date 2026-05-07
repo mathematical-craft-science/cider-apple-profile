@@ -1,4 +1,4 @@
-package org.craft.mcs.cap.shared.domain.classification.profile.sugaracidity;
+package org.craft.mcs.cap.shared.domain.sugaracidity.point;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;

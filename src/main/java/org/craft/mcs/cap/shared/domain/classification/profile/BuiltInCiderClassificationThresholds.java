@@ -5,7 +5,6 @@ import org.craft.mcs.cap.shared.domain.classification.profile.longashton.LongAsh
 import org.craft.mcs.cap.shared.domain.classification.profile.longashton.LongAshton7Thresholds;
 import org.craft.mcs.cap.shared.domain.classification.profile.northamerican.NorthAmericanThresholds;
 import org.craft.mcs.cap.shared.domain.classification.profile.spanish.SpanishThresholds;
-import org.craft.mcs.cap.shared.domain.classification.profile.sugaracidity.SugarAcidityZoneThresholds;
 import org.craft.mcs.cap.shared.domain.classification.rule.AxisRange;
 import org.jspecify.annotations.NonNull;
 
@@ -13,28 +12,6 @@ import org.jspecify.annotations.NonNull;
 public class BuiltInCiderClassificationThresholds {
 
   private BuiltInCiderClassificationThresholds() {
-  }
-
-  // =========================
-  // SUGAR-ACIDITY ZONES
-  // =========================
-
-  public static @NonNull SugarAcidityZoneThresholds sugarAcidityZones() {
-    return new SugarAcidityZoneThresholds(
-
-        // Sugar (Specific Gravity)
-        AxisRange.lessThan("1.045"),
-        AxisRange.between("1.045", "1.060"),
-        AxisRange.atLeast("1.060"),
-
-        // Acidity (g/L malic)
-        AxisRange.lessThan("4.5"),
-        AxisRange.between("4.5", "7.5"),
-        AxisRange.atLeast("7.5"),
-
-        // Tannin (mg/L TAE)
-        AxisRange.between("1500", "2500")
-    );
   }
 
   // =========================

@@ -18,3 +18,8 @@ spring:
 
 sentry:
   enabled: false
+
+cap:
+  classification:
+    sugar-acidity:
+      assessor: rectangle # или ellipse

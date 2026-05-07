@@ -1,4 +1,4 @@
-package org.craft.mcs.cap.shared.domain.classification.profile.sugaracidity;
+package org.craft.mcs.cap.shared.domain.sugaracidity.assessment;
 
 import org.craft.mcs.cap.shared.domain.classification.rule.AxisRange;
 import org.jspecify.annotations.NonNull;

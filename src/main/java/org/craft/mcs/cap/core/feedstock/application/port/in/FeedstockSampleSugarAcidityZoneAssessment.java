@@ -3,7 +3,7 @@ package org.craft.mcs.cap.core.feedstock.application.port.in;
 import org.craft.mcs.cap.core.feedstock.domain.model.FeedstockSampleId;
 import org.craft.mcs.cap.core.feedstock.domain.model.value.CiderMakerId;
 import org.craft.mcs.cap.core.feedstock.domain.model.value.FeedstockSampleName;
-import org.craft.mcs.cap.shared.domain.classification.profile.sugaracidity.SugarAcidityZoneAssessment;
+import org.craft.mcs.cap.shared.domain.sugaracidity.assessment.SugarAcidityZoneAssessment;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
