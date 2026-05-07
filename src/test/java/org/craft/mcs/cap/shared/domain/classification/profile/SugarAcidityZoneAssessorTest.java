@@ -42,8 +42,11 @@ class SugarAcidityZoneAssessorTest {
 
   @Test
   void assessesPerfectApples() {
-    assertThat(assess(profile("1.060", "4.50", "1500")).zone())
+    final var assessment = assess(profile("1.060", "4.50", "1500"));
+
+    assertThat(assessment.zone())
         .isEqualTo(SugarAcidityZone.PERFECT_APPLES);
+    assertThat(assessment.balancedForSingleVariety()).isTrue();
   }
 
   @Test
@@ -71,11 +74,12 @@ class SugarAcidityZoneAssessorTest {
   }
 
   @Test
-  void leavesHighSugarMediumAcidityLowTanninUnclassified() {
+  void assessesPerfectAppleZoneSeparatelyFromSingleVarietyBalance() {
     final var assessment = assess(profile("1.060", "4.50", "1499"));
 
-    assertThat(assessment.classified()).isFalse();
-    assertThat(assessment.zone()).isNull();
+    assertThat(assessment.classified()).isTrue();
+    assertThat(assessment.zone()).isEqualTo(SugarAcidityZone.PERFECT_APPLES);
+    assertThat(assessment.balancedForSingleVariety()).isFalse();
   }
 
   @Test

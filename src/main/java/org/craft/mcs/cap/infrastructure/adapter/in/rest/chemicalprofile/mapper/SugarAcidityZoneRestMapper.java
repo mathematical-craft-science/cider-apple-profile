@@ -32,6 +32,7 @@ public final class SugarAcidityZoneRestMapper {
         assessment.sugar().name(),
         assessment.acidity().name(),
         levelName(assessment.tannin()),
+        assessment.balancedForSingleVariety(),
         pointResponse(assessment.point())
     );
   }

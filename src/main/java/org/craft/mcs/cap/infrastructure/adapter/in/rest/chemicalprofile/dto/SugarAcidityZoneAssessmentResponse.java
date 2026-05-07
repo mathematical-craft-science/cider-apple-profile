@@ -10,6 +10,7 @@ public record SugarAcidityZoneAssessmentResponse(
     @NonNull String sugar,
     @NonNull String acidity,
     @Nullable String tannin,
+    boolean balancedForSingleVariety,
     @NonNull SugarAcidityProfilePointResponse point
 ) {
 }

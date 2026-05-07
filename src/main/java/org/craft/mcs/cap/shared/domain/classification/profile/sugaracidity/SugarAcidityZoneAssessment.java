@@ -12,6 +12,7 @@ public record SugarAcidityZoneAssessment(
     @NonNull SugarAcidityLevel sugar,
     @NonNull SugarAcidityLevel acidity,
     @Nullable SugarAcidityLevel tannin,
+    boolean balancedForSingleVariety,
     @NonNull SugarAcidityProfilePoint point
 ) {
 
@@ -29,6 +30,7 @@ public record SugarAcidityZoneAssessment(
       @NonNull SugarAcidityLevel sugar,
       @NonNull SugarAcidityLevel acidity,
       @Nullable SugarAcidityLevel tannin,
+      boolean balancedForSingleVariety,
       @NonNull SugarAcidityProfilePoint point
   ) {
     return new SugarAcidityZoneAssessment(
@@ -37,6 +39,7 @@ public record SugarAcidityZoneAssessment(
         sugar,
         acidity,
         tannin,
+        balancedForSingleVariety,
         point
     );
   }
@@ -47,6 +50,6 @@ public record SugarAcidityZoneAssessment(
       @Nullable SugarAcidityLevel tannin,
       @NonNull SugarAcidityProfilePoint point
   ) {
-    return new SugarAcidityZoneAssessment(false, null, sugar, acidity, tannin, point);
+    return new SugarAcidityZoneAssessment(false, null, sugar, acidity, tannin, false, point);
   }
 }

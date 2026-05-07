@@ -102,52 +102,59 @@ public final class SugarAcidityZoneAssessor {
     );
     final var tannin = tanninLevel(axes);
 
+    if (is(sugar, SugarAcidityLevel.HIGH) && is(acidity, SugarAcidityLevel.MEDIUM)) {
+      return Optional.of(SugarAcidityZoneAssessment.classified(
+          SugarAcidityZone.PERFECT_APPLES,
+          sugar,
+          acidity,
+          tannin,
+          isMedium(tannin),
+          point
+      ));
+    }
+
+    if (is(sugar, SugarAcidityLevel.HIGH) && is(acidity, SugarAcidityLevel.HIGH)) {
+      return Optional.of(SugarAcidityZoneAssessment.classified(
+          SugarAcidityZone.SUGAR_RICH_APPLES,
+          sugar,
+          acidity,
+          tannin,
+          false,
+          point
+      ));
+    }
+
     if (is(acidity, SugarAcidityLevel.LOW)) {
       return Optional.of(SugarAcidityZoneAssessment.classified(
           SugarAcidityZone.LOW_ACIDITY_APPLES,
           sugar,
           acidity,
           tannin,
+          false,
           point
       ));
     }
 
-    if (is(sugar, SugarAcidityLevel.LOW)) {
-      return Optional.of(SugarAcidityZoneAssessment.classified(
-          SugarAcidityZone.LOW_SUGAR_APPLES,
-          sugar,
-          acidity,
-          tannin,
-          point
-      ));
-    }
-
-    if (is(sugar, SugarAcidityLevel.MEDIUM)) {
+    if (is(sugar, SugarAcidityLevel.MEDIUM)
+        && (is(acidity, SugarAcidityLevel.MEDIUM) || is(acidity, SugarAcidityLevel.HIGH))) {
       return Optional.of(SugarAcidityZoneAssessment.classified(
           SugarAcidityZone.MEDIUM_SUGAR_APPLES,
           sugar,
           acidity,
           tannin,
+          false,
           point
       ));
     }
 
-    if (is(acidity, SugarAcidityLevel.HIGH)) {
+    if (is(sugar, SugarAcidityLevel.LOW)
+        && (is(acidity, SugarAcidityLevel.MEDIUM) || is(acidity, SugarAcidityLevel.HIGH))) {
       return Optional.of(SugarAcidityZoneAssessment.classified(
-          SugarAcidityZone.SUGAR_RICH_APPLES,
+          SugarAcidityZone.LOW_SUGAR_APPLES,
           sugar,
           acidity,
           tannin,
-          point
-      ));
-    }
-
-    if (is(acidity, SugarAcidityLevel.MEDIUM) && isMedium(tannin)) {
-      return Optional.of(SugarAcidityZoneAssessment.classified(
-          SugarAcidityZone.PERFECT_APPLES,
-          sugar,
-          acidity,
-          tannin,
+          false,
           point
       ));
     }
