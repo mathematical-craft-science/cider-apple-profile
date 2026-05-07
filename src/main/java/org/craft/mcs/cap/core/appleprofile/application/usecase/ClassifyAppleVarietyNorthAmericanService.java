@@ -7,6 +7,9 @@ import org.craft.mcs.cap.core.appleprofile.application.port.out.AppleVarietyRepo
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyId;
 import org.craft.mcs.cap.shared.domain.classification.axis.ChemicalProfileAxisExtractor;
 import org.craft.mcs.cap.shared.domain.classification.profile.northamerican.NorthAmericanProfileCalculator;
+import org.craft.mcs.cap.shared.domain.chemical.capability.ChemicalProfileCapability;
+import org.craft.mcs.cap.shared.domain.chemical.capability.ChemicalProfileCapabilityAssessor;
+import org.craft.mcs.cap.shared.domain.chemical.capability.ChemicalProfileCapabilityNotMetException;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 
@@ -20,6 +23,7 @@ public final class ClassifyAppleVarietyNorthAmericanService
 
   private final @NonNull AppleVarietyRepository appleVarietyRepository;
   private final @NonNull ChemicalProfileAxisExtractor axisExtractor;
+  private final @NonNull ChemicalProfileCapabilityAssessor capabilityAssessor;
   private final @NonNull NorthAmericanProfileCalculator calculator;
 
   @Override
@@ -32,6 +36,14 @@ public final class ClassifyAppleVarietyNorthAmericanService
         .orElseThrow(() -> new IllegalArgumentException("apple variety not found: " + varietyId.value()));
 
     final var axes = axisExtractor.extract(variety.chemicalProfile());
+    final var capabilityAssessment = capabilityAssessor.assess(
+        axes,
+        ChemicalProfileCapability.NORTH_AMERICAN_PROFILE
+    );
+    if (!capabilityAssessment.capable()) {
+      throw new ChemicalProfileCapabilityNotMetException(capabilityAssessment);
+    }
+
     final var profile = calculator.calculate(axes);
 
     return new AppleVarietyNorthAmericanClassification(

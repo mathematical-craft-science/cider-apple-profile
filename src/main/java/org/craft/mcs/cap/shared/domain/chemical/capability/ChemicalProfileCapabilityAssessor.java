@@ -38,6 +38,11 @@ public final class ChemicalProfileCapabilityAssessor {
   ) {
     return switch (capability) {
       case SUGAR_ACIDITY_PLOT -> Set.of(ChemicalAxis.SUGAR, ChemicalAxis.ACIDITY);
+      case NORTH_AMERICAN_PROFILE, SINGLE_VARIETY_CIDER_ASSESSMENT -> Set.of(
+          ChemicalAxis.SUGAR,
+          ChemicalAxis.ACIDITY,
+          ChemicalAxis.TANNINITY
+      );
     };
   }
 
