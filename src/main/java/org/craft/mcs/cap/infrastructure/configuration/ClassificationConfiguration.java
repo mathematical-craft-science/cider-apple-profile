@@ -6,6 +6,7 @@ import org.craft.mcs.cap.shared.domain.classification.engine.ChemicalProfileClas
 import org.craft.mcs.cap.shared.domain.classification.engine.ClassificationConfidencePolicy;
 import org.craft.mcs.cap.shared.domain.classification.profile.BuiltInCiderClassificationThresholds;
 import org.craft.mcs.cap.shared.domain.classification.profile.northamerican.NorthAmericanProfileCalculator;
+import org.craft.mcs.cap.shared.domain.chemical.capability.ChemicalProfileCapabilityAssessor;
 import org.craft.mcs.cap.shared.domain.sugaracidity.assessment.BuiltInSugarAcidityZoneProfiles;
 import org.craft.mcs.cap.shared.domain.sugaracidity.assessment.EllipseSugarAcidityZoneAssessor;
 import org.craft.mcs.cap.shared.domain.sugaracidity.assessment.RectangleSugarAcidityZoneAssessor;
@@ -21,6 +22,11 @@ class ClassificationConfiguration {
   @Bean
   ChemicalProfileAxisExtractor chemicalProfileAxisExtractor() {
     return new ChemicalProfileAxisExtractor();
+  }
+
+  @Bean
+  ChemicalProfileCapabilityAssessor chemicalProfileCapabilityAssessor() {
+    return new ChemicalProfileCapabilityAssessor();
   }
 
   @Bean

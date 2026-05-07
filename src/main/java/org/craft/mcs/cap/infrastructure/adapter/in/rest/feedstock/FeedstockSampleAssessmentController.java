@@ -1,12 +1,12 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock;
 
-import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.feedstock.application.port.in.AssessFeedstockSampleSugarAcidityZoneUseCase;
 import org.craft.mcs.cap.core.feedstock.application.port.in.ListFeedstockSampleSugarAcidityZonePointsUseCase;
 import org.craft.mcs.cap.core.feedstock.domain.model.FeedstockSampleId;
 import org.craft.mcs.cap.core.feedstock.domain.model.value.CiderMakerId;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.FeedstockSampleSugarAcidityZonePointBatchResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.FeedstockSampleSugarAcidityZoneResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.mapper.FeedstockSampleSugarAcidityZoneRestMapper;
 import org.jspecify.annotations.NonNull;
@@ -38,16 +38,15 @@ public final class FeedstockSampleAssessmentController {
   }
 
   @GetMapping("/feedstock-samples/sugar-acidity-zone-points")
-  public @NonNull ResponseEntity<@NonNull List<@NonNull FeedstockSampleSugarAcidityZoneResponse>> listSugarAcidityZonePoints(
+  public @NonNull ResponseEntity<@NonNull FeedstockSampleSugarAcidityZonePointBatchResponse> listSugarAcidityZonePoints(
       @RequestParam @NonNull UUID ciderMakerId
   ) {
     final var results = listSugarAcidityZonePointsUseCase.listByCiderMakerId(
             CiderMakerId.of(ciderMakerId)
-        )
-        .stream()
-        .map(FeedstockSampleSugarAcidityZoneRestMapper::toResponse)
-        .toList();
+        );
 
-    return ResponseEntity.ok(results);
+    return ResponseEntity.ok(
+        FeedstockSampleSugarAcidityZoneRestMapper.toResponse(results)
+    );
   }
 }

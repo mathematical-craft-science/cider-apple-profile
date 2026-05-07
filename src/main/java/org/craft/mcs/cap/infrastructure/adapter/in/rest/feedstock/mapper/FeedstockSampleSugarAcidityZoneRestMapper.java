@@ -1,8 +1,13 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.mapper;
 
 import org.craft.mcs.cap.core.feedstock.application.port.in.FeedstockSampleSugarAcidityZoneAssessment;
+import org.craft.mcs.cap.core.feedstock.application.port.in.FeedstockSampleSugarAcidityZonePointBatch;
+import org.craft.mcs.cap.core.feedstock.application.port.in.UnplottableFeedstockSampleSugarAcidityZonePoint;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.mapper.ChemicalProfileCapabilityRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.mapper.SugarAcidityZoneRestMapper;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.FeedstockSampleSugarAcidityZonePointBatchResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.FeedstockSampleSugarAcidityZoneResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.UnplottableFeedstockSampleSugarAcidityZonePointResponse;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
@@ -23,6 +28,34 @@ public final class FeedstockSampleSugarAcidityZoneRestMapper {
         assessment.ciderMakerId().value().toString(),
         assessment.sampleName().value(),
         SugarAcidityZoneRestMapper.toResponse(assessment.assessment())
+    );
+  }
+
+  public static @NonNull FeedstockSampleSugarAcidityZonePointBatchResponse toResponse(
+      @NonNull FeedstockSampleSugarAcidityZonePointBatch batch
+  ) {
+    requireNonNull(batch, "feedstock sample sugar-acidity zone point batch cannot be null");
+
+    return new FeedstockSampleSugarAcidityZonePointBatchResponse(
+        batch.points().stream()
+            .map(FeedstockSampleSugarAcidityZoneRestMapper::toResponse)
+            .toList(),
+        batch.unplottable().stream()
+            .map(FeedstockSampleSugarAcidityZoneRestMapper::toResponse)
+            .toList()
+    );
+  }
+
+  private static @NonNull UnplottableFeedstockSampleSugarAcidityZonePointResponse toResponse(
+      @NonNull UnplottableFeedstockSampleSugarAcidityZonePoint unplottable
+  ) {
+    requireNonNull(unplottable, "unplottable feedstock sample sugar-acidity zone point cannot be null");
+
+    return new UnplottableFeedstockSampleSugarAcidityZonePointResponse(
+        unplottable.sampleId().value().toString(),
+        unplottable.ciderMakerId().value().toString(),
+        unplottable.sampleName().value(),
+        ChemicalProfileCapabilityRestMapper.toResponse(unplottable.capabilityAssessment())
     );
   }
 }

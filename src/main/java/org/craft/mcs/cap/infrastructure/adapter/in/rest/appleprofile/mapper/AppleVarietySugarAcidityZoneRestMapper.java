@@ -1,7 +1,12 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.mapper;
 
 import org.craft.mcs.cap.core.appleprofile.application.port.in.AppleVarietySugarAcidityZoneAssessment;
+import org.craft.mcs.cap.core.appleprofile.application.port.in.AppleVarietySugarAcidityZonePointBatch;
+import org.craft.mcs.cap.core.appleprofile.application.port.in.UnplottableAppleVarietySugarAcidityZonePoint;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.dto.AppleVarietySugarAcidityZonePointBatchResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.dto.AppleVarietySugarAcidityZoneResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.dto.UnplottableAppleVarietySugarAcidityZonePointResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.mapper.ChemicalProfileCapabilityRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.mapper.SugarAcidityZoneRestMapper;
 import org.jspecify.annotations.NonNull;
 
@@ -22,6 +27,33 @@ public final class AppleVarietySugarAcidityZoneRestMapper {
         assessment.varietyId().value().toString(),
         assessment.varietyName().value(),
         SugarAcidityZoneRestMapper.toResponse(assessment.assessment())
+    );
+  }
+
+  public static @NonNull AppleVarietySugarAcidityZonePointBatchResponse toResponse(
+      @NonNull AppleVarietySugarAcidityZonePointBatch batch
+  ) {
+    requireNonNull(batch, "apple variety sugar-acidity zone point batch cannot be null");
+
+    return new AppleVarietySugarAcidityZonePointBatchResponse(
+        batch.points().stream()
+            .map(AppleVarietySugarAcidityZoneRestMapper::toResponse)
+            .toList(),
+        batch.unplottable().stream()
+            .map(AppleVarietySugarAcidityZoneRestMapper::toResponse)
+            .toList()
+    );
+  }
+
+  private static @NonNull UnplottableAppleVarietySugarAcidityZonePointResponse toResponse(
+      @NonNull UnplottableAppleVarietySugarAcidityZonePoint unplottable
+  ) {
+    requireNonNull(unplottable, "unplottable apple variety sugar-acidity zone point cannot be null");
+
+    return new UnplottableAppleVarietySugarAcidityZonePointResponse(
+        unplottable.varietyId().value().toString(),
+        unplottable.varietyName().value(),
+        ChemicalProfileCapabilityRestMapper.toResponse(unplottable.capabilityAssessment())
     );
   }
 }
