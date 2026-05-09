@@ -6,8 +6,10 @@ import org.jspecify.annotations.NonNull;
 
 public record PotentialAbvPredictionResponse(
     @NonNull BigDecimal originalGravity,
-    @NonNull BigDecimal assumedFinalGravity,
+    @NonNull BigDecimal predictedFinalGravity,
+    @NonNull String predictedFinalGravitySource,
     @NonNull BigDecimal potentialAbv,
-    @NonNull String method
+    @NonNull String method,
+    @NonNull String confidence
 ) {
 }

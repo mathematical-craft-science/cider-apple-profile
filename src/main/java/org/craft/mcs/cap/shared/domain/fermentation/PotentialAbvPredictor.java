@@ -33,30 +33,49 @@ public final class PotentialAbvPredictor {
   ) {
     requireNonNull(sugar, "sugar concentration cannot be null");
     final var originalGravity = sugar.specificGravity();
+    final var finalGravityPrediction = finalGravityPredictionStrategy.predictFinalGravity(
+        new FinalGravityPredictionInput(originalGravity)
+    );
     return predict(
         originalGravity,
-        finalGravityPredictionStrategy.predictFinalGravity(
-            new FinalGravityPredictionInput(originalGravity)
-        )
+        finalGravityPrediction
     );
   }
 
   public @NonNull PotentialAbvPrediction predict(
       @NonNull SpecificGravityValue originalGravity,
-      @NonNull SpecificGravityValue assumedFinalGravity
+      @NonNull SpecificGravityValue predictedFinalGravity
+  ) {
+    return predict(
+        originalGravity,
+        new FinalGravityPrediction(
+            predictedFinalGravity,
+            FinalGravityPredictionSource.FIXED_DRY_CIDER_DEFAULT,
+            PredictionConfidence.LOW
+        )
+    );
+  }
+
+  private @NonNull PotentialAbvPrediction predict(
+      @NonNull SpecificGravityValue originalGravity,
+      @NonNull FinalGravityPrediction finalGravityPrediction
   ) {
     requireNonNull(originalGravity, "original gravity cannot be null");
-    requireNonNull(assumedFinalGravity, "assumed final gravity cannot be null");
+    requireNonNull(finalGravityPrediction, "final gravity prediction cannot be null");
 
-    if (assumedFinalGravity.compareTo(originalGravity) > 0) {
-      throw new IllegalArgumentException("assumed final gravity must not exceed original gravity");
+    final var predictedFinalGravity = finalGravityPrediction.finalGravity();
+
+    if (predictedFinalGravity.compareTo(originalGravity) > 0) {
+      throw new IllegalArgumentException("predicted final gravity must not exceed original gravity");
     }
 
     return new PotentialAbvPrediction(
         originalGravity,
-        assumedFinalGravity,
-        abvPredictionStrategy.predict(new AbvPredictionInput(originalGravity, assumedFinalGravity)),
-        abvPredictionStrategy.method()
+        predictedFinalGravity,
+        finalGravityPrediction.source(),
+        abvPredictionStrategy.predict(new AbvPredictionInput(originalGravity, predictedFinalGravity)),
+        abvPredictionStrategy.method(),
+        finalGravityPrediction.confidence()
     );
   }
 }

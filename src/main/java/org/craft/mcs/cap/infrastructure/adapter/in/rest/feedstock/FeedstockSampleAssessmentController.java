@@ -54,7 +54,7 @@ public final class FeedstockSampleAssessmentController {
     );
   }
 
-  @GetMapping("/feedstock-samples/{sampleId}/potential-abv")
+  @GetMapping("/feedstock-samples/{sampleId}/abv-prediction")
   public @NonNull ResponseEntity<@NonNull FeedstockSamplePotentialAbvResponse> predictPotentialAbv(
       @PathVariable @NonNull UUID sampleId
   ) {
