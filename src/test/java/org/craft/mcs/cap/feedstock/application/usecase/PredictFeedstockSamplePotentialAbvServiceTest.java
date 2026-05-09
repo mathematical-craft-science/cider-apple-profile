@@ -6,6 +6,7 @@ import org.craft.mcs.cap.core.feedstock.application.port.out.FeedstockSampleRepo
 import org.craft.mcs.cap.core.feedstock.application.usecase.PredictFeedstockSamplePotentialAbvService;
 import org.craft.mcs.cap.core.feedstock.domain.model.FeedstockSample;
 import org.craft.mcs.cap.core.feedstock.domain.model.FeedstockSampleId;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.value.CiderMakerId;
 import org.craft.mcs.cap.core.feedstock.domain.model.value.FeedstockSampleName;
 import org.craft.mcs.cap.core.feedstock.domain.model.value.FeedstockType;
@@ -90,6 +91,7 @@ class PredictFeedstockSamplePotentialAbvServiceTest {
     return FeedstockSample.create(
         FeedstockSampleId.newId(),
         CiderMakerId.of(randomUUID()),
+        FeedstockBatchId.newId(),
         FeedstockSampleName.of("Batch A"),
         FeedstockType.APPLE_JUICE,
         profile,

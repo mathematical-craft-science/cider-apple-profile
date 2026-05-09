@@ -40,6 +40,10 @@ public class FeedstockSampleJpaEntity {
   UUID ciderMakerId;
 
   @NonNull
+  @Column(name = "batch_id", nullable = false, updatable = false)
+  UUID batchId;
+
+  @NonNull
   @Column(name = "name", nullable = false, length = 160)
   String name;
 
@@ -49,8 +53,8 @@ public class FeedstockSampleJpaEntity {
   FeedstockType type;
 
   @Nullable
-  @Column(name = "collected_at", nullable = false)
-  Instant collectedAt;
+  @Column(name = "measured_at", nullable = false)
+  Instant measuredAt;
 
   @Nullable
   @Column(name = "note", length = 2000)
@@ -150,9 +154,10 @@ public class FeedstockSampleJpaEntity {
   FeedstockSampleJpaEntity(
       @NonNull UUID sampleId,
       @NonNull UUID ciderMakerId,
+      @NonNull UUID batchId,
       @NonNull String name,
       @NonNull FeedstockType type,
-      @NonNull Instant collectedAt,
+      @NonNull Instant measuredAt,
       @Nullable String note,
       @Nullable MeasurementJpaEmbeddable sugar,
       @Nullable MeasurementJpaEmbeddable ph,
@@ -163,9 +168,10 @@ public class FeedstockSampleJpaEntity {
   ) {
     this.sampleId = requireNonNull(sampleId, "feedstock sample id cannot be null");
     this.ciderMakerId = requireNonNull(ciderMakerId, "cider maker id cannot be null");
+    this.batchId = requireNonNull(batchId, "feedstock batch id cannot be null");
     this.name = requireNonNull(name, "feedstock sample name cannot be null");
     this.type = requireNonNull(type, "feedstock type cannot be null");
-    this.collectedAt = requireNonNull(collectedAt, "collected at cannot be null");
+    this.measuredAt = requireNonNull(measuredAt, "measured at cannot be null");
     this.note = note;
     this.sugar = sugar;
     this.ph = ph;

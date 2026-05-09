@@ -1,10 +1,41 @@
+CREATE TABLE IF NOT EXISTS feedstock_batches
+(
+    batch_id                 UUID                     NOT NULL PRIMARY KEY,
+    cider_maker_id           UUID                     NOT NULL,
+    name                     VARCHAR(160)             NOT NULL,
+    season_starts_on         DATE                     NOT NULL,
+    season_ends_on           DATE                     NOT NULL,
+    source                   VARCHAR(255),
+    available_volume_liters  NUMERIC(15, 3)           NOT NULL,
+    note                     VARCHAR(2000),
+
+    version                  BIGINT                   NOT NULL DEFAULT 0,
+    created_at               TIMESTAMP WITH TIME ZONE NOT NULL,
+    updated_at               TIMESTAMP WITH TIME ZONE NOT NULL,
+
+    CONSTRAINT chk_feedstock_batches_season_dates
+        CHECK (season_ends_on >= season_starts_on),
+    CONSTRAINT chk_feedstock_batches_available_volume
+        CHECK (available_volume_liters >= 0)
+);
+
+CREATE INDEX IF NOT EXISTS idx_feedstock_batches_cider_maker_id
+    ON feedstock_batches (cider_maker_id);
+
+CREATE INDEX IF NOT EXISTS idx_feedstock_batches_cider_maker_season
+    ON feedstock_batches (cider_maker_id, season_starts_on, season_ends_on);
+
+CREATE INDEX IF NOT EXISTS idx_feedstock_batches_cider_maker_lower_name
+    ON feedstock_batches (cider_maker_id, LOWER(name));
+
 CREATE TABLE IF NOT EXISTS feedstock_samples
 (
     sample_id                    UUID                     NOT NULL PRIMARY KEY,
     cider_maker_id               UUID                     NOT NULL,
+    batch_id                     UUID                     NOT NULL,
     name                         VARCHAR(160)             NOT NULL,
     type                         VARCHAR(32)              NOT NULL,
-    collected_at                 TIMESTAMP WITH TIME ZONE NOT NULL,
+    measured_at                  TIMESTAMP WITH TIME ZONE NOT NULL,
     note                         VARCHAR(2000),
 
     sugar_kind                   VARCHAR(32),
@@ -48,14 +79,20 @@ CREATE TABLE IF NOT EXISTS feedstock_samples
 
     version                      BIGINT                   NOT NULL DEFAULT 0,
     created_at                   TIMESTAMP WITH TIME ZONE NOT NULL,
-    updated_at                   TIMESTAMP WITH TIME ZONE NOT NULL
+    updated_at                   TIMESTAMP WITH TIME ZONE NOT NULL,
+
+    CONSTRAINT fk_feedstock_samples_batch
+        FOREIGN KEY (batch_id) REFERENCES feedstock_batches (batch_id)
 );
 
 CREATE INDEX IF NOT EXISTS idx_feedstock_samples_cider_maker_id
     ON feedstock_samples (cider_maker_id);
 
-CREATE INDEX IF NOT EXISTS idx_feedstock_samples_cider_maker_collected_at
-    ON feedstock_samples (cider_maker_id, collected_at DESC);
+CREATE INDEX IF NOT EXISTS idx_feedstock_samples_batch_id
+    ON feedstock_samples (batch_id);
+
+CREATE INDEX IF NOT EXISTS idx_feedstock_samples_cider_maker_measured_at
+    ON feedstock_samples (cider_maker_id, measured_at DESC);
 
 CREATE INDEX IF NOT EXISTS idx_feedstock_samples_cider_maker_type
     ON feedstock_samples (cider_maker_id, type);

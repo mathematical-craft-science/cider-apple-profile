@@ -6,6 +6,7 @@ import org.craft.mcs.cap.core.feedstock.application.port.out.FeedstockSampleRepo
 import org.craft.mcs.cap.core.feedstock.application.usecase.AssessFeedstockSampleSugarAcidityZoneService;
 import org.craft.mcs.cap.core.feedstock.domain.model.FeedstockSample;
 import org.craft.mcs.cap.core.feedstock.domain.model.FeedstockSampleId;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.value.CiderMakerId;
 import org.craft.mcs.cap.core.feedstock.domain.model.value.FeedstockSampleName;
 import org.craft.mcs.cap.core.feedstock.domain.model.value.FeedstockType;
@@ -44,6 +45,7 @@ class AssessFeedstockSampleSugarAcidityZoneServiceTest {
     final var sample = FeedstockSample.create(
         FeedstockSampleId.newId(),
         CiderMakerId.of(randomUUID()),
+        FeedstockBatchId.newId(),
         FeedstockSampleName.of("Partial batch"),
         FeedstockType.APPLE_JUICE,
         ChemicalProfile.builder()

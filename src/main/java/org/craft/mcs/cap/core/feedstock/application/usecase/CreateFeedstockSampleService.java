@@ -30,10 +30,11 @@ public final class CreateFeedstockSampleService
       final var sample = FeedstockSample.create(
           FeedstockSampleId.newId(),
           command.ciderMakerId(),
+          command.batchId(),
           command.name(),
           command.type(),
           command.chemicalProfile(),
-          command.collectedAt()
+          command.measuredAt()
       ).changeNote(command.note());
 
       final var saved = feedstockSampleRepository.save(sample);
@@ -41,6 +42,7 @@ public final class CreateFeedstockSampleService
       return new FeedstockSampleCreated(
           saved.sampleId(),
           saved.ciderMakerId(),
+          saved.batchId(),
           saved.name(),
           saved.type()
       );

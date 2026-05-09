@@ -1,6 +1,7 @@
 package org.craft.mcs.cap.core.feedstock.domain.model;
 
 import java.time.Instant;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.value.CiderMakerId;
 import org.craft.mcs.cap.core.feedstock.domain.model.value.FeedstockSampleName;
 import org.craft.mcs.cap.core.feedstock.domain.model.value.FeedstockType;
@@ -20,49 +21,55 @@ public final class FeedstockSample {
 
   private final @NonNull CiderMakerId ciderMakerId;
 
+  private final @NonNull FeedstockBatchId batchId;
+
   private @NonNull FeedstockSampleName name;
 
   private @NonNull FeedstockType type;
 
   private @NonNull ChemicalProfile chemicalProfile;
 
-  private @NonNull Instant collectedAt;
+  private @NonNull Instant measuredAt;
 
   private @Nullable String note;
 
   private FeedstockSample(
       @NonNull FeedstockSampleId sampleId,
       @NonNull CiderMakerId ciderMakerId,
+      @NonNull FeedstockBatchId batchId,
       @NonNull FeedstockSampleName name,
       @NonNull FeedstockType type,
       @NonNull ChemicalProfile chemicalProfile,
-      @NonNull Instant collectedAt,
+      @NonNull Instant measuredAt,
       @Nullable String note
   ) {
     this.sampleId = requireNonNull(sampleId, "feedstock sample id cannot be null");
     this.ciderMakerId = requireNonNull(ciderMakerId, "cider maker id cannot be null");
+    this.batchId = requireNonNull(batchId, "feedstock batch id cannot be null");
     this.name = requireNonNull(name, "feedstock sample name cannot be null");
     this.type = requireNonNull(type, "feedstock type cannot be null");
     this.chemicalProfile = requireNonNull(chemicalProfile, "chemical profile cannot be null");
-    this.collectedAt = requireNonNull(collectedAt, "collected at cannot be null");
+    this.measuredAt = requireNonNull(measuredAt, "measured at cannot be null");
     this.note = normalize(note);
   }
 
   public static @NonNull FeedstockSample create(
       @NonNull FeedstockSampleId sampleId,
       @NonNull CiderMakerId ciderMakerId,
+      @NonNull FeedstockBatchId batchId,
       @NonNull FeedstockSampleName name,
       @NonNull FeedstockType type,
       @NonNull ChemicalProfile chemicalProfile,
-      @NonNull Instant collectedAt
+      @NonNull Instant measuredAt
   ) {
     return new FeedstockSample(
         sampleId,
         ciderMakerId,
+        batchId,
         name,
         type,
         chemicalProfile,
-        collectedAt,
+        measuredAt,
         null
     );
   }
@@ -73,6 +80,10 @@ public final class FeedstockSample {
 
   public @NonNull CiderMakerId ciderMakerId() {
     return ciderMakerId;
+  }
+
+  public @NonNull FeedstockBatchId batchId() {
+    return batchId;
   }
 
   public @NonNull FeedstockSampleName name() {
@@ -87,8 +98,8 @@ public final class FeedstockSample {
     return chemicalProfile;
   }
 
-  public @NonNull Instant collectedAt() {
-    return collectedAt;
+  public @NonNull Instant measuredAt() {
+    return measuredAt;
   }
 
   public @Nullable String note() {
@@ -112,8 +123,8 @@ public final class FeedstockSample {
     return this;
   }
 
-  public @NonNull FeedstockSample changeCollectedAt(@NonNull Instant collectedAt) {
-    this.collectedAt = requireNonNull(collectedAt, "collected at cannot be null");
+  public @NonNull FeedstockSample changeMeasuredAt(@NonNull Instant measuredAt) {
+    this.measuredAt = requireNonNull(measuredAt, "measured at cannot be null");
     return this;
   }
 
