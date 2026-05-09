@@ -1,0 +1,56 @@
+package org.craft.mcs.cap.feedstock.application.usecase;
+
+import java.time.LocalDate;
+import org.craft.mcs.cap.core.feedstock.application.port.in.CreateFeedstockBatchCommand;
+import org.craft.mcs.cap.core.feedstock.application.port.out.FeedstockBatchRepository;
+import org.craft.mcs.cap.core.feedstock.application.usecase.CreateFeedstockBatchService;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockBatchName;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
+import org.craft.mcs.cap.core.feedstock.domain.model.value.CiderMakerId;
+import org.craft.mcs.cap.shared.application.TransactionHelper;
+import org.craft.mcs.cap.shared.domain.measurement.VolumeValue;
+import org.junit.jupiter.api.Test;
+
+import static java.util.UUID.randomUUID;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+
+class CreateFeedstockBatchServiceTest {
+
+  @Test
+  void createsFeedstockBatchWithOptionalSource() {
+    final var repository = mock(FeedstockBatchRepository.class);
+    final var transactionHelper = new TransactionHelper() {
+      @Override
+      public <T> T callInTransactionNonNull(java.util.function.Supplier<T> action) {
+        return action.get();
+      }
+
+      @Override
+      public void executeInTransaction(Runnable action) {
+        action.run();
+      }
+    };
+    final var service = new CreateFeedstockBatchService(repository, transactionHelper);
+    final var ciderMakerId = CiderMakerId.of(randomUUID());
+    when(repository.save(any(FeedstockBatch.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+    final var created = service.create(new CreateFeedstockBatchCommand(
+        ciderMakerId,
+        FeedstockBatchName.of("Late season fruit"),
+        FeedstockSeason.of(LocalDate.parse("2026-10-01"), LocalDate.parse("2026-12-15")),
+        null,
+        VolumeValue.ofLiters("250.000"),
+        "Pressed in two sessions"
+    ));
+
+    assertThat(created.batchId()).isNotNull();
+    assertThat(created.ciderMakerId()).isEqualTo(ciderMakerId);
+    assertThat(created.source()).isNull();
+    assertThat(created.availableVolume().liters()).isEqualByComparingTo("250.000");
+  }
+}
