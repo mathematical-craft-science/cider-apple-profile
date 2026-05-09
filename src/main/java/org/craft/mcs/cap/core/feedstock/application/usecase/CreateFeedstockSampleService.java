@@ -2,7 +2,6 @@ package org.craft.mcs.cap.core.feedstock.application.usecase;
 
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchNotFoundException;
-import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchOwnershipMismatchException;
 import org.craft.mcs.cap.core.feedstock.application.port.in.CreateFeedstockSampleCommand;
 import org.craft.mcs.cap.core.feedstock.application.port.in.CreateFeedstockSampleUseCase;
 import org.craft.mcs.cap.core.feedstock.application.port.in.FeedstockSampleCreated;
@@ -33,14 +32,6 @@ public final class CreateFeedstockSampleService
     return transactionHelper.callInTransactionNonNull(() -> {
       final var batch = feedstockBatchRepository.findById(command.batchId())
           .orElseThrow(() -> new FeedstockBatchNotFoundException(command.batchId()));
-
-      if (!batch.ciderMakerId().equals(command.ciderMakerId())) {
-        throw new FeedstockBatchOwnershipMismatchException(
-            command.batchId(),
-            command.ciderMakerId(),
-            batch.ciderMakerId()
-        );
-      }
 
       final var sample = FeedstockSample.create(
           FeedstockSampleId.newId(),

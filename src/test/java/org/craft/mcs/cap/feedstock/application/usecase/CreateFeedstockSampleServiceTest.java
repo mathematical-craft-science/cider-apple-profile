@@ -5,7 +5,6 @@ import java.time.LocalDate;
 import java.util.Optional;
 import java.util.function.Supplier;
 import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchNotFoundException;
-import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchOwnershipMismatchException;
 import org.craft.mcs.cap.core.feedstock.application.port.in.CreateFeedstockSampleCommand;
 import org.craft.mcs.cap.core.feedstock.application.port.out.FeedstockBatchRepository;
 import org.craft.mcs.cap.core.feedstock.application.port.out.FeedstockSampleRepository;
@@ -47,7 +46,6 @@ class CreateFeedstockSampleServiceTest {
     when(sampleRepository.save(any(FeedstockSample.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
     final var created = service.create(new CreateFeedstockSampleCommand(
-        ciderMakerId,
         batch.batchId(),
         FeedstockSampleName.of("Late press sample"),
         FeedstockType.APPLE_JUICE,
@@ -72,7 +70,6 @@ class CreateFeedstockSampleServiceTest {
     when(batchRepository.findById(batchId)).thenReturn(Optional.empty());
 
     assertThatThrownBy(() -> service.create(new CreateFeedstockSampleCommand(
-        CiderMakerId.of(randomUUID()),
         batchId,
         FeedstockSampleName.of("Late press sample"),
         FeedstockType.APPLE_JUICE,
@@ -80,29 +77,6 @@ class CreateFeedstockSampleServiceTest {
         Instant.parse("2026-10-15T10:00:00Z"),
         null
     ))).isInstanceOf(FeedstockBatchNotFoundException.class);
-  }
-
-  @Test
-  void rejectsSampleWhenBatchBelongsToAnotherCiderMaker() {
-    final var batchRepository = mock(FeedstockBatchRepository.class);
-    final var service = new CreateFeedstockSampleService(
-        batchRepository,
-        mock(FeedstockSampleRepository.class),
-        transactionHelper()
-    );
-    final var requestedCiderMakerId = CiderMakerId.of(randomUUID());
-    final var batch = batch(CiderMakerId.of(randomUUID()));
-    when(batchRepository.findById(batch.batchId())).thenReturn(Optional.of(batch));
-
-    assertThatThrownBy(() -> service.create(new CreateFeedstockSampleCommand(
-        requestedCiderMakerId,
-        batch.batchId(),
-        FeedstockSampleName.of("Late press sample"),
-        FeedstockType.APPLE_JUICE,
-        chemicalProfile(),
-        Instant.parse("2026-10-15T10:00:00Z"),
-        null
-    ))).isInstanceOf(FeedstockBatchOwnershipMismatchException.class);
   }
 
   private static FeedstockBatch batch(CiderMakerId ciderMakerId) {

@@ -1,9 +1,6 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest;
 
 import java.util.Set;
-import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchOwnershipMismatchException;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
-import org.craft.mcs.cap.core.feedstock.domain.model.value.CiderMakerId;
 import org.craft.mcs.cap.shared.domain.chemical.capability.ChemicalProfileCapability;
 import org.craft.mcs.cap.shared.domain.chemical.capability.ChemicalProfileCapabilityAssessment;
 import org.craft.mcs.cap.shared.domain.chemical.capability.ChemicalProfileCapabilityNotMetException;
@@ -11,7 +8,6 @@ import org.craft.mcs.cap.shared.domain.classification.axis.ChemicalAxis;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatusCode;
 
-import static java.util.UUID.randomUUID;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
@@ -44,28 +40,4 @@ class RestExceptionHandlerTest {
         .containsEntry("missingAxes", java.util.List.of("ACIDITY", "TANNINITY"));
   }
 
-  @Test
-  void mapsFeedstockBatchOwnershipMismatchToForbiddenProblemDetail() {
-    final var batchId = FeedstockBatchId.newId();
-    final var requestedCiderMakerId = CiderMakerId.of(randomUUID());
-    final var actualCiderMakerId = CiderMakerId.of(randomUUID());
-
-    final var response = new RestExceptionHandler().handleFeedstockBatchOwnershipMismatch(
-        new FeedstockBatchOwnershipMismatchException(
-            batchId,
-            requestedCiderMakerId,
-            actualCiderMakerId
-        )
-    );
-
-    final var problem = response.getBody();
-
-    assertThat(response.getStatusCode()).isEqualTo(HttpStatusCode.valueOf(403));
-    assertThat(problem).isNotNull();
-    assertThat(problem.getTitle()).isEqualTo("Feedstock batch belongs to another cider maker");
-    assertThat(problem.getProperties())
-        .containsEntry("batchId", batchId.value().toString())
-        .containsEntry("requestedCiderMakerId", requestedCiderMakerId.value().toString())
-        .doesNotContainKey("actualCiderMakerId");
-  }
 }

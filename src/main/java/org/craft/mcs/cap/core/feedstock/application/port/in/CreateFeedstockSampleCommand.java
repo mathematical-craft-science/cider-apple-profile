@@ -2,7 +2,6 @@ package org.craft.mcs.cap.core.feedstock.application.port.in;
 
 import java.time.Instant;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
-import org.craft.mcs.cap.core.feedstock.domain.model.value.CiderMakerId;
 import org.craft.mcs.cap.core.feedstock.domain.model.sample.value.FeedstockSampleName;
 import org.craft.mcs.cap.core.feedstock.domain.model.sample.value.FeedstockType;
 import org.craft.mcs.cap.shared.domain.chemical.ChemicalProfile;
@@ -13,7 +12,6 @@ import static java.util.Objects.requireNonNull;
 
 
 public record CreateFeedstockSampleCommand(
-    @NonNull CiderMakerId ciderMakerId,
     @NonNull FeedstockBatchId batchId,
     @NonNull FeedstockSampleName name,
     @NonNull FeedstockType type,
@@ -23,7 +21,6 @@ public record CreateFeedstockSampleCommand(
 ) {
 
   public CreateFeedstockSampleCommand {
-    requireNonNull(ciderMakerId, "cider maker id cannot be null");
     requireNonNull(batchId, "feedstock batch id cannot be null");
     requireNonNull(name, "feedstock sample name cannot be null");
     requireNonNull(type, "feedstock type cannot be null");

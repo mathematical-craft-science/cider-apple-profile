@@ -5,7 +5,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchNotFoundException;
-import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchOwnershipMismatchException;
 import org.craft.mcs.cap.shared.domain.chemical.capability.ChemicalProfileCapabilityNotMetException;
 import org.craft.mcs.cap.shared.domain.classification.axis.ChemicalAxis;
 import org.jspecify.annotations.NonNull;
@@ -22,10 +21,7 @@ public final class RestExceptionHandler {
       URI.create("urn:problem-type:chemical-profile-capability-not-met");
   private static final URI FEEDSTOCK_BATCH_NOT_FOUND =
       URI.create("urn:problem-type:feedstock-batch-not-found");
-  private static final URI FEEDSTOCK_BATCH_OWNERSHIP_MISMATCH =
-      URI.create("urn:problem-type:feedstock-batch-ownership-mismatch");
   private static final int UNPROCESSABLE_ENTITY = 422;
-  private static final int FORBIDDEN = 403;
 
   @ExceptionHandler(ChemicalProfileCapabilityNotMetException.class)
   public @NonNull ResponseEntity<@NonNull ProblemDetail> handleChemicalProfileCapabilityNotMet(
@@ -60,23 +56,6 @@ public final class RestExceptionHandler {
 
     return ResponseEntity
         .status(404)
-        .body(problem);
-  }
-
-  @ExceptionHandler(FeedstockBatchOwnershipMismatchException.class)
-  public @NonNull ResponseEntity<@NonNull ProblemDetail> handleFeedstockBatchOwnershipMismatch(
-      @NonNull FeedstockBatchOwnershipMismatchException exception
-  ) {
-    final var problem = ProblemDetail.forStatus(FORBIDDEN);
-
-    problem.setType(FEEDSTOCK_BATCH_OWNERSHIP_MISMATCH);
-    problem.setTitle("Feedstock batch belongs to another cider maker");
-    problem.setDetail("Feedstock sample can only be created inside a batch owned by the same cider maker");
-    problem.setProperty("batchId", exception.batchId().value().toString());
-    problem.setProperty("requestedCiderMakerId", exception.requestedCiderMakerId().value().toString());
-
-    return ResponseEntity
-        .status(FORBIDDEN)
         .body(problem);
   }
 
