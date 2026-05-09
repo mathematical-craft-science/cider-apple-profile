@@ -9,6 +9,7 @@ import org.jspecify.annotations.Nullable;
 public record FeedstockSampleSugarAcidityZoneResponse(
     @NonNull String sampleId,
     @NonNull String ciderMakerId,
+    @NonNull String batchId,
     @NonNull String sampleName,
     boolean plottable,
     @Nullable SugarAcidityZoneAssessmentResponse assessment,
@@ -18,9 +19,10 @@ public record FeedstockSampleSugarAcidityZoneResponse(
   public FeedstockSampleSugarAcidityZoneResponse(
       @NonNull String sampleId,
       @NonNull String ciderMakerId,
+      @NonNull String batchId,
       @NonNull String sampleName,
       @NonNull SugarAcidityZoneAssessmentResponse assessment
   ) {
-    this(sampleId, ciderMakerId, sampleName, true, assessment, null);
+    this(sampleId, ciderMakerId, batchId, sampleName, true, assessment, null);
   }
 }

@@ -43,6 +43,7 @@ public final class AssessFeedstockSampleSugarAcidityZoneService
       return new FeedstockSampleSugarAcidityZoneResult(
           sample.sampleId(),
           sample.ciderMakerId(),
+          sample.batchId(),
           sample.name(),
           false,
           null,
@@ -58,6 +59,7 @@ public final class AssessFeedstockSampleSugarAcidityZoneService
     return new FeedstockSampleSugarAcidityZoneResult(
         sample.sampleId(),
         sample.ciderMakerId(),
+        sample.batchId(),
         sample.name(),
         true,
         assessment,

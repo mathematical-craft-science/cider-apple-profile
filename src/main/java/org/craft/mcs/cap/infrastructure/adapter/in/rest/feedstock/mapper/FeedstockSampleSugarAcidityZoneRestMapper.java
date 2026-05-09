@@ -27,6 +27,7 @@ public final class FeedstockSampleSugarAcidityZoneRestMapper {
     return new FeedstockSampleSugarAcidityZoneResponse(
         assessment.sampleId().value().toString(),
         assessment.ciderMakerId().value().toString(),
+        assessment.batchId().value().toString(),
         assessment.sampleName().value(),
         SugarAcidityZoneRestMapper.toResponse(assessment.assessment())
     );
@@ -40,6 +41,7 @@ public final class FeedstockSampleSugarAcidityZoneRestMapper {
     return new FeedstockSampleSugarAcidityZoneResponse(
         result.sampleId().value().toString(),
         result.ciderMakerId().value().toString(),
+        result.batchId().value().toString(),
         result.sampleName().value(),
         result.plottable(),
         result.assessment() == null ? null : SugarAcidityZoneRestMapper.toResponse(result.assessment()), // NOSONAR
@@ -70,6 +72,7 @@ public final class FeedstockSampleSugarAcidityZoneRestMapper {
     return new UnplottableFeedstockSampleSugarAcidityZonePointResponse(
         unplottable.sampleId().value().toString(),
         unplottable.ciderMakerId().value().toString(),
+        unplottable.batchId().value().toString(),
         unplottable.sampleName().value(),
         ChemicalProfileCapabilityRestMapper.toResponse(unplottable.capabilityAssessment())
     );

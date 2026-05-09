@@ -1,6 +1,7 @@
 package org.craft.mcs.cap.feedstock.application.usecase;
 
 import java.time.LocalDate;
+import java.util.function.Supplier;
 import org.craft.mcs.cap.core.feedstock.application.port.in.CreateFeedstockBatchCommand;
 import org.craft.mcs.cap.core.feedstock.application.port.out.FeedstockBatchRepository;
 import org.craft.mcs.cap.core.feedstock.application.usecase.CreateFeedstockBatchService;
@@ -10,6 +11,7 @@ import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason
 import org.craft.mcs.cap.core.feedstock.domain.model.value.CiderMakerId;
 import org.craft.mcs.cap.shared.application.TransactionHelper;
 import org.craft.mcs.cap.shared.domain.measurement.VolumeValue;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
 import static java.util.UUID.randomUUID;
@@ -25,8 +27,9 @@ class CreateFeedstockBatchServiceTest {
   void createsFeedstockBatchWithOptionalSource() {
     final var repository = mock(FeedstockBatchRepository.class);
     final var transactionHelper = new TransactionHelper() {
+      @NonNull
       @Override
-      public <T> T callInTransactionNonNull(java.util.function.Supplier<T> action) {
+      public <T> T callInTransactionNonNull(@NonNull Supplier<T> action) {
         return action.get();
       }
 
@@ -52,5 +55,6 @@ class CreateFeedstockBatchServiceTest {
     assertThat(created.ciderMakerId()).isEqualTo(ciderMakerId);
     assertThat(created.source()).isNull();
     assertThat(created.availableVolume().liters()).isEqualByComparingTo("250.000");
+    assertThat(created.note()).isEqualTo("Pressed in two sessions");
   }
 }

@@ -18,7 +18,8 @@ public record FeedstockBatchCreated(
     @NonNull FeedstockBatchName name,
     @NonNull FeedstockSeason season,
     @Nullable FeedstockSource source,
-    @NonNull VolumeValue availableVolume
+    @NonNull VolumeValue availableVolume,
+    @Nullable String note
 ) {
 
   public FeedstockBatchCreated {

@@ -63,6 +63,7 @@ public final class ListFeedstockSampleSugarAcidityZonePointsService
     return new FeedstockSampleSugarAcidityZoneAssessment(
         sample.sampleId(),
         sample.ciderMakerId(),
+        sample.batchId(),
         sample.name(),
         assessment
     );
@@ -75,6 +76,7 @@ public final class ListFeedstockSampleSugarAcidityZonePointsService
     return new UnplottableFeedstockSampleSugarAcidityZonePoint(
         sample.sampleId(),
         sample.ciderMakerId(),
+        sample.batchId(),
         sample.name(),
         capabilityAssessment
     );

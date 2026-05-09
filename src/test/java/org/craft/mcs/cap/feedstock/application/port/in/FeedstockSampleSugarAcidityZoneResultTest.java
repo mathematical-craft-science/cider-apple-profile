@@ -2,6 +2,7 @@ package org.craft.mcs.cap.feedstock.application.port.in;
 
 import org.craft.mcs.cap.core.feedstock.application.port.in.FeedstockSampleSugarAcidityZoneResult;
 import org.craft.mcs.cap.core.feedstock.domain.model.FeedstockSampleId;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.value.CiderMakerId;
 import org.craft.mcs.cap.core.feedstock.domain.model.value.FeedstockSampleName;
 import org.craft.mcs.cap.shared.domain.chemical.ChemicalProfile;
@@ -27,6 +28,7 @@ class FeedstockSampleSugarAcidityZoneResultTest {
         .isThrownBy(() -> new FeedstockSampleSugarAcidityZoneResult(
             FeedstockSampleId.newId(),
             CiderMakerId.of(randomUUID()),
+            FeedstockBatchId.newId(),
             FeedstockSampleName.of("Partial batch"),
             true,
             null,
@@ -39,6 +41,7 @@ class FeedstockSampleSugarAcidityZoneResultTest {
     final var result = new FeedstockSampleSugarAcidityZoneResult(
         FeedstockSampleId.newId(),
         CiderMakerId.of(randomUUID()),
+        FeedstockBatchId.newId(),
         FeedstockSampleName.of("Partial batch"),
         false,
         null,

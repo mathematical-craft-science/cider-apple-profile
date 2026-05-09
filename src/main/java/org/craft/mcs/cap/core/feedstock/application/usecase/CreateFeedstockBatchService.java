@@ -43,7 +43,8 @@ public final class CreateFeedstockBatchService
           saved.name(),
           saved.season(),
           saved.source(),
-          saved.availableVolume()
+          saved.availableVolume(),
+          saved.note()
       );
     });
   }
