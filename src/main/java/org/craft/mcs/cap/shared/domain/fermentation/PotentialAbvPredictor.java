@@ -44,12 +44,12 @@ public final class PotentialAbvPredictor {
 
   public @NonNull PotentialAbvPrediction predict(
       @NonNull SpecificGravityValue originalGravity,
-      @NonNull SpecificGravityValue assumedFinalGravity
+      @NonNull SpecificGravityValue predictedFinalGravity
   ) {
     return predict(
         originalGravity,
         new FinalGravityPrediction(
-            assumedFinalGravity,
+            predictedFinalGravity,
             FinalGravityPredictionSource.FIXED_DRY_CIDER_DEFAULT,
             PredictionConfidence.LOW
         )
@@ -63,17 +63,17 @@ public final class PotentialAbvPredictor {
     requireNonNull(originalGravity, "original gravity cannot be null");
     requireNonNull(finalGravityPrediction, "final gravity prediction cannot be null");
 
-    final var assumedFinalGravity = finalGravityPrediction.finalGravity();
+    final var predictedFinalGravity = finalGravityPrediction.finalGravity();
 
-    if (assumedFinalGravity.compareTo(originalGravity) > 0) {
-      throw new IllegalArgumentException("assumed final gravity must not exceed original gravity");
+    if (predictedFinalGravity.compareTo(originalGravity) > 0) {
+      throw new IllegalArgumentException("predicted final gravity must not exceed original gravity");
     }
 
     return new PotentialAbvPrediction(
         originalGravity,
-        assumedFinalGravity,
+        predictedFinalGravity,
         finalGravityPrediction.source(),
-        abvPredictionStrategy.predict(new AbvPredictionInput(originalGravity, assumedFinalGravity)),
+        abvPredictionStrategy.predict(new AbvPredictionInput(originalGravity, predictedFinalGravity)),
         abvPredictionStrategy.method(),
         finalGravityPrediction.confidence()
     );

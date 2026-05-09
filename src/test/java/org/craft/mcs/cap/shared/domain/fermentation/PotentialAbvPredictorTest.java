@@ -22,8 +22,8 @@ class PotentialAbvPredictorTest {
     );
 
     assertThat(prediction.originalGravity().asBigDecimal()).isEqualByComparingTo("1.052");
-    assertThat(prediction.assumedFinalGravity().asBigDecimal()).isEqualByComparingTo("1.000");
-    assertThat(prediction.assumedFinalGravitySource())
+    assertThat(prediction.predictedFinalGravity().asBigDecimal()).isEqualByComparingTo("1.000");
+    assertThat(prediction.predictedFinalGravitySource())
         .isEqualTo(FinalGravityPredictionSource.FIXED_DRY_CIDER_DEFAULT);
     assertThat(prediction.potentialAbv().percent()).isEqualByComparingTo("6.825");
     assertThat(prediction.method()).isEqualTo(AbvPredictionMethod.STANDARD_GRAVITY_DROP);
@@ -50,8 +50,8 @@ class PotentialAbvPredictorTest {
         SugarConcentration.ofSpecificGravity(SpecificGravityValue.of("1.052"))
     );
 
-    assertThat(prediction.assumedFinalGravity().asBigDecimal()).isEqualByComparingTo("1.010");
-    assertThat(prediction.assumedFinalGravitySource())
+    assertThat(prediction.predictedFinalGravity().asBigDecimal()).isEqualByComparingTo("1.010");
+    assertThat(prediction.predictedFinalGravitySource())
         .isEqualTo(FinalGravityPredictionSource.FIXED_DRY_CIDER_DEFAULT);
     assertThat(prediction.potentialAbv().percent()).isEqualByComparingTo("5.513");
     assertThat(prediction.confidence()).isEqualTo(PredictionConfidence.LOW);
