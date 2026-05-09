@@ -1,5 +1,65 @@
 # Доменный backlog
 
+## Приоритизация
+
+Шкалы:
+
+- Ценность: 1-10, насколько фича помогает сидроделу принимать практические
+  решения.
+- Сложность: 1-10, доменная и техническая сложность реализации.
+
+### Высший приоритет
+
+| Фича | Ценность | Сложность | Причина |
+|---|---:|---:|---|
+| FeedstockSample graph + warnings по неполному профилю | 9 | 4 | Работа с реальным сырьем, явные предупреждения и понимание, чего не хватает для оценки. |
+| Potential ABV для FeedstockSample | 9 | 3 | Быстро отвечает на практический вопрос: какую крепость ожидать от конкретной партии. |
+| Fermentation monitoring по партиям | 10 | 8 | Превращает систему в помощника, который следит за процессом и показывает динамику. |
+| Alerts: stuck fermentation / выход за temperature/pH/ABV ranges | 10 | 8 | Помогает не потерять партию и вовремя вмешаться в процесс. |
+| Yeast catalog + yeast-aware fermentation checks | 9 | 7 | Дрожжи влияют на FG/ABV, температурные риски, остановку ферментации и мониторинг. |
+
+### Следующий сильный слой
+
+| Фича | Ценность | Сложность | Причина |
+|---|---:|---:|---|
+| Blending для FeedstockSample с target area | 10 | 9 | Сильный decision support: подбор пропорций купажа под цель с учетом ограничений. |
+| Available volume для FeedstockSample | 8 | 4 | Необходимая основа для blending и production planning. |
+| Исследование каталога через выделенную область на graph | 8 | 6 | Делает каталог discovery-инструментом, а не статичным справочником. |
+| Фильтрация по English/French/Spanish/Long Ashton classifications | 8 | 5 | Позволяет сидроделу работать в привычной системе терминов. |
+| Query/filter/search model с cursor | 7 | 6 | Технический enabler для больших каталогов, graph exploration и стабильного API. |
+
+### Средний приоритет
+
+| Фича | Ценность | Сложность | Причина |
+|---|---:|---:|---|
+| Admin data-quality reports по AppleVariety | 7 | 5 | Важно для качества каталога, но косвенно полезно сидроделу. |
+| Materialized projection/index для вычислимых профилей | 7 | 8 | Понадобится при росте каталога и сложных фильтрах, но можно отложить до нагрузки. |
+| FeedstockSample season/batch model | 8 | 5 | Нужна для работы по сезонам и партиям, требует аккуратной доменной модели. |
+| Сравнение FeedstockSample с AppleVariety каталогом | 7 | 7 | Полезный экспертный сценарий, но требует similarity metric. |
+| Frontend graph contract: tooltips, selected area, linked rows | 7 | 5 | Делает экспертность видимой и удобной, зависит от frontend-слоя. |
+
+### Низкий / отложенный приоритет
+
+| Фича | Ценность | Сложность | Причина |
+|---|---:|---:|---|
+| typicalPotentialAbv для AppleVariety | 4 | 4 | Может помочь каталогу, но есть риск ложной точности. |
+| Standalone cider suitability | 5 | 6 | Идея интересная, но user story еще недостаточно зрелая. |
+| Orchard-related характеристики | 3 | 7 | Не cider-core, лучше не смешивать без отдельного orchard-домена. |
+| Ellipse/lasso selection на graph | 5 | 6 | Удобно, но rectangle selection даст основную пользу проще. |
+| Полный REST error model для всех ошибок | 6 | 4 | Нужно для зрелости API, но само по себе не делает систему экспертной. |
+
+### Рекомендуемый порядок движения
+
+1. Довести ABV prediction для `FeedstockSample`: response, method/confidence,
+   source of assumed/predicted FG.
+2. Добавить season/batch и available volume в `FeedstockSample`.
+3. Начать `FermentationBatch`: source sample/blend, yeast optional, starting
+   SG, measurements over time.
+4. Добавить yeast catalog как источник рабочих диапазонов и constraints.
+5. Добавить первые rule-based alerts: temperature out of yeast range, SG не
+   снижается, ABV near yeast tolerance.
+6. После этого переходить к blending optimization.
+
 ## Сценарии и user stories
 
 ### Исследование каталога сортов через sugar-acidity graph
@@ -159,6 +219,32 @@ User stories:
 опылителей, устойчивости к болезням, зимостойкости и пригодности к климату
 скорее относятся к orchard-домену. Их не стоит смешивать с cider-моделью
 `AppleVariety`, пока в системе явно не появится область планирования сада.
+
+Низкий приоритет: рассмотреть `typicalPotentialAbv` для `AppleVariety`.
+Это должно быть не производственным прогнозом, а справочной оценкой по
+типичному chemical profile сорта. Для сорта нельзя честно обещать конкретный
+ABV, потому что реальная крепость зависит от сезона, климата, зрелости,
+хранения и конкретного `FeedstockSample`.
+
+Возможная форма:
+
+```json
+{
+  "varietyId": "...",
+  "varietyName": "Kingston Black",
+  "typicalPotentialAbv": {
+    "min": 6.1,
+    "max": 7.3,
+    "basis": "TYPICAL_CHEMICAL_PROFILE"
+  }
+}
+```
+
+User story для будущего обсуждения:
+
+> Как сидродел, исследующий каталог сортов, я хочу примерно понимать
+> потенциальную крепость сидра по типичному профилю сорта, чтобы сравнивать
+> кандидатов для закупки, посадки или исследования.
 
 ### Standalone cider suitability
 
@@ -575,10 +661,47 @@ assessment. Проверка пригодности профиля должна 
 
 - Как часто сидродел реально будет вносить измерения.
 - Какие показатели обязательны, а какие опциональны.
-- Как учитывать разные единицы SG/Brix/Plato и температурные единицы.
+- ABV prediction всегда должен работать по нормализованному SG. Brix/Plato
+  могут быть входными форматами sugar domain, но до fermentation/ABV слоя они
+  должны быть приведены к SG.
+- Как учитывать температурные единицы.
 - Какие warning-и должны быть hard alerts, а какие advisory hints.
 - Как хранить intervention events: nutrient addition, temperature correction,
   racking, yeast pitching, restart attempt.
+
+### ABV prediction strategies
+
+ABV prediction должен работать по нормализованному SG. Brix/Plato могут быть
+входными форматами sugar domain, но до fermentation/ABV слоя они должны быть
+приведены к `SpecificGravityValue`.
+
+Текущий базовый вариант:
+
+- `STANDARD_GRAVITY_DROP`: расчет по OG и predicted/assumed FG.
+
+Будущие стратегии:
+
+- `YEAST_AWARE`: прогноз учитывает выбранный yeast strain, его alcohol
+  tolerance, expected attenuation, recommended temperature range, pH range и
+  nutrient requirements. Такая стратегия может влиять прежде всего на
+  predicted FG и риск недоброда.
+- `FERMENTATION_MODEL_ADJUSTED`: прогноз учитывает параметры fermentation
+  batch: температурный режим, pH, исходный chemical profile, выбранные дрожжи,
+  планируемые или фактические условия процесса.
+- `FERMENTATION_MEASUREMENTS_BASED`: более сложная модель на основе временного
+  ряда измерений fermentation batch. Может уточнять expected final ABV по
+  динамике SG, temperature, pH/acidity и событиям процесса.
+
+Открытые вопросы:
+
+- Будут ли это разные `AbvPredictionStrategy` или разные стратегии расчета FG,
+  используемые одной ABV formula.
+- Как выбирать стратегию: configuration, request parameter, yeast/batch
+  context или автоматический selection по доступным данным.
+- Как показывать пользователю confidence прогноза: baseline estimate,
+  yeast-aware estimate, in-progress adjusted estimate.
+- Как учитывать incomplete data: если нет yeast или time series, использовать
+  fallback к `STANDARD_GRAVITY_DROP`.
 
 ### Yeast characteristics model
 

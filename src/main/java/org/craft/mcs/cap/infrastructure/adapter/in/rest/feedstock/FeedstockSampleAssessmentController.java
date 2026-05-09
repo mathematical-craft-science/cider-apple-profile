@@ -4,10 +4,13 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.feedstock.application.port.in.AssessFeedstockSampleSugarAcidityZoneUseCase;
 import org.craft.mcs.cap.core.feedstock.application.port.in.ListFeedstockSampleSugarAcidityZonePointsUseCase;
+import org.craft.mcs.cap.core.feedstock.application.port.in.PredictFeedstockSamplePotentialAbvUseCase;
 import org.craft.mcs.cap.core.feedstock.domain.model.FeedstockSampleId;
 import org.craft.mcs.cap.core.feedstock.domain.model.value.CiderMakerId;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.FeedstockSamplePotentialAbvResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.FeedstockSampleSugarAcidityZonePointBatchResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.FeedstockSampleSugarAcidityZoneResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.mapper.FeedstockSamplePotentialAbvRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.mapper.FeedstockSampleSugarAcidityZoneRestMapper;
 import org.jspecify.annotations.NonNull;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +26,7 @@ public final class FeedstockSampleAssessmentController {
 
   private final @NonNull AssessFeedstockSampleSugarAcidityZoneUseCase assessSugarAcidityZoneUseCase;
   private final @NonNull ListFeedstockSampleSugarAcidityZonePointsUseCase listSugarAcidityZonePointsUseCase;
+  private final @NonNull PredictFeedstockSamplePotentialAbvUseCase predictPotentialAbvUseCase;
 
   @GetMapping("/feedstock-samples/{sampleId}/sugar-acidity-zone")
   public @NonNull ResponseEntity<@NonNull FeedstockSampleSugarAcidityZoneResponse> assessSugarAcidityZone(
@@ -47,6 +51,19 @@ public final class FeedstockSampleAssessmentController {
 
     return ResponseEntity.ok(
         FeedstockSampleSugarAcidityZoneRestMapper.toResponse(results)
+    );
+  }
+
+  @GetMapping("/feedstock-samples/{sampleId}/potential-abv")
+  public @NonNull ResponseEntity<@NonNull FeedstockSamplePotentialAbvResponse> predictPotentialAbv(
+      @PathVariable @NonNull UUID sampleId
+  ) {
+    final var prediction = predictPotentialAbvUseCase.predict(
+        FeedstockSampleId.of(sampleId)
+    );
+
+    return ResponseEntity.ok(
+        FeedstockSamplePotentialAbvRestMapper.toResponse(prediction)
     );
   }
 }

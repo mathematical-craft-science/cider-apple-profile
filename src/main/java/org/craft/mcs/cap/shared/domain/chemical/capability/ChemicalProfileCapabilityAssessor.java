@@ -37,6 +37,7 @@ public final class ChemicalProfileCapabilityAssessor {
       @NonNull ChemicalProfileCapability capability
   ) {
     return switch (capability) {
+      case ABV_PREDICTION -> Set.of(ChemicalAxis.SUGAR);
       case SUGAR_ACIDITY_PLOT -> Set.of(ChemicalAxis.SUGAR, ChemicalAxis.ACIDITY);
       case NORTH_AMERICAN_PROFILE, SINGLE_VARIETY_CIDER_ASSESSMENT -> Set.of(
           ChemicalAxis.SUGAR,

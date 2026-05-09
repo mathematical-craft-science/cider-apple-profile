@@ -55,6 +55,22 @@ class ChemicalProfileCapabilityAssessorTest {
   }
 
   @Test
+  void abvPredictionRequiresOnlySugar() {
+    final var assessment = assessor.assess(
+        axisExtractor.extract(ChemicalProfile.builder()
+            .sugar(ExactMeasurement.of(SugarConcentration.ofSpecificGravity(
+                SpecificGravityValue.of("1.052")
+            )))
+            .build()),
+        ChemicalProfileCapability.ABV_PREDICTION
+    );
+
+    assertThat(assessment.capable()).isTrue();
+    assertThat(assessment.requiredAxes()).containsExactly(ChemicalAxis.SUGAR);
+    assertThat(assessment.missingAxes()).isEmpty();
+  }
+
+  @Test
   void northAmericanProfileRequiresSugarAcidityAndTanninity() {
     final var assessment = assessor.assess(
         axisExtractor.extract(sugarAndAcidityProfile()),

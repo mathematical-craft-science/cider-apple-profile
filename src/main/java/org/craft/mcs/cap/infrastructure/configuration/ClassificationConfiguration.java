@@ -7,6 +7,11 @@ import org.craft.mcs.cap.shared.domain.classification.engine.ClassificationConfi
 import org.craft.mcs.cap.shared.domain.classification.profile.BuiltInCiderClassificationThresholds;
 import org.craft.mcs.cap.shared.domain.classification.profile.northamerican.NorthAmericanProfileCalculator;
 import org.craft.mcs.cap.shared.domain.chemical.capability.ChemicalProfileCapabilityAssessor;
+import org.craft.mcs.cap.shared.domain.fermentation.AbvPredictionStrategy;
+import org.craft.mcs.cap.shared.domain.fermentation.FinalGravityPredictionStrategy;
+import org.craft.mcs.cap.shared.domain.fermentation.FixedFinalGravityPredictionStrategy;
+import org.craft.mcs.cap.shared.domain.fermentation.PotentialAbvPredictor;
+import org.craft.mcs.cap.shared.domain.fermentation.StandardGravityDropAbvPredictionStrategy;
 import org.craft.mcs.cap.shared.domain.sugaracidity.assessment.BuiltInSugarAcidityZoneProfiles;
 import org.craft.mcs.cap.shared.domain.sugaracidity.assessment.EllipseSugarAcidityZoneAssessor;
 import org.craft.mcs.cap.shared.domain.sugaracidity.assessment.RectangleSugarAcidityZoneAssessor;
@@ -27,6 +32,24 @@ class ClassificationConfiguration {
   @Bean
   ChemicalProfileCapabilityAssessor chemicalProfileCapabilityAssessor() {
     return new ChemicalProfileCapabilityAssessor();
+  }
+
+  @Bean
+  FinalGravityPredictionStrategy finalGravityPredictionStrategy() {
+    return FixedFinalGravityPredictionStrategy.dryCiderDefault();
+  }
+
+  @Bean
+  AbvPredictionStrategy abvPredictionStrategy() {
+    return new StandardGravityDropAbvPredictionStrategy();
+  }
+
+  @Bean
+  PotentialAbvPredictor potentialAbvPredictor(
+      FinalGravityPredictionStrategy finalGravityPredictionStrategy,
+      AbvPredictionStrategy abvPredictionStrategy
+  ) {
+    return new PotentialAbvPredictor(finalGravityPredictionStrategy, abvPredictionStrategy);
   }
 
   @Bean
