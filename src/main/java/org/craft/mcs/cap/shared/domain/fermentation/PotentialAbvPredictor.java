@@ -33,11 +33,12 @@ public final class PotentialAbvPredictor {
   ) {
     requireNonNull(sugar, "sugar concentration cannot be null");
     final var originalGravity = sugar.specificGravity();
+    final var finalGravityPrediction = finalGravityPredictionStrategy.predictFinalGravity(
+        new FinalGravityPredictionInput(originalGravity)
+    );
     return predict(
         originalGravity,
-        finalGravityPredictionStrategy.predictFinalGravity(
-            new FinalGravityPredictionInput(originalGravity)
-        )
+        finalGravityPrediction
     );
   }
 
@@ -45,8 +46,24 @@ public final class PotentialAbvPredictor {
       @NonNull SpecificGravityValue originalGravity,
       @NonNull SpecificGravityValue assumedFinalGravity
   ) {
+    return predict(
+        originalGravity,
+        new FinalGravityPrediction(
+            assumedFinalGravity,
+            FinalGravityPredictionSource.FIXED_DRY_CIDER_DEFAULT,
+            PredictionConfidence.LOW
+        )
+    );
+  }
+
+  private @NonNull PotentialAbvPrediction predict(
+      @NonNull SpecificGravityValue originalGravity,
+      @NonNull FinalGravityPrediction finalGravityPrediction
+  ) {
     requireNonNull(originalGravity, "original gravity cannot be null");
-    requireNonNull(assumedFinalGravity, "assumed final gravity cannot be null");
+    requireNonNull(finalGravityPrediction, "final gravity prediction cannot be null");
+
+    final var assumedFinalGravity = finalGravityPrediction.finalGravity();
 
     if (assumedFinalGravity.compareTo(originalGravity) > 0) {
       throw new IllegalArgumentException("assumed final gravity must not exceed original gravity");
@@ -55,8 +72,10 @@ public final class PotentialAbvPredictor {
     return new PotentialAbvPrediction(
         originalGravity,
         assumedFinalGravity,
+        finalGravityPrediction.source(),
         abvPredictionStrategy.predict(new AbvPredictionInput(originalGravity, assumedFinalGravity)),
-        abvPredictionStrategy.method()
+        abvPredictionStrategy.method(),
+        finalGravityPrediction.confidence()
     );
   }
 }

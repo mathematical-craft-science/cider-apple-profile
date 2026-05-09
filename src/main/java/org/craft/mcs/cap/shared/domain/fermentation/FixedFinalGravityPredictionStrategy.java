@@ -20,10 +20,14 @@ public final class FixedFinalGravityPredictionStrategy
   }
 
   @Override
-  public @NonNull SpecificGravityValue predictFinalGravity(
+  public @NonNull FinalGravityPrediction predictFinalGravity(
       @NonNull FinalGravityPredictionInput input
   ) {
     requireNonNull(input, "final gravity prediction input cannot be null");
-    return finalGravity;
+    return new FinalGravityPrediction(
+        finalGravity,
+        FinalGravityPredictionSource.FIXED_DRY_CIDER_DEFAULT,
+        PredictionConfidence.LOW
+    );
   }
 }
