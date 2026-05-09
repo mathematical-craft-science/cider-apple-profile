@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
-import org.craft.mcs.cap.core.feedstock.domain.model.value.CiderMakerId;
+import org.craft.mcs.cap.core.feedstock.domain.model.sample.value.CiderMakerId;
 import org.jspecify.annotations.NonNull;
 
 

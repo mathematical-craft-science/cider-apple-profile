@@ -2,6 +2,7 @@ package org.craft.mcs.cap.feedstock.application.usecase;
 
 import java.time.LocalDate;
 import java.util.List;
+import org.craft.mcs.cap.core.feedstock.application.port.in.FeedstockBatchSummary;
 import org.craft.mcs.cap.core.feedstock.application.port.in.ListFeedstockBatchesQuery;
 import org.craft.mcs.cap.core.feedstock.application.port.out.FeedstockBatchRepository;
 import org.craft.mcs.cap.core.feedstock.application.usecase.ListFeedstockBatchesService;
@@ -9,7 +10,7 @@ import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockBatchName;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
-import org.craft.mcs.cap.core.feedstock.domain.model.value.CiderMakerId;
+import org.craft.mcs.cap.core.feedstock.domain.model.sample.value.CiderMakerId;
 import org.craft.mcs.cap.shared.domain.measurement.VolumeValue;
 import org.junit.jupiter.api.Test;
 
@@ -36,7 +37,7 @@ class ListFeedstockBatchesServiceTest {
     ));
 
     assertThat(result)
-        .extracting(summary -> summary.batchId())
+        .extracting(FeedstockBatchSummary::batchId)
         .containsExactly(matching.batchId());
   }
 

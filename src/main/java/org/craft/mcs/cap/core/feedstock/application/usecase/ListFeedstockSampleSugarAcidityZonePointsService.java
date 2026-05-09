@@ -8,8 +8,8 @@ import org.craft.mcs.cap.core.feedstock.application.port.in.FeedstockSampleSugar
 import org.craft.mcs.cap.core.feedstock.application.port.in.ListFeedstockSampleSugarAcidityZonePointsUseCase;
 import org.craft.mcs.cap.core.feedstock.application.port.in.UnplottableFeedstockSampleSugarAcidityZonePoint;
 import org.craft.mcs.cap.core.feedstock.application.port.out.FeedstockSampleRepository;
-import org.craft.mcs.cap.core.feedstock.domain.model.FeedstockSample;
-import org.craft.mcs.cap.core.feedstock.domain.model.value.CiderMakerId;
+import org.craft.mcs.cap.core.feedstock.domain.model.sample.FeedstockSample;
+import org.craft.mcs.cap.core.feedstock.domain.model.sample.value.CiderMakerId;
 import org.craft.mcs.cap.shared.domain.classification.axis.ChemicalProfileAxisExtractor;
 import org.craft.mcs.cap.shared.domain.chemical.capability.ChemicalProfileCapability;
 import org.craft.mcs.cap.shared.domain.chemical.capability.ChemicalProfileCapabilityAssessment;

@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.feedstock.application.port.in.AssessFeedstockSampleSugarAcidityZoneUseCase;
 import org.craft.mcs.cap.core.feedstock.application.port.in.FeedstockSampleSugarAcidityZoneResult;
 import org.craft.mcs.cap.core.feedstock.application.port.out.FeedstockSampleRepository;
-import org.craft.mcs.cap.core.feedstock.domain.model.FeedstockSampleId;
+import org.craft.mcs.cap.core.feedstock.domain.model.sample.FeedstockSampleId;
 import org.craft.mcs.cap.shared.domain.classification.axis.ChemicalProfileAxisExtractor;
 import org.craft.mcs.cap.shared.domain.chemical.capability.ChemicalProfileCapability;
 import org.craft.mcs.cap.shared.domain.chemical.capability.ChemicalProfileCapabilityAssessor;

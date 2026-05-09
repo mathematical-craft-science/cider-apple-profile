@@ -8,8 +8,8 @@ import org.craft.mcs.cap.core.feedstock.application.port.in.CreateFeedstockSampl
 import org.craft.mcs.cap.core.feedstock.application.port.in.FeedstockSampleCreated;
 import org.craft.mcs.cap.core.feedstock.application.port.out.FeedstockBatchRepository;
 import org.craft.mcs.cap.core.feedstock.application.port.out.FeedstockSampleRepository;
-import org.craft.mcs.cap.core.feedstock.domain.model.FeedstockSample;
-import org.craft.mcs.cap.core.feedstock.domain.model.FeedstockSampleId;
+import org.craft.mcs.cap.core.feedstock.domain.model.sample.FeedstockSample;
+import org.craft.mcs.cap.core.feedstock.domain.model.sample.FeedstockSampleId;
 import org.craft.mcs.cap.shared.application.TransactionHelper;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;

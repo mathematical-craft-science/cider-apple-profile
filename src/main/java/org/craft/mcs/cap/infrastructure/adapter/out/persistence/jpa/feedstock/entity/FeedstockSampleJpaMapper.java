@@ -1,11 +1,11 @@
 package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jpa.feedstock.entity;
 
 import org.craft.mcs.cap.shared.domain.sugar.SugarConcentration;
-import org.craft.mcs.cap.core.feedstock.domain.model.FeedstockSample;
-import org.craft.mcs.cap.core.feedstock.domain.model.FeedstockSampleId;
+import org.craft.mcs.cap.core.feedstock.domain.model.sample.FeedstockSample;
+import org.craft.mcs.cap.core.feedstock.domain.model.sample.FeedstockSampleId;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
-import org.craft.mcs.cap.core.feedstock.domain.model.value.CiderMakerId;
-import org.craft.mcs.cap.core.feedstock.domain.model.value.FeedstockSampleName;
+import org.craft.mcs.cap.core.feedstock.domain.model.sample.value.CiderMakerId;
+import org.craft.mcs.cap.core.feedstock.domain.model.sample.value.FeedstockSampleName;
 import org.craft.mcs.cap.shared.domain.chemical.ChemicalProfile;
 import org.craft.mcs.cap.shared.domain.chemical.ChemicalProfileSource;
 import org.craft.mcs.cap.shared.domain.chemical.value.PhValue;

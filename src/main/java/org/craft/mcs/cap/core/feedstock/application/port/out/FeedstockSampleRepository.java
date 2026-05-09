@@ -2,9 +2,9 @@ package org.craft.mcs.cap.core.feedstock.application.port.out;
 
 import java.util.List;
 import java.util.Optional;
-import org.craft.mcs.cap.core.feedstock.domain.model.FeedstockSample;
-import org.craft.mcs.cap.core.feedstock.domain.model.FeedstockSampleId;
-import org.craft.mcs.cap.core.feedstock.domain.model.value.CiderMakerId;
+import org.craft.mcs.cap.core.feedstock.domain.model.sample.FeedstockSample;
+import org.craft.mcs.cap.core.feedstock.domain.model.sample.FeedstockSampleId;
+import org.craft.mcs.cap.core.feedstock.domain.model.sample.value.CiderMakerId;
 import org.jspecify.annotations.NonNull;
 
 

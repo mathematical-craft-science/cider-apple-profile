@@ -1,4 +1,4 @@
-package org.craft.mcs.cap.core.feedstock.domain.model;
+package org.craft.mcs.cap.core.feedstock.domain.model.sample;
 
 import java.util.UUID;
 import org.jmolecules.ddd.annotation.ValueObject;

@@ -1,10 +1,10 @@
 package org.craft.mcs.cap.core.feedstock.application.port.in;
 
-import org.craft.mcs.cap.core.feedstock.domain.model.FeedstockSampleId;
+import org.craft.mcs.cap.core.feedstock.domain.model.sample.FeedstockSampleId;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
-import org.craft.mcs.cap.core.feedstock.domain.model.value.CiderMakerId;
-import org.craft.mcs.cap.core.feedstock.domain.model.value.FeedstockSampleName;
-import org.craft.mcs.cap.core.feedstock.domain.model.value.FeedstockType;
+import org.craft.mcs.cap.core.feedstock.domain.model.sample.value.CiderMakerId;
+import org.craft.mcs.cap.core.feedstock.domain.model.sample.value.FeedstockSampleName;
+import org.craft.mcs.cap.core.feedstock.domain.model.sample.value.FeedstockType;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;

@@ -13,7 +13,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 import java.time.Instant;
 import java.util.UUID;
-import org.craft.mcs.cap.core.feedstock.domain.model.value.FeedstockType;
+import org.craft.mcs.cap.core.feedstock.domain.model.sample.value.FeedstockType;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jpa.common.MeasurementJpaEmbeddable;
 import org.craft.mcs.cap.shared.domain.chemical.ConfidenceLevel;
 import org.jspecify.annotations.NonNull;

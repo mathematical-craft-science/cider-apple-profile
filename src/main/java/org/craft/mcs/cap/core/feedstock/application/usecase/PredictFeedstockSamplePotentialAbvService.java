@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.feedstock.application.port.in.FeedstockSamplePotentialAbvPrediction;
 import org.craft.mcs.cap.core.feedstock.application.port.in.PredictFeedstockSamplePotentialAbvUseCase;
 import org.craft.mcs.cap.core.feedstock.application.port.out.FeedstockSampleRepository;
-import org.craft.mcs.cap.core.feedstock.domain.model.FeedstockSampleId;
+import org.craft.mcs.cap.core.feedstock.domain.model.sample.FeedstockSampleId;
 import org.craft.mcs.cap.shared.domain.chemical.capability.ChemicalProfileCapability;
 import org.craft.mcs.cap.shared.domain.chemical.capability.ChemicalProfileCapabilityAssessor;
 import org.craft.mcs.cap.shared.domain.chemical.capability.ChemicalProfileCapabilityNotMetException;

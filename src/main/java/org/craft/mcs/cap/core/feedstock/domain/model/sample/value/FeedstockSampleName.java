@@ -1,4 +1,4 @@
-package org.craft.mcs.cap.core.feedstock.domain.model.value;
+package org.craft.mcs.cap.core.feedstock.domain.model.sample.value;
 
 import org.jmolecules.ddd.annotation.ValueObject;
 import org.jspecify.annotations.NonNull;
