@@ -2,6 +2,7 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.mapper;
 
 import org.craft.mcs.cap.core.feedstock.application.port.in.CreateFeedstockSampleCommand;
 import org.craft.mcs.cap.core.feedstock.application.port.in.FeedstockSampleCreated;
+import org.craft.mcs.cap.core.feedstock.application.port.in.FeedstockSampleSummary;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.sample.value.FeedstockSampleName;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.mapper.ChemicalProfileRestMapper;
@@ -40,7 +41,23 @@ public final class FeedstockSampleRestMapper {
         sample.ciderMakerId().value().toString(),
         sample.batchId().value().toString(),
         sample.name().value(),
-        sample.type()
+        sample.type(),
+        null,
+        null
+    );
+  }
+
+  public static @NonNull FeedstockSampleResponse toResponse(@NonNull FeedstockSampleSummary sample) {
+    requireNonNull(sample, "feedstock sample summary cannot be null");
+
+    return new FeedstockSampleResponse(
+        sample.sampleId().value().toString(),
+        sample.ciderMakerId().value().toString(),
+        sample.batchId().value().toString(),
+        sample.name().value(),
+        sample.type(),
+        sample.measuredAt(),
+        sample.note()
     );
   }
 }

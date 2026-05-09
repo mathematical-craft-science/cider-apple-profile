@@ -25,4 +25,24 @@ interface SpringDataFeedstockSampleQueryJpaRepository
   List<@NonNull FeedstockSampleJpaEntity> findAllByCiderMakerId(
       @Param("ciderMakerId") @NonNull UUID ciderMakerId
   );
+
+  @NonNull
+  @Query("""
+      select new org.craft.mcs.cap.infrastructure.adapter.out.persistence.jpa.feedstock.FeedstockSampleSummaryJpaProjection(
+        sample.sampleId,
+        batch.ciderMakerId,
+        sample.batchId,
+        sample.name,
+        sample.type,
+        sample.measuredAt,
+        sample.note
+      )
+      from FeedstockSampleJpaEntity sample, FeedstockBatchJpaEntity batch
+      where sample.batchId = batch.batchId
+        and sample.batchId = :batchId
+      order by sample.measuredAt desc, sample.name asc
+      """)
+  List<@NonNull FeedstockSampleSummaryJpaProjection> findSummariesByBatchId(
+      @Param("batchId") @NonNull UUID batchId
+  );
 }
