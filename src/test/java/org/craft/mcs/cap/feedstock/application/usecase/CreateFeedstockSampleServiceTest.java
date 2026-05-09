@@ -15,7 +15,7 @@ import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockBatchName;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
-import org.craft.mcs.cap.core.feedstock.domain.model.sample.value.CiderMakerId;
+import org.craft.mcs.cap.core.feedstock.domain.model.value.CiderMakerId;
 import org.craft.mcs.cap.core.feedstock.domain.model.sample.value.FeedstockSampleName;
 import org.craft.mcs.cap.core.feedstock.domain.model.sample.value.FeedstockType;
 import org.craft.mcs.cap.shared.application.TransactionHelper;

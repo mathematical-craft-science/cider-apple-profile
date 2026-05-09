@@ -1,13 +1,18 @@
 package org.craft.mcs.cap.feedstock.application.usecase;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.Optional;
+import org.craft.mcs.cap.core.feedstock.application.port.out.FeedstockBatchRepository;
 import org.craft.mcs.cap.core.feedstock.application.port.out.FeedstockSampleRepository;
 import org.craft.mcs.cap.core.feedstock.application.usecase.PredictFeedstockSamplePotentialAbvService;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
 import org.craft.mcs.cap.core.feedstock.domain.model.sample.FeedstockSample;
 import org.craft.mcs.cap.core.feedstock.domain.model.sample.FeedstockSampleId;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
-import org.craft.mcs.cap.core.feedstock.domain.model.sample.value.CiderMakerId;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockBatchName;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
+import org.craft.mcs.cap.core.feedstock.domain.model.value.CiderMakerId;
 import org.craft.mcs.cap.core.feedstock.domain.model.sample.value.FeedstockSampleName;
 import org.craft.mcs.cap.core.feedstock.domain.model.sample.value.FeedstockType;
 import org.craft.mcs.cap.shared.domain.chemical.ChemicalProfile;
@@ -22,6 +27,7 @@ import org.craft.mcs.cap.shared.domain.fermentation.FixedFinalGravityPredictionS
 import org.craft.mcs.cap.shared.domain.fermentation.PotentialAbvPredictor;
 import org.craft.mcs.cap.shared.domain.fermentation.StandardGravityDropAbvPredictionStrategy;
 import org.craft.mcs.cap.shared.domain.measurement.ExactMeasurement;
+import org.craft.mcs.cap.shared.domain.measurement.VolumeValue;
 import org.craft.mcs.cap.shared.domain.sugar.SpecificGravityValue;
 import org.craft.mcs.cap.shared.domain.sugar.SugarConcentration;
 import org.junit.jupiter.api.Test;
@@ -38,13 +44,16 @@ class PredictFeedstockSamplePotentialAbvServiceTest {
   @Test
   void predictsPotentialAbvForSampleWithSugar() {
     final var repository = mock(FeedstockSampleRepository.class);
-    final var service = service(repository);
+    final var batchRepository = mock(FeedstockBatchRepository.class);
+    final var service = service(repository, batchRepository);
     final var sample = sample(ChemicalProfile.builder()
         .sugar(ExactMeasurement.of(SugarConcentration.ofSpecificGravity(
             SpecificGravityValue.of("1.052")
         )))
         .build());
     when(repository.findById(sample.sampleId())).thenReturn(Optional.of(sample));
+    when(batchRepository.findById(sample.batchId()))
+        .thenReturn(Optional.of(batch(sample.batchId(), CiderMakerId.of(randomUUID()))));
 
     final var prediction = service.predict(sample.sampleId());
 
@@ -56,11 +65,14 @@ class PredictFeedstockSamplePotentialAbvServiceTest {
   @Test
   void rejectsSampleWithoutSugar() {
     final var repository = mock(FeedstockSampleRepository.class);
-    final var service = service(repository);
+    final var batchRepository = mock(FeedstockBatchRepository.class);
+    final var service = service(repository, batchRepository);
     final var sample = sample(ChemicalProfile.builder()
         .titratableAcidity(ExactMeasurement.of(TitratableAcidityValue.of("5.2")))
         .build());
     when(repository.findById(sample.sampleId())).thenReturn(Optional.of(sample));
+    when(batchRepository.findById(sample.batchId()))
+        .thenReturn(Optional.of(batch(sample.batchId(), CiderMakerId.of(randomUUID()))));
 
     assertThatThrownBy(() -> service.predict(sample.sampleId()))
         .isInstanceOfSatisfying(
@@ -74,10 +86,12 @@ class PredictFeedstockSamplePotentialAbvServiceTest {
   }
 
   private static PredictFeedstockSamplePotentialAbvService service(
-      FeedstockSampleRepository repository
+      FeedstockSampleRepository repository,
+      FeedstockBatchRepository batchRepository
   ) {
     return new PredictFeedstockSamplePotentialAbvService(
         repository,
+        batchRepository,
         new ChemicalProfileAxisExtractor(),
         new ChemicalProfileCapabilityAssessor(),
         new PotentialAbvPredictor(
@@ -90,12 +104,21 @@ class PredictFeedstockSamplePotentialAbvServiceTest {
   private static FeedstockSample sample(ChemicalProfile profile) {
     return FeedstockSample.create(
         FeedstockSampleId.newId(),
-        CiderMakerId.of(randomUUID()),
         FeedstockBatchId.newId(),
         FeedstockSampleName.of("Batch A"),
         FeedstockType.APPLE_JUICE,
         profile,
         Instant.parse("2026-01-15T10:00:00Z")
+    );
+  }
+
+  private static FeedstockBatch batch(FeedstockBatchId batchId, CiderMakerId ciderMakerId) {
+    return FeedstockBatch.create(
+        batchId,
+        ciderMakerId,
+        FeedstockBatchName.of("Test batch"),
+        FeedstockSeason.of(LocalDate.parse("2026-01-01"), LocalDate.parse("2026-12-31")),
+        VolumeValue.ofLiters("100")
     );
   }
 }

@@ -2,7 +2,7 @@ package org.craft.mcs.cap.core.feedstock.application;
 
 import java.io.Serial;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
-import org.craft.mcs.cap.core.feedstock.domain.model.sample.value.CiderMakerId;
+import org.craft.mcs.cap.core.feedstock.domain.model.value.CiderMakerId;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;

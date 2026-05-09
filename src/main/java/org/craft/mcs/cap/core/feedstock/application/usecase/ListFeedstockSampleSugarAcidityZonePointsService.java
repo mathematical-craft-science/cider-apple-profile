@@ -7,9 +7,9 @@ import org.craft.mcs.cap.core.feedstock.application.port.in.FeedstockSampleSugar
 import org.craft.mcs.cap.core.feedstock.application.port.in.FeedstockSampleSugarAcidityZonePointBatch;
 import org.craft.mcs.cap.core.feedstock.application.port.in.ListFeedstockSampleSugarAcidityZonePointsUseCase;
 import org.craft.mcs.cap.core.feedstock.application.port.in.UnplottableFeedstockSampleSugarAcidityZonePoint;
-import org.craft.mcs.cap.core.feedstock.application.port.out.FeedstockSampleRepository;
+import org.craft.mcs.cap.core.feedstock.application.port.out.FeedstockSampleQueryRepository;
 import org.craft.mcs.cap.core.feedstock.domain.model.sample.FeedstockSample;
-import org.craft.mcs.cap.core.feedstock.domain.model.sample.value.CiderMakerId;
+import org.craft.mcs.cap.core.feedstock.domain.model.value.CiderMakerId;
 import org.craft.mcs.cap.shared.domain.classification.axis.ChemicalProfileAxisExtractor;
 import org.craft.mcs.cap.shared.domain.chemical.capability.ChemicalProfileCapability;
 import org.craft.mcs.cap.shared.domain.chemical.capability.ChemicalProfileCapabilityAssessment;
@@ -25,7 +25,7 @@ import org.springframework.stereotype.Component;
 public final class ListFeedstockSampleSugarAcidityZonePointsService
     implements ListFeedstockSampleSugarAcidityZonePointsUseCase {
 
-  private final @NonNull FeedstockSampleRepository feedstockSampleRepository;
+  private final @NonNull FeedstockSampleQueryRepository feedstockSampleQueryRepository;
   private final @NonNull ChemicalProfileAxisExtractor axisExtractor;
   private final @NonNull ChemicalProfileCapabilityAssessor capabilityAssessor;
   private final @NonNull SugarAcidityZoneAssessor assessor;
@@ -37,7 +37,7 @@ public final class ListFeedstockSampleSugarAcidityZonePointsService
     final List<@NonNull FeedstockSampleSugarAcidityZoneAssessment> points = new ArrayList<>();
     final List<@NonNull UnplottableFeedstockSampleSugarAcidityZonePoint> unplottable = new ArrayList<>();
 
-    for (final var sample : feedstockSampleRepository.findAllByCiderMakerId(ciderMakerId)) {
+    for (final var sample : feedstockSampleQueryRepository.findAllByCiderMakerId(ciderMakerId)) {
       final var axes = axisExtractor.extract(sample.chemicalProfile());
       final var capability = capabilityAssessor.assess(
           axes,
@@ -46,10 +46,10 @@ public final class ListFeedstockSampleSugarAcidityZonePointsService
 
       if (capability.capable()) {
         assessor.assess(axes)
-            .map(assessment -> toAssessment(sample, assessment))
+            .map(assessment -> toAssessment(ciderMakerId, sample, assessment))
             .ifPresent(points::add);
       } else {
-        unplottable.add(toUnplottable(sample, capability));
+        unplottable.add(toUnplottable(ciderMakerId, sample, capability));
       }
     }
 
@@ -57,12 +57,13 @@ public final class ListFeedstockSampleSugarAcidityZonePointsService
   }
 
   private static @NonNull FeedstockSampleSugarAcidityZoneAssessment toAssessment(
+      @NonNull CiderMakerId ciderMakerId,
       @NonNull FeedstockSample sample,
       @NonNull SugarAcidityZoneAssessment assessment
   ) {
     return new FeedstockSampleSugarAcidityZoneAssessment(
         sample.sampleId(),
-        sample.ciderMakerId(),
+        ciderMakerId,
         sample.batchId(),
         sample.name(),
         assessment
@@ -70,12 +71,13 @@ public final class ListFeedstockSampleSugarAcidityZonePointsService
   }
 
   private static @NonNull UnplottableFeedstockSampleSugarAcidityZonePoint toUnplottable(
+      @NonNull CiderMakerId ciderMakerId,
       @NonNull FeedstockSample sample,
       @NonNull ChemicalProfileCapabilityAssessment capabilityAssessment
   ) {
     return new UnplottableFeedstockSampleSugarAcidityZonePoint(
         sample.sampleId(),
-        sample.ciderMakerId(),
+        ciderMakerId,
         sample.batchId(),
         sample.name(),
         capabilityAssessment

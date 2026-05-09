@@ -21,6 +21,7 @@ public final class FeedstockSamplePotentialAbvRestMapper {
     return new FeedstockSamplePotentialAbvResponse(
         prediction.sampleId().value().toString(),
         prediction.ciderMakerId().value().toString(),
+        prediction.batchId().value().toString(),
         prediction.sampleName().value(),
         prediction.originalGravityValueKind().name(),
         PotentialAbvPredictionRestMapper.toResponse(prediction.prediction())

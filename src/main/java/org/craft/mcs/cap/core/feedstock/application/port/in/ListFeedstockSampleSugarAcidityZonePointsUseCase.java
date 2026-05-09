@@ -1,6 +1,6 @@
 package org.craft.mcs.cap.core.feedstock.application.port.in;
 
-import org.craft.mcs.cap.core.feedstock.domain.model.sample.value.CiderMakerId;
+import org.craft.mcs.cap.core.feedstock.domain.model.value.CiderMakerId;
 import org.jspecify.annotations.NonNull;
 
 

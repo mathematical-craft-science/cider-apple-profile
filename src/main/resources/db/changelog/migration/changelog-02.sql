@@ -31,7 +31,6 @@ CREATE INDEX IF NOT EXISTS idx_feedstock_batches_cider_maker_lower_name
 CREATE TABLE IF NOT EXISTS feedstock_samples
 (
     sample_id                    UUID                     NOT NULL PRIMARY KEY,
-    cider_maker_id               UUID                     NOT NULL,
     batch_id                     UUID                     NOT NULL,
     name                         VARCHAR(160)             NOT NULL,
     type                         VARCHAR(32)              NOT NULL,
@@ -85,20 +84,14 @@ CREATE TABLE IF NOT EXISTS feedstock_samples
         FOREIGN KEY (batch_id) REFERENCES feedstock_batches (batch_id)
 );
 
-CREATE INDEX IF NOT EXISTS idx_feedstock_samples_cider_maker_id
-    ON feedstock_samples (cider_maker_id);
-
 CREATE INDEX IF NOT EXISTS idx_feedstock_samples_batch_id
     ON feedstock_samples (batch_id);
 
-CREATE INDEX IF NOT EXISTS idx_feedstock_samples_cider_maker_measured_at
-    ON feedstock_samples (cider_maker_id, measured_at DESC);
+CREATE INDEX IF NOT EXISTS idx_feedstock_samples_batch_measured_at
+    ON feedstock_samples (batch_id, measured_at DESC);
 
-CREATE INDEX IF NOT EXISTS idx_feedstock_samples_cider_maker_type
-    ON feedstock_samples (cider_maker_id, type);
+CREATE INDEX IF NOT EXISTS idx_feedstock_samples_batch_type
+    ON feedstock_samples (batch_id, type);
 
-CREATE INDEX IF NOT EXISTS idx_feedstock_samples_cider_maker_name
-    ON feedstock_samples (cider_maker_id, name);
-
-CREATE INDEX IF NOT EXISTS idx_feedstock_samples_cider_maker_lower_name
-    ON feedstock_samples (cider_maker_id, LOWER(name));
+CREATE INDEX IF NOT EXISTS idx_feedstock_samples_batch_lower_name
+    ON feedstock_samples (batch_id, LOWER(name));

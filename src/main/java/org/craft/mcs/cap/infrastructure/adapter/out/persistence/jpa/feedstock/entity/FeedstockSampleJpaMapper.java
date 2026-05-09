@@ -4,7 +4,6 @@ import org.craft.mcs.cap.shared.domain.sugar.SugarConcentration;
 import org.craft.mcs.cap.core.feedstock.domain.model.sample.FeedstockSample;
 import org.craft.mcs.cap.core.feedstock.domain.model.sample.FeedstockSampleId;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
-import org.craft.mcs.cap.core.feedstock.domain.model.sample.value.CiderMakerId;
 import org.craft.mcs.cap.core.feedstock.domain.model.sample.value.FeedstockSampleName;
 import org.craft.mcs.cap.shared.domain.chemical.ChemicalProfile;
 import org.craft.mcs.cap.shared.domain.chemical.ChemicalProfileSource;
@@ -31,7 +30,6 @@ public final class FeedstockSampleJpaMapper {
 
     return new FeedstockSampleJpaEntity(
         sample.sampleId().value(),
-        sample.ciderMakerId().value(),
         sample.batchId().value(),
         sample.name().value(),
         sample.type(),
@@ -91,7 +89,6 @@ public final class FeedstockSampleJpaMapper {
 
     return FeedstockSample.create(
         FeedstockSampleId.of(requireNonNull(entity.sampleId, "feedstock sample id cannot be null")),
-        CiderMakerId.of(requireNonNull(entity.ciderMakerId, "cider maker id cannot be null")),
         FeedstockBatchId.of(requireNonNull(entity.batchId, "feedstock batch id cannot be null")),
         FeedstockSampleName.of(requireNonNull(entity.name, "feedstock sample name cannot be null")),
         requireNonNull(entity.type, "feedstock type cannot be null"),

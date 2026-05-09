@@ -2,7 +2,6 @@ package org.craft.mcs.cap.core.feedstock.domain.model.sample;
 
 import java.time.Instant;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
-import org.craft.mcs.cap.core.feedstock.domain.model.sample.value.CiderMakerId;
 import org.craft.mcs.cap.core.feedstock.domain.model.sample.value.FeedstockSampleName;
 import org.craft.mcs.cap.core.feedstock.domain.model.sample.value.FeedstockType;
 import org.craft.mcs.cap.shared.domain.chemical.ChemicalProfile;
@@ -19,8 +18,6 @@ public final class FeedstockSample {
   @Identity
   private final @NonNull FeedstockSampleId sampleId;
 
-  private final @NonNull CiderMakerId ciderMakerId;
-
   private final @NonNull FeedstockBatchId batchId;
 
   private @NonNull FeedstockSampleName name;
@@ -35,7 +32,6 @@ public final class FeedstockSample {
 
   private FeedstockSample(
       @NonNull FeedstockSampleId sampleId,
-      @NonNull CiderMakerId ciderMakerId,
       @NonNull FeedstockBatchId batchId,
       @NonNull FeedstockSampleName name,
       @NonNull FeedstockType type,
@@ -44,7 +40,6 @@ public final class FeedstockSample {
       @Nullable String note
   ) {
     this.sampleId = requireNonNull(sampleId, "feedstock sample id cannot be null");
-    this.ciderMakerId = requireNonNull(ciderMakerId, "cider maker id cannot be null");
     this.batchId = requireNonNull(batchId, "feedstock batch id cannot be null");
     this.name = requireNonNull(name, "feedstock sample name cannot be null");
     this.type = requireNonNull(type, "feedstock type cannot be null");
@@ -55,7 +50,6 @@ public final class FeedstockSample {
 
   public static @NonNull FeedstockSample create(
       @NonNull FeedstockSampleId sampleId,
-      @NonNull CiderMakerId ciderMakerId,
       @NonNull FeedstockBatchId batchId,
       @NonNull FeedstockSampleName name,
       @NonNull FeedstockType type,
@@ -64,7 +58,6 @@ public final class FeedstockSample {
   ) {
     return new FeedstockSample(
         sampleId,
-        ciderMakerId,
         batchId,
         name,
         type,
@@ -76,10 +69,6 @@ public final class FeedstockSample {
 
   public @NonNull FeedstockSampleId sampleId() {
     return sampleId;
-  }
-
-  public @NonNull CiderMakerId ciderMakerId() {
-    return ciderMakerId;
   }
 
   public @NonNull FeedstockBatchId batchId() {

@@ -7,6 +7,7 @@ import org.jspecify.annotations.NonNull;
 public record FeedstockSamplePotentialAbvResponse(
     @NonNull String sampleId,
     @NonNull String ciderMakerId,
+    @NonNull String batchId,
     @NonNull String sampleName,
     @NonNull String originalGravityValueKind,
     @NonNull PotentialAbvPredictionResponse prediction

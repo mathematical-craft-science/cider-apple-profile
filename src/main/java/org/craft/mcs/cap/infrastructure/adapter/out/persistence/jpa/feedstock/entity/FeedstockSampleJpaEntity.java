@@ -36,10 +36,6 @@ public class FeedstockSampleJpaEntity {
   UUID sampleId;
 
   @NonNull
-  @Column(name = "cider_maker_id", nullable = false, updatable = false)
-  UUID ciderMakerId;
-
-  @NonNull
   @Column(name = "batch_id", nullable = false, updatable = false)
   UUID batchId;
 
@@ -153,7 +149,6 @@ public class FeedstockSampleJpaEntity {
 
   FeedstockSampleJpaEntity(
       @NonNull UUID sampleId,
-      @NonNull UUID ciderMakerId,
       @NonNull UUID batchId,
       @NonNull String name,
       @NonNull FeedstockType type,
@@ -167,7 +162,6 @@ public class FeedstockSampleJpaEntity {
       @Nullable ConfidenceLevel chemicalProfileConfidence
   ) {
     this.sampleId = requireNonNull(sampleId, "feedstock sample id cannot be null");
-    this.ciderMakerId = requireNonNull(ciderMakerId, "cider maker id cannot be null");
     this.batchId = requireNonNull(batchId, "feedstock batch id cannot be null");
     this.name = requireNonNull(name, "feedstock sample name cannot be null");
     this.type = requireNonNull(type, "feedstock type cannot be null");

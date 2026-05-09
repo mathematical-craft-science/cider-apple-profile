@@ -3,6 +3,7 @@ package org.craft.mcs.cap.core.feedstock.application.usecase;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.feedstock.application.port.in.FeedstockSamplePotentialAbvPrediction;
 import org.craft.mcs.cap.core.feedstock.application.port.in.PredictFeedstockSamplePotentialAbvUseCase;
+import org.craft.mcs.cap.core.feedstock.application.port.out.FeedstockBatchRepository;
 import org.craft.mcs.cap.core.feedstock.application.port.out.FeedstockSampleRepository;
 import org.craft.mcs.cap.core.feedstock.domain.model.sample.FeedstockSampleId;
 import org.craft.mcs.cap.shared.domain.chemical.capability.ChemicalProfileCapability;
@@ -24,6 +25,7 @@ public final class PredictFeedstockSamplePotentialAbvService
     implements PredictFeedstockSamplePotentialAbvUseCase {
 
   private final @NonNull FeedstockSampleRepository feedstockSampleRepository;
+  private final @NonNull FeedstockBatchRepository feedstockBatchRepository;
   private final @NonNull ChemicalProfileAxisExtractor axisExtractor;
   private final @NonNull ChemicalProfileCapabilityAssessor capabilityAssessor;
   private final @NonNull PotentialAbvPredictor predictor;
@@ -36,6 +38,8 @@ public final class PredictFeedstockSamplePotentialAbvService
 
     final var sample = feedstockSampleRepository.findById(sampleId)
         .orElseThrow(() -> new IllegalArgumentException("feedstock sample not found: " + sampleId.value()));
+    final var batch = feedstockBatchRepository.findById(sample.batchId())
+        .orElseThrow(() -> new IllegalStateException("feedstock sample batch not found: " + sample.batchId().value()));
     final var axes = axisExtractor.extract(sample.chemicalProfile());
     final var capability = capabilityAssessor.assess(axes, ChemicalProfileCapability.ABV_PREDICTION);
 
@@ -48,7 +52,8 @@ public final class PredictFeedstockSamplePotentialAbvService
 
     return new FeedstockSamplePotentialAbvPrediction(
         sample.sampleId(),
-        sample.ciderMakerId(),
+        batch.ciderMakerId(),
+        sample.batchId(),
         sample.name(),
         sugar.valueKind(),
         predictor.predict(SpecificGravityValue.of(sugar.value()), SpecificGravityValue.of("1.000"))

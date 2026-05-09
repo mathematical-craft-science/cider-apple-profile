@@ -3,12 +3,12 @@ package org.craft.mcs.cap.feedstock.application.usecase;
 import java.time.Instant;
 import java.util.List;
 import org.craft.mcs.cap.core.feedstock.application.port.in.FeedstockSampleSugarAcidityZoneAssessment;
-import org.craft.mcs.cap.core.feedstock.application.port.out.FeedstockSampleRepository;
+import org.craft.mcs.cap.core.feedstock.application.port.out.FeedstockSampleQueryRepository;
 import org.craft.mcs.cap.core.feedstock.application.usecase.ListFeedstockSampleSugarAcidityZonePointsService;
 import org.craft.mcs.cap.core.feedstock.domain.model.sample.FeedstockSample;
 import org.craft.mcs.cap.core.feedstock.domain.model.sample.FeedstockSampleId;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
-import org.craft.mcs.cap.core.feedstock.domain.model.sample.value.CiderMakerId;
+import org.craft.mcs.cap.core.feedstock.domain.model.value.CiderMakerId;
 import org.craft.mcs.cap.core.feedstock.domain.model.sample.value.FeedstockSampleName;
 import org.craft.mcs.cap.core.feedstock.domain.model.sample.value.FeedstockType;
 import org.craft.mcs.cap.shared.domain.chemical.ChemicalProfile;
@@ -34,7 +34,7 @@ class ListFeedstockSampleSugarAcidityZonePointsServiceTest {
 
   @Test
   void returnsPlottablePointsAndUnplottableSamplesWithMissingAxes() {
-    final var repository = mock(FeedstockSampleRepository.class);
+    final var repository = mock(FeedstockSampleQueryRepository.class);
     final var service = new ListFeedstockSampleSugarAcidityZonePointsService(
         repository,
         new ChemicalProfileAxisExtractor(),
@@ -46,7 +46,6 @@ class ListFeedstockSampleSugarAcidityZonePointsServiceTest {
     );
     final var ciderMakerId = CiderMakerId.of(randomUUID());
     final var plottable = sample(
-        ciderMakerId,
         "Plottable batch",
         ChemicalProfile.builder()
             .sugar(ExactMeasurement.of(SugarConcentration.ofSpecificGravity(
@@ -56,7 +55,6 @@ class ListFeedstockSampleSugarAcidityZonePointsServiceTest {
             .build()
     );
     final var unplottable = sample(
-        ciderMakerId,
         "Partial batch",
         ChemicalProfile.builder()
             .sugar(ExactMeasurement.of(SugarConcentration.ofSpecificGravity(
@@ -80,13 +78,11 @@ class ListFeedstockSampleSugarAcidityZonePointsServiceTest {
   }
 
   private static FeedstockSample sample(
-      CiderMakerId ciderMakerId,
       String name,
       ChemicalProfile profile
   ) {
     return FeedstockSample.create(
         FeedstockSampleId.newId(),
-        ciderMakerId,
         FeedstockBatchId.newId(),
         FeedstockSampleName.of(name),
         FeedstockType.APPLE_JUICE,

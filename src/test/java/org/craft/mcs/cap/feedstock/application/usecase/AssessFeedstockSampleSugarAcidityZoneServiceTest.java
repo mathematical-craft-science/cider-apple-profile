@@ -1,13 +1,18 @@
 package org.craft.mcs.cap.feedstock.application.usecase;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.Optional;
+import org.craft.mcs.cap.core.feedstock.application.port.out.FeedstockBatchRepository;
 import org.craft.mcs.cap.core.feedstock.application.port.out.FeedstockSampleRepository;
 import org.craft.mcs.cap.core.feedstock.application.usecase.AssessFeedstockSampleSugarAcidityZoneService;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
 import org.craft.mcs.cap.core.feedstock.domain.model.sample.FeedstockSample;
 import org.craft.mcs.cap.core.feedstock.domain.model.sample.FeedstockSampleId;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
-import org.craft.mcs.cap.core.feedstock.domain.model.sample.value.CiderMakerId;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockBatchName;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
+import org.craft.mcs.cap.core.feedstock.domain.model.value.CiderMakerId;
 import org.craft.mcs.cap.core.feedstock.domain.model.sample.value.FeedstockSampleName;
 import org.craft.mcs.cap.core.feedstock.domain.model.sample.value.FeedstockType;
 import org.craft.mcs.cap.shared.domain.chemical.ChemicalProfile;
@@ -16,6 +21,7 @@ import org.craft.mcs.cap.shared.domain.chemical.capability.ChemicalProfileCapabi
 import org.craft.mcs.cap.shared.domain.classification.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.domain.classification.axis.ChemicalProfileAxisExtractor;
 import org.craft.mcs.cap.shared.domain.measurement.ExactMeasurement;
+import org.craft.mcs.cap.shared.domain.measurement.VolumeValue;
 import org.craft.mcs.cap.shared.domain.sugar.SpecificGravityValue;
 import org.craft.mcs.cap.shared.domain.sugar.SugarConcentration;
 import org.craft.mcs.cap.shared.domain.sugaracidity.assessment.BuiltInSugarAcidityZoneProfiles;
@@ -33,8 +39,10 @@ class AssessFeedstockSampleSugarAcidityZoneServiceTest {
   @Test
   void returnsUnplottableResultForIncompleteProfile() {
     final var repository = mock(FeedstockSampleRepository.class);
+    final var batchRepository = mock(FeedstockBatchRepository.class);
     final var service = new AssessFeedstockSampleSugarAcidityZoneService(
         repository,
+        batchRepository,
         new ChemicalProfileAxisExtractor(),
         new ChemicalProfileCapabilityAssessor(),
         new RectangleSugarAcidityZoneAssessor(
@@ -44,7 +52,6 @@ class AssessFeedstockSampleSugarAcidityZoneServiceTest {
     );
     final var sample = FeedstockSample.create(
         FeedstockSampleId.newId(),
-        CiderMakerId.of(randomUUID()),
         FeedstockBatchId.newId(),
         FeedstockSampleName.of("Partial batch"),
         FeedstockType.APPLE_JUICE,
@@ -56,6 +63,8 @@ class AssessFeedstockSampleSugarAcidityZoneServiceTest {
         Instant.parse("2026-01-15T10:00:00Z")
     );
     when(repository.findById(sample.sampleId())).thenReturn(Optional.of(sample));
+    when(batchRepository.findById(sample.batchId()))
+        .thenReturn(Optional.of(batch(sample.batchId(), CiderMakerId.of(randomUUID()))));
 
     final var result = service.assess(sample.sampleId());
 
@@ -65,5 +74,15 @@ class AssessFeedstockSampleSugarAcidityZoneServiceTest {
         .isEqualTo(ChemicalProfileCapability.SUGAR_ACIDITY_PLOT);
     assertThat(result.capabilityAssessment().missingAxes())
         .containsExactly(ChemicalAxis.ACIDITY);
+  }
+
+  private static FeedstockBatch batch(FeedstockBatchId batchId, CiderMakerId ciderMakerId) {
+    return FeedstockBatch.create(
+        batchId,
+        ciderMakerId,
+        FeedstockBatchName.of("Test batch"),
+        FeedstockSeason.of(LocalDate.parse("2026-01-01"), LocalDate.parse("2026-12-31")),
+        VolumeValue.ofLiters("100")
+    );
   }
 }

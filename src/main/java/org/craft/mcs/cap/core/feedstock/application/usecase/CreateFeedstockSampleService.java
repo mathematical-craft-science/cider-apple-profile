@@ -44,7 +44,6 @@ public final class CreateFeedstockSampleService
 
       final var sample = FeedstockSample.create(
           FeedstockSampleId.newId(),
-          command.ciderMakerId(),
           command.batchId(),
           command.name(),
           command.type(),
@@ -56,7 +55,7 @@ public final class CreateFeedstockSampleService
 
       return new FeedstockSampleCreated(
           saved.sampleId(),
-          saved.ciderMakerId(),
+          batch.ciderMakerId(),
           saved.batchId(),
           saved.name(),
           saved.type()

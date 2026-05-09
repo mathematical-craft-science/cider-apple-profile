@@ -8,7 +8,7 @@ import org.craft.mcs.cap.core.feedstock.application.port.in.CreateFeedstockBatch
 import org.craft.mcs.cap.core.feedstock.application.port.in.ListFeedstockBatchesQuery;
 import org.craft.mcs.cap.core.feedstock.application.port.in.ListFeedstockBatchesUseCase;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
-import org.craft.mcs.cap.core.feedstock.domain.model.sample.value.CiderMakerId;
+import org.craft.mcs.cap.core.feedstock.domain.model.value.CiderMakerId;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.CreateFeedstockBatchRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.FeedstockBatchListResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.FeedstockBatchResponse;
