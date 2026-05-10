@@ -136,9 +136,25 @@ mindmap
         Prediction method
         Capability error if sugar missing
     Fermentation
-      FermentationBatch
+      ProductionBatch or CiderBatch
+        Source FeedstockBatch
         Source FeedstockSample
         Source blend recipe
+        Current volume
+        Operation history
+        Production phase
+      Production operations
+        Start production
+        Start fermentation
+        Measurement
+        Racking
+        Transfer
+        Bottling
+        Future keeving
+        Future secondary fermentation
+        Future bottle conditioning
+        Future disgorging
+      Fermentation phase
         Starting SG
         Predicted ABV
         Yeast strain

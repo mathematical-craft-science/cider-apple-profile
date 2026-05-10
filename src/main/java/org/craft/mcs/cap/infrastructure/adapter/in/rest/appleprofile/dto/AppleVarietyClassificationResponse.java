@@ -5,7 +5,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import java.util.List;
 import java.util.UUID;
-import org.craft.mcs.cap.shared.domain.classification.result.ClassificationConfidence;
+import org.craft.mcs.cap.core.cideranalysis.classification.result.ClassificationConfidence;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

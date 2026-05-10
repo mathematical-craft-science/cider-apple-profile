@@ -28,6 +28,6 @@ sentry:
   enabled: false
 
 cap:
-  classification:
+  cider-analysis:
     sugar-acidity:
       assessor: rectangle # или ellipse

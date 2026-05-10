@@ -1,6 +1,6 @@
 package org.craft.mcs.cap.core.cideranalysis.sugaracidity.assessment;
 
-import org.craft.mcs.cap.shared.domain.classification.rule.AxisRange;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisRange;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;

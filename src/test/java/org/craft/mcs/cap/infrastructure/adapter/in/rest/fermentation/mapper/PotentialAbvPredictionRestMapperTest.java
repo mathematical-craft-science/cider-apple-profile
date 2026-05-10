@@ -1,11 +1,11 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.fermentation.mapper;
 
 import java.math.BigDecimal;
-import org.craft.mcs.cap.shared.domain.fermentation.AbvPredictionMethod;
-import org.craft.mcs.cap.shared.domain.fermentation.AbvValue;
-import org.craft.mcs.cap.shared.domain.fermentation.FinalGravityPredictionSource;
-import org.craft.mcs.cap.shared.domain.fermentation.PotentialAbvPrediction;
-import org.craft.mcs.cap.shared.domain.fermentation.PredictionConfidence;
+import org.craft.mcs.cap.core.fermentation.domain.AbvPredictionMethod;
+import org.craft.mcs.cap.core.fermentation.domain.AbvValue;
+import org.craft.mcs.cap.core.fermentation.domain.FinalGravityPredictionSource;
+import org.craft.mcs.cap.core.fermentation.domain.PotentialAbvPrediction;
+import org.craft.mcs.cap.core.fermentation.domain.PredictionConfidence;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.junit.jupiter.api.Test;
 

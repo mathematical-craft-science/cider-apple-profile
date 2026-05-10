@@ -2,9 +2,9 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.fermentation.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
-import org.craft.mcs.cap.shared.domain.fermentation.AbvPredictionMethod;
-import org.craft.mcs.cap.shared.domain.fermentation.FinalGravityPredictionSource;
-import org.craft.mcs.cap.shared.domain.fermentation.PredictionConfidence;
+import org.craft.mcs.cap.core.fermentation.domain.AbvPredictionMethod;
+import org.craft.mcs.cap.core.fermentation.domain.FinalGravityPredictionSource;
+import org.craft.mcs.cap.core.fermentation.domain.PredictionConfidence;
 import org.jspecify.annotations.NonNull;
 
 

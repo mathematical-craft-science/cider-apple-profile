@@ -2,7 +2,7 @@ package org.craft.mcs.cap.core.cideranalysis.sugaracidity.assessment;
 
 import java.math.BigDecimal;
 import java.util.List;
-import org.craft.mcs.cap.shared.domain.classification.rule.AxisRange;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisRange;
 import org.craft.mcs.cap.core.cideranalysis.sugaracidity.plot.EllipseSugarAcidityGraphZone;
 import org.craft.mcs.cap.core.cideranalysis.sugaracidity.plot.RectangleSugarAcidityGraphZone;
 import org.craft.mcs.cap.core.cideranalysis.sugaracidity.plot.SugarAcidityGraphAxis;

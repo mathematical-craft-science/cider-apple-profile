@@ -14,6 +14,7 @@
 |---|---:|---:|---|
 | FeedstockSample graph + warnings по неполному профилю | 9 | 4 | Работа с реальным сырьем, явные предупреждения и понимание, чего не хватает для оценки. |
 | Potential ABV для FeedstockSample | 9 | 3 | Быстро отвечает на практический вопрос: какую крепость ожидать от конкретной партии. |
+| ProductionBatch / CiderBatch как производственная партия | 10 | 8 | Основа для учета объема, операций, ферментации, снятия с осадка, розлива и разных технологий производства. |
 | Fermentation monitoring по партиям | 10 | 8 | Превращает систему в помощника, который следит за процессом и показывает динамику. |
 | Alerts: stuck fermentation / выход за temperature/pH/ABV ranges | 10 | 8 | Помогает не потерять партию и вовремя вмешаться в процесс. |
 | Yeast catalog + yeast-aware fermentation checks | 9 | 7 | Дрожжи влияют на FG/ABV, температурные риски, остановку ферментации и мониторинг. |
@@ -53,8 +54,9 @@
 1. Довести ABV prediction для `FeedstockSample`: response, method/confidence,
    source of assumed/predicted FG.
 2. Добавить season/batch и available volume в `FeedstockSample`.
-3. Начать `FermentationBatch`: source sample/blend, yeast optional, starting
-   SG, measurements over time.
+3. Начать `ProductionBatch` / `CiderBatch` как производственную партию:
+   source feedstock, текущий объем, операции, первая поддержанная фаза
+   fermentation.
 4. Добавить yeast catalog как источник рабочих диапазонов и constraints.
 5. Добавить первые rule-based alerts: temperature out of yeast range, SG не
    снижается, ABV near yeast tolerance.
@@ -339,12 +341,156 @@ User story для будущего обсуждения:
 - возможно distinction между measured volume, usable volume и reserved volume;
 - дата актуальности объема, если объем может уменьшаться после использования.
 
+### ProductionBatch / CiderBatch как производственная партия
+
+`FermentationBatch` как главный aggregate слишком узкий термин. Ферментация -
+это важная фаза производства, но не вся жизнь партии сидра. Полный процесс
+может включать старт ферментации, снятие с осадка, перелив, выдержку,
+вторичную ферментацию, кивинг, купажирование, розлив, дображивание в бутылке,
+дегоржаж, dosage и другие операции в зависимости от технологии.
+
+Более устойчивое доменное понятие:
+
+- `ProductionBatch` или `CiderBatch`: живая производственная партия сидра;
+- `Fermentation`: фаза/процесс внутри производственной партии;
+- `ProductionOperation`: факт технологической операции над партией.
+
+`FeedstockBatch` представляет доступный запас сырья/сока до производства.
+`ProductionBatch` представляет часть этого сырья, которая уже ушла в
+производственный процесс. При создании `ProductionBatch` объем должен быть
+зарезервирован или списан из `FeedstockBatch.availableVolume`.
+
+Важное правило: поле внутри `ProductionBatch` не должно называться
+`availableVolume`. Это уже не доступный запас, а текущий объем партии в
+процессе. Лучше использовать:
+
+- `currentVolume`;
+- `initialVolume`;
+- позже возможно `usableVolume`, если нужно отдельно учитывать технологические
+  потери.
+
+User stories:
+
+- Как сидродел, я хочу взять часть объема из `FeedstockBatch` и запустить из
+  нее производственную партию, чтобы отделить сырье в запасе от сидра в
+  процессе.
+- Как сидродел, я хочу видеть текущий объем партии, чтобы понимать, сколько
+  продукта реально осталось после операций и потерь.
+- Как сидродел, я хочу фиксировать снятие с осадка, переливы и розлив, чтобы
+  сохранять историю технологических решений.
+- Как сидродел, я хочу видеть, из какого сырья или blend-а была создана партия,
+  чтобы анализировать результат по исходным профилям.
+- Как сидродел, я хочу вести разные технологии производства, не ломая базовую
+  модель партии: тихий сидр, pet-nat, ancestral, keeving, traditional method.
+
+#### Снятие с осадка / racking
+
+Снятие с осадка - это операция внутри той же производственной партии, если
+идентичность продукта сохраняется. Новый batch создавать не нужно, когда партия
+просто переливается в другую емкость и теряет часть объема с осадком.
+
+Пример:
+
+```text
+CiderBatch A
+currentVolume: 80 L
+vessel: Tank 1
+
+Operation: RACKING
+inputVolume: 80 L
+outputVolume: 74 L
+lossVolume: 6 L
+lossReason: LEES
+targetVessel: Tank 2
+
+CiderBatch A
+currentVolume: 74 L
+vessel: Tank 2
+```
+
+Новый `ProductionBatch` нужен, когда меняется идентичность партии:
+
+- партия разделена на две независимые части;
+- несколько партий смешаны в новый blend;
+- часть партии ушла на отдельную технологию;
+- часть разлита, а часть оставлена на выдержку;
+- часть партии получила отдельные добавки/дрожжи/режим и дальше живет отдельно.
+
+#### ProductionOperation
+
+Операции лучше моделировать как историю фактов, а не только как изменение
+полей aggregate. Это позволит позже объяснять пользователю, почему текущий
+объем именно такой и какие технологические действия привели к результату.
+
+Минимальная модель операции:
+
+```java
+record ProductionOperation(
+    ProductionOperationId id,
+    ProductionOperationType type,
+    Instant performedAt,
+    VolumeValue inputVolume,
+    VolumeValue outputVolume,
+    VolumeValue lossVolume,
+    String note
+) {
+}
+```
+
+Минимальные типы операций:
+
+- `START_PRODUCTION`;
+- `START_FERMENTATION`;
+- `MEASUREMENT`;
+- `RACKING`;
+- `TRANSFER`;
+- `BOTTLING`.
+
+Будущие типы:
+
+- `KEEVING`;
+- `BLENDING`;
+- `SECONDARY_FERMENTATION`;
+- `BOTTLE_CONDITIONING`;
+- `RIDDLING`;
+- `DISGORGING`;
+- `DOSAGE`;
+- `STABILIZATION`;
+- `SULFITE_ADDITION`;
+- `NUTRIENT_ADDITION`.
+
+#### Технологические профили
+
+Разные стили производства можно рассматривать как технологические профили или
+маршруты, но не нужно зашивать их слишком рано в жесткий enum workflow.
+Сидродел может следовать классической технологии или творчески применять
+операции в нестандартном порядке.
+
+Возможная будущая модель:
+
+- `ProductionProfile`: рекомендуемый/ожидаемый набор фаз и операций;
+- `ProductionPhase`: fermentation, maturation, bottle conditioning и т.д.;
+- `AllowedOperationPolicy`: какие операции допустимы в текущем состоянии;
+- `ProductionPlan`: планируемый маршрут;
+- `ProductionTimeline`: фактическая история операций и измерений.
+
+На первом этапе лучше поддержать свободную историю операций с базовыми
+инвариантами:
+
+- нельзя списать из `FeedstockBatch` больше доступного объема;
+- операция не может увеличить объем без явного источника добавления;
+- `outputVolume + lossVolume` не должен превышать `inputVolume`, если операция
+  не содержит добавление;
+- текущий объем партии не может быть отрицательным;
+- завершенную или разлитую партию нельзя менять обычными технологическими
+  операциями без отдельной correction/audit-модели.
+
 ### Fermentation forecast and monitoring
 
 Будущая большая область: прогноз и сопровождение ферментации по партиям.
-Здесь `FeedstockSample` или blend превращается в fermentation batch, у которого
-есть исходный chemical profile, выбранные дрожжи, температурный режим и
-последовательность измерений во времени.
+Здесь `ProductionBatch` находится в fermentation phase: у него есть исходный
+chemical profile, выбранные дрожжи, температурный режим и последовательность
+измерений во времени.
 
 Возможные user stories:
 
@@ -365,8 +511,10 @@ User story для будущего обсуждения:
 
 Минимальные сущности/понятия для обсуждения:
 
-- `FermentationBatch`: партия ферментации.
-- Исходное сырье: один `FeedstockSample` или blend нескольких samples.
+- `ProductionBatch` / `CiderBatch`: производственная партия.
+- `FermentationState`: состояние фазы ферментации внутри партии.
+- Исходное сырье: один `FeedstockBatch`, один `FeedstockSample` или blend
+  нескольких samples/batches.
 - Стартовый SG/sugar и прогнозируемый ABV.
 - Измерения во времени: SG, temperature, pH, acidity, возможно tannin,
   nutrients, notes.
@@ -634,8 +782,11 @@ assessment. Проверка пригодности профиля должна 
 
 Идеи реализации:
 
-- Создать `FermentationBatch` как отдельный aggregate или bounded context.
-- Связать batch с исходным `FeedstockSample` или blend recipe.
+- Не создавать `FermentationBatch` как главный aggregate. Главный aggregate -
+  `ProductionBatch` / `CiderBatch`, а fermentation - фаза и набор операций
+  внутри него.
+- Связать production batch с исходным `FeedstockBatch`, `FeedstockSample` или
+  blend recipe.
 - Хранить time series measurements:
   - SG/sugar;
   - temperature;
@@ -655,7 +806,7 @@ assessment. Проверка пригодности профиля должна 
   - expected/current ABV приближается к alcohol tolerance yeast strain;
   - резкие изменения показателей выглядят подозрительно.
 - Позже заменить или дополнить rule-based alerts статистической моделью по
-  историческим batches.
+  историческим production batches.
 
 Открытые вопросы:
 

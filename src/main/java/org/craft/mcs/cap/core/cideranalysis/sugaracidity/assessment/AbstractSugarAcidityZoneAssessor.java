@@ -5,7 +5,7 @@ import java.util.Optional;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
-import org.craft.mcs.cap.shared.domain.classification.rule.AxisRange;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisRange;
 import org.craft.mcs.cap.core.cideranalysis.sugaracidity.plot.SugarAcidityGraphMetadata;
 import org.craft.mcs.cap.core.cideranalysis.sugaracidity.point.SugarAcidityAxisPoint;
 import org.craft.mcs.cap.core.cideranalysis.sugaracidity.point.SugarAcidityProfilePoint;
