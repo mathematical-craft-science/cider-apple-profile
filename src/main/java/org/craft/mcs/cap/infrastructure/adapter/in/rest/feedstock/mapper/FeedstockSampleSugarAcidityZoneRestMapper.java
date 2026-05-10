@@ -25,9 +25,9 @@ public final class FeedstockSampleSugarAcidityZoneRestMapper {
     requireNonNull(assessment, "feedstock sample sugar-acidity zone assessment cannot be null");
 
     return new FeedstockSampleSugarAcidityZoneResponse(
-        assessment.sampleId().value().toString(),
-        assessment.ciderMakerId().value().toString(),
-        assessment.batchId().value().toString(),
+        assessment.sampleId().value(),
+        assessment.ciderMakerId().value(),
+        assessment.batchId().value(),
         assessment.sampleName().value(),
         SugarAcidityZoneRestMapper.toResponse(assessment.assessment())
     );
@@ -39,9 +39,9 @@ public final class FeedstockSampleSugarAcidityZoneRestMapper {
     requireNonNull(result, "feedstock sample sugar-acidity zone result cannot be null");
 
     return new FeedstockSampleSugarAcidityZoneResponse(
-        result.sampleId().value().toString(),
-        result.ciderMakerId().value().toString(),
-        result.batchId().value().toString(),
+        result.sampleId().value(),
+        result.ciderMakerId().value(),
+        result.batchId().value(),
         result.sampleName().value(),
         result.plottable(),
         result.assessment() == null ? null : SugarAcidityZoneRestMapper.toResponse(result.assessment()), // NOSONAR
@@ -70,9 +70,9 @@ public final class FeedstockSampleSugarAcidityZoneRestMapper {
     requireNonNull(unplottable, "unplottable feedstock sample sugar-acidity zone point cannot be null");
 
     return new UnplottableFeedstockSampleSugarAcidityZonePointResponse(
-        unplottable.sampleId().value().toString(),
-        unplottable.ciderMakerId().value().toString(),
-        unplottable.batchId().value().toString(),
+        unplottable.sampleId().value(),
+        unplottable.ciderMakerId().value(),
+        unplottable.batchId().value(),
         unplottable.sampleName().value(),
         ChemicalProfileCapabilityRestMapper.toResponse(unplottable.capabilityAssessment())
     );

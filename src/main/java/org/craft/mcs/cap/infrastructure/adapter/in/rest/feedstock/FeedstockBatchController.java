@@ -22,15 +22,18 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+
 
 @RestController
 @RequiredArgsConstructor
-public final class FeedstockBatchController {
+public final class FeedstockBatchController implements FeedstockBatchApi {
 
   private final @NonNull CreateFeedstockBatchUseCase createFeedstockBatchUseCase;
   private final @NonNull ListFeedstockBatchesUseCase listFeedstockBatchesUseCase;
 
-  @PostMapping("/feedstock-batches")
+  @Override
+  @PostMapping(value = "/feedstock-batches", consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
   public @NonNull ResponseEntity<@NonNull FeedstockBatchResponse> create(
       @RequestBody @NonNull CreateFeedstockBatchRequest request
   ) {
@@ -43,7 +46,8 @@ public final class FeedstockBatchController {
         .body(FeedstockBatchRestMapper.toResponse(created));
   }
 
-  @GetMapping("/feedstock-batches")
+  @Override
+  @GetMapping(value = "/feedstock-batches", produces = APPLICATION_JSON_VALUE)
   public @NonNull ResponseEntity<@NonNull FeedstockBatchListResponse> list(
       @RequestParam @NonNull UUID ciderMakerId,
       @RequestParam(required = false) @Nullable LocalDate seasonStartsOn,

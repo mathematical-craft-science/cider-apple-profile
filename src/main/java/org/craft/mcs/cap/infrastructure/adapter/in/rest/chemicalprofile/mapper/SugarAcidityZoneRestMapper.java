@@ -7,11 +7,9 @@ import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.dto.Suga
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.dto.SugarAcidityProfilePointResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.dto.SugarAcidityZoneAssessmentResponse;
 import org.craft.mcs.cap.shared.domain.sugaracidity.point.SugarAcidityAxisPoint;
-import org.craft.mcs.cap.shared.domain.sugaracidity.assessment.SugarAcidityLevel;
 import org.craft.mcs.cap.shared.domain.sugaracidity.point.SugarAcidityProfilePoint;
 import org.craft.mcs.cap.shared.domain.sugaracidity.assessment.SugarAcidityZoneAssessment;
 import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
 
 import static java.util.Objects.requireNonNull;
 
@@ -28,10 +26,10 @@ public final class SugarAcidityZoneRestMapper {
 
     return new SugarAcidityZoneAssessmentResponse(
         assessment.classified(),
-        assessment.zone() == null ? null : assessment.zone().name(), // NOSONAR
-        assessment.sugar().name(),
-        assessment.acidity().name(),
-        levelName(assessment.tannin()),
+        assessment.zone(),
+        assessment.sugar(),
+        assessment.acidity(),
+        assessment.tannin(),
         assessment.balancedForSingleVariety(),
         pointResponse(assessment.point())
     );
@@ -74,13 +72,9 @@ public final class SugarAcidityZoneRestMapper {
 
     return new StatisticalSugarAcidityAxisPointResponse(
         point.value(),
-        point.valueKind().name(),
+        point.valueKind(),
         point.standardDeviation(),
         point.sampleSize()
     );
-  }
-
-  private static @Nullable String levelName(@Nullable SugarAcidityLevel level) {
-    return level == null ? null : level.name();
   }
 }

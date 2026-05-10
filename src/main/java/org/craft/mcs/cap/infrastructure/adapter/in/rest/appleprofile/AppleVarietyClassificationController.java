@@ -22,17 +22,20 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+
 
 @RestController
 @RequiredArgsConstructor
-public final class AppleVarietyClassificationController {
+public final class AppleVarietyClassificationController implements AppleVarietyClassificationApi {
 
   private final @NonNull ClassifyAppleVarietyUseCase classifyAppleVarietyUseCase;
   private final @NonNull ClassifyAppleVarietyNorthAmericanUseCase classifyAppleVarietyNorthAmericanUseCase;
   private final @NonNull AssessAppleVarietySugarAcidityZoneUseCase assessAppleVarietySugarAcidityZoneUseCase;
   private final @NonNull ListAppleVarietySugarAcidityZonePointsUseCase listAppleVarietySugarAcidityZonePointsUseCase;
 
-  @GetMapping("/apple-varieties/{varietyId}/classification")
+  @Override
+  @GetMapping(value = "/apple-varieties/{varietyId}/classification", produces = APPLICATION_JSON_VALUE)
   public @NonNull ResponseEntity<@NonNull AppleVarietyClassificationResponse> classify(
       @PathVariable @NonNull UUID varietyId,
       @RequestParam @NonNull AppleVarietyClassificationSystem system
@@ -47,7 +50,8 @@ public final class AppleVarietyClassificationController {
     );
   }
 
-  @GetMapping("/apple-varieties/{varietyId}/north-american")
+  @Override
+  @GetMapping(value = "/apple-varieties/{varietyId}/north-american", produces = APPLICATION_JSON_VALUE)
   public @NonNull ResponseEntity<@NonNull AppleVarietyNorthAmericanResponse> classifyNorthAmerican(
       @PathVariable @NonNull UUID varietyId
   ) {
@@ -60,7 +64,8 @@ public final class AppleVarietyClassificationController {
     );
   }
 
-  @GetMapping("/apple-varieties/{varietyId}/sugar-acidity-zone")
+  @Override
+  @GetMapping(value = "/apple-varieties/{varietyId}/sugar-acidity-zone", produces = APPLICATION_JSON_VALUE)
   public @NonNull ResponseEntity<@NonNull AppleVarietySugarAcidityZoneResponse> assessSugarAcidityZone(
       @PathVariable @NonNull UUID varietyId
   ) {
@@ -73,7 +78,8 @@ public final class AppleVarietyClassificationController {
     );
   }
 
-  @GetMapping("/apple-varieties/sugar-acidity-zone-points")
+  @Override
+  @GetMapping(value = "/apple-varieties/sugar-acidity-zone-points", produces = APPLICATION_JSON_VALUE)
   public @NonNull ResponseEntity<@NonNull AppleVarietySugarAcidityZonePointBatchResponse> listSugarAcidityZonePoints() {
     final var results = listAppleVarietySugarAcidityZonePointsUseCase.list();
 

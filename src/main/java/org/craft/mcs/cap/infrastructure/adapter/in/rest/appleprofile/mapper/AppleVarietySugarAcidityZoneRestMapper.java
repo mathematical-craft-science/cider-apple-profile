@@ -25,7 +25,7 @@ public final class AppleVarietySugarAcidityZoneRestMapper {
     requireNonNull(assessment, "apple variety sugar-acidity zone assessment cannot be null");
 
     return new AppleVarietySugarAcidityZoneResponse(
-        assessment.varietyId().value().toString(),
+        assessment.varietyId().value(),
         assessment.varietyName().value(),
         SugarAcidityZoneRestMapper.toResponse(assessment.assessment())
     );
@@ -37,7 +37,7 @@ public final class AppleVarietySugarAcidityZoneRestMapper {
     requireNonNull(result, "apple variety sugar-acidity zone result cannot be null");
 
     return new AppleVarietySugarAcidityZoneResponse(
-        result.varietyId().value().toString(),
+        result.varietyId().value(),
         result.varietyName().value(),
         result.plottable(),
         result.assessment() == null ? null : SugarAcidityZoneRestMapper.toResponse(result.assessment()), // NOSONAR
@@ -66,7 +66,7 @@ public final class AppleVarietySugarAcidityZoneRestMapper {
     requireNonNull(unplottable, "unplottable apple variety sugar-acidity zone point cannot be null");
 
     return new UnplottableAppleVarietySugarAcidityZonePointResponse(
-        unplottable.varietyId().value().toString(),
+        unplottable.varietyId().value(),
         unplottable.varietyName().value(),
         ChemicalProfileCapabilityRestMapper.toResponse(unplottable.capabilityAssessment())
     );

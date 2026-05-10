@@ -42,13 +42,13 @@ public final class SugarAcidityGraphMetadataRestMapper {
     requireNonNull(zone, "sugar-acidity graph zone cannot be null");
 
     return switch (zone) {
-      case RectangleSugarAcidityGraphZone rectangle -> new RectangleSugarAcidityGraphZoneResponse(
-          rectangle.zone().name(),
+      case RectangleSugarAcidityGraphZone rectangle -> new RectangleSugarAcidityGraphZoneResponse( // NOSONAR
+          rectangle.zone(),
           rangeResponse(rectangle.sugarRange()),
           rangeResponse(rectangle.acidityRange())
       );
-      case EllipseSugarAcidityGraphZone ellipse -> new EllipseSugarAcidityGraphZoneResponse(
-          ellipse.zone().name(),
+      case EllipseSugarAcidityGraphZone ellipse -> new EllipseSugarAcidityGraphZoneResponse( // NOSONAR
+          ellipse.zone(),
           ellipse.sugarCenter(),
           ellipse.acidityCenter(),
           ellipse.sugarRadius(),

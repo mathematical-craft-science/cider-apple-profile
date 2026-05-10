@@ -7,6 +7,7 @@ import org.craft.mcs.cap.shared.domain.chemical.ChemicalProfile;
 import org.craft.mcs.cap.shared.domain.chemical.capability.ChemicalProfileCapability;
 import org.craft.mcs.cap.shared.domain.chemical.capability.ChemicalProfileCapabilityAssessor;
 import org.craft.mcs.cap.shared.domain.classification.axis.ChemicalProfileAxisExtractor;
+import org.craft.mcs.cap.shared.domain.classification.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.domain.measurement.ExactMeasurement;
 import org.craft.mcs.cap.shared.domain.sugar.SpecificGravityValue;
 import org.craft.mcs.cap.shared.domain.sugar.SugarConcentration;
@@ -39,11 +40,11 @@ class AppleVarietySugarAcidityZoneRestMapperTest {
         )
     );
 
-    assertThat(response.varietyId()).isEqualTo("00000000-0000-0000-0000-000000000001");
+    assertThat(response.varietyId()).hasToString("00000000-0000-0000-0000-000000000001");
     assertThat(response.varietyName()).isEqualTo("Partial Profile");
     assertThat(response.plottable()).isFalse();
     assertThat(response.assessment()).isNull();
     assertThat(response.capabilityAssessment()).isNotNull();
-    assertThat(response.capabilityAssessment().missingAxes()).containsExactly("ACIDITY");
+    assertThat(response.capabilityAssessment().missingAxes()).containsExactly(ChemicalAxis.ACIDITY);
   }
 }

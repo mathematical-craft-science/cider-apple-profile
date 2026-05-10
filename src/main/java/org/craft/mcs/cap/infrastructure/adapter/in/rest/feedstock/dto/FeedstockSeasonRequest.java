@@ -1,11 +1,13 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDate;
 import org.jspecify.annotations.NonNull;
 
 
+@Schema(description = "Feedstock season date range request.")
 public record FeedstockSeasonRequest(
-    @NonNull LocalDate startsOn,
-    @NonNull LocalDate endsOn
+    @Schema(description = "Season start date.", format = "date", example = "2026-09-15") @NonNull LocalDate startsOn,
+    @Schema(description = "Season end date.", format = "date", example = "2026-12-01") @NonNull LocalDate endsOn
 ) {
 }

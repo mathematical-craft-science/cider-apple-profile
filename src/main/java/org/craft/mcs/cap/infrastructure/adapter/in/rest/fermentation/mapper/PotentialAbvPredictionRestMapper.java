@@ -20,10 +20,10 @@ public final class PotentialAbvPredictionRestMapper {
     return new PotentialAbvPredictionResponse(
         prediction.originalGravity().asBigDecimal(),
         prediction.predictedFinalGravity().asBigDecimal(),
-        prediction.predictedFinalGravitySource().name(),
+        prediction.predictedFinalGravitySource(),
         prediction.potentialAbv().percent(),
-        prediction.method().name(),
-        prediction.confidence().name()
+        prediction.method(),
+        prediction.confidence()
     );
   }
 }

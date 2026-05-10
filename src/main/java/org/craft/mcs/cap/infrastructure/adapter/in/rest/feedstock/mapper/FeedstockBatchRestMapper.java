@@ -44,8 +44,8 @@ public final class FeedstockBatchRestMapper {
     requireNonNull(batch, "created feedstock batch cannot be null");
 
     return new FeedstockBatchResponse(
-        batch.batchId().value().toString(),
-        batch.ciderMakerId().value().toString(),
+        batch.batchId().value(),
+        batch.ciderMakerId().value(),
         batch.name().value(),
         toResponse(batch.season()),
         batch.source() == null ? null : batch.source().value(), // NOSONAR
@@ -60,8 +60,8 @@ public final class FeedstockBatchRestMapper {
     requireNonNull(batch, "feedstock batch summary cannot be null");
 
     return new FeedstockBatchResponse(
-        batch.batchId().value().toString(),
-        batch.ciderMakerId().value().toString(),
+        batch.batchId().value(),
+        batch.ciderMakerId().value(),
         batch.name().value(),
         toResponse(batch.season()),
         batch.source() == null ? null : batch.source().value(), // NOSONAR

@@ -19,16 +19,19 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+
 
 @RestController
 @RequiredArgsConstructor
-public final class FeedstockSampleAssessmentController {
+public final class FeedstockSampleAssessmentController implements FeedstockSampleAssessmentApi {
 
   private final @NonNull AssessFeedstockSampleSugarAcidityZoneUseCase assessSugarAcidityZoneUseCase;
   private final @NonNull ListFeedstockSampleSugarAcidityZonePointsUseCase listSugarAcidityZonePointsUseCase;
   private final @NonNull PredictFeedstockSamplePotentialAbvUseCase predictPotentialAbvUseCase;
 
-  @GetMapping("/feedstock-samples/{sampleId}/sugar-acidity-zone")
+  @Override
+  @GetMapping(value = "/feedstock-samples/{sampleId}/sugar-acidity-zone", produces = APPLICATION_JSON_VALUE)
   public @NonNull ResponseEntity<@NonNull FeedstockSampleSugarAcidityZoneResponse> assessSugarAcidityZone(
       @PathVariable @NonNull UUID sampleId
   ) {
@@ -41,7 +44,8 @@ public final class FeedstockSampleAssessmentController {
     );
   }
 
-  @GetMapping("/feedstock-samples/sugar-acidity-zone-points")
+  @Override
+  @GetMapping(value = "/feedstock-samples/sugar-acidity-zone-points", produces = APPLICATION_JSON_VALUE)
   public @NonNull ResponseEntity<@NonNull FeedstockSampleSugarAcidityZonePointBatchResponse> listSugarAcidityZonePoints(
       @RequestParam @NonNull UUID ciderMakerId
   ) {
@@ -54,7 +58,8 @@ public final class FeedstockSampleAssessmentController {
     );
   }
 
-  @GetMapping("/feedstock-samples/{sampleId}/abv-prediction")
+  @Override
+  @GetMapping(value = "/feedstock-samples/{sampleId}/abv-prediction", produces = APPLICATION_JSON_VALUE)
   public @NonNull ResponseEntity<@NonNull FeedstockSamplePotentialAbvResponse> predictPotentialAbv(
       @PathVariable @NonNull UUID sampleId
   ) {

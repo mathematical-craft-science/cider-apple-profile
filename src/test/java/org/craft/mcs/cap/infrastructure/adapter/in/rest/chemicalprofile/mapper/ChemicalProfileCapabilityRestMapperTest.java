@@ -23,10 +23,10 @@ class ChemicalProfileCapabilityRestMapperTest {
         )
     );
 
-    assertThat(response.capability()).isEqualTo("SUGAR_ACIDITY_PLOT");
+    assertThat(response.capability()).isEqualTo(ChemicalProfileCapability.SUGAR_ACIDITY_PLOT);
     assertThat(response.capable()).isFalse();
-    assertThat(response.requiredAxes()).containsExactly("SUGAR", "ACIDITY");
-    assertThat(response.presentAxes()).containsExactly("SUGAR");
-    assertThat(response.missingAxes()).containsExactly("ACIDITY");
+    assertThat(response.requiredAxes()).containsExactly(ChemicalAxis.SUGAR, ChemicalAxis.ACIDITY);
+    assertThat(response.presentAxes()).containsExactly(ChemicalAxis.SUGAR);
+    assertThat(response.missingAxes()).containsExactly(ChemicalAxis.ACIDITY);
   }
 }

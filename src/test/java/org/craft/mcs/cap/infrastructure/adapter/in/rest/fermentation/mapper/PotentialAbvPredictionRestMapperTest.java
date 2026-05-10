@@ -29,9 +29,9 @@ class PotentialAbvPredictionRestMapperTest {
 
     assertThat(response.originalGravity()).isEqualByComparingTo("1.052");
     assertThat(response.predictedFinalGravity()).isEqualByComparingTo("1.000");
-    assertThat(response.predictedFinalGravitySource()).isEqualTo("FIXED_DRY_CIDER_DEFAULT");
+    assertThat(response.predictedFinalGravitySource()).isEqualTo(FinalGravityPredictionSource.FIXED_DRY_CIDER_DEFAULT);
     assertThat(response.potentialAbv()).isEqualByComparingTo("6.825");
-    assertThat(response.method()).isEqualTo("STANDARD_GRAVITY_DROP");
-    assertThat(response.confidence()).isEqualTo("LOW");
+    assertThat(response.method()).isEqualTo(AbvPredictionMethod.STANDARD_GRAVITY_DROP);
+    assertThat(response.confidence()).isEqualTo(PredictionConfidence.LOW);
   }
 }

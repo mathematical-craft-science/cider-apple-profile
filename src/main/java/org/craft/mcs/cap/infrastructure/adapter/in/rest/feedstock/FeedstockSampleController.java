@@ -18,15 +18,18 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+
 
 @RestController
 @RequiredArgsConstructor
-public final class FeedstockSampleController {
+public final class FeedstockSampleController implements FeedstockSampleApi {
 
   private final @NonNull CreateFeedstockSampleUseCase createFeedstockSampleUseCase;
   private final @NonNull ListFeedstockSamplesUseCase listFeedstockSamplesUseCase;
 
-  @PostMapping("/feedstock-samples")
+  @Override
+  @PostMapping(value = "/feedstock-samples", consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
   public @NonNull ResponseEntity<@NonNull FeedstockSampleResponse> create(
       @RequestBody @NonNull CreateFeedstockSampleRequest request
   ) {
@@ -39,7 +42,8 @@ public final class FeedstockSampleController {
         .body(FeedstockSampleRestMapper.toResponse(created));
   }
 
-  @GetMapping("/feedstock-samples")
+  @Override
+  @GetMapping(value = "/feedstock-samples", produces = APPLICATION_JSON_VALUE)
   public @NonNull ResponseEntity<@NonNull FeedstockSampleListResponse> listByBatchId(
       @RequestParam @NonNull UUID batchId
   ) {

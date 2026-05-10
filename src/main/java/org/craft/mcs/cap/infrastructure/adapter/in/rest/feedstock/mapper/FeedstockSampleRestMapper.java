@@ -37,9 +37,9 @@ public final class FeedstockSampleRestMapper {
     requireNonNull(sample, "created feedstock sample cannot be null");
 
     return new FeedstockSampleResponse(
-        sample.sampleId().value().toString(),
-        sample.ciderMakerId().value().toString(),
-        sample.batchId().value().toString(),
+        sample.sampleId().value(),
+        sample.ciderMakerId().value(),
+        sample.batchId().value(),
         sample.name().value(),
         sample.type(),
         null,
@@ -51,9 +51,9 @@ public final class FeedstockSampleRestMapper {
     requireNonNull(sample, "feedstock sample summary cannot be null");
 
     return new FeedstockSampleResponse(
-        sample.sampleId().value().toString(),
-        sample.ciderMakerId().value().toString(),
-        sample.batchId().value().toString(),
+        sample.sampleId().value(),
+        sample.ciderMakerId().value(),
+        sample.batchId().value(),
         sample.name().value(),
         sample.type(),
         sample.measuredAt(),
