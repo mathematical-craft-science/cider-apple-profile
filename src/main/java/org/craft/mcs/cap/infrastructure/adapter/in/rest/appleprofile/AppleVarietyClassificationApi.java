@@ -11,6 +11,7 @@ import org.craft.mcs.cap.core.appleprofile.application.port.in.AppleVarietyClass
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.dto.AppleVarietyClassificationResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.dto.AppleVarietyNorthAmericanResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.dto.AppleVarietySugarAcidityZonePointBatchResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.dto.AppleVarietySugarAcidityZonePointQueryRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.dto.AppleVarietySugarAcidityZoneResponse;
 import org.jspecify.annotations.NonNull;
 import org.springframework.http.ProblemDetail;
@@ -80,5 +81,7 @@ public interface AppleVarietyClassificationApi {
       description = "Batch of apple variety graph points.",
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = AppleVarietySugarAcidityZonePointBatchResponse.class))
   )
-  @NonNull ResponseEntity<@NonNull AppleVarietySugarAcidityZonePointBatchResponse> listSugarAcidityZonePoints();
+  @NonNull ResponseEntity<@NonNull AppleVarietySugarAcidityZonePointBatchResponse> listSugarAcidityZonePoints(
+      @NonNull AppleVarietySugarAcidityZonePointQueryRequest request
+  );
 }

@@ -49,3 +49,6 @@ CREATE TABLE  IF NOT EXISTS apple_varieties
 
 CREATE UNIQUE INDEX IF NOT EXISTS ux_apple_varieties_lower_name
     ON apple_varieties (lower(name));
+
+CREATE INDEX IF NOT EXISTS idx_apple_varieties_name_variety_id
+    ON apple_varieties (name, variety_id);

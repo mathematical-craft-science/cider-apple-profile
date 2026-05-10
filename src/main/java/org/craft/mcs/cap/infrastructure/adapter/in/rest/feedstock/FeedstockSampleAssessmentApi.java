@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.UUID;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.FeedstockSamplePotentialAbvResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.FeedstockSampleSugarAcidityZonePointBatchResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.FeedstockSampleSugarAcidityZonePointQueryRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.FeedstockSampleSugarAcidityZoneResponse;
 import org.jspecify.annotations.NonNull;
 import org.springframework.http.ProblemDetail;
@@ -44,8 +45,7 @@ public interface FeedstockSampleAssessmentApi {
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = FeedstockSampleSugarAcidityZonePointBatchResponse.class))
   )
   @NonNull ResponseEntity<@NonNull FeedstockSampleSugarAcidityZonePointBatchResponse> listSugarAcidityZonePoints(
-      @Parameter(description = "Cider maker identifier.", schema = @Schema(format = "uuid"))
-      @NonNull UUID ciderMakerId
+      @NonNull FeedstockSampleSugarAcidityZonePointQueryRequest request
   );
 
   @Operation(

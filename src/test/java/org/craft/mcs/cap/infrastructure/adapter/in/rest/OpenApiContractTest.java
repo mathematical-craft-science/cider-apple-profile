@@ -47,18 +47,20 @@ class OpenApiContractTest {
     assertJsonResponse(openApi, "/apple-varieties/{varietyId}/classification", "get");
     assertJsonResponse(openApi, "/apple-varieties/{varietyId}/north-american", "get");
     assertJsonResponse(openApi, "/apple-varieties/{varietyId}/sugar-acidity-zone", "get");
-    assertJsonResponse(openApi, "/apple-varieties/sugar-acidity-zone-points", "get");
+    assertJsonResponse(openApi, "/apple-varieties/sugar-acidity-zone-points", "post");
     assertJsonResponse(openApi, "/chemical-profiles/sugar-acidity-zone/plot-metadata", "get");
     assertJsonResponse(openApi, "/feedstock-batches", "get");
     assertJsonResponse(openApi, "/feedstock-batches", "post", "201");
     assertJsonResponse(openApi, "/feedstock-samples", "get");
     assertJsonResponse(openApi, "/feedstock-samples", "post", "201");
     assertJsonResponse(openApi, "/feedstock-samples/{sampleId}/sugar-acidity-zone", "get");
-    assertJsonResponse(openApi, "/feedstock-samples/sugar-acidity-zone-points", "get");
+    assertJsonResponse(openApi, "/feedstock-samples/sugar-acidity-zone-points", "post");
     assertJsonResponse(openApi, "/feedstock-samples/{sampleId}/abv-prediction", "get");
 
     assertJsonRequest(openApi, "/feedstock-batches", "post");
     assertJsonRequest(openApi, "/feedstock-samples", "post");
+    assertJsonRequest(openApi, "/apple-varieties/sugar-acidity-zone-points", "post");
+    assertJsonRequest(openApi, "/feedstock-samples/sugar-acidity-zone-points", "post");
 
     assertStringFormat(schemaProperty(openApi, "AppleVarietyClassificationResponse", "varietyId"), "uuid");
     assertStringFormat(schemaProperty(openApi, "FeedstockBatchResponse", "batchId"), "uuid");

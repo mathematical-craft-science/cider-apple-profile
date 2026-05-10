@@ -1,6 +1,7 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest;
 
 import java.util.Set;
+import org.craft.mcs.cap.shared.application.query.MalformedCursorException;
 import org.craft.mcs.cap.shared.domain.chemical.capability.ChemicalProfileCapability;
 import org.craft.mcs.cap.shared.domain.chemical.capability.ChemicalProfileCapabilityAssessment;
 import org.craft.mcs.cap.shared.domain.chemical.capability.ChemicalProfileCapabilityNotMetException;
@@ -40,4 +41,19 @@ class RestExceptionHandlerTest {
         .containsEntry("missingAxes", java.util.List.of("ACIDITY", "TANNINITY"));
   }
 
+  @Test
+  void mapsMalformedCursorExceptionToProblemDetail() {
+    final var response = new RestExceptionHandler().handleMalformedCursor(
+        new MalformedCursorException()
+    );
+
+    final var problem = response.getBody();
+
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatusCode.valueOf(400));
+    assertThat(problem).isNotNull();
+    assertThat(problem.getType().toString()).isEqualTo("urn:problem-type:malformed-cursor");
+    assertThat(problem.getTitle()).isEqualTo("Malformed cursor");
+    assertThat(problem.getDetail()).contains("pagination cursor");
+    assertThat(problem.getProperties()).containsEntry("parameter", "after");
+  }
 }

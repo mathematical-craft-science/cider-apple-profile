@@ -25,6 +25,9 @@ CREATE INDEX IF NOT EXISTS idx_feedstock_batches_cider_maker_id
 CREATE INDEX IF NOT EXISTS idx_feedstock_batches_cider_maker_season
     ON feedstock_batches (cider_maker_id, season_starts_on, season_ends_on);
 
+CREATE INDEX IF NOT EXISTS idx_feedstock_batches_cider_maker_season_batch
+    ON feedstock_batches (cider_maker_id, season_starts_on, season_ends_on, batch_id);
+
 CREATE INDEX IF NOT EXISTS idx_feedstock_batches_cider_maker_lower_name
     ON feedstock_batches (cider_maker_id, LOWER(name));
 
@@ -89,6 +92,9 @@ CREATE INDEX IF NOT EXISTS idx_feedstock_samples_batch_id
 
 CREATE INDEX IF NOT EXISTS idx_feedstock_samples_batch_measured_at
     ON feedstock_samples (batch_id, measured_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_feedstock_samples_batch_measured_at_sample
+    ON feedstock_samples (batch_id, measured_at, sample_id);
 
 CREATE INDEX IF NOT EXISTS idx_feedstock_samples_batch_type
     ON feedstock_samples (batch_id, type);

@@ -5,6 +5,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchNotFoundException;
+import org.craft.mcs.cap.shared.application.query.MalformedCursorException;
 import org.craft.mcs.cap.shared.domain.chemical.capability.ChemicalProfileCapabilityNotMetException;
 import org.craft.mcs.cap.shared.domain.classification.axis.ChemicalAxis;
 import org.jspecify.annotations.NonNull;
@@ -21,6 +22,9 @@ public final class RestExceptionHandler {
       URI.create("urn:problem-type:chemical-profile-capability-not-met");
   private static final URI FEEDSTOCK_BATCH_NOT_FOUND =
       URI.create("urn:problem-type:feedstock-batch-not-found");
+  private static final URI MALFORMED_CURSOR =
+      URI.create("urn:problem-type:malformed-cursor");
+  private static final int BAD_REQUEST = 400;
   private static final int UNPROCESSABLE_ENTITY = 422;
 
   @ExceptionHandler(ChemicalProfileCapabilityNotMetException.class)
@@ -56,6 +60,22 @@ public final class RestExceptionHandler {
 
     return ResponseEntity
         .status(404)
+        .body(problem);
+  }
+
+  @ExceptionHandler(MalformedCursorException.class)
+  public @NonNull ResponseEntity<@NonNull ProblemDetail> handleMalformedCursor(
+      @NonNull MalformedCursorException exception
+  ) {
+    final var problem = ProblemDetail.forStatus(BAD_REQUEST);
+
+    problem.setType(MALFORMED_CURSOR);
+    problem.setTitle("Malformed cursor");
+    problem.setDetail("The pagination cursor is malformed or no longer valid for this query.");
+    problem.setProperty("parameter", "after");
+
+    return ResponseEntity
+        .status(BAD_REQUEST)
         .body(problem);
   }
 
