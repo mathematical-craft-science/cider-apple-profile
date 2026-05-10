@@ -6,7 +6,7 @@ import org.craft.mcs.cap.core.appleprofile.application.port.in.AppleVarietyClass
 import org.craft.mcs.cap.core.appleprofile.application.port.in.ClassifyAppleVarietyUseCase;
 import org.craft.mcs.cap.core.appleprofile.application.port.out.AppleVarietyRepository;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyId;
-import org.craft.mcs.cap.shared.domain.chemical.ChemicalProfile;
+import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.craft.mcs.cap.shared.domain.classification.result.ClassificationResult;
 import org.craft.mcs.cap.shared.domain.classification.engine.ClassificationStrategy;
 import org.craft.mcs.cap.shared.domain.classification.engine.ChemicalProfileClassifier;

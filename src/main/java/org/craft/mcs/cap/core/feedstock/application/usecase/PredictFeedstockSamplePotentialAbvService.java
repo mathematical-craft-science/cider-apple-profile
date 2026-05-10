@@ -6,13 +6,13 @@ import org.craft.mcs.cap.core.feedstock.application.port.in.PredictFeedstockSamp
 import org.craft.mcs.cap.core.feedstock.application.port.out.FeedstockBatchRepository;
 import org.craft.mcs.cap.core.feedstock.application.port.out.FeedstockSampleRepository;
 import org.craft.mcs.cap.core.feedstock.domain.model.sample.FeedstockSampleId;
-import org.craft.mcs.cap.shared.domain.chemical.capability.ChemicalProfileCapability;
-import org.craft.mcs.cap.shared.domain.chemical.capability.ChemicalProfileCapabilityAssessor;
-import org.craft.mcs.cap.shared.domain.chemical.capability.ChemicalProfileCapabilityNotMetException;
-import org.craft.mcs.cap.shared.domain.classification.axis.ChemicalAxis;
-import org.craft.mcs.cap.shared.domain.classification.axis.ChemicalProfileAxisExtractor;
+import org.craft.mcs.cap.shared.kernel.chemical.capability.ChemicalProfileCapability;
+import org.craft.mcs.cap.shared.kernel.chemical.capability.ChemicalProfileCapabilityAssessor;
+import org.craft.mcs.cap.shared.kernel.chemical.capability.ChemicalProfileCapabilityNotMetException;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
 import org.craft.mcs.cap.shared.domain.fermentation.PotentialAbvPredictor;
-import org.craft.mcs.cap.shared.domain.sugar.SpecificGravityValue;
+import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 

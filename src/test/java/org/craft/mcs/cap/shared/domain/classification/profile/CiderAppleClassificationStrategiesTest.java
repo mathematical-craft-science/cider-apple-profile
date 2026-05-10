@@ -1,8 +1,8 @@
 package org.craft.mcs.cap.shared.domain.classification.profile;
 
-import org.craft.mcs.cap.shared.domain.sugar.SugarConcentration;
-import org.craft.mcs.cap.shared.domain.chemical.ChemicalProfile;
-import org.craft.mcs.cap.shared.domain.classification.axis.ChemicalProfileAxisExtractor;
+import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
+import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
 import org.craft.mcs.cap.shared.domain.classification.engine.ChemicalProfileClassifier;
 import org.craft.mcs.cap.shared.domain.classification.engine.ClassificationConfidencePolicy;
 import org.craft.mcs.cap.shared.domain.classification.profile.french.FrenchCiderAppleClass;
@@ -13,10 +13,10 @@ import org.craft.mcs.cap.shared.domain.classification.profile.longashton.LongAsh
 import org.craft.mcs.cap.shared.domain.classification.profile.longashton.LongAshton7ClassificationStrategy;
 import org.craft.mcs.cap.shared.domain.classification.profile.spanish.SpanishCiderAppleClass;
 import org.craft.mcs.cap.shared.domain.classification.profile.spanish.SpanishClassificationStrategy;
-import org.craft.mcs.cap.shared.domain.measurement.ExactMeasurement;
-import org.craft.mcs.cap.shared.domain.sugar.SpecificGravityValue;
-import org.craft.mcs.cap.shared.domain.chemical.value.TanninityValue;
-import org.craft.mcs.cap.shared.domain.chemical.value.TitratableAcidityValue;
+import org.craft.mcs.cap.shared.kernel.measurement.ExactMeasurement;
+import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TanninityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 

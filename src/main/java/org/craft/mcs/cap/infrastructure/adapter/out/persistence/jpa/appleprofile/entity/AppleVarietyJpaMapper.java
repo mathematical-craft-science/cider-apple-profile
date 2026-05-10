@@ -3,13 +3,13 @@ package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jpa.appleprofil
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVariety;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyId;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyName;
-import org.craft.mcs.cap.shared.domain.sugar.SugarConcentration;
-import org.craft.mcs.cap.shared.domain.chemical.ChemicalProfile;
-import org.craft.mcs.cap.shared.domain.chemical.ChemicalProfileSource;
-import org.craft.mcs.cap.shared.domain.chemical.value.PhValue;
-import org.craft.mcs.cap.shared.domain.sugar.SpecificGravityValue;
-import org.craft.mcs.cap.shared.domain.chemical.value.TanninityValue;
-import org.craft.mcs.cap.shared.domain.chemical.value.TitratableAcidityValue;
+import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
+import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
+import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfileSource;
+import org.craft.mcs.cap.shared.kernel.chemical.value.PhValue;
+import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TanninityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;

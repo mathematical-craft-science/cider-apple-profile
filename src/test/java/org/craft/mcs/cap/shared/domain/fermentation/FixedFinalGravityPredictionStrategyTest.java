@@ -1,6 +1,6 @@
 package org.craft.mcs.cap.shared.domain.fermentation;
 
-import org.craft.mcs.cap.shared.domain.sugar.SpecificGravityValue;
+import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;

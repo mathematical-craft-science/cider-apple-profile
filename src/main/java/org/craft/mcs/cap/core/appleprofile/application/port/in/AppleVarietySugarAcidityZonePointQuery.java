@@ -1,6 +1,6 @@
 package org.craft.mcs.cap.core.appleprofile.application.port.in;
 
-import org.craft.mcs.cap.shared.application.query.CursorPageRequest;
+import org.craft.mcs.cap.shared.platform.query.CursorPageRequest;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;

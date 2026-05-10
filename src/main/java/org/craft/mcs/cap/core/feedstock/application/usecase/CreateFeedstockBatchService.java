@@ -7,7 +7,7 @@ import org.craft.mcs.cap.core.feedstock.application.port.in.FeedstockBatchCreate
 import org.craft.mcs.cap.core.feedstock.application.port.out.FeedstockBatchRepository;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
-import org.craft.mcs.cap.shared.application.TransactionHelper;
+import org.craft.mcs.cap.shared.platform.TransactionHelper;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 

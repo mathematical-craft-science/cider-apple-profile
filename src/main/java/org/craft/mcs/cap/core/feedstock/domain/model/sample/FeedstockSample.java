@@ -4,7 +4,7 @@ import java.time.Instant;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.sample.value.FeedstockSampleName;
 import org.craft.mcs.cap.core.feedstock.domain.model.sample.value.FeedstockType;
-import org.craft.mcs.cap.shared.domain.chemical.ChemicalProfile;
+import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.jmolecules.ddd.annotation.AggregateRoot;
 import org.jmolecules.ddd.annotation.Identity;
 import org.jspecify.annotations.NonNull;

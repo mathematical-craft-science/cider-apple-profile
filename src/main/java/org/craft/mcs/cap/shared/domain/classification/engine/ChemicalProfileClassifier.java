@@ -1,7 +1,7 @@
 package org.craft.mcs.cap.shared.domain.classification.engine;
 
-import org.craft.mcs.cap.shared.domain.chemical.ChemicalProfile;
-import org.craft.mcs.cap.shared.domain.classification.axis.ChemicalProfileAxisExtractor;
+import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
 import org.craft.mcs.cap.shared.domain.classification.result.ClassificationResult;
 import org.jmolecules.ddd.annotation.Service;
 import org.jspecify.annotations.NonNull;

@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import io.swagger.v3.oas.annotations.media.DiscriminatorMapping;
 import io.swagger.v3.oas.annotations.media.Schema;
-import org.craft.mcs.cap.shared.domain.sugaracidity.assessment.SugarAcidityZone;
-import org.craft.mcs.cap.shared.domain.sugaracidity.plot.SugarAcidityGraphZoneShape;
+import org.craft.mcs.cap.core.cideranalysis.sugaracidity.assessment.SugarAcidityZone;
+import org.craft.mcs.cap.core.cideranalysis.sugaracidity.plot.SugarAcidityGraphZoneShape;
 import org.jspecify.annotations.NonNull;
 
 

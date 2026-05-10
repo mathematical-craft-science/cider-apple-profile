@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import io.swagger.v3.oas.annotations.media.DiscriminatorMapping;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
-import org.craft.mcs.cap.shared.domain.classification.axis.MeasurementValueKind;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.MeasurementValueKind;
 import org.jspecify.annotations.NonNull;
 
 

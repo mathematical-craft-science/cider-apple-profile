@@ -1,6 +1,6 @@
 package org.craft.mcs.cap.core.appleprofile.domain.model;
 
-import org.craft.mcs.cap.shared.domain.chemical.ChemicalProfile;
+import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.jmolecules.ddd.annotation.AggregateRoot;
 import org.jmolecules.ddd.annotation.Identity;
 import org.jspecify.annotations.NonNull;

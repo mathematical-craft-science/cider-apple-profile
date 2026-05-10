@@ -6,7 +6,7 @@ import org.craft.mcs.cap.shared.domain.fermentation.AbvValue;
 import org.craft.mcs.cap.shared.domain.fermentation.FinalGravityPredictionSource;
 import org.craft.mcs.cap.shared.domain.fermentation.PotentialAbvPrediction;
 import org.craft.mcs.cap.shared.domain.fermentation.PredictionConfidence;
-import org.craft.mcs.cap.shared.domain.sugar.SpecificGravityValue;
+import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;

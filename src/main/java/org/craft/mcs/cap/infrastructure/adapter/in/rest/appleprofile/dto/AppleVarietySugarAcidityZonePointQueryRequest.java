@@ -1,7 +1,7 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.dto;
 
-import org.craft.mcs.cap.shared.domain.chemical.capability.ChemicalProfileCapability;
-import org.craft.mcs.cap.shared.domain.sugaracidity.assessment.SugarAcidityZone;
+import org.craft.mcs.cap.shared.kernel.chemical.capability.ChemicalProfileCapability;
+import org.craft.mcs.cap.core.cideranalysis.sugaracidity.assessment.SugarAcidityZone;
 import org.jspecify.annotations.Nullable;
 
 

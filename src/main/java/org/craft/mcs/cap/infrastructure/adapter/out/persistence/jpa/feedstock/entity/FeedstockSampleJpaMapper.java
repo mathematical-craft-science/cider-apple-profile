@@ -1,16 +1,16 @@
 package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jpa.feedstock.entity;
 
-import org.craft.mcs.cap.shared.domain.sugar.SugarConcentration;
+import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.craft.mcs.cap.core.feedstock.domain.model.sample.FeedstockSample;
 import org.craft.mcs.cap.core.feedstock.domain.model.sample.FeedstockSampleId;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.sample.value.FeedstockSampleName;
-import org.craft.mcs.cap.shared.domain.chemical.ChemicalProfile;
-import org.craft.mcs.cap.shared.domain.chemical.ChemicalProfileSource;
-import org.craft.mcs.cap.shared.domain.chemical.value.PhValue;
-import org.craft.mcs.cap.shared.domain.sugar.SpecificGravityValue;
-import org.craft.mcs.cap.shared.domain.chemical.value.TanninityValue;
-import org.craft.mcs.cap.shared.domain.chemical.value.TitratableAcidityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
+import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfileSource;
+import org.craft.mcs.cap.shared.kernel.chemical.value.PhValue;
+import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TanninityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;

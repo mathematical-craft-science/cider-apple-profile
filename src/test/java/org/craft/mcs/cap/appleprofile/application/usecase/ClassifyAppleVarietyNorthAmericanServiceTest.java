@@ -6,16 +6,16 @@ import org.craft.mcs.cap.core.appleprofile.application.usecase.ClassifyAppleVari
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVariety;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyId;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyName;
-import org.craft.mcs.cap.shared.domain.chemical.ChemicalProfile;
-import org.craft.mcs.cap.shared.domain.chemical.capability.ChemicalProfileCapability;
-import org.craft.mcs.cap.shared.domain.chemical.capability.ChemicalProfileCapabilityAssessor;
-import org.craft.mcs.cap.shared.domain.chemical.capability.ChemicalProfileCapabilityNotMetException;
-import org.craft.mcs.cap.shared.domain.classification.axis.ChemicalAxis;
-import org.craft.mcs.cap.shared.domain.classification.axis.ChemicalProfileAxisExtractor;
+import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
+import org.craft.mcs.cap.shared.kernel.chemical.capability.ChemicalProfileCapability;
+import org.craft.mcs.cap.shared.kernel.chemical.capability.ChemicalProfileCapabilityAssessor;
+import org.craft.mcs.cap.shared.kernel.chemical.capability.ChemicalProfileCapabilityNotMetException;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
 import org.craft.mcs.cap.shared.domain.classification.profile.northamerican.NorthAmericanProfileCalculator;
-import org.craft.mcs.cap.shared.domain.measurement.ExactMeasurement;
-import org.craft.mcs.cap.shared.domain.sugar.SpecificGravityValue;
-import org.craft.mcs.cap.shared.domain.sugar.SugarConcentration;
+import org.craft.mcs.cap.shared.kernel.measurement.ExactMeasurement;
+import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
+import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;

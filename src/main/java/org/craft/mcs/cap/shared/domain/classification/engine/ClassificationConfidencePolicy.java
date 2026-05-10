@@ -6,15 +6,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 import org.craft.mcs.cap.shared.domain.classification.rule.AxisRange;
-import org.craft.mcs.cap.shared.domain.classification.axis.AxisValue;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
 import org.craft.mcs.cap.shared.domain.classification.result.BorderlineEvidence;
 import org.craft.mcs.cap.shared.domain.classification.result.BorderlineReason;
-import org.craft.mcs.cap.shared.domain.classification.axis.ChemicalAxis;
-import org.craft.mcs.cap.shared.domain.classification.axis.ChemicalProfileAxes;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
 import org.craft.mcs.cap.shared.domain.classification.result.ClassificationAssessment;
 import org.craft.mcs.cap.shared.domain.classification.result.ClassificationConfidence;
 import org.craft.mcs.cap.shared.domain.classification.rule.ClassificationRule;
-import org.craft.mcs.cap.shared.domain.classification.axis.MeasurementValueKind;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.MeasurementValueKind;
 import org.jmolecules.ddd.annotation.Service;
 import org.jspecify.annotations.NonNull;
 
@@ -47,7 +47,7 @@ public class ClassificationConfidencePolicy {
       return;
     }
 
-    if (!range.contains(axisValue.min()) || !range.contains(axisValue.max())) {
+    if (!range.contains(axisValue.min()) || !range.contains(axisValue.max())) {  // NOSONAR
       evidence.add(new BorderlineEvidence(axisValue.axis(), BorderlineReason.RANGE_OVERLAPS_BOUNDARY));
     }
   }

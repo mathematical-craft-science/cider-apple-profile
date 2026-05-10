@@ -1,8 +1,8 @@
 package org.craft.mcs.cap.shared.domain.classification.profile.northamerican;
 
 import java.math.BigDecimal;
-import org.craft.mcs.cap.shared.domain.classification.axis.ChemicalAxis;
-import org.craft.mcs.cap.shared.domain.classification.axis.ChemicalProfileAxes;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
 import org.craft.mcs.cap.shared.domain.classification.rule.AxisRange;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;

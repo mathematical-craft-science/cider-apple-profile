@@ -1,21 +1,21 @@
 package org.craft.mcs.cap.infrastructure.configuration;
 
 
-import org.craft.mcs.cap.shared.domain.classification.axis.ChemicalProfileAxisExtractor;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
 import org.craft.mcs.cap.shared.domain.classification.engine.ChemicalProfileClassifier;
 import org.craft.mcs.cap.shared.domain.classification.engine.ClassificationConfidencePolicy;
 import org.craft.mcs.cap.shared.domain.classification.profile.BuiltInCiderClassificationThresholds;
 import org.craft.mcs.cap.shared.domain.classification.profile.northamerican.NorthAmericanProfileCalculator;
-import org.craft.mcs.cap.shared.domain.chemical.capability.ChemicalProfileCapabilityAssessor;
+import org.craft.mcs.cap.shared.kernel.chemical.capability.ChemicalProfileCapabilityAssessor;
 import org.craft.mcs.cap.shared.domain.fermentation.AbvPredictionStrategy;
 import org.craft.mcs.cap.shared.domain.fermentation.FinalGravityPredictionStrategy;
 import org.craft.mcs.cap.shared.domain.fermentation.FixedFinalGravityPredictionStrategy;
 import org.craft.mcs.cap.shared.domain.fermentation.PotentialAbvPredictor;
 import org.craft.mcs.cap.shared.domain.fermentation.StandardGravityDropAbvPredictionStrategy;
-import org.craft.mcs.cap.shared.domain.sugaracidity.assessment.BuiltInSugarAcidityZoneProfiles;
-import org.craft.mcs.cap.shared.domain.sugaracidity.assessment.EllipseSugarAcidityZoneAssessor;
-import org.craft.mcs.cap.shared.domain.sugaracidity.assessment.RectangleSugarAcidityZoneAssessor;
-import org.craft.mcs.cap.shared.domain.sugaracidity.assessment.SugarAcidityZoneAssessor;
+import org.craft.mcs.cap.core.cideranalysis.sugaracidity.assessment.BuiltInSugarAcidityZoneProfiles;
+import org.craft.mcs.cap.core.cideranalysis.sugaracidity.assessment.EllipseSugarAcidityZoneAssessor;
+import org.craft.mcs.cap.core.cideranalysis.sugaracidity.assessment.RectangleSugarAcidityZoneAssessor;
+import org.craft.mcs.cap.core.cideranalysis.sugaracidity.assessment.SugarAcidityZoneAssessor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

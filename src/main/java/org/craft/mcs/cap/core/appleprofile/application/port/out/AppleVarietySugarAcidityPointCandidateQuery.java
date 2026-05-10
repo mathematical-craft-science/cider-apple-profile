@@ -1,7 +1,7 @@
 package org.craft.mcs.cap.core.appleprofile.application.port.out;
 
-import org.craft.mcs.cap.shared.application.query.CursorPageRequest;
-import org.craft.mcs.cap.shared.application.query.TextSearchCriteria;
+import org.craft.mcs.cap.shared.platform.query.CursorPageRequest;
+import org.craft.mcs.cap.shared.platform.query.TextSearchCriteria;
 import org.jspecify.annotations.Nullable;
 
 

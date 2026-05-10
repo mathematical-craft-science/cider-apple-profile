@@ -3,17 +3,17 @@ package org.craft.mcs.cap.appleprofile.application.port.in;
 import org.craft.mcs.cap.core.appleprofile.application.port.in.AppleVarietySugarAcidityZoneResult;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyId;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyName;
-import org.craft.mcs.cap.shared.domain.chemical.capability.ChemicalProfileCapability;
-import org.craft.mcs.cap.shared.domain.chemical.capability.ChemicalProfileCapabilityAssessment;
-import org.craft.mcs.cap.shared.domain.chemical.capability.ChemicalProfileCapabilityAssessor;
-import org.craft.mcs.cap.shared.domain.chemical.value.TitratableAcidityValue;
-import org.craft.mcs.cap.shared.domain.classification.axis.ChemicalProfileAxisExtractor;
-import org.craft.mcs.cap.shared.domain.measurement.ExactMeasurement;
-import org.craft.mcs.cap.shared.domain.sugar.SpecificGravityValue;
-import org.craft.mcs.cap.shared.domain.sugar.SugarConcentration;
-import org.craft.mcs.cap.shared.domain.sugaracidity.assessment.BuiltInSugarAcidityZoneProfiles;
-import org.craft.mcs.cap.shared.domain.sugaracidity.assessment.RectangleSugarAcidityZoneAssessor;
-import org.craft.mcs.cap.shared.domain.chemical.ChemicalProfile;
+import org.craft.mcs.cap.shared.kernel.chemical.capability.ChemicalProfileCapability;
+import org.craft.mcs.cap.shared.kernel.chemical.capability.ChemicalProfileCapabilityAssessment;
+import org.craft.mcs.cap.shared.kernel.chemical.capability.ChemicalProfileCapabilityAssessor;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
+import org.craft.mcs.cap.shared.kernel.measurement.ExactMeasurement;
+import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
+import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
+import org.craft.mcs.cap.core.cideranalysis.sugaracidity.assessment.BuiltInSugarAcidityZoneProfiles;
+import org.craft.mcs.cap.core.cideranalysis.sugaracidity.assessment.RectangleSugarAcidityZoneAssessor;
+import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -89,7 +89,7 @@ class AppleVarietySugarAcidityZoneResultTest {
     );
   }
 
-  private static org.craft.mcs.cap.shared.domain.sugaracidity.assessment.SugarAcidityZoneAssessment assessment(
+  private static org.craft.mcs.cap.core.cideranalysis.sugaracidity.assessment.SugarAcidityZoneAssessment assessment(
       ChemicalProfile profile
   ) {
     return new RectangleSugarAcidityZoneAssessor(

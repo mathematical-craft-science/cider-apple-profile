@@ -1,11 +1,11 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest;
 
 import java.util.Set;
-import org.craft.mcs.cap.shared.application.query.MalformedCursorException;
-import org.craft.mcs.cap.shared.domain.chemical.capability.ChemicalProfileCapability;
-import org.craft.mcs.cap.shared.domain.chemical.capability.ChemicalProfileCapabilityAssessment;
-import org.craft.mcs.cap.shared.domain.chemical.capability.ChemicalProfileCapabilityNotMetException;
-import org.craft.mcs.cap.shared.domain.classification.axis.ChemicalAxis;
+import org.craft.mcs.cap.shared.platform.query.MalformedCursorException;
+import org.craft.mcs.cap.shared.kernel.chemical.capability.ChemicalProfileCapability;
+import org.craft.mcs.cap.shared.kernel.chemical.capability.ChemicalProfileCapabilityAssessment;
+import org.craft.mcs.cap.shared.kernel.chemical.capability.ChemicalProfileCapabilityNotMetException;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatusCode;
 

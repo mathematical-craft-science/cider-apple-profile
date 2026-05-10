@@ -2,8 +2,8 @@ package org.craft.mcs.cap.shared.domain.classification.rule;
 
 import java.util.EnumMap;
 import java.util.Map;
-import org.craft.mcs.cap.shared.domain.classification.axis.ChemicalAxis;
-import org.craft.mcs.cap.shared.domain.classification.axis.ChemicalProfileAxes;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

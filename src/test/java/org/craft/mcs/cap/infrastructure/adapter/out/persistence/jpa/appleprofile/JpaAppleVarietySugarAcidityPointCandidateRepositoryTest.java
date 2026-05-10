@@ -1,7 +1,7 @@
 package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jpa.appleprofile;
 
 import org.craft.mcs.cap.core.appleprofile.application.port.out.AppleVarietySugarAcidityPointCandidateQuery;
-import org.craft.mcs.cap.shared.application.query.TextSearchCriteria;
+import org.craft.mcs.cap.shared.platform.query.TextSearchCriteria;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Pageable;
 

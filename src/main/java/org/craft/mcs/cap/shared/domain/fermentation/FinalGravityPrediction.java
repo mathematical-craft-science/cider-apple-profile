@@ -1,6 +1,6 @@
 package org.craft.mcs.cap.shared.domain.fermentation;
 
-import org.craft.mcs.cap.shared.domain.sugar.SpecificGravityValue;
+import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;

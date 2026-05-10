@@ -6,10 +6,10 @@ import org.craft.mcs.cap.core.feedstock.application.port.in.FeedstockSampleSugar
 import org.craft.mcs.cap.core.feedstock.application.port.out.FeedstockBatchRepository;
 import org.craft.mcs.cap.core.feedstock.application.port.out.FeedstockSampleRepository;
 import org.craft.mcs.cap.core.feedstock.domain.model.sample.FeedstockSampleId;
-import org.craft.mcs.cap.shared.domain.classification.axis.ChemicalProfileAxisExtractor;
-import org.craft.mcs.cap.shared.domain.chemical.capability.ChemicalProfileCapability;
-import org.craft.mcs.cap.shared.domain.chemical.capability.ChemicalProfileCapabilityAssessor;
-import org.craft.mcs.cap.shared.domain.sugaracidity.assessment.SugarAcidityZoneAssessor;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
+import org.craft.mcs.cap.shared.kernel.chemical.capability.ChemicalProfileCapability;
+import org.craft.mcs.cap.shared.kernel.chemical.capability.ChemicalProfileCapabilityAssessor;
+import org.craft.mcs.cap.core.cideranalysis.sugaracidity.assessment.SugarAcidityZoneAssessor;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 

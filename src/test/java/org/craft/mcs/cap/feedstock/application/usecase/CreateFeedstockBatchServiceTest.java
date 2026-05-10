@@ -9,8 +9,8 @@ import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockBatchName;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.core.feedstock.domain.model.value.CiderMakerId;
-import org.craft.mcs.cap.shared.application.TransactionHelper;
-import org.craft.mcs.cap.shared.domain.measurement.VolumeValue;
+import org.craft.mcs.cap.shared.platform.TransactionHelper;
+import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
@@ -34,7 +34,7 @@ class CreateFeedstockBatchServiceTest {
       }
 
       @Override
-      public void executeInTransaction(Runnable action) {
+      public void executeInTransaction(@NonNull Runnable action) {
         action.run();
       }
     };

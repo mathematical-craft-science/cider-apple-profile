@@ -1,6 +1,6 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.importer.appleprofile.dto;
 
-import org.craft.mcs.cap.shared.domain.chemical.ConfidenceLevel;
+import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

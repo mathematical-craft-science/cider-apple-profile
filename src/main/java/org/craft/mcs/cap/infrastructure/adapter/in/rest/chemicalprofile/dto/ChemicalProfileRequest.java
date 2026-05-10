@@ -1,7 +1,7 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import org.craft.mcs.cap.shared.domain.chemical.ConfidenceLevel;
+import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
 import org.jspecify.annotations.Nullable;
 
 

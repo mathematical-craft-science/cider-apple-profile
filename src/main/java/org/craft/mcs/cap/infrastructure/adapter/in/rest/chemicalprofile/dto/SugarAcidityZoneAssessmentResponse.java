@@ -1,8 +1,8 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import org.craft.mcs.cap.shared.domain.sugaracidity.assessment.SugarAcidityLevel;
-import org.craft.mcs.cap.shared.domain.sugaracidity.assessment.SugarAcidityZone;
+import org.craft.mcs.cap.core.cideranalysis.sugaracidity.assessment.SugarAcidityLevel;
+import org.craft.mcs.cap.core.cideranalysis.sugaracidity.assessment.SugarAcidityZone;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

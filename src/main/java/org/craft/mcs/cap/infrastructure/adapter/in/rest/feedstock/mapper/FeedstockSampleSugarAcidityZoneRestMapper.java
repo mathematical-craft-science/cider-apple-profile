@@ -15,10 +15,10 @@ import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.FeedstockS
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.FeedstockSampleSugarAcidityZonePointBatchResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.FeedstockSampleSugarAcidityZoneResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.UnplottableFeedstockSampleSugarAcidityZonePointResponse;
-import org.craft.mcs.cap.shared.application.query.ChemicalProfileCapabilityCriteria;
-import org.craft.mcs.cap.shared.application.query.CursorPage;
-import org.craft.mcs.cap.shared.application.query.CursorPageRequest;
-import org.craft.mcs.cap.shared.application.query.SugarAcidityZoneCriteria;
+import org.craft.mcs.cap.shared.platform.query.ChemicalProfileCapabilityCriteria;
+import org.craft.mcs.cap.shared.platform.query.CursorPage;
+import org.craft.mcs.cap.shared.platform.query.CursorPageRequest;
+import org.craft.mcs.cap.shared.platform.query.SugarAcidityZoneCriteria;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

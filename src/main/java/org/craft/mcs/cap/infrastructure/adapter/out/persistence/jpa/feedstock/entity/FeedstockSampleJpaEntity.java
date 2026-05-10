@@ -15,7 +15,7 @@ import java.time.Instant;
 import java.util.UUID;
 import org.craft.mcs.cap.core.feedstock.domain.model.sample.value.FeedstockType;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jpa.common.MeasurementJpaEmbeddable;
-import org.craft.mcs.cap.shared.domain.chemical.ConfidenceLevel;
+import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.data.annotation.CreatedDate;

@@ -17,12 +17,13 @@ import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason
 import org.craft.mcs.cap.core.feedstock.domain.model.value.CiderMakerId;
 import org.craft.mcs.cap.core.feedstock.domain.model.sample.value.FeedstockSampleName;
 import org.craft.mcs.cap.core.feedstock.domain.model.sample.value.FeedstockType;
-import org.craft.mcs.cap.shared.application.TransactionHelper;
-import org.craft.mcs.cap.shared.domain.chemical.ChemicalProfile;
-import org.craft.mcs.cap.shared.domain.measurement.ExactMeasurement;
-import org.craft.mcs.cap.shared.domain.measurement.VolumeValue;
-import org.craft.mcs.cap.shared.domain.sugar.SpecificGravityValue;
-import org.craft.mcs.cap.shared.domain.sugar.SugarConcentration;
+import org.craft.mcs.cap.shared.platform.TransactionHelper;
+import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
+import org.craft.mcs.cap.shared.kernel.measurement.ExactMeasurement;
+import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;
+import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
+import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
 import static java.util.UUID.randomUUID;
@@ -97,15 +98,17 @@ class CreateFeedstockSampleServiceTest {
         .build();
   }
 
+  @NonNull
   private static TransactionHelper transactionHelper() {
     return new TransactionHelper() {
+      @NonNull
       @Override
-      public <T> T callInTransactionNonNull(Supplier<T> action) {
+      public <T> T callInTransactionNonNull(@NonNull Supplier<T> action) {
         return action.get();
       }
 
       @Override
-      public void executeInTransaction(Runnable action) {
+      public void executeInTransaction(@NonNull Runnable action) {
         action.run();
       }
     };

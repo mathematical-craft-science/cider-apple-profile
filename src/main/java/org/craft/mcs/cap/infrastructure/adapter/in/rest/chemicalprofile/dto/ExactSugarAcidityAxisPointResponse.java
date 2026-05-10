@@ -2,7 +2,7 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
-import org.craft.mcs.cap.shared.domain.classification.axis.MeasurementValueKind;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.MeasurementValueKind;
 import org.jspecify.annotations.NonNull;
 
 

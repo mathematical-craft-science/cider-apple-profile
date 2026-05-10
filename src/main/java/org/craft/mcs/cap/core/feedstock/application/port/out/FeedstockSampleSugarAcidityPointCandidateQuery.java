@@ -3,7 +3,7 @@ package org.craft.mcs.cap.core.feedstock.application.port.out;
 import org.craft.mcs.cap.core.feedstock.application.port.in.FeedstockBatchCriteria;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.core.feedstock.domain.model.value.CiderMakerId;
-import org.craft.mcs.cap.shared.application.query.CursorPageRequest;
+import org.craft.mcs.cap.shared.platform.query.CursorPageRequest;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

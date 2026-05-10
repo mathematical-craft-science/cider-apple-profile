@@ -7,7 +7,7 @@ import org.craft.mcs.cap.core.appleprofile.application.port.out.AppleVarietySuga
 import org.craft.mcs.cap.core.appleprofile.application.port.out.AppleVarietySugarAcidityPointCandidateQuery;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVariety;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jpa.appleprofile.entity.AppleVarietyJpaMapper;
-import org.craft.mcs.cap.shared.application.query.TextSearchCriteria;
+import org.craft.mcs.cap.shared.platform.query.TextSearchCriteria;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.data.domain.PageRequest;
