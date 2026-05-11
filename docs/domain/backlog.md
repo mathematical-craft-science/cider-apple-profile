@@ -25,6 +25,7 @@
 |---|---:|---:|---|
 | Blending для FeedstockSample с target area | 10 | 10 | Сильный decision support: подбор пропорций купажа под цель с учетом ограничений; сложность высокая из-за target geometry, метрики расстояния, нормализации шкал и volume constraints. |
 | Distance metric / target model для chemical profile | 9 | 7 | Обязательная основа для blending optimization, similarity search и сравнения samples с catalog varieties. |
+| Калибровка normalizer strategies для blending/evaluation | 8 | 7 | Нужно подобрать лучшие алгоритмы нормализации под разные сценарии: graph discovery, zone matching, practical blending и expert calibration. |
 | ~~Available volume для FeedstockBatch~~ | 8 | 4 | Реализовано как `FeedstockBatch.availableVolume`; sample создается внутри batch. |
 | Исследование каталога через выделенную область на graph | 8 | 6 | Делает каталог discovery-инструментом, а не статичным справочником. |
 | Фильтрация по English/French/Spanish/Long Ashton classifications | 8 | 5 | Позволяет сидроделу работать в привычной системе терминов. |
@@ -100,6 +101,38 @@ selection задается пользователем в момент иссле
   `assessment.point().acidity().value()`.
 - Позволить комбинировать selection с фильтрами по classification system,
   zone, levels, completeness и name.
+
+### Калибровка нормализации для distance и blending
+
+Как технолог или разработчик экспертной модели, я хочу сравнить разные
+normalizer strategies на реальных данных сортов и сырья, чтобы система
+ранжировала кандидатов так, как это практически полезно сидроделу.
+
+Уже реализованные стратегии:
+
+- `MIN_MAX`: простая нормализация по полному диапазону осей.
+- `EFFECTIVE_RANGE`: нормализация по практическим cider blending ranges.
+- `THRESHOLD_SEGMENT`: нормализация по классификационным порогам зон.
+- `SENSITIVITY_UNIT`: нормализация по экспертным единицам чувствительности.
+
+Идеи для будущих стратегий:
+
+- Robust scaling по медиане и IQR, когда накопится достаточно данных.
+- Z-score по каталогу или региональной выборке, если данные будут
+  статистически надежными.
+- Target-relative scaling: отклонение нормализуется относительно ширины
+  целевой области.
+- Learned/calibrated scoring: веса и normalization ranges подбираются по
+  историческим успешным blending решениям.
+
+Идея реализации:
+
+- Не показывать normalizer как основной пользовательский параметр.
+- Использовать `BlendProfileScoringPurpose`, который мапится на default
+  normalizer policy.
+- Хранить выбранный normalizer в результате score для объяснимости и аудита.
+- Позже добавить offline evaluation: сравнивать ranking разных normalizers на
+  тестовых наборах и экспертной разметке.
 
 ### Работа сидродела в привычной системе классификации
 

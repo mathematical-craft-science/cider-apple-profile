@@ -24,8 +24,8 @@ import org.craft.mcs.cap.shared.kernel.measurement.ExactMeasurement;
 import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.assessment.BuiltInSugarAcidityZoneProfiles;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.assessment.RectangleSugarAcidityZoneAssessor;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.zone.BuiltInSugarAcidityZoneProfiles;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.zone.RectangleSugarAcidityZoneAssessor;
 import org.junit.jupiter.api.Test;
 
 import static java.util.UUID.randomUUID;
@@ -47,7 +47,7 @@ class AssessFeedstockSampleSugarAcidityZoneServiceTest {
         new ChemicalProfileCapabilityAssessor(),
         new RectangleSugarAcidityZoneAssessor(
             BuiltInSugarAcidityZoneProfiles.thresholds(),
-            BuiltInSugarAcidityZoneProfiles.rectangularGraphMetadata()
+            BuiltInSugarAcidityZoneProfiles.rectangularZoneGeometryProfile()
         )
     );
     final var sample = FeedstockSample.create(

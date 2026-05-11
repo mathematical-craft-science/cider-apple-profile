@@ -6,12 +6,12 @@ import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.dto.Suga
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.dto.SugarAcidityGraphMetadataResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.dto.SugarAcidityGraphRangeResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.dto.SugarAcidityGraphZoneResponse;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.plot.SugarAcidityGraphAxis;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.plot.EllipseSugarAcidityGraphZone;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.plot.RectangleSugarAcidityGraphZone;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.plot.SugarAcidityGraphMetadata;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.plot.SugarAcidityGraphRange;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.plot.SugarAcidityGraphZone;
+import org.craft.mcs.cap.core.cideranalysis.profilegraph.domain.SugarAcidityGraphAxis;
+import org.craft.mcs.cap.core.cideranalysis.profilegraph.domain.EllipseSugarAcidityGraphZone;
+import org.craft.mcs.cap.core.cideranalysis.profilegraph.domain.RectangleSugarAcidityGraphZone;
+import org.craft.mcs.cap.core.cideranalysis.profilegraph.domain.SugarAcidityGraphMetadata;
+import org.craft.mcs.cap.core.cideranalysis.profilegraph.domain.SugarAcidityGraphRange;
+import org.craft.mcs.cap.core.cideranalysis.profilegraph.domain.SugarAcidityGraphZone;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;

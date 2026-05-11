@@ -1,7 +1,7 @@
 package org.craft.mcs.cap.shared.platform.query;
 
 import java.util.Set;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.assessment.SugarAcidityZone;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.zone.SugarAcidityZone;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
