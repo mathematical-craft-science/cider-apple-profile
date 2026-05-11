@@ -8,7 +8,8 @@ import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.composition
 import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.composition.ChemicalProfileCompositionSource;
 import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.composition.ChemicalProfileCompositionSourceReference;
 import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.composition.ChemicalProfileCompositionTanninPolicy;
-import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.composition.MassBalanceChemicalProfileCompositionStrategy;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.composition.BuiltInChemicalProfileCompositionCalculatorSelector;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.distance.BuiltInProfileTargetObjectiveFunctionFactory;
 import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.distance.BuiltInProfileAxisNormalizerSelector;
 import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.distance.ProfileTargetObjective;
 import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.distance.ProfileTargetObjectiveWeights;
@@ -29,9 +30,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 class CalculateChemicalProfileCompositionServiceTest {
 
   private final CalculateChemicalProfileCompositionService service = new CalculateChemicalProfileCompositionService(
-      new MassBalanceChemicalProfileCompositionStrategy(),
+      new BuiltInChemicalProfileCompositionCalculatorSelector(),
       new BuiltInProfileAxisNormalizerSelector(BuiltInSugarAcidityZoneProfiles.thresholds()),
-      new BuiltInProfileTargetScoringPurposeNormalizerPolicy()
+      new BuiltInProfileTargetObjectiveFunctionFactory()
   );
 
   @Test

@@ -7,6 +7,14 @@ import org.jspecify.annotations.Nullable;
 import static java.util.Objects.requireNonNull;
 
 
+/**
+ * Per-axis weights used by objective functions.
+ *
+ * <p>Weights are applied after axis normalization. A higher weight means deviations on that axis are
+ * more important for ranking candidates. Tannin is nullable because tannin can be omitted from the
+ * objective entirely; when tannin target is present and weight is omitted, objective functions use
+ * {@code 1}.
+ */
 public record ProfileTargetObjectiveWeights(
     @NonNull BigDecimal sugar,
     @NonNull BigDecimal acidity,

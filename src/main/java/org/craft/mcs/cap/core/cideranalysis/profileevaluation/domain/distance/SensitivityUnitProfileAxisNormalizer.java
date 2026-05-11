@@ -12,6 +12,10 @@ import static java.util.Objects.requireNonNull;
 /**
  * Normalizes axes by expert sensitivity units:
  * normalized(x) = x / unit, so distance delta is (x1 - x2) / unit.
+ *
+ * <p>This normalizer is intended for expert calibration. A unit represents one meaningful movement
+ * on that axis, for example 0.005 SG or 1 g/L acidity. It is useful when a technologist wants
+ * distance to reflect practical adjustment sensitivity rather than fixed axis ranges.
  */
 public final class SensitivityUnitProfileAxisNormalizer implements ProfileAxisNormalizer {
 

@@ -13,6 +13,10 @@ import static java.util.Objects.requireNonNull;
 /**
  * Normalizes axes by cider-making effective ranges:
  * normalized(x) = (x - effectiveMin) / (effectiveMax - effectiveMin).
+ *
+ * <p>This is the default normalizer for blending planning. It uses practical cider-making ranges
+ * rather than absolute value-object limits, so distance reflects meaningful sensory/process
+ * movement in typical source material.
  */
 public final class EffectiveRangeProfileAxisNormalizer implements ProfileAxisNormalizer {
 

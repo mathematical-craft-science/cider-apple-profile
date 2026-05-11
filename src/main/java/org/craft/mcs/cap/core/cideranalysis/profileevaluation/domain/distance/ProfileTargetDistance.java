@@ -11,6 +11,14 @@ import org.jspecify.annotations.Nullable;
 import static java.util.Objects.requireNonNull;
 
 
+/**
+ * Result of scoring a profile point against a target objective.
+ *
+ * <p>The object is intentionally verbose because the API needs to explain optimization decisions:
+ * the original point, nearest target point, optional tannin values, selected objective function,
+ * metric, weights and missing measurements all travel together. This lets a UI show why one
+ * candidate ranked better than another instead of exposing only a scalar score.
+ */
 public record ProfileTargetDistance(
     @NonNull ProfileTargetDistanceStatus status,
     @NonNull SugarAcidityCoordinates point,

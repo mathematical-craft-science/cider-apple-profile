@@ -14,6 +14,22 @@ import static java.util.Objects.requireNonNull;
 
 /**
  * Scores a point by normalized weighted distance to the nearest target area boundary.
+ *
+ * <p>This is the default L2 objective function. If the point is inside the sugar-acidity target
+ * geometry and inside the optional tannin target, distance is zero. Otherwise the target geometry
+ * provides the nearest sugar-acidity point and the function computes:
+ *
+ * <pre>{@code
+ * distance = sqrt(
+ *   sugarWeight   * normalizedSugarDelta^2
+ * + acidityWeight * normalizedAcidityDelta^2
+ * + tanninWeight  * normalizedTanninDelta^2
+ * )
+ * }</pre>
+ *
+ * <p>Because deltas are normalized before aggregation, SG, acidity and tannin can participate in one
+ * objective without raw-unit skew. This strategy is useful when larger deviations should be
+ * penalized more strongly than several small deviations.
  */
 public final class DistanceToTargetAreaObjectiveFunction implements ProfileTargetObjectiveFunction {
 

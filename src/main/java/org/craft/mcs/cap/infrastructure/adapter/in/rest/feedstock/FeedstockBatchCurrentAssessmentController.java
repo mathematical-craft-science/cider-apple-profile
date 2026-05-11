@@ -2,7 +2,9 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock;
 
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.composition.optimization.DiscretizedCompositionOptimizationSettings;
 import org.craft.mcs.cap.core.feedstock.application.port.in.AssessFeedstockBatchCurrentSugarAcidityZoneUseCase;
+import org.craft.mcs.cap.core.feedstock.application.port.in.OptimizeFeedstockBatchCompositionUseCase;
 import org.craft.mcs.cap.core.feedstock.application.port.in.PredictFeedstockBatchCurrentPotentialAbvUseCase;
 import org.craft.mcs.cap.core.feedstock.application.port.in.QueryFeedstockBatchCurrentSugarAcidityZonePointsUseCase;
 import org.craft.mcs.cap.core.feedstock.application.port.in.ScoreFeedstockBatchBlendProfileTargetUseCase;
@@ -12,6 +14,8 @@ import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.FeedstockB
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.FeedstockBatchCurrentSugarAcidityZonePointBatchResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.FeedstockBatchCurrentSugarAcidityZonePointQueryRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.FeedstockBatchCurrentSugarAcidityZoneResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.OptimizeFeedstockBatchCompositionRequest;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.OptimizeFeedstockBatchCompositionResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.ScoreFeedstockBatchBlendProfileTargetRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.mapper.FeedstockBatchBlendProfileTargetScoreRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.mapper.FeedstockBatchCurrentAssessmentRestMapper;
@@ -34,6 +38,7 @@ public final class FeedstockBatchCurrentAssessmentController {
   private final @NonNull QueryFeedstockBatchCurrentSugarAcidityZonePointsUseCase querySugarAcidityZonePointsUseCase;
   private final @NonNull PredictFeedstockBatchCurrentPotentialAbvUseCase predictPotentialAbvUseCase;
   private final @NonNull ScoreFeedstockBatchBlendProfileTargetUseCase scoreBlendProfileTargetUseCase;
+  private final @NonNull OptimizeFeedstockBatchCompositionUseCase optimizeFeedstockBatchCompositionUseCase;
 
   @GetMapping(value = "/feedstock-batches/{batchId}/sugar-acidity-zone", produces = APPLICATION_JSON_VALUE)
   public @NonNull ResponseEntity<@NonNull FeedstockBatchCurrentSugarAcidityZoneResponse> assessSugarAcidityZone(
@@ -93,5 +98,28 @@ public final class FeedstockBatchCurrentAssessmentController {
     return ResponseEntity.ok(
         FeedstockBatchBlendProfileTargetScoreRestMapper.toResponse(scores)
     );
+  }
+
+  @PostMapping(
+      value = "/feedstock-batches/composition-optimizations",
+      consumes = APPLICATION_JSON_VALUE,
+      produces = APPLICATION_JSON_VALUE
+  )
+  public @NonNull ResponseEntity<@NonNull OptimizeFeedstockBatchCompositionResponse> optimizeComposition(
+      @RequestBody @NonNull OptimizeFeedstockBatchCompositionRequest request
+  ) {
+    final var result = optimizeFeedstockBatchCompositionUseCase.optimize(
+        FeedstockBatchBlendProfileTargetScoreRestMapper.toOptimizationCommand(request)
+    );
+
+    return ResponseEntity.ok(
+        FeedstockBatchBlendProfileTargetScoreRestMapper.toResponse(result, stepPercent(request))
+    );
+  }
+
+  private static int stepPercent(@NonNull OptimizeFeedstockBatchCompositionRequest request) {
+    return request.stepPercent() == null
+        ? DiscretizedCompositionOptimizationSettings.DEFAULT_STEP_PERCENT
+        : request.stepPercent();
   }
 }

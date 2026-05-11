@@ -14,6 +14,10 @@ import static java.util.Objects.requireNonNull;
 /**
  * Normalizes axes piecewise by classification thresholds:
  * normalized(x) = (segmentIndex + (x - segmentMin) / (segmentMax - segmentMin)) / segmentCount.
+ *
+ * <p>This normalizer is useful for target-zone matching. It makes movement across domain
+ * classification thresholds more explicit than raw min-max scaling, so candidates near different
+ * low/medium/high bands can be compared in terms of classification semantics.
  */
 public final class ThresholdSegmentProfileAxisNormalizer implements ProfileAxisNormalizer {
 

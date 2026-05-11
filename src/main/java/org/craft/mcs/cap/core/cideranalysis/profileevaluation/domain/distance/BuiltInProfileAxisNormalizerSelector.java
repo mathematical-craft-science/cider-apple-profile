@@ -10,6 +10,14 @@ import static java.util.Objects.requireNonNull;
 
 /**
  * Selects one of the built-in profile evaluation axis normalization strategies.
+ *
+ * <p>The built-ins are intentionally domain-specific:
+ * <ul>
+ *   <li>{@link ProfileAxisNormalizerCode#MIN_MAX}: full cider profile axis range;</li>
+ *   <li>{@link ProfileAxisNormalizerCode#EFFECTIVE_RANGE}: practical cider blending range;</li>
+ *   <li>{@link ProfileAxisNormalizerCode#THRESHOLD_SEGMENT}: sugar-acidity/tannin threshold segments;</li>
+ *   <li>{@link ProfileAxisNormalizerCode#SENSITIVITY_UNIT}: expert-calibrated units.</li>
+ * </ul>
  */
 public final class BuiltInProfileAxisNormalizerSelector implements ProfileAxisNormalizerSelector {
 

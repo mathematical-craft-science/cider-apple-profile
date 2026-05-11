@@ -5,6 +5,13 @@ import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.distance.Pr
 import org.jspecify.annotations.NonNull;
 
 
+/**
+ * Maps a user-facing scoring purpose to a default normalizer.
+ *
+ * <p>REST requests may still override the normalizer explicitly. This policy defines defaults for
+ * cases where the caller only knows the business purpose, such as graph exploration or blending
+ * planning.
+ */
 public interface ProfileTargetScoringPurposeNormalizerPolicy {
 
   @NonNull
