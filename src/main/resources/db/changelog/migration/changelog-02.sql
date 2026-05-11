@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS feedstock_batches
     batch_id                 UUID                     NOT NULL PRIMARY KEY,
     cider_maker_id           UUID                     NOT NULL,
     name                     VARCHAR(160)             NOT NULL,
+    type                     VARCHAR(32)              NOT NULL,
     season_starts_on         DATE                     NOT NULL,
     season_ends_on           DATE                     NOT NULL,
     source                   VARCHAR(255),
@@ -31,12 +32,11 @@ CREATE INDEX IF NOT EXISTS idx_feedstock_batches_cider_maker_season_batch
 CREATE INDEX IF NOT EXISTS idx_feedstock_batches_cider_maker_lower_name
     ON feedstock_batches (cider_maker_id, LOWER(name));
 
-CREATE TABLE IF NOT EXISTS feedstock_samples
+CREATE TABLE IF NOT EXISTS feedstock_measurements
 (
-    sample_id                    UUID                     NOT NULL PRIMARY KEY,
+    measurement_id               UUID                     NOT NULL PRIMARY KEY,
     batch_id                     UUID                     NOT NULL,
     name                         VARCHAR(160)             NOT NULL,
-    type                         VARCHAR(32)              NOT NULL,
     measured_at                  TIMESTAMP WITH TIME ZONE NOT NULL,
     note                         VARCHAR(2000),
 
@@ -83,21 +83,18 @@ CREATE TABLE IF NOT EXISTS feedstock_samples
     created_at                   TIMESTAMP WITH TIME ZONE NOT NULL,
     updated_at                   TIMESTAMP WITH TIME ZONE NOT NULL,
 
-    CONSTRAINT fk_feedstock_samples_batch
+    CONSTRAINT fk_feedstock_measurements_batch
         FOREIGN KEY (batch_id) REFERENCES feedstock_batches (batch_id)
 );
 
-CREATE INDEX IF NOT EXISTS idx_feedstock_samples_batch_id
-    ON feedstock_samples (batch_id);
+CREATE INDEX IF NOT EXISTS idx_feedstock_measurements_batch_id
+    ON feedstock_measurements (batch_id);
 
-CREATE INDEX IF NOT EXISTS idx_feedstock_samples_batch_measured_at
-    ON feedstock_samples (batch_id, measured_at DESC);
+CREATE INDEX IF NOT EXISTS idx_feedstock_measurements_batch_measured_at
+    ON feedstock_measurements (batch_id, measured_at DESC);
 
-CREATE INDEX IF NOT EXISTS idx_feedstock_samples_batch_measured_at_sample
-    ON feedstock_samples (batch_id, measured_at, sample_id);
+CREATE INDEX IF NOT EXISTS idx_feedstock_measurements_batch_measured_at_measurement
+    ON feedstock_measurements (batch_id, measured_at, measurement_id);
 
-CREATE INDEX IF NOT EXISTS idx_feedstock_samples_batch_type
-    ON feedstock_samples (batch_id, type);
-
-CREATE INDEX IF NOT EXISTS idx_feedstock_samples_batch_lower_name
-    ON feedstock_samples (batch_id, LOWER(name));
+CREATE INDEX IF NOT EXISTS idx_feedstock_measurements_batch_lower_name
+    ON feedstock_measurements (batch_id, LOWER(name));

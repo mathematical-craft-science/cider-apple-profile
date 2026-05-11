@@ -8,6 +8,7 @@ import org.craft.mcs.cap.core.feedstock.application.usecase.CreateFeedstockBatch
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockBatchName;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
 import org.craft.mcs.cap.core.feedstock.domain.model.value.CiderMakerId;
 import org.craft.mcs.cap.shared.platform.TransactionHelper;
 import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;
@@ -45,6 +46,7 @@ class CreateFeedstockBatchServiceTest {
     final var created = service.create(new CreateFeedstockBatchCommand(
         ciderMakerId,
         FeedstockBatchName.of("Late season fruit"),
+        FeedstockType.APPLE_JUICE,
         FeedstockSeason.of(LocalDate.parse("2026-10-01"), LocalDate.parse("2026-12-15")),
         null,
         VolumeValue.ofLiters("250.000"),

@@ -31,6 +31,7 @@ public final class FeedstockBatchRestMapper {
     return new CreateFeedstockBatchCommand(
         CiderMakerId.of(requireNonNull(request.ciderMakerId(), "cider maker id cannot be null")),
         FeedstockBatchName.of(request.name()),
+        requireNonNull(request.type(), "feedstock type cannot be null"),
         FeedstockSeason.of(request.season().startsOn(), request.season().endsOn()),
         sourceOf(request.source()),
         VolumeValue.ofLiters(request.availableVolumeLiters()),
@@ -47,6 +48,7 @@ public final class FeedstockBatchRestMapper {
         batch.batchId().value(),
         batch.ciderMakerId().value(),
         batch.name().value(),
+        batch.type(),
         toResponse(batch.season()),
         batch.source() == null ? null : batch.source().value(), // NOSONAR
         batch.availableVolume().liters(),
@@ -63,6 +65,7 @@ public final class FeedstockBatchRestMapper {
         batch.batchId().value(),
         batch.ciderMakerId().value(),
         batch.name().value(),
+        batch.type(),
         toResponse(batch.season()),
         batch.source() == null ? null : batch.source().value(), // NOSONAR
         batch.availableVolume().liters(),

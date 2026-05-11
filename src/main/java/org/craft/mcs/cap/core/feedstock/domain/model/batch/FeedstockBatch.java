@@ -3,6 +3,7 @@ package org.craft.mcs.cap.core.feedstock.domain.model.batch;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockBatchName;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSource;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
 import org.craft.mcs.cap.core.feedstock.domain.model.value.CiderMakerId;
 import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;
 import org.jmolecules.ddd.annotation.AggregateRoot;
@@ -23,6 +24,8 @@ public final class FeedstockBatch {
 
   private @NonNull FeedstockBatchName name;
 
+  private @NonNull FeedstockType type;
+
   private @NonNull FeedstockSeason season;
 
   private @Nullable FeedstockSource source;
@@ -35,6 +38,7 @@ public final class FeedstockBatch {
       @NonNull FeedstockBatchId batchId,
       @NonNull CiderMakerId ciderMakerId,
       @NonNull FeedstockBatchName name,
+      @NonNull FeedstockType type,
       @NonNull FeedstockSeason season,
       @Nullable FeedstockSource source,
       @NonNull VolumeValue availableVolume,
@@ -43,6 +47,7 @@ public final class FeedstockBatch {
     this.batchId = requireNonNull(batchId, "feedstock batch id cannot be null");
     this.ciderMakerId = requireNonNull(ciderMakerId, "cider maker id cannot be null");
     this.name = requireNonNull(name, "feedstock batch name cannot be null");
+    this.type = requireNonNull(type, "feedstock type cannot be null");
     this.season = requireNonNull(season, "feedstock season cannot be null");
     this.source = source;
     this.availableVolume = requireNonNull(availableVolume, "available volume cannot be null");
@@ -53,6 +58,7 @@ public final class FeedstockBatch {
       @NonNull FeedstockBatchId batchId,
       @NonNull CiderMakerId ciderMakerId,
       @NonNull FeedstockBatchName name,
+      @NonNull FeedstockType type,
       @NonNull FeedstockSeason season,
       @NonNull VolumeValue availableVolume
   ) {
@@ -60,6 +66,7 @@ public final class FeedstockBatch {
         batchId,
         ciderMakerId,
         name,
+        type,
         season,
         null,
         availableVolume,
@@ -77,6 +84,10 @@ public final class FeedstockBatch {
 
   public @NonNull FeedstockBatchName name() {
     return name;
+  }
+
+  public @NonNull FeedstockType type() {
+    return type;
   }
 
   public @NonNull FeedstockSeason season() {
@@ -97,6 +108,11 @@ public final class FeedstockBatch {
 
   public @NonNull FeedstockBatch rename(@NonNull FeedstockBatchName name) {
     this.name = requireNonNull(name, "feedstock batch name cannot be null");
+    return this;
+  }
+
+  public @NonNull FeedstockBatch changeType(@NonNull FeedstockType type) {
+    this.type = requireNonNull(type, "feedstock type cannot be null");
     return this;
   }
 
