@@ -22,9 +22,9 @@ import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtracto
 import org.craft.mcs.cap.shared.kernel.measurement.ExactMeasurement;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.assessment.BuiltInSugarAcidityZoneProfiles;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.assessment.RectangleSugarAcidityZoneAssessor;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.assessment.SugarAcidityZone;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.zone.BuiltInSugarAcidityZoneProfiles;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.zone.RectangleSugarAcidityZoneAssessor;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.zone.SugarAcidityZone;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -135,7 +135,7 @@ class QueryAppleVarietySugarAcidityZonePointsServiceTest {
         new ChemicalProfileCapabilityAssessor(),
         new RectangleSugarAcidityZoneAssessor(
             BuiltInSugarAcidityZoneProfiles.thresholds(),
-            BuiltInSugarAcidityZoneProfiles.rectangularGraphMetadata()
+            BuiltInSugarAcidityZoneProfiles.rectangularZoneGeometryProfile()
         )
     );
   }

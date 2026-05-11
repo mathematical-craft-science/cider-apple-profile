@@ -3,7 +3,7 @@ package org.craft.mcs.cap.shared.platform.query;
 import java.util.HashSet;
 import java.util.Set;
 import org.craft.mcs.cap.shared.kernel.chemical.capability.ChemicalProfileCapability;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.assessment.SugarAcidityZone;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.zone.SugarAcidityZone;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;

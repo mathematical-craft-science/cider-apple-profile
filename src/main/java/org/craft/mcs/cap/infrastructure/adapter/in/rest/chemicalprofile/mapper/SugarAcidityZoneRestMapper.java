@@ -6,9 +6,9 @@ import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.dto.Stat
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.dto.SugarAcidityAxisPointResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.dto.SugarAcidityProfilePointResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.dto.SugarAcidityZoneAssessmentResponse;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.point.SugarAcidityAxisPoint;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.point.SugarAcidityProfilePoint;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.assessment.SugarAcidityZoneAssessment;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.point.SugarAcidityAxisPoint;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.point.SugarAcidityProfilePoint;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.zone.SugarAcidityZoneAssessment;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;

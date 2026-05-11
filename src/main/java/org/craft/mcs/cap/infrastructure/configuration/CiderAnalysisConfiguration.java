@@ -5,10 +5,15 @@ import org.craft.mcs.cap.core.cideranalysis.classification.engine.ChemicalProfil
 import org.craft.mcs.cap.core.cideranalysis.classification.engine.ClassificationConfidencePolicy;
 import org.craft.mcs.cap.core.cideranalysis.classification.profile.BuiltInCiderClassificationThresholds;
 import org.craft.mcs.cap.core.cideranalysis.classification.profile.northamerican.NorthAmericanProfileCalculator;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.assessment.BuiltInSugarAcidityZoneProfiles;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.assessment.EllipseSugarAcidityZoneAssessor;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.assessment.RectangleSugarAcidityZoneAssessor;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.assessment.SugarAcidityZoneAssessor;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.zone.BuiltInSugarAcidityZoneProfiles;
+import org.craft.mcs.cap.core.cideranalysis.profilegraph.domain.BuiltInSugarAcidityGraphMetadataFactory;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.zone.EllipseSugarAcidityZoneAssessor;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.zone.RectangleSugarAcidityZoneAssessor;
+import org.craft.mcs.cap.core.cideranalysis.profilegraph.domain.SugarAcidityGraphMetadata;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.zone.SugarAcidityZoneGeometryProfile;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.zone.SugarAcidityZoneAssessor;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.distance.BlendProfileAxisNormalizerSelector;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.distance.BuiltInBlendProfileAxisNormalizerSelector;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -42,21 +47,39 @@ class CiderAnalysisConfiguration {
   }
 
   @Bean
-  SugarAcidityZoneAssessor sugarAcidityZoneAssessor(
+  SugarAcidityZoneGeometryProfile sugarAcidityZoneGeometryProfile(
       @Value("${cap.cider-analysis.sugar-acidity.assessor:rectangle}") String assessor
+  ) {
+    return switch (assessor) {
+      case "ellipse" -> BuiltInSugarAcidityZoneProfiles.ellipticalZoneGeometryProfile();
+      case "rectangle" -> BuiltInSugarAcidityZoneProfiles.rectangularZoneGeometryProfile();
+      default -> throw new IllegalArgumentException("unsupported sugar-acidity assessor: " + assessor);
+    };
+  }
+
+  @Bean
+  SugarAcidityGraphMetadata sugarAcidityGraphMetadata(
+      SugarAcidityZoneGeometryProfile geometryProfile
+  ) {
+    return BuiltInSugarAcidityGraphMetadataFactory.from(geometryProfile);
+  }
+
+  @Bean
+  SugarAcidityZoneAssessor sugarAcidityZoneAssessor(
+      SugarAcidityZoneGeometryProfile geometryProfile
   ) {
     final var thresholds = BuiltInSugarAcidityZoneProfiles.thresholds();
 
-    return switch (assessor) {
-      case "ellipse" -> new EllipseSugarAcidityZoneAssessor(
-          thresholds,
-          BuiltInSugarAcidityZoneProfiles.ellipticalGraphMetadata()
-      );
-      case "rectangle" -> new RectangleSugarAcidityZoneAssessor(
-          thresholds,
-          BuiltInSugarAcidityZoneProfiles.rectangularGraphMetadata()
-      );
-      default -> throw new IllegalArgumentException("unsupported sugar-acidity assessor: " + assessor);
+    return switch (geometryProfile.zones().getFirst().shape()) {
+      case ELLIPSE -> new EllipseSugarAcidityZoneAssessor(thresholds, geometryProfile);
+      case RECTANGLE -> new RectangleSugarAcidityZoneAssessor(thresholds, geometryProfile);
     };
+  }
+
+  @Bean
+  BlendProfileAxisNormalizerSelector blendProfileAxisNormalizerSelector() {
+    return new BuiltInBlendProfileAxisNormalizerSelector(
+        BuiltInSugarAcidityZoneProfiles.thresholds()
+    );
   }
 }

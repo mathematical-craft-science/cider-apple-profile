@@ -31,6 +31,14 @@ public final class TanninityValue
     return new TanninityValue(Quantities.getQuantity(mgPerLiter, UNIT));
   }
 
+  public static @NonNull BigDecimal minValue() {
+    return MIN;
+  }
+
+  public static @NonNull BigDecimal maxValue() {
+    return MAX;
+  }
+
   @NonNull
   public static TanninityValue of(@NonNull String mgPerLiter) {
     requireNonNull(mgPerLiter, "Tanninity value cannot be null");
