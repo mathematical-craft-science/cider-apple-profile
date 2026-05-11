@@ -31,23 +31,23 @@ public final class SugarAcidityZoneRestMapper {
         assessment.acidity(),
         assessment.tannin(),
         assessment.balancedForSingleVariety(),
-        pointResponse(assessment.point())
+        toResponse(assessment.point())
     );
   }
 
-  private static @NonNull SugarAcidityProfilePointResponse pointResponse(
+  public static @NonNull SugarAcidityProfilePointResponse toResponse(
       @NonNull SugarAcidityProfilePoint point
   ) {
     requireNonNull(point, "sugar-acidity profile point cannot be null");
 
     return new SugarAcidityProfilePointResponse(
-        pointResponse(point.sugar()),
-        pointResponse(point.acidity()),
-        point.tannin() == null ? null : pointResponse(point.tannin()) // NOSONAR
+        toResponse(point.sugar()),
+        toResponse(point.acidity()),
+        point.tannin() == null ? null : toResponse(point.tannin()) // NOSONAR
     );
   }
 
-  private static @NonNull SugarAcidityAxisPointResponse pointResponse(
+  public static @NonNull SugarAcidityAxisPointResponse toResponse(
       @NonNull SugarAcidityAxisPoint point
   ) {
     requireNonNull(point, "sugar-acidity axis point cannot be null");

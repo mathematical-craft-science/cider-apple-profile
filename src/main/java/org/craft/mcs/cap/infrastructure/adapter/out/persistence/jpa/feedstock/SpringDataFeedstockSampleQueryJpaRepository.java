@@ -77,6 +77,38 @@ interface SpringDataFeedstockSampleQueryJpaRepository
 
   @NonNull
   @Query("""
+      select sample
+      from FeedstockSampleJpaEntity sample, FeedstockBatchJpaEntity batch
+      where sample.batchId = batch.batchId
+        and batch.ciderMakerId = :ciderMakerId
+        and (:filterByBatch = false or sample.batchId in :batchIds)
+        and (
+          :filterBySeason = false
+          or (batch.seasonStartsOn <= :seasonEndsOn and batch.seasonEndsOn >= :seasonStartsOn)
+        )
+        and not exists (
+          select newer.sampleId
+          from FeedstockSampleJpaEntity newer
+          where newer.batchId = sample.batchId
+            and (
+              newer.measuredAt > sample.measuredAt
+              or (newer.measuredAt = sample.measuredAt and newer.sampleId > sample.sampleId)
+            )
+        )
+      order by sample.measuredAt desc, sample.sampleId desc
+      """)
+  List<@NonNull FeedstockSampleJpaEntity> findLatestSugarAcidityPointCandidates(
+      @Param("ciderMakerId") @NonNull UUID ciderMakerId,
+      @Param("filterByBatch") boolean filterByBatch,
+      @Param("batchIds") @NonNull List<@NonNull UUID> batchIds,
+      @Param("filterBySeason") boolean filterBySeason,
+      @Param("seasonStartsOn") @Nullable LocalDate seasonStartsOn,
+      @Param("seasonEndsOn") @Nullable LocalDate seasonEndsOn,
+      @NonNull Pageable pageable
+  );
+
+  @NonNull
+  @Query("""
       select new org.craft.mcs.cap.infrastructure.adapter.out.persistence.jpa.feedstock.FeedstockSampleSummaryJpaProjection(
         sample.sampleId,
         batch.ciderMakerId,

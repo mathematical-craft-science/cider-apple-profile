@@ -26,5 +26,10 @@ public interface FeedstockSampleQueryRepository {
   );
 
   @NonNull
+  List<@NonNull FeedstockSample> findLatestSugarAcidityPointCandidates(
+      @NonNull LatestFeedstockSampleSugarAcidityPointCandidateQuery query
+  );
+
+  @NonNull
   List<@NonNull FeedstockSampleSummary> findSummariesByBatchId(@NonNull FeedstockBatchId batchId);
 }

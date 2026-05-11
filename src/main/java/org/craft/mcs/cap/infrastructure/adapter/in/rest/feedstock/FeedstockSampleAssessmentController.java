@@ -5,11 +5,15 @@ import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.feedstock.application.port.in.AssessFeedstockSampleSugarAcidityZoneUseCase;
 import org.craft.mcs.cap.core.feedstock.application.port.in.PredictFeedstockSamplePotentialAbvUseCase;
 import org.craft.mcs.cap.core.feedstock.application.port.in.QueryFeedstockSampleSugarAcidityZonePointsUseCase;
+import org.craft.mcs.cap.core.feedstock.application.port.in.ScoreFeedstockSampleBlendProfileTargetUseCase;
 import org.craft.mcs.cap.core.feedstock.domain.model.sample.FeedstockSampleId;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.FeedstockSampleBlendProfileTargetScoreBatchResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.FeedstockSamplePotentialAbvResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.FeedstockSampleSugarAcidityZonePointBatchResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.FeedstockSampleSugarAcidityZonePointQueryRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.FeedstockSampleSugarAcidityZoneResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.ScoreFeedstockSampleBlendProfileTargetRequest;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.mapper.FeedstockSampleBlendProfileTargetScoreRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.mapper.FeedstockSamplePotentialAbvRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.mapper.FeedstockSampleSugarAcidityZoneRestMapper;
 import org.jspecify.annotations.NonNull;
@@ -30,6 +34,7 @@ public final class FeedstockSampleAssessmentController implements FeedstockSampl
   private final @NonNull AssessFeedstockSampleSugarAcidityZoneUseCase assessSugarAcidityZoneUseCase;
   private final @NonNull QueryFeedstockSampleSugarAcidityZonePointsUseCase querySugarAcidityZonePointsUseCase;
   private final @NonNull PredictFeedstockSamplePotentialAbvUseCase predictPotentialAbvUseCase;
+  private final @NonNull ScoreFeedstockSampleBlendProfileTargetUseCase scoreBlendProfileTargetUseCase;
 
   @Override
   @GetMapping(value = "/feedstock-samples/{sampleId}/sugar-acidity-zone", produces = APPLICATION_JSON_VALUE)
@@ -74,6 +79,23 @@ public final class FeedstockSampleAssessmentController implements FeedstockSampl
 
     return ResponseEntity.ok(
         FeedstockSamplePotentialAbvRestMapper.toResponse(prediction)
+    );
+  }
+
+  @PostMapping(
+      value = "/feedstock-samples/blend-profile-target-scores",
+      consumes = APPLICATION_JSON_VALUE,
+      produces = APPLICATION_JSON_VALUE
+  )
+  public @NonNull ResponseEntity<@NonNull FeedstockSampleBlendProfileTargetScoreBatchResponse> scoreBlendProfileTarget(
+      @RequestBody @NonNull ScoreFeedstockSampleBlendProfileTargetRequest request
+  ) {
+    final var scores = scoreBlendProfileTargetUseCase.score(
+        FeedstockSampleBlendProfileTargetScoreRestMapper.toCommand(request)
+    );
+
+    return ResponseEntity.ok(
+        FeedstockSampleBlendProfileTargetScoreRestMapper.toResponse(scores)
     );
   }
 }

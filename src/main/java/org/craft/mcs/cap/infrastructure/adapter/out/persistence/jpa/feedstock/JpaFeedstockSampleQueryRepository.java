@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.feedstock.application.port.in.FeedstockSampleSummary;
 import org.craft.mcs.cap.core.feedstock.application.port.out.FeedstockSampleQueryRepository;
 import org.craft.mcs.cap.core.feedstock.application.port.out.FeedstockSampleSugarAcidityPointCandidateQuery;
+import org.craft.mcs.cap.core.feedstock.application.port.out.LatestFeedstockSampleSugarAcidityPointCandidateQuery;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.core.feedstock.domain.model.sample.FeedstockSample;
@@ -78,6 +79,33 @@ class JpaFeedstockSampleQueryRepository
             season == null ? null : season.endsOn(),
             cursor == null ? null : cursor.measuredAt(),
             cursor == null ? null : cursor.sampleId(),
+            PageRequest.ofSize(query.limit())
+        )
+        .stream()
+        .map(FeedstockSampleJpaMapper::toDomain)
+        .toList();
+  }
+
+  @Override
+  public @NonNull List<@NonNull FeedstockSample> findLatestSugarAcidityPointCandidates(
+      @NonNull LatestFeedstockSampleSugarAcidityPointCandidateQuery query
+  ) {
+    requireNonNull(query, "latest feedstock sample point candidate query cannot be null");
+
+    final var season = query.season();
+    final var batchIds = query.batch() == null
+        ? List.of(new UUID(0L, 0L))
+        : query.batch().batchIds().stream()
+            .map(FeedstockBatchId::value)
+            .toList();
+
+    return repository.findLatestSugarAcidityPointCandidates(
+            query.ciderMakerId().value(),
+            query.batch() != null,
+            batchIds,
+            season != null,
+            season == null ? null : season.startsOn(),
+            season == null ? null : season.endsOn(),
             PageRequest.ofSize(query.limit())
         )
         .stream()

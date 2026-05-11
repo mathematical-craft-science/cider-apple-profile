@@ -43,6 +43,7 @@ public final class ZoneGeometrySugarAcidityTargetResolver implements SugarAcidit
           RectangleSugarAcidityTargetGeometry.from(rectangle)
       );
     }
+    // TODO Support ellipse targets when blend distance objective functions handle non-rectangle geometry.
     throw new SugarAcidityTargetResolutionException(
         "Unsupported sugar-acidity target geometry: " + zone.shape()
     );
