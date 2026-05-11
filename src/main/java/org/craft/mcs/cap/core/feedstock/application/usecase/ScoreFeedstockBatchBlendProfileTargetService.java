@@ -5,11 +5,11 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.cideranalysis.profileevaluation.application.port.in.BlendProfileDistanceCandidate;
-import org.craft.mcs.cap.core.cideranalysis.profileevaluation.application.port.in.BlendProfileDistanceCandidateReference;
-import org.craft.mcs.cap.core.cideranalysis.profileevaluation.application.port.in.ScoreBlendProfileDistanceCandidatesCommand;
-import org.craft.mcs.cap.core.cideranalysis.profileevaluation.application.port.in.ScoreBlendProfileDistanceCandidatesUseCase;
-import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.distance.BlendProfileObjective;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.application.port.in.ProfileTargetDistanceCandidate;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.application.port.in.ProfileTargetDistanceCandidateReference;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.application.port.in.ScoreProfileTargetDistanceCandidatesCommand;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.application.port.in.ScoreProfileTargetDistanceCandidatesUseCase;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.distance.ProfileTargetObjective;
 import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.target.CustomRectangleSugarAcidityTarget;
 import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.target.SugarAcidityTarget;
 import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.target.SugarAcidityTargetResolver;
@@ -49,7 +49,7 @@ public final class ScoreFeedstockBatchBlendProfileTargetService
   private final @NonNull ChemicalProfileCapabilityAssessor capabilityAssessor;
   private final @NonNull SugarAcidityZoneAssessor zoneAssessor;
   private final @NonNull SugarAcidityTargetResolver targetResolver;
-  private final @NonNull ScoreBlendProfileDistanceCandidatesUseCase scoreBlendProfileDistanceCandidatesUseCase;
+  private final @NonNull ScoreProfileTargetDistanceCandidatesUseCase scoreProfileTargetDistanceCandidatesUseCase;
 
   @Override
   public @NonNull FeedstockBatchBlendProfileTargetScores score(
@@ -77,8 +77,8 @@ public final class ScoreFeedstockBatchBlendProfileTargetService
             Function.identity()
         ));
     final var objective = objective(command);
-    final var scores = scoreBlendProfileDistanceCandidatesUseCase.score(
-        new ScoreBlendProfileDistanceCandidatesCommand(
+    final var scores = scoreProfileTargetDistanceCandidatesUseCase.score(
+        new ScoreProfileTargetDistanceCandidatesCommand(
             command.purpose(),
             objective,
             command.weights(),
@@ -131,7 +131,7 @@ public final class ScoreFeedstockBatchBlendProfileTargetService
 
     return Optional.of(new ScorableFeedstockMeasurementCandidate(
         measurement,
-        new BlendProfileDistanceCandidate(
+        new ProfileTargetDistanceCandidate(
             referenceId(measurement),
             assessment.point()
         )
@@ -155,7 +155,7 @@ public final class ScoreFeedstockBatchBlendProfileTargetService
     return criteria == null || criteria.zones().contains(assessment.zone());
   }
 
-  private @NonNull BlendProfileObjective objective(
+  private @NonNull ProfileTargetObjective objective(
       @NonNull ScoreFeedstockBatchBlendProfileTargetCommand command
   ) {
     final SugarAcidityTarget target = switch (command.target()) {
@@ -164,15 +164,15 @@ public final class ScoreFeedstockBatchBlendProfileTargetService
     };
 
     return command.tanninTarget() == null
-        ? BlendProfileObjective.of(target)
-        : BlendProfileObjective.withTanninTarget(target, command.tanninTarget()); // NOSONAR
+        ? ProfileTargetObjective.of(target)
+        : ProfileTargetObjective.withTanninTarget(target, command.tanninTarget()); // NOSONAR
   }
 
-  private static @NonNull BlendProfileDistanceCandidateReference referenceId(
+  private static @NonNull ProfileTargetDistanceCandidateReference referenceId(
       @NonNull FeedstockMeasurement measurement
   ) {
     requireNonNull(measurement, "feedstock measurement cannot be null");
-    return new BlendProfileDistanceCandidateReference(
+    return new ProfileTargetDistanceCandidateReference(
         REFERENCE_TYPE,
         measurement.batchId().value().toString()
     );
@@ -180,12 +180,12 @@ public final class ScoreFeedstockBatchBlendProfileTargetService
 
   private record ScorableFeedstockMeasurementCandidate(
       @NonNull FeedstockMeasurement measurement,
-      @NonNull BlendProfileDistanceCandidate candidate
+      @NonNull ProfileTargetDistanceCandidate candidate
   ) {
 
     private ScorableFeedstockMeasurementCandidate {
       requireNonNull(measurement, "feedstock measurement cannot be null");
-      requireNonNull(candidate, "blend profile distance candidate cannot be null");
+      requireNonNull(candidate, "profile target distance candidate cannot be null");
     }
   }
 }

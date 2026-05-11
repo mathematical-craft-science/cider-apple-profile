@@ -23,7 +23,7 @@
 
 | Фича | Ценность | Сложность | Причина |
 |---|---:|---:|---|
-| Blending для FeedstockSample с target area | 10 | 10 | Сильный decision support: подбор пропорций купажа под цель с учетом ограничений; сложность высокая из-за target geometry, метрики расстояния, нормализации шкал и volume constraints. |
+| Blending для FeedstockBatch с target area | 10 | 10 | Сильный decision support: подбор пропорций купажа под цель с учетом ограничений; сложность высокая из-за target geometry, метрики расстояния, нормализации шкал, законов смешивания chemical profile и volume constraints. |
 | Distance metric / target model для chemical profile | 9 | 7 | Обязательная основа для blending optimization, similarity search и сравнения samples с catalog varieties. |
 | Калибровка normalizer strategies для blending/evaluation | 8 | 7 | Нужно подобрать лучшие алгоритмы нормализации под разные сценарии: graph discovery, zone matching, practical blending и expert calibration. |
 | ~~Available volume для FeedstockBatch~~ | 8 | 4 | Реализовано как `FeedstockBatch.availableVolume`; sample создается внутри batch. |
@@ -58,7 +58,8 @@
 2. ~~Добавить season/batch и available volume через `FeedstockBatch`.~~
 3. Добавить distance metric / target model для sugar-acidity profile.
 4. Добавить MVP blending plan: predefined zone/custom rectangle target,
-   normalized weighted distance, one optimized option, volume constraints.
+   mass-balance predicted profile, normalized weighted distance, one optimized
+   option, volume constraints.
 5. Начать `ProductionBatch` как принятие blend/source plan:
    списание объемов, текущий объем, операции, первая fermentation phase.
 6. Добавить минимальный yeast catalog как источник рабочих диапазонов и constraints.
@@ -332,15 +333,16 @@ User story для будущего обсуждения:
 - Как сидродел, я хочу найти сорта или samples, которые могут дополнить текущую
   партию по acidity/tannin/sugar.
 
-### Blending для FeedstockSample
+### Blending для FeedstockBatch
 
-Будущая большая область: подбор купажа из имеющихся `FeedstockSample`.
-Сидродел работает не с абстрактными сортами, а с конкретными партиями сырья,
-у каждой из которых есть chemical profile и ограниченный доступный объем.
+Будущая большая область: подбор купажа из имеющихся `FeedstockBatch`.
+Сидродел работает не с абстрактными сортами, а с конкретными партиями сырья.
+Актуальный chemical profile партии берется из latest `FeedstockMeasurement`, а
+доступный объем хранится на `FeedstockBatch`.
 
 Возможные user stories:
 
-- Как сидродел, я хочу выбрать несколько `FeedstockSample` и задать целевую
+- Как сидродел, я хочу выбрать несколько `FeedstockBatch` и задать целевую
   область на sugar-acidity graph, чтобы система предложила пропорции купажа,
   максимально приближающие итоговый профиль к цели.
 - Как сидродел, я хочу задать target не только через готовую зону, но и через
@@ -352,7 +354,7 @@ User story для будущего обсуждения:
   чтобы выбрать между точностью попадания в цель, расходом редкого сырья и
   практичностью производства.
 - Как сидродел, я хочу понимать, почему предложенный купаж не попал точно в
-  цель, если доступные samples физически не позволяют достичь нужного профиля.
+  цель, если доступные партии физически не позволяют достичь нужного профиля.
 - Как сидродел, я хочу принять предложенный blend plan и создать из него
   производственную партию, чтобы система автоматически списала объемы из всех
   участвующих сырьевых партий.
@@ -371,9 +373,31 @@ User story для будущего обсуждения:
   - позже pH или другие показатели.
 - Центр целевой области как target point для оптимизации.
 
-Ключевое доменное требование: в `FeedstockSample` нужно добавить объем
-доступного сырья. Без этого blending-алгоритм сможет предложить математически
-красивые, но физически невозможные пропорции.
+Ключевое доменное требование: использовать `FeedstockBatch.availableVolume`.
+Без этого blending-алгоритм сможет предложить математически красивые, но
+физически невозможные пропорции.
+
+Потенциальные источники для chemical profile composition:
+
+- `FEEDSTOCK_BATCH` - основной MVP-источник: текущий профиль сырьевой партии
+  берется из latest `FeedstockMeasurement`, объем - из `availableVolume`.
+- `MANUAL_LAB_BLEND_SOURCE` - важное будущее направление: технолог вручную
+  задает лабораторно измеренный или расчетный компонент купажа, который еще не
+  является `FeedstockBatch`.
+- `BENCH_TRIAL_COMPONENT` - малый пробный купаж или компонент bench trial,
+  который нужен для калибровки расчетов и сравнения прогноза с фактом.
+- `APPLE_VARIETY_TYPICAL_PROFILE` - типовой профиль сорта для предварительного
+  планирования до появления реального сырья.
+- `PRODUCTION_BATCH_SPLIT` - часть существующей производственной партии после
+  перелива, снятия с осадка или разделения объема.
+- `EXTERNAL_JUICE_LOT` - купленный сок/сусло из внешнего источника, который
+  может участвовать в производстве, но не обязательно является собственной
+  сырьевой партией.
+
+Для этого composition model использует `ChemicalProfileCompositionSourceReference(type, id)`, а не
+прямую ссылку на `FeedstockBatch`. Это сохраняет `profileevaluation`
+независимым от feedstock/production bounded contexts и позволяет позднее
+подключить manual/lab sources без переписывания calculator-а.
 
 Возможные характеристики объема:
 
@@ -381,6 +405,68 @@ User story для будущего обсуждения:
 - unit: liters/gallons, позже нужно решить единицы и конвертации;
 - возможно distinction между measured volume, usable volume и reserved volume;
 - дата актуальности объема, если объем может уменьшаться после использования.
+
+#### Расчет ChemicalProfileComposition
+
+Для MVP используем mass-balance / volume-weighted model. Это базовый
+физико-химический подход: считаем количество вещества, внесенное каждой
+партией, и делим на общий объем смеси. Это не произвольная эвристика, а
+первый закон сохранения количества вещества для показателей, которые выражены
+как концентрации.
+
+MVP formulas:
+
+- `TA_blend = sum(TA_i * volume_i) / sum(volume_i)`, где TA в g/L malic.
+- `tannin_blend = sum(tannin_i * volume_i) / sum(volume_i)`, где tannin в
+  mg/L TAE.
+- `sugar/SG`: считать через gravity points, а не усреднять SG как обычное
+  число:
+  - `gravity_points_i = (SG_i - 1.000) * 1000`;
+  - `gravity_points_blend = sum(gravity_points_i * volume_i) / sum(volume_i)`;
+  - `SG_blend = 1.000 + gravity_points_blend / 1000`.
+
+На первом этапе не прогнозируем `pH` для купажа. pH логарифмический и зависит
+от буферной емкости сока, поэтому простое объемное среднее даст ложную
+точность. Чтобы прогнозировать pH лучше, понадобятся титрационные данные или
+хотя бы buffer capacity.
+
+Практический смысл calculator-а:
+
+- Это не optimizer и не подбирает пропорции сам. Он отвечает на вопрос:
+  "если смешать эти источники в заданных объемах/долях, какой chemical profile
+  получится".
+- Сидродел может проверить ручную composition перед тем, как реально списывать
+  сырье и создавать production batch.
+- Можно сравнить несколько ручных вариантов купажа по ожидаемому SG, acidity,
+  tannin, потенциальному ABV и расстоянию до target.
+- Будущий optimizer будет использовать этот calculator как вычислительное ядро:
+  генерировать варианты пропорций, считать predicted profile и затем оценивать
+  distance до target.
+- Calculator повышает explainability: система сможет показать, почему итоговый
+  профиль получился именно таким и какая партия сильнее повлияла на результат.
+
+Ограничения MVP:
+
+- Все входные значения должны быть нормализованы к одним единицам:
+  SG, TA g/L malic, tannin mg/L TAE.
+- `sugar` и `acidity` обязательны для sugar-acidity target.
+- `tannin` остается опциональным, но становится обязательным, если target или
+  objective явно включает tannin.
+- Batch с неполным current profile должен попадать в warnings/excluded
+  candidates, а не молча портить расчет.
+
+Более точные будущие модели:
+
+- `DensityCorrectedChemicalProfileCompositionCalculator`: считать через массу сока
+  `mass_i = volume_i * density_i`, затем смешивать массу сахара/экстракта.
+  Это точнее для разных плотностей, но сложнее и не нужно для MVP.
+- `BufferAwareAcidityModel`: прогноз pH/кислотного баланса через буферную
+  емкость или титрационные кривые.
+- `BenchTrialCalibratedChemicalProfileCompositionCalculator`: сидродел делает малый пробный
+  купаж, измеряет фактический SG/TA/pH/tannin, а система сохраняет отклонение
+  и калибрует будущие прогнозы.
+- `SensoryAdjustedBlendModel`: учитывает perceived acidity, astringency,
+  bitterness, body и aroma intensity, когда появятся sensory feedback данные.
 
 ### ProductionBatch как производственная партия
 
@@ -420,7 +506,7 @@ User story для будущего обсуждения:
 учетом сырья и конкурентным доступом к объему. Production batch может
 создаваться из одного `FeedstockBatch`, нескольких feedstock batches или
 результата blending optimization. Поэтому production-модель не должна
-начинаться раньше, чем появится минимальный `BlendPlan` / `ProductionSourcePlan`.
+начинаться раньше, чем появится минимальный `ChemicalProfileComposition`.
 
 Зависимость roadmap: сначала нужны distance function и target model, затем
 blending algorithm, который строит source plan, и только потом
@@ -865,29 +951,39 @@ assessment. Проверка пригодности профиля должна 
 
 ### Blending optimization model
 
-Для будущего blending по `FeedstockSample` нужна отдельная application/domain
+Для будущего blending по `FeedstockBatch` нужна отдельная application/domain
 модель оптимизационной задачи.
 
 Идея:
 
-- Вход: набор доступных `FeedstockSample`, их chemical profile и доступный
-  объем.
+- Вход: набор доступных `FeedstockBatch`, их current chemical profile из latest
+  `FeedstockMeasurement` и доступный объем.
 - Target: predefined sugar-acidity zone, пользовательская область graph или
   custom rectangle/ranges через API.
 - Целевая функция: минимизировать расстояние итогового профиля купажа до центра
   target area или до заданного target point.
 - Ограничения:
-  - доля каждого sample неотрицательная;
-  - используемый объем sample не превышает `availableVolume`;
+  - доля каждого source batch неотрицательная;
+  - используемый объем batch не превышает `availableVolume`;
   - итоговый объем может быть задан или вычисляться;
-  - samples с неполным профилем нельзя использовать для target, который требует
-    отсутствующие измерения.
+  - batches с неполным current profile нельзя использовать для target, который
+    требует отсутствующие измерения.
 - Выход: один или несколько вариантов купажа с пропорциями, итоговым расчетным
   chemical profile, расстоянием до цели и объяснением ограничений.
 
+Prediction model для итогового chemical profile:
+
+- MVP calculator: `MassBalanceChemicalProfileCompositionStrategy`.
+- `sugar`: через gravity points и volume-weighted mass balance.
+- `acidity`: через TA g/L malic mass balance.
+- `tannin`: через mg/L TAE mass balance, если tannin участвует в target или
+  objective.
+- `pH`: не прогнозировать в MVP, потому что pH не смешивается линейно.
+
 Открытые технические вопросы:
 
-- Какие показатели смешиваются линейно, а какие требуют осторожности.
+- Какой calculator strategy выбирать для разных сценариев: MVP mass-balance,
+  density-corrected, bench-trial calibrated, sensory-adjusted.
 - Нужно ли учитывать uncertainty/range/statistical measurements при
   оптимизации.
 - Как учитывать tannin и pH, если target задан только на 2D sugar-acidity
@@ -897,14 +993,30 @@ assessment. Проверка пригодности профиля должна 
 - Нужна ли внешняя optimization library или достаточно собственного простого
   solver-а на первом этапе.
 
+Возможные подходы к будущему blending optimizer:
+
+- `Discretized bounded search` для MVP: простой перебор пропорций с шагом,
+  например 1% или 5%. Легко объяснять, легко тестировать, достаточно для
+  небольшого числа сырьевых партий.
+- `Linear programming`: подходит, если objective можно выразить линейно,
+  например минимизировать сумму абсолютных отклонений от target через auxiliary
+  variables.
+- `Quadratic / nonlinear optimization`: нужна, если используем евклидово
+  расстояние, нормализованную L2 distance, эллипсы или более сложные функции
+  качества.
+
 MVP blending должен быть уже и проще полной задачи:
 
 - target model поддерживает два варианта:
   - predefined `SugarAcidityZone` из уже реализованных зон;
   - custom rectangle `[sugarMin..sugarMax, acidityMin..acidityMax]`, заданный
     технологом через API;
+- predicted composition profile: mass-balance calculator по SG gravity points,
+  acidity TA и optional tannin;
 - distance: взвешенная евклидова метрика с нормализацией шкал sugar/acidity;
-- tannin добавить позже как третью координату/constraint;
+- tannin включать как optional третью координату/constraint, если target его
+  требует;
+- pH не включать в prediction/distance в MVP;
 - shape support для ellipse/polygon/lasso не включать в первый solver;
 - результат: сначала один оптимизированный вариант;
 - алгоритм: простой bounded search / discretized proportions с отсечением по
@@ -912,25 +1024,36 @@ MVP blending должен быть уже и проще полной задач�
 - multiple ranked options добавить после доказанного MVP.
 
 Выход blending MVP должен быть не только текстовой рекомендацией, а
-структурированным `BlendPlan` / `ProductionSourcePlan`:
+структурированным `ChemicalProfileComposition`:
 
-- source `FeedstockBatch` / `FeedstockSample`;
+- source reference; в MVP type = `FEEDSTOCK_BATCH`, позже manual/lab и другие
+  источники;
 - requested volume per source;
-- expected blended chemical profile;
+- calculated chemical profile;
 - target distance;
 - target source: predefined zone или custom rectangle;
 - total volume;
 - warnings, если target недостижим или использованы profiles с разной
   confidence.
 
-Этот plan позже должен становиться входом для создания `ProductionBatch`.
+Эта composition позже может становиться входом для создания `ProductionBatch`.
 Именно поэтому blending/distance стоят перед production foundation.
+
+Термин `BlendPlan` оставляем для будущего купажирования готовых продуктов:
+после законченной ферментации, перед второй ферментацией, перед розливом или
+для технологических сценариев работы с готовыми напитками. Абстрактный
+calculator при этом возвращает только `ChemicalProfileComposition` и не знает,
+будет ли результат использован для производства, купажирования готового
+продукта, manual/lab сценария или оптимизации.
 
 Открытые вопросы для более поздней версии:
 
 - поддержка target ellipse/polygon/zone shape;
 - Mahalanobis или другая метрика с учетом covariance/uncertainty;
 - учет range/statistical measurements;
+- density-corrected расчет sugar/extract;
+- bench trial feedback loop для калибровки прогнозов купажа;
+- pH/buffer model вместо ложного среднего pH;
 - explainability для trade-off между точностью цели и расходом редкого сырья.
 
 ### Graph export
@@ -1067,7 +1190,7 @@ ABV prediction должен работать по нормализованном
   - temperature out of range;
   - pH out of range;
   - ABV near tolerance;
-  - fermentation speed отличается от expected profile.
+  - fermentation speed отличается от calculated profile.
 - Позже добавить пользовательские yeast strains и overrides, потому что
   сидродел может работать с локальными или смешанными культурами.
 

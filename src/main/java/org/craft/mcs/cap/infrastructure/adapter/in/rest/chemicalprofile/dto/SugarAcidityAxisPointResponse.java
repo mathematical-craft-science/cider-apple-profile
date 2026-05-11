@@ -20,7 +20,8 @@ import org.jspecify.annotations.NonNull;
         @JsonSubTypes.Type(value = ExactSugarAcidityAxisPointResponse.class, name = "EXACT"),
         @JsonSubTypes.Type(value = RangeSugarAcidityAxisPointResponse.class, name = "RANGE_MIDPOINT"),
         @JsonSubTypes.Type(value = StatisticalSugarAcidityAxisPointResponse.class, name = "STATISTICAL_MEAN"),
-        @JsonSubTypes.Type(value = StatisticalSugarAcidityAxisPointResponse.class, name = "STATISTICAL_MEDIAN")
+        @JsonSubTypes.Type(value = StatisticalSugarAcidityAxisPointResponse.class, name = "STATISTICAL_MEDIAN"),
+        @JsonSubTypes.Type(value = CalculatedSugarAcidityAxisPointResponse.class, name = "CALCULATED")
     }
 )
 @Schema(
@@ -29,19 +30,22 @@ import org.jspecify.annotations.NonNull;
     oneOf = {
         ExactSugarAcidityAxisPointResponse.class,
         RangeSugarAcidityAxisPointResponse.class,
-        StatisticalSugarAcidityAxisPointResponse.class
+        StatisticalSugarAcidityAxisPointResponse.class,
+        CalculatedSugarAcidityAxisPointResponse.class
     },
     discriminatorMapping = {
         @DiscriminatorMapping(value = "EXACT", schema = ExactSugarAcidityAxisPointResponse.class),
         @DiscriminatorMapping(value = "RANGE_MIDPOINT", schema = RangeSugarAcidityAxisPointResponse.class),
         @DiscriminatorMapping(value = "STATISTICAL_MEAN", schema = StatisticalSugarAcidityAxisPointResponse.class),
-        @DiscriminatorMapping(value = "STATISTICAL_MEDIAN", schema = StatisticalSugarAcidityAxisPointResponse.class)
+        @DiscriminatorMapping(value = "STATISTICAL_MEDIAN", schema = StatisticalSugarAcidityAxisPointResponse.class),
+        @DiscriminatorMapping(value = "CALCULATED", schema = CalculatedSugarAcidityAxisPointResponse.class)
     }
 )
 public sealed interface SugarAcidityAxisPointResponse
     permits ExactSugarAcidityAxisPointResponse,
     RangeSugarAcidityAxisPointResponse,
-    StatisticalSugarAcidityAxisPointResponse {
+    StatisticalSugarAcidityAxisPointResponse,
+    CalculatedSugarAcidityAxisPointResponse {
 
   @NonNull
   @Schema(description = "Coordinate value for the graph axis.", example = "1.052")

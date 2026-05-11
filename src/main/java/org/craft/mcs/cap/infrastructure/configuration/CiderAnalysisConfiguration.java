@@ -5,17 +5,19 @@ import org.craft.mcs.cap.core.cideranalysis.classification.engine.ChemicalProfil
 import org.craft.mcs.cap.core.cideranalysis.classification.engine.ClassificationConfidencePolicy;
 import org.craft.mcs.cap.core.cideranalysis.classification.profile.BuiltInCiderClassificationThresholds;
 import org.craft.mcs.cap.core.cideranalysis.classification.profile.northamerican.NorthAmericanProfileCalculator;
-import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.zone.BuiltInSugarAcidityZoneProfiles;
-import org.craft.mcs.cap.core.cideranalysis.profilegraph.domain.BuiltInSugarAcidityGraphMetadataFactory;
-import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.zone.EllipseSugarAcidityZoneAssessor;
-import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.zone.RectangleSugarAcidityZoneAssessor;
-import org.craft.mcs.cap.core.cideranalysis.profilegraph.domain.SugarAcidityGraphMetadata;
-import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.zone.SugarAcidityZoneGeometryProfile;
-import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.zone.SugarAcidityZoneAssessor;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.composition.ChemicalProfileCompositionCalculator;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.composition.MassBalanceChemicalProfileCompositionStrategy;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.distance.ProfileAxisNormalizerSelector;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.distance.BuiltInProfileAxisNormalizerSelector;
 import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.target.SugarAcidityTargetResolver;
 import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.target.ZoneGeometrySugarAcidityTargetResolver;
-import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.distance.BlendProfileAxisNormalizerSelector;
-import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.distance.BuiltInBlendProfileAxisNormalizerSelector;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.zone.BuiltInSugarAcidityZoneProfiles;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.zone.EllipseSugarAcidityZoneAssessor;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.zone.RectangleSugarAcidityZoneAssessor;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.zone.SugarAcidityZoneAssessor;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.zone.SugarAcidityZoneGeometryProfile;
+import org.craft.mcs.cap.core.cideranalysis.profilegraph.domain.BuiltInSugarAcidityGraphMetadataFactory;
+import org.craft.mcs.cap.core.cideranalysis.profilegraph.domain.SugarAcidityGraphMetadata;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -86,9 +88,14 @@ class CiderAnalysisConfiguration {
   }
 
   @Bean
-  BlendProfileAxisNormalizerSelector blendProfileAxisNormalizerSelector() {
-    return new BuiltInBlendProfileAxisNormalizerSelector(
+  ProfileAxisNormalizerSelector blendProfileAxisNormalizerSelector() {
+    return new BuiltInProfileAxisNormalizerSelector(
         BuiltInSugarAcidityZoneProfiles.thresholds()
     );
+  }
+
+  @Bean
+  ChemicalProfileCompositionCalculator chemicalProfileCompositionCalculator() {
+    return new MassBalanceChemicalProfileCompositionStrategy();
   }
 }

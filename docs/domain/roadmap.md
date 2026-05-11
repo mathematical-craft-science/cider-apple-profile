@@ -35,8 +35,8 @@
 production foundation зависит от аналитического слоя:
 
 1. Distance/target model для chemical profiles.
-2. Blending MVP, который строит `BlendPlan` / `ProductionSourcePlan`.
-3. ProductionBatch, который принимает source plan и атомарно списывает объемы.
+2. Blending MVP, который строит `ChemicalProfileComposition`.
+3. ProductionBatch, который принимает composition и атомарно списывает объемы.
 4. Fermentation monitoring и yeast-aware intelligence.
 
 ## Phase 1 - Distance And Target Model
@@ -68,8 +68,8 @@ production foundation зависит от аналитического слоя:
 
 | Фича | Ценность | Сложность | Статус |
 |---|---:|---:|---|
-| Blending для FeedstockSample с target area | 10 | 10 | Next |
-| BlendPlan / ProductionSourcePlan | 10 | 8 | Next |
+| Blending для FeedstockBatch с target area | 10 | 10 | Next |
+| ChemicalProfileComposition | 10 | 8 | Next |
 | One optimized blend option | 9 | 7 | Next |
 | Учет available volume constraints | 10 | 8 | Next |
 | Explain unreachable target | 9 | 8 | Planned |
@@ -81,12 +81,12 @@ production foundation зависит от аналитического слоя:
 2. Использовать normalized weighted Euclidean distance из Phase 1.
 3. Сначала вернуть один optimized blend option через bounded/discretized search.
 4. Учитывать ограничения по доступному объему каждого source batch/sample.
-5. Возвращать структурированный `BlendPlan`: source, volume, expected profile, distance, total volume, warnings.
+5. Возвращать структурированный `ChemicalProfileComposition`: source, volume, calculated profile, distance, total volume, warnings.
 6. Tannin, ellipse/polygon/lasso targets, multiple ranked options и Mahalanobis оставить на следующие итерации.
 
 ## Phase 3 - Production Foundation
 
-Цель: принять source plan и превратить его в beverage-neutral
+Цель: принять composition и превратить его в beverage-neutral
 производственную партию с учетом объемов, операций, потерь, типа продукта и
 будущих технологий.
 
@@ -105,11 +105,11 @@ production foundation зависит от аналитического слоя:
 Минимальный implementation slice:
 
 1. Создать `ProductionBatch` aggregate.
-2. Создавать production batch из `BlendPlan` / `ProductionSourcePlan`; single-source case считать частным случаем plan-а.
+2. Создавать production batch из `ChemicalProfileComposition`; single-source case считать частным случаем plan-а.
 3. Добавить `productType` / `productIntent`: cider, perry, distillate base, calvados, pommeau, other.
 4. Атомарно списывать или резервировать объемы из всех source `FeedstockBatch`.
 5. Добавить optimistic locking для защиты от параллельного использования одного объема.
-6. Хранить `initialVolume`, `currentVolume`, source plan reference и историю `ProductionOperation`.
+6. Хранить `initialVolume`, `currentVolume`, composition reference и историю `ProductionOperation`.
 7. Поддержать `START_PRODUCTION`, `START_FERMENTATION`, `RACKING`, `TRANSFER`, `BOTTLING`, `VOLUME_ADJUSTMENT`, `SAMPLE_TAKEN`.
 8. Добавить domain events и unit/application/concurrency tests для volume invariants.
 9. Не моделировать пока весь workflow технологий как жесткий enum.

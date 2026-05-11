@@ -1,6 +1,6 @@
 package org.craft.mcs.cap.core.feedstock.application.port.in;
 
-import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.distance.BlendProfileTargetDistance;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.distance.ProfileTargetDistance;
 import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.point.SugarAcidityProfilePoint;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurementId;
@@ -17,7 +17,7 @@ public record FeedstockBatchBlendProfileTargetScore(
     @NonNull FeedstockMeasurementId currentMeasurementId,
     @NonNull FeedstockMeasurementName currentMeasurementName,
     @NonNull SugarAcidityProfilePoint point,
-    @NonNull BlendProfileTargetDistance distance
+    @NonNull ProfileTargetDistance distance
 ) {
 
   public FeedstockBatchBlendProfileTargetScore {
@@ -26,6 +26,6 @@ public record FeedstockBatchBlendProfileTargetScore(
     requireNonNull(currentMeasurementId, "current feedstock measurement id cannot be null");
     requireNonNull(currentMeasurementName, "current feedstock measurement name cannot be null");
     requireNonNull(point, "sugar-acidity profile point cannot be null");
-    requireNonNull(distance, "blend profile target distance cannot be null");
+    requireNonNull(distance, "profile target distance cannot be null");
   }
 }
