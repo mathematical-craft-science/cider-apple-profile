@@ -1,15 +1,26 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.mapper;
 
+import org.craft.mcs.cap.core.feedstock.application.port.in.FeedstockBatchCriteria;
+import org.craft.mcs.cap.core.feedstock.application.port.in.FeedstockSamplePointFilters;
 import org.craft.mcs.cap.core.feedstock.application.port.in.FeedstockSampleSugarAcidityZoneAssessment;
-import org.craft.mcs.cap.core.feedstock.application.port.in.FeedstockSampleSugarAcidityZonePointBatch;
+import org.craft.mcs.cap.core.feedstock.application.port.in.FeedstockSampleSugarAcidityZonePointQuery;
 import org.craft.mcs.cap.core.feedstock.application.port.in.FeedstockSampleSugarAcidityZoneResult;
-import org.craft.mcs.cap.core.feedstock.application.port.in.UnplottableFeedstockSampleSugarAcidityZonePoint;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
+import org.craft.mcs.cap.core.feedstock.domain.model.value.CiderMakerId;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.mapper.ChemicalProfileCapabilityRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.mapper.SugarAcidityZoneRestMapper;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.FeedstockSampleSugarAcidityZonePointQueryRequest;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.FeedstockSeasonRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.FeedstockSampleSugarAcidityZonePointBatchResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.FeedstockSampleSugarAcidityZoneResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.UnplottableFeedstockSampleSugarAcidityZonePointResponse;
+import org.craft.mcs.cap.shared.platform.query.ChemicalProfileCapabilityCriteria;
+import org.craft.mcs.cap.shared.platform.query.CursorPage;
+import org.craft.mcs.cap.shared.platform.query.CursorPageRequest;
+import org.craft.mcs.cap.shared.platform.query.SugarAcidityZoneCriteria;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import static java.util.Objects.requireNonNull;
 
@@ -25,10 +36,33 @@ public final class FeedstockSampleSugarAcidityZoneRestMapper {
     requireNonNull(assessment, "feedstock sample sugar-acidity zone assessment cannot be null");
 
     return new FeedstockSampleSugarAcidityZoneResponse(
-        assessment.sampleId().value().toString(),
-        assessment.ciderMakerId().value().toString(),
+        assessment.sampleId().value(),
+        assessment.ciderMakerId().value(),
+        assessment.batchId().value(),
         assessment.sampleName().value(),
         SugarAcidityZoneRestMapper.toResponse(assessment.assessment())
+    );
+  }
+
+  public static @NonNull FeedstockSampleSugarAcidityZonePointQuery toQuery(
+      @NonNull FeedstockSampleSugarAcidityZonePointQueryRequest request
+  ) {
+    requireNonNull(request, "feedstock sample sugar-acidity zone point query request cannot be null");
+
+    return new FeedstockSampleSugarAcidityZonePointQuery(
+        CiderMakerId.of(request.ciderMakerId()),
+        new FeedstockSamplePointFilters(
+            request.batchId() == null ? null : FeedstockBatchCriteria.of(FeedstockBatchId.of(request.batchId())), // NOSONAR
+            toSeason(request.season()),
+            request.zone() == null ? null : SugarAcidityZoneCriteria.of(request.zone()), // NOSONAR
+            request.capability() == null
+                ? null
+                : new ChemicalProfileCapabilityCriteria(request.capability(), request.capable()) // NOSONAR
+        ),
+        new CursorPageRequest(
+            request.after(),
+            request.limit() == null ? CursorPageRequest.DEFAULT_LIMIT : request.limit()
+        )
     );
   }
 
@@ -38,8 +72,9 @@ public final class FeedstockSampleSugarAcidityZoneRestMapper {
     requireNonNull(result, "feedstock sample sugar-acidity zone result cannot be null");
 
     return new FeedstockSampleSugarAcidityZoneResponse(
-        result.sampleId().value().toString(),
-        result.ciderMakerId().value().toString(),
+        result.sampleId().value(),
+        result.ciderMakerId().value(),
+        result.batchId().value(),
         result.sampleName().value(),
         result.plottable(),
         result.assessment() == null ? null : SugarAcidityZoneRestMapper.toResponse(result.assessment()), // NOSONAR
@@ -48,30 +83,38 @@ public final class FeedstockSampleSugarAcidityZoneRestMapper {
   }
 
   public static @NonNull FeedstockSampleSugarAcidityZonePointBatchResponse toResponse(
-      @NonNull FeedstockSampleSugarAcidityZonePointBatch batch
+      @NonNull CursorPage<@NonNull FeedstockSampleSugarAcidityZoneResult> page
   ) {
-    requireNonNull(batch, "feedstock sample sugar-acidity zone point batch cannot be null");
+    requireNonNull(page, "feedstock sample sugar-acidity zone point page cannot be null");
 
     return new FeedstockSampleSugarAcidityZonePointBatchResponse(
-        batch.points().stream()
+        page.items().stream()
+            .filter(FeedstockSampleSugarAcidityZoneResult::plottable)
             .map(FeedstockSampleSugarAcidityZoneRestMapper::toResponse)
             .toList(),
-        batch.unplottable().stream()
-            .map(FeedstockSampleSugarAcidityZoneRestMapper::toResponse)
-            .toList()
+        page.items().stream()
+            .filter(result -> !result.plottable())
+            .map(FeedstockSampleSugarAcidityZoneRestMapper::toUnplottableResponse)
+            .toList(),
+        page.nextCursor()
     );
   }
 
-  private static @NonNull UnplottableFeedstockSampleSugarAcidityZonePointResponse toResponse(
-      @NonNull UnplottableFeedstockSampleSugarAcidityZonePoint unplottable
+  private static @NonNull UnplottableFeedstockSampleSugarAcidityZonePointResponse toUnplottableResponse(
+      @NonNull FeedstockSampleSugarAcidityZoneResult result
   ) {
-    requireNonNull(unplottable, "unplottable feedstock sample sugar-acidity zone point cannot be null");
+    requireNonNull(result, "feedstock sample sugar-acidity zone result cannot be null");
 
     return new UnplottableFeedstockSampleSugarAcidityZonePointResponse(
-        unplottable.sampleId().value().toString(),
-        unplottable.ciderMakerId().value().toString(),
-        unplottable.sampleName().value(),
-        ChemicalProfileCapabilityRestMapper.toResponse(unplottable.capabilityAssessment())
+        result.sampleId().value(),
+        result.ciderMakerId().value(),
+        result.batchId().value(),
+        result.sampleName().value(),
+        ChemicalProfileCapabilityRestMapper.toResponse(result.capabilityAssessment())
     );
+  }
+
+  private static @Nullable FeedstockSeason toSeason(@Nullable FeedstockSeasonRequest request) {
+    return request == null ? null : FeedstockSeason.of(request.startsOn(), request.endsOn());
   }
 }

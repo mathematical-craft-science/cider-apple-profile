@@ -1,0 +1,51 @@
+package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jpa.feedstock.entity;
+
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockBatchName;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSource;
+import org.craft.mcs.cap.core.feedstock.domain.model.value.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;
+import org.jspecify.annotations.NonNull;
+
+import static java.util.Objects.requireNonNull;
+
+
+public final class FeedstockBatchJpaMapper {
+
+  private FeedstockBatchJpaMapper() {
+  }
+
+  public static @NonNull FeedstockBatchJpaEntity fromDomain(@NonNull FeedstockBatch batch) {
+    requireNonNull(batch, "feedstock batch cannot be null");
+
+    return new FeedstockBatchJpaEntity(
+        batch.batchId().value(),
+        batch.ciderMakerId().value(),
+        batch.name().value(),
+        batch.season().startsOn(),
+        batch.season().endsOn(),
+        batch.source() == null ? null : batch.source().value(),
+        batch.availableVolume().liters(),
+        batch.note()
+    );
+  }
+
+  public static @NonNull FeedstockBatch toDomain(@NonNull FeedstockBatchJpaEntity entity) {
+    requireNonNull(entity, "feedstock batch entity cannot be null");
+
+    final var source = entity.source == null ? null : FeedstockSource.of(entity.source);
+
+    return FeedstockBatch.create(
+        FeedstockBatchId.of(requireNonNull(entity.batchId, "feedstock batch id cannot be null")),
+        CiderMakerId.of(requireNonNull(entity.ciderMakerId, "cider maker id cannot be null")),
+        FeedstockBatchName.of(requireNonNull(entity.name, "feedstock batch name cannot be null")),
+        FeedstockSeason.of(
+            requireNonNull(entity.seasonStartsOn, "feedstock season start date cannot be null"),
+            requireNonNull(entity.seasonEndsOn, "feedstock season end date cannot be null")
+        ),
+        VolumeValue.ofLiters(requireNonNull(entity.availableVolumeLiters, "available volume cannot be null"))
+    ).changeSource(source).changeNote(entity.note);
+  }
+}

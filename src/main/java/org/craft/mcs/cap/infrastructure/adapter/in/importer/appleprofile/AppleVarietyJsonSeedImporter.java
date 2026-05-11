@@ -7,23 +7,23 @@ import org.craft.mcs.cap.core.appleprofile.application.port.out.AppleVarietyRepo
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVariety;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyId;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyName;
-import org.craft.mcs.cap.shared.domain.sugar.SugarConcentration;
+import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.craft.mcs.cap.infrastructure.adapter.in.importer.appleprofile.dto.AppleVarietySeedDto;
 import org.craft.mcs.cap.infrastructure.adapter.in.importer.appleprofile.dto.ExactMeasurementSeedDto;
 import org.craft.mcs.cap.infrastructure.adapter.in.importer.appleprofile.dto.MeasurementSeedDto;
 import org.craft.mcs.cap.infrastructure.adapter.in.importer.appleprofile.dto.RangeMeasurementSeedDto;
 import org.craft.mcs.cap.infrastructure.adapter.in.importer.appleprofile.dto.SeedMeasurementCharacteristic;
 import org.craft.mcs.cap.infrastructure.adapter.in.importer.appleprofile.dto.StatisticalMeasurementSeedDto;
-import org.craft.mcs.cap.shared.domain.chemical.ChemicalProfile;
-import org.craft.mcs.cap.shared.domain.chemical.ChemicalProfileSource;
-import org.craft.mcs.cap.shared.domain.measurement.ExactMeasurement;
-import org.craft.mcs.cap.shared.domain.measurement.MeasuredCharacteristic;
-import org.craft.mcs.cap.shared.domain.chemical.value.PhValue;
-import org.craft.mcs.cap.shared.domain.measurement.RangeMeasurement;
-import org.craft.mcs.cap.shared.domain.sugar.SpecificGravityValue;
-import org.craft.mcs.cap.shared.domain.measurement.StatisticalMeasurement;
-import org.craft.mcs.cap.shared.domain.chemical.value.TanninityValue;
-import org.craft.mcs.cap.shared.domain.chemical.value.TitratableAcidityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
+import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfileSource;
+import org.craft.mcs.cap.shared.kernel.measurement.ExactMeasurement;
+import org.craft.mcs.cap.shared.kernel.measurement.MeasuredCharacteristic;
+import org.craft.mcs.cap.shared.kernel.chemical.value.PhValue;
+import org.craft.mcs.cap.shared.kernel.measurement.RangeMeasurement;
+import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
+import org.craft.mcs.cap.shared.kernel.measurement.StatisticalMeasurement;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TanninityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
@@ -116,7 +116,7 @@ public final class AppleVarietyJsonSeedImporter {
     }
 
     if (dto.source() != null) {
-      builder.source(ChemicalProfileSource.of(dto.source()));
+      builder.source(ChemicalProfileSource.of(dto.source())); // NOSONAR
     }
 
     builder.confidence(dto.confidence());
@@ -148,7 +148,7 @@ public final class AppleVarietyJsonSeedImporter {
 
       case StatisticalMeasurementSeedDto statistical -> StatisticalMeasurement.of(
           factory.create(statistical.mean()),
-          statistical.median() == null ? null : factory.create(statistical.median()),
+          statistical.median() == null ? null : factory.create(statistical.median()),  // NOSONAR
           statistical.standardDeviation() == null ? null : new BigDecimal(statistical.standardDeviation()),
           statistical.sampleSize()
       );

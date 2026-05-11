@@ -1,13 +1,15 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
 
 
+@Schema(description = "Borderline classification reason.")
 public record BorderlineReasonDto(
-    @NonNull String measure,
-    @NonNull String borderlineCondition
+    @Schema(description = "Measured profile axis.", example = "SUGAR") @NonNull String measure,
+    @Schema(description = "Condition describing the boundary.") @NonNull String borderlineCondition
 ) {
 
   public BorderlineReasonDto {

@@ -19,7 +19,7 @@ public final class AppleVarietyClassificationRestMapper {
     requireNonNull(classification, "apple variety classification cannot be null");
 
     return new AppleVarietyClassificationResponse(
-        classification.varietyId().value().toString(),
+        classification.varietyId().value(),
         classification.varietyName().value(),
         classification.profileCode(),
         classification.classified(),

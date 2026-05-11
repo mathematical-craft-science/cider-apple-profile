@@ -1,0 +1,56 @@
+package org.craft.mcs.cap.core.feedstock.application.usecase;
+
+import java.util.List;
+import lombok.RequiredArgsConstructor;
+import org.craft.mcs.cap.core.feedstock.application.port.in.FeedstockBatchSummary;
+import org.craft.mcs.cap.core.feedstock.application.port.in.ListFeedstockBatchesQuery;
+import org.craft.mcs.cap.core.feedstock.application.port.in.ListFeedstockBatchesUseCase;
+import org.craft.mcs.cap.core.feedstock.application.port.out.FeedstockBatchRepository;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
+import org.jspecify.annotations.NonNull;
+import org.springframework.stereotype.Component;
+
+import static java.util.Objects.requireNonNull;
+
+
+@Component
+@RequiredArgsConstructor
+public final class ListFeedstockBatchesService
+    implements ListFeedstockBatchesUseCase {
+
+  private final @NonNull FeedstockBatchRepository feedstockBatchRepository;
+
+  @Override
+  public @NonNull List<@NonNull FeedstockBatchSummary> list(
+      @NonNull ListFeedstockBatchesQuery query
+  ) {
+    requireNonNull(query, "list feedstock batches query cannot be null");
+
+    return feedstockBatchRepository.findAllByCiderMakerId(query.ciderMakerId())
+        .stream()
+        .filter(batch -> query.season() == null || overlaps(batch.season(), query.season()))
+        .map(ListFeedstockBatchesService::toSummary)
+        .toList();
+  }
+
+  private static boolean overlaps(
+      @NonNull FeedstockSeason batchSeason,
+      @NonNull FeedstockSeason requestedSeason
+  ) {
+    return !batchSeason.endsOn().isBefore(requestedSeason.startsOn())
+        && !batchSeason.startsOn().isAfter(requestedSeason.endsOn());
+  }
+
+  private static @NonNull FeedstockBatchSummary toSummary(@NonNull FeedstockBatch batch) {
+    return new FeedstockBatchSummary(
+        batch.batchId(),
+        batch.ciderMakerId(),
+        batch.name(),
+        batch.season(),
+        batch.source(),
+        batch.availableVolume(),
+        batch.note()
+    );
+  }
+}

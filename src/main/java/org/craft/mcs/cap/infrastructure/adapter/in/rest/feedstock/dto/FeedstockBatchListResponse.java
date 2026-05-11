@@ -1,0 +1,14 @@
+package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto;
+
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.List;
+import org.jspecify.annotations.NonNull;
+
+
+@Schema(description = "Feedstock batch list response.")
+public record FeedstockBatchListResponse(
+    @ArraySchema(schema = @Schema(description = "Feedstock batches.", implementation = FeedstockBatchResponse.class))
+    @NonNull List<@NonNull FeedstockBatchResponse> batches
+) {
+}

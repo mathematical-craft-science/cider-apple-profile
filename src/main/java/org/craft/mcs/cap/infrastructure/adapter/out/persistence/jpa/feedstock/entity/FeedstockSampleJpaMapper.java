@@ -1,16 +1,16 @@
 package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jpa.feedstock.entity;
 
-import org.craft.mcs.cap.shared.domain.sugar.SugarConcentration;
-import org.craft.mcs.cap.core.feedstock.domain.model.FeedstockSample;
-import org.craft.mcs.cap.core.feedstock.domain.model.FeedstockSampleId;
-import org.craft.mcs.cap.core.feedstock.domain.model.value.CiderMakerId;
-import org.craft.mcs.cap.core.feedstock.domain.model.value.FeedstockSampleName;
-import org.craft.mcs.cap.shared.domain.chemical.ChemicalProfile;
-import org.craft.mcs.cap.shared.domain.chemical.ChemicalProfileSource;
-import org.craft.mcs.cap.shared.domain.chemical.value.PhValue;
-import org.craft.mcs.cap.shared.domain.sugar.SpecificGravityValue;
-import org.craft.mcs.cap.shared.domain.chemical.value.TanninityValue;
-import org.craft.mcs.cap.shared.domain.chemical.value.TitratableAcidityValue;
+import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
+import org.craft.mcs.cap.core.feedstock.domain.model.sample.FeedstockSample;
+import org.craft.mcs.cap.core.feedstock.domain.model.sample.FeedstockSampleId;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
+import org.craft.mcs.cap.core.feedstock.domain.model.sample.value.FeedstockSampleName;
+import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
+import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfileSource;
+import org.craft.mcs.cap.shared.kernel.chemical.value.PhValue;
+import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TanninityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
@@ -30,10 +30,10 @@ public final class FeedstockSampleJpaMapper {
 
     return new FeedstockSampleJpaEntity(
         sample.sampleId().value(),
-        sample.ciderMakerId().value(),
+        sample.batchId().value(),
         sample.name().value(),
         sample.type(),
-        sample.collectedAt(),
+        sample.measuredAt(),
         sample.note(),
         fromNullableCharacteristic(
             profile.sugar().orElse(null),
@@ -89,11 +89,11 @@ public final class FeedstockSampleJpaMapper {
 
     return FeedstockSample.create(
         FeedstockSampleId.of(requireNonNull(entity.sampleId, "feedstock sample id cannot be null")),
-        CiderMakerId.of(requireNonNull(entity.ciderMakerId, "cider maker id cannot be null")),
+        FeedstockBatchId.of(requireNonNull(entity.batchId, "feedstock batch id cannot be null")),
         FeedstockSampleName.of(requireNonNull(entity.name, "feedstock sample name cannot be null")),
         requireNonNull(entity.type, "feedstock type cannot be null"),
         builder.build(),
-        requireNonNull(entity.collectedAt, "collected at cannot be null")
+        requireNonNull(entity.measuredAt, "measured at cannot be null")
     ).changeNote(entity.note);
   }
 }

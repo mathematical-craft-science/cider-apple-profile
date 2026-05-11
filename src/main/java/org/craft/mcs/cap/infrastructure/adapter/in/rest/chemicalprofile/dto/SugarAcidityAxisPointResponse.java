@@ -1,9 +1,12 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.dto;
 
-import java.math.BigDecimal;
-import org.jspecify.annotations.NonNull;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import io.swagger.v3.oas.annotations.media.DiscriminatorMapping;
+import io.swagger.v3.oas.annotations.media.Schema;
+import java.math.BigDecimal;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.MeasurementValueKind;
+import org.jspecify.annotations.NonNull;
 
 
 @JsonTypeInfo(
@@ -20,14 +23,31 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
         @JsonSubTypes.Type(value = StatisticalSugarAcidityAxisPointResponse.class, name = "STATISTICAL_MEDIAN")
     }
 )
+@Schema(
+    description = "Graph-axis point value with source value kind.",
+    discriminatorProperty = "valueKind",
+    oneOf = {
+        ExactSugarAcidityAxisPointResponse.class,
+        RangeSugarAcidityAxisPointResponse.class,
+        StatisticalSugarAcidityAxisPointResponse.class
+    },
+    discriminatorMapping = {
+        @DiscriminatorMapping(value = "EXACT", schema = ExactSugarAcidityAxisPointResponse.class),
+        @DiscriminatorMapping(value = "RANGE_MIDPOINT", schema = RangeSugarAcidityAxisPointResponse.class),
+        @DiscriminatorMapping(value = "STATISTICAL_MEAN", schema = StatisticalSugarAcidityAxisPointResponse.class),
+        @DiscriminatorMapping(value = "STATISTICAL_MEDIAN", schema = StatisticalSugarAcidityAxisPointResponse.class)
+    }
+)
 public sealed interface SugarAcidityAxisPointResponse
     permits ExactSugarAcidityAxisPointResponse,
     RangeSugarAcidityAxisPointResponse,
     StatisticalSugarAcidityAxisPointResponse {
 
   @NonNull
+  @Schema(description = "Coordinate value for the graph axis.", example = "1.052")
   BigDecimal value();
 
   @NonNull
-  String valueKind();
+  @Schema(description = "Axis point value discriminator.", implementation = MeasurementValueKind.class, example = "EXACT")
+  MeasurementValueKind valueKind();
 }

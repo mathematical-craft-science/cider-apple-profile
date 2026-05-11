@@ -1,12 +1,12 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.fermentation.mapper;
 
 import java.math.BigDecimal;
-import org.craft.mcs.cap.shared.domain.fermentation.AbvPredictionMethod;
-import org.craft.mcs.cap.shared.domain.fermentation.AbvValue;
-import org.craft.mcs.cap.shared.domain.fermentation.FinalGravityPredictionSource;
-import org.craft.mcs.cap.shared.domain.fermentation.PotentialAbvPrediction;
-import org.craft.mcs.cap.shared.domain.fermentation.PredictionConfidence;
-import org.craft.mcs.cap.shared.domain.sugar.SpecificGravityValue;
+import org.craft.mcs.cap.core.fermentation.domain.AbvPredictionMethod;
+import org.craft.mcs.cap.core.fermentation.domain.AbvValue;
+import org.craft.mcs.cap.core.fermentation.domain.FinalGravityPredictionSource;
+import org.craft.mcs.cap.core.fermentation.domain.PotentialAbvPrediction;
+import org.craft.mcs.cap.core.fermentation.domain.PredictionConfidence;
+import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -29,9 +29,9 @@ class PotentialAbvPredictionRestMapperTest {
 
     assertThat(response.originalGravity()).isEqualByComparingTo("1.052");
     assertThat(response.predictedFinalGravity()).isEqualByComparingTo("1.000");
-    assertThat(response.predictedFinalGravitySource()).isEqualTo("FIXED_DRY_CIDER_DEFAULT");
+    assertThat(response.predictedFinalGravitySource()).isEqualTo(FinalGravityPredictionSource.FIXED_DRY_CIDER_DEFAULT);
     assertThat(response.potentialAbv()).isEqualByComparingTo("6.825");
-    assertThat(response.method()).isEqualTo("STANDARD_GRAVITY_DROP");
-    assertThat(response.confidence()).isEqualTo("LOW");
+    assertThat(response.method()).isEqualTo(AbvPredictionMethod.STANDARD_GRAVITY_DROP);
+    assertThat(response.confidence()).isEqualTo(PredictionConfidence.LOW);
   }
 }

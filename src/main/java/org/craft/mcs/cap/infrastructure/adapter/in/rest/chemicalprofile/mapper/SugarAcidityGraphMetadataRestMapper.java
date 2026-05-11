@@ -6,12 +6,12 @@ import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.dto.Suga
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.dto.SugarAcidityGraphMetadataResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.dto.SugarAcidityGraphRangeResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.dto.SugarAcidityGraphZoneResponse;
-import org.craft.mcs.cap.shared.domain.sugaracidity.plot.SugarAcidityGraphAxis;
-import org.craft.mcs.cap.shared.domain.sugaracidity.plot.EllipseSugarAcidityGraphZone;
-import org.craft.mcs.cap.shared.domain.sugaracidity.plot.RectangleSugarAcidityGraphZone;
-import org.craft.mcs.cap.shared.domain.sugaracidity.plot.SugarAcidityGraphMetadata;
-import org.craft.mcs.cap.shared.domain.sugaracidity.plot.SugarAcidityGraphRange;
-import org.craft.mcs.cap.shared.domain.sugaracidity.plot.SugarAcidityGraphZone;
+import org.craft.mcs.cap.core.cideranalysis.sugaracidity.plot.SugarAcidityGraphAxis;
+import org.craft.mcs.cap.core.cideranalysis.sugaracidity.plot.EllipseSugarAcidityGraphZone;
+import org.craft.mcs.cap.core.cideranalysis.sugaracidity.plot.RectangleSugarAcidityGraphZone;
+import org.craft.mcs.cap.core.cideranalysis.sugaracidity.plot.SugarAcidityGraphMetadata;
+import org.craft.mcs.cap.core.cideranalysis.sugaracidity.plot.SugarAcidityGraphRange;
+import org.craft.mcs.cap.core.cideranalysis.sugaracidity.plot.SugarAcidityGraphZone;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
@@ -42,13 +42,13 @@ public final class SugarAcidityGraphMetadataRestMapper {
     requireNonNull(zone, "sugar-acidity graph zone cannot be null");
 
     return switch (zone) {
-      case RectangleSugarAcidityGraphZone rectangle -> new RectangleSugarAcidityGraphZoneResponse(
-          rectangle.zone().name(),
+      case RectangleSugarAcidityGraphZone rectangle -> new RectangleSugarAcidityGraphZoneResponse( // NOSONAR
+          rectangle.zone(),
           rangeResponse(rectangle.sugarRange()),
           rangeResponse(rectangle.acidityRange())
       );
-      case EllipseSugarAcidityGraphZone ellipse -> new EllipseSugarAcidityGraphZoneResponse(
-          ellipse.zone().name(),
+      case EllipseSugarAcidityGraphZone ellipse -> new EllipseSugarAcidityGraphZoneResponse( // NOSONAR
+          ellipse.zone(),
           ellipse.sugarCenter(),
           ellipse.acidityCenter(),
           ellipse.sugarRadius(),

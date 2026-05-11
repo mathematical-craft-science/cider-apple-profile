@@ -19,10 +19,11 @@ public final class FeedstockSamplePotentialAbvRestMapper {
     requireNonNull(prediction, "feedstock sample potential ABV prediction cannot be null");
 
     return new FeedstockSamplePotentialAbvResponse(
-        prediction.sampleId().value().toString(),
-        prediction.ciderMakerId().value().toString(),
+        prediction.sampleId().value(),
+        prediction.ciderMakerId().value(),
+        prediction.batchId().value(),
         prediction.sampleName().value(),
-        prediction.originalGravityValueKind().name(),
+        prediction.originalGravityValueKind(),
         PotentialAbvPredictionRestMapper.toResponse(prediction.prediction())
     );
   }

@@ -1,17 +1,18 @@
 package org.craft.mcs.cap.feedstock.application.port.in;
 
 import org.craft.mcs.cap.core.feedstock.application.port.in.FeedstockSampleSugarAcidityZoneResult;
-import org.craft.mcs.cap.core.feedstock.domain.model.FeedstockSampleId;
+import org.craft.mcs.cap.core.feedstock.domain.model.sample.FeedstockSampleId;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.value.CiderMakerId;
-import org.craft.mcs.cap.core.feedstock.domain.model.value.FeedstockSampleName;
-import org.craft.mcs.cap.shared.domain.chemical.ChemicalProfile;
-import org.craft.mcs.cap.shared.domain.chemical.capability.ChemicalProfileCapability;
-import org.craft.mcs.cap.shared.domain.chemical.capability.ChemicalProfileCapabilityAssessment;
-import org.craft.mcs.cap.shared.domain.chemical.capability.ChemicalProfileCapabilityAssessor;
-import org.craft.mcs.cap.shared.domain.classification.axis.ChemicalProfileAxisExtractor;
-import org.craft.mcs.cap.shared.domain.measurement.ExactMeasurement;
-import org.craft.mcs.cap.shared.domain.sugar.SpecificGravityValue;
-import org.craft.mcs.cap.shared.domain.sugar.SugarConcentration;
+import org.craft.mcs.cap.core.feedstock.domain.model.sample.value.FeedstockSampleName;
+import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
+import org.craft.mcs.cap.shared.kernel.chemical.capability.ChemicalProfileCapability;
+import org.craft.mcs.cap.shared.kernel.chemical.capability.ChemicalProfileCapabilityAssessment;
+import org.craft.mcs.cap.shared.kernel.chemical.capability.ChemicalProfileCapabilityAssessor;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
+import org.craft.mcs.cap.shared.kernel.measurement.ExactMeasurement;
+import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
+import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.junit.jupiter.api.Test;
 
 import static java.util.UUID.randomUUID;
@@ -27,6 +28,7 @@ class FeedstockSampleSugarAcidityZoneResultTest {
         .isThrownBy(() -> new FeedstockSampleSugarAcidityZoneResult(
             FeedstockSampleId.newId(),
             CiderMakerId.of(randomUUID()),
+            FeedstockBatchId.newId(),
             FeedstockSampleName.of("Partial batch"),
             true,
             null,
@@ -39,6 +41,7 @@ class FeedstockSampleSugarAcidityZoneResultTest {
     final var result = new FeedstockSampleSugarAcidityZoneResult(
         FeedstockSampleId.newId(),
         CiderMakerId.of(randomUUID()),
+        FeedstockBatchId.newId(),
         FeedstockSampleName.of("Partial batch"),
         false,
         null,

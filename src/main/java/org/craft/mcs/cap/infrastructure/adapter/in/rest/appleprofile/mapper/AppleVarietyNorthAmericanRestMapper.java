@@ -20,11 +20,11 @@ public final class AppleVarietyNorthAmericanRestMapper {
     final var profile = classification.profile();
 
     return new AppleVarietyNorthAmericanResponse(
-        classification.varietyId().value().toString(),
+        classification.varietyId().value(),
         classification.varietyName().value(),
-        profile.sugar().name(),
-        profile.acidity().name(),
-        profile.tannin().name()
+        profile.sugar(),
+        profile.acidity(),
+        profile.tannin()
     );
   }
 }

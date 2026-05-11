@@ -16,10 +16,18 @@ spring:
     username: username
     password: password
 
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+
 sentry:
   enabled: false
 
 cap:
-  classification:
+  cider-analysis:
     sugar-acidity:
       assessor: rectangle # или ellipse

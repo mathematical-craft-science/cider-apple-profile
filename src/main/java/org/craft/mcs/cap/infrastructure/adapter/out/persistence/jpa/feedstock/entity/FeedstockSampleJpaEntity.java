@@ -13,9 +13,9 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 import java.time.Instant;
 import java.util.UUID;
-import org.craft.mcs.cap.core.feedstock.domain.model.value.FeedstockType;
+import org.craft.mcs.cap.core.feedstock.domain.model.sample.value.FeedstockType;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jpa.common.MeasurementJpaEmbeddable;
-import org.craft.mcs.cap.shared.domain.chemical.ConfidenceLevel;
+import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.data.annotation.CreatedDate;
@@ -36,8 +36,8 @@ public class FeedstockSampleJpaEntity {
   UUID sampleId;
 
   @NonNull
-  @Column(name = "cider_maker_id", nullable = false, updatable = false)
-  UUID ciderMakerId;
+  @Column(name = "batch_id", nullable = false, updatable = false)
+  UUID batchId;
 
   @NonNull
   @Column(name = "name", nullable = false, length = 160)
@@ -49,8 +49,8 @@ public class FeedstockSampleJpaEntity {
   FeedstockType type;
 
   @Nullable
-  @Column(name = "collected_at", nullable = false)
-  Instant collectedAt;
+  @Column(name = "measured_at", nullable = false)
+  Instant measuredAt;
 
   @Nullable
   @Column(name = "note", length = 2000)
@@ -149,10 +149,10 @@ public class FeedstockSampleJpaEntity {
 
   FeedstockSampleJpaEntity(
       @NonNull UUID sampleId,
-      @NonNull UUID ciderMakerId,
+      @NonNull UUID batchId,
       @NonNull String name,
       @NonNull FeedstockType type,
-      @NonNull Instant collectedAt,
+      @NonNull Instant measuredAt,
       @Nullable String note,
       @Nullable MeasurementJpaEmbeddable sugar,
       @Nullable MeasurementJpaEmbeddable ph,
@@ -162,10 +162,10 @@ public class FeedstockSampleJpaEntity {
       @Nullable ConfidenceLevel chemicalProfileConfidence
   ) {
     this.sampleId = requireNonNull(sampleId, "feedstock sample id cannot be null");
-    this.ciderMakerId = requireNonNull(ciderMakerId, "cider maker id cannot be null");
+    this.batchId = requireNonNull(batchId, "feedstock batch id cannot be null");
     this.name = requireNonNull(name, "feedstock sample name cannot be null");
     this.type = requireNonNull(type, "feedstock type cannot be null");
-    this.collectedAt = requireNonNull(collectedAt, "collected at cannot be null");
+    this.measuredAt = requireNonNull(measuredAt, "measured at cannot be null");
     this.note = note;
     this.sugar = sugar;
     this.ph = ph;

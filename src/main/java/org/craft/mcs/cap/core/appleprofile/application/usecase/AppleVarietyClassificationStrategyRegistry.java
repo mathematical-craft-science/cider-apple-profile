@@ -2,12 +2,12 @@ package org.craft.mcs.cap.core.appleprofile.application.usecase;
 
 import java.util.Map;
 import org.craft.mcs.cap.core.appleprofile.application.port.in.AppleVarietyClassificationSystem;
-import org.craft.mcs.cap.shared.domain.classification.engine.ClassificationStrategy;
-import org.craft.mcs.cap.shared.domain.classification.profile.BuiltInCiderClassificationThresholds;
-import org.craft.mcs.cap.shared.domain.classification.profile.french.FrenchClassificationStrategy;
-import org.craft.mcs.cap.shared.domain.classification.profile.longashton.LongAshton4ClassificationStrategy;
-import org.craft.mcs.cap.shared.domain.classification.profile.longashton.LongAshton7ClassificationStrategy;
-import org.craft.mcs.cap.shared.domain.classification.profile.spanish.SpanishClassificationStrategy;
+import org.craft.mcs.cap.core.cideranalysis.classification.engine.ClassificationStrategy;
+import org.craft.mcs.cap.core.cideranalysis.classification.profile.BuiltInCiderClassificationThresholds;
+import org.craft.mcs.cap.core.cideranalysis.classification.profile.french.FrenchClassificationStrategy;
+import org.craft.mcs.cap.core.cideranalysis.classification.profile.longashton.LongAshton4ClassificationStrategy;
+import org.craft.mcs.cap.core.cideranalysis.classification.profile.longashton.LongAshton7ClassificationStrategy;
+import org.craft.mcs.cap.core.cideranalysis.classification.profile.spanish.SpanishClassificationStrategy;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 
@@ -44,7 +44,7 @@ public class AppleVarietyClassificationStrategyRegistry {
 
     final var strategy = strategies.get(system);
 
-    if (strategy == null) {
+    if (strategy == null) { // NOSONAR
       throw new IllegalArgumentException("unsupported apple variety classification system: " + system);
     }
 
