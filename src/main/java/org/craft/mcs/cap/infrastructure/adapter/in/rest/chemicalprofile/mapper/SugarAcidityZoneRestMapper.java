@@ -1,6 +1,7 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.mapper;
 
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.dto.ExactSugarAcidityAxisPointResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.dto.CalculatedSugarAcidityAxisPointResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.dto.RangeSugarAcidityAxisPointResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.dto.StatisticalSugarAcidityAxisPointResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.dto.SugarAcidityAxisPointResponse;
@@ -62,6 +63,7 @@ public final class SugarAcidityZoneRestMapper {
           requireNonNull(point.max(), "range axis point maximum cannot be null")
       );
       case STATISTICAL_MEAN, STATISTICAL_MEDIAN -> statisticalPointResponse(point);
+      case CALCULATED -> new CalculatedSugarAcidityAxisPointResponse(point.value());
     };
   }
 

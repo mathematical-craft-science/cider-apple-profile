@@ -1,8 +1,8 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.mapper;
 
 import java.math.BigDecimal;
-import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.distance.BlendProfileObjectiveWeights;
-import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.distance.BlendProfileTargetDistance;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.distance.ProfileTargetObjectiveWeights;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.distance.ProfileTargetDistance;
 import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.target.RectangleSugarAcidityTargetGeometry;
 import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.target.SugarAcidityCoordinates;
 import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.target.TanninTargetRange;
@@ -18,8 +18,8 @@ import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.core.feedstock.domain.model.value.CiderMakerId;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.mapper.SugarAcidityZoneRestMapper;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.BlendProfileObjectiveWeightsRequest;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.BlendProfileTargetDistanceResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.ProfileTargetObjectiveWeightsRequest;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.ProfileTargetDistanceResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.CustomRectangleFeedstockBatchBlendProfileTargetRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.FeedstockBatchBlendProfileTargetRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.FeedstockBatchBlendProfileTargetScoreBatchResponse;
@@ -95,12 +95,12 @@ public final class FeedstockBatchBlendProfileTargetScoreRestMapper {
     );
   }
 
-  private static @NonNull BlendProfileTargetDistanceResponse toResponse(
-      @NonNull BlendProfileTargetDistance distance
+  private static @NonNull ProfileTargetDistanceResponse toResponse(
+      @NonNull ProfileTargetDistance distance
   ) {
-    requireNonNull(distance, "blend profile target distance cannot be null");
+    requireNonNull(distance, "profile target distance cannot be null");
 
-    return new BlendProfileTargetDistanceResponse(
+    return new ProfileTargetDistanceResponse(
         distance.status(),
         distance.value(),
         distance.insideSugarAcidityTarget(),
@@ -149,16 +149,16 @@ public final class FeedstockBatchBlendProfileTargetScoreRestMapper {
     return request == null ? null : new TanninTargetRange(request.min(), request.max());
   }
 
-  private static @NonNull BlendProfileObjectiveWeights toWeights(
-      @Nullable BlendProfileObjectiveWeightsRequest request
+  private static @NonNull ProfileTargetObjectiveWeights toWeights(
+      @Nullable ProfileTargetObjectiveWeightsRequest request
   ) {
     if (request == null) {
-      return BlendProfileObjectiveWeights.balanced();
+      return ProfileTargetObjectiveWeights.balanced();
     }
 
     final BigDecimal sugar = request.sugar() == null ? BigDecimal.ONE : request.sugar();
     final BigDecimal acidity = request.acidity() == null ? BigDecimal.ONE : request.acidity();
-    return new BlendProfileObjectiveWeights(sugar, acidity, request.tannin()); // NOSONAR
+    return new ProfileTargetObjectiveWeights(sugar, acidity, request.tannin()); // NOSONAR
   }
 
   private static @Nullable FeedstockSeason toSeason(@Nullable FeedstockSeasonRequest request) {

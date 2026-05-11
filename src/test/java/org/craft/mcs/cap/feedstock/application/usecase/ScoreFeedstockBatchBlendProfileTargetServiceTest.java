@@ -2,11 +2,11 @@ package org.craft.mcs.cap.feedstock.application.usecase;
 
 import java.time.Instant;
 import java.util.List;
-import org.craft.mcs.cap.core.cideranalysis.profileevaluation.application.port.in.BlendProfileScoringPurpose;
-import org.craft.mcs.cap.core.cideranalysis.profileevaluation.application.usecase.BuiltInBlendProfileScoringPurposeNormalizerPolicy;
-import org.craft.mcs.cap.core.cideranalysis.profileevaluation.application.usecase.ScoreBlendProfileDistanceCandidatesService;
-import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.distance.BlendProfileObjectiveWeights;
-import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.distance.BuiltInBlendProfileAxisNormalizerSelector;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.application.port.in.ProfileTargetScoringPurpose;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.application.usecase.BuiltInProfileTargetScoringPurposeNormalizerPolicy;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.application.usecase.ScoreProfileTargetDistanceCandidatesService;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.distance.ProfileTargetObjectiveWeights;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.distance.BuiltInProfileAxisNormalizerSelector;
 import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.target.ZoneGeometrySugarAcidityTargetResolver;
 import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.zone.BuiltInSugarAcidityZoneProfiles;
 import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.zone.RectangleSugarAcidityZoneAssessor;
@@ -58,10 +58,10 @@ class ScoreFeedstockBatchBlendProfileTargetServiceTest {
     final var result = service.score(new ScoreFeedstockBatchBlendProfileTargetCommand(
         ciderMakerId,
         new FeedstockMeasurementPointFilters(null, null, null, null),
-        BlendProfileScoringPurpose.BLENDING_PLANNING,
+        ProfileTargetScoringPurpose.BLENDING_PLANNING,
         new PredefinedFeedstockBatchBlendProfileTargetSelection(SugarAcidityZone.PERFECT_APPLES),
         null,
-        BlendProfileObjectiveWeights.balanced(),
+        ProfileTargetObjectiveWeights.balanced(),
         50
     ));
 
@@ -92,9 +92,9 @@ class ScoreFeedstockBatchBlendProfileTargetServiceTest {
         new ChemicalProfileCapabilityAssessor(),
         new RectangleSugarAcidityZoneAssessor(thresholds, geometryProfile),
         new ZoneGeometrySugarAcidityTargetResolver(geometryProfile),
-        new ScoreBlendProfileDistanceCandidatesService(
-            new BuiltInBlendProfileAxisNormalizerSelector(thresholds),
-            new BuiltInBlendProfileScoringPurposeNormalizerPolicy()
+        new ScoreProfileTargetDistanceCandidatesService(
+            new BuiltInProfileAxisNormalizerSelector(thresholds),
+            new BuiltInProfileTargetScoringPurposeNormalizerPolicy()
         )
     );
   }

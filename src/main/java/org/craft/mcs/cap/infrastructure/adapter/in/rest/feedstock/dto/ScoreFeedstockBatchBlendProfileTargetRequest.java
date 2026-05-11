@@ -1,7 +1,7 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto;
 
 import java.util.UUID;
-import org.craft.mcs.cap.core.cideranalysis.profileevaluation.application.port.in.BlendProfileScoringPurpose;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.application.port.in.ProfileTargetScoringPurpose;
 import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.zone.SugarAcidityZone;
 import org.craft.mcs.cap.shared.kernel.chemical.capability.ChemicalProfileCapability;
 import org.jspecify.annotations.NonNull;
@@ -17,16 +17,16 @@ public record ScoreFeedstockBatchBlendProfileTargetRequest(
     @Nullable SugarAcidityZone zone,
     @Nullable ChemicalProfileCapability capability,
     @Nullable Boolean capable,
-    @NonNull BlendProfileScoringPurpose purpose,
+    @NonNull ProfileTargetScoringPurpose purpose,
     @NonNull FeedstockBatchBlendProfileTargetRequest target,
     @Nullable TanninTargetRangeRequest tanninTarget,
-    @Nullable BlendProfileObjectiveWeightsRequest weights,
+    @Nullable ProfileTargetObjectiveWeightsRequest weights,
     @Nullable Integer limit
 ) {
 
   public ScoreFeedstockBatchBlendProfileTargetRequest {
     requireNonNull(ciderMakerId, "cider maker id cannot be null");
-    requireNonNull(purpose, "blend profile scoring purpose cannot be null");
+    requireNonNull(purpose, "profile target scoring purpose cannot be null");
     requireNonNull(target, "feedstock batch blend profile target cannot be null");
   }
 }

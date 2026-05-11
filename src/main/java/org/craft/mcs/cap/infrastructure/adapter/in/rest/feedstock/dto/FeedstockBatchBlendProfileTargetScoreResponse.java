@@ -11,6 +11,6 @@ public record FeedstockBatchBlendProfileTargetScoreResponse(
     @NonNull UUID currentMeasurementId,
     @NonNull String currentMeasurementName,
     @NonNull SugarAcidityProfilePointResponse point,
-    @NonNull BlendProfileTargetDistanceResponse distance
+    @NonNull ProfileTargetDistanceResponse distance
 ) {
 }
