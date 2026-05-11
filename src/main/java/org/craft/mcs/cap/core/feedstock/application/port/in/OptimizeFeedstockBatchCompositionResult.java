@@ -1,6 +1,6 @@
 package org.craft.mcs.cap.core.feedstock.application.port.in;
 
-import org.craft.mcs.cap.core.cideranalysis.profileevaluation.application.port.in.OptimizeChemicalProfileCompositionResult;
+import org.craft.mcs.cap.core.cideranalysis.composition.optimization.application.port.in.OptimizeChemicalProfileCompositionResult;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;

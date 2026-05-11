@@ -4,26 +4,26 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
-import org.craft.mcs.cap.core.cideranalysis.profileevaluation.application.port.in.OptimizeChemicalProfileCompositionResult;
-import org.craft.mcs.cap.core.cideranalysis.profileevaluation.application.port.in.OptimizeChemicalProfileCompositionUseCase;
-import org.craft.mcs.cap.core.cideranalysis.profileevaluation.application.port.in.ProfileTargetScoringPurpose;
-import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.composition.ChemicalProfileCompositionCalculatorCode;
-import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.composition.ChemicalProfileCompositionTanninPolicy;
-import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.composition.optimization.CompositionOptimizationAlgorithm;
-import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.composition.optimization.CompositionOptimizationMode;
-import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.composition.optimization.ChemicalProfileCompositionOptimizationResult;
-import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.composition.optimization.DiscretizedCompositionOptimizationSettings;
-import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.distance.ProfileAxisNormalizerCode;
-import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.distance.ProfileTargetObjectiveFunctionCode;
-import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.distance.ProfileTargetObjectiveWeights;
-import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.target.TanninTargetRange;
-import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.target.ZoneGeometrySugarAcidityTargetResolver;
-import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.zone.BuiltInSugarAcidityZoneProfiles;
-import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.zone.RectangleSugarAcidityZoneAssessor;
-import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.zone.SugarAcidityZone;
+import org.craft.mcs.cap.core.cideranalysis.composition.optimization.application.port.in.OptimizeChemicalProfileCompositionResult;
+import org.craft.mcs.cap.core.cideranalysis.composition.optimization.application.port.in.OptimizeChemicalProfileCompositionUseCase;
+import org.craft.mcs.cap.core.cideranalysis.profiletarget.scoring.application.port.in.ProfileTargetScoringPurpose;
+import org.craft.mcs.cap.core.cideranalysis.composition.calculation.domain.ChemicalProfileCompositionCalculatorCode;
+import org.craft.mcs.cap.core.cideranalysis.composition.calculation.domain.ChemicalProfileCompositionTanninPolicy;
+import org.craft.mcs.cap.core.cideranalysis.composition.optimization.domain.CompositionOptimizationAlgorithm;
+import org.craft.mcs.cap.core.cideranalysis.composition.optimization.domain.CompositionOptimizationMode;
+import org.craft.mcs.cap.core.cideranalysis.composition.optimization.domain.ChemicalProfileCompositionOptimizationResult;
+import org.craft.mcs.cap.core.cideranalysis.composition.optimization.domain.DiscretizedCompositionOptimizationSettings;
+import org.craft.mcs.cap.core.cideranalysis.profiletarget.scoring.domain.ProfileAxisNormalizerCode;
+import org.craft.mcs.cap.core.cideranalysis.profiletarget.scoring.domain.ProfileTargetObjectiveFunctionCode;
+import org.craft.mcs.cap.core.cideranalysis.profiletarget.scoring.domain.ProfileTargetObjectiveWeights;
+import org.craft.mcs.cap.core.cideranalysis.sugaracidity.target.domain.TanninTargetRange;
+import org.craft.mcs.cap.core.cideranalysis.sugaracidity.target.domain.ZoneGeometrySugarAcidityTargetResolver;
+import org.craft.mcs.cap.core.cideranalysis.sugaracidity.zone.domain.BuiltInSugarAcidityZoneProfiles;
+import org.craft.mcs.cap.core.cideranalysis.sugaracidity.zone.domain.RectangleSugarAcidityZoneAssessor;
+import org.craft.mcs.cap.core.cideranalysis.sugaracidity.zone.domain.SugarAcidityZone;
 import org.craft.mcs.cap.core.feedstock.application.port.in.FeedstockMeasurementPointFilters;
 import org.craft.mcs.cap.core.feedstock.application.port.in.OptimizeFeedstockBatchCompositionCommand;
-import org.craft.mcs.cap.core.feedstock.application.port.in.PredefinedFeedstockBatchBlendProfileTargetSelection;
+import org.craft.mcs.cap.core.feedstock.application.port.in.PredefinedFeedstockProfileTargetSelection;
 import org.craft.mcs.cap.core.feedstock.application.port.out.FeedstockBatchRepository;
 import org.craft.mcs.cap.core.feedstock.application.port.out.FeedstockMeasurementQueryRepository;
 import org.craft.mcs.cap.core.feedstock.application.port.out.LatestFeedstockMeasurementSugarAcidityPointCandidateQuery;
@@ -186,7 +186,7 @@ class OptimizeFeedstockBatchCompositionServiceTest {
     final var optimizer = mock(OptimizeChemicalProfileCompositionUseCase.class);
     when(optimizer.optimize(any()))
         .thenAnswer(invocation -> {
-          final org.craft.mcs.cap.core.cideranalysis.profileevaluation.application.port.in.OptimizeChemicalProfileCompositionCommand command =
+          final org.craft.mcs.cap.core.cideranalysis.composition.optimization.application.port.in.OptimizeChemicalProfileCompositionCommand command =
               invocation.getArgument(0);
           return new OptimizeChemicalProfileCompositionResult(
               command.mode(),
@@ -200,9 +200,9 @@ class OptimizeFeedstockBatchCompositionServiceTest {
     return optimizer;
   }
 
-  private static ArgumentCaptor<org.craft.mcs.cap.core.cideranalysis.profileevaluation.application.port.in.OptimizeChemicalProfileCompositionCommand> genericCommandCaptor() {
+  private static ArgumentCaptor<org.craft.mcs.cap.core.cideranalysis.composition.optimization.application.port.in.OptimizeChemicalProfileCompositionCommand> genericCommandCaptor() {
     return ArgumentCaptor.forClass(
-        org.craft.mcs.cap.core.cideranalysis.profileevaluation.application.port.in.OptimizeChemicalProfileCompositionCommand.class
+        org.craft.mcs.cap.core.cideranalysis.composition.optimization.application.port.in.OptimizeChemicalProfileCompositionCommand.class
     );
   }
 
@@ -214,7 +214,7 @@ class OptimizeFeedstockBatchCompositionServiceTest {
         ciderMakerId,
         new FeedstockMeasurementPointFilters(null, null, null, null),
         ProfileTargetScoringPurpose.BLENDING_PLANNING,
-        new PredefinedFeedstockBatchBlendProfileTargetSelection(SugarAcidityZone.PERFECT_APPLES),
+        new PredefinedFeedstockProfileTargetSelection(SugarAcidityZone.PERFECT_APPLES),
         tanninTarget,
         ProfileTargetObjectiveWeights.balanced(),
         new DiscretizedCompositionOptimizationSettings(5, 3),
