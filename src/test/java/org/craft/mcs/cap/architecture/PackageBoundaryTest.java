@@ -52,18 +52,53 @@ class PackageBoundaryTest {
   }
 
   @Test
-  void profileEvaluationDoesNotDependOnClassificationContext() throws IOException {
+  void ciderAnalysisSupportContextsDoNotDependOnClassificationContext() throws IOException {
     assertNoImportsUnder(
-        "org/craft/mcs/cap/core/cideranalysis/profileevaluation",
+        "org/craft/mcs/cap/core/cideranalysis/profileaxis",
+        List.of("org.craft.mcs.cap.core.cideranalysis.classification.")
+    );
+    assertNoImportsUnder(
+        "org/craft/mcs/cap/core/cideranalysis/sugaracidity",
+        List.of("org.craft.mcs.cap.core.cideranalysis.classification.")
+    );
+    assertNoImportsUnder(
+        "org/craft/mcs/cap/core/cideranalysis/profiletarget",
+        List.of("org.craft.mcs.cap.core.cideranalysis.classification.")
+    );
+    assertNoImportsUnder(
+        "org/craft/mcs/cap/core/cideranalysis/composition",
         List.of("org.craft.mcs.cap.core.cideranalysis.classification.")
     );
   }
 
   @Test
-  void profileGraphDoesNotDependOnClassificationContext() throws IOException {
+  void lowerLevelCiderAnalysisContextsDoNotDependOnCompositionContexts() throws IOException {
     assertNoImportsUnder(
-        "org/craft/mcs/cap/core/cideranalysis/profilegraph",
-        List.of("org.craft.mcs.cap.core.cideranalysis.classification.")
+        "org/craft/mcs/cap/core/cideranalysis/profileaxis",
+        List.of(
+            "org.craft.mcs.cap.core.cideranalysis.sugaracidity.",
+            "org.craft.mcs.cap.core.cideranalysis.profiletarget.",
+            "org.craft.mcs.cap.core.cideranalysis.composition."
+        )
+    );
+    assertNoImportsUnder(
+        "org/craft/mcs/cap/core/cideranalysis/sugaracidity",
+        List.of(
+            "org.craft.mcs.cap.core.cideranalysis.profiletarget.",
+            "org.craft.mcs.cap.core.cideranalysis.composition."
+        )
+    );
+    assertNoImportsUnder(
+        "org/craft/mcs/cap/core/cideranalysis/profiletarget",
+        List.of("org.craft.mcs.cap.core.cideranalysis.composition.")
+    );
+  }
+
+  @Test
+  void compositionCalculationDoesNotDependOnCompositionOptimization() throws IOException {
+    assertNoImportsUnder(
+        "org/craft/mcs/cap/core/cideranalysis/composition/calculation",
+        List.of("org.craft.mcs.cap.core.cideranalysis.composition.optimization.")
     );
   }
 
