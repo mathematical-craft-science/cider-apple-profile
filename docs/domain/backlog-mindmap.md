@@ -136,7 +136,13 @@ mindmap
         Prediction method
         Capability error if sugar missing
     Fermentation
-      ProductionBatch or CiderBatch
+      ProductionBatch
+        Product type or intent
+          Cider
+          Perry
+          Distillate base
+          Calvados
+          Pommeau
         Source FeedstockBatch
         Source FeedstockSample
         Source blend recipe

@@ -12,9 +12,9 @@
 
 | Фича | Ценность | Сложность | Причина |
 |---|---:|---:|---|
-| FeedstockSample graph + warnings по неполному профилю | 9 | 4 | Работа с реальным сырьем, явные предупреждения и понимание, чего не хватает для оценки. |
-| Potential ABV для FeedstockSample | 9 | 3 | Быстро отвечает на практический вопрос: какую крепость ожидать от конкретной партии. |
-| ProductionBatch / CiderBatch как производственная партия | 10 | 8 | Основа для учета объема, операций, ферментации, снятия с осадка, розлива и разных технологий производства. |
+| ~~FeedstockSample graph + warnings по неполному профилю~~ | 9 | 4 | Реализованы graph points, unplottable records и warnings по missing axes. |
+| ~~Potential ABV для FeedstockSample~~ | 9 | 3 | Реализован прогноз ABV по normalized SG с method/confidence/FG source. |
+| ProductionBatch как производственная партия | 10 | 9 | Основа для учета объема, операций, ферментации, снятия с осадка, розлива и разных технологий; сложность повышена из-за интеграции с запасами, concurrency и операциями объема. |
 | Fermentation monitoring по партиям | 10 | 8 | Превращает систему в помощника, который следит за процессом и показывает динамику. |
 | Alerts: stuck fermentation / выход за temperature/pH/ABV ranges | 10 | 8 | Помогает не потерять партию и вовремя вмешаться в процесс. |
 | Yeast catalog + yeast-aware fermentation checks | 9 | 7 | Дрожжи влияют на FG/ABV, температурные риски, остановку ферментации и мониторинг. |
@@ -23,11 +23,12 @@
 
 | Фича | Ценность | Сложность | Причина |
 |---|---:|---:|---|
-| Blending для FeedstockSample с target area | 10 | 9 | Сильный decision support: подбор пропорций купажа под цель с учетом ограничений. |
-| Available volume для FeedstockSample | 8 | 4 | Необходимая основа для blending и production planning. |
+| Blending для FeedstockSample с target area | 10 | 10 | Сильный decision support: подбор пропорций купажа под цель с учетом ограничений; сложность высокая из-за target geometry, метрики расстояния, нормализации шкал и volume constraints. |
+| Distance metric / target model для chemical profile | 9 | 7 | Обязательная основа для blending optimization, similarity search и сравнения samples с catalog varieties. |
+| ~~Available volume для FeedstockBatch~~ | 8 | 4 | Реализовано как `FeedstockBatch.availableVolume`; sample создается внутри batch. |
 | Исследование каталога через выделенную область на graph | 8 | 6 | Делает каталог discovery-инструментом, а не статичным справочником. |
 | Фильтрация по English/French/Spanish/Long Ashton classifications | 8 | 5 | Позволяет сидроделу работать в привычной системе терминов. |
-| Query/filter/search model с cursor | 7 | 6 | Технический enabler для больших каталогов, graph exploration и стабильного API. |
+| ~~Query/filter/search model с cursor~~ | 7 | 6 | Реализованы POST query models, cursor pagination и malformed cursor ProblemDetail. |
 
 ### Средний приоритет
 
@@ -35,7 +36,7 @@
 |---|---:|---:|---|
 | Admin data-quality reports по AppleVariety | 7 | 5 | Важно для качества каталога, но косвенно полезно сидроделу. |
 | Materialized projection/index для вычислимых профилей | 7 | 8 | Понадобится при росте каталога и сложных фильтрах, но можно отложить до нагрузки. |
-| FeedstockSample season/batch model | 8 | 5 | Нужна для работы по сезонам и партиям, требует аккуратной доменной модели. |
+| ~~FeedstockBatch season/batch model~~ | 8 | 5 | Реализован `FeedstockBatch` с season/source/availableVolume и sample внутри batch. |
 | Сравнение FeedstockSample с AppleVariety каталогом | 7 | 7 | Полезный экспертный сценарий, но требует similarity metric. |
 | Frontend graph contract: tooltips, selected area, linked rows | 7 | 5 | Делает экспертность видимой и удобной, зависит от frontend-слоя. |
 
@@ -51,16 +52,17 @@
 
 ### Рекомендуемый порядок движения
 
-1. Довести ABV prediction для `FeedstockSample`: response, method/confidence,
-   source of assumed/predicted FG.
-2. Добавить season/batch и available volume в `FeedstockSample`.
-3. Начать `ProductionBatch` / `CiderBatch` как производственную партию:
-   source feedstock, текущий объем, операции, первая поддержанная фаза
-   fermentation.
-4. Добавить yeast catalog как источник рабочих диапазонов и constraints.
-5. Добавить первые rule-based alerts: temperature out of yeast range, SG не
+1. ~~Довести ABV prediction для `FeedstockSample`: response, method/confidence,
+   source of assumed/predicted FG.~~
+2. ~~Добавить season/batch и available volume через `FeedstockBatch`.~~
+3. Добавить distance metric / target model для sugar-acidity profile.
+4. Добавить MVP blending plan: predefined zone/custom rectangle target,
+   normalized weighted distance, one optimized option, volume constraints.
+5. Начать `ProductionBatch` как принятие blend/source plan:
+   списание объемов, текущий объем, операции, первая fermentation phase.
+6. Добавить минимальный yeast catalog как источник рабочих диапазонов и constraints.
+7. Добавить первые rule-based alerts: temperature out of yeast range, SG не
    снижается, ABV near yeast tolerance.
-6. После этого переходить к blending optimization.
 
 ## Сценарии и user stories
 
@@ -123,7 +125,7 @@ medium-sugar и т.д.
 
 Идея реализации:
 
-- Фильтр `sugarAcidityZone`.
+- ~~Фильтр `sugarAcidityZone`.~~
 - Дополнительные фильтры `sugarLevel`, `acidityLevel`, `tanninLevel`.
 - `tanninLevel` полезен даже для 2D graph, потому что сидродел может искать,
   например, low-acidity/high-tannin кандидатов.
@@ -135,8 +137,8 @@ medium-sugar и т.д.
 
 Идея реализации:
 
-- Фильтр `name`.
-- Поиск по нормализованному названию.
+- ~~Фильтр `name`.~~
+- ~~Поиск по нормализованному названию.~~
 - Позже добавить поиск по синонимам и локальным названиям.
 
 ### Управление качеством каталога AppleVariety
@@ -162,14 +164,14 @@ medium-sugar и т.д.
 
 User stories:
 
-- Как сидродел, я хочу создать sample с частичным набором измерений, чтобы
-  начать вести данные до полного лабораторного профиля.
-- Как сидродел, я хочу видеть предупреждение, что sample пока нельзя
-  отобразить на sugar-acidity plot.
-- Как сидродел, я хочу понимать, каких измерений не хватает для конкретного
-  графика или оценки.
-- Как сидродел, я хочу фильтровать samples по полноте данных, сезону, партии
-  или cider maker.
+- ~~Как сидродел, я хочу создать sample с частичным набором измерений, чтобы
+  начать вести данные до полного лабораторного профиля.~~
+- ~~Как сидродел, я хочу видеть предупреждение, что sample пока нельзя
+  отобразить на sugar-acidity plot.~~
+- ~~Как сидродел, я хочу понимать, каких измерений не хватает для конкретного
+  графика или оценки.~~
+- ~~Как сидродел, я хочу фильтровать samples по полноте данных, сезону, партии
+  или cider maker.~~
 
 ### Сезоны и партии для FeedstockSample
 
@@ -180,16 +182,17 @@ User stories:
 
 Возможные характеристики:
 
-- Сезон урожая.
-- Партия или batch.
-- Cider maker / владелец сырья.
+- ~~Сезон урожая.~~
+- ~~Партия или batch.~~
+- ~~Cider maker / владелец сырья.~~
 - Дата сбора.
 - Дата прессования или измерения.
 - Условия хранения перед измерением.
-- Источник сырья: свой сад, поставщик, ферма, рынок.
+- ~~Источник сырья: свой сад, поставщик, ферма, рынок.~~
 
-Открытый вопрос: что именно является season и batch в доменной модели, нужны ли
-отдельные value objects или aggregate для партии.
+~~Открытый вопрос: что именно является season и batch в доменной модели, нужны ли
+отдельные value objects или aggregate для партии.~~ Решено через отдельный
+aggregate `FeedstockBatch` и value object `FeedstockSeason`.
 
 ### Возможные характеристики AppleVariety в cider-домене
 
@@ -317,12 +320,17 @@ User story для будущего обсуждения:
   практичностью производства.
 - Как сидродел, я хочу понимать, почему предложенный купаж не попал точно в
   цель, если доступные samples физически не позволяют достичь нужного профиля.
+- Как сидродел, я хочу принять предложенный blend plan и создать из него
+  производственную партию, чтобы система автоматически списала объемы из всех
+  участвующих сырьевых партий.
 
 Возможные способы задания target:
 
 - Готовая `SugarAcidityZone`, например `PERFECT_APPLES` или
   `MEDIUM_SUGAR_APPLES`.
 - Пользовательская rectangle selection на graph.
+- Custom rectangle через API, заданный технологом:
+  `sugarMin`, `sugarMax`, `acidityMin`, `acidityMax`.
 - Явные диапазоны значений:
   - sugar/SG min-max;
   - acidity/TA min-max;
@@ -341,24 +349,64 @@ User story для будущего обсуждения:
 - возможно distinction между measured volume, usable volume и reserved volume;
 - дата актуальности объема, если объем может уменьшаться после использования.
 
-### ProductionBatch / CiderBatch как производственная партия
+### ProductionBatch как производственная партия
 
 `FermentationBatch` как главный aggregate слишком узкий термин. Ферментация -
-это важная фаза производства, но не вся жизнь партии сидра. Полный процесс
+это важная фаза производства, но не вся жизнь партии напитка. Полный процесс
 может включать старт ферментации, снятие с осадка, перелив, выдержку,
 вторичную ферментацию, кивинг, купажирование, розлив, дображивание в бутылке,
-дегоржаж, dosage и другие операции в зависимости от технологии.
+дегоржаж, dosage и другие операции в зависимости от технологии и типа продукта.
 
 Более устойчивое доменное понятие:
 
-- `ProductionBatch` или `CiderBatch`: живая производственная партия сидра;
+- `ProductionBatch`: живая производственная партия напитка;
 - `Fermentation`: фаза/процесс внутри производственной партии;
 - `ProductionOperation`: факт технологической операции над партией.
+
+`ProductionBatch` должен быть beverage-neutral. Он может описывать будущий
+сидр, перри, основу для дистиллята/кальвадоса, помо или другой продукт. Тип
+продукта должен быть отдельным атрибутом/intent, например:
+
+- `CIDER`;
+- `PERRY`;
+- `DISTILLATE_BASE`;
+- `CALVADOS`;
+- `POMMEAU`;
+- `OTHER`.
+
+Это не должны быть отдельные aggregate roots на первом этапе. Различия между
+продуктами лучше выражать через `productType`, production profile/policy и
+доступные операции.
 
 `FeedstockBatch` представляет доступный запас сырья/сока до производства.
 `ProductionBatch` представляет часть этого сырья, которая уже ушла в
 производственный процесс. При создании `ProductionBatch` объем должен быть
 зарезервирован или списан из `FeedstockBatch.availableVolume`.
+
+Риск реализации: сложность находится не в создании сущности, а в интеграции с
+учетом сырья и конкурентным доступом к объему. Production batch может
+создаваться из одного `FeedstockBatch`, нескольких feedstock batches или
+результата blending optimization. Поэтому production-модель не должна
+начинаться раньше, чем появится минимальный `BlendPlan` / `ProductionSourcePlan`.
+
+Зависимость roadmap: сначала нужны distance function и target model, затем
+blending algorithm, который строит source plan, и только потом
+`ProductionBatch`, который принимает этот source plan и атомарно списывает
+объемы из участвующих `FeedstockBatch`.
+
+Требования к резервированию/списанию объема:
+
+- создание production batch и уменьшение/reservation объемов по всем source
+  batches должны быть атомарны в одной transaction boundary;
+- `FeedstockBatch.availableVolume` должен защищаться optimistic locking, чтобы
+  параллельные создания production batches не могли использовать один и тот же
+  объем дважды;
+- нужно явно решить модель: сразу списывать объем или резервировать его до
+  подтверждения `START_PRODUCTION`;
+- если выбран reserve-flow, нужны операции cancel/release reservation и
+  возможно change reserved volume;
+- недостаточный объем в любом source batch должен возвращать application-level error, а не падать
+  поздно в persistence layer.
 
 Важное правило: поле внутри `ProductionBatch` не должно называться
 `availableVolume`. Это уже не доступный запас, а текущий объем партии в
@@ -371,8 +419,8 @@ User story для будущего обсуждения:
 
 User stories:
 
-- Как сидродел, я хочу взять часть объема из `FeedstockBatch` и запустить из
-  нее производственную партию, чтобы отделить сырье в запасе от сидра в
+- Как производитель, я хочу взять часть объема из `FeedstockBatch` и запустить
+  из нее производственную партию, чтобы отделить сырье в запасе от продукта в
   процессе.
 - Как сидродел, я хочу видеть текущий объем партии, чтобы понимать, сколько
   продукта реально осталось после операций и потерь.
@@ -380,8 +428,9 @@ User stories:
   сохранять историю технологических решений.
 - Как сидродел, я хочу видеть, из какого сырья или blend-а была создана партия,
   чтобы анализировать результат по исходным профилям.
-- Как сидродел, я хочу вести разные технологии производства, не ломая базовую
-  модель партии: тихий сидр, pet-nat, ancestral, keeving, traditional method.
+- Как производитель, я хочу вести разные технологии производства, не ломая
+  базовую модель партии: тихий сидр, perry, pet-nat, ancestral, keeving,
+  traditional method, distillate base/calvados, pommeau.
 
 #### Снятие с осадка / racking
 
@@ -392,7 +441,7 @@ User stories:
 Пример:
 
 ```text
-CiderBatch A
+ProductionBatch A
 currentVolume: 80 L
 vessel: Tank 1
 
@@ -403,7 +452,7 @@ lossVolume: 6 L
 lossReason: LEES
 targetVessel: Tank 2
 
-CiderBatch A
+ProductionBatch A
 currentVolume: 74 L
 vessel: Tank 2
 ```
@@ -444,7 +493,19 @@ record ProductionOperation(
 - `MEASUREMENT`;
 - `RACKING`;
 - `TRANSFER`;
+- `VOLUME_ADJUSTMENT`;
+- `SAMPLE_TAKEN`;
 - `BOTTLING`.
+
+`VOLUME_ADJUSTMENT` нужен как явная операция коррекции текущего объема, чтобы
+учетный объем не расходился с физическим. Причины должны быть типизированы:
+
+- `EVAPORATION`;
+- `SAMPLING`;
+- `SPILL`;
+- `RACKING_LOSS`;
+- `MEASUREMENT_CORRECTION`;
+- `OTHER`.
 
 Будущие типы:
 
@@ -485,6 +546,27 @@ record ProductionOperation(
 - завершенную или разлитую партию нельзя менять обычными технологическими
   операциями без отдельной correction/audit-модели.
 
+Доменные события для future audit/notifications/integration:
+
+- `FeedstockVolumeReserved`;
+- `FeedstockVolumeReservationReleased`;
+- `ProductionBatchStarted`;
+- `FermentationStarted`;
+- `ProductionOperationRecorded`;
+- `ProductionBatchVolumeAdjusted`;
+- `ProductionBatchSplit`;
+- `ProductionBatchBlended`.
+
+Тестирование первого slice:
+
+- unit tests на инварианты объема;
+- unit tests на операции `START_PRODUCTION`, `RACKING`, `VOLUME_ADJUSTMENT`,
+  `SAMPLE_TAKEN`;
+- application tests на атомарное создание production batch и изменение
+  `FeedstockBatch.availableVolume`;
+- persistence/concurrency test на optimistic locking для параллельного
+  списания/reservation одного объема.
+
 ### Fermentation forecast and monitoring
 
 Будущая большая область: прогноз и сопровождение ферментации по партиям.
@@ -511,7 +593,7 @@ chemical profile, выбранные дрожжи, температурный р
 
 Минимальные сущности/понятия для обсуждения:
 
-- `ProductionBatch` / `CiderBatch`: производственная партия.
+- `ProductionBatch`: производственная партия.
 - `FermentationState`: состояние фазы ферментации внутри партии.
 - Исходное сырье: один `FeedstockBatch`, один `FeedstockSample` или blend
   нескольких samples/batches.
@@ -555,12 +637,12 @@ chemical profile, выбранные дрожжи, температурный р
 
 ## Архитектурные и технические идеи
 
-### Query/filter model для apple variety graph batch
+### ~~Query/filter model для apple variety graph batch~~
 
-Сейчас batch endpoint для sugar-acidity graph концептуально остается операцией
+~~Сейчас batch endpoint для sugar-acidity graph концептуально остается операцией
 "дай все". Для большого каталога сортов это не подходит. Нужно ввести явную
 query model, например `AppleVarietySugarAcidityZonePointQuery`, и cursor-based
-pagination.
+pagination.~~
 
 Возможная форма query object:
 
@@ -586,24 +668,24 @@ record AppleVarietySugarAcidityZonePointQuery(
 }
 ```
 
-### GET vs POST для search
+### ~~GET vs POST для search~~
 
-GET удобен для простых read-only фильтров: URL можно сохранить, открыть заново
+~~GET удобен для простых read-only фильтров: URL можно сохранить, открыть заново
 и проще отлаживать. Но исследовательский search быстро становится сложным:
-plot selection, массивы classes, levels, cursor, future shapes.
+plot selection, массивы classes, levels, cursor, future shapes.~~
 
 Идея:
 
-- Оставить простой `GET /apple-varieties/sugar-acidity-zone-points` для default
-  сценария или простых фильтров.
-- Основной исследовательский endpoint сделать как
-  `POST /apple-varieties/sugar-acidity-zone-points/search` с request body.
-- В application layer использовать одну query model независимо от transport.
+- ~~Оставить простой `GET /apple-varieties/sugar-acidity-zone-points` для default
+  сценария или простых фильтров.~~
+- ~~Основной исследовательский endpoint сделать как
+  `POST /apple-varieties/sugar-acidity-zone-points/search` с request body.~~
+- ~~В application layer использовать одну query model независимо от transport.~~
 
-### Cursor pagination
+### ~~Cursor pagination~~
 
-Курсор нужно добавить сразу. Он должен быть opaque для клиента. Минимальная
-идея: Base64 JSON с последней позицией стабильной сортировки.
+~~Курсор нужно добавить сразу. Он должен быть opaque для клиента. Минимальная
+идея: Base64 JSON с последней позицией стабильной сортировки.~~
 
 ```json
 {
@@ -612,9 +694,9 @@ plot selection, массивы classes, levels, cursor, future shapes.
 }
 ```
 
-Сортировка по умолчанию: `normalizedName + varietyId`.
+~~Сортировка по умолчанию: `normalizedName + varietyId`.~~
 
-Ответ batch/search endpoint-а должен содержать page metadata:
+~~Ответ batch/search endpoint-а должен содержать page metadata:~~
 
 ```json
 {
@@ -641,14 +723,14 @@ selection.
 
 Возможные решения:
 
-- overfetch: читать больше кандидатов, пока не набран `limit` результатов или
-  каталог не закончился;
+- ~~overfetch: читать больше кандидатов, пока не набран `limit` результатов или
+  каталог не закончился;~~
 - позже сделать materialized projection/index для вычисленных профилей,
   координат graph и классификаций;
 - держать query model стабильной, чтобы перенос фильтров из application layer в
   persistence/projection слой не ломал API.
 
-### Управление полнотой и актуальностью chemical profile
+### ~~Управление полнотой и актуальностью chemical profile для graph/capability scenarios~~
 
 Неполный `ChemicalProfile` является допустимым состоянием данных. Система должна
 позволять загружать и хранить профили, в которых отсутствуют отдельные
@@ -659,12 +741,12 @@ selection.
 Нужно мыслить через capability assessment: оценку пригодности профиля для
 конкретного сценария.
 
-Примеры capabilities:
+~~Примеры capabilities:~~
 
-- `SUGAR_ACIDITY_PLOT`: требует sugar и acidity.
-- `NORTH_AMERICAN_PROFILE`: требует sugar, acidity и tannin.
-- `SINGLE_VARIETY_CIDER_ASSESSMENT`: требует sugar, acidity и tannin, но
-  сценарий пока не реализуем.
+- ~~`SUGAR_ACIDITY_PLOT`: требует sugar и acidity.~~
+- ~~`NORTH_AMERICAN_PROFILE`: требует sugar, acidity и tannin.~~
+- ~~`SINGLE_VARIETY_CIDER_ASSESSMENT`: требует sugar, acidity и tannin, но
+  сценарий пока не реализуем.~~
 - `CIDER_CLASSIFICATION`: требования зависят от выбранной классификационной
   системы.
 
@@ -681,8 +763,8 @@ record ChemicalProfileCapabilityAssessment(
 }
 ```
 
-Для batch endpoint-а graph полезно возвращать не только отображаемые точки, но
-и элементы, которые нельзя отобразить:
+~~Для batch endpoint-а graph полезно возвращать не только отображаемые точки, но
+и элементы, которые нельзя отобразить:~~
 
 ```json
 {
@@ -701,22 +783,29 @@ record ChemicalProfileCapabilityAssessment(
 }
 ```
 
-`SugarAcidityZoneAssessor` не должен решать задачу полноты данных. Его
+~~`SugarAcidityZoneAssessor` не должен решать задачу полноты данных. Его
 ответственность - оценить профиль, который уже пригоден для sugar-acidity
 assessment. Проверка пригодности профиля должна находиться перед assessor-ом, в
-отдельной доменной или application service модели.
+отдельной доменной или application service модели.~~
 
 ### REST error model
 
-Сейчас добавлен `422 ProblemDetail` для `ChemicalProfileCapabilityNotMet`.
+~~Сейчас добавлен `422 ProblemDetail` для `ChemicalProfileCapabilityNotMet`.~~
 Нужно отдельно обсудить общий error strategy:
 
-- not found;
+- ~~not found для `FeedstockBatchNotFoundException`;~~
 - validation errors;
 - unsupported classification system;
 - malformed query/search body;
-- capability not met;
+- ~~malformed cursor;~~
+- ~~capability not met;~~
 - consistent `type`, `title`, `detail`, `properties`.
+
+Выполнено техническое разделение REST exception handlers:
+
+- ~~`ChemicalProfileExceptionHandler` для capability errors;~~
+- ~~`FeedstockExceptionHandler` для feedstock-specific errors;~~
+- ~~`QueryExceptionHandler` для cursor/query errors.~~
 
 ### Classification filter contract
 
@@ -750,8 +839,8 @@ assessment. Проверка пригодности профиля должна 
 
 - Вход: набор доступных `FeedstockSample`, их chemical profile и доступный
   объем.
-- Target: зона graph, пользовательская область или явные диапазоны
-  sugar/acidity/tannin.
+- Target: predefined sugar-acidity zone, пользовательская область graph или
+  custom rectangle/ranges через API.
 - Целевая функция: минимизировать расстояние итогового профиля купажа до центра
   target area или до заданного target point.
 - Ограничения:
@@ -775,6 +864,63 @@ assessment. Проверка пригодности профиля должна 
 - Нужна ли внешняя optimization library или достаточно собственного простого
   solver-а на первом этапе.
 
+MVP blending должен быть уже и проще полной задачи:
+
+- target model поддерживает два варианта:
+  - predefined `SugarAcidityZone` из уже реализованных зон;
+  - custom rectangle `[sugarMin..sugarMax, acidityMin..acidityMax]`, заданный
+    технологом через API;
+- distance: взвешенная евклидова метрика с нормализацией шкал sugar/acidity;
+- tannin добавить позже как третью координату/constraint;
+- shape support для ellipse/polygon/lasso не включать в первый solver;
+- результат: сначала один оптимизированный вариант;
+- алгоритм: простой bounded search / discretized proportions с отсечением по
+  available volume;
+- multiple ranked options добавить после доказанного MVP.
+
+Выход blending MVP должен быть не только текстовой рекомендацией, а
+структурированным `BlendPlan` / `ProductionSourcePlan`:
+
+- source `FeedstockBatch` / `FeedstockSample`;
+- requested volume per source;
+- expected blended chemical profile;
+- target distance;
+- target source: predefined zone или custom rectangle;
+- total volume;
+- warnings, если target недостижим или использованы profiles с разной
+  confidence.
+
+Этот plan позже должен становиться входом для создания `ProductionBatch`.
+Именно поэтому blending/distance стоят перед production foundation.
+
+Открытые вопросы для более поздней версии:
+
+- поддержка target ellipse/polygon/zone shape;
+- Mahalanobis или другая метрика с учетом covariance/uncertainty;
+- учет range/statistical measurements;
+- explainability для trade-off между точностью цели и расходом редкого сырья.
+
+### Graph export
+
+Низковисящий сценарий для graph discovery: экспорт отфильтрованных результатов
+в CSV/Excel.
+
+User stories:
+
+- Как сидродел, я хочу выгрузить отфильтрованные точки graph в CSV/Excel,
+  чтобы анализировать их вне системы или делиться подборкой.
+- Как администратор каталога, я хочу экспортировать выборку сортов с неполными
+  профилями, чтобы искать недостающие данные и сверять источники.
+
+Идея реализации:
+
+- использовать тот же search/query object, что и для graph points;
+- отдельный endpoint export, возвращающий CSV на первом этапе;
+- поля: id, name, sugar/SG, acidity, tannin, zone, capability status,
+  missing axes, source/batch/season для feedstock;
+- ценность: 7;
+- сложность: 3-4.
+
 ### Fermentation model and alerts
 
 Для прогноза и мониторинга ферментации нужна отдельная модель процесса, которая
@@ -783,7 +929,7 @@ assessment. Проверка пригодности профиля должна 
 Идеи реализации:
 
 - Не создавать `FermentationBatch` как главный aggregate. Главный aggregate -
-  `ProductionBatch` / `CiderBatch`, а fermentation - фаза и набор операций
+  `ProductionBatch`, а fermentation - фаза и набор операций
   внутри него.
 - Связать production batch с исходным `FeedstockBatch`, `FeedstockSample` или
   blend recipe.
@@ -808,6 +954,19 @@ assessment. Проверка пригодности профиля должна 
 - Позже заменить или дополнить rule-based alerts статистической моделью по
   историческим production batches.
 
+Минимальный yeast catalog лучше добавить до содержательных alerts. Без yeast
+metadata alerts смогут проверять только generic thresholds, но не рабочий
+диапазон конкретных дрожжей.
+
+Минимальная модель `YeastStrain` для первой версии:
+
+- `id`;
+- `name`;
+- `temperatureRange`;
+- `phRange`;
+- `alcoholTolerance`;
+- optional `producer`.
+
 Открытые вопросы:
 
 - Как часто сидродел реально будет вносить измерения.
@@ -828,7 +987,7 @@ ABV prediction должен работать по нормализованном
 
 Текущий базовый вариант:
 
-- `STANDARD_GRAVITY_DROP`: расчет по OG и predicted/assumed FG.
+- ~~`STANDARD_GRAVITY_DROP`: расчет по OG и predicted/assumed FG.~~
 
 Будущие стратегии:
 
@@ -881,6 +1040,12 @@ ABV prediction должен работать по нормализованном
 
 ### CompositionRoot
 
-Открытый архитектурный вопрос: куда девать `CompositionRoot`. Нужно отдельно
+~~Открытый архитектурный вопрос: куда девать `CompositionRoot`. Нужно отдельно
 решить, остается ли это отдельным application/bootstrap слоем, частью
-configuration, или исчезает в пользу явной Spring configuration.
+configuration, или исчезает в пользу явной Spring configuration.~~
+
+Решено через явные Spring configuration classes:
+
+- ~~`SharedKernelConfiguration`;~~
+- ~~`CiderAnalysisConfiguration`;~~
+- ~~`FermentationConfiguration`.~~
