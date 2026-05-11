@@ -2,7 +2,10 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.cideranalysis.dto;
 
 import java.util.List;
 import org.craft.mcs.cap.core.cideranalysis.profileevaluation.application.port.in.ProfileTargetScoringPurpose;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.composition.ChemicalProfileCompositionCalculatorCode;
 import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.composition.ChemicalProfileCompositionTanninPolicy;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.distance.ProfileAxisNormalizerCode;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.distance.ProfileTargetObjectiveFunctionCode;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -13,6 +16,9 @@ public record CalculateChemicalProfileCompositionRequest(
     @Nullable ProfileTargetRequest target,
     @Nullable ProfileTargetTanninRangeRequest tanninTarget,
     @Nullable ProfileTargetObjectiveWeightsRequest weights,
-    @Nullable ProfileTargetScoringPurpose scoringPurpose
+    @Nullable ProfileTargetScoringPurpose scoringPurpose,
+    @Nullable ChemicalProfileCompositionCalculatorCode calculator,
+    @Nullable ProfileAxisNormalizerCode normalizer,
+    @Nullable ProfileTargetObjectiveFunctionCode objectiveFunction
 ) {
 }

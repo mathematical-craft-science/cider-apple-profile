@@ -62,6 +62,23 @@ class DistanceToTargetAreaObjectiveFunctionTest {
   }
 
   @Test
+  void manhattanObjectiveMeasuresL1DistanceToNearestTargetBoundary() {
+    final var manhattanObjective = new ManhattanDistanceToTargetAreaObjectiveFunction(
+        MinMaxProfileAxisNormalizer.fullCiderProfileRange(),
+        ProfileTargetObjectiveWeights.balanced()
+    );
+
+    final var distance = manhattanObjective.distanceTo(new SugarAcidityCoordinates(
+        new BigDecimal("1.050"),
+        new BigDecimal("8.5")
+    ), target);
+
+    assertThat(distance.metric()).isEqualTo(ProfileDistanceMetric.NORMALIZED_WEIGHTED_MANHATTAN);
+    assertThat(distance.objectiveFunction()).isEqualTo(ProfileTargetObjectiveFunctionCode.MANHATTAN_DISTANCE_TO_TARGET_AREA);
+    assertThat(distance.value()).isCloseTo(new BigDecimal("0.266667"), within(new BigDecimal("0.000001")));
+  }
+
+  @Test
   void appliesCustomAxisWeights() {
     final var weightedObjective = new DistanceToTargetAreaObjectiveFunction(
         MinMaxProfileAxisNormalizer.fullCiderProfileRange(),

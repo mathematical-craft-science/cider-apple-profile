@@ -8,6 +8,7 @@ import org.craft.mcs.cap.core.cideranalysis.profileevaluation.application.port.i
 import org.craft.mcs.cap.core.cideranalysis.profileevaluation.application.port.in.ScoreProfileTargetDistanceCandidatesCommand;
 import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.zone.BuiltInSugarAcidityZoneProfiles;
 import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.distance.ProfileEvaluationAxis;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.distance.BuiltInProfileTargetObjectiveFunctionFactory;
 import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.distance.ProfileAxisNormalizerCode;
 import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.distance.BuiltInProfileAxisNormalizerSelector;
 import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.distance.ProfileTargetObjective;
@@ -30,7 +31,8 @@ class ScoreProfileTargetDistanceCandidatesServiceTest {
   private final ScoreProfileTargetDistanceCandidatesService service =
       new ScoreProfileTargetDistanceCandidatesService(
           new BuiltInProfileAxisNormalizerSelector(BuiltInSugarAcidityZoneProfiles.thresholds()),
-          new BuiltInProfileTargetScoringPurposeNormalizerPolicy()
+          new BuiltInProfileTargetScoringPurposeNormalizerPolicy(),
+          new BuiltInProfileTargetObjectiveFunctionFactory()
       );
 
   @Test

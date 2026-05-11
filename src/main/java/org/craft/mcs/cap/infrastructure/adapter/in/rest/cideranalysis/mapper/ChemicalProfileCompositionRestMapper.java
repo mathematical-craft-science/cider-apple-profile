@@ -3,15 +3,24 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.cideranalysis.mapper;
 import java.math.BigDecimal;
 import org.craft.mcs.cap.core.cideranalysis.profileevaluation.application.port.in.CalculateChemicalProfileCompositionCommand;
 import org.craft.mcs.cap.core.cideranalysis.profileevaluation.application.port.in.CalculateChemicalProfileCompositionResult;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.application.port.in.OptimizeChemicalProfileCompositionCommand;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.application.port.in.OptimizeChemicalProfileCompositionResult;
 import org.craft.mcs.cap.core.cideranalysis.profileevaluation.application.port.in.ProfileTargetScoringPurpose;
 import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.composition.AbsoluteCompositionVolume;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.composition.ChemicalProfileCompositionCalculatorCode;
 import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.composition.ChemicalProfileCompositionSource;
 import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.composition.ChemicalProfileCompositionSourceReference;
 import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.composition.ChemicalProfileCompositionSourceWeight;
 import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.composition.ChemicalProfileCompositionTanninPolicy;
 import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.composition.CompositionProportion;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.composition.optimization.ChemicalProfileCompositionOptimizationCandidate;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.composition.optimization.ChemicalProfileCompositionOptimizationSource;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.composition.optimization.CompositionOptimizationAlgorithm;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.composition.optimization.DiscretizedCompositionOptimizationSettings;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.distance.ProfileAxisNormalizerCode;
 import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.distance.ProfileTargetDistance;
 import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.distance.ProfileTargetObjective;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.distance.ProfileTargetObjectiveFunctionCode;
 import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.distance.ProfileTargetObjectiveWeights;
 import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.target.CustomRectangleSugarAcidityTarget;
 import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.target.RectangleSugarAcidityTargetGeometry;
@@ -22,12 +31,16 @@ import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.target.Tann
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.mapper.SugarAcidityZoneRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.cideranalysis.dto.CalculateChemicalProfileCompositionRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.cideranalysis.dto.ChemicalProfileCompositionAxesRequest;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.cideranalysis.dto.ChemicalProfileCompositionOptimizationCandidateResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.cideranalysis.dto.ChemicalProfileCompositionOptimizationSourceRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.cideranalysis.dto.ChemicalProfileCompositionResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.cideranalysis.dto.ChemicalProfileCompositionSourceReferenceRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.cideranalysis.dto.ChemicalProfileCompositionSourceRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.cideranalysis.dto.ChemicalProfileCompositionSourceResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.cideranalysis.dto.ChemicalProfileCompositionSourceWeightRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.cideranalysis.dto.CustomRectangleProfileTargetRequest;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.cideranalysis.dto.OptimizeChemicalProfileCompositionRequest;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.cideranalysis.dto.OptimizeChemicalProfileCompositionResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.cideranalysis.dto.PredefinedZoneProfileTargetRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.cideranalysis.dto.ProfileTargetDistanceResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.cideranalysis.dto.ProfileTargetObjectiveWeightsRequest;
@@ -63,6 +76,15 @@ public final class ChemicalProfileCompositionRestMapper {
     final ProfileTargetScoringPurpose scoringPurpose = request.scoringPurpose() == null
         ? ProfileTargetScoringPurpose.BLENDING_PLANNING
         : request.scoringPurpose();
+    final ChemicalProfileCompositionCalculatorCode calculator = request.calculator() == null
+                                                                ? ChemicalProfileCompositionCalculatorCode.MASS_BALANCE
+                                                                : request.calculator();
+    final ProfileAxisNormalizerCode normalizer = request.normalizer() == null
+                                                 ? normalizerFor(scoringPurpose)
+                                                 : request.normalizer();
+    final ProfileTargetObjectiveFunctionCode objectiveFunction = request.objectiveFunction() == null
+                                                                 ? ProfileTargetObjectiveFunctionCode.DISTANCE_TO_TARGET_AREA
+                                                                 : request.objectiveFunction();
 
     return new CalculateChemicalProfileCompositionCommand( // NOSONAR
         request.sources().stream()
@@ -71,7 +93,10 @@ public final class ChemicalProfileCompositionRestMapper {
         tanninPolicy,
         toTargetObjective(request.target(), request.tanninTarget(), targetResolver),
         toWeights(request.weights()),
-        scoringPurpose
+        scoringPurpose,
+        calculator,
+        normalizer,
+        objectiveFunction
     );
   }
 
@@ -90,6 +115,83 @@ public final class ChemicalProfileCompositionRestMapper {
         composition.warnings(),
         result.normalizerCode(),
         result.targetDistance() == null ? null : toResponse(result.targetDistance()) // NOSONAR
+    );
+  }
+
+  public static @NonNull OptimizeChemicalProfileCompositionCommand toOptimizationCommand(
+      @NonNull OptimizeChemicalProfileCompositionRequest request,
+      @NonNull SugarAcidityTargetResolver targetResolver
+  ) {
+    requireNonNull(request, "optimize chemical profile composition request cannot be null");
+    requireNonNull(targetResolver, "sugar-acidity target resolver cannot be null");
+
+    final ChemicalProfileCompositionTanninPolicy tanninPolicy = request.tanninPolicy() == null
+                                                                ? ChemicalProfileCompositionTanninPolicy.CALCULATE_WHEN_COMPLETE
+                                                                : request.tanninPolicy();
+    final ProfileTargetScoringPurpose scoringPurpose = request.scoringPurpose() == null
+                                                       ? ProfileTargetScoringPurpose.BLENDING_PLANNING
+                                                       : request.scoringPurpose();
+    final var mode = requireNonNull(request.mode(), "composition optimization mode cannot be null");
+    final CompositionOptimizationAlgorithm algorithm = request.algorithm() == null
+                                                       ? CompositionOptimizationAlgorithm.DISCRETIZED_BOUNDED_SEARCH
+                                                       : request.algorithm();
+    final ChemicalProfileCompositionCalculatorCode calculator = request.calculator() == null
+                                                                ? ChemicalProfileCompositionCalculatorCode.MASS_BALANCE
+                                                                : request.calculator();
+    final ProfileAxisNormalizerCode normalizer = request.normalizer() == null
+                                                 ? normalizerFor(scoringPurpose)
+                                                 : request.normalizer();
+    final ProfileTargetObjectiveFunctionCode objectiveFunction = request.objectiveFunction() == null
+                                                                 ? ProfileTargetObjectiveFunctionCode.DISTANCE_TO_TARGET_AREA
+                                                                 : request.objectiveFunction();
+    final var settings = new DiscretizedCompositionOptimizationSettings(
+        request.stepPercent() == null
+        ? DiscretizedCompositionOptimizationSettings.DEFAULT_STEP_PERCENT
+        : request.stepPercent(),
+        request.limit() == null
+        ? DiscretizedCompositionOptimizationSettings.DEFAULT_LIMIT
+        : request.limit()
+    );
+    final var targetObjective = requireNonNull(
+        toTargetObjective(request.target(), request.tanninTarget(), targetResolver),
+        "profile target objective cannot be null"
+    );
+
+    return new OptimizeChemicalProfileCompositionCommand(
+        request.sources().stream()
+            .map(ChemicalProfileCompositionRestMapper::toOptimizationSource)
+            .toList(),
+        tanninPolicy,
+        targetObjective,
+        toWeights(request.weights()),
+        scoringPurpose,
+        settings,
+        mode,
+        algorithm,
+        calculator,
+        normalizer,
+        objectiveFunction,
+        toVolume(request.targetTotalVolumeLiters())
+    );
+  }
+
+  public static @NonNull OptimizeChemicalProfileCompositionResponse toResponse(
+      @NonNull OptimizeChemicalProfileCompositionResult result,
+      int stepPercent
+  ) {
+    requireNonNull(result, "optimize chemical profile composition result cannot be null");
+
+    return new OptimizeChemicalProfileCompositionResponse(
+        result.mode(),
+        result.algorithm(),
+        result.calculatorCode(),
+        result.normalizerCode(),
+        result.objectiveFunctionCode(),
+        stepPercent,
+        result.optimizationResult().evaluatedCandidates(),
+        result.optimizationResult().candidates().stream()
+            .map(ChemicalProfileCompositionRestMapper::toOptimizationCandidateResponse)
+            .toList()
     );
   }
 
@@ -123,6 +225,35 @@ public final class ChemicalProfileCompositionRestMapper {
         toAxes(request.axes()),
         toWeight(request.weight()),
         toVolume(request.availableVolumeLiters())
+    );
+  }
+
+  private static @NonNull ChemicalProfileCompositionOptimizationSource toOptimizationSource(
+      @NonNull ChemicalProfileCompositionOptimizationSourceRequest request
+  ) {
+    requireNonNull(request, "chemical profile composition optimization source request cannot be null");
+
+    return new ChemicalProfileCompositionOptimizationSource(
+        toReference(request.reference()),
+        toAxes(request.axes()),
+        toVolume(request.availableVolumeLiters())
+    );
+  }
+
+  private static @NonNull ChemicalProfileCompositionOptimizationCandidateResponse toOptimizationCandidateResponse(
+      @NonNull ChemicalProfileCompositionOptimizationCandidate candidate
+  ) {
+    requireNonNull(candidate, "chemical profile composition optimization candidate cannot be null");
+    final var composition = candidate.composition();
+
+    return new ChemicalProfileCompositionOptimizationCandidateResponse(
+        composition.sources().stream()
+            .map(ChemicalProfileCompositionRestMapper::toResponse)
+            .toList(),
+        SugarAcidityZoneRestMapper.toResponse(composition.profile()),
+        composition.totalVolume() == null ? null : composition.totalVolume().liters(), // NOSONAR
+        composition.warnings(),
+        toResponse(candidate.distance())
     );
   }
 
@@ -216,6 +347,18 @@ public final class ChemicalProfileCompositionRestMapper {
     final BigDecimal sugar = request.sugar() == null ? BigDecimal.ONE : request.sugar();
     final BigDecimal acidity = request.acidity() == null ? BigDecimal.ONE : request.acidity();
     return new ProfileTargetObjectiveWeights(sugar, acidity, request.tannin()); // NOSONAR
+  }
+
+  private static @NonNull ProfileAxisNormalizerCode normalizerFor(
+      @NonNull ProfileTargetScoringPurpose scoringPurpose
+  ) {
+    requireNonNull(scoringPurpose, "profile target scoring purpose cannot be null");
+    return switch (scoringPurpose) {
+      case GRAPH_EXPLORATION -> ProfileAxisNormalizerCode.MIN_MAX;
+      case BLENDING_PLANNING -> ProfileAxisNormalizerCode.EFFECTIVE_RANGE;
+      case TARGET_ZONE_MATCHING -> ProfileAxisNormalizerCode.THRESHOLD_SEGMENT;
+      case EXPERT_CALIBRATION -> ProfileAxisNormalizerCode.SENSITIVITY_UNIT;
+    };
   }
 
   private static @NonNull ProfileTargetDistanceResponse toResponse(

@@ -6,13 +6,21 @@ import org.craft.mcs.cap.core.cideranalysis.profileevaluation.application.port.i
 import org.craft.mcs.cap.core.cideranalysis.profileevaluation.application.port.in.ScoreProfileTargetDistanceCandidatesCommand;
 import org.craft.mcs.cap.core.cideranalysis.profileevaluation.application.port.in.ScoreProfileTargetDistanceCandidatesUseCase;
 import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.distance.ProfileAxisNormalizerSelector;
-import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.distance.DistanceToTargetAreaObjectiveFunction;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.distance.ProfileTargetObjectiveFunctionCode;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.distance.ProfileTargetObjectiveFunctionFactory;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 
 import static java.util.Objects.requireNonNull;
 
 
+/**
+ * Scores already-calculated profile points against one target objective.
+ *
+ * <p>This use case is used by graph/catalog scenarios where candidate points already exist and only
+ * need distance ranking. Composition optimization is a different use case: it first generates
+ * candidate source weights, calculates profiles, then scores them.
+ */
 @Component
 @RequiredArgsConstructor
 public final class ScoreProfileTargetDistanceCandidatesService
@@ -20,6 +28,7 @@ public final class ScoreProfileTargetDistanceCandidatesService
 
   private final @NonNull ProfileAxisNormalizerSelector normalizerSelector;
   private final @NonNull ProfileTargetScoringPurposeNormalizerPolicy normalizerPolicy;
+  private final @NonNull ProfileTargetObjectiveFunctionFactory objectiveFunctionFactory;
 
   @Override
   public @NonNull ProfileTargetDistanceCandidateScores score(
@@ -28,7 +37,8 @@ public final class ScoreProfileTargetDistanceCandidatesService
     requireNonNull(command, "score profile target distance candidates command cannot be null");
     final var normalizerCode = normalizerPolicy.normalizerFor(command.purpose());
     final var normalizer = normalizerSelector.select(normalizerCode);
-    final var objectiveFunction = new DistanceToTargetAreaObjectiveFunction(
+    final var objectiveFunction = objectiveFunctionFactory.create(
+        ProfileTargetObjectiveFunctionCode.DISTANCE_TO_TARGET_AREA,
         normalizer,
         command.weights()
     );

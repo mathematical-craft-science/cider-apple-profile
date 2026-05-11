@@ -8,6 +8,14 @@ import org.jspecify.annotations.NonNull;
 import static java.util.Objects.requireNonNull;
 
 
+/**
+ * Scores a profile point against a configured target.
+ *
+ * <p>An objective function combines target geometry, optional tannin target, axis normalizer and
+ * per-axis weights into one {@link ProfileTargetDistance}. It does not decide which normalizer to
+ * use; that is done by application policy or request configuration before the objective function is
+ * created by {@link ProfileTargetObjectiveFunctionFactory}.
+ */
 public interface ProfileTargetObjectiveFunction {
 
   @NonNull

@@ -10,6 +10,10 @@ import static java.util.Objects.requireNonNull;
 
 /**
  * Maps user-facing scoring purposes to built-in normalization strategies.
+ *
+ * <p>These defaults are intentionally conservative:
+ * graph exploration uses full min-max ranges, blending uses effective cider ranges, target-zone
+ * matching uses threshold segments, and expert calibration uses sensitivity units.
  */
 @Component
 public final class BuiltInProfileTargetScoringPurposeNormalizerPolicy

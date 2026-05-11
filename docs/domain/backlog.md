@@ -1001,9 +1001,32 @@ Prediction model для итогового chemical profile:
 - `Linear programming`: подходит, если objective можно выразить линейно,
   например минимизировать сумму абсолютных отклонений от target через auxiliary
   variables.
-- `Quadratic / nonlinear optimization`: нужна, если используем евклидово
-  расстояние, нормализованную L2 distance, эллипсы или более сложные функции
+- `Quadratic programming`: подходит для нормализованной L2 distance, когда
+  chemical profile calculator остается линейным, а objective квадратично
+  штрафует отклонения от target point/area.
+- `Mixed-integer programming`: понадобится, если появятся дискретные
+  производственные ограничения: целые емкости, минимальный объем забора из
+  batch, ограничение количества источников, шаги дозирования.
+- `Local search / coordinate descent`: полезен как быстрый refinement после
+  грубого grid search или когда источников слишком много для полного перебора.
+- `Evolutionary / genetic heuristic`: потенциально полезен для сложных
+  нелинейных, сенсорных или preference-based objective functions, где solver
+  сложно формализовать.
+- `Nonlinear optimization`: нужна, если используем эллипсы, нелинейные
+  calculators, pH/буферность, нелинейные sensory penalties или сложные функции
   качества.
+
+Текущее состояние в коде:
+
+- `CompositionOptimizationAlgorithm` уже содержит stable codes для будущих
+  вариантов: `DISCRETIZED_BOUNDED_SEARCH`, `LINEAR_PROGRAMMING`,
+  `QUADRATIC_PROGRAMMING`, `MIXED_INTEGER_PROGRAMMING`, `LOCAL_SEARCH`,
+  `EVOLUTIONARY_HEURISTIC`, `NONLINEAR_OPTIMIZATION`.
+- `BuiltInCompositionOptimizationStrategySelector` сейчас регистрирует только
+  `DISCRETIZED_BOUNDED_SEARCH`; остальные коды должны fail-fast до появления
+  реализации.
+- Выбор optimizer-а должен оставаться независимым от выбора calculator-а,
+  normalizer-а и objective function.
 
 MVP blending должен быть уже и проще полной задачи:
 

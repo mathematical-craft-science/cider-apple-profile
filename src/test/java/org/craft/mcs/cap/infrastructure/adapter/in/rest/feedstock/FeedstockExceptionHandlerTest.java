@@ -2,6 +2,7 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock;
 
 
 import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchNotFoundException;
+import org.craft.mcs.cap.core.feedstock.application.InsufficientFeedstockCompositionSourcesException;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatusCode;
@@ -26,5 +27,23 @@ class FeedstockExceptionHandlerTest {
     assertThat(problem.getTitle()).isEqualTo("Feedstock batch not found");
     assertThat(problem.getDetail()).contains(batchId.value().toString());
     assertThat(problem.getProperties()).containsEntry("batchId", batchId.value().toString());
+  }
+
+  @Test
+  void mapsInsufficientFeedstockCompositionSourcesExceptionToProblemDetail() {
+    final var response = new FeedstockExceptionHandler().handleInsufficientFeedstockCompositionSources(
+        new InsufficientFeedstockCompositionSourcesException(1, 2)
+    );
+
+    final var problem = response.getBody();
+
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatusCode.valueOf(422));
+    assertThat(problem).isNotNull();
+    assertThat(problem.getType()).hasToString("urn:problem-type:insufficient-feedstock-composition-sources");
+    assertThat(problem.getTitle()).isEqualTo("Insufficient feedstock composition sources");
+    assertThat(problem.getDetail()).contains("at least 2 usable current batch profiles");
+    assertThat(problem.getProperties())
+        .containsEntry("sourceCount", 1)
+        .containsEntry("minimumSourceCount", 2);
   }
 }

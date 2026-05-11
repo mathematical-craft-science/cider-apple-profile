@@ -18,6 +18,22 @@ import static java.util.Objects.requireNonNull;
 
 /**
  * Calculates a chemical profile composition by mass balance over source weights.
+ *
+ * <p>This is the default calculator for juice/feedstock composition. It assumes that every source is
+ * already normalized to the common axes used by the cider analysis domain:
+ * sugar as specific gravity, acidity as titratable acidity, and tannin as tannin concentration.
+ *
+ * <p>Formulae:
+ * <ul>
+ *   <li>Sugar: specific gravity is converted to gravity points, composed by weighted average, then
+ *       converted back to SG: {@code SG = 1 + weightedAverage((SG_i - 1) * 1000) / 1000}.</li>
+ *   <li>Acidity: concentration mass balance, {@code sum(acidity_i * weight_i) / sum(weight_i)}.</li>
+ *   <li>Tannin: same concentration mass balance when the selected tannin policy allows it.</li>
+ * </ul>
+ *
+ * <p>The strategy does not decide which source weights to use. It is called by fixed composition
+ * calculations and by optimization algorithms after they generate a candidate set of weights.
+ *
  * Sugar is composed through gravity points: gp = (SG - 1.000) * 1000.
  * Acidity and tannin are composed as concentration mass balance:
  * blended = sum(value_i * weight_i) / sum(weight_i).

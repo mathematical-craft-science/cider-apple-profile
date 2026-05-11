@@ -5,10 +5,14 @@ import org.craft.mcs.cap.core.cideranalysis.classification.engine.ChemicalProfil
 import org.craft.mcs.cap.core.cideranalysis.classification.engine.ClassificationConfidencePolicy;
 import org.craft.mcs.cap.core.cideranalysis.classification.profile.BuiltInCiderClassificationThresholds;
 import org.craft.mcs.cap.core.cideranalysis.classification.profile.northamerican.NorthAmericanProfileCalculator;
-import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.composition.ChemicalProfileCompositionCalculator;
-import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.composition.MassBalanceChemicalProfileCompositionStrategy;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.composition.BuiltInChemicalProfileCompositionCalculatorSelector;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.composition.ChemicalProfileCompositionCalculatorSelector;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.composition.optimization.BuiltInCompositionOptimizationStrategySelector;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.composition.optimization.CompositionOptimizationStrategySelector;
 import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.distance.ProfileAxisNormalizerSelector;
 import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.distance.BuiltInProfileAxisNormalizerSelector;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.distance.BuiltInProfileTargetObjectiveFunctionFactory;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.distance.ProfileTargetObjectiveFunctionFactory;
 import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.target.SugarAcidityTargetResolver;
 import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.target.ZoneGeometrySugarAcidityTargetResolver;
 import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.zone.BuiltInSugarAcidityZoneProfiles;
@@ -88,14 +92,24 @@ class CiderAnalysisConfiguration {
   }
 
   @Bean
-  ProfileAxisNormalizerSelector blendProfileAxisNormalizerSelector() {
+  ProfileAxisNormalizerSelector profileAxisNormalizerSelector() {
     return new BuiltInProfileAxisNormalizerSelector(
         BuiltInSugarAcidityZoneProfiles.thresholds()
     );
   }
 
   @Bean
-  ChemicalProfileCompositionCalculator chemicalProfileCompositionCalculator() {
-    return new MassBalanceChemicalProfileCompositionStrategy();
+  ChemicalProfileCompositionCalculatorSelector chemicalProfileCompositionCalculatorSelector() {
+    return new BuiltInChemicalProfileCompositionCalculatorSelector();
+  }
+
+  @Bean
+  CompositionOptimizationStrategySelector compositionOptimizationStrategySelector() {
+    return new BuiltInCompositionOptimizationStrategySelector();
+  }
+
+  @Bean
+  ProfileTargetObjectiveFunctionFactory profileTargetObjectiveFunctionFactory() {
+    return new BuiltInProfileTargetObjectiveFunctionFactory();
   }
 }

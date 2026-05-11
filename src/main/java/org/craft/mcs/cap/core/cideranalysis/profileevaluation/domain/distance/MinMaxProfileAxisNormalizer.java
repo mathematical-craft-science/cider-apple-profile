@@ -13,6 +13,9 @@ import static java.util.Objects.requireNonNull;
 /**
  * Normalizes each profile evaluation axis by min-max scaling:
  * normalized(x) = (x - min) / (max - min).
+ *
+ * <p>This normalizer is useful for graph exploration and broad catalog comparison where the full
+ * configured axis span should map to a common 0..1-ish scale.
  */
 public final class MinMaxProfileAxisNormalizer implements ProfileAxisNormalizer {
 

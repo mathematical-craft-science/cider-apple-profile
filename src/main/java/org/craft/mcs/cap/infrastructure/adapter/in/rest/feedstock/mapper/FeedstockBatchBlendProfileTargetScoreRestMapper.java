@@ -1,8 +1,22 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.mapper;
 
 import java.math.BigDecimal;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.application.port.in.ProfileTargetScoringPurpose;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.composition.AbsoluteCompositionVolume;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.composition.ChemicalProfileCompositionSource;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.composition.ChemicalProfileCompositionWarning;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.composition.CompositionProportion;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.composition.ChemicalProfileCompositionCalculatorCode;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.composition.optimization.CompositionOptimizationAlgorithm;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.composition.optimization.DiscretizedCompositionOptimizationSettings;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.distance.ProfileAxisNormalizerCode;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.distance.ProfileTargetObjectiveFunctionCode;
 import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.distance.ProfileTargetObjectiveWeights;
 import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.distance.ProfileTargetDistance;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.composition.optimization.ChemicalProfileCompositionOptimizationCandidate;
 import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.target.RectangleSugarAcidityTargetGeometry;
 import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.target.SugarAcidityCoordinates;
 import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.target.TanninTargetRange;
@@ -12,12 +26,18 @@ import org.craft.mcs.cap.core.feedstock.application.port.in.FeedstockBatchBlendP
 import org.craft.mcs.cap.core.feedstock.application.port.in.FeedstockBatchBlendProfileTargetScores;
 import org.craft.mcs.cap.core.feedstock.application.port.in.FeedstockBatchBlendProfileTargetSelection;
 import org.craft.mcs.cap.core.feedstock.application.port.in.FeedstockMeasurementPointFilters;
+import org.craft.mcs.cap.core.feedstock.application.port.in.OptimizeFeedstockBatchCompositionCommand;
+import org.craft.mcs.cap.core.feedstock.application.port.in.OptimizeFeedstockBatchCompositionResult;
 import org.craft.mcs.cap.core.feedstock.application.port.in.PredefinedFeedstockBatchBlendProfileTargetSelection;
 import org.craft.mcs.cap.core.feedstock.application.port.in.ScoreFeedstockBatchBlendProfileTargetCommand;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.core.feedstock.domain.model.value.CiderMakerId;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.mapper.SugarAcidityZoneRestMapper;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.FeedstockBatchCompositionOptimizationCandidateResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.FeedstockBatchCompositionOptimizationSourceResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.OptimizeFeedstockBatchCompositionRequest;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.OptimizeFeedstockBatchCompositionResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.ProfileTargetObjectiveWeightsRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.ProfileTargetDistanceResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.CustomRectangleFeedstockBatchBlendProfileTargetRequest;
@@ -29,6 +49,7 @@ import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.Predefined
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.ScoreFeedstockBatchBlendProfileTargetRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.SugarAcidityCoordinatesResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.TanninTargetRangeRequest;
+import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;
 import org.craft.mcs.cap.shared.platform.query.ChemicalProfileCapabilityCriteria;
 import org.craft.mcs.cap.shared.platform.query.CursorPageRequest;
 import org.craft.mcs.cap.shared.platform.query.SugarAcidityZoneCriteria;
@@ -80,6 +101,77 @@ public final class FeedstockBatchBlendProfileTargetScoreRestMapper {
     );
   }
 
+  public static @NonNull OptimizeFeedstockBatchCompositionCommand toOptimizationCommand(
+      @NonNull OptimizeFeedstockBatchCompositionRequest request
+  ) {
+    requireNonNull(request, "optimize feedstock batch composition request cannot be null");
+    final var purpose = request.purpose() == null
+        ? ProfileTargetScoringPurpose.BLENDING_PLANNING
+        : request.purpose();
+    final var settings = new DiscretizedCompositionOptimizationSettings(
+        request.stepPercent() == null
+            ? DiscretizedCompositionOptimizationSettings.DEFAULT_STEP_PERCENT
+            : request.stepPercent(),
+        request.limit() == null
+            ? DiscretizedCompositionOptimizationSettings.DEFAULT_LIMIT
+            : request.limit()
+    );
+
+    return new OptimizeFeedstockBatchCompositionCommand( // NOSONAR
+        CiderMakerId.of(request.ciderMakerId()),
+        new FeedstockMeasurementPointFilters(
+            toBatchCriteria(request.batchIds()),
+            toSeason(request.season()),
+            request.zone() == null ? null : SugarAcidityZoneCriteria.of(request.zone()), // NOSONAR
+            request.capability() == null
+                ? null
+                : new ChemicalProfileCapabilityCriteria(request.capability(), request.capable()) // NOSONAR
+        ),
+        purpose,
+        toTarget(request.target()),
+        toTanninTarget(request.tanninTarget()),
+        toWeights(request.weights()),
+        settings,
+        request.mode(),
+        request.algorithm() == null
+            ? CompositionOptimizationAlgorithm.DISCRETIZED_BOUNDED_SEARCH
+            : request.algorithm(),
+        request.calculator() == null
+            ? ChemicalProfileCompositionCalculatorCode.MASS_BALANCE
+            : request.calculator(),
+        request.normalizer() == null
+            ? normalizerFor(purpose)
+            : request.normalizer(),
+        request.objectiveFunction() == null
+            ? ProfileTargetObjectiveFunctionCode.DISTANCE_TO_TARGET_AREA
+            : request.objectiveFunction(),
+        request.targetTotalVolumeLiters() == null ? null : VolumeValue.ofLiters(request.targetTotalVolumeLiters()), // NOSONAR
+        request.sourceLimit() == null ? CursorPageRequest.MAX_LIMIT : request.sourceLimit()
+    );
+  }
+
+  public static @NonNull OptimizeFeedstockBatchCompositionResponse toResponse(
+      @NonNull OptimizeFeedstockBatchCompositionResult result,
+      int stepPercent
+  ) {
+    requireNonNull(result, "optimize feedstock batch composition result cannot be null");
+    final var optimization = result.optimization();
+
+    return new OptimizeFeedstockBatchCompositionResponse(
+        result.sourceCount(),
+        optimization.mode(),
+        optimization.algorithm(),
+        optimization.calculatorCode(),
+        optimization.normalizerCode(),
+        optimization.objectiveFunctionCode(),
+        stepPercent,
+        optimization.optimizationResult().evaluatedCandidates(),
+        optimization.optimizationResult().candidates().stream()
+            .map(FeedstockBatchBlendProfileTargetScoreRestMapper::toResponse)
+            .toList()
+    );
+  }
+
   private static @NonNull FeedstockBatchBlendProfileTargetScoreResponse toResponse(
       @NonNull FeedstockBatchBlendProfileTargetScore score
   ) {
@@ -116,6 +208,42 @@ public final class FeedstockBatchBlendProfileTargetScoreRestMapper {
     );
   }
 
+  private static @NonNull FeedstockBatchCompositionOptimizationCandidateResponse toResponse(
+      @NonNull ChemicalProfileCompositionOptimizationCandidate candidate
+  ) {
+    requireNonNull(candidate, "chemical profile composition optimization candidate cannot be null");
+    final var composition = candidate.composition();
+
+    return new FeedstockBatchCompositionOptimizationCandidateResponse(
+        composition.sources().stream()
+            .map(FeedstockBatchBlendProfileTargetScoreRestMapper::toSourceResponse)
+            .toList(),
+        SugarAcidityZoneRestMapper.toResponse(composition.profile()),
+        composition.totalVolume() == null ? null : composition.totalVolume().liters(), // NOSONAR
+        List.copyOf(composition.warnings()),
+        toResponse(candidate.distance())
+    );
+  }
+
+  private static @NonNull FeedstockBatchCompositionOptimizationSourceResponse toSourceResponse(
+      @NonNull ChemicalProfileCompositionSource source
+  ) {
+    requireNonNull(source, "chemical profile composition source cannot be null");
+    return new FeedstockBatchCompositionOptimizationSourceResponse(
+        UUID.fromString(source.reference().id()),
+        requestedVolume(source),
+        proportion(source)
+    );
+  }
+
+  private static @Nullable BigDecimal requestedVolume(@NonNull ChemicalProfileCompositionSource source) {
+    return source.weight() instanceof AbsoluteCompositionVolume(VolumeValue volume) ? volume.liters() : null;
+  }
+
+  private static @Nullable BigDecimal proportion(@NonNull ChemicalProfileCompositionSource source) {
+    return source.weight() instanceof CompositionProportion(BigDecimal value) ? value : null;
+  }
+
   private static @NonNull SugarAcidityCoordinatesResponse toResponse(
       @NonNull SugarAcidityCoordinates coordinates
   ) {
@@ -143,6 +271,19 @@ public final class FeedstockBatchBlendProfileTargetScoreRestMapper {
     };
   }
 
+  private static @Nullable FeedstockBatchCriteria toBatchCriteria(
+      @Nullable List<@NonNull UUID> batchIds
+  ) {
+    if (batchIds == null || batchIds.isEmpty()) {
+      return null;
+    }
+    return new FeedstockBatchCriteria(
+        batchIds.stream()
+            .map(FeedstockBatchId::of)
+            .collect(Collectors.toSet())
+    );
+  }
+
   private static @Nullable TanninTargetRange toTanninTarget(
       @Nullable TanninTargetRangeRequest request
   ) {
@@ -163,5 +304,17 @@ public final class FeedstockBatchBlendProfileTargetScoreRestMapper {
 
   private static @Nullable FeedstockSeason toSeason(@Nullable FeedstockSeasonRequest request) {
     return request == null ? null : FeedstockSeason.of(request.startsOn(), request.endsOn());
+  }
+
+  private static @NonNull ProfileAxisNormalizerCode normalizerFor(
+      @NonNull ProfileTargetScoringPurpose purpose
+  ) {
+    requireNonNull(purpose, "profile target scoring purpose cannot be null");
+    return switch (purpose) {
+      case GRAPH_EXPLORATION -> ProfileAxisNormalizerCode.MIN_MAX;
+      case BLENDING_PLANNING -> ProfileAxisNormalizerCode.EFFECTIVE_RANGE;
+      case TARGET_ZONE_MATCHING -> ProfileAxisNormalizerCode.THRESHOLD_SEGMENT;
+      case EXPERT_CALIBRATION -> ProfileAxisNormalizerCode.SENSITIVITY_UNIT;
+    };
   }
 }

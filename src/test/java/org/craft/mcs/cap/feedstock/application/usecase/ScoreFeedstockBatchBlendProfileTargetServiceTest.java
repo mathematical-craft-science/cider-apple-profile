@@ -5,6 +5,7 @@ import java.util.List;
 import org.craft.mcs.cap.core.cideranalysis.profileevaluation.application.port.in.ProfileTargetScoringPurpose;
 import org.craft.mcs.cap.core.cideranalysis.profileevaluation.application.usecase.BuiltInProfileTargetScoringPurposeNormalizerPolicy;
 import org.craft.mcs.cap.core.cideranalysis.profileevaluation.application.usecase.ScoreProfileTargetDistanceCandidatesService;
+import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.distance.BuiltInProfileTargetObjectiveFunctionFactory;
 import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.distance.ProfileTargetObjectiveWeights;
 import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.distance.BuiltInProfileAxisNormalizerSelector;
 import org.craft.mcs.cap.core.cideranalysis.profileevaluation.domain.target.ZoneGeometrySugarAcidityTargetResolver;
@@ -94,7 +95,8 @@ class ScoreFeedstockBatchBlendProfileTargetServiceTest {
         new ZoneGeometrySugarAcidityTargetResolver(geometryProfile),
         new ScoreProfileTargetDistanceCandidatesService(
             new BuiltInProfileAxisNormalizerSelector(thresholds),
-            new BuiltInProfileTargetScoringPurposeNormalizerPolicy()
+            new BuiltInProfileTargetScoringPurposeNormalizerPolicy(),
+            new BuiltInProfileTargetObjectiveFunctionFactory()
         )
     );
   }
