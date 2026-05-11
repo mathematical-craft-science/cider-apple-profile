@@ -4,6 +4,7 @@ import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockBatchName;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSource;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
 import org.craft.mcs.cap.core.feedstock.domain.model.value.CiderMakerId;
 import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;
 import org.jspecify.annotations.NonNull;
@@ -16,6 +17,7 @@ public record FeedstockBatchCreated(
     @NonNull FeedstockBatchId batchId,
     @NonNull CiderMakerId ciderMakerId,
     @NonNull FeedstockBatchName name,
+    @NonNull FeedstockType type,
     @NonNull FeedstockSeason season,
     @Nullable FeedstockSource source,
     @NonNull VolumeValue availableVolume,
@@ -26,6 +28,7 @@ public record FeedstockBatchCreated(
     requireNonNull(batchId, "feedstock batch id cannot be null");
     requireNonNull(ciderMakerId, "cider maker id cannot be null");
     requireNonNull(name, "feedstock batch name cannot be null");
+    requireNonNull(type, "feedstock type cannot be null");
     requireNonNull(season, "feedstock season cannot be null");
     requireNonNull(availableVolume, "available volume cannot be null");
   }

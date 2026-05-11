@@ -47,6 +47,7 @@ public final class ListFeedstockBatchesService
         batch.batchId(),
         batch.ciderMakerId(),
         batch.name(),
+        batch.type(),
         batch.season(),
         batch.source(),
         batch.availableVolume(),

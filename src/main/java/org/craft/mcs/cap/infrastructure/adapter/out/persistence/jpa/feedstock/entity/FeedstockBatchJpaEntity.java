@@ -3,6 +3,8 @@ package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jpa.feedstock.e
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
@@ -10,6 +12,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.UUID;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.data.annotation.CreatedDate;
@@ -36,6 +39,11 @@ public class FeedstockBatchJpaEntity {
   @NonNull
   @Column(name = "name", nullable = false, length = 160)
   String name;
+
+  @NonNull
+  @Enumerated(EnumType.STRING)
+  @Column(name = "type", nullable = false, length = 32)
+  FeedstockType type;
 
   @NonNull
   @Column(name = "season_starts_on", nullable = false)
@@ -79,6 +87,7 @@ public class FeedstockBatchJpaEntity {
       @NonNull UUID batchId,
       @NonNull UUID ciderMakerId,
       @NonNull String name,
+      @NonNull FeedstockType type,
       @NonNull LocalDate seasonStartsOn,
       @NonNull LocalDate seasonEndsOn,
       @Nullable String source,
@@ -88,6 +97,7 @@ public class FeedstockBatchJpaEntity {
     this.batchId = requireNonNull(batchId, "feedstock batch id cannot be null");
     this.ciderMakerId = requireNonNull(ciderMakerId, "cider maker id cannot be null");
     this.name = requireNonNull(name, "feedstock batch name cannot be null");
+    this.type = requireNonNull(type, "feedstock type cannot be null");
     this.seasonStartsOn = requireNonNull(seasonStartsOn, "feedstock season start date cannot be null");
     this.seasonEndsOn = requireNonNull(seasonEndsOn, "feedstock season end date cannot be null");
     this.source = normalize(source);

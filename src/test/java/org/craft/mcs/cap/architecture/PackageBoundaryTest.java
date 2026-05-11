@@ -52,9 +52,17 @@ class PackageBoundaryTest {
   }
 
   @Test
-  void sugarAcidityDoesNotDependOnClassificationContext() throws IOException {
+  void profileEvaluationDoesNotDependOnClassificationContext() throws IOException {
     assertNoImportsUnder(
-        "org/craft/mcs/cap/core/cideranalysis/sugaracidity",
+        "org/craft/mcs/cap/core/cideranalysis/profileevaluation",
+        List.of("org.craft.mcs.cap.core.cideranalysis.classification.")
+    );
+  }
+
+  @Test
+  void profileGraphDoesNotDependOnClassificationContext() throws IOException {
+    assertNoImportsUnder(
+        "org/craft/mcs/cap/core/cideranalysis/profilegraph",
         List.of("org.craft.mcs.cap.core.cideranalysis.classification.")
     );
   }

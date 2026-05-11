@@ -24,6 +24,7 @@ public final class FeedstockBatchJpaMapper {
         batch.batchId().value(),
         batch.ciderMakerId().value(),
         batch.name().value(),
+        batch.type(),
         batch.season().startsOn(),
         batch.season().endsOn(),
         batch.source() == null ? null : batch.source().value(),
@@ -41,6 +42,7 @@ public final class FeedstockBatchJpaMapper {
         FeedstockBatchId.of(requireNonNull(entity.batchId, "feedstock batch id cannot be null")),
         CiderMakerId.of(requireNonNull(entity.ciderMakerId, "cider maker id cannot be null")),
         FeedstockBatchName.of(requireNonNull(entity.name, "feedstock batch name cannot be null")),
+        requireNonNull(entity.type, "feedstock type cannot be null"),
         FeedstockSeason.of(
             requireNonNull(entity.seasonStartsOn, "feedstock season start date cannot be null"),
             requireNonNull(entity.seasonEndsOn, "feedstock season end date cannot be null")

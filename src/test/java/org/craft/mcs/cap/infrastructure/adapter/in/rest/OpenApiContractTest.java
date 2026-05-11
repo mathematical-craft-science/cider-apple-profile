@@ -51,25 +51,25 @@ class OpenApiContractTest {
     assertJsonResponse(openApi, "/chemical-profiles/sugar-acidity-zone/plot-metadata", "get");
     assertJsonResponse(openApi, "/feedstock-batches", "get");
     assertJsonResponse(openApi, "/feedstock-batches", "post", "201");
-    assertJsonResponse(openApi, "/feedstock-samples", "get");
-    assertJsonResponse(openApi, "/feedstock-samples", "post", "201");
-    assertJsonResponse(openApi, "/feedstock-samples/{sampleId}/sugar-acidity-zone", "get");
-    assertJsonResponse(openApi, "/feedstock-samples/sugar-acidity-zone-points", "post");
-    assertJsonResponse(openApi, "/feedstock-samples/{sampleId}/abv-prediction", "get");
+    assertJsonResponse(openApi, "/feedstock-batches/{batchId}/measurements", "get");
+    assertJsonResponse(openApi, "/feedstock-batches/{batchId}/measurements", "post", "201");
+    assertJsonResponse(openApi, "/feedstock-measurements/{measurementId}/sugar-acidity-zone", "get");
+    assertJsonResponse(openApi, "/feedstock-measurements/sugar-acidity-zone-points", "post");
+    assertJsonResponse(openApi, "/feedstock-measurements/{measurementId}/abv-prediction", "get");
 
     assertJsonRequest(openApi, "/feedstock-batches", "post");
-    assertJsonRequest(openApi, "/feedstock-samples", "post");
+    assertJsonRequest(openApi, "/feedstock-batches/{batchId}/measurements", "post");
     assertJsonRequest(openApi, "/apple-varieties/sugar-acidity-zone-points", "post");
-    assertJsonRequest(openApi, "/feedstock-samples/sugar-acidity-zone-points", "post");
+    assertJsonRequest(openApi, "/feedstock-measurements/sugar-acidity-zone-points", "post");
 
     assertStringFormat(schemaProperty(openApi, "AppleVarietyClassificationResponse", "varietyId"), "uuid");
     assertStringFormat(schemaProperty(openApi, "FeedstockBatchResponse", "batchId"), "uuid");
-    assertStringFormat(schemaProperty(openApi, "FeedstockSampleResponse", "measuredAt"), "date-time");
+    assertStringFormat(schemaProperty(openApi, "FeedstockMeasurementResponse", "measuredAt"), "date-time");
     assertStringFormat(schemaProperty(openApi, "FeedstockSeasonResponse", "startsOn"), "date");
     assertArray(schemaProperty(openApi, "AppleVarietySugarAcidityZonePointBatchResponse", "points"));
-    assertArray(schemaProperty(openApi, "FeedstockSampleSugarAcidityZonePointBatchResponse", "unplottable"));
+    assertArray(schemaProperty(openApi, "FeedstockMeasurementSugarAcidityZonePointBatchResponse", "unplottable"));
 
-    assertEnumProperty(openApi, "CreateFeedstockSampleRequest", "type", "APPLE_JUICE");
+    assertEnumProperty(openApi, "CreateFeedstockBatchRequest", "type", "APPLE_JUICE");
     assertEnumProperty(openApi, "ChemicalProfileCapabilityAssessmentResponse", "capability", "SUGAR_ACIDITY_PLOT");
     assertEnumProperty(openApi, "PotentialAbvPredictionResponse", "confidence", "LOW");
   }

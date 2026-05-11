@@ -31,6 +31,7 @@ public final class CreateFeedstockBatchService
           FeedstockBatchId.newId(),
           command.ciderMakerId(),
           command.name(),
+          command.type(),
           command.season(),
           command.availableVolume()
       ).changeSource(command.source()).changeNote(command.note());
@@ -41,6 +42,7 @@ public final class CreateFeedstockBatchService
           saved.batchId(),
           saved.ciderMakerId(),
           saved.name(),
+          saved.type(),
           saved.season(),
           saved.source(),
           saved.availableVolume(),
