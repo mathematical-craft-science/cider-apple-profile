@@ -41,7 +41,7 @@ class ProfileAxisNormalizerTest {
     assertThat(normalizer.normalize(
         ProfileEvaluationAxis.TANNIN,
         new BigDecimal("2000")
-    )).isEqualByComparingTo("0.5");
+    )).isEqualByComparingTo("0.1666666666666667");
   }
 
   @Test

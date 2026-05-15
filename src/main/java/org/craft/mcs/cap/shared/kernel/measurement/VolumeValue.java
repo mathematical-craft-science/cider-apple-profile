@@ -49,4 +49,9 @@ public final class VolumeValue
   public boolean isZero() {
     return asBigDecimal().signum() == 0;
   }
+
+  public @NonNull VolumeValue subtract(@NonNull VolumeValue other) {
+    requireNonNull(other, "volume value to subtract cannot be null");
+    return ofLiters(liters().subtract(other.liters()));
+  }
 }

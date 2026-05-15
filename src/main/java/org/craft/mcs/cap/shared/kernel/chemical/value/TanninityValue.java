@@ -18,7 +18,7 @@ public final class TanninityValue
     extends MeasuredValue<Tanninity, TanninityValue> {
 
   private static final BigDecimal MIN = BigDecimal.ZERO;
-  private static final BigDecimal MAX = new BigDecimal("4000");
+  private static final BigDecimal MAX = new BigDecimal("12000");
   private static final Unit<Tanninity> UNIT = BeverageUnits.MILLIGRAM_PER_LITER_AS_TANNIC_ACID;
 
   public TanninityValue(@NonNull Quantity<Tanninity> value) {

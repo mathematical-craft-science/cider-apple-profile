@@ -1,155 +1,4414 @@
 [
   {
     "name": "Dabinett",
-    "source": "Curated cider apple dataset",
+    "source": "Montana State University 2022 cider cultivar evaluations; normalized from Brix, malic acid %, tannic acid %",
     "confidence": "MEDIUM",
-    "sugar": { "kind": "EXACT", "unit": "SPECIFIC_GRAVITY", "value": "1.048" },
-    "ph": { "kind": "RANGE", "unit": "PH", "min": "3.50", "max": "3.80" },
-    "titratableAcidity": { "kind": "STATISTICAL", "unit": "GRAM_PER_LITER_AS_MALIC_ACID", "mean": "4.50" },
-    "tanninity": { "kind": "EXACT", "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID", "value": "2200.0000" }
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.084"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "3.60"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "7600.0000"
+    }
   },
   {
     "name": "Yarlington Mill",
     "source": "Curated cider apple dataset",
     "confidence": "MEDIUM",
-    "sugar": { "kind": "EXACT", "unit": "SPECIFIC_GRAVITY", "value": "1.050" },
-    "ph": { "kind": "RANGE", "unit": "PH", "min": "3.40", "max": "3.70" },
-    "titratableAcidity": { "kind": "STATISTICAL", "unit": "GRAM_PER_LITER_AS_MALIC_ACID", "mean": "4.80" },
-    "tanninity": { "kind": "EXACT", "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID", "value": "2000.0000" }
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.050"
+    },
+    "ph": {
+      "kind": "RANGE",
+      "unit": "PH",
+      "min": "3.40",
+      "max": "3.70"
+    },
+    "titratableAcidity": {
+      "kind": "STATISTICAL",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "mean": "4.80"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "2000.0000"
+    }
   },
   {
     "name": "Michelin",
     "source": "Curated cider apple dataset",
     "confidence": "MEDIUM",
-    "sugar": { "kind": "EXACT", "unit": "SPECIFIC_GRAVITY", "value": "1.046" },
-    "ph": { "kind": "RANGE", "unit": "PH", "min": "3.50", "max": "3.80" },
-    "titratableAcidity": { "kind": "STATISTICAL", "unit": "GRAM_PER_LITER_AS_MALIC_ACID", "mean": "3.80" },
-    "tanninity": { "kind": "EXACT", "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID", "value": "1800.0000" }
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.046"
+    },
+    "ph": {
+      "kind": "RANGE",
+      "unit": "PH",
+      "min": "3.50",
+      "max": "3.80"
+    },
+    "titratableAcidity": {
+      "kind": "STATISTICAL",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "mean": "3.80"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "1800.0000"
+    }
   },
   {
     "name": "Brown Snout",
     "source": "Curated cider apple dataset",
     "confidence": "MEDIUM",
-    "sugar": { "kind": "EXACT", "unit": "SPECIFIC_GRAVITY", "value": "1.047" },
-    "ph": { "kind": "RANGE", "unit": "PH", "min": "3.60", "max": "3.90" },
-    "titratableAcidity": { "kind": "STATISTICAL", "unit": "GRAM_PER_LITER_AS_MALIC_ACID", "mean": "3.50" },
-    "tanninity": { "kind": "EXACT", "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID", "value": "2500.0000" }
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.047"
+    },
+    "ph": {
+      "kind": "RANGE",
+      "unit": "PH",
+      "min": "3.60",
+      "max": "3.90"
+    },
+    "titratableAcidity": {
+      "kind": "STATISTICAL",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "mean": "3.50"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "2500.0000"
+    }
   },
   {
     "name": "Chisel Jersey",
-    "source": "Curated cider apple dataset",
+    "source": "Montana State University 2022 cider cultivar evaluations; normalized from Brix, malic acid %, tannic acid %",
     "confidence": "MEDIUM",
-    "sugar": { "kind": "EXACT", "unit": "SPECIFIC_GRAVITY", "value": "1.049" },
-    "ph": { "kind": "RANGE", "unit": "PH", "min": "3.50", "max": "3.80" },
-    "titratableAcidity": { "kind": "STATISTICAL", "unit": "GRAM_PER_LITER_AS_MALIC_ACID", "mean": "4.20" },
-    "tanninity": { "kind": "EXACT", "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID", "value": "2300.0000" }
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.077"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "4.00"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "10500.0000"
+    }
   },
   {
     "name": "Harry Masters Jersey",
     "source": "Curated cider apple dataset",
     "confidence": "MEDIUM",
-    "sugar": { "kind": "EXACT", "unit": "SPECIFIC_GRAVITY", "value": "1.048" },
-    "ph": { "kind": "RANGE", "unit": "PH", "min": "3.50", "max": "3.80" },
-    "titratableAcidity": { "kind": "STATISTICAL", "unit": "GRAM_PER_LITER_AS_MALIC_ACID", "mean": "4.00" },
-    "tanninity": { "kind": "EXACT", "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID", "value": "2100.0000" }
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.048"
+    },
+    "ph": {
+      "kind": "RANGE",
+      "unit": "PH",
+      "min": "3.50",
+      "max": "3.80"
+    },
+    "titratableAcidity": {
+      "kind": "STATISTICAL",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "mean": "4.00"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "2100.0000"
+    }
   },
   {
     "name": "Somerset Redstreak",
     "source": "Curated cider apple dataset",
     "confidence": "MEDIUM",
-    "sugar": { "kind": "EXACT", "unit": "SPECIFIC_GRAVITY", "value": "1.050" },
-    "ph": { "kind": "RANGE", "unit": "PH", "min": "3.40", "max": "3.70" },
-    "titratableAcidity": { "kind": "STATISTICAL", "unit": "GRAM_PER_LITER_AS_MALIC_ACID", "mean": "4.50" },
-    "tanninity": { "kind": "EXACT", "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID", "value": "1700.0000" }
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.050"
+    },
+    "ph": {
+      "kind": "RANGE",
+      "unit": "PH",
+      "min": "3.40",
+      "max": "3.70"
+    },
+    "titratableAcidity": {
+      "kind": "STATISTICAL",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "mean": "4.50"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "1700.0000"
+    }
   },
   {
     "name": "Sweet Coppin",
     "source": "Curated cider apple dataset",
     "confidence": "MEDIUM",
-    "sugar": { "kind": "EXACT", "unit": "SPECIFIC_GRAVITY", "value": "1.045" },
-    "ph": { "kind": "RANGE", "unit": "PH", "min": "3.70", "max": "4.00" },
-    "titratableAcidity": { "kind": "STATISTICAL", "unit": "GRAM_PER_LITER_AS_MALIC_ACID", "mean": "3.20" },
-    "tanninity": { "kind": "EXACT", "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID", "value": "2000.0000" }
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.045"
+    },
+    "ph": {
+      "kind": "RANGE",
+      "unit": "PH",
+      "min": "3.70",
+      "max": "4.00"
+    },
+    "titratableAcidity": {
+      "kind": "STATISTICAL",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "mean": "3.20"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "2000.0000"
+    }
   },
   {
     "name": "Slack-ma-Girdle",
     "source": "Curated cider apple dataset",
     "confidence": "MEDIUM",
-    "sugar": { "kind": "EXACT", "unit": "SPECIFIC_GRAVITY", "value": "1.049" },
-    "ph": { "kind": "RANGE", "unit": "PH", "min": "3.30", "max": "3.60" },
-    "titratableAcidity": { "kind": "STATISTICAL", "unit": "GRAM_PER_LITER_AS_MALIC_ACID", "mean": "6.00" },
-    "tanninity": { "kind": "EXACT", "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID", "value": "1200.0000" }
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.049"
+    },
+    "ph": {
+      "kind": "RANGE",
+      "unit": "PH",
+      "min": "3.30",
+      "max": "3.60"
+    },
+    "titratableAcidity": {
+      "kind": "STATISTICAL",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "mean": "6.00"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "1200.0000"
+    }
   },
   {
     "name": "Foxwhelp",
     "source": "Curated cider apple dataset",
     "confidence": "MEDIUM",
-    "sugar": { "kind": "EXACT", "unit": "SPECIFIC_GRAVITY", "value": "1.052" },
-    "ph": { "kind": "RANGE", "unit": "PH", "min": "3.00", "max": "3.30" },
-    "titratableAcidity": { "kind": "STATISTICAL", "unit": "GRAM_PER_LITER_AS_MALIC_ACID", "mean": "9.00" },
-    "tanninity": { "kind": "EXACT", "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID", "value": "900.0000" }
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.052"
+    },
+    "ph": {
+      "kind": "RANGE",
+      "unit": "PH",
+      "min": "3.00",
+      "max": "3.30"
+    },
+    "titratableAcidity": {
+      "kind": "STATISTICAL",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "mean": "9.00"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "900.0000"
+    }
   },
   {
     "name": "Porter's Perfection",
     "source": "Curated cider apple dataset",
     "confidence": "MEDIUM",
-    "sugar": { "kind": "EXACT", "unit": "SPECIFIC_GRAVITY", "value": "1.049" },
-    "ph": { "kind": "RANGE", "unit": "PH", "min": "3.40", "max": "3.70" },
-    "titratableAcidity": { "kind": "STATISTICAL", "unit": "GRAM_PER_LITER_AS_MALIC_ACID", "mean": "5.00" },
-    "tanninity": { "kind": "EXACT", "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID", "value": "2200.0000" }
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.049"
+    },
+    "ph": {
+      "kind": "RANGE",
+      "unit": "PH",
+      "min": "3.40",
+      "max": "3.70"
+    },
+    "titratableAcidity": {
+      "kind": "STATISTICAL",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "mean": "5.00"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "2200.0000"
+    }
   },
   {
     "name": "Stembridge Jersey",
     "source": "Curated cider apple dataset",
     "confidence": "MEDIUM",
-    "sugar": { "kind": "EXACT", "unit": "SPECIFIC_GRAVITY", "value": "1.047" },
-    "ph": { "kind": "RANGE", "unit": "PH", "min": "3.50", "max": "3.80" },
-    "titratableAcidity": { "kind": "STATISTICAL", "unit": "GRAM_PER_LITER_AS_MALIC_ACID", "mean": "4.00" },
-    "tanninity": { "kind": "EXACT", "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID", "value": "2100.0000" }
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.047"
+    },
+    "ph": {
+      "kind": "RANGE",
+      "unit": "PH",
+      "min": "3.50",
+      "max": "3.80"
+    },
+    "titratableAcidity": {
+      "kind": "STATISTICAL",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "mean": "4.00"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "2100.0000"
+    }
   },
   {
     "name": "Ashton Bitter",
     "source": "Curated cider apple dataset",
     "confidence": "MEDIUM",
-    "sugar": { "kind": "EXACT", "unit": "SPECIFIC_GRAVITY", "value": "1.048" },
-    "ph": { "kind": "RANGE", "unit": "PH", "min": "3.40", "max": "3.70" },
-    "titratableAcidity": { "kind": "STATISTICAL", "unit": "GRAM_PER_LITER_AS_MALIC_ACID", "mean": "4.50" },
-    "tanninity": { "kind": "EXACT", "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID", "value": "2000.0000" }
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.048"
+    },
+    "ph": {
+      "kind": "RANGE",
+      "unit": "PH",
+      "min": "3.40",
+      "max": "3.70"
+    },
+    "titratableAcidity": {
+      "kind": "STATISTICAL",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "mean": "4.50"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "2000.0000"
+    }
   },
   {
     "name": "Vilberie",
-    "source": "Curated cider apple dataset",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
     "confidence": "MEDIUM",
-    "sugar": { "kind": "EXACT", "unit": "SPECIFIC_GRAVITY", "value": "1.046" },
-    "ph": { "kind": "RANGE", "unit": "PH", "min": "3.30", "max": "3.60" },
-    "titratableAcidity": { "kind": "STATISTICAL", "unit": "GRAM_PER_LITER_AS_MALIC_ACID", "mean": "5.50" },
-    "tanninity": { "kind": "EXACT", "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID", "value": "1500.0000" }
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.044"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "2.70"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "4100.0000"
+    }
   },
   {
-    "name": "Frequin Rouge",
-    "source": "Curated cider apple dataset",
+    "name": "Fréquin Rouge",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
     "confidence": "MEDIUM",
-    "sugar": { "kind": "EXACT", "unit": "SPECIFIC_GRAVITY", "value": "1.048" },
-    "ph": { "kind": "RANGE", "unit": "PH", "min": "3.40", "max": "3.70" },
-    "titratableAcidity": { "kind": "STATISTICAL", "unit": "GRAM_PER_LITER_AS_MALIC_ACID", "mean": "4.50" },
-    "tanninity": { "kind": "EXACT", "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID", "value": "1700.0000" }
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.065"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "2.40"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "5100.0000"
+    }
   },
   {
     "name": "Bedan",
     "source": "Curated cider apple dataset",
     "confidence": "MEDIUM",
-    "sugar": { "kind": "EXACT", "unit": "SPECIFIC_GRAVITY", "value": "1.047" },
-    "ph": { "kind": "RANGE", "unit": "PH", "min": "3.40", "max": "3.70" },
-    "titratableAcidity": { "kind": "STATISTICAL", "unit": "GRAM_PER_LITER_AS_MALIC_ACID", "mean": "4.20" },
-    "tanninity": { "kind": "EXACT", "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID", "value": "1600.0000" }
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.047"
+    },
+    "ph": {
+      "kind": "RANGE",
+      "unit": "PH",
+      "min": "3.40",
+      "max": "3.70"
+    },
+    "titratableAcidity": {
+      "kind": "STATISTICAL",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "mean": "4.20"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "1600.0000"
+    }
   },
   {
     "name": "Binet Rouge",
-    "source": "Curated cider apple dataset",
+    "source": "Montana State University 2022 cider cultivar evaluations; normalized from Brix, malic acid %, tannic acid %",
     "confidence": "MEDIUM",
-    "sugar": { "kind": "EXACT", "unit": "SPECIFIC_GRAVITY", "value": "1.048" },
-    "ph": { "kind": "RANGE", "unit": "PH", "min": "3.40", "max": "3.70" },
-    "titratableAcidity": { "kind": "STATISTICAL", "unit": "GRAM_PER_LITER_AS_MALIC_ACID", "mean": "4.30" },
-    "tanninity": { "kind": "EXACT", "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID", "value": "1800.0000" }
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.082"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "3.30"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "4600.0000"
+    }
+  },
+  {
+    "name": "Amanda",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.054"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "2.20"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "2300.0000"
+    }
+  },
+  {
+    "name": "Amere de Berthcourt",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.049"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "2.00"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "3400.0000"
+    }
+  },
+  {
+    "name": "Amere Forestier",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.046"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "2.00"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "3400.0000"
+    }
+  },
+  {
+    "name": "Angela",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.049"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "6.20"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "1900.0000"
+    }
+  },
+  {
+    "name": "Antoinette",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.050"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "2.50"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "2700.0000"
+    }
+  },
+  {
+    "name": "Armagnac",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.065"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "8.10"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "1700.0000"
+    }
+  },
+  {
+    "name": "Ashton Brown Jersey",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.054"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "1.40"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "3400.0000"
+    }
+  },
+  {
+    "name": "Avrolles",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.055"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "12.00"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "900.0000"
+    }
+  },
+  {
+    "name": "Backwell red",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.051"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "7.00"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "1300.0000"
+    }
+  },
+  {
+    "name": "Baldwin",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.062"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "7.40"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "590.0000"
+    }
+  },
+  {
+    "name": "Betty",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.050"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "9.00"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "1100.0000"
+    }
+  },
+  {
+    "name": "Binet Blanc",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.060"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "1.80"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "2500.0000"
+    }
+  },
+  {
+    "name": "Binet Violet",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.050"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "1.70"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "2600.0000"
+    }
+  },
+  {
+    "name": "Bisquet",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.045"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "2.10"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "2100.0000"
+    }
+  },
+  {
+    "name": "Black Crofton",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.043"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "4.00"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "370.0000"
+    }
+  },
+  {
+    "name": "Blanchet",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.050"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "4.80"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "1300.0000"
+    }
+  },
+  {
+    "name": "Blanc Mollet",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.046"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "1.50"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "2000.0000"
+    }
+  },
+  {
+    "name": "Blanc Sur",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.055"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "6.70"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "1200.0000"
+    }
+  },
+  {
+    "name": "Bouteville",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.052"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "1.60"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "1400.0000"
+    }
+  },
+  {
+    "name": "Bramley",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.050"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "9.40"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "1200.0000"
+    }
+  },
+  {
+    "name": "Bramtot",
+    "source": "WSU Mount Vernon Annual Report 2011 Table 3; latest complete year, normalized from Brix and tannin %",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.056"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "2.79"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "8800.0000"
+    }
+  },
+  {
+    "name": "Breakwell's Seedling",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.042"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "6.40"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "2300.0000"
+    }
+  },
+  {
+    "name": "Brown Thorn ( a.k.a. Argile Grise)",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.048"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "2.00"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "1600.0000"
+    }
+  },
+  {
+    "name": "Bulmer's Norman",
+    "source": "Montana State University 2022 cider cultivar evaluations; normalized from Brix, malic acid %, tannic acid %",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.066"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "3.60"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "8200.0000"
+    }
+  },
+  {
+    "name": "Campfield",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.055"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "2.30"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "1700.0000"
+    }
+  },
+  {
+    "name": "Cap of Liberty",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.052"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "8.20"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "2100.0000"
+    }
+  },
+  {
+    "name": "Cartigny",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.051"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "2.10"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "2200.0000"
+    }
+  },
+  {
+    "name": "Cazo Jaune",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.054"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "13.10"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "3300.0000"
+    }
+  },
+  {
+    "name": "Chevalier Jaune",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.053"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "2.20"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "3800.0000"
+    }
+  },
+  {
+    "name": "C'Huero Briz",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.056"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "2.10"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "4700.0000"
+    }
+  },
+  {
+    "name": "Cidor",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.055"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "1.70"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "4000.0000"
+    }
+  },
+  {
+    "name": "Cimitiere",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.039"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "1.30"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "2300.0000"
+    }
+  },
+  {
+    "name": "Clos Renaux",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.052"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "2.50"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "2200.0000"
+    }
+  },
+  {
+    "name": "Clozette Douce",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.054"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "2.20"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "2300.0000"
+    }
+  },
+  {
+    "name": "Court Pendu Plat",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.048"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "8.10"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "1100.0000"
+    }
+  },
+  {
+    "name": "Court Royal ( a.k.a. Sweet Blenheim)",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.050"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "2.10"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "1100.0000"
+    }
+  },
+  {
+    "name": "Crimson King",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.044"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "6.00"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "1300.0000"
+    }
+  },
+  {
+    "name": "Crow Egg",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.046"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "3.10"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "440.0000"
+    }
+  },
+  {
+    "name": "Debbie",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.050"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "9.00"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "800.0000"
+    }
+  },
+  {
+    "name": "Democrat",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.043"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "3.70"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "440.0000"
+    }
+  },
+  {
+    "name": "Diot Roux",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.052"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "9.80"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "1800.0000"
+    }
+  },
+  {
+    "name": "Domaines",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.067"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "2.10"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "2600.0000"
+    }
+  },
+  {
+    "name": "Douce Coetligné",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.051"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "1.90"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "1800.0000"
+    }
+  },
+  {
+    "name": "Douce Moen",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.061"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "2.10"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "2400.0000"
+    }
+  },
+  {
+    "name": "Doux Eveque Jaune",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.052"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "1.60"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "2000.0000"
+    }
+  },
+  {
+    "name": "Doux Joseph",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.058"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "2.10"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "3600.0000"
+    }
+  },
+  {
+    "name": "Doux Lozon",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.053"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "1.40"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "2100.0000"
+    }
+  },
+  {
+    "name": "Doux Normandie",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.065"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "1.60"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "1400.0000"
+    }
+  },
+  {
+    "name": "Dove",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.049"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "2.20"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "3100.0000"
+    }
+  },
+  {
+    "name": "Early Bird",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.052"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "2.10"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "5500.0000"
+    }
+  },
+  {
+    "name": "Ellis Bitter",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.053"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "2.00"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "2400.0000"
+    }
+  },
+  {
+    "name": "Filbarrel",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.045"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "2.20"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "1900.0000"
+    }
+  },
+  {
+    "name": "Finkenwerder Herbstprinz",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.055"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "9.80"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "700.0000"
+    }
+  },
+  {
+    "name": "Fiona",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.049"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "6.90"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "1500.0000"
+    }
+  },
+  {
+    "name": "Frederick",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.048"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "10.20"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "900.0000"
+    }
+  },
+  {
+    "name": "Gesnot",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.049"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "6.50"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "1100.0000"
+    }
+  },
+  {
+    "name": "Gilly",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.053"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "5.40"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "1800.0000"
+    }
+  },
+  {
+    "name": "Golden Russet",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.061"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "6.60"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "1000.0000"
+    }
+  },
+  {
+    "name": "Granniwinkle",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.045"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "3.00"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "800.0000"
+    }
+  },
+  {
+    "name": "Gravenstein Red",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.052"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "5.60"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "700.0000"
+    }
+  },
+  {
+    "name": "Grimes Golden",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.052"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "6.10"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "700.0000"
+    }
+  },
+  {
+    "name": "Grindstone",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.061"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "5.80"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "1000.0000"
+    }
+  },
+  {
+    "name": "Guillevic",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.059"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "5.80"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "1350.0000"
+    }
+  },
+  {
+    "name": "Hangdown ( a.k.a. Pocket Apple)",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.056"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "2.00"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "2800.0000"
+    }
+  },
+  {
+    "name": "Harrison",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.061"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "6.40"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "1000.0000"
+    }
+  },
+  {
+    "name": "Hastings",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.057"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "1.30"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "2900.0000"
+    }
+  },
+  {
+    "name": "Helen's Apple",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.050"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "1.00"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "2900.0000"
+    }
+  },
+  {
+    "name": "Idared",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.050"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "4.10"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "410.0000"
+    }
+  },
+  {
+    "name": "Jane",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.052"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "1.90"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "3300.0000"
+    }
+  },
+  {
+    "name": "Jeanne Renard",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.065"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "1.70"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "4200.0000"
+    }
+  },
+  {
+    "name": "Joanna",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.045"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "1.10"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "2200.0000"
+    }
+  },
+  {
+    "name": "Jonathan",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.053"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "5.80"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "460.0000"
+    }
+  },
+  {
+    "name": "Jouveaux",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.052"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "3.00"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "1600.0000"
+    }
+  },
+  {
+    "name": "Judaine",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.053"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "6.70"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "750.0000"
+    }
+  },
+  {
+    "name": "Judeline",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.050"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "5.00"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "700.0000"
+    }
+  },
+  {
+    "name": "Judin",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.060"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "6.60"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "900.0000"
+    }
+  },
+  {
+    "name": "Judor",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.052"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "6.70"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "700.0000"
+    }
+  },
+  {
+    "name": "Juliana",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.061"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "10.30"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "1800.0000"
+    }
+  },
+  {
+    "name": "Jurella",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.053"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "8.50"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "600.0000"
+    }
+  },
+  {
+    "name": "Kermerrien",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.062"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "1.50"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "4300.0000"
+    }
+  },
+  {
+    "name": "Kingston Black ( a.k.a. Black Taunton)",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.061"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "5.80"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "1900.0000"
+    }
+  },
+  {
+    "name": "Knotted Kernel",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.059"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "2.40"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "3400.0000"
+    }
+  },
+  {
+    "name": "Lambrook Pippin",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.054"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "5.80"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "2400.0000"
+    }
+  },
+  {
+    "name": "Lavignée ( a.k.a. Belle de Douai)",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.049"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "2.10"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "2700.0000"
+    }
+  },
+  {
+    "name": "Lizzy",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.047"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "1.70"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "2000.0000"
+    }
+  },
+  {
+    "name": "London Pippin",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.047"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "3.80"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "1100.0000"
+    }
+  },
+  {
+    "name": "Maggie",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.052"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "5.80"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "1400.0000"
+    }
+  },
+  {
+    "name": "Major",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.054"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "1.80"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "4100.0000"
+    }
+  },
+  {
+    "name": "Margil",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.049"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "5.70"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "700.0000"
+    }
+  },
+  {
+    "name": "Marie Ménard",
+    "source": "Montana State University 2022 cider cultivar evaluations; normalized from Brix, malic acid %, tannic acid %",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.084"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "3.60"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "8300.0000"
+    }
+  },
+  {
+    "name": "Marin Onfroy",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.059"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "1.70"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "3250.0000"
+    }
+  },
+  {
+    "name": "Maud",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.050"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "4.90"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "700.0000"
+    }
+  },
+  {
+    "name": "Médaille D'Or",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.059"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "2.70"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "6400.0000"
+    }
+  },
+  {
+    "name": "Merton Russet",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.055"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "8.20"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "340.0000"
+    }
+  },
+  {
+    "name": "Mettais",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.063"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "1.70"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "3800.0000"
+    }
+  },
+  {
+    "name": "Morgan Sweet",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.049"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "2.20"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "1300.0000"
+    }
+  },
+  {
+    "name": "Mott Pink",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.043"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "7.60"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "500.0000"
+    }
+  },
+  {
+    "name": "Moulin á Vent",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.061"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "2.60"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "2700.0000"
+    }
+  },
+  {
+    "name": "Muscadet de Dieppe",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.055"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "2.10"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "2500.0000"
+    }
+  },
+  {
+    "name": "Muscat de Bernay",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.050"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "2.80"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "1900.0000"
+    }
+  },
+  {
+    "name": "Naomi",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.041"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "2.80"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "1700.0000"
+    }
+  },
+  {
+    "name": "Nehou",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.057"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "1.70"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "6000.0000"
+    }
+  },
+  {
+    "name": "Northern Spy",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.053"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "7.00"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "480.0000"
+    }
+  },
+  {
+    "name": "Northwood",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.049"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "2.70"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "1700.0000"
+    }
+  },
+  {
+    "name": "Omont",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.063"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "1.90"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "2200.0000"
+    }
+  },
+  {
+    "name": "Peau de Chien",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.065"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "2.20"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "3000.0000"
+    }
+  },
+  {
+    "name": "Peau de Vache",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.048"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "2.60"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "1400.0000"
+    }
+  },
+  {
+    "name": "Petit Amer",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.055"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "2.00"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "4400.0000"
+    }
+  },
+  {
+    "name": "Petit Jaune",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.055"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "7.40"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "1200.0000"
+    }
+  },
+  {
+    "name": "Prince William",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.057"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "1.50"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "2500.0000"
+    }
+  },
+  {
+    "name": "Puget Spice",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.057"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "9.60"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "1300.0000"
+    }
+  },
+  {
+    "name": "Queen Cox",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.050"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "5.90"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "430.0000"
+    }
+  },
+  {
+    "name": "Rambault",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.061"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "6.40"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "1400.0000"
+    }
+  },
+  {
+    "name": "Red Jersey ( a.k.a. Loral Drain)",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.052"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "6.30"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "4800.0000"
+    }
+  },
+  {
+    "name": "Red Spitzenberg",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.065"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "7.70"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "520.0000"
+    }
+  },
+  {
+    "name": "Red Stayman Winesap",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.062"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "5.10"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "600.0000"
+    }
+  },
+  {
+    "name": "Redstreak",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.048"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "9.50"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "900.0000"
+    }
+  },
+  {
+    "name": "Reine des Hatives",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.044"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "2.40"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "2700.0000"
+    }
+  },
+  {
+    "name": "Reine des Pommes",
+    "source": "WSU Mount Vernon Annual Report 2011 Table 3; latest complete year, normalized from Brix and tannin %",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.061"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "3.38"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "6700.0000"
+    }
+  },
+  {
+    "name": "René Martin",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.053"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "7.60"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "1400.0000"
+    }
+  },
+  {
+    "name": "Ribston Pippin",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.060"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "6.70"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "1100.0000"
+    }
+  },
+  {
+    "name": "Rosemary Russet",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.055"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "8.60"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "700.0000"
+    }
+  },
+  {
+    "name": "Ross Nonpareil",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.059"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "6.80"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "1500.0000"
+    }
+  },
+  {
+    "name": "Rouge Duret",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.049"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "1.70"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "1600.0000"
+    }
+  },
+  {
+    "name": "Rousse de la Sarthe",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.056"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "1.70"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "1600.0000"
+    }
+  },
+  {
+    "name": "Roxbury Russet",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.061"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "6.10"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "800.0000"
+    }
+  },
+  {
+    "name": "Royal Jersey",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.048"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "1.90"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "3600.0000"
+    }
+  },
+  {
+    "name": "Royal Wilding",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.053"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "2.30"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "2400.0000"
+    }
+  },
+  {
+    "name": "Russet King",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.053"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "7.10"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "500.0000"
+    }
+  },
+  {
+    "name": "Saint Martin",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.055"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "2.00"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "2300.0000"
+    }
+  },
+  {
+    "name": "Sebin Blanc",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.051"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "5.40"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "1400.0000"
+    }
+  },
+  {
+    "name": "Sherrington Norman",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.051"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "2.70"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "3300.0000"
+    }
+  },
+  {
+    "name": "Smith's Cider",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.050"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "5.50"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "800.0000"
+    }
+  },
+  {
+    "name": "Stoke Red",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.052"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "6.40"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "3100.0000"
+    }
+  },
+  {
+    "name": "Strawberry Norman",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.053"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "3.20"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "3600.0000"
+    }
+  },
+  {
+    "name": "Sweet Alford",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.052"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "2.20"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "1500.0000"
+    }
+  },
+  {
+    "name": "Sweet Coopin",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.052"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "2.00"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "1400.0000"
+    }
+  },
+  {
+    "name": "Taliaferro",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.047"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "7.70"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "900.0000"
+    }
+  },
+  {
+    "name": "Tardive de la Sarthe",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.059"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "2.00"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "3700.0000"
+    }
+  },
+  {
+    "name": "Taylor's Sweet ( a.k.a. Taylor's)",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.051"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "2.00"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "1400.0000"
+    }
+  },
+  {
+    "name": "Tesniére",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.055"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "5.60"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "1600.0000"
+    }
+  },
+  {
+    "name": "Three Counties",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.056"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "2.00"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "3000.0000"
+    }
+  },
+  {
+    "name": "Tina",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.055"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "1.80"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "2500.0000"
+    }
+  },
+  {
+    "name": "Tom Putt",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.052"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "6.50"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "1300.0000"
+    }
+  },
+  {
+    "name": "Track Zero",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.053"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "1.80"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "1000.0000"
+    }
+  },
+  {
+    "name": "Tramlett's Geneva",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.044"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "10.10"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "1700.0000"
+    }
+  },
+  {
+    "name": "Tremlett's Bitter",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.052"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "2.70"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "3400.0000"
+    }
+  },
+  {
+    "name": "Twistbody Jersey",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.040"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "1.20"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "580.0000"
+    }
+  },
+  {
+    "name": "Vicky",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.050"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "1.50"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "1400.0000"
+    }
+  },
+  {
+    "name": "Virginia Crab",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.060"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "9.10"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "1900.0000"
+    }
+  },
+  {
+    "name": "Wagener",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.044"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "4.70"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "380.0000"
+    }
+  },
+  {
+    "name": "Whidbey",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.049"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "6.90"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "1200.0000"
+    }
+  },
+  {
+    "name": "White Jersey",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.051"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "2.90"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "2600.0000"
+    }
+  },
+  {
+    "name": "White Norman ( a.k.a. White Hereford)",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.056"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "2.00"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "3200.0000"
+    }
+  },
+  {
+    "name": "Winesap",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.051"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "5.10"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "540.0000"
+    }
+  },
+  {
+    "name": "Winter Banana",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.052"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "4.10"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "760.0000"
+    }
+  },
+  {
+    "name": "Woodbine 1 ( a.k.a. Rice's Jersey)",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.052"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "2.90"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "1500.0000"
+    }
+  },
+  {
+    "name": "Yellow Newtown",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.044"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "5.60"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "400.0000"
+    }
+  },
+  {
+    "name": "Yeovil Sour",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.052"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "5.50"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "1500.0000"
+    }
+  },
+  {
+    "name": "Zabergäu Renette",
+    "source": "Wikipedia List of apple cultivars - cider apple table; normalized from acidity %, tannin %, SG/Brix",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.057"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "7.90"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "1200.0000"
+    }
+  },
+  {
+    "name": "Tremblett's Bitter",
+    "source": "cider.org.uk Cider Apple Compositional Data; normalized from Brix, acidity %, tannin %",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.048"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "13.10"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "1220.0000"
+    }
+  },
+  {
+    "name": "Vagnon Flocher",
+    "source": "cider.org.uk Cider Apple Compositional Data; normalized from Brix, acidity %, tannin %",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.042"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "5.00"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "430.0000"
+    }
+  },
+  {
+    "name": "Alnarp",
+    "source": "cider.org.uk Cider Apple Compositional Data; normalized from Brix, acidity %, tannin %",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.054"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "8.20"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "370.0000"
+    }
+  },
+  {
+    "name": "Souv. de Cognet",
+    "source": "cider.org.uk Cider Apple Compositional Data; normalized from Brix, acidity %, tannin %",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.056"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "2.10"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "1600.0000"
+    }
+  },
+  {
+    "name": "Marechal",
+    "source": "cider.org.uk Cider Apple Compositional Data; normalized from Brix, acidity %, tannin %",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.046"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "1.90"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "2280.0000"
+    }
+  },
+  {
+    "name": "Muscadet de Bernay",
+    "source": "cider.org.uk Cider Apple Compositional Data; normalized from Brix, acidity %, tannin %",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.049"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "2.00"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "920.0000"
+    }
+  },
+  {
+    "name": "Bedan des Partes",
+    "source": "cider.org.uk Cider Apple Compositional Data; normalized from Brix, acidity %, tannin %",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.046"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "2.00"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "1720.0000"
+    }
+  },
+  {
+    "name": "Muscadet de Lense",
+    "source": "cider.org.uk Cider Apple Compositional Data; normalized from Brix, acidity %, tannin %",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.050"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "1.90"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "880.0000"
+    }
+  },
+  {
+    "name": "Belle sans Pippin",
+    "source": "cider.org.uk Cider Apple Compositional Data; normalized from Brix, acidity %, tannin %",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.051"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "3.50"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "580.0000"
+    }
+  },
+  {
+    "name": "Delicious (Groth)",
+    "source": "cider.org.uk Cider Apple Compositional Data; normalized from Brix, acidity %, tannin %",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.050"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "2.30"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "360.0000"
+    }
+  },
+  {
+    "name": "Melrose",
+    "source": "cider.org.uk Cider Apple Compositional Data; normalized from Brix, acidity %, tannin %",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.048"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "4.10"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "370.0000"
+    }
+  },
+  {
+    "name": "Golden Delicious",
+    "source": "cider.org.uk Cider Apple Compositional Data; normalized from Brix, acidity %, tannin %",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.041"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "2.10"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "430.0000"
+    }
+  },
+  {
+    "name": "Stark 287",
+    "source": "cider.org.uk Cider Apple Compositional Data; normalized from Brix, acidity %, tannin %",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.069"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "6.30"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "480.0000"
+    }
+  },
+  {
+    "name": "Starksplendor",
+    "source": "cider.org.uk Cider Apple Compositional Data; normalized from Brix, acidity %, tannin %",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.048"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "2.90"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "450.0000"
+    }
+  },
+  {
+    "name": "Red Stayman",
+    "source": "cider.org.uk Cider Apple Compositional Data; normalized from Brix, acidity %, tannin %",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.062"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "5.10"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "600.0000"
+    }
+  },
+  {
+    "name": "Rome (Frimley)",
+    "source": "cider.org.uk Cider Apple Compositional Data; normalized from Brix, acidity %, tannin %",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.046"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "3.50"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "380.0000"
+    }
+  },
+  {
+    "name": "Brown's",
+    "source": "Montana State University Intermountain West cultivar performance table; normalized from Brix, TA %, tannin %",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.041"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "7.40"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "1000.0000"
+    }
+  },
+  {
+    "name": "Hewe's Virginia Crab",
+    "source": "Montana State University 2022 cider cultivar evaluations; normalized from Brix, malic acid %, tannic acid %",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.087"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "12.30"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "5200.0000"
+    }
+  },
+  {
+    "name": "Muscadette de Dieppe",
+    "source": "Montana State University Intermountain West cultivar performance table; normalized from Brix, TA %, tannin %",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.058"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "2.60"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "2100.0000"
+    }
+  },
+  {
+    "name": "Tsugaru Homei",
+    "source": "WSU Mount Vernon Annual Report 2003 Table 2; normalized from SG, TA % malic, tannin %",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.053"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "2.10"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "600.0000"
+    }
+  },
+  {
+    "name": "McIntosh",
+    "source": "WSU Mount Vernon Annual Report 2003 Table 2; normalized from SG, TA % malic, tannin %",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.049"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "5.50"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "900.0000"
+    }
+  },
+  {
+    "name": "NY 486",
+    "source": "WSU Mount Vernon Annual Report 2003 Table 2; normalized from SG, TA % malic, tannin %",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.054"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "5.00"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "800.0000"
+    }
+  },
+  {
+    "name": "WSU AxP crab",
+    "source": "WSU Mount Vernon Annual Report 2003 Table 2; normalized from SG, TA % malic, tannin %",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.057"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "9.60"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "1300.0000"
+    }
+  },
+  {
+    "name": "Raven",
+    "source": "WSU Mount Vernon Annual Report 2003 Table 2; normalized from SG, TA % malic, tannin %",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.056"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "10.30"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "1100.0000"
+    }
+  },
+  {
+    "name": "Rubinette",
+    "source": "WSU Mount Vernon Annual Report 2003 Table 2; normalized from SG, TA % malic, tannin %",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.058"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "6.00"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "200.0000"
+    }
+  },
+  {
+    "name": "Brown's Apple",
+    "source": "WSU Mount Vernon Annual Report 2003 Table 2; normalized from SG, TA % malic, tannin %",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.050"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "7.40"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "2600.0000"
+    }
+  },
+  {
+    "name": "Jonagold",
+    "source": "WSU Mount Vernon Annual Report 2003 Table 2; normalized from SG, TA % malic, tannin %",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.049"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "4.00"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "600.0000"
+    }
+  },
+  {
+    "name": "Ashmead's Kernel",
+    "source": "WSU Mount Vernon Annual Report 2003 Table 2; normalized from SG, TA % malic, tannin %",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.068"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "8.20"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "900.0000"
+    }
+  },
+  {
+    "name": "American Forestier",
+    "source": "WSU Mount Vernon Annual Report 2011 Table 3; latest complete year, normalized from Brix and tannin %",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.047"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "1.98"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "2000.0000"
+    }
+  },
+  {
+    "name": "Bramley's Seedling",
+    "source": "WSU Mount Vernon Annual Report 2011 Table 3; latest complete year, normalized from Brix and tannin %",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.043"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "9.75"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "900.0000"
+    }
+  },
+  {
+    "name": "Cap O'Liberty",
+    "source": "WSU Mount Vernon Annual Report 2011 Table 3; latest complete year, normalized from Brix and tannin %",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.047"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "10.18"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "2100.0000"
+    }
+  },
+  {
+    "name": "Coat Jersey",
+    "source": "WSU Mount Vernon Annual Report 2011 Table 3; latest complete year, normalized from Brix and tannin %",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.048"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "1.93"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "4800.0000"
+    }
+  },
+  {
+    "name": "Court Pendu Rose",
+    "source": "WSU Mount Vernon Annual Report 2011 Table 3; latest complete year, normalized from Brix and tannin %",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.041"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "6.51"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "1300.0000"
+    }
+  },
+  {
+    "name": "Dymock Red",
+    "source": "WSU Mount Vernon Annual Report 2011 Table 3; latest complete year, normalized from Brix and tannin %",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.053"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "1.82"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "2100.0000"
+    }
+  },
+  {
+    "name": "Frequin Audievre",
+    "source": "WSU Mount Vernon Annual Report 2011 Table 3; latest complete year, normalized from Brix and tannin %",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.048"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "1.40"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "2300.0000"
+    }
+  },
+  {
+    "name": "Frequin Tardif",
+    "source": "WSU Mount Vernon Annual Report 2011 Table 3; latest complete year, normalized from Brix and tannin %",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.048"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "2.58"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "2800.0000"
+    }
+  },
+  {
+    "name": "Freyberg",
+    "source": "WSU Mount Vernon Annual Report 2011 Table 3; latest complete year, normalized from Brix and tannin %",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.057"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "3.48"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "100.0000"
+    }
+  },
+  {
+    "name": "Hewes Crab",
+    "source": "WSU Mount Vernon Annual Report 2011 Table 3; latest complete year, normalized from Brix and tannin %",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.061"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "7.84"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "2900.0000"
+    }
+  },
+  {
+    "name": "Lambrooke Pippin",
+    "source": "WSU Mount Vernon Annual Report 2011 Table 3; latest complete year, normalized from Brix and tannin %",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.050"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "7.40"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "3100.0000"
+    }
+  },
+  {
+    "name": "Amere de Berthecourt",
+    "source": "cider.org.uk Cider Apple Compositional Data; normalized from Brix, acidity %, tannin %",
+    "confidence": "MEDIUM",
+    "sugar": {
+      "kind": "EXACT",
+      "unit": "SPECIFIC_GRAVITY",
+      "value": "1.061"
+    },
+    "titratableAcidity": {
+      "kind": "EXACT",
+      "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
+      "value": "2.30"
+    },
+    "tanninity": {
+      "kind": "EXACT",
+      "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
+      "value": "1690.0000"
+    }
   }
 ]
