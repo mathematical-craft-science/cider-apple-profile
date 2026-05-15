@@ -6,7 +6,6 @@ import java.time.LocalDate;
 import java.util.UUID;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jpa.feedstock.entity.FeedstockMeasurementJpaEntity;
 import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
@@ -57,7 +56,7 @@ interface SpringDataFeedstockMeasurementQueryJpaRepository
           or (batch.seasonStartsOn <= :seasonEndsOn and batch.seasonEndsOn >= :seasonStartsOn)
         )
         and (
-          :afterMeasuredAt is null
+          :filterByCursor = false
           or sample.measuredAt > :afterMeasuredAt
           or (sample.measuredAt = :afterMeasuredAt and sample.measurementId > :afterSampleId)
         )
@@ -68,10 +67,11 @@ interface SpringDataFeedstockMeasurementQueryJpaRepository
       @Param("filterByBatch") boolean filterByBatch,
       @Param("batchIds") @NonNull List<@NonNull UUID> batchIds,
       @Param("filterBySeason") boolean filterBySeason,
-      @Param("seasonStartsOn") @Nullable LocalDate seasonStartsOn,
-      @Param("seasonEndsOn") @Nullable LocalDate seasonEndsOn,
-      @Param("afterMeasuredAt") @Nullable Instant afterMeasuredAt,
-      @Param("afterSampleId") @Nullable UUID afterSampleId,
+      @Param("seasonStartsOn") @NonNull LocalDate seasonStartsOn,
+      @Param("seasonEndsOn") @NonNull LocalDate seasonEndsOn,
+      @Param("filterByCursor") boolean filterByCursor,
+      @Param("afterMeasuredAt") @NonNull Instant afterMeasuredAt,
+      @Param("afterSampleId") @NonNull UUID afterSampleId,
       @NonNull Pageable pageable
   );
 
@@ -87,7 +87,7 @@ interface SpringDataFeedstockMeasurementQueryJpaRepository
           or (batch.seasonStartsOn <= :seasonEndsOn and batch.seasonEndsOn >= :seasonStartsOn)
         )
         and (
-          :afterMeasuredAt is null
+          :filterByCursor = false
           or sample.measuredAt < :afterMeasuredAt
           or (sample.measuredAt = :afterMeasuredAt and sample.measurementId < :afterSampleId)
         )
@@ -107,10 +107,11 @@ interface SpringDataFeedstockMeasurementQueryJpaRepository
       @Param("filterByBatch") boolean filterByBatch,
       @Param("batchIds") @NonNull List<@NonNull UUID> batchIds,
       @Param("filterBySeason") boolean filterBySeason,
-      @Param("seasonStartsOn") @Nullable LocalDate seasonStartsOn,
-      @Param("seasonEndsOn") @Nullable LocalDate seasonEndsOn,
-      @Param("afterMeasuredAt") @Nullable Instant afterMeasuredAt,
-      @Param("afterSampleId") @Nullable UUID afterSampleId,
+      @Param("seasonStartsOn") @NonNull LocalDate seasonStartsOn,
+      @Param("seasonEndsOn") @NonNull LocalDate seasonEndsOn,
+      @Param("filterByCursor") boolean filterByCursor,
+      @Param("afterMeasuredAt") @NonNull Instant afterMeasuredAt,
+      @Param("afterSampleId") @NonNull UUID afterSampleId,
       @NonNull Pageable pageable
   );
 

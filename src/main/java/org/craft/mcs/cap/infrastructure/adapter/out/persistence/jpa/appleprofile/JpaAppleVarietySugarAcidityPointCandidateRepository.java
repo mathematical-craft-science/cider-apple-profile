@@ -2,6 +2,7 @@ package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jpa.appleprofil
 
 import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.appleprofile.application.port.out.AppleVarietySugarAcidityPointCandidateRepository;
 import org.craft.mcs.cap.core.appleprofile.application.port.out.AppleVarietySugarAcidityPointCandidateQuery;
@@ -21,6 +22,9 @@ import static java.util.Objects.requireNonNull;
 class JpaAppleVarietySugarAcidityPointCandidateRepository
     implements AppleVarietySugarAcidityPointCandidateRepository {
 
+  private static final @NonNull String NO_CURSOR_NAME = "";
+  private static final @NonNull UUID NO_CURSOR_ID = new UUID(0L, 0L);
+
   private final @NonNull SpringDataAppleVarietyJpaRepository repository;
 
   @Override
@@ -33,9 +37,11 @@ class JpaAppleVarietySugarAcidityPointCandidateRepository
     final var nameContains = normalizeNameContains(query.nameContains());
 
     return repository.findSugarAcidityPointCandidates(
-            nameContains,
-            cursor == null ? null : cursor.name(),
-            cursor == null ? null : cursor.varietyId(),
+            nameContains != null,
+            nameContains == null ? "" : nameContains,
+            cursor != null,
+            cursor == null ? NO_CURSOR_NAME : cursor.name(),
+            cursor == null ? NO_CURSOR_ID : cursor.varietyId(),
             PageRequest.ofSize(query.limit())
         )
         .stream()

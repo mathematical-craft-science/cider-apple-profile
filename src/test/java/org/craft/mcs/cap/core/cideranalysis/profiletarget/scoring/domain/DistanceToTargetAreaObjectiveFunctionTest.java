@@ -112,7 +112,7 @@ class DistanceToTargetAreaObjectiveFunctionTest {
     assertThat(distance.insideTarget()).isFalse();
     assertThat(distance.tannin()).isEqualByComparingTo("1000");
     assertThat(distance.nearestTargetTannin()).isEqualByComparingTo("1500");
-    assertThat(distance.value()).isCloseTo(new BigDecimal("0.125"), within(new BigDecimal("0.000001")));
+    assertThat(distance.value()).isCloseTo(new BigDecimal("0.041666"), within(new BigDecimal("0.000001")));
   }
 
   @Test

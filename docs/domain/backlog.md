@@ -190,6 +190,37 @@ medium-sugar и т.д.
 - Будущие статусы вроде "ожидает уточнения", "исключен из graph",
   "скрыт из публичного каталога".
 
+### Provenance и несколько наблюдений chemical profile для AppleVariety
+
+Сейчас seed хранит один выбранный chemical profile на сорт. Это удобно для
+каталога и graph, но теряет важный смысл: показатели sugar, acidity и tannin
+могут сильно отличаться по году, региону, зрелости, хранению и методике
+измерения. Особенно это заметно по tannin: открытые источники дают для одного
+и того же сорта разные значения, иногда выше старой границы `4000 mg/L`.
+
+User stories:
+
+- Как администратор каталога, я хочу видеть все source observations по сорту,
+  чтобы понимать разброс данных и выбирать canonical profile осознанно.
+- Как сидродел, я хочу видеть не только одно число, но и надежность/разброс
+  типичного профиля сорта, чтобы не принимать справочные данные за гарантию
+  конкретного урожая.
+- Как разработчик аналитики, я хочу иметь provenance по каждому измерению,
+  чтобы строить confidence, ranges и статистику без потери исходных данных.
+
+Идея реализации:
+
+- Добавить модель `AppleVarietyChemicalProfileObservation` или близкий термин.
+- Хранить `varietyId`, source/reference, region/location, year/season,
+  measurement method, original unit/value и normalized `ChemicalProfile`.
+- Разделить `canonicalChemicalProfile` сорта и набор наблюдений.
+- Canonical profile можно вычислять policy/strategy: latest trusted source,
+  median/mean по наблюдениям, manual admin selection.
+- Для seed/importer сохранять provenance вместо перезаписи одного значения
+  без следа.
+- Для API каталога отдавать canonical profile по умолчанию, а подробные
+  observations отдельным endpoint-ом.
+
 ### Постепенное заполнение FeedstockSample
 
 Для `FeedstockSample` неполный профиль является нормальным рабочим состоянием.

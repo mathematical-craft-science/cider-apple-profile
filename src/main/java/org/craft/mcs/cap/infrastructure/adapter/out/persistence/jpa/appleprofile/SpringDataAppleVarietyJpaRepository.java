@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.UUID;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jpa.appleprofile.entity.AppleVarietyJpaEntity;
 import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -18,18 +17,20 @@ interface SpringDataAppleVarietyJpaRepository
   @Query("""
       select variety
       from AppleVarietyJpaEntity variety
-      where (:nameContains is null or lower(variety.name) like concat('%', :nameContains, '%'))
+      where (:filterByName = false or lower(variety.name) like concat('%', :nameContains, '%'))
         and (
-          :afterName is null
+          :filterByCursor = false
           or variety.name > :afterName
           or (variety.name = :afterName and variety.varietyId > :afterVarietyId)
         )
       order by variety.name asc, variety.varietyId asc
       """)
   List<@NonNull AppleVarietyJpaEntity> findSugarAcidityPointCandidates(
-      @Param("nameContains") @Nullable String nameContains,
-      @Param("afterName") @Nullable String afterName,
-      @Param("afterVarietyId") @Nullable UUID afterVarietyId,
+      @Param("filterByName") boolean filterByName,
+      @Param("nameContains") @NonNull String nameContains,
+      @Param("filterByCursor") boolean filterByCursor,
+      @Param("afterName") @NonNull String afterName,
+      @Param("afterVarietyId") @NonNull UUID afterVarietyId,
       @NonNull Pageable pageable
   );
 }

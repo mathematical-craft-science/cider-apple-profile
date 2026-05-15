@@ -136,6 +136,19 @@ public final class FeedstockBatch {
     return this;
   }
 
+  public @NonNull FeedstockBatch consumeAvailableVolume(@NonNull VolumeValue volume) {
+    requireNonNull(volume, "consumed feedstock volume cannot be null");
+    if (volume.isZero()) {
+      throw new IllegalArgumentException("consumed feedstock volume must be positive");
+    }
+    if (volume.compareTo(availableVolume) > 0) {
+      throw new IllegalArgumentException("consumed feedstock volume exceeds available volume");
+    }
+
+    this.availableVolume = availableVolume.subtract(volume);
+    return this;
+  }
+
   public @NonNull FeedstockBatch changeNote(@Nullable String note) {
     this.note = normalize(note);
     return this;

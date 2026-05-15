@@ -1,5 +1,7 @@
 package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jpa.feedstock;
 
+import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -26,6 +28,10 @@ import static java.util.Objects.requireNonNull;
 @RequiredArgsConstructor
 class JpaFeedstockMeasurementQueryRepository
     implements FeedstockMeasurementQueryRepository {
+
+  private static final @NonNull LocalDate NO_SEASON_DATE = LocalDate.of(1970, 1, 1);
+  private static final @NonNull Instant NO_CURSOR_MEASURED_AT = Instant.EPOCH;
+  private static final @NonNull UUID NO_CURSOR_MEASUREMENT_ID = new UUID(0L, 0L);
 
   private final @NonNull SpringDataFeedstockMeasurementQueryJpaRepository repository;
 
@@ -76,10 +82,11 @@ class JpaFeedstockMeasurementQueryRepository
             query.batch() != null,
             batchIds,
             season != null,
-            season == null ? null : season.startsOn(),
-            season == null ? null : season.endsOn(),
-            cursor == null ? null : cursor.measuredAt(),
-            cursor == null ? null : cursor.measurementId(),
+            season == null ? NO_SEASON_DATE : season.startsOn(),
+            season == null ? NO_SEASON_DATE : season.endsOn(),
+            cursor != null,
+            cursor == null ? NO_CURSOR_MEASURED_AT : cursor.measuredAt(),
+            cursor == null ? NO_CURSOR_MEASUREMENT_ID : cursor.measurementId(),
             PageRequest.ofSize(query.limit())
         )
         .stream()
@@ -94,6 +101,7 @@ class JpaFeedstockMeasurementQueryRepository
     requireNonNull(query, "latest feedstock measurement point candidate query cannot be null");
 
     final var season = query.season();
+    final var cursor = query.after();
     final var batchIds = query.batch() == null
         ? List.of(new UUID(0L, 0L))
         : query.batch().batchIds().stream()
@@ -105,10 +113,11 @@ class JpaFeedstockMeasurementQueryRepository
             query.batch() != null,
             batchIds,
             season != null,
-            season == null ? null : season.startsOn(),
-            season == null ? null : season.endsOn(),
-            query.after() == null ? null : query.after().measuredAt(),
-            query.after() == null ? null : query.after().measurementId(),
+            season == null ? NO_SEASON_DATE : season.startsOn(),
+            season == null ? NO_SEASON_DATE : season.endsOn(),
+            cursor != null,
+            cursor == null ? NO_CURSOR_MEASURED_AT : cursor.measuredAt(),
+            cursor == null ? NO_CURSOR_MEASUREMENT_ID : cursor.measurementId(),
             PageRequest.ofSize(query.limit())
         )
         .stream()

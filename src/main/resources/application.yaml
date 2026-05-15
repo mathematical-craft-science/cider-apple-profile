@@ -1,5 +1,6 @@
 server:
   shutdown: graceful
+  port: 8088
 
 spring:
   application:
@@ -12,7 +13,7 @@ spring:
       ddl-auto: validate
     open-in-view: true
   datasource:
-    url: jdbc:postgresql://localhost:5732/cap_db
+    url: jdbc:postgresql://localhost:5832/cap_db
     username: username
     password: password
 

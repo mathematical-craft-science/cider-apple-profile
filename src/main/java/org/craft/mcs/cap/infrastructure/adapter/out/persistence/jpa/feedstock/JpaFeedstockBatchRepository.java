@@ -25,7 +25,9 @@ class JpaFeedstockBatchRepository
   public @NonNull FeedstockBatch save(@NonNull FeedstockBatch feedstockBatch) {
     requireNonNull(feedstockBatch, "feedstock batch cannot be null");
 
-    final var entity = FeedstockBatchJpaMapper.fromDomain(feedstockBatch);
+    final var entity = repository.findById(feedstockBatch.batchId().value())
+        .map(existing -> FeedstockBatchJpaMapper.updateFromDomain(feedstockBatch, existing))
+        .orElseGet(() -> FeedstockBatchJpaMapper.fromDomain(feedstockBatch));
     final var saved = repository.save(entity);
 
     return FeedstockBatchJpaMapper.toDomain(saved);

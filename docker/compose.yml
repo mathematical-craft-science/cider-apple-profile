@@ -5,7 +5,7 @@ services:
     volumes:
       - cap-postgres-data:/var/lib/postgresql/cap
     ports:
-      - "5732:5432"
+      - "5832:5432"
     environment:
       - POSTGRES_DB=cap_db
       - POSTGRES_USER=username

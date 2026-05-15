@@ -33,6 +33,24 @@ public final class FeedstockBatchJpaMapper {
     );
   }
 
+  public static @NonNull FeedstockBatchJpaEntity updateFromDomain(
+      @NonNull FeedstockBatch batch,
+      @NonNull FeedstockBatchJpaEntity entity
+  ) {
+    requireNonNull(batch, "feedstock batch cannot be null");
+    requireNonNull(entity, "feedstock batch entity cannot be null");
+
+    entity.name = batch.name().value();
+    entity.type = batch.type();
+    entity.seasonStartsOn = batch.season().startsOn();
+    entity.seasonEndsOn = batch.season().endsOn();
+    entity.source = batch.source() == null ? null : batch.source().value();
+    entity.availableVolumeLiters = batch.availableVolume().liters();
+    entity.note = batch.note();
+
+    return entity;
+  }
+
   public static @NonNull FeedstockBatch toDomain(@NonNull FeedstockBatchJpaEntity entity) {
     requireNonNull(entity, "feedstock batch entity cannot be null");
 
