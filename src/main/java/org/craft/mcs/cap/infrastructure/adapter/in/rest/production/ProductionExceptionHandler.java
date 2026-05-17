@@ -3,7 +3,6 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.production;
 import java.net.URI;
 import org.craft.mcs.cap.core.production.application.ProductionSourceInsufficientAvailableVolumeException;
 import org.craft.mcs.cap.core.production.application.ProductionSourceOwnershipMismatchException;
-import org.craft.mcs.cap.core.production.application.ProductionSourceProfileNotUsableException;
 import org.jspecify.annotations.NonNull;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
@@ -18,8 +17,6 @@ public final class ProductionExceptionHandler {
       URI.create("urn:problem-type:production-source-ownership-mismatch");
   private static final @NonNull URI INSUFFICIENT_AVAILABLE_VOLUME =
       URI.create("urn:problem-type:production-source-insufficient-available-volume");
-  private static final @NonNull URI SOURCE_PROFILE_NOT_USABLE =
-      URI.create("urn:problem-type:production-source-profile-not-usable");
   private static final @NonNull URI INVALID_PRODUCTION_BATCH =
       URI.create("urn:problem-type:invalid-production-batch");
   private static final int BAD_REQUEST = 400;
@@ -56,23 +53,6 @@ public final class ProductionExceptionHandler {
     problem.setProperty("batchId", exception.batchId().value().toString());
     problem.setProperty("requestedVolumeLiters", exception.requestedVolume().liters());
     problem.setProperty("availableVolumeLiters", exception.availableVolume().liters());
-
-    return ResponseEntity
-        .status(UNPROCESSABLE_ENTITY)
-        .body(problem);
-  }
-
-  @ExceptionHandler(ProductionSourceProfileNotUsableException.class)
-  public @NonNull ResponseEntity<@NonNull ProblemDetail> handleSourceProfileNotUsable(
-      @NonNull ProductionSourceProfileNotUsableException exception
-  ) {
-    final var problem = ProblemDetail.forStatus(UNPROCESSABLE_ENTITY);
-
-    problem.setType(SOURCE_PROFILE_NOT_USABLE);
-    problem.setTitle("Production source profile is not usable");
-    problem.setDetail("Current feedstock batch profile does not contain measurements required for production.");
-    problem.setProperty("batchId", exception.batchId().value().toString());
-    problem.setProperty("requiredCapability", exception.requiredCapability().name());
 
     return ResponseEntity
         .status(UNPROCESSABLE_ENTITY)

@@ -1,20 +1,15 @@
 package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jpa.production.entity;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchKind;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchStatus;
@@ -93,10 +88,6 @@ public class ProductionBatchJpaEntity {
   @Column(name = "version", nullable = false)
   long version;
 
-  @OneToMany(mappedBy = "productionBatch", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-  @NonNull
-  List<@NonNull ProductionBatchSourceJpaEntity> sources = new ArrayList<>();
-
   @SuppressWarnings("NullAway.Init")
   protected ProductionBatchJpaEntity() {
   }
@@ -125,16 +116,6 @@ public class ProductionBatchJpaEntity {
     this.tanninMgLTea = tanninMgLTea;
     this.targetDistance = targetDistance;
     this.note = normalize(note);
-  }
-
-  void replaceSources(@NonNull List<@NonNull ProductionBatchSourceJpaEntity> sourceEntities) {
-    requireNonNull(sourceEntities, "production batch source entities cannot be null");
-
-    sources.clear();
-    for (final var source : sourceEntities) {
-      source.productionBatch = this;
-      sources.add(source);
-    }
   }
 
   private static @Nullable String normalize(@Nullable String value) {

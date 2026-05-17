@@ -1,11 +1,12 @@
 package org.craft.mcs.cap.core.production.domain.model;
 
-import java.math.BigDecimal;
 import org.craft.mcs.cap.core.feedstock.domain.model.value.CiderMakerId;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchKind;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchName;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchStatus;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
+import org.craft.mcs.cap.core.production.domain.model.value.ProductionTargetDistance;
+import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;
 import org.jmolecules.ddd.annotation.AggregateRoot;
 import org.jmolecules.ddd.annotation.Identity;
 import org.jspecify.annotations.NonNull;
@@ -15,12 +16,11 @@ import static java.util.Objects.requireNonNull;
 
 
 /**
- * Aggregate root for a committed production lot created from one or more source batches.
+ * Aggregate root for a committed production lot.
  *
- * <p>The aggregate captures the production intent after a composition/blending decision has been
- * accepted: source composition, product kind, planned status and a chemical profile snapshot at
- * creation time. The snapshot is stored because later feedstock measurements may change, while a
- * production batch must preserve the profile that was used when stock volume was consumed.
+ * <p>The aggregate owns production state after a material input has been accepted: product kind,
+ * planned status, current volume and the chemical profile snapshot at creation time. Source tree and
+ * source snapshots belong to Batch Traceability, not to this aggregate.
  */
 @AggregateRoot
 public final class ProductionBatch {
@@ -36,11 +36,11 @@ public final class ProductionBatch {
 
   private @NonNull ProductionBatchStatus status;
 
-  private @NonNull ProductionSourceComposition sourceComposition;
+  private @NonNull VolumeValue volume;
 
   private @NonNull ProductionProfileSnapshot profile;
 
-  private @Nullable BigDecimal targetDistance;
+  private @Nullable ProductionTargetDistance targetDistance;
 
   private @Nullable String note;
 
@@ -50,9 +50,9 @@ public final class ProductionBatch {
       @NonNull ProductionBatchName name,
       @NonNull ProductionBatchKind kind,
       @NonNull ProductionBatchStatus status,
-      @NonNull ProductionSourceComposition sourceComposition,
+      @NonNull VolumeValue volume,
       @NonNull ProductionProfileSnapshot profile,
-      @Nullable BigDecimal targetDistance,
+      @Nullable ProductionTargetDistance targetDistance,
       @Nullable String note
   ) {
     this.batchId = requireNonNull(batchId, "production batch id cannot be null");
@@ -60,7 +60,7 @@ public final class ProductionBatch {
     this.name = requireNonNull(name, "production batch name cannot be null");
     this.kind = requireNonNull(kind, "production batch kind cannot be null");
     this.status = requireNonNull(status, "production batch status cannot be null");
-    this.sourceComposition = requireNonNull(sourceComposition, "production source composition cannot be null");
+    this.volume = requireNonNull(volume, "production volume cannot be null");
     this.profile = requireNonNull(profile, "production profile cannot be null");
     this.targetDistance = targetDistance;
     this.note = normalize(note);
@@ -71,9 +71,9 @@ public final class ProductionBatch {
       @NonNull CiderMakerId ciderMakerId,
       @NonNull ProductionBatchName name,
       @NonNull ProductionBatchKind kind,
-      @NonNull ProductionSourceComposition sourceComposition,
+      @NonNull VolumeValue volume,
       @NonNull ProductionProfileSnapshot profile,
-      @Nullable BigDecimal targetDistance,
+      @Nullable ProductionTargetDistance targetDistance,
       @Nullable String note
   ) {
     return new ProductionBatch(
@@ -82,7 +82,7 @@ public final class ProductionBatch {
         name,
         kind,
         ProductionBatchStatus.PLANNED,
-        sourceComposition,
+        volume,
         profile,
         targetDistance,
         note
@@ -95,9 +95,9 @@ public final class ProductionBatch {
       @NonNull ProductionBatchName name,
       @NonNull ProductionBatchKind kind,
       @NonNull ProductionBatchStatus status,
-      @NonNull ProductionSourceComposition sourceComposition,
+      @NonNull VolumeValue volume,
       @NonNull ProductionProfileSnapshot profile,
-      @Nullable BigDecimal targetDistance,
+      @Nullable ProductionTargetDistance targetDistance,
       @Nullable String note
   ) {
     return new ProductionBatch(
@@ -106,7 +106,7 @@ public final class ProductionBatch {
         name,
         kind,
         status,
-        sourceComposition,
+        volume,
         profile,
         targetDistance,
         note
@@ -133,15 +133,15 @@ public final class ProductionBatch {
     return status;
   }
 
-  public @NonNull ProductionSourceComposition sourceComposition() {
-    return sourceComposition;
+  public @NonNull VolumeValue volume() {
+    return volume;
   }
 
   public @NonNull ProductionProfileSnapshot profile() {
     return profile;
   }
 
-  public @Nullable BigDecimal targetDistance() {
+  public @Nullable ProductionTargetDistance targetDistance() {
     return targetDistance;
   }
 
