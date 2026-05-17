@@ -10,6 +10,15 @@ import org.jspecify.annotations.Nullable;
 import static java.util.Objects.requireNonNull;
 
 
+/**
+ * Calculates the North American cider profile levels from canonical chemical axes.
+ *
+ * <p>The calculator requires sugar, acidity and tannin. It has no partial-result semantics by
+ * design: application services must check {@code NORTH_AMERICAN_PROFILE} capability before calling
+ * it and decide how missing axes should be reported to a user. The calculation itself is a
+ * threshold lookup over configured low/medium/high ranges and returns the three-level semantic
+ * profile used by downstream classification and future single-variety assessment scenarios.
+ */
 public final class NorthAmericanProfileCalculator {
 
   private final @NonNull NorthAmericanThresholds thresholds;

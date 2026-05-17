@@ -1,14 +1,20 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.composition.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 
+@Schema(description = "Composition source with chemical axes and selected weight.")
 public record ChemicalProfileCompositionSourceRequest(
+    @Schema(description = "Source reference.")
     @NonNull ChemicalProfileCompositionSourceReferenceRequest reference,
+    @Schema(description = "Source canonical chemical axes.")
     @NonNull ChemicalProfileCompositionAxesRequest axes,
+    @Schema(description = "Source weight.")
     @NonNull ChemicalProfileCompositionSourceWeightRequest weight,
+    @Schema(description = "Available source volume in liters, when volume constraints are known.", example = "120.0")
     @Nullable BigDecimal availableVolumeLiters
 ) {
 }

@@ -11,6 +11,7 @@ import static java.util.Objects.requireNonNull;
 @Schema(description = "Statistical chemical measurement request.")
 public record StatisticalChemicalMeasurementRequest(
     @Schema(description = "Measurement shape.", example = "STATISTICAL") @NonNull String kind,
+    @Schema(description = "External measurement unit.", example = "g/L as malic acid") @Nullable String unit,
     @Schema(description = "Mean measured value.", example = "5.2") @NonNull BigDecimal mean,
     @Schema(description = "Median measured value, when available.", example = "5.1") @Nullable BigDecimal median,
     @Schema(description = "Standard deviation, when available.", example = "0.2") @Nullable BigDecimal standardDeviation,
@@ -20,5 +21,15 @@ public record StatisticalChemicalMeasurementRequest(
   public StatisticalChemicalMeasurementRequest {
     requireNonNull(kind, "measurement kind cannot be null");
     requireNonNull(mean, "statistical mean value cannot be null");
+  }
+
+  public StatisticalChemicalMeasurementRequest(
+      @NonNull String kind,
+      @NonNull BigDecimal mean,
+      @Nullable BigDecimal median,
+      @Nullable BigDecimal standardDeviation,
+      @Nullable Integer sampleSize
+  ) {
+    this(kind, null, mean, median, standardDeviation, sampleSize);
   }
 }

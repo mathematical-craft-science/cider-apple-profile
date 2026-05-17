@@ -13,8 +13,6 @@ import org.craft.mcs.cap.core.feedstock.application.port.out.LatestFeedstockMeas
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurement;
-import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurementId;
-import org.craft.mcs.cap.core.feedstock.domain.model.measurement.value.FeedstockMeasurementName;
 import org.craft.mcs.cap.core.feedstock.domain.model.value.CiderMakerId;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jpa.feedstock.entity.FeedstockMeasurementJpaMapper;
 import org.jspecify.annotations.NonNull;
@@ -150,13 +148,15 @@ class JpaFeedstockMeasurementQueryRepository
   private static @NonNull FeedstockMeasurementSummary toSummary(
       @NonNull FeedstockMeasurementSummaryJpaProjection projection
   ) {
+    final var measurement = FeedstockMeasurementJpaMapper.toDomain(projection.measurement());
     return new FeedstockMeasurementSummary(
-        FeedstockMeasurementId.of(projection.measurementId()),
+        measurement.measurementId(),
         CiderMakerId.of(projection.ciderMakerId()),
-        FeedstockBatchId.of(projection.batchId()),
-        FeedstockMeasurementName.of(projection.name()),
-        projection.measuredAt(),
-        projection.note()
+        measurement.batchId(),
+        measurement.name(),
+        measurement.measuredAt(),
+        measurement.chemicalProfile(),
+        measurement.note()
     );
   }
 }

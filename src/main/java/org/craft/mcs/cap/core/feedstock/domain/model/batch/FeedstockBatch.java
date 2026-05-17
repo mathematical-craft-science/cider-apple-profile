@@ -1,5 +1,6 @@
 package org.craft.mcs.cap.core.feedstock.domain.model.batch;
 
+import java.time.Instant;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockBatchName;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSource;
@@ -14,6 +15,18 @@ import org.jspecify.annotations.Nullable;
 import static java.util.Objects.requireNonNull;
 
 
+/**
+ * Aggregate root for a physical lot of available raw material owned by a cider maker.
+ *
+ * <p>A batch is the operational entity a user manages in the workspace: it has a season, optional
+ * source/origin, available volume and lifecycle state. Chemical values are intentionally not stored
+ * on the batch itself; they are measured over time by {@code FeedstockMeasurement}. Application
+ * query services define the current profile as the latest measurement for the batch.
+ *
+ * <p>The aggregate owns stock invariants such as consuming no more volume than is available. This
+ * keeps production-batch creation and future blending reservations anchored to the feedstock
+ * bounded context.
+ */
 @AggregateRoot
 public final class FeedstockBatch {
 
@@ -34,6 +47,8 @@ public final class FeedstockBatch {
 
   private @Nullable String note;
 
+  private @Nullable Instant deletedAt;
+
   private FeedstockBatch(
       @NonNull FeedstockBatchId batchId,
       @NonNull CiderMakerId ciderMakerId,
@@ -42,7 +57,8 @@ public final class FeedstockBatch {
       @NonNull FeedstockSeason season,
       @Nullable FeedstockSource source,
       @NonNull VolumeValue availableVolume,
-      @Nullable String note
+      @Nullable String note,
+      @Nullable Instant deletedAt
   ) {
     this.batchId = requireNonNull(batchId, "feedstock batch id cannot be null");
     this.ciderMakerId = requireNonNull(ciderMakerId, "cider maker id cannot be null");
@@ -52,6 +68,7 @@ public final class FeedstockBatch {
     this.source = source;
     this.availableVolume = requireNonNull(availableVolume, "available volume cannot be null");
     this.note = normalize(note);
+    this.deletedAt = deletedAt;
   }
 
   public static @NonNull FeedstockBatch create(
@@ -70,7 +87,32 @@ public final class FeedstockBatch {
         season,
         null,
         availableVolume,
+        null,
         null
+    );
+  }
+
+  public static @NonNull FeedstockBatch restore(
+      @NonNull FeedstockBatchId batchId,
+      @NonNull CiderMakerId ciderMakerId,
+      @NonNull FeedstockBatchName name,
+      @NonNull FeedstockType type,
+      @NonNull FeedstockSeason season,
+      @Nullable FeedstockSource source,
+      @NonNull VolumeValue availableVolume,
+      @Nullable String note,
+      @Nullable Instant deletedAt
+  ) {
+    return new FeedstockBatch(
+        batchId,
+        ciderMakerId,
+        name,
+        type,
+        season,
+        source,
+        availableVolume,
+        note,
+        deletedAt
     );
   }
 
@@ -104,6 +146,14 @@ public final class FeedstockBatch {
 
   public @Nullable String note() {
     return note;
+  }
+
+  public @Nullable Instant deletedAt() {
+    return deletedAt;
+  }
+
+  public boolean deleted() {
+    return deletedAt != null;
   }
 
   public @NonNull FeedstockBatch rename(@NonNull FeedstockBatchName name) {
@@ -156,6 +206,11 @@ public final class FeedstockBatch {
 
   public @NonNull FeedstockBatch clearNote() {
     this.note = null;
+    return this;
+  }
+
+  public @NonNull FeedstockBatch delete(@NonNull Instant deletedAt) {
+    this.deletedAt = requireNonNull(deletedAt, "deleted at cannot be null");
     return this;
   }
 

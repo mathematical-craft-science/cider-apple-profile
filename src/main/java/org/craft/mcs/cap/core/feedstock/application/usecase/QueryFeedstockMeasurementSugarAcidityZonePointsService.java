@@ -29,6 +29,14 @@ import org.springframework.stereotype.Component;
 import static java.util.Objects.requireNonNull;
 
 
+/**
+ * Read-side use case for historical feedstock measurement points on the sugar-acidity graph.
+ *
+ * <p>This query includes all matching measurements, not only the latest per batch. It is useful for
+ * audit/history views and for understanding how a batch profile evolved over time. Current
+ * decision-support flows should use {@link QueryFeedstockBatchCurrentSugarAcidityZonePointsService}
+ * instead.
+ */
 @Component
 @RequiredArgsConstructor
 public final class QueryFeedstockMeasurementSugarAcidityZonePointsService

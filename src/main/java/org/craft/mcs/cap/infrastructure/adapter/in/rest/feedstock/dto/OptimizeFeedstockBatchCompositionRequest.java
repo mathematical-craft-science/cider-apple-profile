@@ -1,5 +1,7 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto;
 
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
@@ -20,25 +22,45 @@ import org.jspecify.annotations.Nullable;
 import static java.util.Objects.requireNonNull;
 
 
+@Schema(description = "Request to optimize feedstock batch source composition against a profile target.")
 public record OptimizeFeedstockBatchCompositionRequest(
+    @Schema(description = "Cider maker identifier.", format = "uuid", example = "4d96759c-86ff-4d39-8b19-241bc60f82ff")
     @NonNull UUID ciderMakerId,
+    @ArraySchema(schema = @Schema(description = "Optional feedstock batch id filter.", format = "uuid"))
     @Nullable List<@NonNull UUID> batchIds,
+    @Schema(description = "Optional season overlap filter.")
     @Nullable FeedstockSeasonRequest season,
+    @Schema(description = "Optional sugar-acidity zone filter.", implementation = SugarAcidityZone.class, example = "PERFECT_APPLES")
     @Nullable SugarAcidityZone zone,
+    @Schema(description = "Optional chemical profile capability filter.", implementation = ChemicalProfileCapability.class, example = "SUGAR_ACIDITY_PLOT")
     @Nullable ChemicalProfileCapability capability,
+    @Schema(description = "Whether the optional capability must be met.", example = "true")
     @Nullable Boolean capable,
+    @Schema(description = "Scoring purpose used to select default normalizer.", implementation = ProfileTargetScoringPurpose.class, example = "BLENDING_PLANNING")
     @Nullable ProfileTargetScoringPurpose purpose,
+    @Schema(description = "Required target.")
     @NonNull ProfileTargetRequest target,
+    @Schema(description = "Optional tannin target range.")
     @Nullable ProfileTargetTanninRangeRequest tanninTarget,
+    @Schema(description = "Optional axis weights.")
     @Nullable ProfileTargetObjectiveWeightsRequest weights,
+    @Schema(description = "Optimization mode.", implementation = CompositionOptimizationMode.class)
     @NonNull CompositionOptimizationMode mode,
+    @Schema(description = "Optimization algorithm.", implementation = CompositionOptimizationAlgorithm.class)
     @Nullable CompositionOptimizationAlgorithm algorithm,
+    @Schema(description = "Composition calculator code.", implementation = ChemicalProfileCompositionCalculatorCode.class)
     @Nullable ChemicalProfileCompositionCalculatorCode calculator,
+    @Schema(description = "Axis normalizer code.", implementation = ProfileAxisNormalizerCode.class)
     @Nullable ProfileAxisNormalizerCode normalizer,
+    @Schema(description = "Objective function code.", implementation = ProfileTargetObjectiveFunctionCode.class)
     @Nullable ProfileTargetObjectiveFunctionCode objectiveFunction,
+    @Schema(description = "Discrete search step in percent.", example = "5")
     @Nullable Integer stepPercent,
+    @Schema(description = "Maximum optimization candidates returned.", example = "10")
     @Nullable Integer limit,
+    @Schema(description = "Maximum source batches considered before optimization.", example = "8")
     @Nullable Integer sourceLimit,
+    @Schema(description = "Target total volume in liters for absolute-volume optimization.", example = "100.0")
     @Nullable BigDecimal targetTotalVolumeLiters
 ) {
 

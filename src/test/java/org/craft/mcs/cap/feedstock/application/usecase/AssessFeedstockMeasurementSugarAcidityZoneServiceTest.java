@@ -1,6 +1,5 @@
 package org.craft.mcs.cap.feedstock.application.usecase;
 
-import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Optional;
 import org.craft.mcs.cap.core.feedstock.application.port.out.FeedstockBatchRepository;
@@ -29,6 +28,7 @@ import org.craft.mcs.cap.core.cideranalysis.sugaracidity.zone.domain.RectangleSu
 import org.junit.jupiter.api.Test;
 
 import static java.util.UUID.randomUUID;
+import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementInstant;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -59,7 +59,7 @@ class AssessFeedstockMeasurementSugarAcidityZoneServiceTest {
                 SpecificGravityValue.of("1.050")
             )))
             .build(),
-        Instant.parse("2026-01-15T10:00:00Z")
+        feedstockMeasurementInstant()
     );
     when(repository.findById(sample.measurementId())).thenReturn(Optional.of(sample));
     when(batchRepository.findById(sample.batchId()))

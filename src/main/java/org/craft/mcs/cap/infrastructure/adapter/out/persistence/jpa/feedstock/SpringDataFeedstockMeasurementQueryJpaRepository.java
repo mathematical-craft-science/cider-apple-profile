@@ -130,12 +130,8 @@ interface SpringDataFeedstockMeasurementQueryJpaRepository
   @NonNull
   @Query("""
       select new org.craft.mcs.cap.infrastructure.adapter.out.persistence.jpa.feedstock.FeedstockMeasurementSummaryJpaProjection(
-        sample.measurementId,
         batch.ciderMakerId,
-        sample.batchId,
-        sample.name,
-        sample.measuredAt,
-        sample.note
+        sample
       )
       from FeedstockMeasurementJpaEntity sample, FeedstockBatchJpaEntity batch
       where sample.batchId = batch.batchId

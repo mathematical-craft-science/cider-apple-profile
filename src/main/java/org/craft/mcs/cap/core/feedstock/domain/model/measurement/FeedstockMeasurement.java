@@ -11,6 +11,17 @@ import org.jspecify.annotations.Nullable;
 
 import static java.util.Objects.requireNonNull;
 
+/**
+ * Aggregate root for one chemical measurement of a feedstock batch.
+ *
+ * <p>The measurement is historical evidence, not the batch itself. Multiple measurements may exist
+ * for the same {@link FeedstockBatchId}; read-side application services select the latest one when
+ * a use case needs the current batch profile. This supports gradual profile completion and audit of
+ * how raw material characteristics changed over time.
+ *
+ * <p>The aggregate validates that measurements cannot be dated in the future and owns edits to the
+ * measured chemical profile, name and note.
+ */
 @AggregateRoot
 public final class FeedstockMeasurement {
 
@@ -39,7 +50,7 @@ public final class FeedstockMeasurement {
     this.batchId = requireNonNull(batchId, "feedstock batch id cannot be null");
     this.name = requireNonNull(name, "feedstock measurement name cannot be null");
     this.chemicalProfile = requireNonNull(chemicalProfile, "chemical profile cannot be null");
-    this.measuredAt = requireNonNull(measuredAt, "measured at cannot be null");
+    this.measuredAt = validMeasuredAt(measuredAt);
     this.note = normalize(note);
   }
 
@@ -97,7 +108,7 @@ public final class FeedstockMeasurement {
   }
 
   public @NonNull FeedstockMeasurement changeMeasuredAt(@NonNull Instant measuredAt) {
-    this.measuredAt = requireNonNull(measuredAt, "measured at cannot be null");
+    this.measuredAt = validMeasuredAt(measuredAt);
     return this;
   }
 
@@ -118,5 +129,13 @@ public final class FeedstockMeasurement {
 
     final var normalized = value.strip();
     return normalized.isEmpty() ? null : normalized;
+  }
+
+  private static @NonNull Instant validMeasuredAt(@NonNull Instant measuredAt) {
+    requireNonNull(measuredAt, "measured at cannot be null");
+    if (measuredAt.isAfter(Instant.now())) {
+      throw new IllegalArgumentException("feedstock measurement date cannot be in the future");
+    }
+    return measuredAt;
   }
 }

@@ -50,4 +50,14 @@ class JpaFeedstockBatchRepository
         .map(FeedstockBatchJpaMapper::toDomain)
         .toList();
   }
+
+  @Override
+  public void delete(@NonNull FeedstockBatch feedstockBatch) {
+    requireNonNull(feedstockBatch, "feedstock batch cannot be null");
+
+    final var entity = repository.findById(feedstockBatch.batchId().value())
+        .orElseGet(() -> FeedstockBatchJpaMapper.fromDomain(feedstockBatch));
+
+    repository.delete(entity);
+  }
 }

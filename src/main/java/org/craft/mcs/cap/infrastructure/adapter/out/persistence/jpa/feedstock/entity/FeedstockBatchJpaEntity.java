@@ -13,6 +13,8 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.UUID;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.data.annotation.CreatedDate;
@@ -25,6 +27,14 @@ import static java.util.Objects.requireNonNull;
 @Entity
 @Table(name = "feedstock_batches")
 @EntityListeners(AuditingEntityListener.class)
+@SQLDelete(sql = """
+    UPDATE feedstock_batches
+    SET deleted_at = CURRENT_TIMESTAMP,
+        updated_at = CURRENT_TIMESTAMP,
+        version = version + 1
+    WHERE batch_id = ? AND version = ?
+    """)
+@SQLRestriction("deleted_at IS NULL")
 public class FeedstockBatchJpaEntity {
 
   @Id
@@ -65,6 +75,10 @@ public class FeedstockBatchJpaEntity {
   @Column(name = "note", length = 2000)
   String note;
 
+  @Nullable
+  @Column(name = "deleted_at")
+  Instant deletedAt;
+
   @NonNull
   @CreatedDate
   @Column(name = "created_at", nullable = false, updatable = false)
@@ -92,7 +106,8 @@ public class FeedstockBatchJpaEntity {
       @NonNull LocalDate seasonEndsOn,
       @Nullable String source,
       @NonNull BigDecimal availableVolumeLiters,
-      @Nullable String note
+      @Nullable String note,
+      @Nullable Instant deletedAt
   ) {
     this.batchId = requireNonNull(batchId, "feedstock batch id cannot be null");
     this.ciderMakerId = requireNonNull(ciderMakerId, "cider maker id cannot be null");
@@ -103,6 +118,7 @@ public class FeedstockBatchJpaEntity {
     this.source = normalize(source);
     this.availableVolumeLiters = requireNonNull(availableVolumeLiters, "available volume cannot be null");
     this.note = normalize(note);
+    this.deletedAt = deletedAt;
   }
 
   @NonNull

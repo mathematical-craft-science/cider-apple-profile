@@ -13,4 +13,6 @@ public interface FeedstockMeasurementRepository {
 
   @NonNull
   Optional<@NonNull FeedstockMeasurement> findById(@NonNull FeedstockMeasurementId measurementId);
+
+  void deleteById(@NonNull FeedstockMeasurementId measurementId);
 }

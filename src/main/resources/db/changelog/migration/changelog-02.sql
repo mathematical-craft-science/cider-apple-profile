@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS feedstock_batches
     source                   VARCHAR(255),
     available_volume_liters  NUMERIC(15, 3)           NOT NULL,
     note                     VARCHAR(2000),
+    deleted_at               TIMESTAMP WITH TIME ZONE,
 
     version                  BIGINT                   NOT NULL DEFAULT 0,
     created_at               TIMESTAMP WITH TIME ZONE NOT NULL,
@@ -31,6 +32,14 @@ CREATE INDEX IF NOT EXISTS idx_feedstock_batches_cider_maker_season_batch
 
 CREATE INDEX IF NOT EXISTS idx_feedstock_batches_cider_maker_lower_name
     ON feedstock_batches (cider_maker_id, LOWER(name));
+
+CREATE INDEX IF NOT EXISTS idx_feedstock_batches_active_cider_maker_id
+    ON feedstock_batches (cider_maker_id)
+    WHERE deleted_at IS NULL;
+
+CREATE INDEX IF NOT EXISTS idx_feedstock_batches_active_cider_maker_season
+    ON feedstock_batches (cider_maker_id, season_starts_on, season_ends_on)
+    WHERE deleted_at IS NULL;
 
 CREATE TABLE IF NOT EXISTS feedstock_measurements
 (

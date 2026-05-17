@@ -33,6 +33,8 @@ import org.craft.mcs.cap.core.cideranalysis.sugaracidity.zone.domain.SugarAcidit
 import org.junit.jupiter.api.Test;
 
 import static java.util.UUID.randomUUID;
+import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementInstant;
+import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementInstantPlusSeconds;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -48,10 +50,10 @@ class QueryFeedstockMeasurementSugarAcidityZonePointsServiceTest {
     final var service = service(repository);
     final var ciderMakerId = CiderMakerId.of(randomUUID());
     final var matchingBatchId = FeedstockBatchId.newId();
-    final var beta = sample("Beta", matchingBatchId, profile("1.064", "5.8", "1800"), "2026-01-15T10:02:00Z");
-    final var alpha = sample("Alpha", matchingBatchId, profile("1.066", "5.7", "1700"), "2026-01-15T10:01:00Z");
-    final var wrongZone = sample("Wrong zone", matchingBatchId, profile("1.066", "8.2", "1700"), "2026-01-15T10:00:00Z");
-    final var missingTannin = sample("Missing tannin", matchingBatchId, profile("1.066", "5.7", null), "2026-01-15T10:03:00Z");
+    final var beta = sample("Beta", matchingBatchId, profile("1.064", "5.8", "1800"), feedstockMeasurementInstantPlusSeconds(120));
+    final var alpha = sample("Alpha", matchingBatchId, profile("1.066", "5.7", "1700"), feedstockMeasurementInstantPlusSeconds(60));
+    final var wrongZone = sample("Wrong zone", matchingBatchId, profile("1.066", "8.2", "1700"), feedstockMeasurementInstant());
+    final var missingTannin = sample("Missing tannin", matchingBatchId, profile("1.066", "5.7", null), feedstockMeasurementInstantPlusSeconds(180));
 
     when(repository.findSugarAcidityPointCandidates(any()))
         .thenReturn(List.of(wrongZone, alpha), List.of(beta, missingTannin));
@@ -80,9 +82,9 @@ class QueryFeedstockMeasurementSugarAcidityZonePointsServiceTest {
     final var service = service(repository);
     final var ciderMakerId = CiderMakerId.of(randomUUID());
     final var batchId = FeedstockBatchId.newId();
-    final var first = sample("First", batchId, profile("1.066", "5.7", null), "2026-01-15T10:00:00Z");
-    final var second = sample("Second", batchId, profile("1.066", "5.7", null), "2026-01-15T10:01:00Z");
-    final var third = sample("Third", batchId, profile("1.066", "5.7", null), "2026-01-15T10:02:00Z");
+    final var first = sample("First", batchId, profile("1.066", "5.7", null), feedstockMeasurementInstant());
+    final var second = sample("Second", batchId, profile("1.066", "5.7", null), feedstockMeasurementInstantPlusSeconds(60));
+    final var third = sample("Third", batchId, profile("1.066", "5.7", null), feedstockMeasurementInstantPlusSeconds(120));
 
     when(repository.findSugarAcidityPointCandidates(any()))
         .thenReturn(List.of(first, second, third), List.of(third));
@@ -193,21 +195,21 @@ class QueryFeedstockMeasurementSugarAcidityZonePointsServiceTest {
       FeedstockBatchId batchId,
       ChemicalProfile profile
   ) {
-    return sample(name, batchId, profile, "2026-01-15T10:00:00Z");
+    return sample(name, batchId, profile, feedstockMeasurementInstant());
   }
 
   private static FeedstockMeasurement sample(
       String name,
       FeedstockBatchId batchId,
       ChemicalProfile profile,
-      String measuredAt
+      Instant measuredAt
   ) {
     return FeedstockMeasurement.create(
         FeedstockMeasurementId.newId(),
         batchId,
         FeedstockMeasurementName.of(name),
         profile,
-        Instant.parse(measuredAt)
+        measuredAt
     );
   }
 

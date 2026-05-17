@@ -10,6 +10,13 @@ import org.jspecify.annotations.Nullable;
 import static java.util.Objects.requireNonNull;
 
 
+/**
+ * Calculated chemical profile of a source composition.
+ *
+ * <p>The composition keeps the exact sources used for calculation, the resulting profile point,
+ * optional total volume when source weights are concrete volumes, and warnings for intentionally
+ * partial axes such as incomplete tannin.
+ */
 public record ChemicalProfileComposition(
     @NonNull List<@NonNull ChemicalProfileCompositionSource> sources,
     @NonNull SugarAcidityProfilePoint profile,

@@ -14,6 +14,13 @@ import org.springframework.stereotype.Component;
 import static java.util.Objects.requireNonNull;
 
 
+/**
+ * Application service for registering a new feedstock batch in a cider maker workspace.
+ *
+ * <p>The service creates the operational batch aggregate with season/source/available-volume
+ * metadata. Chemical data is intentionally not captured here; it is added through
+ * {@code CreateFeedstockMeasurementService} so the batch can keep a measurement history.
+ */
 @Component
 @RequiredArgsConstructor
 public final class CreateFeedstockBatchService

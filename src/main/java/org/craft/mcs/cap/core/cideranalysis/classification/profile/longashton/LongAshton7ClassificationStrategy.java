@@ -9,6 +9,13 @@ import org.jspecify.annotations.NonNull;
 import static java.util.Objects.requireNonNull;
 
 
+/**
+ * Long Ashton seven-class classification strategy.
+ *
+ * <p>This strategy refines the four-class English vocabulary by splitting bittersweet and sharp
+ * categories into practical tannin intensity bands. It is useful when a cider maker needs more
+ * descriptive local terminology than the coarse four-class profile.
+ */
 public final class LongAshton7ClassificationStrategy
     implements ClassificationStrategy<LongAshton7CiderAppleClass> {
 

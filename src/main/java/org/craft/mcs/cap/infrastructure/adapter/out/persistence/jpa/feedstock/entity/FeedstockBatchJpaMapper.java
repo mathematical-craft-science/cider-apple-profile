@@ -29,7 +29,8 @@ public final class FeedstockBatchJpaMapper {
         batch.season().endsOn(),
         batch.source() == null ? null : batch.source().value(),
         batch.availableVolume().liters(),
-        batch.note()
+        batch.note(),
+        batch.deletedAt()
     );
   }
 
@@ -47,6 +48,7 @@ public final class FeedstockBatchJpaMapper {
     entity.source = batch.source() == null ? null : batch.source().value();
     entity.availableVolumeLiters = batch.availableVolume().liters();
     entity.note = batch.note();
+    entity.deletedAt = batch.deletedAt();
 
     return entity;
   }
@@ -56,7 +58,7 @@ public final class FeedstockBatchJpaMapper {
 
     final var source = entity.source == null ? null : FeedstockSource.of(entity.source);
 
-    return FeedstockBatch.create(
+    return FeedstockBatch.restore(
         FeedstockBatchId.of(requireNonNull(entity.batchId, "feedstock batch id cannot be null")),
         CiderMakerId.of(requireNonNull(entity.ciderMakerId, "cider maker id cannot be null")),
         FeedstockBatchName.of(requireNonNull(entity.name, "feedstock batch name cannot be null")),
@@ -65,7 +67,10 @@ public final class FeedstockBatchJpaMapper {
             requireNonNull(entity.seasonStartsOn, "feedstock season start date cannot be null"),
             requireNonNull(entity.seasonEndsOn, "feedstock season end date cannot be null")
         ),
-        VolumeValue.ofLiters(requireNonNull(entity.availableVolumeLiters, "available volume cannot be null"))
-    ).changeSource(source).changeNote(entity.note);
+        source,
+        VolumeValue.ofLiters(requireNonNull(entity.availableVolumeLiters, "available volume cannot be null")),
+        entity.note,
+        entity.deletedAt
+    );
   }
 }

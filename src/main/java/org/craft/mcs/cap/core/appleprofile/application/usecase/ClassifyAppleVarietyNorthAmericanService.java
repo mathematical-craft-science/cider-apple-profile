@@ -16,6 +16,15 @@ import org.springframework.stereotype.Component;
 import static java.util.Objects.requireNonNull;
 
 
+/**
+ * Application service for the North American profile projection of a catalog variety.
+ *
+ * <p>Unlike generic classification systems, the North American calculator is a reusable profile
+ * calculation component that can later participate in other algorithms. This service therefore
+ * performs the use-case specific steps around it: load the variety, extract canonical chemical
+ * axes, enforce the {@link ChemicalProfileCapability#NORTH_AMERICAN_PROFILE} prerequisite and
+ * translate missing axes into the shared capability exception mapped to ProblemDetail by REST.
+ */
 @Component
 @RequiredArgsConstructor
 public final class ClassifyAppleVarietyNorthAmericanService

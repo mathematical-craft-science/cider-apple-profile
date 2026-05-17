@@ -9,6 +9,13 @@ import org.jspecify.annotations.NonNull;
 import static java.util.Objects.requireNonNull;
 
 
+/**
+ * French cider-apple classification strategy.
+ *
+ * <p>The strategy maps acidity/tannin threshold combinations to traditional French terms such as
+ * douce, douce amere, amere, acidulee, aigre and aigre amere. Sugar is not part of this profile,
+ * so the generated rules leave the sugar range empty and classify by acidity and tannin only.
+ */
 public final class FrenchClassificationStrategy
     implements ClassificationStrategy<FrenchCiderAppleClass> {
 

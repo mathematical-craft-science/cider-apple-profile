@@ -9,6 +9,13 @@ import org.jspecify.annotations.NonNull;
 import static java.util.Objects.requireNonNull;
 
 
+/**
+ * Long Ashton four-class classification strategy.
+ *
+ * <p>This strategy implements the compact English cider apple vocabulary: sweet, sharp,
+ * bittersweet and bittersharp. It classifies by acidity and tannin threshold quadrants and leaves
+ * sugar out of rule matching.
+ */
 public final class LongAshton4ClassificationStrategy
     implements ClassificationStrategy<LongAshton4CiderAppleClass> {
 

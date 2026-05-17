@@ -32,7 +32,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestController
 @RequiredArgsConstructor
-public final class FeedstockBatchCurrentAssessmentController {
+public final class FeedstockBatchCurrentAssessmentController implements FeedstockBatchCurrentAssessmentApi {
 
   private final @NonNull AssessFeedstockBatchCurrentSugarAcidityZoneUseCase assessSugarAcidityZoneUseCase;
   private final @NonNull QueryFeedstockBatchCurrentSugarAcidityZonePointsUseCase querySugarAcidityZonePointsUseCase;
@@ -40,6 +40,7 @@ public final class FeedstockBatchCurrentAssessmentController {
   private final @NonNull ScoreFeedstockBatchProfileTargetUseCase scoreProfileTargetUseCase;
   private final @NonNull OptimizeFeedstockBatchCompositionUseCase optimizeFeedstockBatchCompositionUseCase;
 
+  @Override
   @GetMapping(value = "/feedstock-batches/{batchId}/sugar-acidity-zone", produces = APPLICATION_JSON_VALUE)
   public @NonNull ResponseEntity<@NonNull FeedstockBatchCurrentSugarAcidityZoneResponse> assessSugarAcidityZone(
       @PathVariable @NonNull UUID batchId
@@ -53,6 +54,7 @@ public final class FeedstockBatchCurrentAssessmentController {
     );
   }
 
+  @Override
   @PostMapping(
       value = "/feedstock-batches/sugar-acidity-zone-points",
       consumes = APPLICATION_JSON_VALUE,
@@ -70,6 +72,7 @@ public final class FeedstockBatchCurrentAssessmentController {
     );
   }
 
+  @Override
   @GetMapping(value = "/feedstock-batches/{batchId}/abv-prediction", produces = APPLICATION_JSON_VALUE)
   public @NonNull ResponseEntity<@NonNull FeedstockBatchCurrentPotentialAbvResponse> predictPotentialAbv(
       @PathVariable @NonNull UUID batchId
@@ -83,6 +86,7 @@ public final class FeedstockBatchCurrentAssessmentController {
     );
   }
 
+  @Override
   @PostMapping(
       value = "/feedstock-batches/profile-target-scores",
       consumes = APPLICATION_JSON_VALUE,
@@ -100,6 +104,7 @@ public final class FeedstockBatchCurrentAssessmentController {
     );
   }
 
+  @Override
   @PostMapping(
       value = "/feedstock-batches/composition-optimizations",
       consumes = APPLICATION_JSON_VALUE,

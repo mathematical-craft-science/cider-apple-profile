@@ -6,6 +6,13 @@ import org.jspecify.annotations.NonNull;
 import static java.util.Objects.requireNonNull;
 
 
+/**
+ * Explainable potential ABV prediction result.
+ *
+ * <p>The result keeps the original gravity, predicted final gravity, source of that FG assumption,
+ * prediction method and confidence. This lets API consumers distinguish a low-confidence fixed FG
+ * estimate from future yeast-aware or fermentation-model predictions.
+ */
 public record PotentialAbvPrediction(
     @NonNull SpecificGravityValue originalGravity,
     @NonNull SpecificGravityValue predictedFinalGravity,

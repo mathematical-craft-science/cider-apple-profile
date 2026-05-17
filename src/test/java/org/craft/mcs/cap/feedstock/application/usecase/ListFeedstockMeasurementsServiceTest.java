@@ -1,6 +1,5 @@
 package org.craft.mcs.cap.feedstock.application.usecase;
 
-import java.time.Instant;
 import java.util.List;
 import org.craft.mcs.cap.core.feedstock.application.port.in.FeedstockMeasurementSummary;
 import org.craft.mcs.cap.core.feedstock.application.port.out.FeedstockMeasurementQueryRepository;
@@ -9,9 +8,14 @@ import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurementId;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.value.FeedstockMeasurementName;
 import org.craft.mcs.cap.core.feedstock.domain.model.value.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
+import org.craft.mcs.cap.shared.kernel.measurement.ExactMeasurement;
+import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
+import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.junit.jupiter.api.Test;
 
 import static java.util.UUID.randomUUID;
+import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementInstant;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -29,7 +33,10 @@ class ListFeedstockMeasurementsServiceTest {
         CiderMakerId.of(randomUUID()),
         batchId,
         FeedstockMeasurementName.of("Late press sample"),
-        Instant.parse("2026-10-15T10:00:00Z"),
+        feedstockMeasurementInstant(),
+        ChemicalProfile.builder()
+            .sugar(ExactMeasurement.of(SugarConcentration.ofSpecificGravity(SpecificGravityValue.of("1.052"))))
+            .build(),
         "first lab result"
     );
     when(repository.findSummariesByBatchId(batchId)).thenReturn(List.of(summary));

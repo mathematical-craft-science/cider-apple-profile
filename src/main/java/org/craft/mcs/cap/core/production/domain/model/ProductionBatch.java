@@ -14,6 +14,14 @@ import org.jspecify.annotations.Nullable;
 import static java.util.Objects.requireNonNull;
 
 
+/**
+ * Aggregate root for a committed production lot created from one or more source batches.
+ *
+ * <p>The aggregate captures the production intent after a composition/blending decision has been
+ * accepted: source composition, product kind, planned status and a chemical profile snapshot at
+ * creation time. The snapshot is stored because later feedstock measurements may change, while a
+ * production batch must preserve the profile that was used when stock volume was consumed.
+ */
 @AggregateRoot
 public final class ProductionBatch {
 

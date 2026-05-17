@@ -16,6 +16,14 @@ import org.springframework.stereotype.Component;
 import static java.util.Objects.requireNonNull;
 
 
+/**
+ * Application service for assessing one historical feedstock measurement on the sugar-acidity
+ * graph.
+ *
+ * <p>This use case exists beside the batch-current assessment because users may need to inspect or
+ * correct past measurements. It does not apply the latest-measurement rule; it evaluates the exact
+ * measurement requested by id.
+ */
 @Component
 @RequiredArgsConstructor
 public final class AssessFeedstockMeasurementSugarAcidityZoneService

@@ -15,13 +15,13 @@ import org.craft.mcs.cap.core.cideranalysis.sugaracidity.target.domain.SugarAcid
 import org.craft.mcs.cap.core.cideranalysis.sugaracidity.target.domain.SugarAcidityTargetResolver;
 import org.craft.mcs.cap.core.cideranalysis.sugaracidity.zone.domain.SugarAcidityZoneAssessment;
 import org.craft.mcs.cap.core.cideranalysis.sugaracidity.zone.domain.SugarAcidityZoneAssessor;
+import org.craft.mcs.cap.core.feedstock.application.query.FeedstockBatchCurrentMeasurementQueryService;
 import org.craft.mcs.cap.core.feedstock.application.port.in.CustomRectangleFeedstockProfileTargetSelection;
 import org.craft.mcs.cap.core.feedstock.application.port.in.FeedstockBatchProfileTargetScore;
 import org.craft.mcs.cap.core.feedstock.application.port.in.FeedstockBatchProfileTargetScores;
 import org.craft.mcs.cap.core.feedstock.application.port.in.PredefinedFeedstockProfileTargetSelection;
 import org.craft.mcs.cap.core.feedstock.application.port.in.ScoreFeedstockBatchProfileTargetCommand;
 import org.craft.mcs.cap.core.feedstock.application.port.in.ScoreFeedstockBatchProfileTargetUseCase;
-import org.craft.mcs.cap.core.feedstock.application.port.out.FeedstockMeasurementQueryRepository;
 import org.craft.mcs.cap.core.feedstock.application.port.out.LatestFeedstockMeasurementSugarAcidityPointCandidateQuery;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurement;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
@@ -37,6 +37,14 @@ import org.springframework.stereotype.Component;
 import static java.util.Objects.requireNonNull;
 
 
+/**
+ * Scores current feedstock batch profiles against a selected target area.
+ *
+ * <p>This service adapts the feedstock workspace to the generic profile-target scoring use case.
+ * It selects only the latest measurement per batch, filters unplottable or non-matching profiles,
+ * resolves either a predefined zone target or a custom rectangle, then ranks candidates by target
+ * distance. It does not generate new compositions; it scores existing batch profiles.
+ */
 @Component
 @RequiredArgsConstructor
 public final class ScoreFeedstockBatchProfileTargetService
@@ -44,7 +52,7 @@ public final class ScoreFeedstockBatchProfileTargetService
 
   private static final @NonNull String REFERENCE_TYPE = "feedstock-batch";
 
-  private final @NonNull FeedstockMeasurementQueryRepository feedstockMeasurementQueryRepository;
+  private final @NonNull FeedstockBatchCurrentMeasurementQueryService currentMeasurementQueryService;
   private final @NonNull ChemicalProfileAxisExtractor axisExtractor;
   private final @NonNull ChemicalProfileCapabilityAssessor capabilityAssessor;
   private final @NonNull SugarAcidityZoneAssessor zoneAssessor;
@@ -57,7 +65,7 @@ public final class ScoreFeedstockBatchProfileTargetService
   ) {
     requireNonNull(command, "score feedstock batch profile target command cannot be null");
 
-    final var candidates = feedstockMeasurementQueryRepository.findLatestSugarAcidityPointCandidates(
+    final var candidates = currentMeasurementQueryService.findCurrentSugarAcidityPointCandidates(
             new LatestFeedstockMeasurementSugarAcidityPointCandidateQuery(
                 command.ciderMakerId(),
                 command.filters().batch(),
