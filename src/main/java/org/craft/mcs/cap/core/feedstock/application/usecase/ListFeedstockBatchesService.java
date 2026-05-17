@@ -14,6 +14,13 @@ import org.springframework.stereotype.Component;
 import static java.util.Objects.requireNonNull;
 
 
+/**
+ * Read-side use case for listing feedstock batches in a cider maker workspace.
+ *
+ * <p>The service keeps the list endpoint focused on batch metadata and stock state. Optional season
+ * filtering uses date-range overlap because cider-making seasons are practical periods rather than
+ * fixed global enum values.
+ */
 @Component
 @RequiredArgsConstructor
 public final class ListFeedstockBatchesService

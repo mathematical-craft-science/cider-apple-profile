@@ -7,6 +7,12 @@ import org.jspecify.annotations.NonNull;
 import static java.util.Objects.requireNonNull;
 
 
+/**
+ * Absolute source weight expressed as available or planned volume.
+ *
+ * <p>This weight mode is used when a user wants the calculation or optimization to produce concrete
+ * liters that can later be committed into a production batch.
+ */
 public record AbsoluteCompositionVolume(@NonNull VolumeValue volume) implements ChemicalProfileCompositionSourceWeight {
 
   public AbsoluteCompositionVolume {

@@ -36,9 +36,11 @@
 | Фича | Ценность | Сложность | Причина |
 |---|---:|---:|---|
 | Admin data-quality reports по AppleVariety | 7 | 5 | Важно для качества каталога, но косвенно полезно сидроделу. |
+| Региональные contributor profiles для AppleVariety | 8 | 8 | Превращает каталог из единственного справочного профиля в живую базу региональных наблюдений с provenance, confidence и attribution; сложность в модерации, canonical profile policy и приватности контактов. |
 | Materialized projection/index для вычислимых профилей | 7 | 8 | Понадобится при росте каталога и сложных фильтрах, но можно отложить до нагрузки. |
 | ~~FeedstockBatch season/batch model~~ | 8 | 5 | Реализован `FeedstockBatch` с season/source/availableVolume и sample внутри batch. |
 | Сравнение FeedstockSample с AppleVariety каталогом | 7 | 7 | Полезный экспертный сценарий, но требует similarity metric. |
+| User measurement unit preferences для API response | 6 | 5 | Позволит сидроделу видеть значения в привычных единицах, сохраняя canonical units внутри core. |
 | Frontend graph contract: tooltips, selected area, linked rows | 7 | 5 | Делает экспертность видимой и удобной, зависит от frontend-слоя. |
 
 ### Низкий / отложенный приоритет
@@ -135,6 +137,31 @@ normalizer strategies на реальных данных сортов и сыр�
 - Позже добавить offline evaluation: сравнивать ranking разных normalizers на
   тестовых наборах и экспертной разметке.
 
+### Пользовательские предпочтения единиц измерения для API response
+
+Как сидродел, работающий в привычной системе измерений, я хочу получать
+значения chemical profile в выбранных единицах отображения, чтобы не
+пересчитывать SG/Brix/Plato, acidity и tannin вручную при работе с UI.
+
+Текущее архитектурное соглашение:
+
+- Внутри core все значения остаются в canonical units:
+  sugar = SG, acidity = g/L as malic acid, tanninity = mg/L TAE.
+- REST input уже проходит через ACL и нормализуется к canonical units.
+- REST response сейчас возвращает canonical units.
+
+Идея реализации:
+
+- Добавить `MeasurementUnitPreferences` как user/workspace setting.
+- На response boundary добавить formatter/ACL, который может вернуть:
+  canonical value/unit, display value/unit и, при необходимости,
+  conversion metadata.
+- Не протаскивать пользовательские units внутрь core/domain/application
+  use cases.
+- Для sugar использовать существующие domain converters SG/Brix/Plato.
+- Для acidity/tanninity использовать JSR-385 `Quantity` conversion там, где
+  это физически корректная unit conversion.
+
 ### Работа сидродела в привычной системе классификации
 
 Как сидродел, привыкший к English/French/Spanish/Long Ashton терминам, я хочу
@@ -220,6 +247,232 @@ User stories:
   без следа.
 - Для API каталога отдавать canonical profile по умолчанию, а подробные
   observations отдельным endpoint-ом.
+
+### Supplier-attributed regional catalog contributions
+
+Это не marketplace, а supplier-attributed regional catalog contribution:
+фермер, производитель, лаборатория или куратор не продает через систему, а
+публикует данные о сорте, химическом профиле, регионе, сезоне, provenance и
+опциональной возможности связи вне платформы.
+
+Смысл модели - разделить три вещи:
+
+- `AppleVariety`: сорт как помологическая сущность и справочник.
+- `AppleVarietyRegionalProfile`: химический профиль сорта в конкретном
+  регионе, сезоне и условиях наблюдения.
+- `ContributorProfile` / `ProducerProfile`: кто предоставил данные и можно ли
+  публично показать способ связи.
+
+Граница продукта:
+
+- Делаем только data contribution + optional contact visibility.
+- Не делаем orders, payments, reservations, marketplace listing, contracts,
+  delivery, prices, stock/available volume, личные сообщения и рейтинги
+  поставщиков.
+- Публичные контакты - это атрибуция и внешний канал связи, а не transaction
+  workflow внутри CAP.
+- Поле `availableVolume` намеренно не добавлять в MVP, потому что оно быстро
+  превращает региональный профиль в торговое предложение.
+
+Практический смысл для сидродела:
+
+- Вместо абстрактного `Dabinett: typical profile` сидродел видит практический
+  профиль вроде `Dabinett, Estonia, 2025 season, measured by Farm X`.
+- Можно учитывать региональный разброс: SG, TA, tannin и pH ближе к реальному
+  sourcing, чем один усредненный справочный профиль.
+- На graph можно показывать несколько слоев: typical catalog profile и
+  contributed regional profiles.
+- По региональным данным можно позже строить similarity search между своим
+  `FeedstockBatch` и похожими региональными профилями сортов.
+
+Практический смысл для contributor-а:
+
+- Показать свои сорта и качество сырья.
+- Стать видимым для сидроделов без необходимости продавать через платформу.
+- Получать входящие контакты вне CAP, если contributor явно разрешил
+  публикацию контактов.
+- Снизить барьер участия: contributor добавляет данные и provenance, но не
+  обязан вести заказы, склад, логистику или оплату.
+
+Практический смысл для платформы:
+
+- Живой каталог вместо статичной справочной базы.
+- Региональные данные и реальные измерения.
+- Улучшение аналитики, confidence и canonical profile policy.
+- Потенциальная сеть поставщиков без сложности marketplace.
+
+Рекомендуемые названия области:
+
+- `Producer Contributions`.
+- `Regional Variety Profiles`.
+- `Supplier-attributed Profiles`.
+- `Grower Data Contributions`.
+
+UI language:
+
+- `Contributed by`.
+- `Producer profile`.
+- `Contact producer`.
+- `Contact: not public`, если contributor не дал consent.
+
+Доменная модель:
+
+```text
+AppleVariety
+- id
+- name
+- synonyms
+
+AppleVarietyRegionalProfile
+- profileId
+- appleVarietyId
+- region
+- observationPeriod
+- chemicalProfile
+- provenance
+- contributorId?
+- confidence
+- visibility / submissionStatus
+
+ContributorProfile
+- contributorId
+- displayName
+- type
+- region
+- contactVisibility
+- contactDetails?
+- website?
+- notes?
+- verificationStatus
+```
+
+Пример regional profile:
+
+```text
+Kingston Black
+Region: Estonia / Tartu County
+Season: 2026-09-01 .. 2026-11-30
+ChemicalProfile: SG, TA, tannins, pH
+Contributor: Tartu Orchard Farm
+Confidence: LAB_VERIFIED
+Contact: public website/email, если разрешено contributor-ом
+```
+
+Contributor types:
+
+- `FARMER`.
+- `ORCHARD`.
+- `PRODUCER`.
+- `CIDERMAKER`.
+- `RESEARCHER`.
+- `CURATOR`.
+- `UNKNOWN`.
+
+Контактная модель:
+
+```text
+ContributorContact
+- publicName
+- publicWebsite?
+- publicEmail?
+- publicPhone?
+- contactNote?
+- visibility
+```
+
+Contact visibility:
+
+- `PRIVATE`.
+- `PUBLIC`.
+- Позже возможно `PUBLIC_AFTER_APPROVAL`.
+
+Для MVP достаточно `PRIVATE` / `PUBLIC`. По умолчанию контакты должны быть
+private. Email/phone нельзя показывать без явного consent.
+
+Profile submission status:
+
+- `DRAFT`.
+- `SUBMITTED`.
+- `PUBLISHED`.
+- `REJECTED`.
+- `ARCHIVED`.
+
+Для MVP можно публиковать сразу только admin/curator-created данные, а producer
+submissions держать в `SUBMITTED` до проверки. Moderation status нужен сразу,
+иначе contributed catalog быстро загрязнится.
+
+User stories:
+
+- Как сидродел, я хочу видеть региональные профили сорта, чтобы понимать,
+  насколько справочные значения применимы к моему климату и сезону.
+- Как сидродел, я хочу фильтровать regional profiles по region, contributor
+  type, confidence, contact availability, lab verification и season.
+- Как сидродел, я хочу видеть, кем contributed профиль добавлен и можно ли
+  связаться с contributor-ом вне платформы.
+- Как фермер/производитель, я хочу добавить данные о своем сорте, регионе,
+  сезоне и химическом профиле, чтобы стать видимым для сидроделов.
+- Как лаборатория, я хочу добавить химический профиль с method/provenance и
+  lab verification, чтобы повысить доверие к данным.
+- Как contributor, я хочу выбрать visibility контактов, чтобы контролировать,
+  что публично видно в каталоге.
+- Как куратор каталога, я хочу проверять submissions и переводить их в
+  `PUBLISHED`, `REJECTED` или `ARCHIVED`.
+
+Producer-facing journey: "Добавить свои данные в каталог"
+
+1. Contributor создает `ContributorProfile`.
+2. Указывает orchard/region.
+3. Выбирает `AppleVariety`.
+4. Добавляет `ChemicalProfile` measurement.
+5. Добавляет season / observation period.
+6. Добавляет provenance: lab report, self-measured, method, source note.
+7. Выбирает contact visibility.
+8. Отправляет profile на публикацию.
+9. Платформа присваивает status: `SUBMITTED`, `PUBLISHED`, `REJECTED`,
+   `NEEDS_CLARIFICATION` или другой moderation outcome.
+
+UI MVP:
+
+- Region filter on graph.
+- `Contributed profiles` layer на sugar-acidity graph.
+- Contributor card.
+- Submit profile form.
+- Admin review list.
+
+API MVP:
+
+- `POST /contributors`.
+- `POST /apple-variety-regional-profiles`.
+- `GET /apple-variety-regional-profiles/search`.
+- `GET /apple-varieties/{id}/regional-profiles`.
+
+Фаза roadmap:
+
+`Regional Variety Intelligence` - отдельная фаза после базового graph и до
+любых supplier/marketplace идей.
+
+Порядок внутри фазы:
+
+1. `GrowingRegion`.
+2. `AppleVarietyRegionalProfile`.
+3. Region filter on graph.
+4. `ContributorProfile`.
+5. Optional public contact.
+6. Submission moderation.
+
+Открытые вопросы доменного моделирования:
+
+- `ContributorProfile` должен быть отдельным bounded context или частью catalog
+  context на первом этапе.
+- `AppleVarietyRegionalProfile` - это одно observation или агрегированный
+  региональный профиль по нескольким observations.
+- Как canonical profile сорта учитывает regional profiles: manual curator
+  selection, trusted-source priority, median/mean по approved observations или
+  отдельные canonical profiles per region.
+- Как хранить lab report: attachment/reference в CAP или только external
+  reference в provenance.
+- Нужен ли статус `NEEDS_CLARIFICATION` как отдельный domain status или это
+  review comment поверх `SUBMITTED`.
 
 ### Постепенное заполнение FeedstockSample
 

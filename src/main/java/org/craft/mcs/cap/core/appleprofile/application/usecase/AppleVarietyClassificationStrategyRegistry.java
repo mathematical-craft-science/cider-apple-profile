@@ -14,6 +14,14 @@ import org.springframework.stereotype.Component;
 import static java.util.Objects.requireNonNull;
 
 
+/**
+ * Registry that maps public apple-variety classification systems to domain strategies.
+ *
+ * <p>This is an application-level catalog of built-in cider classification systems used only for
+ * apple variety classification. North American profile calculation is intentionally not registered
+ * here because it is a broader profile projection that can be reused outside the generic
+ * classification endpoint.
+ */
 @Component
 public class AppleVarietyClassificationStrategyRegistry {
 

@@ -7,6 +7,15 @@ import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
 
+/**
+ * Aggregate root for a pomological apple variety in the catalog.
+ *
+ * <p>The aggregate represents the variety itself, not a concrete harvest lot or a regional
+ * observation. Its chemical profile is the catalog-level profile currently known for the variety
+ * and is used by classification, graph plotting, potential ABV and future catalog discovery use
+ * cases. Region-specific contributed observations should live in a separate regional-profile
+ * aggregate rather than changing this semantic boundary.
+ */
 @AggregateRoot
 public final class AppleVariety {
 

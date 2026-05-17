@@ -16,6 +16,14 @@ import org.springframework.stereotype.Component;
 import static java.util.Objects.requireNonNull;
 
 
+/**
+ * Application service for adding a chemical measurement to an existing feedstock batch.
+ *
+ * <p>The service validates that the parent batch exists, creates a measurement aggregate and
+ * returns a result enriched with the owning cider maker id from the batch. Ownership checks for
+ * user-facing endpoints are handled at the REST/application boundary before or around this use
+ * case.
+ */
 @Component
 @RequiredArgsConstructor
 public final class CreateFeedstockMeasurementService
@@ -47,7 +55,10 @@ public final class CreateFeedstockMeasurementService
           saved.measurementId(),
           batch.ciderMakerId(),
           saved.batchId(),
-          saved.name()
+          saved.name(),
+          saved.measuredAt(),
+          saved.chemicalProfile(),
+          saved.note()
       );
     });
   }

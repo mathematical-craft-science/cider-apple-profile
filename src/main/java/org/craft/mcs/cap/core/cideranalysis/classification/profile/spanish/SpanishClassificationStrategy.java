@@ -10,6 +10,13 @@ import org.jspecify.annotations.NonNull;
 import static java.util.Objects.requireNonNull;
 
 
+/**
+ * Spanish cider-apple classification strategy.
+ *
+ * <p>The strategy maps acidity/tannin threshold combinations to Spanish cider terms such as acida,
+ * semiacida, dulce, dulce amarga and amarga. Sugar is not part of this profile, so rule matching is
+ * driven by acidity and tannin ranges.
+ */
 public final class SpanishClassificationStrategy
     implements ClassificationStrategy<SpanishCiderAppleClass> {
 

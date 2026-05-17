@@ -4,17 +4,26 @@ import java.net.URI;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.feedstock.application.port.in.CreateFeedstockMeasurementUseCase;
+import org.craft.mcs.cap.core.feedstock.application.port.in.DeleteFeedstockMeasurementCommand;
+import org.craft.mcs.cap.core.feedstock.application.port.in.DeleteFeedstockMeasurementUseCase;
 import org.craft.mcs.cap.core.feedstock.application.port.in.ListFeedstockMeasurementsUseCase;
+import org.craft.mcs.cap.core.feedstock.application.port.in.UpdateFeedstockMeasurementUseCase;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
+import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurementId;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.CreateFeedstockMeasurementRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.FeedstockMeasurementListResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.FeedstockMeasurementResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.PatchFeedstockMeasurementRequest;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.UpdateFeedstockMeasurementRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.mapper.FeedstockMeasurementRestMapper;
 import org.jspecify.annotations.NonNull;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -27,6 +36,8 @@ public final class FeedstockMeasurementController implements FeedstockMeasuremen
 
   private final @NonNull CreateFeedstockMeasurementUseCase createFeedstockMeasurementUseCase;
   private final @NonNull ListFeedstockMeasurementsUseCase listFeedstockMeasurementsUseCase;
+  private final @NonNull UpdateFeedstockMeasurementUseCase updateFeedstockMeasurementUseCase;
+  private final @NonNull DeleteFeedstockMeasurementUseCase deleteFeedstockMeasurementUseCase;
 
   @Override
   @PostMapping(
@@ -59,5 +70,63 @@ public final class FeedstockMeasurementController implements FeedstockMeasuremen
             .map(FeedstockMeasurementRestMapper::toResponse)
             .toList()
     ));
+  }
+
+  @PutMapping(
+      value = "/feedstock-batches/{batchId}/measurements/{measurementId}",
+      consumes = APPLICATION_JSON_VALUE,
+      produces = APPLICATION_JSON_VALUE
+  )
+  @Override
+  public @NonNull ResponseEntity<@NonNull FeedstockMeasurementResponse> update(
+      @PathVariable @NonNull UUID batchId,
+      @PathVariable @NonNull UUID measurementId,
+      @RequestBody @NonNull UpdateFeedstockMeasurementRequest request
+  ) {
+    final var updated = updateFeedstockMeasurementUseCase.update(
+        FeedstockMeasurementRestMapper.toCommand(
+            FeedstockBatchId.of(batchId),
+            FeedstockMeasurementId.of(measurementId),
+            request
+        )
+    );
+
+    return ResponseEntity.ok(FeedstockMeasurementRestMapper.toResponse(updated));
+  }
+
+  @PatchMapping(
+      value = "/feedstock-batches/{batchId}/measurements/{measurementId}",
+      consumes = APPLICATION_JSON_VALUE,
+      produces = APPLICATION_JSON_VALUE
+  )
+  @Override
+  public @NonNull ResponseEntity<@NonNull FeedstockMeasurementResponse> patch(
+      @PathVariable @NonNull UUID batchId,
+      @PathVariable @NonNull UUID measurementId,
+      @RequestBody @NonNull PatchFeedstockMeasurementRequest request
+  ) {
+    final var updated = updateFeedstockMeasurementUseCase.update(
+        FeedstockMeasurementRestMapper.toCommand(
+            FeedstockBatchId.of(batchId),
+            FeedstockMeasurementId.of(measurementId),
+            request
+        )
+    );
+
+    return ResponseEntity.ok(FeedstockMeasurementRestMapper.toResponse(updated));
+  }
+
+  @DeleteMapping(value = "/feedstock-batches/{batchId}/measurements/{measurementId}")
+  @Override
+  public @NonNull ResponseEntity<Void> delete(
+      @PathVariable @NonNull UUID batchId,
+      @PathVariable @NonNull UUID measurementId
+  ) {
+    deleteFeedstockMeasurementUseCase.delete(new DeleteFeedstockMeasurementCommand(
+        FeedstockBatchId.of(batchId),
+        FeedstockMeasurementId.of(measurementId)
+    ));
+
+    return ResponseEntity.noContent().build();
   }
 }

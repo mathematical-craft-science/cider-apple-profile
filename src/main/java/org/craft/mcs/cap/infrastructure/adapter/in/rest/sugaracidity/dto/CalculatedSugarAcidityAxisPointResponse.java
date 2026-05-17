@@ -5,15 +5,26 @@ import java.math.BigDecimal;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.MeasurementValueKind;
 import org.jspecify.annotations.NonNull;
 
+import static java.util.Objects.requireNonNull;
+
 
 @Schema(description = "Calculated graph-axis point value.")
 public record CalculatedSugarAcidityAxisPointResponse(
-    @Schema(description = "Calculated axis value.", example = "1.052") @NonNull BigDecimal value
+    @Schema(description = "Calculated axis value.", example = "1.052") @NonNull BigDecimal value,
+    @Schema(description = "Axis point value discriminator.", implementation = MeasurementValueKind.class, example = "CALCULATED")
+    @NonNull MeasurementValueKind valueKind
 ) implements SugarAcidityAxisPointResponse {
 
-  @Override
-  @Schema(description = "Axis point value discriminator.", implementation = MeasurementValueKind.class, example = "CALCULATED")
-  public @NonNull MeasurementValueKind valueKind() {
-    return MeasurementValueKind.CALCULATED;
+  public CalculatedSugarAcidityAxisPointResponse(@NonNull BigDecimal value) {
+    this(value, MeasurementValueKind.CALCULATED);
+  }
+
+  public CalculatedSugarAcidityAxisPointResponse {
+    requireNonNull(value, "calculated axis point value cannot be null");
+    requireNonNull(valueKind, "calculated axis point value kind cannot be null");
+
+    if (valueKind != MeasurementValueKind.CALCULATED) {
+      throw new IllegalArgumentException("calculated axis point value kind expected");
+    }
   }
 }

@@ -1,7 +1,6 @@
 package org.craft.mcs.cap.feedstock.application.usecase;
 
 import java.math.BigDecimal;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import org.craft.mcs.cap.core.cideranalysis.composition.optimization.application.port.in.OptimizeChemicalProfileCompositionResult;
@@ -22,6 +21,7 @@ import org.craft.mcs.cap.core.cideranalysis.sugaracidity.zone.domain.BuiltInSuga
 import org.craft.mcs.cap.core.cideranalysis.sugaracidity.zone.domain.RectangleSugarAcidityZoneAssessor;
 import org.craft.mcs.cap.core.cideranalysis.sugaracidity.zone.domain.SugarAcidityZone;
 import org.craft.mcs.cap.core.feedstock.application.port.in.FeedstockMeasurementPointFilters;
+import org.craft.mcs.cap.core.feedstock.application.query.FeedstockBatchCurrentMeasurementQueryService;
 import org.craft.mcs.cap.core.feedstock.application.port.in.OptimizeFeedstockBatchCompositionCommand;
 import org.craft.mcs.cap.core.feedstock.application.port.in.PredefinedFeedstockProfileTargetSelection;
 import org.craft.mcs.cap.core.feedstock.application.port.out.FeedstockBatchRepository;
@@ -51,6 +51,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 import static java.util.UUID.randomUUID;
+import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementInstant;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -172,7 +173,7 @@ class OptimizeFeedstockBatchCompositionServiceTest {
     final var geometryProfile = BuiltInSugarAcidityZoneProfiles.rectangularZoneGeometryProfile();
 
     return new OptimizeFeedstockBatchCompositionService(
-        measurementRepository,
+        new FeedstockBatchCurrentMeasurementQueryService(measurementRepository),
         batchRepository,
         new ChemicalProfileAxisExtractor(),
         new ChemicalProfileCapabilityAssessor(),
@@ -248,7 +249,7 @@ class OptimizeFeedstockBatchCompositionServiceTest {
         batchId,
         FeedstockMeasurementName.of("Current lab sample"),
         profile,
-        Instant.parse("2026-01-15T10:00:00Z")
+        feedstockMeasurementInstant()
     );
   }
 

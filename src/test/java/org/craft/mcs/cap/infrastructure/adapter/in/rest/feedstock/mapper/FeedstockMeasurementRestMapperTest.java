@@ -1,7 +1,6 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.mapper;
 
 import java.math.BigDecimal;
-import java.time.Instant;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.dto.ChemicalProfileRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.dto.ExactChemicalMeasurementRequest;
@@ -11,6 +10,7 @@ import org.craft.mcs.cap.shared.kernel.measurement.ExactMeasurement;
 import org.craft.mcs.cap.shared.kernel.measurement.StatisticalMeasurement;
 import org.junit.jupiter.api.Test;
 
+import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementInstant;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
@@ -38,7 +38,7 @@ class FeedstockMeasurementRestMapperTest {
                 "lab",
                 null
             ),
-            Instant.parse("2026-10-15T10:00:00Z"),
+            feedstockMeasurementInstant(),
             "first lab result"
         )
     );

@@ -19,6 +19,13 @@ import org.springframework.stereotype.Component;
 import static java.util.Objects.requireNonNull;
 
 
+/**
+ * Application service for potential ABV prediction from one historical feedstock measurement.
+ *
+ * <p>This use case evaluates the exact measurement requested by id, which is useful when comparing
+ * how projected alcohol changed across the measurement timeline. Batch-current ABV prediction uses
+ * the latest-measurement rule and is exposed as a separate use case.
+ */
 @Component
 @RequiredArgsConstructor
 public final class PredictFeedstockMeasurementPotentialAbvService

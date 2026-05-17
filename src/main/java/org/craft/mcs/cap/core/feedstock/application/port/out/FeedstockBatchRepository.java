@@ -18,4 +18,6 @@ public interface FeedstockBatchRepository {
 
   @NonNull
   List<@NonNull FeedstockBatch> findAllByCiderMakerId(@NonNull CiderMakerId ciderMakerId);
+
+  void delete(@NonNull FeedstockBatch feedstockBatch);
 }

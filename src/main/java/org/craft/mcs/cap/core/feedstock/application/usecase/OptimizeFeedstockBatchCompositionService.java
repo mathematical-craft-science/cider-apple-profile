@@ -17,6 +17,7 @@ import org.craft.mcs.cap.core.cideranalysis.sugaracidity.target.domain.SugarAcid
 import org.craft.mcs.cap.core.cideranalysis.sugaracidity.zone.domain.SugarAcidityZoneAssessment;
 import org.craft.mcs.cap.core.cideranalysis.sugaracidity.zone.domain.SugarAcidityZoneAssessor;
 import org.craft.mcs.cap.core.feedstock.application.InsufficientFeedstockCompositionSourcesException;
+import org.craft.mcs.cap.core.feedstock.application.query.FeedstockBatchCurrentMeasurementQueryService;
 import org.craft.mcs.cap.core.feedstock.application.port.in.CustomRectangleFeedstockProfileTargetSelection;
 import org.craft.mcs.cap.core.feedstock.application.port.in.FeedstockMeasurementPointFilters;
 import org.craft.mcs.cap.core.feedstock.application.port.in.OptimizeFeedstockBatchCompositionCommand;
@@ -24,7 +25,6 @@ import org.craft.mcs.cap.core.feedstock.application.port.in.OptimizeFeedstockBat
 import org.craft.mcs.cap.core.feedstock.application.port.in.OptimizeFeedstockBatchCompositionUseCase;
 import org.craft.mcs.cap.core.feedstock.application.port.in.PredefinedFeedstockProfileTargetSelection;
 import org.craft.mcs.cap.core.feedstock.application.port.out.FeedstockBatchRepository;
-import org.craft.mcs.cap.core.feedstock.application.port.out.FeedstockMeasurementQueryRepository;
 import org.craft.mcs.cap.core.feedstock.application.port.out.LatestFeedstockMeasurementSugarAcidityPointCandidateQuery;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
@@ -56,7 +56,7 @@ public final class OptimizeFeedstockBatchCompositionService implements OptimizeF
   private static final int MINIMUM_SOURCE_COUNT = 2;
   private static final @NonNull String SOURCE_TYPE = "FEEDSTOCK_BATCH";
 
-  private final @NonNull FeedstockMeasurementQueryRepository feedstockMeasurementQueryRepository;
+  private final @NonNull FeedstockBatchCurrentMeasurementQueryService currentMeasurementQueryService;
   private final @NonNull FeedstockBatchRepository feedstockBatchRepository;
   private final @NonNull ChemicalProfileAxisExtractor axisExtractor;
   private final @NonNull ChemicalProfileCapabilityAssessor capabilityAssessor;
@@ -73,7 +73,7 @@ public final class OptimizeFeedstockBatchCompositionService implements OptimizeF
     final var batchesById = feedstockBatchRepository.findAllByCiderMakerId(command.ciderMakerId())
         .stream()
         .collect(Collectors.toMap(FeedstockBatch::batchId, Function.identity()));
-    final var sources = feedstockMeasurementQueryRepository.findLatestSugarAcidityPointCandidates(
+    final var sources = currentMeasurementQueryService.findCurrentSugarAcidityPointCandidates(
             new LatestFeedstockMeasurementSugarAcidityPointCandidateQuery(
                 command.ciderMakerId(),
                 command.filters().batch(),

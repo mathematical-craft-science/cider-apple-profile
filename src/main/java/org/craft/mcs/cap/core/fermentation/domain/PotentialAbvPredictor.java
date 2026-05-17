@@ -8,6 +8,14 @@ import org.jspecify.annotations.NonNull;
 import static java.util.Objects.requireNonNull;
 
 
+/**
+ * Domain service that coordinates potential ABV prediction.
+ *
+ * <p>The predictor first obtains or accepts a predicted final gravity, then delegates the actual ABV
+ * formula to the selected {@link AbvPredictionStrategy}. This keeps the extension point explicit:
+ * future yeast-aware strategies should replace final-gravity prediction, while the gravity-drop ABV
+ * formula can remain stable unless the domain requires another method.
+ */
 @Service
 public final class PotentialAbvPredictor {
 

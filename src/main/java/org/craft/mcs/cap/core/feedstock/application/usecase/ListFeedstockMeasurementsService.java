@@ -12,6 +12,13 @@ import org.springframework.stereotype.Component;
 import static java.util.Objects.requireNonNull;
 
 
+/**
+ * Read-side use case for measurement history of one feedstock batch.
+ *
+ * <p>The returned list is historical evidence for the batch. It is intentionally separate from
+ * current-profile queries so UI screens can show both the latest actionable profile and the full
+ * timeline without mixing semantics.
+ */
 @Component
 @RequiredArgsConstructor
 public final class ListFeedstockMeasurementsService

@@ -16,6 +16,15 @@ import org.springframework.stereotype.Component;
 import static java.util.Objects.requireNonNull;
 
 
+/**
+ * Application service for classifying an apple variety by one configured cider classification
+ * system.
+ *
+ * <p>This use case loads the catalog aggregate, resolves the selected strategy through
+ * {@link AppleVarietyClassificationStrategyRegistry}, delegates the actual domain classification to
+ * {@link ChemicalProfileClassifier}, and maps the result to an application read model. It is the
+ * boundary where REST/API system names become domain strategy selection.
+ */
 @Component
 @RequiredArgsConstructor
 public final class ClassifyAppleVarietyService

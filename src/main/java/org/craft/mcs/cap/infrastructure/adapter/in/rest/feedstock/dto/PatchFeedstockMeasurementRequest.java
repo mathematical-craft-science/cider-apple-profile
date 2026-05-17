@@ -1,0 +1,20 @@
+package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import java.time.Instant;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.dto.ChemicalProfileRequest;
+import org.jspecify.annotations.Nullable;
+
+
+@Schema(description = "Request to partially update a feedstock measurement.")
+public record PatchFeedstockMeasurementRequest(
+    @Schema(description = "New measurement name, when changed.", example = "Pressing measurement #1")
+    @Nullable String name,
+    @Schema(description = "Chemical profile axes to merge into the existing profile.")
+    @Nullable ChemicalProfileRequest chemicalProfile,
+    @Schema(description = "New timestamp when the measurement was taken.", format = "date-time", example = "2026-10-18T10:15:30Z")
+    @Nullable Instant measuredAt,
+    @Schema(description = "New note. Blank value clears the note.", example = "Measured immediately after pressing.")
+    @Nullable String note
+) {
+}

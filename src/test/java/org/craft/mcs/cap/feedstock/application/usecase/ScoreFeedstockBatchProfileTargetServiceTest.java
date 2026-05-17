@@ -1,6 +1,5 @@
 package org.craft.mcs.cap.feedstock.application.usecase;
 
-import java.time.Instant;
 import java.util.List;
 import org.craft.mcs.cap.core.cideranalysis.profiletarget.scoring.application.port.in.ProfileTargetScoringPurpose;
 import org.craft.mcs.cap.core.cideranalysis.profiletarget.scoring.application.usecase.BuiltInProfileTargetScoringPurposeNormalizerPolicy;
@@ -12,6 +11,7 @@ import org.craft.mcs.cap.core.cideranalysis.sugaracidity.target.domain.ZoneGeome
 import org.craft.mcs.cap.core.cideranalysis.sugaracidity.zone.domain.BuiltInSugarAcidityZoneProfiles;
 import org.craft.mcs.cap.core.cideranalysis.sugaracidity.zone.domain.RectangleSugarAcidityZoneAssessor;
 import org.craft.mcs.cap.core.cideranalysis.sugaracidity.zone.domain.SugarAcidityZone;
+import org.craft.mcs.cap.core.feedstock.application.query.FeedstockBatchCurrentMeasurementQueryService;
 import org.craft.mcs.cap.core.feedstock.application.port.in.FeedstockBatchProfileTargetScore;
 import org.craft.mcs.cap.core.feedstock.application.port.in.FeedstockMeasurementPointFilters;
 import org.craft.mcs.cap.core.feedstock.application.port.in.PredefinedFeedstockProfileTargetSelection;
@@ -35,6 +35,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 import static java.util.UUID.randomUUID;
+import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementInstant;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -88,7 +89,7 @@ class ScoreFeedstockBatchProfileTargetServiceTest {
     final var geometryProfile = BuiltInSugarAcidityZoneProfiles.rectangularZoneGeometryProfile();
 
     return new ScoreFeedstockBatchProfileTargetService(
-        repository,
+        new FeedstockBatchCurrentMeasurementQueryService(repository),
         new ChemicalProfileAxisExtractor(),
         new ChemicalProfileCapabilityAssessor(),
         new RectangleSugarAcidityZoneAssessor(thresholds, geometryProfile),
@@ -110,7 +111,7 @@ class ScoreFeedstockBatchProfileTargetServiceTest {
         FeedstockBatchId.newId(),
         FeedstockMeasurementName.of(name),
         profile,
-        Instant.parse("2026-01-15T10:00:00Z")
+        feedstockMeasurementInstant()
     );
   }
 

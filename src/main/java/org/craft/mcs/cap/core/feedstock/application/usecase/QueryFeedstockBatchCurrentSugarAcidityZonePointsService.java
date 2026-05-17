@@ -6,10 +6,10 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.cideranalysis.sugaracidity.zone.domain.SugarAcidityZoneAssessment;
 import org.craft.mcs.cap.core.cideranalysis.sugaracidity.zone.domain.SugarAcidityZoneAssessor;
+import org.craft.mcs.cap.core.feedstock.application.query.FeedstockBatchCurrentMeasurementQueryService;
 import org.craft.mcs.cap.core.feedstock.application.port.in.FeedstockBatchCurrentSugarAcidityZonePointQuery;
 import org.craft.mcs.cap.core.feedstock.application.port.in.FeedstockBatchCurrentSugarAcidityZoneResult;
 import org.craft.mcs.cap.core.feedstock.application.port.in.QueryFeedstockBatchCurrentSugarAcidityZonePointsUseCase;
-import org.craft.mcs.cap.core.feedstock.application.port.out.FeedstockMeasurementQueryRepository;
 import org.craft.mcs.cap.core.feedstock.application.port.out.FeedstockMeasurementSugarAcidityPointCandidateCursor;
 import org.craft.mcs.cap.core.feedstock.application.port.out.LatestFeedstockMeasurementSugarAcidityPointCandidateQuery;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurement;
@@ -29,6 +29,13 @@ import org.springframework.stereotype.Component;
 import static java.util.Objects.requireNonNull;
 
 
+/**
+ * Read-side use case for current feedstock batch points on the sugar-acidity graph.
+ *
+ * <p>The service applies the product rule that only the latest measurement of each batch represents
+ * the current batch profile. It then evaluates capability and zone filters in the application
+ * layer, returning cursor pages for workspace graph rendering.
+ */
 @Component
 @RequiredArgsConstructor
 public final class QueryFeedstockBatchCurrentSugarAcidityZonePointsService
@@ -36,7 +43,7 @@ public final class QueryFeedstockBatchCurrentSugarAcidityZonePointsService
 
   private static final int PAGE_LOOKAHEAD = 1;
 
-  private final @NonNull FeedstockMeasurementQueryRepository feedstockMeasurementQueryRepository;
+  private final @NonNull FeedstockBatchCurrentMeasurementQueryService currentMeasurementQueryService;
   private final @NonNull ChemicalProfileAxisExtractor axisExtractor;
   private final @NonNull ChemicalProfileCapabilityAssessor capabilityAssessor;
   private final @NonNull SugarAcidityZoneAssessor assessor;
@@ -51,7 +58,7 @@ public final class QueryFeedstockBatchCurrentSugarAcidityZonePointsService
         decodeCursor(query.page().after()),
         query.page().limit(),
         PAGE_LOOKAHEAD,
-        (afterCursor, limit) -> feedstockMeasurementQueryRepository.findLatestSugarAcidityPointCandidates(
+        (afterCursor, limit) -> currentMeasurementQueryService.findCurrentSugarAcidityPointCandidates(
             new LatestFeedstockMeasurementSugarAcidityPointCandidateQuery(
                 query.ciderMakerId(),
                 query.filters().batch(),

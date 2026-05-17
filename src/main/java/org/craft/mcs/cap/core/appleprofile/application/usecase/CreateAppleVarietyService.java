@@ -15,6 +15,14 @@ import org.springframework.stereotype.Component;
 import static java.util.Objects.requireNonNull;
 
 
+/**
+ * Application service for creating catalog apple varieties.
+ *
+ * <p>The service owns the write-side use case boundary: it creates a new aggregate id, delegates
+ * invariant checks to {@link AppleVariety}, persists through the outbound repository port, and
+ * returns an immutable application result instead of exposing the mutable aggregate to REST
+ * adapters.
+ */
 @Component
 @RequiredArgsConstructor
 public final class CreateAppleVarietyService

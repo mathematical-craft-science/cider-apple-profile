@@ -3,6 +3,12 @@ package org.craft.mcs.cap.core.fermentation.domain;
 import org.jspecify.annotations.NonNull;
 
 
+/**
+ * Strategy for calculating ABV from original and final gravity.
+ *
+ * <p>The strategy is separated from final-gravity prediction so future yeast-aware or fermentation
+ * model inputs can change expected FG without replacing the ABV formula itself.
+ */
 public interface AbvPredictionStrategy {
 
   @NonNull

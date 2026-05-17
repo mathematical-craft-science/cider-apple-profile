@@ -1,11 +1,15 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
 import org.jspecify.annotations.NonNull;
 
 
+@Schema(description = "Sugar-acidity coordinate in canonical graph units.")
 public record SugarAcidityCoordinatesResponse(
+    @Schema(description = "Sugar coordinate in SG.", example = "1.060")
     @NonNull BigDecimal sugar,
+    @Schema(description = "Titratable acidity coordinate in g/L as malic acid.", example = "6.0")
     @NonNull BigDecimal acidity
 ) {
 }

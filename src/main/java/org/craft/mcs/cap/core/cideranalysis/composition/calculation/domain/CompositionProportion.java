@@ -6,6 +6,12 @@ import org.jspecify.annotations.NonNull;
 import static java.util.Objects.requireNonNull;
 
 
+/**
+ * Relative source weight expressed as a positive proportion.
+ *
+ * <p>Proportion mode is useful for exploratory planning when the user wants a blend profile without
+ * committing to a concrete total volume.
+ */
 public record CompositionProportion(@NonNull BigDecimal value) implements ChemicalProfileCompositionSourceWeight {
 
   public CompositionProportion {

@@ -1,12 +1,11 @@
 package org.craft.mcs.cap.core.feedstock.application.usecase;
 
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchHasNoMeasurementsException;
 import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchNotFoundException;
+import org.craft.mcs.cap.core.feedstock.application.query.FeedstockBatchCurrentMeasurementQueryService;
 import org.craft.mcs.cap.core.feedstock.application.port.in.FeedstockBatchCurrentPotentialAbvPrediction;
 import org.craft.mcs.cap.core.feedstock.application.port.in.PredictFeedstockBatchCurrentPotentialAbvUseCase;
 import org.craft.mcs.cap.core.feedstock.application.port.out.FeedstockBatchRepository;
-import org.craft.mcs.cap.core.feedstock.application.port.out.FeedstockMeasurementQueryRepository;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.core.fermentation.domain.PotentialAbvPredictor;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
@@ -21,13 +20,21 @@ import org.springframework.stereotype.Component;
 import static java.util.Objects.requireNonNull;
 
 
+/**
+ * Application service for potential ABV prediction from the current feedstock batch profile.
+ *
+ * <p>The service uses the latest measurement of the batch, verifies that sugar is present through
+ * {@link ChemicalProfileCapability#ABV_PREDICTION}, then delegates fermentation math to the
+ * configured {@link PotentialAbvPredictor}. The assumed final gravity is currently fixed at 1.000
+ * until yeast-aware and fermentation-model strategies become available.
+ */
 @Component
 @RequiredArgsConstructor
 public final class PredictFeedstockBatchCurrentPotentialAbvService
     implements PredictFeedstockBatchCurrentPotentialAbvUseCase {
 
   private final @NonNull FeedstockBatchRepository feedstockBatchRepository;
-  private final @NonNull FeedstockMeasurementQueryRepository feedstockMeasurementQueryRepository;
+  private final @NonNull FeedstockBatchCurrentMeasurementQueryService currentMeasurementQueryService;
   private final @NonNull ChemicalProfileAxisExtractor axisExtractor;
   private final @NonNull ChemicalProfileCapabilityAssessor capabilityAssessor;
   private final @NonNull PotentialAbvPredictor predictor;
@@ -38,8 +45,7 @@ public final class PredictFeedstockBatchCurrentPotentialAbvService
 
     final var batch = feedstockBatchRepository.findById(batchId)
         .orElseThrow(() -> new FeedstockBatchNotFoundException(batchId));
-    final var currentMeasurement = feedstockMeasurementQueryRepository.findLatestByBatchId(batchId)
-        .orElseThrow(() -> new FeedstockBatchHasNoMeasurementsException(batchId));
+    final var currentMeasurement = currentMeasurementQueryService.requireCurrentMeasurement(batchId);
     final var axes = axisExtractor.extract(currentMeasurement.chemicalProfile());
     final var capability = capabilityAssessor.assess(axes, ChemicalProfileCapability.ABV_PREDICTION);
 

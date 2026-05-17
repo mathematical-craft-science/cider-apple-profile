@@ -36,4 +36,10 @@ class JpaFeedstockMeasurementRepository
     return repository.findById(measurementId.value())
         .map(FeedstockMeasurementJpaMapper::toDomain);
   }
+
+  @Override
+  public void deleteById(@NonNull FeedstockMeasurementId measurementId) {
+    requireNonNull(measurementId, "feedstock measurement id cannot be null");
+    repository.deleteById(measurementId.value());
+  }
 }

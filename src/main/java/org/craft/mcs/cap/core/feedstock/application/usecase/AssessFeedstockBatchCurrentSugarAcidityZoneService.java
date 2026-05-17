@@ -2,12 +2,11 @@ package org.craft.mcs.cap.core.feedstock.application.usecase;
 
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.cideranalysis.sugaracidity.zone.domain.SugarAcidityZoneAssessor;
-import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchHasNoMeasurementsException;
 import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchNotFoundException;
+import org.craft.mcs.cap.core.feedstock.application.query.FeedstockBatchCurrentMeasurementQueryService;
 import org.craft.mcs.cap.core.feedstock.application.port.in.AssessFeedstockBatchCurrentSugarAcidityZoneUseCase;
 import org.craft.mcs.cap.core.feedstock.application.port.in.FeedstockBatchCurrentSugarAcidityZoneResult;
 import org.craft.mcs.cap.core.feedstock.application.port.out.FeedstockBatchRepository;
-import org.craft.mcs.cap.core.feedstock.application.port.out.FeedstockMeasurementQueryRepository;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
 import org.craft.mcs.cap.shared.kernel.chemical.capability.ChemicalProfileCapability;
@@ -18,13 +17,22 @@ import org.springframework.stereotype.Component;
 import static java.util.Objects.requireNonNull;
 
 
+/**
+ * Application service for assessing the current profile of a feedstock batch on the sugar-acidity
+ * graph.
+ *
+ * <p>Current means the latest measurement selected by
+ * {@link FeedstockBatchCurrentMeasurementQueryService}. The service returns an unplottable result
+ * when sugar/acidity capability is missing so the workspace can show actionable warnings instead of
+ * hiding incomplete batches.
+ */
 @Component
 @RequiredArgsConstructor
 public final class AssessFeedstockBatchCurrentSugarAcidityZoneService
     implements AssessFeedstockBatchCurrentSugarAcidityZoneUseCase {
 
   private final @NonNull FeedstockBatchRepository feedstockBatchRepository;
-  private final @NonNull FeedstockMeasurementQueryRepository feedstockMeasurementQueryRepository;
+  private final @NonNull FeedstockBatchCurrentMeasurementQueryService currentMeasurementQueryService;
   private final @NonNull ChemicalProfileAxisExtractor axisExtractor;
   private final @NonNull ChemicalProfileCapabilityAssessor capabilityAssessor;
   private final @NonNull SugarAcidityZoneAssessor assessor;
@@ -35,8 +43,7 @@ public final class AssessFeedstockBatchCurrentSugarAcidityZoneService
 
     final var batch = feedstockBatchRepository.findById(batchId)
         .orElseThrow(() -> new FeedstockBatchNotFoundException(batchId));
-    final var currentMeasurement = feedstockMeasurementQueryRepository.findLatestByBatchId(batchId)
-        .orElseThrow(() -> new FeedstockBatchHasNoMeasurementsException(batchId));
+    final var currentMeasurement = currentMeasurementQueryService.requireCurrentMeasurement(batchId);
     final var axes = axisExtractor.extract(currentMeasurement.chemicalProfile());
     final var capability = capabilityAssessor.assess(
         axes,

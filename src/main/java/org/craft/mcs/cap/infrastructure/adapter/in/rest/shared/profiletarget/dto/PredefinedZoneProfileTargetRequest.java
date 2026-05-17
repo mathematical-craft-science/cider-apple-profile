@@ -1,13 +1,17 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.craft.mcs.cap.core.cideranalysis.sugaracidity.zone.domain.SugarAcidityZone;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
 
 
+@Schema(description = "Target that references one of the built-in sugar-acidity zones.")
 public record PredefinedZoneProfileTargetRequest(
+    @Schema(description = "Target shape.", example = "PREDEFINED_ZONE")
     @NonNull String kind,
+    @Schema(description = "Built-in sugar-acidity zone.", implementation = SugarAcidityZone.class, example = "PERFECT_APPLES")
     @NonNull SugarAcidityZone zone
 ) implements ProfileTargetRequest {
 

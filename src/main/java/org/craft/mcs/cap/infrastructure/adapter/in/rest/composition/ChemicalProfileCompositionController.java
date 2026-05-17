@@ -21,12 +21,13 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestController
 @RequiredArgsConstructor
-public final class ChemicalProfileCompositionController {
+public final class ChemicalProfileCompositionController implements ChemicalProfileCompositionApi {
 
   private final @NonNull CalculateChemicalProfileCompositionUseCase calculateChemicalProfileCompositionUseCase;
   private final @NonNull OptimizeChemicalProfileCompositionUseCase optimizeChemicalProfileCompositionUseCase;
   private final @NonNull SugarAcidityTargetResolver targetResolver;
 
+  @Override
   @PostMapping(
       value = "/chemical-profile-compositions/calculations",
       consumes = APPLICATION_JSON_VALUE,
@@ -44,6 +45,7 @@ public final class ChemicalProfileCompositionController {
     );
   }
 
+  @Override
   @PostMapping(
       value = "/chemical-profile-compositions/optimizations",
       consumes = APPLICATION_JSON_VALUE,

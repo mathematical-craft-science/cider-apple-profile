@@ -4,13 +4,14 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.UUID;
 import org.craft.mcs.cap.core.cideranalysis.sugaracidity.zone.domain.SugarAcidityZone;
 import org.craft.mcs.cap.shared.kernel.chemical.capability.ChemicalProfileCapability;
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 
 @Schema(description = "Request for current feedstock batch sugar-acidity graph points.")
 public record FeedstockBatchCurrentSugarAcidityZonePointQueryRequest(
     @Schema(description = "Cider maker identifier.", format = "uuid", example = "4d96759c-86ff-4d39-8b19-241bc60f82ff")
-    UUID ciderMakerId,
+    @NonNull UUID ciderMakerId,
     @Schema(description = "Optional feedstock batch identifier filter.", format = "uuid", example = "b2a49b8a-3a19-4f8f-989d-9278f4e00d2f")
     @Nullable UUID batchId,
     @Schema(description = "Optional season overlap filter.")

@@ -1,12 +1,16 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
 import java.util.UUID;
 import org.jspecify.annotations.NonNull;
 
 
+@Schema(description = "Feedstock source selected for production batch creation.")
 public record CreateProductionBatchSourceRequest(
+    @Schema(description = "Feedstock batch identifier.", format = "uuid", example = "b2a49b8a-3a19-4f8f-989d-9278f4e00d2f")
     @NonNull UUID feedstockBatchId,
+    @Schema(description = "Volume to use from the feedstock batch in liters.", example = "25.0")
     @NonNull BigDecimal volumeLiters
 ) {
 }

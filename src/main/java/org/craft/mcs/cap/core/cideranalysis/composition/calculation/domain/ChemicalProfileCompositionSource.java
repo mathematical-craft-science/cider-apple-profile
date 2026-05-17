@@ -8,6 +8,13 @@ import org.jspecify.annotations.Nullable;
 import static java.util.Objects.requireNonNull;
 
 
+/**
+ * One source participating in chemical profile composition calculation.
+ *
+ * <p>The source is a context-neutral mathematical input: reference, canonical axes, weight and
+ * optional availability bound. Feedstock batches, manual lab entries and future sources can all be
+ * projected into this shape without coupling the calculator to those contexts.
+ */
 public record ChemicalProfileCompositionSource(
     @NonNull ChemicalProfileCompositionSourceReference reference,
     @NonNull ChemicalProfileAxes axes,

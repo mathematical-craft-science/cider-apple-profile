@@ -1,6 +1,5 @@
 package org.craft.mcs.cap.production.application.usecase;
 
-import java.time.Instant;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
@@ -51,6 +50,7 @@ import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
 import static java.util.UUID.randomUUID;
+import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementInstant;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -189,7 +189,7 @@ class CreateProductionBatchServiceTest {
         batchId,
         FeedstockMeasurementName.of("Current lab sample"),
         profile,
-        Instant.parse("2026-01-15T10:00:00Z")
+        feedstockMeasurementInstant()
     );
   }
 
@@ -230,6 +230,11 @@ class CreateProductionBatchServiceTest {
       return batches.values().stream()
           .filter(batch -> batch.ciderMakerId().equals(ciderMakerId))
           .toList();
+    }
+
+    @Override
+    public void delete(@NonNull FeedstockBatch feedstockBatch) {
+      batches.remove(feedstockBatch.batchId());
     }
   }
 

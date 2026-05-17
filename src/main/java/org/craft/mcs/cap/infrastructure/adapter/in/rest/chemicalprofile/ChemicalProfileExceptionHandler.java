@@ -1,18 +1,18 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile;
 
 
-import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
-import org.craft.mcs.cap.shared.kernel.chemical.capability.ChemicalProfileCapabilityNotMetException;
-import org.jspecify.annotations.NonNull;
-import org.springframework.http.ProblemDetail;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
-
 import java.net.URI;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
+import org.craft.mcs.cap.shared.kernel.chemical.capability.ChemicalProfileCapabilityNotMetException;
+import org.jspecify.annotations.NonNull;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ProblemDetail;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 
 @RestControllerAdvice
@@ -40,6 +40,17 @@ public final class ChemicalProfileExceptionHandler {
     return ResponseEntity
         .status(UNPROCESSABLE_ENTITY)
         .body(problem);
+  }
+
+  @ExceptionHandler(UnsupportedChemicalMeasurementUnitException.class)
+  public @NonNull ResponseEntity<@NonNull ProblemDetail> handleUnsupportedChemicalMeasurementUnit(
+      @NonNull UnsupportedChemicalMeasurementUnitException exception
+  ) {
+    final var problem = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
+    problem.setTitle("Unsupported chemical measurement unit");
+    problem.setDetail(exception.getMessage());
+
+    return ResponseEntity.badRequest().body(problem);
   }
 
   private static @NonNull List<@NonNull String> axisNames(

@@ -72,6 +72,65 @@ class OpenApiContractTest {
     assertEnumProperty(openApi, "CreateFeedstockBatchRequest", "type", "APPLE_JUICE");
     assertEnumProperty(openApi, "ChemicalProfileCapabilityAssessmentResponse", "capability", "SUGAR_ACIDITY_PLOT");
     assertEnumProperty(openApi, "PotentialAbvPredictionResponse", "confidence", "LOW");
+
+    assertRequiredProperties(
+        openApi,
+        "CreateFeedstockBatchRequest",
+        "ciderMakerId",
+        "name",
+        "type",
+        "season",
+        "availableVolumeLiters"
+    );
+    assertNotRequiredProperties(openApi, "CreateFeedstockBatchRequest", "source", "note");
+    assertNullable(schemaProperty(openApi, "CreateFeedstockBatchRequest", "source"));
+    assertNullable(schemaProperty(openApi, "CreateFeedstockBatchRequest", "note"));
+
+    assertRequiredProperties(openApi, "CreateFeedstockMeasurementRequest", "name", "chemicalProfile", "measuredAt");
+    assertNotRequiredProperties(openApi, "CreateFeedstockMeasurementRequest", "note");
+    assertNullable(schemaProperty(openApi, "CreateFeedstockMeasurementRequest", "note"));
+
+    assertRequiredProperties(openApi, "FeedstockMeasurementResponse", "measurementId", "ciderMakerId", "batchId", "name");
+    assertNotRequiredProperties(openApi, "FeedstockMeasurementResponse", "measuredAt", "chemicalProfile", "note");
+    assertNullable(schemaProperty(openApi, "FeedstockMeasurementResponse", "measuredAt"));
+    assertNullable(schemaProperty(openApi, "FeedstockMeasurementResponse", "chemicalProfile"));
+    assertNullable(schemaProperty(openApi, "FeedstockMeasurementResponse", "note"));
+
+    assertRequiredProperties(openApi, "ProfileTargetDistanceResponse", "status", "insideSugarAcidityTarget", "insideTarget");
+    assertNotRequiredProperties(openApi, "ProfileTargetDistanceResponse", "value", "tannin", "nearestTargetTannin");
+    assertNullable(schemaProperty(openApi, "ProfileTargetDistanceResponse", "value"));
+    assertNullable(schemaProperty(openApi, "ProfileTargetDistanceResponse", "tannin"));
+    assertNullable(schemaProperty(openApi, "ProfileTargetDistanceResponse", "nearestTargetTannin"));
+
+    assertRequiredProperties(openApi, "FeedstockBatchCurrentSugarAcidityZonePointQueryRequest", "ciderMakerId");
+    assertNotRequiredProperties(openApi, "FeedstockBatchCurrentSugarAcidityZonePointQueryRequest", "batchId", "season", "after", "limit");
+    assertNullable(schemaProperty(openApi, "FeedstockBatchCurrentSugarAcidityZonePointQueryRequest", "batchId"));
+    assertNullable(schemaProperty(openApi, "FeedstockBatchCurrentSugarAcidityZonePointQueryRequest", "season"));
+
+    assertParameterRequired(openApi, "/feedstock-batches", "get", "ciderMakerId", true);
+    assertParameterRequired(openApi, "/feedstock-batches", "get", "seasonStartsOn", false);
+    assertParameterRequired(openApi, "/feedstock-batches", "get", "seasonEndsOn", false);
+
+    assertOneOfSchema(openApi, "ChemicalMeasurementRequest");
+    assertNoAllOfSchema(openApi, "ExactChemicalMeasurementRequest");
+    assertNoAllOfSchema(openApi, "RangeChemicalMeasurementRequest");
+    assertNoAllOfSchema(openApi, "StatisticalChemicalMeasurementRequest");
+    assertOneOfSchema(openApi, "ChemicalMeasurementResponse");
+    assertNoAllOfSchema(openApi, "ExactChemicalMeasurementResponse");
+    assertNoAllOfSchema(openApi, "RangeChemicalMeasurementResponse");
+    assertNoAllOfSchema(openApi, "StatisticalChemicalMeasurementResponse");
+    assertOneOfSchema(openApi, "ProfileTargetRequest");
+    assertNoAllOfSchema(openApi, "PredefinedZoneProfileTargetRequest");
+    assertNoAllOfSchema(openApi, "CustomRectangleProfileTargetRequest");
+    assertOneOfSchema(openApi, "SugarAcidityAxisPointResponse");
+    assertNoAllOfSchema(openApi, "ExactSugarAcidityAxisPointResponse");
+    assertNoAllOfSchema(openApi, "RangeSugarAcidityAxisPointResponse");
+    assertNoAllOfSchema(openApi, "StatisticalSugarAcidityAxisPointResponse");
+    assertNoAllOfSchema(openApi, "CalculatedSugarAcidityAxisPointResponse");
+    assertOneOfSchema(openApi, "SugarAcidityGraphZoneResponse");
+    assertNoAllOfSchema(openApi, "RectangleSugarAcidityGraphZoneResponse");
+    assertNoAllOfSchema(openApi, "EllipseSugarAcidityGraphZoneResponse");
+    assertNoSchemaComposesDiscriminatedUnionThroughAllOf(openApi);
   }
 
   private static void assertJsonResponse(
@@ -140,9 +199,117 @@ class OpenApiContractTest {
     return property;
   }
 
+  private static void assertRequiredProperties(
+      JsonNode openApi,
+      String schemaName,
+      String... propertyNames
+  ) {
+    final var required = requiredProperties(openApi, schemaName);
+    assertThat(required).contains(propertyNames);
+  }
+
+  private static void assertNotRequiredProperties(
+      JsonNode openApi,
+      String schemaName,
+      String... propertyNames
+  ) {
+    final var required = requiredProperties(openApi, schemaName);
+    assertThat(required).doesNotContain(propertyNames);
+  }
+
+  private static java.util.List<String> requiredProperties(JsonNode openApi, String schemaName) {
+    return StreamSupport.stream(openApi
+            .path("components")
+            .path("schemas")
+            .path(schemaName)
+            .path("required")
+            .spliterator(), false)
+        .map(JsonNode::asText)
+        .toList();
+  }
+
+  private static void assertNullable(JsonNode property) {
+    final var nullable = property.path("nullable").asBoolean(false)
+        || hasType(property, "null")
+        || StreamSupport.stream(property.path("anyOf").spliterator(), false)
+        .anyMatch(schema -> hasType(schema, "null"));
+
+    assertThat(nullable).isTrue();
+  }
+
+  private static void assertParameterRequired(
+      JsonNode openApi,
+      String path,
+      String method,
+      String parameterName,
+      boolean required
+  ) {
+    final var parameter = StreamSupport.stream(operation(openApi, path, method)
+            .path("parameters")
+            .spliterator(), false)
+        .filter(candidate -> parameterName.equals(candidate.path("name").asText()))
+        .findFirst();
+
+    assertThat(parameter)
+        .as("%s %s parameter %s exists", method, path, parameterName)
+        .isPresent();
+    assertThat(parameter.orElseThrow().path("required").asBoolean(false))
+        .as("%s %s parameter %s required", method, path, parameterName)
+        .isEqualTo(required);
+  }
+
+  private static void assertOneOfSchema(JsonNode openApi, String schemaName) {
+    final var schema = openApi.path("components").path("schemas").path(schemaName);
+    assertThat(schema.path("oneOf").isArray())
+        .as("%s should remain a discriminated oneOf union", schemaName)
+        .isTrue();
+  }
+
+  private static void assertNoAllOfSchema(JsonNode openApi, String schemaName) {
+    final var schema = openApi.path("components").path("schemas").path(schemaName);
+    assertThat(schema.has("allOf"))
+        .as("%s should be a flat object schema for TypeScript generators", schemaName)
+        .isFalse();
+    assertThat(schema.path("type").asText())
+        .as("%s type", schemaName)
+        .isEqualTo("object");
+  }
+
+  private static void assertNoSchemaComposesDiscriminatedUnionThroughAllOf(JsonNode openApi) {
+    final var schemas = openApi.path("components").path("schemas");
+    final var schemaProperties = schemas.properties();
+    final var discriminatedUnionSchemaNames = schemaProperties.stream()
+        .filter(entry -> entry.getValue().path("oneOf").isArray())
+        .map(java.util.Map.Entry::getKey)
+        .toList();
+
+    final var recursiveCompositionRefs = schemaProperties.stream()
+        .filter(entry -> entry.getValue().path("allOf").isArray())
+        .flatMap(entry -> StreamSupport.stream(entry.getValue().path("allOf").spliterator(), false)
+            .map(part -> part.path("$ref").asText())
+            .filter(ref -> !ref.isBlank())
+            .map(ref -> entry.getKey() + " -> " + ref.substring(ref.lastIndexOf('/') + 1)))
+        .filter(ref -> discriminatedUnionSchemaNames.stream().anyMatch(ref::endsWith))
+        .toList();
+
+    assertThat(recursiveCompositionRefs)
+        .as("schemas must not compose discriminated oneOf unions through allOf")
+        .isEmpty();
+  }
+
   private static void assertStringFormat(JsonNode property, String format) {
-    assertThat(property.path("type").asText()).isEqualTo("string");
+    assertThat(hasType(property, "string")).isTrue();
     assertThat(property.path("format").asText()).isEqualTo(format);
+  }
+
+  private static boolean hasType(JsonNode property, String type) {
+    if (type.equals(property.path("type").asText())) {
+      return true;
+    }
+
+    return StreamSupport.stream(property.path("type").spliterator(), false)
+        .map(JsonNode::asText)
+        .anyMatch(type::equals);
   }
 
   private static void assertArray(JsonNode property) {

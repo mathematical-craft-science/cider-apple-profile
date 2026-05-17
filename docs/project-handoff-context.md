@@ -1,5 +1,7 @@
 # Project Handoff Context
 
+Architecture overview: [docs/architecture/project-documentation.md](architecture/project-documentation.md).
+
 Документ для переноса контекста в новый чат. Его можно дать следующему
 агенту/ассистенту как стартовую память проекта.
 

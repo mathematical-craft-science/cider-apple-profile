@@ -6,6 +6,13 @@ import org.jspecify.annotations.NonNull;
 import static java.util.Objects.requireNonNull;
 
 
+/**
+ * Input for ABV prediction strategies.
+ *
+ * <p>Both values are canonical specific gravity values. The input enforces the physical assumption
+ * that predicted final gravity cannot be higher than original gravity for this potential-ABV
+ * calculation.
+ */
 public record AbvPredictionInput(
     @NonNull SpecificGravityValue originalGravity,
     @NonNull SpecificGravityValue finalGravity

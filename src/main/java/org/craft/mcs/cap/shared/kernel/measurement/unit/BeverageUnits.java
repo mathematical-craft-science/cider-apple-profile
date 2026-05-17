@@ -55,6 +55,11 @@ public final class BeverageUnits
           .divide(Units.LITRE)
           .asType(Tanninity.class);
 
+  public static final Unit<Tanninity> GRAM_PER_LITER_AS_TANNIC_ACID =
+      Units.GRAM
+          .divide(Units.LITRE)
+          .asType(Tanninity.class);
+
   public static final Unit<AlcoholByVolume> PERCENT_ABV =
       Units.PERCENT.asType(AlcoholByVolume.class);
 
@@ -78,6 +83,7 @@ public final class BeverageUnits
     addUnit(GRAM_PER_LITRE_AS_CITRIC_ACID);
     //
     addUnit(MILLIGRAM_PER_LITER_AS_TANNIC_ACID);
+    addUnit(GRAM_PER_LITER_AS_TANNIC_ACID);
 
     final var f = SimpleUnitFormat.getInstance();
 
@@ -93,6 +99,7 @@ public final class BeverageUnits
     f.label(GRAM_PER_LITRE_AS_CITRIC_ACID, "g/L as citric acid");
     //
     f.label(MILLIGRAM_PER_LITER_AS_TANNIC_ACID, "mg/L TAE");
+    f.label(GRAM_PER_LITER_AS_TANNIC_ACID, "g/L TAE");
 
   }
 

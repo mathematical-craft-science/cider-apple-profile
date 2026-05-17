@@ -12,6 +12,7 @@ import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;
 import org.junit.jupiter.api.Test;
 
 import static java.util.UUID.randomUUID;
+import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementInstant;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
@@ -34,6 +35,25 @@ class FeedstockBatchTest {
 
     assertThat(batch.source()).isNotNull();
     assertThat(batch.source().value()).isEqualTo("North orchard");
+    assertThat(batch.availableVolume().liters()).isEqualByComparingTo("250.000");
+  }
+
+  @Test
+  void marksBatchAsDeletedWithoutLosingDomainState() {
+    final var deletedAt = feedstockMeasurementInstant();
+    final var batch = FeedstockBatch.create(
+        FeedstockBatchId.newId(),
+        CiderMakerId.of(randomUUID()),
+        FeedstockBatchName.of("Late season fruit"),
+        FeedstockType.APPLE_JUICE,
+        FeedstockSeason.of(LocalDate.parse("2026-10-01"), LocalDate.parse("2026-12-15")),
+        VolumeValue.ofLiters("250.000")
+    );
+
+    batch.delete(deletedAt);
+
+    assertThat(batch.deleted()).isTrue();
+    assertThat(batch.deletedAt()).isEqualTo(deletedAt);
     assertThat(batch.availableVolume().liters()).isEqualByComparingTo("250.000");
   }
 }
