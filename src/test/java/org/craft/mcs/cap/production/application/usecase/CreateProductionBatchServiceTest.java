@@ -1,9 +1,16 @@
 package org.craft.mcs.cap.production.application.usecase;
 
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
+import java.util.function.Supplier;
 import org.craft.mcs.cap.core.feedstock.application.port.out.FeedstockBatchRepository;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
@@ -11,10 +18,11 @@ import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockBatchN
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
 import org.craft.mcs.cap.core.feedstock.domain.model.value.CiderMakerId;
-import org.craft.mcs.cap.core.production.application.ProductionSourceInsufficientAvailableVolumeException;
-import org.craft.mcs.cap.core.production.application.ProductionSourceOwnershipMismatchException;
 import org.craft.mcs.cap.core.production.application.port.in.CreateProductionBatchCommand;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchRepository;
+import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchFeedstockTraceSource;
+import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchTraceRecorder;
+import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchTraceSource;
 import org.craft.mcs.cap.core.production.application.usecase.CreateProductionBatchService;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatch;
 import org.craft.mcs.cap.core.production.domain.model.ProductionInput;
@@ -23,154 +31,152 @@ import org.craft.mcs.cap.core.production.domain.model.ProductionSourceCompositio
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchKind;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchName;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
-import org.craft.mcs.cap.core.production.domain.model.value.ProductionTargetDistance;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
+import org.craft.mcs.cap.shared.platform.TransactionHelper;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
-import static java.util.UUID.randomUUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 
 class CreateProductionBatchServiceTest {
 
-  @Test
-  void createsProductionBatchAndConsumesFeedstockVolumes() {
-    final var ciderMakerId = CiderMakerId.of(randomUUID());
-    final var firstBatch = batch(ciderMakerId, "50");
-    final var secondBatch = batch(ciderMakerId, "60");
-    final var batchRepository = new InMemoryFeedstockBatchRepository(firstBatch, secondBatch);
-    final var productionRepository = new CapturingProductionBatchRepository();
-    final var service = service(batchRepository, productionRepository);
-
-    final var result = service.create(command(
-        ciderMakerId,
-        List.of(
-            new ProductionSourceComponent(firstBatch.batchId(), VolumeValue.ofLiters("10")),
-            new ProductionSourceComponent(secondBatch.batchId(), VolumeValue.ofLiters("30"))
-        ),
-        profileSnapshot("1.045", "8.0", "900")
-    ));
-
-    assertThat(result.productionBatch().kind()).isEqualTo(ProductionBatchKind.CIDER);
-    assertThat(result.productionBatch().volume().liters()).isEqualByComparingTo("40");
-    assertThat(result.productionBatch().profile().sugar().asBigDecimal()).isEqualByComparingTo("1.045");
-    assertThat(result.productionBatch().profile().acidity().asBigDecimal()).isEqualByComparingTo("8.0");
-    assertThat(result.productionBatch().profile().tannin()).isNotNull();
-    assertThat(result.input().targetDistance()).isNotNull();
-    assertThat(result.input().targetDistance().value()).isEqualByComparingTo("0.125");
-    assertThat(batchRepository.findById(firstBatch.batchId()).orElseThrow().availableVolume().liters())
-        .isEqualByComparingTo("40");
-    assertThat(batchRepository.findById(secondBatch.batchId()).orElseThrow().availableVolume().liters())
-        .isEqualByComparingTo("30");
-    assertThat(productionRepository.saved).isNotNull();
-  }
+  private static final Clock CLOCK =
+      Clock.fixed(Instant.parse("2026-05-18T10:15:30Z"), ZoneOffset.UTC);
 
   @Test
-  void rejectsSourceOwnedByAnotherCiderMaker() {
-    final var ciderMakerId = CiderMakerId.of(randomUUID());
-    final var otherBatch = batch(CiderMakerId.of(randomUUID()), "50");
-    final var batchRepository = new InMemoryFeedstockBatchRepository(otherBatch);
-    final var service = service(
-        batchRepository,
-        new CapturingProductionBatchRepository()
+  void createsProductionBatchAndRecordsTraceFactInSameTransaction() {
+    final var transactionHelper = new StagingTransactionHelper();
+    final var ciderMakerId = CiderMakerId.of(UUID.randomUUID());
+    final var feedstockBatch = feedstockBatch(ciderMakerId, "Late juice", "250");
+    final var feedstockRepository = new InMemoryFeedstockBatchRepository(feedstockBatch);
+    final var productionRepository = new StagingProductionBatchRepository(transactionHelper);
+    final var traceability = new CapturingTraceRecorder();
+    final var service = new CreateProductionBatchService(
+        feedstockRepository,
+        productionRepository,
+        traceability,
+        transactionHelper,
+        CLOCK
     );
 
-    assertThatThrownBy(() -> service.create(command(
-        ciderMakerId,
-        List.of(new ProductionSourceComponent(otherBatch.batchId(), VolumeValue.ofLiters("10"))),
-        profileSnapshot("1.060", "5.0", null)
-    )))
-        .isInstanceOf(ProductionSourceOwnershipMismatchException.class);
+    final var created = service.create(command(ciderMakerId, feedstockBatch));
 
-    assertThat(batchRepository.findById(otherBatch.batchId()).orElseThrow().availableVolume().liters())
-        .isEqualByComparingTo("50");
+    assertThat(created.productionBatch()).isNotNull();
+    assertThat(productionRepository.committed).hasSize(1);
+    assertThat(traceability.recorded).isNotNull();
+    assertThat(traceability.recorded.productionBatch()).isEqualTo(created.productionBatch());
+    assertThat(traceability.recorded.sources()).singleElement()
+        .satisfies(source -> {
+          assertThat(source).isInstanceOf(ProductionBatchFeedstockTraceSource.class);
+          assertThat(source.id()).isEqualTo(feedstockBatch.batchId().value().toString());
+          assertThat(source.displayName()).isEqualTo("Late juice");
+          assertThat(source.volume().liters()).isEqualByComparingTo("100");
+        });
+    assertThat(traceability.recorded.occurredAt()).isEqualTo(Instant.now(CLOCK));
+    assertThat(traceability.recorded.note()).isEqualTo("accepted production input");
   }
 
   @Test
-  void rejectsSourceVolumeGreaterThanAvailableVolume() {
-    final var ciderMakerId = CiderMakerId.of(randomUUID());
-    final var batch = batch(ciderMakerId, "5");
-    final var service = service(
-        new InMemoryFeedstockBatchRepository(batch),
-        new CapturingProductionBatchRepository()
+  void doesNotCommitProductionBatchWhenTraceStepCannotBeAppended() {
+    final var transactionHelper = new StagingTransactionHelper();
+    final var ciderMakerId = CiderMakerId.of(UUID.randomUUID());
+    final var feedstockBatch = feedstockBatch(ciderMakerId, "Late juice", "250");
+    final var productionRepository = new StagingProductionBatchRepository(transactionHelper);
+    final var service = new CreateProductionBatchService(
+        new InMemoryFeedstockBatchRepository(feedstockBatch),
+        productionRepository,
+        (productionBatch, sources, occurredAt, note) -> {
+          throw new IllegalStateException("trace persistence failed");
+        },
+        transactionHelper,
+        CLOCK
     );
 
-    assertThatThrownBy(() -> service.create(command(
-        ciderMakerId,
-        List.of(new ProductionSourceComponent(batch.batchId(), VolumeValue.ofLiters("10"))),
-        profileSnapshot("1.060", "5.0", null)
-    )))
-        .isInstanceOf(ProductionSourceInsufficientAvailableVolumeException.class);
+    assertThatThrownBy(() -> service.create(command(ciderMakerId, feedstockBatch)))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessageContaining("trace persistence failed");
+
+    assertThat(productionRepository.committed).isEmpty();
   }
 
-  private static @NonNull CreateProductionBatchService service(
-      @NonNull FeedstockBatchRepository batchRepository,
-      @NonNull ProductionBatchRepository productionRepository
-  ) {
-    return new CreateProductionBatchService(
-        batchRepository,
-        productionRepository
-    );
-  }
-
-  private static @NonNull CreateProductionBatchCommand command(
-      @NonNull CiderMakerId ciderMakerId,
-      @NonNull List<@NonNull ProductionSourceComponent> sources,
-      @NonNull ProductionProfileSnapshot profile
+  private static CreateProductionBatchCommand command(
+      CiderMakerId ciderMakerId,
+      FeedstockBatch feedstockBatch
   ) {
     return new CreateProductionBatchCommand(
         ciderMakerId,
-        ProductionBatchName.of("Tank A"),
+        ProductionBatchName.of("Classic cider path"),
         ProductionBatchKind.CIDER,
         new ProductionInput(
-            ProductionSourceComposition.of(sources),
-            profile,
-            ProductionTargetDistance.of(new java.math.BigDecimal("0.125"))
+            ProductionSourceComposition.of(List.of(new ProductionSourceComponent(
+                feedstockBatch.batchId(),
+                VolumeValue.ofLiters("100")
+            ))),
+            new ProductionProfileSnapshot(
+                SpecificGravityValue.of("1.052"),
+                TitratableAcidityValue.of("5.8"),
+                TanninityValue.of("1200")
+            ),
+            null
         ),
-        null
+        "accepted production input"
     );
   }
 
-  private static @NonNull FeedstockBatch batch(
-      @NonNull CiderMakerId ciderMakerId,
-      @NonNull String availableVolumeLiters
+  private static FeedstockBatch feedstockBatch(
+      CiderMakerId ciderMakerId,
+      String name,
+      String volumeLiters
   ) {
     return FeedstockBatch.create(
         FeedstockBatchId.newId(),
         ciderMakerId,
-        FeedstockBatchName.of("Harvest batch"),
+        FeedstockBatchName.of(name),
         FeedstockType.APPLE_JUICE,
-        FeedstockSeason.of(LocalDate.parse("2026-09-01"), LocalDate.parse("2026-12-31")),
-        VolumeValue.ofLiters(availableVolumeLiters)
+        FeedstockSeason.of(LocalDate.parse("2026-10-01"), LocalDate.parse("2026-12-15")),
+        VolumeValue.ofLiters(volumeLiters)
     );
   }
 
-  private static @NonNull ProductionProfileSnapshot profileSnapshot(
-      @NonNull String sg,
-      @NonNull String acidity,
-      String tannin
+  private record RecordedTrace(
+      ProductionBatch productionBatch,
+      List<ProductionBatchTraceSource> sources,
+      Instant occurredAt,
+      String note
   ) {
-    return new ProductionProfileSnapshot(
-        SpecificGravityValue.of(sg),
-        TitratableAcidityValue.of(acidity),
-        tannin == null ? null : TanninityValue.of(tannin)
-    );
   }
 
-  private static final class InMemoryFeedstockBatchRepository
-      implements FeedstockBatchRepository {
+  private static final class CapturingTraceRecorder implements ProductionBatchTraceRecorder {
 
-    private final @NonNull HashMap<@NonNull FeedstockBatchId, @NonNull FeedstockBatch> batches = new HashMap<>();
+    private RecordedTrace recorded;
 
-    InMemoryFeedstockBatchRepository(@NonNull FeedstockBatch... batches) {
-      for (final var batch : batches) {
-        this.batches.put(batch.batchId(), batch);
-      }
+    @Override
+    public void recordCreated(
+        @NonNull ProductionBatch productionBatch,
+        @NonNull List<@NonNull ProductionBatchTraceSource> sources,
+        @NonNull Instant occurredAt,
+        String note
+    ) {
+      recorded = new RecordedTrace(
+          productionBatch,
+          List.copyOf(sources),
+          occurredAt,
+          note
+      );
+    }
+  }
+
+  private static final class InMemoryFeedstockBatchRepository implements FeedstockBatchRepository {
+
+    private final Map<FeedstockBatchId, FeedstockBatch> batches = new HashMap<>();
+
+    private InMemoryFeedstockBatchRepository(FeedstockBatch batch) {
+      batches.put(batch.batchId(), batch);
     }
 
     @Override
@@ -197,15 +203,48 @@ class CreateProductionBatchServiceTest {
     }
   }
 
-  private static final class CapturingProductionBatchRepository
-      implements ProductionBatchRepository {
+  private static final class StagingProductionBatchRepository implements ProductionBatchRepository {
 
-    private ProductionBatch saved;
+    private final StagingTransactionHelper transactionHelper;
+    private final List<ProductionBatch> committed = new ArrayList<>();
+
+    private StagingProductionBatchRepository(StagingTransactionHelper transactionHelper) {
+      this.transactionHelper = transactionHelper;
+    }
 
     @Override
     public @NonNull ProductionBatch save(@NonNull ProductionBatch productionBatch) {
-      saved = productionBatch;
+      transactionHelper.stage(() -> committed.add(productionBatch));
       return productionBatch;
+    }
+  }
+
+  private static final class StagingTransactionHelper implements TransactionHelper {
+
+    private final List<Runnable> stagedActions = new ArrayList<>();
+
+    @Override
+    public @NonNull <T> T callInTransactionNonNull(@NonNull Supplier<T> supplier) {
+      stagedActions.clear();
+      try {
+        final T result = supplier.get();
+        stagedActions.forEach(Runnable::run);
+        return result;
+      } finally {
+        stagedActions.clear();
+      }
+    }
+
+    @Override
+    public void executeInTransaction(@NonNull Runnable runnable) {
+      callInTransactionNonNull(() -> {
+        runnable.run();
+        return Boolean.TRUE;
+      });
+    }
+
+    private void stage(Runnable action) {
+      stagedActions.add(action);
     }
   }
 }
