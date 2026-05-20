@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 import org.craft.mcs.cap.core.feedstock.application.port.in.FeedstockBatchCriteria;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
+import org.craft.mcs.cap.shared.application.ApplicationValidationException;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -27,7 +28,7 @@ class FeedstockBatchCriteriaTest {
   @Test
   void rejectsEmptyBatchIds() {
     assertThatThrownBy(() -> new FeedstockBatchCriteria(Set.of()))
-        .isInstanceOf(IllegalArgumentException.class)
+        .isInstanceOf(ApplicationValidationException.class)
         .hasMessageContaining("cannot be empty");
   }
 }

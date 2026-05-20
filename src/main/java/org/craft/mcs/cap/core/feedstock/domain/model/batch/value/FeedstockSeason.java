@@ -1,5 +1,7 @@
 package org.craft.mcs.cap.core.feedstock.domain.model.batch.value;
 
+import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
+
 import java.time.LocalDate;
 import org.jmolecules.ddd.annotation.ValueObject;
 import org.jspecify.annotations.NonNull;
@@ -18,7 +20,7 @@ public record FeedstockSeason(
     requireNonNull(endsOn, "feedstock season end date cannot be null");
 
     if (endsOn.isBefore(startsOn)) {
-      throw new IllegalArgumentException("feedstock season end date cannot be before start date");
+      throw new DomainRuleViolationException("feedstock season end date cannot be before start date");
     }
   }
 

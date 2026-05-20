@@ -1,28 +1,27 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.production.mapper;
 
-import org.craft.mcs.cap.core.cideranalysis.composition.calculation.application.port.in.CalculateChemicalProfileCompositionResult;
-import org.craft.mcs.cap.core.cideranalysis.composition.calculation.domain.ChemicalProfileCompositionSource;
-import org.craft.mcs.cap.core.cideranalysis.composition.calculation.domain.ChemicalProfileCompositionCalculatorCode;
-import org.craft.mcs.cap.core.cideranalysis.composition.calculation.domain.ChemicalProfileCompositionTanninPolicy;
-import org.craft.mcs.cap.core.cideranalysis.composition.calculation.domain.AbsoluteCompositionVolume;
-import org.craft.mcs.cap.core.cideranalysis.profiletarget.scoring.application.port.in.ProfileTargetScoringPurpose;
-import org.craft.mcs.cap.core.cideranalysis.profiletarget.scoring.domain.ProfileAxisNormalizerCode;
-import org.craft.mcs.cap.core.cideranalysis.profiletarget.scoring.domain.ProfileTargetObjectiveFunctionCode;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.value.CiderMakerId;
 import org.craft.mcs.cap.core.production.application.port.in.CreateProductionBatchCommand;
-import org.craft.mcs.cap.core.production.application.port.in.CreateProductionBatchSourceCommand;
 import org.craft.mcs.cap.core.production.application.port.in.ProductionBatchCreated;
+import org.craft.mcs.cap.core.production.domain.model.ProductionInput;
+import org.craft.mcs.cap.core.production.domain.model.ProductionSourceComponent;
+import org.craft.mcs.cap.core.production.domain.model.ProductionSourceComposition;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchName;
+import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
+import org.craft.mcs.cap.core.production.domain.model.value.ProductionTargetDistance;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.CreateProductionBatchRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.CreateProductionBatchSourceRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.ProductionBatchCompositionResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.ProductionBatchResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.ProductionBatchSourceResponse;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.mapper.ProfileTargetRestMapper;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.sugaracidity.mapper.SugarAcidityZoneRestMapper;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.target.domain.SugarAcidityTargetResolver;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.ProductionProfileSnapshotRequest;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.sugaracidity.dto.CalculatedSugarAcidityAxisPointResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.sugaracidity.dto.SugarAcidityProfilePointResponse;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TanninityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;
+import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
@@ -34,42 +33,21 @@ public final class ProductionBatchRestMapper {
   }
 
   public static @NonNull CreateProductionBatchCommand toCommand(
-      @NonNull CreateProductionBatchRequest request,
-      @NonNull SugarAcidityTargetResolver targetResolver
+      @NonNull CreateProductionBatchRequest request
   ) {
     requireNonNull(request, "create production batch request cannot be null");
-    requireNonNull(targetResolver, "sugar-acidity target resolver cannot be null");
 
-    final ProfileTargetScoringPurpose scoringPurpose = request.scoringPurpose() == null
-        ? ProfileTargetScoringPurpose.BLENDING_PLANNING
-        : request.scoringPurpose();
-    final ChemicalProfileCompositionTanninPolicy tanninPolicy = request.tanninPolicy() == null
-        ? defaultTanninPolicy(request)
-        : request.tanninPolicy();
-    final ChemicalProfileCompositionCalculatorCode calculator = request.calculator() == null
-        ? ChemicalProfileCompositionCalculatorCode.MASS_BALANCE
-        : request.calculator();
-    final ProfileAxisNormalizerCode normalizer = request.normalizer() == null
-        ? ProfileTargetRestMapper.normalizerFor(scoringPurpose)
-        : request.normalizer();
-    final ProfileTargetObjectiveFunctionCode objectiveFunction = request.objectiveFunction() == null
-        ? ProfileTargetObjectiveFunctionCode.DISTANCE_TO_TARGET_AREA
-        : request.objectiveFunction();
-
-    return new CreateProductionBatchCommand( // NOSONAR
+    return new CreateProductionBatchCommand(
         CiderMakerId.of(requireNonNull(request.ciderMakerId(), "cider maker id cannot be null")),
         ProductionBatchName.of(request.name()),
         requireNonNull(request.kind(), "production batch kind cannot be null"),
-        request.sources().stream()
-            .map(ProductionBatchRestMapper::toSourceCommand)
-            .toList(),
-        tanninPolicy,
-        ProfileTargetRestMapper.toTargetObjective(request.target(), request.tanninTarget(), targetResolver),
-        ProfileTargetRestMapper.toWeights(request.weights()),
-        scoringPurpose,
-        calculator,
-        normalizer,
-        objectiveFunction,
+        new ProductionInput(
+            ProductionSourceComposition.of(request.sources().stream()
+                .map(ProductionBatchRestMapper::toSourceComponent)
+                .toList()),
+            toProfileSnapshot(request.profile()),
+            request.targetDistance() == null ? null : ProductionTargetDistance.of(request.targetDistance()) // NOSONAR
+        ),
         request.note()
     );
   }
@@ -84,59 +62,68 @@ public final class ProductionBatchRestMapper {
         batch.name().value(),
         batch.kind(),
         batch.status(),
-        toCompositionResponse(created.composition()),
+        toCompositionResponse(created.input()),
         batch.note()
     );
   }
 
-  private static @NonNull CreateProductionBatchSourceCommand toSourceCommand(
+  private static @NonNull ProductionSourceComponent toSourceComponent(
       @NonNull CreateProductionBatchSourceRequest request
   ) {
     requireNonNull(request, "create production batch source request cannot be null");
-    return new CreateProductionBatchSourceCommand(
+    return new ProductionSourceComponent(
         FeedstockBatchId.of(requireNonNull(request.feedstockBatchId(), "feedstock batch id cannot be null")),
         VolumeValue.ofLiters(request.volumeLiters())
     );
   }
 
-  private static @NonNull ProductionBatchCompositionResponse toCompositionResponse(
-      @NonNull CalculateChemicalProfileCompositionResult result
+  private static @NonNull ProductionProfileSnapshot toProfileSnapshot(
+      @NonNull ProductionProfileSnapshotRequest request
   ) {
-    requireNonNull(result, "production composition result cannot be null");
-    final var composition = result.composition();
+    requireNonNull(request, "production profile snapshot request cannot be null");
+    return new ProductionProfileSnapshot(
+        SpecificGravityValue.of(request.sugar()),
+        TitratableAcidityValue.of(request.acidity()),
+        request.tannin() == null ? null : TanninityValue.of(request.tannin()) // NOSONAR
+    );
+  }
+
+  private static @NonNull ProductionBatchCompositionResponse toCompositionResponse(
+      @NonNull ProductionInput input
+  ) {
+    requireNonNull(input, "production input cannot be null");
+    final var composition = input.sourceComposition();
 
     return new ProductionBatchCompositionResponse(
         composition.sources().stream()
             .map(ProductionBatchRestMapper::toSourceResponse)
             .toList(),
-        SugarAcidityZoneRestMapper.toResponse(composition.profile()),
-        requireNonNull(composition.totalVolume(), "production composition total volume cannot be null").liters(),
-        composition.warnings(),
-        result.normalizerCode(),
-        result.targetDistance() == null ? null : ProfileTargetRestMapper.toResponse(result.targetDistance()) // NOSONAR
+        toProfilePointResponse(input.profile()),
+        composition.totalVolume().liters(),
+        input.targetDistance() == null ? null : input.targetDistance().value() // NOSONAR
     );
   }
 
   private static @NonNull ProductionBatchSourceResponse toSourceResponse(
-      @NonNull ChemicalProfileCompositionSource source
+      @NonNull ProductionSourceComponent source
   ) {
-    requireNonNull(source, "production composition source cannot be null");
-
-    if (!(source.weight() instanceof AbsoluteCompositionVolume(VolumeValue volume))) {
-      throw new IllegalStateException("production composition source must use absolute volume");
-    }
-
+    requireNonNull(source, "production source component cannot be null");
     return new ProductionBatchSourceResponse(
-        java.util.UUID.fromString(source.reference().id()),
-        volume.liters()
+        source.feedstockBatchId().value(),
+        source.volume().liters()
     );
   }
 
-  private static @NonNull ChemicalProfileCompositionTanninPolicy defaultTanninPolicy(
-      @NonNull CreateProductionBatchRequest request
+  private static @NonNull SugarAcidityProfilePointResponse toProfilePointResponse(
+      @NonNull ProductionProfileSnapshot profile
   ) {
-    return request.tanninTarget() == null
-        ? ChemicalProfileCompositionTanninPolicy.CALCULATE_WHEN_COMPLETE
-        : ChemicalProfileCompositionTanninPolicy.REQUIRE_TANNIN;
+    requireNonNull(profile, "production profile snapshot cannot be null");
+    return new SugarAcidityProfilePointResponse(
+        new CalculatedSugarAcidityAxisPointResponse(profile.sugar().asBigDecimal()),
+        new CalculatedSugarAcidityAxisPointResponse(profile.acidity().asBigDecimal()),
+        profile.tannin() == null
+            ? null
+            : new CalculatedSugarAcidityAxisPointResponse(profile.tannin().asBigDecimal()) // NOSONAR
+    );
   }
 }

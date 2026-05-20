@@ -1,5 +1,7 @@
 package org.craft.mcs.cap.core.feedstock.application.port.in;
 
+import org.craft.mcs.cap.shared.application.ApplicationValidationException;
+
 import org.craft.mcs.cap.core.cideranalysis.sugaracidity.zone.domain.SugarAcidityZoneAssessment;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurementId;
@@ -30,7 +32,7 @@ public record FeedstockBatchCurrentSugarAcidityZoneResult(
     requireNonNull(capabilityAssessment, "chemical profile capability assessment cannot be null");
 
     if (plottable && assessment == null) {
-      throw new IllegalArgumentException("plottable feedstock batch current result must contain assessment");
+      throw new ApplicationValidationException("plottable feedstock batch current result must contain assessment");
     }
   }
 }

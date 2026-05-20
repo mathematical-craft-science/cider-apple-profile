@@ -1,5 +1,7 @@
 package org.craft.mcs.cap.core.production.domain.model.value;
 
+import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
+
 import org.jmolecules.ddd.annotation.ValueObject;
 import org.jspecify.annotations.NonNull;
 
@@ -15,10 +17,10 @@ public record ProductionBatchName(@NonNull String value) {
     requireNonNull(value, "production batch name cannot be null");
     value = value.strip();
     if (value.isEmpty()) {
-      throw new IllegalArgumentException("production batch name cannot be blank");
+      throw new DomainRuleViolationException("production batch name cannot be blank");
     }
     if (value.length() > MAX_LENGTH) {
-      throw new IllegalArgumentException("production batch name cannot be longer than " + MAX_LENGTH);
+      throw new DomainRuleViolationException("production batch name cannot be longer than " + MAX_LENGTH);
     }
   }
 

@@ -1,6 +1,9 @@
 package org.craft.mcs.cap.shared.kernel.measurement;
 
+import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
+
 import java.math.BigDecimal;
+import java.util.Objects;
 import javax.measure.Quantity;
 import javax.measure.Unit;
 import org.jspecify.annotations.NonNull;
@@ -30,7 +33,7 @@ public abstract class MeasuredValue<Q extends Quantity<Q>, SELF extends Measured
     requireNonNull(value);
 
     if (!unit.equals(value.getUnit())) {
-      throw new IllegalArgumentException(
+      throw new DomainRuleViolationException(
           "Unit mismatch. Expected " + unit + ", got " + value.getUnit()
       );
     }
@@ -75,7 +78,7 @@ public abstract class MeasuredValue<Q extends Quantity<Q>, SELF extends Measured
 
   private void validateRange(@NonNull BigDecimal v) {
     if (v.compareTo(min) < 0 || v.compareTo(max) > 0) {
-      throw new IllegalArgumentException(
+      throw new DomainRuleViolationException(
           "Value " + v + " out of range [" + min + ", " + max + "]"
       );
     }
@@ -85,5 +88,23 @@ public abstract class MeasuredValue<Q extends Quantity<Q>, SELF extends Measured
   public final int compareTo(@NonNull SELF other) {
     requireNonNull(other);
     return this.asBigDecimal().compareTo(other.asBigDecimal());
+  }
+
+  @Override
+  public final boolean equals(Object other) {
+    if (this == other) {
+      return true;
+    }
+    if (other == null || getClass() != other.getClass()) {
+      return false;
+    }
+    final var that = (MeasuredValue<?, ?>) other;
+    return unit.equals(that.unit)
+        && asBigDecimal().compareTo(that.asBigDecimal()) == 0;
+  }
+
+  @Override
+  public final int hashCode() {
+    return Objects.hash(getClass(), unit, asBigDecimal().stripTrailingZeros());
   }
 }

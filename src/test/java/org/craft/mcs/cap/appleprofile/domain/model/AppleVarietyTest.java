@@ -1,5 +1,7 @@
 package org.craft.mcs.cap.appleprofile.domain.model;
 
+import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
+
 import java.util.UUID;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVariety;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyId;
@@ -61,6 +63,6 @@ class AppleVarietyTest {
   @Test
   void rejectsBlankName() {
     assertThatThrownBy(() -> AppleVarietyName.of(" "))
-        .isInstanceOf(IllegalArgumentException.class);
+        .isInstanceOf(DomainRuleViolationException.class);
   }
 }

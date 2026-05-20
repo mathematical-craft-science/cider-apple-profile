@@ -1,5 +1,7 @@
 package org.craft.mcs.cap.core.cideranalysis.profiletarget.scoring.domain;
 
+import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
+
 import java.math.BigDecimal;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -32,13 +34,13 @@ public record ProfileTargetObjectiveWeights(
     requireNonNull(sugar, "sugar objective weight cannot be null");
     requireNonNull(acidity, "acidity objective weight cannot be null");
     if (sugar.compareTo(BigDecimal.ZERO) <= 0) {
-      throw new IllegalArgumentException("sugar objective weight must be positive");
+      throw new DomainRuleViolationException("sugar objective weight must be positive");
     }
     if (acidity.compareTo(BigDecimal.ZERO) <= 0) {
-      throw new IllegalArgumentException("acidity objective weight must be positive");
+      throw new DomainRuleViolationException("acidity objective weight must be positive");
     }
     if (tannin != null && tannin.compareTo(BigDecimal.ZERO) <= 0) {
-      throw new IllegalArgumentException("tannin objective weight must be positive");
+      throw new DomainRuleViolationException("tannin objective weight must be positive");
     }
   }
 

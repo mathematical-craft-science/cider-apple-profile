@@ -8,11 +8,13 @@ import java.util.Set;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.chemical.capability.ChemicalProfileCapabilityNotMetException;
 import org.jspecify.annotations.NonNull;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import static org.craft.mcs.cap.infrastructure.adapter.in.rest.support.RestProblem.create;
+import static org.craft.mcs.cap.infrastructure.adapter.in.rest.support.RestProblem.response;
 
 
 @RestControllerAdvice
@@ -20,6 +22,9 @@ public final class ChemicalProfileExceptionHandler {
 
   private static final @NonNull URI CHEMICAL_PROFILE_CAPABILITY_NOT_MET =
       URI.create("urn:problem-type:chemical-profile-capability-not-met");
+  private static final @NonNull URI UNSUPPORTED_CHEMICAL_MEASUREMENT_UNIT =
+      URI.create("urn:problem-type:unsupported-chemical-measurement-unit");
+  private static final int BAD_REQUEST = 400;
   private static final int UNPROCESSABLE_ENTITY = 422;
 
   @ExceptionHandler(ChemicalProfileCapabilityNotMetException.class)
@@ -27,30 +32,30 @@ public final class ChemicalProfileExceptionHandler {
       @NonNull ChemicalProfileCapabilityNotMetException exception
   ) {
     final var assessment = exception.assessment();
-    final var problem = ProblemDetail.forStatus(UNPROCESSABLE_ENTITY);
-
-    problem.setType(CHEMICAL_PROFILE_CAPABILITY_NOT_MET);
-    problem.setTitle("Chemical profile does not meet capability requirements");
-    problem.setDetail("Chemical profile is missing measurements required for " + assessment.capability().name());
+    final var problem = create(
+        UNPROCESSABLE_ENTITY,
+        CHEMICAL_PROFILE_CAPABILITY_NOT_MET,
+        "Chemical profile does not meet capability requirements",
+        "Chemical profile is missing measurements required for " + assessment.capability().name()
+    );
     problem.setProperty("capability", assessment.capability().name());
     problem.setProperty("requiredAxes", axisNames(assessment.requiredAxes()));
     problem.setProperty("presentAxes", axisNames(assessment.presentAxes()));
     problem.setProperty("missingAxes", axisNames(assessment.missingAxes()));
 
-    return ResponseEntity
-        .status(UNPROCESSABLE_ENTITY)
-        .body(problem);
+    return response(UNPROCESSABLE_ENTITY, problem);
   }
 
   @ExceptionHandler(UnsupportedChemicalMeasurementUnitException.class)
   public @NonNull ResponseEntity<@NonNull ProblemDetail> handleUnsupportedChemicalMeasurementUnit(
       @NonNull UnsupportedChemicalMeasurementUnitException exception
   ) {
-    final var problem = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
-    problem.setTitle("Unsupported chemical measurement unit");
-    problem.setDetail(exception.getMessage());
-
-    return ResponseEntity.badRequest().body(problem);
+    return response(
+        BAD_REQUEST,
+        UNSUPPORTED_CHEMICAL_MEASUREMENT_UNIT,
+        "Unsupported chemical measurement unit",
+        exception.getMessage()
+    );
   }
 
   private static @NonNull List<@NonNull String> axisNames(

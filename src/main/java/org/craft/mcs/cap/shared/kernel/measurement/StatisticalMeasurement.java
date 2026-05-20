@@ -1,5 +1,7 @@
 package org.craft.mcs.cap.shared.kernel.measurement;
 
+import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
+
 import java.math.BigDecimal;
 import org.jmolecules.ddd.annotation.ValueObject;
 import org.jspecify.annotations.NonNull;
@@ -20,11 +22,11 @@ public record StatisticalMeasurement<T extends Comparable<T>>(
     requireNonNull(mean, "mean measured value cannot be null");
 
     if (standardDeviation != null && standardDeviation.signum() < 0) {
-      throw new IllegalArgumentException("standard deviation must not be negative");
+      throw new DomainRuleViolationException("standard deviation must not be negative");
     }
 
     if (sampleSize != null && sampleSize <= 0) {
-      throw new IllegalArgumentException("sample size must be positive");
+      throw new DomainRuleViolationException("sample size must be positive");
     }
   }
 

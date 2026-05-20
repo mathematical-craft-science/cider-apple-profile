@@ -1,5 +1,7 @@
 package org.craft.mcs.cap.feedstock.domain.model.measurement;
 
+import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
+
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurement;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurementId;
@@ -26,7 +28,7 @@ class FeedstockMeasurementTest {
         chemicalProfile(),
         futureInstant()
     ))
-        .isInstanceOf(IllegalArgumentException.class)
+        .isInstanceOf(DomainRuleViolationException.class)
         .hasMessage("feedstock measurement date cannot be in the future");
   }
 
@@ -41,7 +43,7 @@ class FeedstockMeasurementTest {
     );
 
     assertThatThrownBy(() -> measurement.changeMeasuredAt(futureInstant()))
-        .isInstanceOf(IllegalArgumentException.class)
+        .isInstanceOf(DomainRuleViolationException.class)
         .hasMessage("feedstock measurement date cannot be in the future");
   }
 

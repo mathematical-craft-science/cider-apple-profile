@@ -1,13 +1,14 @@
 package org.craft.mcs.cap.shared.kernel.chemical.capability;
 
 import java.io.Serial;
+import org.craft.mcs.cap.shared.kernel.DomainException;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
 
 
 public final class ChemicalProfileCapabilityNotMetException
-    extends RuntimeException {
+    extends DomainException {
 
   @Serial
   private static final long serialVersionUID = 1L;

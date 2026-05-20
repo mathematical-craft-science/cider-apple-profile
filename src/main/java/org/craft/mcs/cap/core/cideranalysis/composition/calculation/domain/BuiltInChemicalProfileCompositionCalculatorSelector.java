@@ -37,7 +37,7 @@ public final class BuiltInChemicalProfileCompositionCalculatorSelector
     requireNonNull(code, "chemical profile composition calculator code cannot be null");
     final var calculator = calculators.get(code);
     if (calculator == null) { // NOSONAR
-      throw new IllegalArgumentException("No chemical profile composition calculator registered for code: " + code);
+      throw new UnsupportedChemicalProfileCompositionCalculatorException(code);
     }
     return calculator;
   }

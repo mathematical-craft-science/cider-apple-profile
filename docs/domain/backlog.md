@@ -922,6 +922,46 @@ record ProductionOperation(
 - `STABILIZATION`;
 - `SULFITE_ADDITION`;
 - `NUTRIENT_ADDITION`.
+- `FRUIT_BERRY_JUICE_ADDITION`.
+
+#### Внесение фруктового или ягодного сока
+
+Нужно поддержать операцию внесения внешнего фруктового/ягодного сока в
+`FeedstockBatch` или `ProductionBatch` на любом допустимом этапе производства.
+Это технологическая операция, а не marketplace/sourcing-сценарий.
+
+Операция должна фиксировать:
+
+- тип добавляемого материала: fruit juice, berry juice, mixed juice, custom;
+- название/описание источника;
+- добавляемый объем;
+- chemical profile добавляемого сока: sugar/SG, acidity/TA, optional tannin,
+  optional pH и другие будущие параметры;
+- volume/profile snapshot партии до операции;
+- ожидаемый calculated profile после операции;
+- measured profile after, если сидродел сделал измерение после внесения;
+- performedAt, performedBy?, note?.
+
+Инварианты:
+
+- операция может увеличивать текущий объем только при наличии явного external
+  input source;
+- расчет expected profile должен использовать composition/mass-balance model,
+  а не простую ручную правку полей партии;
+- если после внесения нет измерения, resulting profile должен быть помечен как
+  calculated/estimated, а не lab-measured;
+- traceability step должен иметь input subject для текущей партии и external
+  additive/source snapshot, output subject - обновленную партию или новую партию,
+  если меняется material identity.
+
+User stories:
+
+- Как сидродел, я хочу добавить сок груши, айвы, вишни или ягоды в текущую
+  партию, чтобы скорректировать профиль или создать смешанный продукт.
+- Как технолог, я хочу видеть, как внесение сока изменило volume, SG, TA и
+  tannin, чтобы принять решение о ферментации или дальнейших корректировках.
+- Как сидродел, я хочу видеть эту операцию в traceability graph, чтобы понимать
+  происхождение итогового продукта.
 
 #### Технологические профили
 

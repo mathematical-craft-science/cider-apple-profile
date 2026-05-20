@@ -1,5 +1,7 @@
 package org.craft.mcs.cap.core.feedstock.domain.model.measurement;
 
+import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
+
 import java.time.Instant;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.value.FeedstockMeasurementName;
@@ -134,7 +136,7 @@ public final class FeedstockMeasurement {
   private static @NonNull Instant validMeasuredAt(@NonNull Instant measuredAt) {
     requireNonNull(measuredAt, "measured at cannot be null");
     if (measuredAt.isAfter(Instant.now())) {
-      throw new IllegalArgumentException("feedstock measurement date cannot be in the future");
+      throw new DomainRuleViolationException("feedstock measurement date cannot be in the future");
     }
     return measuredAt;
   }

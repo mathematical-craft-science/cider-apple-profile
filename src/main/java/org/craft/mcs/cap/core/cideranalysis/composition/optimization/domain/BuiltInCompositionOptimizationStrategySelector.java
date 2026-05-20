@@ -37,7 +37,7 @@ public final class BuiltInCompositionOptimizationStrategySelector implements Com
     requireNonNull(algorithm, "composition optimization algorithm cannot be null");
     final var strategy = strategies.get(algorithm);
     if (strategy == null) { // NOSONAR
-      throw new IllegalArgumentException("No composition optimization strategy registered for algorithm: " + algorithm);
+      throw new UnsupportedCompositionOptimizationStrategyException(algorithm);
     }
     return strategy;
   }

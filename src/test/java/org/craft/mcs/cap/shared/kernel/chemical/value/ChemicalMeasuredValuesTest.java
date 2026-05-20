@@ -1,5 +1,7 @@
 package org.craft.mcs.cap.shared.kernel.chemical.value;
 
+import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
+
 import org.craft.mcs.cap.shared.kernel.sugar.BrixValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.junit.jupiter.api.Test;
@@ -27,18 +29,18 @@ class ChemicalMeasuredValuesTest {
   @Test
   void rejectsOutOfRangeValues() {
     assertThatThrownBy(() -> SpecificGravityValue.of("0.999"))
-        .isInstanceOf(IllegalArgumentException.class);
+        .isInstanceOf(DomainRuleViolationException.class);
     assertThatThrownBy(() -> SpecificGravityValue.of("1.201"))
-        .isInstanceOf(IllegalArgumentException.class);
+        .isInstanceOf(DomainRuleViolationException.class);
     assertThatThrownBy(() -> BrixValue.of("-0.1"))
-        .isInstanceOf(IllegalArgumentException.class);
+        .isInstanceOf(DomainRuleViolationException.class);
     assertThatThrownBy(() -> BrixValue.of("32.1"))
-        .isInstanceOf(IllegalArgumentException.class);
+        .isInstanceOf(DomainRuleViolationException.class);
     assertThatThrownBy(() -> TitratableAcidityValue.of("-0.1"))
-        .isInstanceOf(IllegalArgumentException.class);
+        .isInstanceOf(DomainRuleViolationException.class);
     assertThatThrownBy(() -> TanninityValue.of("12000.1"))
-        .isInstanceOf(IllegalArgumentException.class);
+        .isInstanceOf(DomainRuleViolationException.class);
     assertThatThrownBy(() -> PhValue.of("15.1"))
-        .isInstanceOf(IllegalArgumentException.class);
+        .isInstanceOf(DomainRuleViolationException.class);
   }
 }

@@ -2,14 +2,16 @@ package org.craft.mcs.cap.core.cideranalysis.sugaracidity.target.domain;
 
 
 import java.io.Serial;
+import org.craft.mcs.cap.shared.kernel.DomainException;
+import org.jspecify.annotations.NonNull;
 
 
-public final class SugarAcidityTargetResolutionException extends RuntimeException {
+public final class SugarAcidityTargetResolutionException extends DomainException {
 
   @Serial
   private static final long serialVersionUID = 1L;
 
-  public SugarAcidityTargetResolutionException(String message) {
+  public SugarAcidityTargetResolutionException(@NonNull String message) {
     super(message);
   }
 }

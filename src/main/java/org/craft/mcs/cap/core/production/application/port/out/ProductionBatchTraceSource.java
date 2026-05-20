@@ -1,0 +1,23 @@
+package org.craft.mcs.cap.core.production.application.port.out;
+
+import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
+
+/**
+ * Source snapshot used by production to record traceability facts.
+ *
+ * <p>The sealed hierarchy keeps production language explicit without mirroring traceability's
+ * subject enum. The infrastructure adapter chooses how each production source type is represented
+ * in Batch Traceability.
+ */
+public sealed interface ProductionBatchTraceSource
+    permits ProductionBatchFeedstockTraceSource, ProductionBatchCompositionTraceSource {
+
+  @NonNull String id();
+
+  @Nullable String displayName();
+
+  @NonNull VolumeValue volume();
+}

@@ -1,6 +1,7 @@
 package org.craft.mcs.cap.core.appleprofile.application.usecase;
 
 import lombok.RequiredArgsConstructor;
+import org.craft.mcs.cap.core.appleprofile.application.AppleVarietyNotFoundException;
 import org.craft.mcs.cap.core.appleprofile.application.port.in.AppleVarietyNorthAmericanClassification;
 import org.craft.mcs.cap.core.appleprofile.application.port.in.ClassifyAppleVarietyNorthAmericanUseCase;
 import org.craft.mcs.cap.core.appleprofile.application.port.out.AppleVarietyRepository;
@@ -42,7 +43,7 @@ public final class ClassifyAppleVarietyNorthAmericanService
     requireNonNull(varietyId, "apple variety id cannot be null");
 
     final var variety = appleVarietyRepository.findById(varietyId)
-        .orElseThrow(() -> new IllegalArgumentException("apple variety not found: " + varietyId.value()));
+        .orElseThrow(() -> new AppleVarietyNotFoundException(varietyId));
 
     final var axes = axisExtractor.extract(variety.chemicalProfile());
     final var capabilityAssessment = capabilityAssessor.assess(

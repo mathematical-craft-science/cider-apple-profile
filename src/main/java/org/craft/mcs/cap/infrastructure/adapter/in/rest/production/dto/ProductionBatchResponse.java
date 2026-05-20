@@ -20,7 +20,7 @@ public record ProductionBatchResponse(
     @NonNull ProductionBatchKind kind,
     @Schema(description = "Production batch status.", implementation = ProductionBatchStatus.class, example = "PLANNED")
     @NonNull ProductionBatchStatus status,
-    @Schema(description = "Calculated source composition snapshot.")
+    @Schema(description = "Accepted source composition snapshot.")
     @NonNull ProductionBatchCompositionResponse composition,
     @Schema(description = "Optional production note.", example = "Planned first fermentation in tank A.")
     @Nullable String note

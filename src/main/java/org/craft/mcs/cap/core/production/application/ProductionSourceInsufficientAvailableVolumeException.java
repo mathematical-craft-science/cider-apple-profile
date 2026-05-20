@@ -1,6 +1,7 @@
 package org.craft.mcs.cap.core.production.application;
 
 import java.io.Serial;
+import org.craft.mcs.cap.shared.application.ApplicationUnprocessableException;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;
 import org.jspecify.annotations.NonNull;
@@ -8,8 +9,9 @@ import org.jspecify.annotations.NonNull;
 import static java.util.Objects.requireNonNull;
 
 
+@SuppressWarnings("java:S110")
 public final class ProductionSourceInsufficientAvailableVolumeException
-    extends RuntimeException {
+    extends ApplicationUnprocessableException {
 
   @Serial
   private static final long serialVersionUID = 1L;

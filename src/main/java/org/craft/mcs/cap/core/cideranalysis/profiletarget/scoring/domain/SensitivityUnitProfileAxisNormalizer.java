@@ -1,5 +1,7 @@
 package org.craft.mcs.cap.core.cideranalysis.profiletarget.scoring.domain;
 
+import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
+
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.EnumMap;
@@ -32,7 +34,7 @@ public final class SensitivityUnitProfileAxisNormalizer implements ProfileAxisNo
       requireNonNull(axis, "profile evaluation axis cannot be null");
       requireNonNull(unit, "axis sensitivity unit cannot be null");
       if (unit.compareTo(BigDecimal.ZERO) <= 0) {
-        throw new IllegalArgumentException("axis sensitivity unit must be positive: " + axis);
+        throw new DomainRuleViolationException("axis sensitivity unit must be positive: " + axis);
       }
       unitMap.put(axis, unit);
     });
@@ -56,7 +58,7 @@ public final class SensitivityUnitProfileAxisNormalizer implements ProfileAxisNo
     requireNonNull(value, "axis value cannot be null");
     final var unit = units.get(axis);
     if (unit == null) { // NOSONAR
-      throw new IllegalArgumentException("No sensitivity unit configured for axis: " + axis);
+      throw new DomainRuleViolationException("No sensitivity unit configured for axis: " + axis);
     }
     return value.divide(unit, MATH_CONTEXT);
   }

@@ -1,5 +1,7 @@
 package org.craft.mcs.cap.core.fermentation.domain;
 
+import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
+
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.jspecify.annotations.NonNull;
 
@@ -23,7 +25,7 @@ public record AbvPredictionInput(
     requireNonNull(finalGravity, "final gravity cannot be null");
 
     if (finalGravity.compareTo(originalGravity) > 0) {
-      throw new IllegalArgumentException("final gravity must not exceed original gravity");
+      throw new DomainRuleViolationException("final gravity must not exceed original gravity");
     }
   }
 }

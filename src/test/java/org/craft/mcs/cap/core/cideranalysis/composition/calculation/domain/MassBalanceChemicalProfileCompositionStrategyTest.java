@@ -81,7 +81,7 @@ class MassBalanceChemicalProfileCompositionStrategyTest {
         source("missing-sugar", ChemicalProfileAxes.of(null, axis(ChemicalAxis.ACIDITY, "5.0"), null), CompositionProportion.of("1")),
         source("complete", axes("1.040", "9.0", null), CompositionProportion.of("1"))
     ))))
-        .isInstanceOf(IllegalArgumentException.class)
+        .isInstanceOf(InvalidChemicalProfileCompositionException.class)
         .hasMessageContaining("missing required axis SUGAR")
         .hasMessageContaining("missing-sugar");
 
@@ -89,7 +89,7 @@ class MassBalanceChemicalProfileCompositionStrategyTest {
         source("missing-acidity", ChemicalProfileAxes.of(axis(ChemicalAxis.SUGAR, "1.050"), null, null), CompositionProportion.of("1")),
         source("complete", axes("1.040", "9.0", null), CompositionProportion.of("1"))
     ))))
-        .isInstanceOf(IllegalArgumentException.class)
+        .isInstanceOf(InvalidChemicalProfileCompositionException.class)
         .hasMessageContaining("missing required axis ACIDITY")
         .hasMessageContaining("missing-acidity");
   }
@@ -103,7 +103,7 @@ class MassBalanceChemicalProfileCompositionStrategyTest {
         ),
         ChemicalProfileCompositionTanninPolicy.REQUIRE_TANNIN
     )))
-        .isInstanceOf(IllegalArgumentException.class)
+        .isInstanceOf(InvalidChemicalProfileCompositionException.class)
         .hasMessageContaining("missing required axis TANNINITY")
         .hasMessageContaining("b");
   }
@@ -114,7 +114,7 @@ class MassBalanceChemicalProfileCompositionStrategyTest {
         source("a", axes("1.060", "5.0", null), CompositionProportion.of("1")),
         source("b", axes("1.040", "9.0", null), volume("10"), null)
     ))))
-        .isInstanceOf(IllegalArgumentException.class)
+        .isInstanceOf(InvalidChemicalProfileCompositionException.class)
         .hasMessageContaining("cannot mix absolute volumes and proportions");
   }
 
@@ -124,7 +124,7 @@ class MassBalanceChemicalProfileCompositionStrategyTest {
         source("a", axes("1.060", "5.0", null), volume("25"), volume("20")),
         source("b", axes("1.040", "9.0", null), volume("10"), volume("30"))
     ))))
-        .isInstanceOf(IllegalArgumentException.class)
+        .isInstanceOf(InvalidChemicalProfileCompositionException.class)
         .hasMessageContaining("requested volume exceeds available volume")
         .hasMessageContaining("a");
   }

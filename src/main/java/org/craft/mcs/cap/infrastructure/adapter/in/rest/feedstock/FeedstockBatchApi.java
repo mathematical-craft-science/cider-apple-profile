@@ -51,6 +51,11 @@ public interface FeedstockBatchApi {
       description = "Feedstock batch list.",
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = FeedstockBatchListResponse.class))
   )
+  @ApiResponse(
+      responseCode = "400",
+      description = "Invalid season filter, for example only one season boundary was provided.",
+      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
+  )
   @NonNull ResponseEntity<@NonNull FeedstockBatchListResponse> list(
       @Parameter(description = "Cider maker identifier.", schema = @Schema(format = "uuid"))
       @NonNull UUID ciderMakerId,
@@ -84,6 +89,11 @@ public interface FeedstockBatchApi {
       description = "Feedstock batch not found.",
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
   )
+  @ApiResponse(
+      responseCode = "409",
+      description = "Feedstock batch was modified concurrently.",
+      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
+  )
   @NonNull ResponseEntity<@NonNull FeedstockBatchResponse> update(
       @Parameter(description = "Feedstock batch identifier.", schema = @Schema(format = "uuid"))
       @NonNull UUID batchId,
@@ -98,6 +108,21 @@ public interface FeedstockBatchApi {
       responseCode = "200",
       description = "Feedstock batch patched.",
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = FeedstockBatchResponse.class))
+  )
+  @ApiResponse(
+      responseCode = "403",
+      description = "Batch belongs to another cider maker.",
+      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
+  )
+  @ApiResponse(
+      responseCode = "404",
+      description = "Feedstock batch not found.",
+      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
+  )
+  @ApiResponse(
+      responseCode = "409",
+      description = "Feedstock batch was modified concurrently.",
+      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
   )
   @NonNull ResponseEntity<@NonNull FeedstockBatchResponse> patch(
       @Parameter(description = "Feedstock batch identifier.", schema = @Schema(format = "uuid"))
@@ -123,6 +148,11 @@ public interface FeedstockBatchApi {
   @ApiResponse(
       responseCode = "404",
       description = "Feedstock batch not found.",
+      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
+  )
+  @ApiResponse(
+      responseCode = "409",
+      description = "Feedstock batch was modified concurrently.",
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
   )
   @NonNull ResponseEntity<Void> delete(

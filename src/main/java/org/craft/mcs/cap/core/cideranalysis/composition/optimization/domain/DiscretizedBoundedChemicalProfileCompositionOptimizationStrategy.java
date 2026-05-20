@@ -121,13 +121,19 @@ public final class DiscretizedBoundedChemicalProfileCompositionOptimizationStrat
       @NonNull ChemicalProfileCompositionOptimizationRequest request,
       int @NonNull [] shares
   ) {
+    final var optimizationSources = request.sources();
+    if (shares.length != optimizationSources.size()) {
+      throw new IllegalStateException("share vector size does not match optimization source count");
+    }
+
     final var sources = new ArrayList<ChemicalProfileCompositionSource>();
     for (var index = 0; index < shares.length; index++) {
       if (shares[index] == 0) {
         continue;
       }
 
-      final var source = request.sources().get(index);
+      // The share vector is generated from the request source list; its index is the source coordinate.
+      final var source = optimizationSources.get(index);
       final var weight = weightOf(request, shares[index]);
       if (exceedsAvailableVolume(weight, source)) {
         return List.of();

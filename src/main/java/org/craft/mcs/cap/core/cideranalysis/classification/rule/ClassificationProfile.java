@@ -1,5 +1,7 @@
 package org.craft.mcs.cap.core.cideranalysis.classification.rule;
 
+import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
+
 import java.util.List;
 import org.jspecify.annotations.NonNull;
 
@@ -17,12 +19,12 @@ public record ClassificationProfile<C extends Enum<C>>(
 
     code = code.strip();
     if (code.isBlank()) {
-      throw new IllegalArgumentException("classification profile code cannot be blank");
+      throw new DomainRuleViolationException("classification profile code cannot be blank");
     }
 
     rules = List.copyOf(rules);
     if (rules.isEmpty()) {
-      throw new IllegalArgumentException("classification profile must contain at least one rule");
+      throw new DomainRuleViolationException("classification profile must contain at least one rule");
     }
   }
 }

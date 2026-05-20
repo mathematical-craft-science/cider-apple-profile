@@ -1,5 +1,8 @@
 package org.craft.mcs.cap.core.feedstock.domain.model.batch;
 
+import org.craft.mcs.cap.shared.kernel.DomainConflictException;
+import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
+
 import java.time.Instant;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockBatchName;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
@@ -49,6 +52,7 @@ public final class FeedstockBatch {
 
   private @Nullable Instant deletedAt;
 
+  @SuppressWarnings("java:S107")
   private FeedstockBatch(
       @NonNull FeedstockBatchId batchId,
       @NonNull CiderMakerId ciderMakerId,
@@ -92,6 +96,7 @@ public final class FeedstockBatch {
     );
   }
 
+  @SuppressWarnings("java:S107")
   public static @NonNull FeedstockBatch restore(
       @NonNull FeedstockBatchId batchId,
       @NonNull CiderMakerId ciderMakerId,
@@ -189,10 +194,10 @@ public final class FeedstockBatch {
   public @NonNull FeedstockBatch consumeAvailableVolume(@NonNull VolumeValue volume) {
     requireNonNull(volume, "consumed feedstock volume cannot be null");
     if (volume.isZero()) {
-      throw new IllegalArgumentException("consumed feedstock volume must be positive");
+      throw new DomainRuleViolationException("consumed feedstock volume must be positive");
     }
     if (volume.compareTo(availableVolume) > 0) {
-      throw new IllegalArgumentException("consumed feedstock volume exceeds available volume");
+      throw new DomainConflictException("consumed feedstock volume exceeds available volume");
     }
 
     this.availableVolume = availableVolume.subtract(volume);

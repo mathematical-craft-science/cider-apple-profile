@@ -1,5 +1,7 @@
 package org.craft.mcs.cap.core.feedstock.application.port.in;
 
+import org.craft.mcs.cap.shared.application.ApplicationValidationException;
+
 import org.craft.mcs.cap.core.cideranalysis.composition.optimization.application.port.in.OptimizeChemicalProfileCompositionResult;
 import org.jspecify.annotations.NonNull;
 
@@ -13,7 +15,7 @@ public record OptimizeFeedstockBatchCompositionResult(
 
   public OptimizeFeedstockBatchCompositionResult {
     if (sourceCount < 0) {
-      throw new IllegalArgumentException("feedstock composition optimization source count cannot be negative");
+      throw new ApplicationValidationException("feedstock composition optimization source count cannot be negative");
     }
     requireNonNull(optimization, "chemical profile composition optimization result cannot be null");
   }

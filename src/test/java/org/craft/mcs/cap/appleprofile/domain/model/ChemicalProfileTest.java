@@ -1,5 +1,7 @@
 package org.craft.mcs.cap.appleprofile.domain.model;
 
+import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
+
 import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.craft.mcs.cap.shared.kernel.measurement.ExactMeasurement;
@@ -39,6 +41,6 @@ class ChemicalProfileTest {
     final var builder = ChemicalProfile.builder();
 
     assertThatThrownBy(builder::build)
-        .isInstanceOf(IllegalArgumentException.class);
+        .isInstanceOf(DomainRuleViolationException.class);
   }
 }

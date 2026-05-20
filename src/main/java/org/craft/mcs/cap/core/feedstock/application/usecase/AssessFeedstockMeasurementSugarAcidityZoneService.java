@@ -1,6 +1,8 @@
 package org.craft.mcs.cap.core.feedstock.application.usecase;
 
 import lombok.RequiredArgsConstructor;
+import org.craft.mcs.cap.core.cideranalysis.sugaracidity.zone.domain.SugarAcidityZoneAssessor;
+import org.craft.mcs.cap.core.feedstock.application.FeedstockMeasurementNotFoundException;
 import org.craft.mcs.cap.core.feedstock.application.port.in.AssessFeedstockMeasurementSugarAcidityZoneUseCase;
 import org.craft.mcs.cap.core.feedstock.application.port.in.FeedstockMeasurementSugarAcidityZoneResult;
 import org.craft.mcs.cap.core.feedstock.application.port.out.FeedstockBatchRepository;
@@ -9,7 +11,6 @@ import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasur
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
 import org.craft.mcs.cap.shared.kernel.chemical.capability.ChemicalProfileCapability;
 import org.craft.mcs.cap.shared.kernel.chemical.capability.ChemicalProfileCapabilityAssessor;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.zone.domain.SugarAcidityZoneAssessor;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 
@@ -42,7 +43,7 @@ public final class AssessFeedstockMeasurementSugarAcidityZoneService
     requireNonNull(measurementId, "feedstock measurement id cannot be null");
 
     final var sample = feedstockMeasurementRepository.findById(measurementId)
-        .orElseThrow(() -> new IllegalArgumentException("feedstock measurement not found: " + measurementId.value()));
+        .orElseThrow(() -> new FeedstockMeasurementNotFoundException(measurementId));
     final var batch = feedstockBatchRepository.findById(sample.batchId())
         .orElseThrow(() -> new IllegalStateException("feedstock measurement batch not found: " + sample.batchId().value()));
     final var axes = axisExtractor.extract(sample.chemicalProfile());

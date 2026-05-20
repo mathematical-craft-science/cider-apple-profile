@@ -1,6 +1,7 @@
 package org.craft.mcs.cap.core.appleprofile.application.usecase;
 
 import lombok.RequiredArgsConstructor;
+import org.craft.mcs.cap.core.appleprofile.application.AppleVarietyNotFoundException;
 import org.craft.mcs.cap.core.appleprofile.application.port.in.AppleVarietyClassification;
 import org.craft.mcs.cap.core.appleprofile.application.port.in.AppleVarietyClassificationSystem;
 import org.craft.mcs.cap.core.appleprofile.application.port.in.ClassifyAppleVarietyUseCase;
@@ -43,7 +44,7 @@ public final class ClassifyAppleVarietyService
     requireNonNull(system, "classification system cannot be null");
 
     final var variety = appleVarietyRepository.findById(varietyId)
-        .orElseThrow(() -> new IllegalArgumentException("apple variety not found: " + varietyId.value()));
+        .orElseThrow(() -> new AppleVarietyNotFoundException(varietyId));
 
     final var result = classifyUnchecked(variety.chemicalProfile(), strategyRegistry.get(system));
 

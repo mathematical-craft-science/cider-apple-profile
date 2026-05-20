@@ -19,7 +19,7 @@ public record AbsoluteCompositionVolume(@NonNull VolumeValue volume) implements 
     requireNonNull(volume, "absolute composition volume cannot be null");
 
     if (volume.isZero()) {
-      throw new IllegalArgumentException("absolute composition volume must be greater than zero");
+      throw new InvalidChemicalProfileCompositionException("absolute composition volume must be greater than zero");
     }
   }
 

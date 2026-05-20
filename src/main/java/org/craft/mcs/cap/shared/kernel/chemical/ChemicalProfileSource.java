@@ -1,5 +1,7 @@
 package org.craft.mcs.cap.shared.kernel.chemical;
 
+import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
+
 import org.jmolecules.ddd.annotation.ValueObject;
 import org.jspecify.annotations.NonNull;
 
@@ -14,11 +16,11 @@ public record ChemicalProfileSource(@NonNull String value) {
     value = value.strip();
 
     if (value.isBlank()) {
-      throw new IllegalArgumentException("source cannot be blank");
+      throw new DomainRuleViolationException("source cannot be blank");
     }
 
     if (value.length() > 255) {
-      throw new IllegalArgumentException("source too long");
+      throw new DomainRuleViolationException("source too long");
     }
   }
 

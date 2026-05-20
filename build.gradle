@@ -23,14 +23,13 @@ ext {
     set('sentryVersion', "8.27.0")
     set('springCloudVersion', "2025.1.1")
     set('jMolecules', "2025.0.2")
+    set('archUnitVersion', "1.4.2")
 }
 
 dependencies {
-    // BOM
-    implementation platform("org.jmolecules:jmolecules-bom:${jMolecules}")
 
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jdbc'
     implementation 'org.springframework.boot:spring-boot-starter-liquibase'
     implementation 'org.springframework.boot:spring-boot-starter-opentelemetry'
     implementation 'org.springframework.boot:spring-boot-starter-restclient'
@@ -61,7 +60,7 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok'
     //
     testImplementation 'org.springframework.boot:spring-boot-starter-actuator-test'
-    testImplementation 'org.springframework.boot:spring-boot-starter-data-jpa-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-data-jdbc-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-liquibase-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-opentelemetry-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-restclient-test'
@@ -71,6 +70,7 @@ dependencies {
     testImplementation 'org.testcontainers:testcontainers-grafana'
     testImplementation 'org.testcontainers:testcontainers-junit-jupiter'
     testImplementation 'org.testcontainers:testcontainers-postgresql'
+    testImplementation "com.tngtech.archunit:archunit-junit5:${archUnitVersion}"
     testImplementation("org.assertj:assertj-core:4.0.0-M1")
     testCompileOnly 'org.projectlombok:lombok'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
@@ -81,6 +81,7 @@ dependencyManagement {
     imports {
         mavenBom "io.sentry:sentry-bom:${sentryVersion}"
         mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+        mavenBom "org.jmolecules:jmolecules-bom:${jMolecules}"
     }
 }
 

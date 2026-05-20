@@ -1,5 +1,7 @@
 package org.craft.mcs.cap.feedstock.domain.model.batch;
 
+import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
+
 import java.time.LocalDate;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.junit.jupiter.api.Test;
@@ -28,6 +30,6 @@ class FeedstockSeasonTest {
     assertThatThrownBy(() -> FeedstockSeason.of(
         LocalDate.parse("2026-12-15"),
         LocalDate.parse("2026-09-15")
-    )).isInstanceOf(IllegalArgumentException.class);
+    )).isInstanceOf(DomainRuleViolationException.class);
   }
 }

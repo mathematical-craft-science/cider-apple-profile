@@ -1,5 +1,7 @@
 package org.craft.mcs.cap.core.cideranalysis.sugaracidity.zone.domain;
 
+import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
+
 import java.math.BigDecimal;
 import org.jspecify.annotations.NonNull;
 
@@ -15,7 +17,7 @@ public record SugarAcidityZoneRange(
     requireNonNull(min, "zone range minimum cannot be null");
     requireNonNull(max, "zone range maximum cannot be null");
     if (min.compareTo(max) > 0) {
-      throw new IllegalArgumentException("zone range minimum cannot be greater than maximum");
+      throw new DomainRuleViolationException("zone range minimum cannot be greater than maximum");
     }
   }
 

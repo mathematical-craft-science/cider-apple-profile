@@ -1,5 +1,7 @@
 package org.craft.mcs.cap.core.feedstock.application.port.in;
 
+import org.craft.mcs.cap.shared.application.ApplicationValidationException;
+
 import java.util.Set;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.jspecify.annotations.NonNull;
@@ -16,7 +18,7 @@ public record FeedstockBatchCriteria(
     batchIds = Set.copyOf(batchIds);
 
     if (batchIds.isEmpty()) {
-      throw new IllegalArgumentException("feedstock batch ids cannot be empty");
+      throw new ApplicationValidationException("feedstock batch ids cannot be empty");
     }
   }
 

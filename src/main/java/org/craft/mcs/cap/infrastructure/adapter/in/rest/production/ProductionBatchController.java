@@ -1,7 +1,6 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.production;
 
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.target.domain.SugarAcidityTargetResolver;
 import org.craft.mcs.cap.core.production.application.port.in.CreateProductionBatchUseCase;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.CreateProductionBatchRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.ProductionBatchResponse;
@@ -23,13 +22,12 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 public final class ProductionBatchController implements ProductionBatchApi {
 
   private final @NonNull CreateProductionBatchUseCase createProductionBatchUseCase;
-  private final @NonNull SugarAcidityTargetResolver targetResolver;
 
   @Override
   @PostMapping(consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
   @ResponseStatus(HttpStatus.CREATED)
   public @NonNull ProductionBatchResponse create(@RequestBody @NonNull CreateProductionBatchRequest request) {
-    final var command = ProductionBatchRestMapper.toCommand(request, targetResolver);
+    final var command = ProductionBatchRestMapper.toCommand(request);
     return ProductionBatchRestMapper.toResponse(createProductionBatchUseCase.create(command));
   }
 }

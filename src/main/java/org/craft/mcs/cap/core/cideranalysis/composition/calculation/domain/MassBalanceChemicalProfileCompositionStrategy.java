@@ -38,7 +38,8 @@ import static java.util.Objects.requireNonNull;
  * Acidity and tannin are composed as concentration mass balance:
  * blended = sum(value_i * weight_i) / sum(weight_i).
  */
-public final class MassBalanceChemicalProfileCompositionStrategy implements ChemicalProfileCompositionCalculator {
+public final class MassBalanceChemicalProfileCompositionStrategy
+    implements ChemicalProfileCompositionCalculator {
 
   private static final BigDecimal ONE = BigDecimal.ONE;
   private static final BigDecimal GRAVITY_POINTS_FACTOR = new BigDecimal("1000");
@@ -73,7 +74,8 @@ public final class MassBalanceChemicalProfileCompositionStrategy implements Chem
         .anyMatch(weightClass -> !weightClass.equals(firstWeightClass));
 
     if (mixedWeights) {
-      throw new IllegalArgumentException("chemical profile composition cannot mix absolute volumes and proportions");
+      throw new InvalidChemicalProfileCompositionException(
+          "chemical profile composition cannot mix absolute volumes and proportions");
     }
   }
 
@@ -85,7 +87,7 @@ public final class MassBalanceChemicalProfileCompositionStrategy implements Chem
       }
 
       if (volume.compareTo(source.availableVolume()) > 0) { // NOSONAR
-        throw new IllegalArgumentException(
+        throw new InvalidChemicalProfileCompositionException(
             "composition source requested volume exceeds available volume: " + sourceReference(source)
         );
       }
@@ -155,7 +157,7 @@ public final class MassBalanceChemicalProfileCompositionStrategy implements Chem
       @NonNull ChemicalAxis axis
   ) {
     return source.axes().valueOf(axis)
-        .orElseThrow(() -> new IllegalArgumentException(
+        .orElseThrow(() -> new InvalidChemicalProfileCompositionException(
             "composition source is missing required axis %s: %s".formatted(axis, sourceReference(source))
         ));
   }

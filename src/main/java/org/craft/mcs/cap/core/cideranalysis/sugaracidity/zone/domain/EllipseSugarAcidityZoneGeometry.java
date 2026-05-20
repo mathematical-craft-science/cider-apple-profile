@@ -1,5 +1,7 @@
 package org.craft.mcs.cap.core.cideranalysis.sugaracidity.zone.domain;
 
+import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
+
 import java.math.BigDecimal;
 import java.math.MathContext;
 import org.jspecify.annotations.NonNull;
@@ -24,10 +26,10 @@ public record EllipseSugarAcidityZoneGeometry(
     requireNonNull(sugarRadius, "ellipse sugar radius cannot be null");
     requireNonNull(acidityRadius, "ellipse acidity radius cannot be null");
     if (sugarRadius.compareTo(BigDecimal.ZERO) <= 0) {
-      throw new IllegalArgumentException("ellipse sugar radius must be positive");
+      throw new DomainRuleViolationException("ellipse sugar radius must be positive");
     }
     if (acidityRadius.compareTo(BigDecimal.ZERO) <= 0) {
-      throw new IllegalArgumentException("ellipse acidity radius must be positive");
+      throw new DomainRuleViolationException("ellipse acidity radius must be positive");
     }
   }
 

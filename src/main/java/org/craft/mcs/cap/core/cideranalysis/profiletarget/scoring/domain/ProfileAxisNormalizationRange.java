@@ -1,5 +1,7 @@
 package org.craft.mcs.cap.core.cideranalysis.profiletarget.scoring.domain;
 
+import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
+
 import java.math.BigDecimal;
 import org.jspecify.annotations.NonNull;
 
@@ -17,7 +19,7 @@ public record ProfileAxisNormalizationRange(
     requireNonNull(min, "normalization minimum cannot be null");
     requireNonNull(max, "normalization maximum cannot be null");
     if (min.compareTo(max) >= 0) {
-      throw new IllegalArgumentException("normalization minimum must be less than maximum: " + axis);
+      throw new DomainRuleViolationException("normalization minimum must be less than maximum: " + axis);
     }
   }
 }

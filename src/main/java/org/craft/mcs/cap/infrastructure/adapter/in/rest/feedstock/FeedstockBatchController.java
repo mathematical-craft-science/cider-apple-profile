@@ -13,6 +13,7 @@ import org.craft.mcs.cap.core.feedstock.application.port.in.UpdateFeedstockBatch
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.core.feedstock.domain.model.value.CiderMakerId;
+import org.craft.mcs.cap.shared.application.ApplicationValidationException;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.CreateFeedstockBatchRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.FeedstockBatchListResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.FeedstockBatchResponse;
@@ -134,7 +135,7 @@ public final class FeedstockBatchController implements FeedstockBatchApi {
     }
 
     if (startsOn == null || endsOn == null) {
-      throw new IllegalArgumentException("both seasonStartsOn and seasonEndsOn must be provided");
+      throw new ApplicationValidationException("both seasonStartsOn and seasonEndsOn must be provided");
     }
 
     return FeedstockSeason.of(startsOn, endsOn);

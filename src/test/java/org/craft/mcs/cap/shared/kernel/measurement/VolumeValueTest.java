@@ -1,5 +1,7 @@
 package org.craft.mcs.cap.shared.kernel.measurement;
 
+import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
+
 import org.craft.mcs.cap.shared.kernel.measurement.unit.BeverageUnits;
 import org.junit.jupiter.api.Test;
 
@@ -25,6 +27,16 @@ class VolumeValueTest {
   @Test
   void rejectsNegativeVolume() {
     assertThatThrownBy(() -> VolumeValue.ofLiters("-0.1"))
-        .isInstanceOf(IllegalArgumentException.class);
+        .isInstanceOf(DomainRuleViolationException.class);
+  }
+
+  @Test
+  void keepsEqualityConsistentWithNumericComparison() {
+    final var left = VolumeValue.ofLiters("12.50");
+    final var right = VolumeValue.ofLiters("12.500");
+
+    assertThat(left.compareTo(right)).isZero();
+    assertThat(left).isEqualTo(right);
+    assertThat(left).hasSameHashCodeAs(right);
   }
 }

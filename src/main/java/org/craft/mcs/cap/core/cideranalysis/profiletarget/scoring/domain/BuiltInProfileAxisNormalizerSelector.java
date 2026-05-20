@@ -1,5 +1,7 @@
 package org.craft.mcs.cap.core.cideranalysis.profiletarget.scoring.domain;
 
+import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
+
 import java.util.EnumMap;
 import java.util.Map;
 import org.craft.mcs.cap.core.cideranalysis.sugaracidity.zone.domain.SugarAcidityZoneThresholds;
@@ -56,7 +58,7 @@ public final class BuiltInProfileAxisNormalizerSelector implements ProfileAxisNo
     requireNonNull(code, "profile axis normalizer code cannot be null");
     final var normalizer = normalizers.get(code);
     if (normalizer == null) { // NOSONAR
-      throw new IllegalArgumentException("No profile axis normalizer registered for code: " + code);
+      throw new DomainRuleViolationException("No profile axis normalizer registered for code: " + code);
     }
     return normalizer;
   }
