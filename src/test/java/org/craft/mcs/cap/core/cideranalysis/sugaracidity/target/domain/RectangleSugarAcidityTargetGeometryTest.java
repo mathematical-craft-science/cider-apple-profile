@@ -1,5 +1,7 @@
 package org.craft.mcs.cap.core.cideranalysis.sugaracidity.target.domain;
 
+import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
+
 import java.math.BigDecimal;
 import org.junit.jupiter.api.Test;
 
@@ -65,6 +67,6 @@ class RectangleSugarAcidityTargetGeometryTest {
         new BigDecimal("1.060"),
         new BigDecimal("4.5"),
         new BigDecimal("7.5")
-    )).isInstanceOf(IllegalArgumentException.class);
+    )).isInstanceOf(DomainRuleViolationException.class);
   }
 }

@@ -30,7 +30,12 @@ public interface ChemicalProfileCompositionApi {
   )
   @ApiResponse(
       responseCode = "400",
-      description = "Invalid composition input.",
+      description = "Invalid composition request or unsupported strategy selector.",
+      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
+  )
+  @ApiResponse(
+      responseCode = "422",
+      description = "Composition input is syntactically valid but cannot be processed, for example because required axes or target data are missing.",
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
   )
   @NonNull ResponseEntity<@NonNull ChemicalProfileCompositionResponse> calculate(
@@ -53,7 +58,12 @@ public interface ChemicalProfileCompositionApi {
   )
   @ApiResponse(
       responseCode = "400",
-      description = "Invalid optimization input.",
+      description = "Invalid optimization request or unsupported strategy selector.",
+      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
+  )
+  @ApiResponse(
+      responseCode = "422",
+      description = "Optimization input is syntactically valid but cannot be processed, for example because sources or target data are insufficient.",
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
   )
   @NonNull ResponseEntity<@NonNull OptimizeChemicalProfileCompositionResponse> optimize(

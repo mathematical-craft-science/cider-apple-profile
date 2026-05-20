@@ -1,5 +1,7 @@
 package org.craft.mcs.cap.core.cideranalysis.sugaracidity.zone.domain;
 
+import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
+
 import org.craft.mcs.cap.core.cideranalysis.sugaracidity.point.domain.SugarAcidityProfilePoint;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -19,7 +21,7 @@ public record SugarAcidityZoneAssessment(
 
   public SugarAcidityZoneAssessment {
     if (classified && zone == null) {
-      throw new IllegalArgumentException("classified assessment must have a zone");
+      throw new DomainRuleViolationException("classified assessment must have a zone");
     }
     requireNonNull(sugar, "sugar level cannot be null");
     requireNonNull(acidity, "acidity level cannot be null");

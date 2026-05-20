@@ -1,6 +1,13 @@
 package org.craft.mcs.cap.shared.kernel.sugar.converter;
 
-public final class UnsupportedSugarConversionException extends RuntimeException {
+import java.io.Serial;
+import org.craft.mcs.cap.shared.kernel.DomainException;
+
+
+public final class UnsupportedSugarConversionException extends DomainException {
+
+  @Serial
+  private static final long serialVersionUID = 1L;
 
   public UnsupportedSugarConversionException(
       Class<?> sourceType,

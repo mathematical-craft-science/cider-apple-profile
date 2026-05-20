@@ -1,5 +1,7 @@
 package org.craft.mcs.cap.core.cideranalysis.sugaracidity.target.domain;
 
+import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
+
 import java.math.BigDecimal;
 import org.jspecify.annotations.NonNull;
 
@@ -15,7 +17,7 @@ public record TanninTargetRange(
     requireNonNull(min, "tannin target minimum cannot be null");
     requireNonNull(max, "tannin target maximum cannot be null");
     if (min.compareTo(max) > 0) {
-      throw new IllegalArgumentException("tannin target minimum cannot be greater than maximum");
+      throw new DomainRuleViolationException("tannin target minimum cannot be greater than maximum");
     }
   }
 

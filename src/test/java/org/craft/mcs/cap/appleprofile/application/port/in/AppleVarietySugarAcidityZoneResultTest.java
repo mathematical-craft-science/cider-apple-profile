@@ -14,10 +14,11 @@ import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.craft.mcs.cap.core.cideranalysis.sugaracidity.zone.domain.BuiltInSugarAcidityZoneProfiles;
 import org.craft.mcs.cap.core.cideranalysis.sugaracidity.zone.domain.RectangleSugarAcidityZoneAssessor;
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
+import org.craft.mcs.cap.shared.application.ApplicationValidationException;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 
 class AppleVarietySugarAcidityZoneResultTest {
@@ -26,14 +27,14 @@ class AppleVarietySugarAcidityZoneResultTest {
   void rejectsPlottableResultWithoutAssessment() {
     final var capabilityAssessment = capabilityAssessment(plottableProfile());
 
-    assertThatIllegalArgumentException()
-        .isThrownBy(() -> new AppleVarietySugarAcidityZoneResult(
+    assertThatThrownBy(() -> new AppleVarietySugarAcidityZoneResult(
             AppleVarietyId.newId(),
             AppleVarietyName.of("Kingston Black"),
             true,
             null,
             capabilityAssessment
-        ));
+        ))
+        .isInstanceOf(ApplicationValidationException.class);
   }
 
   @Test

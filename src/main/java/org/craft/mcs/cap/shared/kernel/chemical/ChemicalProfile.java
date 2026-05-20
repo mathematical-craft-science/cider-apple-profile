@@ -1,5 +1,7 @@
 package org.craft.mcs.cap.shared.kernel.chemical;
 
+import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
+
 import java.util.Optional;
 import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.craft.mcs.cap.shared.kernel.measurement.MeasuredCharacteristic;
@@ -29,7 +31,7 @@ public record ChemicalProfile(
     requireNonNull(tanninity, "tanninity characteristic cannot be null");
 
     if (sugar.isEmpty() && ph.isEmpty() && titratableAcidity.isEmpty() && tanninity.isEmpty()) {
-      throw new IllegalArgumentException("chemical profile must contain at least one characteristic");
+      throw new DomainRuleViolationException("chemical profile must contain at least one characteristic");
     }
   }
 

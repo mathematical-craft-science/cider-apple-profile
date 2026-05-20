@@ -27,7 +27,7 @@ public interface ProductionBatchApi {
   )
   @ApiResponse(
       responseCode = "400",
-      description = "Invalid production batch request or insufficient source volume.",
+      description = "Invalid production batch request.",
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
   )
   @ApiResponse(
@@ -38,6 +38,16 @@ public interface ProductionBatchApi {
   @ApiResponse(
       responseCode = "404",
       description = "Feedstock source not found.",
+      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
+  )
+  @ApiResponse(
+      responseCode = "409",
+      description = "A source or production resource was modified concurrently.",
+      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
+  )
+  @ApiResponse(
+      responseCode = "422",
+      description = "Requested source volume exceeds available feedstock volume.",
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
   )
   @NonNull ProductionBatchResponse create(

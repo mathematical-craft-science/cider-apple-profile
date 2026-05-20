@@ -1,5 +1,7 @@
 package org.craft.mcs.cap.core.feedstock.application.port.in;
 
+import org.craft.mcs.cap.shared.application.ApplicationValidationException;
+
 import org.craft.mcs.cap.core.cideranalysis.profiletarget.scoring.application.port.in.ProfileTargetScoringPurpose;
 import org.craft.mcs.cap.core.cideranalysis.composition.calculation.domain.ChemicalProfileCompositionCalculatorCode;
 import org.craft.mcs.cap.core.cideranalysis.composition.optimization.domain.CompositionOptimizationAlgorithm;
@@ -49,7 +51,7 @@ public record OptimizeFeedstockBatchCompositionCommand(
     requireNonNull(objectiveFunctionCode, "profile target objective function code cannot be null");
 
     if (sourceLimit < 2 || sourceLimit > CursorPageRequest.MAX_LIMIT) {
-      throw new IllegalArgumentException("composition optimization source limit must be between 2 and " + CursorPageRequest.MAX_LIMIT);
+      throw new ApplicationValidationException("composition optimization source limit must be between 2 and " + CursorPageRequest.MAX_LIMIT);
     }
   }
 }

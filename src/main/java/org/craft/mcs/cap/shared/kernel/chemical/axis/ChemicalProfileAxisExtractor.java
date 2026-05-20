@@ -1,5 +1,7 @@
 package org.craft.mcs.cap.shared.kernel.chemical.axis;
 
+import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.function.Function;
@@ -75,7 +77,7 @@ public class ChemicalProfileAxisExtractor {
             sampleSize
         );
       }
-      default -> throw new IllegalArgumentException(
+      default -> throw new DomainRuleViolationException(
           "unsupported measured characteristic type: " + characteristic.getClass().getName() // NOSONAR
       );
     }

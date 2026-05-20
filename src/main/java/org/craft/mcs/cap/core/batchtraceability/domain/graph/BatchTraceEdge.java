@@ -1,5 +1,7 @@
 package org.craft.mcs.cap.core.batchtraceability.domain.graph;
 
+import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
+
 import java.util.List;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceOperationType;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStepId;
@@ -25,7 +27,7 @@ public record BatchTraceEdge(
     outputs = List.copyOf(requireNonNull(outputs, "batch trace edge outputs cannot be null"));
 
     if (outputs.isEmpty()) {
-      throw new IllegalArgumentException("batch trace edge must contain at least one output subject");
+      throw new DomainRuleViolationException("batch trace edge must contain at least one output subject");
     }
   }
 }

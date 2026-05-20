@@ -1,5 +1,7 @@
 package org.craft.mcs.cap.core.batchtraceability.domain.model;
 
+import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
+
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
 import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;
 import org.jmolecules.ddd.annotation.ValueObject;
@@ -17,7 +19,7 @@ public record BatchTraceMaterialSnapshot(
   public BatchTraceMaterialSnapshot {
     confidence = normalize(confidence);
     if (volume == null && profile == null && confidence == null) {
-      throw new IllegalArgumentException("batch trace material snapshot must contain at least one value");
+      throw new DomainRuleViolationException("batch trace material snapshot must contain at least one value");
     }
   }
 

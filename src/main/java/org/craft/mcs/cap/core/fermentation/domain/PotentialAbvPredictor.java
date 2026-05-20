@@ -1,5 +1,7 @@
 package org.craft.mcs.cap.core.fermentation.domain;
 
+import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
+
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.jmolecules.ddd.annotation.Service;
@@ -74,7 +76,7 @@ public final class PotentialAbvPredictor {
     final var predictedFinalGravity = finalGravityPrediction.finalGravity();
 
     if (predictedFinalGravity.compareTo(originalGravity) > 0) {
-      throw new IllegalArgumentException("predicted final gravity must not exceed original gravity");
+      throw new DomainRuleViolationException("predicted final gravity must not exceed original gravity");
     }
 
     return new PotentialAbvPrediction(

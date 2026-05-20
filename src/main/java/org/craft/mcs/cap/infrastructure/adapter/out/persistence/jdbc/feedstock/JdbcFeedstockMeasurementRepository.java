@@ -10,6 +10,7 @@ import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Repository;
 
 import static java.util.Objects.requireNonNull;
+import static org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.support.JdbcPersistenceExceptionTranslator.translateOptimisticLocking;
 
 
 @Repository
@@ -24,7 +25,7 @@ class JdbcFeedstockMeasurementRepository
     requireNonNull(feedstockMeasurement, "feedstock measurement cannot be null");
 
     final var entity = FeedstockMeasurementJdbcMapper.fromDomain(feedstockMeasurement);
-    final var saved = repository.save(entity);
+    final var saved = translateOptimisticLocking("feedstock measurement", () -> repository.save(entity));
 
     return FeedstockMeasurementJdbcMapper.toDomain(saved);
   }
@@ -40,6 +41,6 @@ class JdbcFeedstockMeasurementRepository
   @Override
   public void deleteById(@NonNull FeedstockMeasurementId measurementId) {
     requireNonNull(measurementId, "feedstock measurement id cannot be null");
-    repository.deleteById(measurementId.value());
+    translateOptimisticLocking("feedstock measurement", () -> repository.deleteById(measurementId.value()));
   }
 }

@@ -85,6 +85,11 @@ public interface FeedstockMeasurementApi {
       description = "Feedstock batch or measurement not found.",
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
   )
+  @ApiResponse(
+      responseCode = "409",
+      description = "Feedstock measurement was modified concurrently.",
+      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
+  )
   @NonNull ResponseEntity<@NonNull FeedstockMeasurementResponse> update(
       @Parameter(description = "Feedstock batch identifier.", schema = @Schema(format = "uuid"))
       @NonNull UUID batchId,
@@ -112,6 +117,16 @@ public interface FeedstockMeasurementApi {
       description = "Invalid measurement payload, for example a measurement date in the future.",
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
   )
+  @ApiResponse(
+      responseCode = "404",
+      description = "Feedstock batch or measurement not found.",
+      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
+  )
+  @ApiResponse(
+      responseCode = "409",
+      description = "Feedstock measurement was modified concurrently.",
+      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
+  )
   @NonNull ResponseEntity<@NonNull FeedstockMeasurementResponse> patch(
       @Parameter(description = "Feedstock batch identifier.", schema = @Schema(format = "uuid"))
       @NonNull UUID batchId,
@@ -133,6 +148,11 @@ public interface FeedstockMeasurementApi {
   @ApiResponse(
       responseCode = "404",
       description = "Feedstock batch or measurement not found.",
+      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
+  )
+  @ApiResponse(
+      responseCode = "409",
+      description = "Feedstock measurement was modified concurrently.",
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
   )
   @NonNull ResponseEntity<Void> delete(

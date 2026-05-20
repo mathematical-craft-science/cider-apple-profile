@@ -1,5 +1,7 @@
 package org.craft.mcs.cap.core.cideranalysis.sugaracidity.target.domain;
 
+import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
+
 import java.math.BigDecimal;
 import org.craft.mcs.cap.core.cideranalysis.sugaracidity.zone.domain.RectangleSugarAcidityZoneGeometry;
 import org.jspecify.annotations.NonNull;
@@ -20,10 +22,10 @@ public record RectangleSugarAcidityTargetGeometry(
     requireNonNull(acidityMin, "target acidity minimum cannot be null");
     requireNonNull(acidityMax, "target acidity maximum cannot be null");
     if (sugarMin.compareTo(sugarMax) > 0) {
-      throw new IllegalArgumentException("target sugar minimum cannot be greater than maximum");
+      throw new DomainRuleViolationException("target sugar minimum cannot be greater than maximum");
     }
     if (acidityMin.compareTo(acidityMax) > 0) {
-      throw new IllegalArgumentException("target acidity minimum cannot be greater than maximum");
+      throw new DomainRuleViolationException("target acidity minimum cannot be greater than maximum");
     }
   }
 

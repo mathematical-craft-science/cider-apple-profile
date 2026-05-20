@@ -41,10 +41,10 @@ public record ChemicalProfileCompositionOptimizationRequest(
     requireNonNull(mode, "composition optimization mode cannot be null");
 
     if (sources.size() < 2) {
-      throw new IllegalArgumentException("chemical profile composition optimization requires at least two sources");
+      throw new InvalidChemicalProfileCompositionOptimizationException("chemical profile composition optimization requires at least two sources");
     }
     if (sources.size() > DiscretizedCompositionOptimizationSettings.MAX_SOURCE_COUNT) {
-      throw new IllegalArgumentException(
+      throw new InvalidChemicalProfileCompositionOptimizationException(
           "chemical profile composition optimization supports at most "
               + DiscretizedCompositionOptimizationSettings.MAX_SOURCE_COUNT
               + " sources"
@@ -52,20 +52,20 @@ public record ChemicalProfileCompositionOptimizationRequest(
     }
     final var gridCombinations = gridCombinations(sources.size(), settings.stepPercent());
     if (gridCombinations > DiscretizedCompositionOptimizationSettings.MAX_GRID_COMBINATIONS) {
-      throw new IllegalArgumentException(
+      throw new InvalidChemicalProfileCompositionOptimizationException(
           "chemical profile composition optimization grid is too large: "
               + gridCombinations
               + " combinations"
       );
     }
     if (mode == CompositionOptimizationMode.ABSOLUTE_VOLUME && targetTotalVolume == null) {
-      throw new IllegalArgumentException("absolute volume composition optimization requires target total volume");
+      throw new InvalidChemicalProfileCompositionOptimizationException("absolute volume composition optimization requires target total volume");
     }
     if (mode == CompositionOptimizationMode.ABSOLUTE_VOLUME && targetTotalVolume.isZero()) { // NOSONAR
-      throw new IllegalArgumentException("absolute volume composition optimization requires target total volume greater than zero");
+      throw new InvalidChemicalProfileCompositionOptimizationException("absolute volume composition optimization requires target total volume greater than zero");
     }
     if (mode == CompositionOptimizationMode.PROPORTION && targetTotalVolume != null) {
-      throw new IllegalArgumentException("proportion composition optimization must not define target total volume");
+      throw new InvalidChemicalProfileCompositionOptimizationException("proportion composition optimization must not define target total volume");
     }
   }
 

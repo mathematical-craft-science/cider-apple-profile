@@ -1,5 +1,7 @@
 package org.craft.mcs.cap.core.production.application.port.out;
 
+import org.craft.mcs.cap.shared.application.ApplicationValidationException;
+
 import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -22,10 +24,10 @@ public record ProductionBatchCompositionTraceSource(
     requireNonNull(volume, "production trace source volume cannot be null");
 
     if (compositionResultId.isEmpty()) {
-      throw new IllegalArgumentException("composition result id cannot be blank");
+      throw new ApplicationValidationException("composition result id cannot be blank");
     }
     if (volume.isZero()) {
-      throw new IllegalArgumentException("production trace source volume must be positive");
+      throw new ApplicationValidationException("production trace source volume must be positive");
     }
   }
 

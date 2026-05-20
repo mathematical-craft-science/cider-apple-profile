@@ -1,5 +1,7 @@
 package org.craft.mcs.cap.core.batchtraceability.domain.model;
 
+import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
+
 import org.jmolecules.ddd.annotation.ValueObject;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -27,10 +29,13 @@ public record BatchTraceSubject(
     return new BatchTraceSubject(type, id, null);
   }
 
-  private static @NonNull String normalizeRequired(@NonNull String value, @NonNull String message) {
+  private static @NonNull String normalizeRequired(
+      @NonNull String value,
+      @NonNull String message
+  ) {
     final var normalized = requireNonNull(value, message).strip();
     if (normalized.isEmpty()) {
-      throw new IllegalArgumentException(message);
+      throw new DomainRuleViolationException(message);
     }
     return normalized;
   }

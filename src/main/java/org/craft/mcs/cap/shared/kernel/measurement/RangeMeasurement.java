@@ -1,5 +1,7 @@
 package org.craft.mcs.cap.shared.kernel.measurement;
 
+import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
+
 import org.jmolecules.ddd.annotation.ValueObject;
 import org.jspecify.annotations.NonNull;
 
@@ -17,7 +19,7 @@ public record RangeMeasurement<T extends Comparable<T>>(
     requireNonNull(max, "maximum measured value cannot be null");
 
     if (min.compareTo(max) > 0) {
-      throw new IllegalArgumentException("minimum measured value must not exceed maximum");
+      throw new DomainRuleViolationException("minimum measured value must not exceed maximum");
     }
   }
 

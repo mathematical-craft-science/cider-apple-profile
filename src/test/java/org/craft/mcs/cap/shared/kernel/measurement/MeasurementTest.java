@@ -1,5 +1,7 @@
 package org.craft.mcs.cap.shared.kernel.measurement;
 
+import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
+
 import java.math.BigDecimal;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.junit.jupiter.api.Test;
@@ -22,7 +24,7 @@ class MeasurementTest {
     assertThatThrownBy(() -> RangeMeasurement.of(
         TitratableAcidityValue.of("6.0"),
         TitratableAcidityValue.of("5.0")
-    )).isInstanceOf(IllegalArgumentException.class);
+    )).isInstanceOf(DomainRuleViolationException.class);
   }
 
   @Test
@@ -32,14 +34,14 @@ class MeasurementTest {
         null,
         new BigDecimal("-0.1"),
         2
-    )).isInstanceOf(IllegalArgumentException.class);
+    )).isInstanceOf(DomainRuleViolationException.class);
 
     assertThatThrownBy(() -> StatisticalMeasurement.of(
         TitratableAcidityValue.of("5.0"),
         null,
         BigDecimal.ZERO,
         0
-    )).isInstanceOf(IllegalArgumentException.class);
+    )).isInstanceOf(DomainRuleViolationException.class);
   }
 
   @Test

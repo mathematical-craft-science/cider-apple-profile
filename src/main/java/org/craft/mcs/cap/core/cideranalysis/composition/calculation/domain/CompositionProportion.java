@@ -18,7 +18,7 @@ public record CompositionProportion(@NonNull BigDecimal value) implements Chemic
     requireNonNull(value, "composition proportion cannot be null");
 
     if (value.signum() <= 0) {
-      throw new IllegalArgumentException("composition proportion must be greater than zero");
+      throw new InvalidChemicalProfileCompositionException("composition proportion must be greater than zero");
     }
   }
 

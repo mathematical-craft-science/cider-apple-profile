@@ -30,7 +30,7 @@ public record ChemicalProfileComposition(
     warnings = List.copyOf(requireNonNull(warnings, "chemical profile composition warnings cannot be null"));
 
     if (sources.isEmpty()) {
-      throw new IllegalArgumentException("chemical profile composition must contain at least one source");
+      throw new InvalidChemicalProfileCompositionException("chemical profile composition must contain at least one source");
     }
   }
 

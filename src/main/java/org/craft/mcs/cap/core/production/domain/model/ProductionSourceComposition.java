@@ -1,5 +1,7 @@
 package org.craft.mcs.cap.core.production.domain.model;
 
+import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
+
 import java.math.BigDecimal;
 import java.util.List;
 import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;
@@ -20,7 +22,7 @@ public record ProductionSourceComposition(
     requireNonNull(totalVolume, "production source composition total volume cannot be null");
 
     if (sources.isEmpty()) {
-      throw new IllegalArgumentException("production source composition must contain at least one source");
+      throw new DomainRuleViolationException("production source composition must contain at least one source");
     }
   }
 

@@ -1,5 +1,7 @@
 package org.craft.mcs.cap.core.batchtraceability.domain.model;
 
+import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
+
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -64,7 +66,7 @@ class BatchTraceStepTest {
         null,
         null
     ))
-        .isInstanceOf(IllegalArgumentException.class)
+        .isInstanceOf(DomainRuleViolationException.class)
         .hasMessageContaining("output subject");
   }
 
@@ -109,14 +111,14 @@ class BatchTraceStepTest {
   @Test
   void rejectsBlankSubjectId() {
     assertThatThrownBy(() -> BatchTraceSubject.of(BatchTraceSubjectType.FEEDSTOCK_BATCH, " "))
-        .isInstanceOf(IllegalArgumentException.class)
+        .isInstanceOf(DomainRuleViolationException.class)
         .hasMessageContaining("subject id");
   }
 
   @Test
   void rejectsEmptyMaterialSnapshot() {
     assertThatThrownBy(() -> new BatchTraceMaterialSnapshot(null, null, " "))
-        .isInstanceOf(IllegalArgumentException.class)
+        .isInstanceOf(DomainRuleViolationException.class)
         .hasMessageContaining("at least one value");
   }
 

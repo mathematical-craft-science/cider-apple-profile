@@ -1,6 +1,7 @@
 package org.craft.mcs.cap.core.feedstock.application.usecase;
 
 import lombok.RequiredArgsConstructor;
+import org.craft.mcs.cap.core.feedstock.application.FeedstockMeasurementNotFoundException;
 import org.craft.mcs.cap.core.feedstock.application.port.in.FeedstockMeasurementPotentialAbvPrediction;
 import org.craft.mcs.cap.core.feedstock.application.port.in.PredictFeedstockMeasurementPotentialAbvUseCase;
 import org.craft.mcs.cap.core.feedstock.application.port.out.FeedstockBatchRepository;
@@ -44,7 +45,7 @@ public final class PredictFeedstockMeasurementPotentialAbvService
     requireNonNull(measurementId, "feedstock measurement id cannot be null");
 
     final var sample = feedstockMeasurementRepository.findById(measurementId)
-        .orElseThrow(() -> new IllegalArgumentException("feedstock measurement not found: " + measurementId.value()));
+        .orElseThrow(() -> new FeedstockMeasurementNotFoundException(measurementId));
     final var batch = feedstockBatchRepository.findById(sample.batchId())
         .orElseThrow(() -> new IllegalStateException("feedstock measurement batch not found: " + sample.batchId().value()));
     final var axes = axisExtractor.extract(sample.chemicalProfile());

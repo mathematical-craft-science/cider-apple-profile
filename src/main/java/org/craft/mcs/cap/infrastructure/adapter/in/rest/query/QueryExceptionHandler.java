@@ -1,6 +1,7 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.query;
 
 
+import java.net.URI;
 import org.craft.mcs.cap.shared.platform.query.MalformedCursorException;
 import org.jspecify.annotations.NonNull;
 import org.springframework.http.ProblemDetail;
@@ -8,7 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.net.URI;
+import static org.craft.mcs.cap.infrastructure.adapter.in.rest.support.RestProblem.create;
+import static org.craft.mcs.cap.infrastructure.adapter.in.rest.support.RestProblem.response;
 
 
 @RestControllerAdvice
@@ -22,15 +24,14 @@ public final class QueryExceptionHandler {
   public @NonNull ResponseEntity<@NonNull ProblemDetail> handleMalformedCursor(
       @NonNull MalformedCursorException exception
   ) {
-    final var problem = ProblemDetail.forStatus(BAD_REQUEST);
-
-    problem.setType(MALFORMED_CURSOR);
-    problem.setTitle("Malformed cursor");
-    problem.setDetail("The pagination cursor is malformed or no longer valid for this query.");
+    final var problem = create(
+        BAD_REQUEST,
+        MALFORMED_CURSOR,
+        "Malformed cursor",
+        "The pagination cursor is malformed or no longer valid for this query."
+    );
     problem.setProperty("parameter", "after");
 
-    return ResponseEntity
-        .status(BAD_REQUEST)
-        .body(problem);
+    return response(BAD_REQUEST, problem);
   }
 }

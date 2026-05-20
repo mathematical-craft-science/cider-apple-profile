@@ -11,6 +11,7 @@ import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Repository;
 
 import static java.util.Objects.requireNonNull;
+import static org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.support.JdbcPersistenceExceptionTranslator.translateOptimisticLocking;
 
 
 @Repository
@@ -25,7 +26,7 @@ class JdbcAppleVarietyRepository implements AppleVarietyRepository {
     requireNonNull(appleVariety, "apple variety cannot be null");
 
     final var entity = AppleVarietyJdbcMapper.fromDomain(appleVariety);
-    final var saved = repository.save(entity);
+    final var saved = translateOptimisticLocking("apple variety", () -> repository.save(entity));
 
     return AppleVarietyJdbcMapper.toDomain(saved);
   }

@@ -13,19 +13,19 @@ import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtracto
 import org.craft.mcs.cap.shared.kernel.measurement.ExactMeasurement;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
+import org.craft.mcs.cap.shared.application.ApplicationValidationException;
 import org.junit.jupiter.api.Test;
 
 import static java.util.UUID.randomUUID;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 
 class FeedstockMeasurementSugarAcidityZoneResultTest {
 
   @Test
   void rejectsPlottableResultWithoutAssessment() {
-    assertThatIllegalArgumentException()
-        .isThrownBy(() -> new FeedstockMeasurementSugarAcidityZoneResult(
+    assertThatThrownBy(() -> new FeedstockMeasurementSugarAcidityZoneResult(
             FeedstockMeasurementId.newId(),
             CiderMakerId.of(randomUUID()),
             FeedstockBatchId.newId(),
@@ -33,7 +33,8 @@ class FeedstockMeasurementSugarAcidityZoneResultTest {
             true,
             null,
             capabilityAssessment()
-        ));
+        ))
+        .isInstanceOf(ApplicationValidationException.class);
   }
 
   @Test

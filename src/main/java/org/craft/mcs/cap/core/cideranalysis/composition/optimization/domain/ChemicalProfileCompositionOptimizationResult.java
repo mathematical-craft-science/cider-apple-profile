@@ -20,7 +20,7 @@ public record ChemicalProfileCompositionOptimizationResult(
 
   public ChemicalProfileCompositionOptimizationResult {
     if (evaluatedCandidates < 0) {
-      throw new IllegalArgumentException("evaluated composition candidate count cannot be negative");
+      throw new InvalidChemicalProfileCompositionOptimizationException("evaluated composition candidate count cannot be negative");
     }
     candidates = List.copyOf(requireNonNull(candidates, "chemical profile composition optimization candidates cannot be null"));
   }

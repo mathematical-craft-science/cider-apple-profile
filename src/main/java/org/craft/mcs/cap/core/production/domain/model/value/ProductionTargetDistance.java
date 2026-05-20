@@ -1,5 +1,7 @@
 package org.craft.mcs.cap.core.production.domain.model.value;
 
+import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
+
 import java.math.BigDecimal;
 import org.jmolecules.ddd.annotation.ValueObject;
 import org.jspecify.annotations.NonNull;
@@ -20,7 +22,7 @@ public record ProductionTargetDistance(@NonNull BigDecimal value) {
   public ProductionTargetDistance {
     requireNonNull(value, "production target distance cannot be null");
     if (value.compareTo(BigDecimal.ZERO) < 0) {
-      throw new IllegalArgumentException("production target distance cannot be negative");
+      throw new DomainRuleViolationException("production target distance cannot be negative");
     }
   }
 

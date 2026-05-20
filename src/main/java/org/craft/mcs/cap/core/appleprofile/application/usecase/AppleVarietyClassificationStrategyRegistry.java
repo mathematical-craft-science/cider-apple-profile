@@ -1,5 +1,7 @@
 package org.craft.mcs.cap.core.appleprofile.application.usecase;
 
+import org.craft.mcs.cap.shared.application.ApplicationValidationException;
+
 import java.util.Map;
 import org.craft.mcs.cap.core.appleprofile.application.port.in.AppleVarietyClassificationSystem;
 import org.craft.mcs.cap.core.cideranalysis.classification.engine.ClassificationStrategy;
@@ -53,7 +55,7 @@ public class AppleVarietyClassificationStrategyRegistry {
     final var strategy = strategies.get(system);
 
     if (strategy == null) { // NOSONAR
-      throw new IllegalArgumentException("unsupported apple variety classification system: " + system);
+      throw new ApplicationValidationException("unsupported apple variety classification system: " + system);
     }
 
     return strategy;

@@ -1,5 +1,7 @@
 package org.craft.mcs.cap.core.batchtraceability.domain.model;
 
+import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
+
 import java.time.Instant;
 import java.util.List;
 import org.jmolecules.ddd.annotation.Entity;
@@ -41,7 +43,7 @@ public record BatchTraceStep(
     note = normalize(note);
 
     if (outputs.isEmpty()) {
-      throw new IllegalArgumentException("batch trace step must contain at least one output subject");
+      throw new DomainRuleViolationException("batch trace step must contain at least one output subject");
     }
   }
 

@@ -1,5 +1,7 @@
 package org.craft.mcs.cap.core.production.application.port.out;
 
+import org.craft.mcs.cap.shared.application.ApplicationValidationException;
+
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;
 import org.jspecify.annotations.NonNull;
@@ -23,7 +25,7 @@ public record ProductionBatchFeedstockTraceSource(
     requireNonNull(volume, "production trace source volume cannot be null");
 
     if (volume.isZero()) {
-      throw new IllegalArgumentException("production trace source volume must be positive");
+      throw new ApplicationValidationException("production trace source volume must be positive");
     }
   }
 

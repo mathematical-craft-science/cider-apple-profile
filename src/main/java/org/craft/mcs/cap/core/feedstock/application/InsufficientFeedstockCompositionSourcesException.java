@@ -1,9 +1,11 @@
 package org.craft.mcs.cap.core.feedstock.application;
 
 import java.io.Serial;
+import org.craft.mcs.cap.shared.application.ApplicationValidationException;
+import org.craft.mcs.cap.shared.application.ApplicationUnprocessableException;
 
 
-public final class InsufficientFeedstockCompositionSourcesException extends RuntimeException {
+public final class InsufficientFeedstockCompositionSourcesException extends ApplicationUnprocessableException {
 
   @Serial
   private static final long serialVersionUID = 1L;
@@ -15,16 +17,7 @@ public final class InsufficientFeedstockCompositionSourcesException extends Runt
       int sourceCount,
       int minimumSourceCount
   ) {
-    if (sourceCount < 0) {
-      throw new IllegalArgumentException("feedstock composition source count cannot be negative");
-    }
-    if (minimumSourceCount < 1) {
-      throw new IllegalArgumentException("minimum feedstock composition source count must be positive");
-    }
-    super("feedstock composition optimization requires at least "
-        + minimumSourceCount
-        + " usable sources, but found "
-        + sourceCount);
+    super(message(sourceCount, minimumSourceCount));
     this.sourceCount = sourceCount;
     this.minimumSourceCount = minimumSourceCount;
   }
@@ -35,5 +28,19 @@ public final class InsufficientFeedstockCompositionSourcesException extends Runt
 
   public int minimumSourceCount() {
     return minimumSourceCount;
+  }
+
+  private static String message(int sourceCount, int minimumSourceCount) {
+    if (sourceCount < 0) {
+      throw new ApplicationValidationException("feedstock composition source count cannot be negative");
+    }
+    if (minimumSourceCount < 1) {
+      throw new ApplicationValidationException("minimum feedstock composition source count must be positive");
+    }
+
+    return "feedstock composition optimization requires at least "
+        + minimumSourceCount
+        + " usable sources, but found "
+        + sourceCount;
   }
 }

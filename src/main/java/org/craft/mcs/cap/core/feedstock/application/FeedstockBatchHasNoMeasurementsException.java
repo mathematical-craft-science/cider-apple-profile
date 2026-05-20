@@ -2,17 +2,20 @@ package org.craft.mcs.cap.core.feedstock.application;
 
 import java.io.Serial;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
+import org.craft.mcs.cap.shared.application.ApplicationUnprocessableException;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
 
 
-public final class FeedstockBatchHasNoMeasurementsException extends RuntimeException {
+@SuppressWarnings("java:S110")
+public final class FeedstockBatchHasNoMeasurementsException
+    extends ApplicationUnprocessableException {
 
   @Serial
   private static final long serialVersionUID = 1L;
 
-  private final @NonNull FeedstockBatchId batchId;
+  private final @NonNull FeedstockBatchId batchId; // NOSONAR
 
   public FeedstockBatchHasNoMeasurementsException(@NonNull FeedstockBatchId batchId) {
     super("feedstock batch has no measurements: " + requireNonNull(batchId, "feedstock batch id cannot be null").value());

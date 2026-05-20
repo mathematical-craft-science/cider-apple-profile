@@ -1,5 +1,7 @@
 package org.craft.mcs.cap.core.cideranalysis.profiletarget.scoring.domain;
 
+import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
+
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.EnumMap;
@@ -60,7 +62,7 @@ public final class ThresholdSegmentProfileAxisNormalizer implements ProfileAxisN
     requireNonNull(value, "axis value cannot be null");
     final var axisBreakpoints = breakpoints.get(axis);
     if (axisBreakpoints == null) { // NOSONAR
-      throw new IllegalArgumentException("No threshold breakpoints configured for axis: " + axis);
+      throw new DomainRuleViolationException("No threshold breakpoints configured for axis: " + axis);
     }
     final var segmentIndex = segmentIndex(axisBreakpoints, value);
     final var segmentMin = axisBreakpoints.get(segmentIndex);
@@ -90,11 +92,11 @@ public final class ThresholdSegmentProfileAxisNormalizer implements ProfileAxisN
   ) {
     requireNonNull(values, "axis threshold breakpoints cannot be null");
     if (values.size() < 2) {
-      throw new IllegalArgumentException("axis threshold breakpoints must contain at least two values: " + axis);
+      throw new DomainRuleViolationException("axis threshold breakpoints must contain at least two values: " + axis);
     }
     for (int index = 1; index < values.size(); index++) {
       if (values.get(index - 1).compareTo(values.get(index)) >= 0) {
-        throw new IllegalArgumentException("axis threshold breakpoints must be strictly increasing: " + axis);
+        throw new DomainRuleViolationException("axis threshold breakpoints must be strictly increasing: " + axis);
       }
     }
     return List.copyOf(values);

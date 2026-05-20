@@ -1,5 +1,7 @@
 package org.craft.mcs.cap.core.feedstock.application.port.in;
 
+import org.craft.mcs.cap.shared.application.ApplicationValidationException;
+
 import org.craft.mcs.cap.core.cideranalysis.profiletarget.scoring.application.port.in.ProfileTargetScoringPurpose;
 import org.craft.mcs.cap.core.cideranalysis.profiletarget.scoring.domain.ProfileTargetObjectiveWeights;
 import org.craft.mcs.cap.core.cideranalysis.sugaracidity.target.domain.TanninTargetRange;
@@ -29,7 +31,7 @@ public record ScoreFeedstockBatchProfileTargetCommand(
     requireNonNull(weights, "profile target objective weights cannot be null");
 
     if (limit < 1 || limit > CursorPageRequest.MAX_LIMIT) {
-      throw new IllegalArgumentException("profile target score limit must be between 1 and " + CursorPageRequest.MAX_LIMIT);
+      throw new ApplicationValidationException("profile target score limit must be between 1 and " + CursorPageRequest.MAX_LIMIT);
     }
   }
 }

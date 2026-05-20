@@ -24,13 +24,13 @@ public record DiscretizedCompositionOptimizationSettings(
 
   public DiscretizedCompositionOptimizationSettings {
     if (stepPercent < 1 || stepPercent > 50) {
-      throw new IllegalArgumentException("composition optimization step percent must be between 1 and 50");
+      throw new InvalidChemicalProfileCompositionOptimizationException("composition optimization step percent must be between 1 and 50");
     }
     if (100 % stepPercent != 0) {
-      throw new IllegalArgumentException("composition optimization step percent must divide 100 exactly");
+      throw new InvalidChemicalProfileCompositionOptimizationException("composition optimization step percent must divide 100 exactly");
     }
     if (limit < 1 || limit > MAX_LIMIT) {
-      throw new IllegalArgumentException("composition optimization limit must be between 1 and " + MAX_LIMIT);
+      throw new InvalidChemicalProfileCompositionOptimizationException("composition optimization limit must be between 1 and " + MAX_LIMIT);
     }
   }
 

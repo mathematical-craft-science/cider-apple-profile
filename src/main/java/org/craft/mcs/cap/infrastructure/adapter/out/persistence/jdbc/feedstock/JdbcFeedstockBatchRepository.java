@@ -12,6 +12,7 @@ import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Repository;
 
 import static java.util.Objects.requireNonNull;
+import static org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.support.JdbcPersistenceExceptionTranslator.translateOptimisticLocking;
 
 
 @Repository
@@ -28,7 +29,7 @@ class JdbcFeedstockBatchRepository
     final var entity = repository.findById(feedstockBatch.batchId().value())
         .map(existing -> FeedstockBatchJdbcMapper.updateFromDomain(feedstockBatch, existing))
         .orElseGet(() -> FeedstockBatchJdbcMapper.fromDomain(feedstockBatch));
-    final var saved = repository.save(entity);
+    final var saved = translateOptimisticLocking("feedstock batch", () -> repository.save(entity));
 
     return FeedstockBatchJdbcMapper.toDomain(saved);
   }
@@ -55,6 +56,9 @@ class JdbcFeedstockBatchRepository
   public void delete(@NonNull FeedstockBatch feedstockBatch) {
     requireNonNull(feedstockBatch, "feedstock batch cannot be null");
 
-    repository.softDeleteById(feedstockBatch.batchId().value());
+    translateOptimisticLocking(
+        "feedstock batch",
+        () -> repository.softDeleteById(feedstockBatch.batchId().value())
+    );
   }
 }

@@ -16,7 +16,7 @@ public record ChemicalProfileCompositionRequest(
     requireNonNull(tanninPolicy, "chemical profile composition tannin policy cannot be null");
 
     if (sources.size() < 2) {
-      throw new IllegalArgumentException("chemical profile composition requires at least two sources");
+      throw new InvalidChemicalProfileCompositionException("chemical profile composition requires at least two sources");
     }
   }
 

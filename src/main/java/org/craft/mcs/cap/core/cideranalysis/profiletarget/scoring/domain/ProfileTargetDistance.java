@@ -1,5 +1,7 @@
 package org.craft.mcs.cap.core.cideranalysis.profiletarget.scoring.domain;
 
+import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
+
 import java.math.BigDecimal;
 import java.util.List;
 import org.craft.mcs.cap.core.cideranalysis.sugaracidity.target.domain.SugarAcidityCoordinates;
@@ -47,13 +49,13 @@ public record ProfileTargetDistance(
     requireNonNull(targetShape, "target shape cannot be null");
     missingMeasurements = List.copyOf(requireNonNull(missingMeasurements, "missing measurements cannot be null"));
     if (status == ProfileTargetDistanceStatus.SCORED && value == null) {
-      throw new IllegalArgumentException("scored target distance value cannot be null");
+      throw new DomainRuleViolationException("scored target distance value cannot be null");
     }
     if (status == ProfileTargetDistanceStatus.UNSCORABLE && missingMeasurements.isEmpty()) {
-      throw new IllegalArgumentException("unscorable target distance must contain missing measurements");
+      throw new DomainRuleViolationException("unscorable target distance must contain missing measurements");
     }
     if (value != null && value.compareTo(BigDecimal.ZERO) < 0) {
-      throw new IllegalArgumentException("target distance value cannot be negative");
+      throw new DomainRuleViolationException("target distance value cannot be negative");
     }
   }
 

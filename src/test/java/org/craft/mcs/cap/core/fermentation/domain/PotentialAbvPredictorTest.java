@@ -1,5 +1,7 @@
 package org.craft.mcs.cap.core.fermentation.domain;
 
+import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
+
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.junit.jupiter.api.Test;
@@ -62,6 +64,6 @@ class PotentialAbvPredictorTest {
     assertThatThrownBy(() -> predictor.predict(
         SpecificGravityValue.of("1.010"),
         SpecificGravityValue.of("1.020")
-    )).isInstanceOf(IllegalArgumentException.class);
+    )).isInstanceOf(DomainRuleViolationException.class);
   }
 }

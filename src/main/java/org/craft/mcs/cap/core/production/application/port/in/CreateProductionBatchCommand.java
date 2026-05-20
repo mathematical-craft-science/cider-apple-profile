@@ -1,5 +1,7 @@
 package org.craft.mcs.cap.core.production.application.port.in;
 
+import org.craft.mcs.cap.shared.application.ApplicationValidationException;
+
 import org.craft.mcs.cap.core.feedstock.domain.model.value.CiderMakerId;
 import org.craft.mcs.cap.core.production.domain.model.ProductionInput;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceComponent;
@@ -27,7 +29,7 @@ public record CreateProductionBatchCommand(
 
     final var sources = input.sourceComposition().sources();
     if (sources.stream().map(ProductionSourceComponent::feedstockBatchId).distinct().count() != sources.size()) {
-      throw new IllegalArgumentException("production batch cannot contain duplicate feedstock batch sources");
+      throw new ApplicationValidationException("production batch cannot contain duplicate feedstock batch sources");
     }
   }
 }

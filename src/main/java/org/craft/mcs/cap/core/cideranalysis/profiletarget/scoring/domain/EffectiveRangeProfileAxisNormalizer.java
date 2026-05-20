@@ -1,5 +1,7 @@
 package org.craft.mcs.cap.core.cideranalysis.profiletarget.scoring.domain;
 
+import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
+
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.EnumMap;
@@ -64,7 +66,7 @@ public final class EffectiveRangeProfileAxisNormalizer implements ProfileAxisNor
     requireNonNull(value, "axis value cannot be null");
     final var range = ranges.get(axis);
     if (range == null) { // NOSONAR
-      throw new IllegalArgumentException("No effective normalization range configured for axis: " + axis);
+      throw new DomainRuleViolationException("No effective normalization range configured for axis: " + axis);
     }
     return value.subtract(range.min())
         .divide(range.max().subtract(range.min()), MATH_CONTEXT);

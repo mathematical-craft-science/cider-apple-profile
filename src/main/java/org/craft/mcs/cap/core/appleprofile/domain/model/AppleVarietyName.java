@@ -1,5 +1,7 @@
 package org.craft.mcs.cap.core.appleprofile.domain.model;
 
+import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
+
 import org.jmolecules.ddd.annotation.ValueObject;
 import org.jspecify.annotations.NonNull;
 
@@ -15,11 +17,11 @@ public record AppleVarietyName(@NonNull String value) {
     value = value.strip();
 
     if (value.isBlank()) {
-      throw new IllegalArgumentException("apple variety name cannot be blank");
+      throw new DomainRuleViolationException("apple variety name cannot be blank");
     }
 
     if (value.length() > MAX_LENGTH) {
-      throw new IllegalArgumentException(
+      throw new DomainRuleViolationException(
           "apple variety name length must not exceed " + MAX_LENGTH + " characters"
       );
     }

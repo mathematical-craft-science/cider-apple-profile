@@ -1,5 +1,7 @@
 package org.craft.mcs.cap.core.cideranalysis.classification.profile.northamerican;
 
+import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
+
 import java.math.BigDecimal;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
@@ -60,7 +62,7 @@ public final class NorthAmericanProfileCalculator {
       @NonNull ChemicalAxis axis
   ) {
     return axes.valueOf(axis)
-        .orElseThrow(() -> new IllegalArgumentException("missing required axis: " + axis))
+        .orElseThrow(() -> new DomainRuleViolationException("missing required axis: " + axis))
         .value();
   }
 
