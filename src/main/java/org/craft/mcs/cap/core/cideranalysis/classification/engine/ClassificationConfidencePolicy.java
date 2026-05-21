@@ -19,6 +19,7 @@ import org.jmolecules.ddd.annotation.Service;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
+import static org.craft.mcs.cap.shared.kernel.math.DecimalComparisons.isAtMost;
 
 
 @Service
@@ -81,7 +82,7 @@ public class ClassificationConfidencePolicy {
     }
 
     final var margin = boundary.abs().multiply(DEFAULT_BOUNDARY_MARGIN_RATIO);
-    return value.subtract(boundary).abs().compareTo(margin) <= 0;
+    return isAtMost(value.subtract(boundary).abs(), margin);
   }
 
   private static @NonNull ClassificationConfidence confidenceFrom(

@@ -6,6 +6,8 @@ import java.math.BigDecimal;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
+import static org.craft.mcs.cap.shared.kernel.math.DecimalComparisons.isBetweenInclusive;
+import static org.craft.mcs.cap.shared.kernel.math.DecimalComparisons.isGreaterThan;
 
 
 public record SugarAcidityZoneRange(
@@ -16,13 +18,13 @@ public record SugarAcidityZoneRange(
   public SugarAcidityZoneRange {
     requireNonNull(min, "zone range minimum cannot be null");
     requireNonNull(max, "zone range maximum cannot be null");
-    if (min.compareTo(max) > 0) {
+    if (isGreaterThan(min, max)) {
       throw new DomainRuleViolationException("zone range minimum cannot be greater than maximum");
     }
   }
 
   public boolean contains(@NonNull BigDecimal value) {
     requireNonNull(value, "zone range value cannot be null");
-    return value.compareTo(min) >= 0 && value.compareTo(max) <= 0;
+    return isBetweenInclusive(value, min, max);
   }
 }

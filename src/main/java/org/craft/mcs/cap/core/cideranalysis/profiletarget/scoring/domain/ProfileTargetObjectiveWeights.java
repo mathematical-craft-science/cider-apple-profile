@@ -7,6 +7,7 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import static java.util.Objects.requireNonNull;
+import static org.craft.mcs.cap.shared.kernel.math.DecimalComparisons.isPositive;
 
 
 /**
@@ -33,13 +34,13 @@ public record ProfileTargetObjectiveWeights(
   public ProfileTargetObjectiveWeights {
     requireNonNull(sugar, "sugar objective weight cannot be null");
     requireNonNull(acidity, "acidity objective weight cannot be null");
-    if (sugar.compareTo(BigDecimal.ZERO) <= 0) {
+    if (!isPositive(sugar)) {
       throw new DomainRuleViolationException("sugar objective weight must be positive");
     }
-    if (acidity.compareTo(BigDecimal.ZERO) <= 0) {
+    if (!isPositive(acidity)) {
       throw new DomainRuleViolationException("acidity objective weight must be positive");
     }
-    if (tannin != null && tannin.compareTo(BigDecimal.ZERO) <= 0) {
+    if (tannin != null && !isPositive(tannin)) {
       throw new DomainRuleViolationException("tannin objective weight must be positive");
     }
   }

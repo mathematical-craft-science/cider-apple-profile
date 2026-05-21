@@ -177,9 +177,10 @@ public final class DiscretizedBoundedChemicalProfileCompositionOptimizationStrat
       @NonNull ChemicalProfileCompositionSourceWeight weight,
       @NonNull ChemicalProfileCompositionOptimizationSource source
   ) {
+    final var availableVolume = source.availableVolume();
     return weight instanceof AbsoluteCompositionVolume(VolumeValue volume)
-        && source.availableVolume() != null
-        && volume.compareTo(source.availableVolume()) > 0; // NOSONAR
+        && availableVolume != null
+        && volume.exceeds(availableVolume);
   }
 
   private static int compareByDistance(

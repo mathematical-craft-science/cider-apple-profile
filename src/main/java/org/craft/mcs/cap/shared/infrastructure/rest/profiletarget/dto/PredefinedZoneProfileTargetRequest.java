@@ -1,4 +1,4 @@
-package org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto;
+package org.craft.mcs.cap.shared.infrastructure.rest.profiletarget.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.craft.mcs.cap.core.cideranalysis.sugaracidity.zone.domain.SugarAcidityZone;

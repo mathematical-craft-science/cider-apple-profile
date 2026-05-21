@@ -18,7 +18,7 @@ public record RangeMeasurement<T extends Comparable<T>>(
     requireNonNull(min, "minimum measured value cannot be null");
     requireNonNull(max, "maximum measured value cannot be null");
 
-    if (min.compareTo(max) > 0) {
+    if (isGreaterThan(min, max)) {
       throw new DomainRuleViolationException("minimum measured value must not exceed maximum");
     }
   }
@@ -31,4 +31,10 @@ public record RangeMeasurement<T extends Comparable<T>>(
     return new RangeMeasurement<>(min, max);
   }
 
+  private static <T extends Comparable<T>> boolean isGreaterThan(
+      @NonNull T left,
+      @NonNull T right
+  ) {
+    return left.compareTo(right) > 0;
+  }
 }

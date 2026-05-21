@@ -11,6 +11,7 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import static java.util.Objects.requireNonNull;
+import static org.craft.mcs.cap.shared.kernel.math.DecimalComparisons.isNegative;
 
 
 /**
@@ -54,7 +55,7 @@ public record ProfileTargetDistance(
     if (status == ProfileTargetDistanceStatus.UNSCORABLE && missingMeasurements.isEmpty()) {
       throw new DomainRuleViolationException("unscorable target distance must contain missing measurements");
     }
-    if (value != null && value.compareTo(BigDecimal.ZERO) < 0) {
+    if (value != null && isNegative(value)) {
       throw new DomainRuleViolationException("target distance value cannot be negative");
     }
   }

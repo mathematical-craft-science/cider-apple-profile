@@ -1,4 +1,4 @@
-package org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto;
+package org.craft.mcs.cap.shared.infrastructure.rest.profiletarget.dto;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;

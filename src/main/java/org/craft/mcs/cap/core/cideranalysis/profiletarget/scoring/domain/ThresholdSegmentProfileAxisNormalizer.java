@@ -11,6 +11,8 @@ import org.craft.mcs.cap.core.cideranalysis.sugaracidity.zone.domain.SugarAcidit
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
+import static org.craft.mcs.cap.shared.kernel.math.DecimalComparisons.isAtLeast;
+import static org.craft.mcs.cap.shared.kernel.math.DecimalComparisons.isLessThan;
 
 
 /**
@@ -79,7 +81,7 @@ public final class ThresholdSegmentProfileAxisNormalizer implements ProfileAxisN
       @NonNull BigDecimal value
   ) {
     for (int index = 0; index < axisBreakpoints.size() - 2; index++) {
-      if (value.compareTo(axisBreakpoints.get(index + 1)) < 0) {
+      if (isLessThan(value, axisBreakpoints.get(index + 1))) {
         return index;
       }
     }
@@ -95,7 +97,7 @@ public final class ThresholdSegmentProfileAxisNormalizer implements ProfileAxisN
       throw new DomainRuleViolationException("axis threshold breakpoints must contain at least two values: " + axis);
     }
     for (int index = 1; index < values.size(); index++) {
-      if (values.get(index - 1).compareTo(values.get(index)) >= 0) {
+      if (isAtLeast(values.get(index - 1), values.get(index))) {
         throw new DomainRuleViolationException("axis threshold breakpoints must be strictly increasing: " + axis);
       }
     }

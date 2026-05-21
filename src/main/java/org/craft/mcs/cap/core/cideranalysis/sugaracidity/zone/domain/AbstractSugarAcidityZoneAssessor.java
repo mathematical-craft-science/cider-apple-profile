@@ -12,6 +12,7 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import static java.util.Objects.requireNonNull;
+import static org.craft.mcs.cap.shared.kernel.math.DecimalComparisons.isLessThan;
 
 
 /**
@@ -113,7 +114,12 @@ abstract class AbstractSugarAcidityZoneAssessor
       return SugarAcidityLevel.MEDIUM;
     }
 
-    return value.orElseThrow().compareTo(thresholds.mediumTannin().lowerBoundary()) < 0
+    final var mediumTanninLowerBoundary = requireNonNull(
+        thresholds.mediumTannin().lowerBoundary(),
+        "medium tannin lower boundary cannot be null"
+    );
+
+    return isLessThan(value.orElseThrow(), mediumTanninLowerBoundary)
            ? SugarAcidityLevel.LOW
            : SugarAcidityLevel.HIGH;
   }

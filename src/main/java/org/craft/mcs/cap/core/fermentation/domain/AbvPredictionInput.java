@@ -24,7 +24,7 @@ public record AbvPredictionInput(
     requireNonNull(originalGravity, "original gravity cannot be null");
     requireNonNull(finalGravity, "final gravity cannot be null");
 
-    if (finalGravity.compareTo(originalGravity) > 0) {
+    if (finalGravity.exceeds(originalGravity)) {
       throw new DomainRuleViolationException("final gravity must not exceed original gravity");
     }
   }

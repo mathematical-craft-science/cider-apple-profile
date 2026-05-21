@@ -6,13 +6,14 @@ import java.math.BigDecimal;
 import java.util.Objects;
 import javax.measure.Quantity;
 import javax.measure.Unit;
+import org.craft.mcs.cap.shared.kernel.math.DecimalComparisons;
 import org.jspecify.annotations.NonNull;
 import tech.units.indriya.quantity.Quantities;
 
 import static java.util.Objects.requireNonNull;
 
 
-public abstract class MeasuredValue<Q extends Quantity<Q>, SELF extends MeasuredValue<Q, SELF>>
+public abstract class MeasuredValue<Q extends Quantity<Q>, SELF extends MeasuredValue<Q, SELF>> // NOSONAR
     implements Comparable<SELF> {
 
   private final Quantity<Q> value;
@@ -77,7 +78,7 @@ public abstract class MeasuredValue<Q extends Quantity<Q>, SELF extends Measured
   }
 
   private void validateRange(@NonNull BigDecimal v) {
-    if (v.compareTo(min) < 0 || v.compareTo(max) > 0) {
+    if (DecimalComparisons.isLessThan(v, min) || DecimalComparisons.isGreaterThan(v, max)) {
       throw new DomainRuleViolationException(
           "Value " + v + " out of range [" + min + ", " + max + "]"
       );
@@ -88,6 +89,21 @@ public abstract class MeasuredValue<Q extends Quantity<Q>, SELF extends Measured
   public final int compareTo(@NonNull SELF other) {
     requireNonNull(other);
     return this.asBigDecimal().compareTo(other.asBigDecimal());
+  }
+
+  public final boolean isLessThan(@NonNull SELF other) {
+    requireNonNull(other, "measured value to compare cannot be null");
+    return compareTo(other) < 0;
+  }
+
+  public final boolean isGreaterThan(@NonNull SELF other) {
+    requireNonNull(other, "measured value to compare cannot be null");
+    return compareTo(other) > 0;
+  }
+
+  public final boolean exceeds(@NonNull SELF limit) {
+    requireNonNull(limit, "measured value limit cannot be null");
+    return isGreaterThan(limit);
   }
 
   @Override

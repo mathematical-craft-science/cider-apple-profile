@@ -7,6 +7,8 @@ import java.math.MathContext;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
+import static org.craft.mcs.cap.shared.kernel.math.DecimalComparisons.isAtMost;
+import static org.craft.mcs.cap.shared.kernel.math.DecimalComparisons.isPositive;
 
 
 public record EllipseSugarAcidityZoneGeometry(
@@ -25,10 +27,10 @@ public record EllipseSugarAcidityZoneGeometry(
     requireNonNull(acidityCenter, "ellipse acidity center cannot be null");
     requireNonNull(sugarRadius, "ellipse sugar radius cannot be null");
     requireNonNull(acidityRadius, "ellipse acidity radius cannot be null");
-    if (sugarRadius.compareTo(BigDecimal.ZERO) <= 0) {
+    if (!isPositive(sugarRadius)) {
       throw new DomainRuleViolationException("ellipse sugar radius must be positive");
     }
-    if (acidityRadius.compareTo(BigDecimal.ZERO) <= 0) {
+    if (!isPositive(acidityRadius)) {
       throw new DomainRuleViolationException("ellipse acidity radius must be positive");
     }
   }
@@ -52,6 +54,6 @@ public record EllipseSugarAcidityZoneGeometry(
     final var distance = normalizedSugar.multiply(normalizedSugar, MC)
         .add(normalizedAcidity.multiply(normalizedAcidity, MC), MC);
 
-    return distance.compareTo(BigDecimal.ONE) <= 0;
+    return isAtMost(distance, BigDecimal.ONE);
   }
 }
