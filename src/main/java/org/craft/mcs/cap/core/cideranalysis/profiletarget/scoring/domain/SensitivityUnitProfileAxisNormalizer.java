@@ -9,6 +9,7 @@ import java.util.Map;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
+import static org.craft.mcs.cap.shared.kernel.math.DecimalComparisons.isPositive;
 
 
 /**
@@ -33,7 +34,7 @@ public final class SensitivityUnitProfileAxisNormalizer implements ProfileAxisNo
     units.forEach((axis, unit) -> {
       requireNonNull(axis, "profile evaluation axis cannot be null");
       requireNonNull(unit, "axis sensitivity unit cannot be null");
-      if (unit.compareTo(BigDecimal.ZERO) <= 0) {
+      if (!isPositive(unit)) {
         throw new DomainRuleViolationException("axis sensitivity unit must be positive: " + axis);
       }
       unitMap.put(axis, unit);

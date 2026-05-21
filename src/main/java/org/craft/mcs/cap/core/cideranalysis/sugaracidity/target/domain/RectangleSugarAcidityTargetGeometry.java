@@ -7,6 +7,9 @@ import org.craft.mcs.cap.core.cideranalysis.sugaracidity.zone.domain.RectangleSu
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
+import static org.craft.mcs.cap.shared.kernel.math.DecimalComparisons.isBetweenInclusive;
+import static org.craft.mcs.cap.shared.kernel.math.DecimalComparisons.isGreaterThan;
+import static org.craft.mcs.cap.shared.kernel.math.DecimalComparisons.isLessThan;
 
 
 public record RectangleSugarAcidityTargetGeometry(
@@ -21,10 +24,10 @@ public record RectangleSugarAcidityTargetGeometry(
     requireNonNull(sugarMax, "target sugar maximum cannot be null");
     requireNonNull(acidityMin, "target acidity minimum cannot be null");
     requireNonNull(acidityMax, "target acidity maximum cannot be null");
-    if (sugarMin.compareTo(sugarMax) > 0) {
+    if (isGreaterThan(sugarMin, sugarMax)) {
       throw new DomainRuleViolationException("target sugar minimum cannot be greater than maximum");
     }
-    if (acidityMin.compareTo(acidityMax) > 0) {
+    if (isGreaterThan(acidityMin, acidityMax)) {
       throw new DomainRuleViolationException("target acidity minimum cannot be greater than maximum");
     }
   }
@@ -49,10 +52,8 @@ public record RectangleSugarAcidityTargetGeometry(
   @Override
   public boolean contains(@NonNull SugarAcidityCoordinates point) {
     requireNonNull(point, "sugar-acidity point cannot be null");
-    return point.sugar().compareTo(sugarMin) >= 0
-        && point.sugar().compareTo(sugarMax) <= 0
-        && point.acidity().compareTo(acidityMin) >= 0
-        && point.acidity().compareTo(acidityMax) <= 0;
+    return isBetweenInclusive(point.sugar(), sugarMin, sugarMax)
+        && isBetweenInclusive(point.acidity(), acidityMin, acidityMax);
   }
 
   @Override
@@ -71,10 +72,10 @@ public record RectangleSugarAcidityTargetGeometry(
       @NonNull BigDecimal min,
       @NonNull BigDecimal max
   ) {
-    if (value.compareTo(min) < 0) {
+    if (isLessThan(value, min)) {
       return min;
     }
-    if (value.compareTo(max) > 0) {
+    if (isGreaterThan(value, max)) {
       return max;
     }
     return value;

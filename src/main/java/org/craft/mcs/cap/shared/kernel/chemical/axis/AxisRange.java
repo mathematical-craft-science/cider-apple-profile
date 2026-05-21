@@ -5,6 +5,8 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import static java.util.Objects.requireNonNull;
+import static org.craft.mcs.cap.shared.kernel.math.DecimalComparisons.isAtLeast;
+import static org.craft.mcs.cap.shared.kernel.math.DecimalComparisons.isLessThan;
 
 
 public record AxisRange(
@@ -37,8 +39,8 @@ public record AxisRange(
   public boolean contains(@NonNull BigDecimal value) {
     requireNonNull(value, "axis value cannot be null");
 
-    return (minInclusive == null || value.compareTo(minInclusive) >= 0)
-        && (maxExclusive == null || value.compareTo(maxExclusive) < 0);
+    return (minInclusive == null || isAtLeast(value, minInclusive))
+        && (maxExclusive == null || isLessThan(value, maxExclusive));
   }
 
   public @Nullable BigDecimal lowerBoundary() {

@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
+import static org.craft.mcs.cap.shared.kernel.math.DecimalComparisons.isAtLeast;
 
 
 public record ProfileAxisNormalizationRange(
@@ -18,7 +19,7 @@ public record ProfileAxisNormalizationRange(
     requireNonNull(axis, "normalization axis cannot be null");
     requireNonNull(min, "normalization minimum cannot be null");
     requireNonNull(max, "normalization maximum cannot be null");
-    if (min.compareTo(max) >= 0) {
+    if (isAtLeast(min, max)) {
       throw new DomainRuleViolationException("normalization minimum must be less than maximum: " + axis);
     }
   }

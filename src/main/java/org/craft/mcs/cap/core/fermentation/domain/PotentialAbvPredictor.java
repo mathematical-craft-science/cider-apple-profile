@@ -75,7 +75,7 @@ public final class PotentialAbvPredictor {
 
     final var predictedFinalGravity = finalGravityPrediction.finalGravity();
 
-    if (predictedFinalGravity.compareTo(originalGravity) > 0) {
+    if (predictedFinalGravity.exceeds(originalGravity)) {
       throw new DomainRuleViolationException("predicted final gravity must not exceed original gravity");
     }
 

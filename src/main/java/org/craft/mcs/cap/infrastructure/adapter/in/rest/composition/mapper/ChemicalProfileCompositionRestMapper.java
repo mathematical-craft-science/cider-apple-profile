@@ -38,15 +38,15 @@ import org.craft.mcs.cap.infrastructure.adapter.in.rest.composition.dto.Chemical
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.composition.dto.ChemicalProfileCompositionSourceRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.composition.dto.ChemicalProfileCompositionSourceResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.composition.dto.ChemicalProfileCompositionSourceWeightRequest;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.CustomRectangleProfileTargetRequest;
+import org.craft.mcs.cap.shared.infrastructure.rest.profiletarget.dto.CustomRectangleProfileTargetRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.composition.dto.OptimizeChemicalProfileCompositionRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.composition.dto.OptimizeChemicalProfileCompositionResponse;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.PredefinedZoneProfileTargetRequest;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.ProfileTargetDistanceResponse;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.ProfileTargetObjectiveWeightsRequest;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.ProfileTargetRequest;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.ProfileTargetTanninRangeRequest;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.SugarAcidityCoordinatesResponse;
+import org.craft.mcs.cap.shared.infrastructure.rest.profiletarget.dto.PredefinedZoneProfileTargetRequest;
+import org.craft.mcs.cap.shared.infrastructure.rest.profiletarget.dto.ProfileTargetDistanceResponse;
+import org.craft.mcs.cap.shared.infrastructure.rest.profiletarget.dto.ProfileTargetObjectiveWeightsRequest;
+import org.craft.mcs.cap.shared.infrastructure.rest.profiletarget.dto.ProfileTargetRequest;
+import org.craft.mcs.cap.shared.infrastructure.rest.profiletarget.dto.ProfileTargetTanninRangeRequest;
+import org.craft.mcs.cap.shared.infrastructure.rest.profiletarget.dto.SugarAcidityCoordinatesResponse;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
@@ -56,6 +56,7 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import static java.util.Objects.requireNonNull;
+import static org.craft.mcs.cap.shared.infrastructure.rest.profiletarget.mapper.ProfileTargetRestMapper.normalizerFor;
 
 
 public final class ChemicalProfileCompositionRestMapper {
@@ -80,7 +81,7 @@ public final class ChemicalProfileCompositionRestMapper {
                                                                 ? ChemicalProfileCompositionCalculatorCode.MASS_BALANCE
                                                                 : request.calculator();
     final ProfileAxisNormalizerCode normalizer = request.normalizer() == null
-                                                 ? normalizerFor(scoringPurpose) // NOSONAR
+                                                 ? normalizerFor(scoringPurpose)
                                                  : request.normalizer();
     final ProfileTargetObjectiveFunctionCode objectiveFunction = request.objectiveFunction() == null
                                                                  ? ProfileTargetObjectiveFunctionCode.DISTANCE_TO_TARGET_AREA
@@ -347,18 +348,6 @@ public final class ChemicalProfileCompositionRestMapper {
     final BigDecimal sugar = request.sugar() == null ? BigDecimal.ONE : request.sugar();
     final BigDecimal acidity = request.acidity() == null ? BigDecimal.ONE : request.acidity();
     return new ProfileTargetObjectiveWeights(sugar, acidity, request.tannin()); // NOSONAR
-  }
-
-  private static @NonNull ProfileAxisNormalizerCode normalizerFor(
-      @NonNull ProfileTargetScoringPurpose scoringPurpose
-  ) {
-    requireNonNull(scoringPurpose, "profile target scoring purpose cannot be null");
-    return switch (scoringPurpose) {
-      case GRAPH_EXPLORATION -> ProfileAxisNormalizerCode.MIN_MAX;
-      case BLENDING_PLANNING -> ProfileAxisNormalizerCode.EFFECTIVE_RANGE;
-      case TARGET_ZONE_MATCHING -> ProfileAxisNormalizerCode.THRESHOLD_SEGMENT;
-      case EXPERT_CALIBRATION -> ProfileAxisNormalizerCode.SENSITIVITY_UNIT;
-    };
   }
 
   private static @NonNull ProfileTargetDistanceResponse toResponse(

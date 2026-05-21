@@ -1,6 +1,7 @@
 package org.craft.mcs.cap.infrastructure.configuration.openapi;
 
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 import org.jspecify.annotations.NonNull;
 import org.springframework.core.io.Resource;
@@ -16,8 +17,10 @@ import static java.util.Objects.requireNonNull;
 @Component
 public final class RestDtoSchemaTypeScanner {
 
-  private static final @NonNull String REST_DTO_RESOURCE_PATTERN =
-      "classpath*:org/craft/mcs/cap/infrastructure/adapter/in/rest/**/dto/*.class";
+  private static final @NonNull List<@NonNull String> REST_DTO_RESOURCE_PATTERNS = List.of(
+      "classpath*:org/craft/mcs/cap/infrastructure/adapter/in/rest/**/dto/*.class",
+      "classpath*:org/craft/mcs/cap/shared/infrastructure/rest/**/dto/*.class"
+  );
 
   private final @NonNull ResourceLoader resourceLoader;
 
@@ -32,14 +35,16 @@ public final class RestDtoSchemaTypeScanner {
     final var dtoTypes = new LinkedHashSet<Class<?>>();
 
     try {
-      for (Resource resource : resolver.getResources(REST_DTO_RESOURCE_PATTERN)) {
-        final var className = metadataReaderFactory
-            .getMetadataReader(resource)
-            .getClassMetadata()
-            .getClassName();
-        final var dtoType = ClassUtils.forName(className, loader);
-        if (dtoType.isRecord()) {
-          dtoTypes.add(dtoType);
+      for (final var resourcePattern : REST_DTO_RESOURCE_PATTERNS) {
+        for (Resource resource : resolver.getResources(resourcePattern)) {
+          final var className = metadataReaderFactory
+              .getMetadataReader(resource)
+              .getClassMetadata()
+              .getClassName();
+          final var dtoType = ClassUtils.forName(className, loader);
+          if (dtoType.isRecord()) {
+            dtoTypes.add(dtoType);
+          }
         }
       }
     } catch (ReflectiveOperationException | java.io.IOException exception) {

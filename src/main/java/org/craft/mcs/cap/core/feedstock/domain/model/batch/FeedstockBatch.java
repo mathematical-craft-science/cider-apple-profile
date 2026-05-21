@@ -196,7 +196,7 @@ public final class FeedstockBatch {
     if (volume.isZero()) {
       throw new DomainRuleViolationException("consumed feedstock volume must be positive");
     }
-    if (volume.compareTo(availableVolume) > 0) {
+    if (volume.exceeds(availableVolume)) {
       throw new DomainConflictException("consumed feedstock volume exceeds available volume");
     }
 

@@ -97,7 +97,7 @@ public class CreateProductionBatchService
             batch.ciderMakerId()
         );
       }
-      if (source.volume().compareTo(batch.availableVolume()) > 0) {
+      if (source.volume().exceeds(batch.availableVolume())) {
         throw new ProductionSourceInsufficientAvailableVolumeException(
             batch.batchId(),
             source.volume(),

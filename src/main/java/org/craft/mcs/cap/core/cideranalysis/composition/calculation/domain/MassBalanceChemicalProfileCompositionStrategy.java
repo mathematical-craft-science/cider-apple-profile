@@ -81,12 +81,13 @@ public final class MassBalanceChemicalProfileCompositionStrategy
 
   private static void validateAvailableVolume(@NonNull List<@NonNull ChemicalProfileCompositionSource> sources) {
     for (final var source : sources) {
+      final var availableVolume = source.availableVolume();
       if (!(source.weight() instanceof AbsoluteCompositionVolume(VolumeValue volume))
-          || source.availableVolume() == null) {
+          || availableVolume == null) {
         continue;
       }
 
-      if (volume.compareTo(source.availableVolume()) > 0) { // NOSONAR
+      if (volume.exceeds(availableVolume)) {
         throw new InvalidChemicalProfileCompositionException(
             "composition source requested volume exceeds available volume: " + sourceReference(source)
         );

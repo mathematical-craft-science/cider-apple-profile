@@ -7,6 +7,7 @@ import org.jmolecules.ddd.annotation.ValueObject;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
+import static org.craft.mcs.cap.shared.kernel.math.DecimalComparisons.isNegative;
 
 
 /**
@@ -21,7 +22,7 @@ public record ProductionTargetDistance(@NonNull BigDecimal value) {
 
   public ProductionTargetDistance {
     requireNonNull(value, "production target distance cannot be null");
-    if (value.compareTo(BigDecimal.ZERO) < 0) {
+    if (isNegative(value)) {
       throw new DomainRuleViolationException("production target distance cannot be negative");
     }
   }
