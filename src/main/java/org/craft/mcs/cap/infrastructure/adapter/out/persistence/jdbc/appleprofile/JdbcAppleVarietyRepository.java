@@ -25,7 +25,9 @@ class JdbcAppleVarietyRepository implements AppleVarietyRepository {
   public AppleVariety save(@NonNull AppleVariety appleVariety) {
     requireNonNull(appleVariety, "apple variety cannot be null");
 
-    final var entity = AppleVarietyJdbcMapper.fromDomain(appleVariety);
+    final var entity = repository.findById(appleVariety.varietyId().value())
+        .map(existing -> AppleVarietyJdbcMapper.updateFromDomain(appleVariety, existing))
+        .orElseGet(() -> AppleVarietyJdbcMapper.fromDomain(appleVariety));
     final var saved = translateOptimisticLocking("apple variety", () -> repository.save(entity));
 
     return AppleVarietyJdbcMapper.toDomain(saved);

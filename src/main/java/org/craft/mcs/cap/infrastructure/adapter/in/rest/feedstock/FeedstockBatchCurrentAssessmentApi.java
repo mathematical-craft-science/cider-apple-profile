@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.UUID;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.FeedstockBatchCurrentFermentationStartReadinessResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.FeedstockBatchCurrentPotentialAbvResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.FeedstockBatchCurrentSugarAcidityZonePointBatchResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.FeedstockBatchCurrentSugarAcidityZonePointQueryRequest;
@@ -80,6 +81,26 @@ public interface FeedstockBatchCurrentAssessmentApi {
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
   )
   @NonNull ResponseEntity<@NonNull FeedstockBatchCurrentPotentialAbvResponse> predictPotentialAbv(
+      @Parameter(description = "Feedstock batch identifier.", schema = @Schema(format = "uuid"))
+      @NonNull UUID batchId
+  );
+
+  @Operation(
+      summary = "Assess current feedstock batch fermentation-start readiness",
+      description = "Assesses fermentation-start readiness from the latest batch measurement using sugar, pH and YAN."
+  )
+  @ApiResponse(
+      responseCode = "200",
+      description = "Current fermentation-start readiness assessment.",
+      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = FeedstockBatchCurrentFermentationStartReadinessResponse.class))
+  )
+  @ApiResponse(
+      responseCode = "422",
+      description = "Feedstock batch has no current measurement.",
+      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
+  )
+  @NonNull ResponseEntity<@NonNull FeedstockBatchCurrentFermentationStartReadinessResponse>
+      assessFermentationStartReadiness(
       @Parameter(description = "Feedstock batch identifier.", schema = @Schema(format = "uuid"))
       @NonNull UUID batchId
   );

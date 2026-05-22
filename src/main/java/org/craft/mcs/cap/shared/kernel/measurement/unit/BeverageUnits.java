@@ -60,6 +60,11 @@ public final class BeverageUnits
           .divide(Units.LITRE)
           .asType(Tanninity.class);
 
+  public static final Unit<YeastAssimilableNitrogen> MILLIGRAM_NITROGEN_PER_LITER =
+      MetricPrefix.MILLI(Units.GRAM)
+          .divide(Units.LITRE)
+          .asType(YeastAssimilableNitrogen.class);
+
   public static final Unit<AlcoholByVolume> PERCENT_ABV =
       Units.PERCENT.asType(AlcoholByVolume.class);
 
@@ -67,6 +72,7 @@ public final class BeverageUnits
       Units.LITRE.asType(Volume.class);
 
   public static final Unit<TitratableAcidity> TA = GRAM_PER_LITER_AS_MALIC_ACID;
+  public static final Unit<YeastAssimilableNitrogen> YAN = MILLIGRAM_NITROGEN_PER_LITER;
 
   private static final BeverageUnits INSTANCE = new BeverageUnits();
 
@@ -84,6 +90,8 @@ public final class BeverageUnits
     //
     addUnit(MILLIGRAM_PER_LITER_AS_TANNIC_ACID);
     addUnit(GRAM_PER_LITER_AS_TANNIC_ACID);
+    //
+    addUnit(MILLIGRAM_NITROGEN_PER_LITER);
 
     final var f = SimpleUnitFormat.getInstance();
 
@@ -100,11 +108,54 @@ public final class BeverageUnits
     //
     f.label(MILLIGRAM_PER_LITER_AS_TANNIC_ACID, "mg/L TAE");
     f.label(GRAM_PER_LITER_AS_TANNIC_ACID, "g/L TAE");
+    //
+    f.label(MILLIGRAM_NITROGEN_PER_LITER, "mg N/L");
 
   }
 
   public static BeverageUnits getInstance() {
     return INSTANCE;
+  }
+
+  public static @NonNull String label(@NonNull Unit<?> unit) {
+    if (unit == BRIX) {
+      return "°Bx";
+    }
+    if (unit == PLATO) {
+      return "°P";
+    }
+    if (unit == SG) {
+      return "SG";
+    }
+    if (unit == PH) {
+      return "pH";
+    }
+    if (unit == PERCENT_ABV) {
+      return "% ABV";
+    }
+    if (unit == LITRE) {
+      return "L";
+    }
+    if (unit == GRAM_PER_LITER_AS_MALIC_ACID) {
+      return "g/L as malic acid";
+    }
+    if (unit == GRAM_PER_LITRE_AS_LACTIC_ACID) {
+      return "g/L as lactic acid";
+    }
+    if (unit == GRAM_PER_LITRE_AS_CITRIC_ACID) {
+      return "g/L as citric acid";
+    }
+    if (unit == MILLIGRAM_PER_LITER_AS_TANNIC_ACID) {
+      return "mg/L TAE";
+    }
+    if (unit == GRAM_PER_LITER_AS_TANNIC_ACID) {
+      return "g/L TAE";
+    }
+    if (unit == MILLIGRAM_NITROGEN_PER_LITER) {
+      return "mg N/L";
+    }
+    getInstance();
+    return SimpleUnitFormat.getInstance().format(unit);
   }
 
   @NonNull

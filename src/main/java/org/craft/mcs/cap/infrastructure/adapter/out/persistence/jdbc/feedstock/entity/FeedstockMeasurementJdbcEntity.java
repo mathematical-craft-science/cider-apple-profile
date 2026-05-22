@@ -79,6 +79,15 @@ public class FeedstockMeasurementJdbcEntity {
   @Nullable @Column("tanninity_standard_deviation") BigDecimal tanninityStandardDeviation;
   @Nullable @Column("tanninity_sample_size") Integer tanninitySampleSize;
 
+  @Nullable @Column("yan_kind") MeasurementKind yeastAssimilableNitrogenKind;
+  @Nullable @Column("yan_exact_mg_n_l") BigDecimal yeastAssimilableNitrogenExactValue;
+  @Nullable @Column("yan_min_mg_n_l") BigDecimal yeastAssimilableNitrogenMinValue;
+  @Nullable @Column("yan_max_mg_n_l") BigDecimal yeastAssimilableNitrogenMaxValue;
+  @Nullable @Column("yan_mean_mg_n_l") BigDecimal yeastAssimilableNitrogenMeanValue;
+  @Nullable @Column("yan_median_mg_n_l") BigDecimal yeastAssimilableNitrogenMedianValue;
+  @Nullable @Column("yan_standard_deviation") BigDecimal yeastAssimilableNitrogenStandardDeviation;
+  @Nullable @Column("yan_sample_size") Integer yeastAssimilableNitrogenSampleSize;
+
   @Nullable
   @Column("chemical_profile_source")
   String chemicalProfileSource;
@@ -115,6 +124,7 @@ public class FeedstockMeasurementJdbcEntity {
       @Nullable MeasurementJdbcColumns ph,
       @Nullable MeasurementJdbcColumns titratableAcidity,
       @Nullable MeasurementJdbcColumns tanninity,
+      @Nullable MeasurementJdbcColumns yeastAssimilableNitrogen,
       @Nullable String chemicalProfileSource,
       @Nullable ConfidenceLevel chemicalProfileConfidence
   ) {
@@ -129,6 +139,7 @@ public class FeedstockMeasurementJdbcEntity {
     applyPh(ph);
     applyTitratableAcidity(titratableAcidity);
     applyTanninity(tanninity);
+    applyYeastAssimilableNitrogen(yeastAssimilableNitrogen);
   }
 
   @Nullable MeasurementJdbcColumns sugar() {
@@ -150,6 +161,19 @@ public class FeedstockMeasurementJdbcEntity {
   @Nullable MeasurementJdbcColumns tanninity() {
     return measurement(tanninityKind, tanninityExactValue, tanninityMinValue, tanninityMaxValue,
         tanninityMeanValue, tanninityMedianValue, tanninityStandardDeviation, tanninitySampleSize);
+  }
+
+  @Nullable MeasurementJdbcColumns yeastAssimilableNitrogen() {
+    return measurement(
+        yeastAssimilableNitrogenKind,
+        yeastAssimilableNitrogenExactValue,
+        yeastAssimilableNitrogenMinValue,
+        yeastAssimilableNitrogenMaxValue,
+        yeastAssimilableNitrogenMeanValue,
+        yeastAssimilableNitrogenMedianValue,
+        yeastAssimilableNitrogenStandardDeviation,
+        yeastAssimilableNitrogenSampleSize
+    );
   }
 
   private void applySugar(@Nullable MeasurementJdbcColumns measurement) {
@@ -194,6 +218,17 @@ public class FeedstockMeasurementJdbcEntity {
     tanninityMedianValue = medianValue(measurement);
     tanninityStandardDeviation = standardDeviation(measurement);
     tanninitySampleSize = sampleSize(measurement);
+  }
+
+  private void applyYeastAssimilableNitrogen(@Nullable MeasurementJdbcColumns measurement) {
+    yeastAssimilableNitrogenKind = kind(measurement);
+    yeastAssimilableNitrogenExactValue = exactValue(measurement);
+    yeastAssimilableNitrogenMinValue = minValue(measurement);
+    yeastAssimilableNitrogenMaxValue = maxValue(measurement);
+    yeastAssimilableNitrogenMeanValue = meanValue(measurement);
+    yeastAssimilableNitrogenMedianValue = medianValue(measurement);
+    yeastAssimilableNitrogenStandardDeviation = standardDeviation(measurement);
+    yeastAssimilableNitrogenSampleSize = sampleSize(measurement);
   }
 
   private static @Nullable MeasurementKind kind(@Nullable MeasurementJdbcColumns measurement) {

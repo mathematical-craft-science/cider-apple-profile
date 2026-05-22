@@ -81,7 +81,7 @@ public final class ChemicalProfileCompositionRestMapper {
                                                                 ? ChemicalProfileCompositionCalculatorCode.MASS_BALANCE
                                                                 : request.calculator();
     final ProfileAxisNormalizerCode normalizer = request.normalizer() == null
-                                                 ? normalizerFor(scoringPurpose)
+                                                 ? normalizerFor(scoringPurpose) // NOSONAR
                                                  : request.normalizer();
     final ProfileTargetObjectiveFunctionCode objectiveFunction = request.objectiveFunction() == null
                                                                  ? ProfileTargetObjectiveFunctionCode.DISTANCE_TO_TARGET_AREA
@@ -112,6 +112,9 @@ public final class ChemicalProfileCompositionRestMapper {
             .map(ChemicalProfileCompositionRestMapper::toResponse)
             .toList(),
         SugarAcidityZoneRestMapper.toResponse(composition.profile()),
+        composition.yeastAssimilableNitrogen() == null
+            ? null
+            : SugarAcidityZoneRestMapper.toResponse(composition.yeastAssimilableNitrogen()), // NOSONAR
         composition.totalVolume() == null ? null : composition.totalVolume().liters(), // NOSONAR
         composition.warnings(),
         result.normalizerCode(),
@@ -252,6 +255,9 @@ public final class ChemicalProfileCompositionRestMapper {
             .map(ChemicalProfileCompositionRestMapper::toResponse)
             .toList(),
         SugarAcidityZoneRestMapper.toResponse(composition.profile()),
+        composition.yeastAssimilableNitrogen() == null
+            ? null
+            : SugarAcidityZoneRestMapper.toResponse(composition.yeastAssimilableNitrogen()), // NOSONAR
         composition.totalVolume() == null ? null : composition.totalVolume().liters(), // NOSONAR
         composition.warnings(),
         toResponse(candidate.distance())
@@ -278,7 +284,10 @@ public final class ChemicalProfileCompositionRestMapper {
     return ChemicalProfileAxes.of(
         axis(ChemicalAxis.SUGAR, request.sugar()),
         axis(ChemicalAxis.ACIDITY, request.acidity()),
-        request.tannin() == null ? null : axis(ChemicalAxis.TANNINITY, request.tannin()) // NOSONAR
+        request.tannin() == null ? null : axis(ChemicalAxis.TANNINITY, request.tannin()), // NOSONAR
+        request.yeastAssimilableNitrogen() == null
+            ? null
+            : axis(ChemicalAxis.YEAST_ASSIMILABLE_NITROGEN, request.yeastAssimilableNitrogen()) // NOSONAR
     );
   }
 

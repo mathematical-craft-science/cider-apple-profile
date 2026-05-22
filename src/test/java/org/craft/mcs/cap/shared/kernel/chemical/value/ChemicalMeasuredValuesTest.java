@@ -22,6 +22,8 @@ class ChemicalMeasuredValuesTest {
     assertThat(TitratableAcidityValue.of("30.0").asBigDecimal()).isEqualByComparingTo("30.0");
     assertThat(TanninityValue.of("0").asBigDecimal()).isEqualByComparingTo("0");
     assertThat(TanninityValue.of("12000").asBigDecimal()).isEqualByComparingTo("12000");
+    assertThat(YeastAssimilableNitrogenValue.of("0").asBigDecimal()).isEqualByComparingTo("0");
+    assertThat(YeastAssimilableNitrogenValue.of("2000.0").asBigDecimal()).isEqualByComparingTo("2000.0");
     assertThat(PhValue.of("0").asBigDecimal()).isEqualByComparingTo("0");
     assertThat(PhValue.of("15.0").asBigDecimal()).isEqualByComparingTo("15.0");
   }
@@ -39,6 +41,8 @@ class ChemicalMeasuredValuesTest {
     assertThatThrownBy(() -> TitratableAcidityValue.of("-0.1"))
         .isInstanceOf(DomainRuleViolationException.class);
     assertThatThrownBy(() -> TanninityValue.of("12000.1"))
+        .isInstanceOf(DomainRuleViolationException.class);
+    assertThatThrownBy(() -> YeastAssimilableNitrogenValue.of("2000.1"))
         .isInstanceOf(DomainRuleViolationException.class);
     assertThatThrownBy(() -> PhValue.of("15.1"))
         .isInstanceOf(DomainRuleViolationException.class);

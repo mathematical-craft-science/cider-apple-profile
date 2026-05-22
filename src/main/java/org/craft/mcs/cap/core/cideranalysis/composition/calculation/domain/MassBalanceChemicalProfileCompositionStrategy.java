@@ -29,13 +29,15 @@ import static java.util.Objects.requireNonNull;
  *       converted back to SG: {@code SG = 1 + weightedAverage((SG_i - 1) * 1000) / 1000}.</li>
  *   <li>Acidity: concentration mass balance, {@code sum(acidity_i * weight_i) / sum(weight_i)}.</li>
  *   <li>Tannin: same concentration mass balance when the selected tannin policy allows it.</li>
+ *   <li>YAN: same concentration mass balance when every source has YAN. Partial YAN data is not
+ *       extrapolated, because that would make fermentation-start readiness look more precise than it is.</li>
  * </ul>
  *
  * <p>The strategy does not decide which source weights to use. It is called by fixed composition
  * calculations and by optimization algorithms after they generate a candidate set of weights.
  *
  * Sugar is composed through gravity points: gp = (SG - 1.000) * 1000.
- * Acidity and tannin are composed as concentration mass balance:
+ * Acidity, tannin, and YAN are composed as concentration mass balance:
  * blended = sum(value_i * weight_i) / sum(weight_i).
  */
 public final class MassBalanceChemicalProfileCompositionStrategy
@@ -55,6 +57,7 @@ public final class MassBalanceChemicalProfileCompositionStrategy
     final var sugar = calculateSugar(request.sources());
     final var acidity = calculateAxis(request.sources(), ChemicalAxis.ACIDITY);
     final var tannin = calculateTannin(request, warnings);
+    final var yeastAssimilableNitrogen = calculateYeastAssimilableNitrogen(request.sources(), warnings);
 
     return ChemicalProfileComposition.of(
         request.sources(),
@@ -63,6 +66,7 @@ public final class MassBalanceChemicalProfileCompositionStrategy
             calculatedPoint(acidity),
             tannin == null ? null : calculatedPoint(tannin)
         ),
+        yeastAssimilableNitrogen == null ? null : calculatedPoint(yeastAssimilableNitrogen),
         warnings
     );
   }
@@ -148,6 +152,24 @@ public final class MassBalanceChemicalProfileCompositionStrategy
     }
     if (tanninCount > 0) {
       warnings.add(ChemicalProfileCompositionWarning.TANNIN_INCOMPLETE);
+    }
+
+    return null;
+  }
+
+  private static @Nullable BigDecimal calculateYeastAssimilableNitrogen(
+      @NonNull List<@NonNull ChemicalProfileCompositionSource> sources,
+      @NonNull List<@NonNull ChemicalProfileCompositionWarning> warnings
+  ) {
+    final var yanCount = sources.stream()
+        .filter(source -> source.axes().has(ChemicalAxis.YEAST_ASSIMILABLE_NITROGEN))
+        .count();
+
+    if (yanCount == sources.size()) {
+      return calculateAxis(sources, ChemicalAxis.YEAST_ASSIMILABLE_NITROGEN);
+    }
+    if (yanCount > 0) {
+      warnings.add(ChemicalProfileCompositionWarning.YEAST_ASSIMILABLE_NITROGEN_INCOMPLETE);
     }
 
     return null;

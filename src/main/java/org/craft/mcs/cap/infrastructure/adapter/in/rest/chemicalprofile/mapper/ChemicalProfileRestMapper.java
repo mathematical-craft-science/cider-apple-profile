@@ -1,11 +1,13 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.mapper;
 
 import java.math.BigDecimal;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.ChemicalProfileRestUnits;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.acl.ExternalChemicalMeasurementNormalizer;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.acl.PhQuantityNormalizer;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.acl.SugarQuantityNormalizer;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.acl.TanninityQuantityNormalizer;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.acl.TitratableAcidityQuantityNormalizer;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.acl.YeastAssimilableNitrogenQuantityNormalizer;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.dto.ChemicalMeasurementRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.dto.ChemicalMeasurementResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.dto.ChemicalProfileRequest;
@@ -21,6 +23,7 @@ import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfileSource;
 import org.craft.mcs.cap.shared.kernel.chemical.value.PhValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
 import org.craft.mcs.cap.shared.kernel.measurement.ExactMeasurement;
 import org.craft.mcs.cap.shared.kernel.measurement.MeasuredCharacteristic;
 import org.craft.mcs.cap.shared.kernel.measurement.RangeMeasurement;
@@ -33,16 +36,13 @@ import static java.util.Objects.requireNonNull;
 
 public final class ChemicalProfileRestMapper {
 
-  private static final @NonNull String SG_UNIT = "SG";
-  private static final @NonNull String PH_UNIT = "pH";
-  private static final @NonNull String TITRATABLE_ACIDITY_UNIT = "g/L as malic acid";
-  private static final @NonNull String TANNINITY_UNIT = "mg/L TAE";
-
   private static final @NonNull SugarQuantityNormalizer SUGAR_NORMALIZER = new SugarQuantityNormalizer();
   private static final @NonNull PhQuantityNormalizer PH_NORMALIZER = new PhQuantityNormalizer();
   private static final @NonNull TitratableAcidityQuantityNormalizer TITRATABLE_ACIDITY_NORMALIZER =
       new TitratableAcidityQuantityNormalizer();
   private static final @NonNull TanninityQuantityNormalizer TANNINITY_NORMALIZER = new TanninityQuantityNormalizer();
+  private static final @NonNull YeastAssimilableNitrogenQuantityNormalizer
+      YEAST_ASSIMILABLE_NITROGEN_NORMALIZER = new YeastAssimilableNitrogenQuantityNormalizer();
 
   private ChemicalProfileRestMapper() {
   }
@@ -84,6 +84,14 @@ public final class ChemicalProfileRestMapper {
       builder.tanninity(tanninity);
     }
 
+    final var yeastAssimilableNitrogen = toMeasurement(
+        request.yeastAssimilableNitrogen(),
+        YEAST_ASSIMILABLE_NITROGEN_NORMALIZER
+    );
+    if (yeastAssimilableNitrogen != null) {
+      builder.yeastAssimilableNitrogen(yeastAssimilableNitrogen);
+    }
+
     if (request.source() != null) {
       builder.source(ChemicalProfileSource.of(request.source())); // NOSONAR
     }
@@ -101,21 +109,32 @@ public final class ChemicalProfileRestMapper {
             .map(measurement -> toResponse(
                 measurement,
                 sugar -> sugar.specificGravity().asBigDecimal(),
-                SG_UNIT
+                ChemicalProfileRestUnits.SUGAR
             ))
             .orElse(null),  // NOSONAR
         profile.ph()
-            .map(measurement -> toResponse(measurement, PhValue::asBigDecimal, PH_UNIT))
+            .map(measurement -> toResponse(measurement, PhValue::asBigDecimal, ChemicalProfileRestUnits.PH))
             .orElse(null),  // NOSONAR
         profile.titratableAcidity()
             .map(measurement -> toResponse(
                 measurement,
                 TitratableAcidityValue::asBigDecimal,
-                TITRATABLE_ACIDITY_UNIT
+                ChemicalProfileRestUnits.TITRATABLE_ACIDITY
             ))
             .orElse(null),  // NOSONAR
         profile.tanninity()
-            .map(measurement -> toResponse(measurement, TanninityValue::asBigDecimal, TANNINITY_UNIT))
+            .map(measurement -> toResponse(
+                measurement,
+                TanninityValue::asBigDecimal,
+                ChemicalProfileRestUnits.TANNINITY
+            ))
+            .orElse(null),  // NOSONAR
+        profile.yeastAssimilableNitrogen()
+            .map(measurement -> toResponse(
+                measurement,
+                YeastAssimilableNitrogenValue::asBigDecimal,
+                ChemicalProfileRestUnits.YEAST_ASSIMILABLE_NITROGEN
+            ))
             .orElse(null),  // NOSONAR
         profile.source() == null ? null : profile.source().value(),  // NOSONAR
         profile.confidence()

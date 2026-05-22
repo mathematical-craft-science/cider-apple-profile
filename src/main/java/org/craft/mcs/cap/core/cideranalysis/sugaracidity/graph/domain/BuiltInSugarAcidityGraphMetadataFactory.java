@@ -6,6 +6,7 @@ import org.craft.mcs.cap.core.cideranalysis.sugaracidity.zone.domain.EllipseSuga
 import org.craft.mcs.cap.core.cideranalysis.sugaracidity.zone.domain.RectangleSugarAcidityZoneGeometry;
 import org.craft.mcs.cap.core.cideranalysis.sugaracidity.zone.domain.SugarAcidityZoneGeometry;
 import org.craft.mcs.cap.core.cideranalysis.sugaracidity.zone.domain.SugarAcidityZoneGeometryProfile;
+import org.craft.mcs.cap.shared.kernel.measurement.unit.BeverageUnits;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
@@ -27,7 +28,7 @@ public final class BuiltInSugarAcidityGraphMetadataFactory {
         new SugarAcidityGraphAxis(
             "SG",
             "Specific gravity",
-            "SG",
+            BeverageUnits.label(BeverageUnits.SG),
             BuiltInCiderProfileAxisBoundaries.SUGAR_MIN,
             BuiltInCiderProfileAxisBoundaries.SUGAR_MAX,
             List.of(
@@ -38,7 +39,7 @@ public final class BuiltInSugarAcidityGraphMetadataFactory {
         new SugarAcidityGraphAxis(
             "TA",
             "Total acidity",
-            "g/L malic",
+            BeverageUnits.label(BeverageUnits.TA),
             BuiltInCiderProfileAxisBoundaries.ACIDITY_MIN,
             BuiltInCiderProfileAxisBoundaries.ACIDITY_MAX,
             List.of(

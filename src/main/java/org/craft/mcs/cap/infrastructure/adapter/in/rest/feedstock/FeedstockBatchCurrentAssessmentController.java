@@ -3,12 +3,14 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.cideranalysis.composition.optimization.domain.DiscretizedCompositionOptimizationSettings;
+import org.craft.mcs.cap.core.feedstock.application.port.in.AssessFeedstockBatchCurrentFermentationStartReadinessUseCase;
 import org.craft.mcs.cap.core.feedstock.application.port.in.AssessFeedstockBatchCurrentSugarAcidityZoneUseCase;
 import org.craft.mcs.cap.core.feedstock.application.port.in.OptimizeFeedstockBatchCompositionUseCase;
 import org.craft.mcs.cap.core.feedstock.application.port.in.PredictFeedstockBatchCurrentPotentialAbvUseCase;
 import org.craft.mcs.cap.core.feedstock.application.port.in.QueryFeedstockBatchCurrentSugarAcidityZonePointsUseCase;
 import org.craft.mcs.cap.core.feedstock.application.port.in.ScoreFeedstockBatchProfileTargetUseCase;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.FeedstockBatchCurrentFermentationStartReadinessResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.FeedstockBatchProfileTargetScoreBatchResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.FeedstockBatchCurrentPotentialAbvResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.FeedstockBatchCurrentSugarAcidityZonePointBatchResponse;
@@ -37,6 +39,8 @@ public final class FeedstockBatchCurrentAssessmentController implements Feedstoc
   private final @NonNull AssessFeedstockBatchCurrentSugarAcidityZoneUseCase assessSugarAcidityZoneUseCase;
   private final @NonNull QueryFeedstockBatchCurrentSugarAcidityZonePointsUseCase querySugarAcidityZonePointsUseCase;
   private final @NonNull PredictFeedstockBatchCurrentPotentialAbvUseCase predictPotentialAbvUseCase;
+  private final @NonNull AssessFeedstockBatchCurrentFermentationStartReadinessUseCase
+      assessFermentationStartReadinessUseCase;
   private final @NonNull ScoreFeedstockBatchProfileTargetUseCase scoreProfileTargetUseCase;
   private final @NonNull OptimizeFeedstockBatchCompositionUseCase optimizeFeedstockBatchCompositionUseCase;
 
@@ -83,6 +87,19 @@ public final class FeedstockBatchCurrentAssessmentController implements Feedstoc
 
     return ResponseEntity.ok(
         FeedstockBatchCurrentAssessmentRestMapper.toResponse(prediction)
+    );
+  }
+
+  @Override
+  @GetMapping(value = "/feedstock-batches/{batchId}/fermentation-start-readiness", produces = APPLICATION_JSON_VALUE)
+  public @NonNull ResponseEntity<@NonNull FeedstockBatchCurrentFermentationStartReadinessResponse>
+      assessFermentationStartReadiness(@PathVariable @NonNull UUID batchId) {
+    final var assessment = assessFermentationStartReadinessUseCase.assess(
+        FeedstockBatchId.of(batchId)
+    );
+
+    return ResponseEntity.ok(
+        FeedstockBatchCurrentAssessmentRestMapper.toResponse(assessment)
     );
   }
 

@@ -1,5 +1,8 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.mapper;
 
+import org.craft.mcs.cap.core.cideranalysis.fermentationstart.domain.FermentationStartReadinessAssessment;
+import org.craft.mcs.cap.core.cideranalysis.fermentationstart.domain.FermentationStartReadinessCheck;
+import org.craft.mcs.cap.core.feedstock.application.port.in.FeedstockBatchCurrentFermentationStartReadinessResult;
 import org.craft.mcs.cap.core.feedstock.application.port.in.FeedstockBatchCriteria;
 import org.craft.mcs.cap.core.feedstock.application.port.in.FeedstockBatchCurrentSugarAcidityZoneResult;
 import org.craft.mcs.cap.core.feedstock.application.port.in.FeedstockMeasurementPointFilters;
@@ -10,7 +13,10 @@ import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason
 import org.craft.mcs.cap.core.feedstock.domain.model.value.CiderMakerId;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.mapper.ChemicalProfileCapabilityRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.sugaracidity.mapper.SugarAcidityZoneRestMapper;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.FeedstockBatchCurrentFermentationStartReadinessResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.FeedstockBatchCurrentPotentialAbvResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.FermentationStartReadinessAssessmentResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.FermentationStartReadinessCheckResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.FeedstockBatchCurrentSugarAcidityZonePointBatchResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.FeedstockBatchCurrentSugarAcidityZonePointQueryRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.FeedstockBatchCurrentSugarAcidityZoneResponse;
@@ -100,6 +106,49 @@ public final class FeedstockBatchCurrentAssessmentRestMapper {
         prediction.currentMeasurementName().value(),
         prediction.originalGravityValueKind(),
         PotentialAbvPredictionRestMapper.toResponse(prediction.prediction())
+    );
+  }
+
+  public static @NonNull FeedstockBatchCurrentFermentationStartReadinessResponse toResponse(
+      @NonNull FeedstockBatchCurrentFermentationStartReadinessResult result
+  ) {
+    requireNonNull(result, "feedstock batch current fermentation-start readiness result cannot be null");
+
+    return new FeedstockBatchCurrentFermentationStartReadinessResponse(
+        result.batchId().value(),
+        result.ciderMakerId().value(),
+        result.currentMeasurementId().value(),
+        result.currentMeasurementName().value(),
+        toResponse(result.assessment())
+    );
+  }
+
+  private static @NonNull FermentationStartReadinessAssessmentResponse toResponse(
+      @NonNull FermentationStartReadinessAssessment assessment
+  ) {
+    requireNonNull(assessment, "fermentation-start readiness assessment cannot be null");
+
+    return new FermentationStartReadinessAssessmentResponse(
+        assessment.status(),
+        assessment.method(),
+        assessment.checks().stream()
+            .map(FeedstockBatchCurrentAssessmentRestMapper::toResponse)
+            .toList()
+    );
+  }
+
+  private static @NonNull FermentationStartReadinessCheckResponse toResponse(
+      @NonNull FermentationStartReadinessCheck check
+  ) {
+    requireNonNull(check, "fermentation-start readiness check cannot be null");
+
+    return new FermentationStartReadinessCheckResponse(
+        check.factor(),
+        check.severity(),
+        check.code(),
+        check.message(),
+        check.value(),
+        check.unit()
     );
   }
 

@@ -13,6 +13,7 @@ import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
 import org.craft.mcs.cap.shared.kernel.chemical.value.PhValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.jspecify.annotations.NonNull;
@@ -56,9 +57,78 @@ public final class FeedstockMeasurementJdbcMapper {
             profile.tanninity().orElse(null),
             TanninityValue::asBigDecimal
         ),
+        fromNullableCharacteristic(
+            profile.yeastAssimilableNitrogen().orElse(null),
+            YeastAssimilableNitrogenValue::asBigDecimal
+        ),
         profile.source() == null ? null : profile.source().value(),
         profile.confidence()
     );
+  }
+
+  public static @NonNull FeedstockMeasurementJdbcEntity updateFromDomain(
+      @NonNull FeedstockMeasurement measurement,
+      @NonNull FeedstockMeasurementJdbcEntity entity
+  ) {
+    requireNonNull(measurement, "feedstock measurement cannot be null");
+    requireNonNull(entity, "feedstock measurement row cannot be null");
+
+    final var updated = fromDomain(measurement);
+
+    entity.batch = updated.batch;
+    entity.name = updated.name;
+    entity.measuredAt = updated.measuredAt;
+    entity.note = updated.note;
+
+    entity.sugarKind = updated.sugarKind;
+    entity.sugarExactValue = updated.sugarExactValue;
+    entity.sugarMinValue = updated.sugarMinValue;
+    entity.sugarMaxValue = updated.sugarMaxValue;
+    entity.sugarMeanValue = updated.sugarMeanValue;
+    entity.sugarMedianValue = updated.sugarMedianValue;
+    entity.sugarStandardDeviation = updated.sugarStandardDeviation;
+    entity.sugarSampleSize = updated.sugarSampleSize;
+
+    entity.phKind = updated.phKind;
+    entity.phExactValue = updated.phExactValue;
+    entity.phMinValue = updated.phMinValue;
+    entity.phMaxValue = updated.phMaxValue;
+    entity.phMeanValue = updated.phMeanValue;
+    entity.phMedianValue = updated.phMedianValue;
+    entity.phStandardDeviation = updated.phStandardDeviation;
+    entity.phSampleSize = updated.phSampleSize;
+
+    entity.titratableAcidityKind = updated.titratableAcidityKind;
+    entity.titratableAcidityExactValue = updated.titratableAcidityExactValue;
+    entity.titratableAcidityMinValue = updated.titratableAcidityMinValue;
+    entity.titratableAcidityMaxValue = updated.titratableAcidityMaxValue;
+    entity.titratableAcidityMeanValue = updated.titratableAcidityMeanValue;
+    entity.titratableAcidityMedianValue = updated.titratableAcidityMedianValue;
+    entity.titratableAcidityStandardDeviation = updated.titratableAcidityStandardDeviation;
+    entity.titratableAciditySampleSize = updated.titratableAciditySampleSize;
+
+    entity.tanninityKind = updated.tanninityKind;
+    entity.tanninityExactValue = updated.tanninityExactValue;
+    entity.tanninityMinValue = updated.tanninityMinValue;
+    entity.tanninityMaxValue = updated.tanninityMaxValue;
+    entity.tanninityMeanValue = updated.tanninityMeanValue;
+    entity.tanninityMedianValue = updated.tanninityMedianValue;
+    entity.tanninityStandardDeviation = updated.tanninityStandardDeviation;
+    entity.tanninitySampleSize = updated.tanninitySampleSize;
+
+    entity.yeastAssimilableNitrogenKind = updated.yeastAssimilableNitrogenKind;
+    entity.yeastAssimilableNitrogenExactValue = updated.yeastAssimilableNitrogenExactValue;
+    entity.yeastAssimilableNitrogenMinValue = updated.yeastAssimilableNitrogenMinValue;
+    entity.yeastAssimilableNitrogenMaxValue = updated.yeastAssimilableNitrogenMaxValue;
+    entity.yeastAssimilableNitrogenMeanValue = updated.yeastAssimilableNitrogenMeanValue;
+    entity.yeastAssimilableNitrogenMedianValue = updated.yeastAssimilableNitrogenMedianValue;
+    entity.yeastAssimilableNitrogenStandardDeviation = updated.yeastAssimilableNitrogenStandardDeviation;
+    entity.yeastAssimilableNitrogenSampleSize = updated.yeastAssimilableNitrogenSampleSize;
+
+    entity.chemicalProfileSource = updated.chemicalProfileSource;
+    entity.chemicalProfileConfidence = updated.chemicalProfileConfidence;
+
+    return entity;
   }
 
   public static @NonNull FeedstockMeasurementJdbcEntity fromResultSet(@NonNull ResultSet resultSet)
@@ -108,6 +178,15 @@ public final class FeedstockMeasurementJdbcMapper {
     entity.tanninityStandardDeviation = resultSet.getBigDecimal("tanninity_standard_deviation");
     entity.tanninitySampleSize = integerValue(resultSet, "tanninity_sample_size");
 
+    entity.yeastAssimilableNitrogenKind = measurementKind(resultSet, "yan_kind");
+    entity.yeastAssimilableNitrogenExactValue = resultSet.getBigDecimal("yan_exact_mg_n_l");
+    entity.yeastAssimilableNitrogenMinValue = resultSet.getBigDecimal("yan_min_mg_n_l");
+    entity.yeastAssimilableNitrogenMaxValue = resultSet.getBigDecimal("yan_max_mg_n_l");
+    entity.yeastAssimilableNitrogenMeanValue = resultSet.getBigDecimal("yan_mean_mg_n_l");
+    entity.yeastAssimilableNitrogenMedianValue = resultSet.getBigDecimal("yan_median_mg_n_l");
+    entity.yeastAssimilableNitrogenStandardDeviation = resultSet.getBigDecimal("yan_standard_deviation");
+    entity.yeastAssimilableNitrogenSampleSize = integerValue(resultSet, "yan_sample_size");
+
     entity.chemicalProfileSource = resultSet.getString("chemical_profile_source");
     entity.chemicalProfileConfidence = confidenceLevel(resultSet, "chemical_profile_confidence");
     entity.createdAt =
@@ -142,6 +221,11 @@ public final class FeedstockMeasurementJdbcMapper {
         entity.tanninity(),
         value -> TanninityValue.of(value.toPlainString())
     ).ifPresent(builder::tanninity);
+
+    toCharacteristic(
+        entity.yeastAssimilableNitrogen(),
+        value -> YeastAssimilableNitrogenValue.of(value.toPlainString())
+    ).ifPresent(builder::yeastAssimilableNitrogen);
 
     if (entity.chemicalProfileSource != null) {
       builder.source(ChemicalProfileSource.of(entity.chemicalProfileSource));

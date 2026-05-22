@@ -57,6 +57,8 @@ public final class TanninityValue
   @Override
   @NonNull
   public String toString() {
-    return asBigDecimal().stripTrailingZeros().toPlainString() + " mg/L TAE";
+    return asBigDecimal().stripTrailingZeros().toPlainString()
+        + " "
+        + BeverageUnits.label(UNIT);
   }
 }

@@ -218,6 +218,9 @@ public final class FeedstockBatchProfileTargetScoreRestMapper {
             .map(FeedstockBatchProfileTargetScoreRestMapper::toSourceResponse)
             .toList(),
         SugarAcidityZoneRestMapper.toResponse(composition.profile()),
+        composition.yeastAssimilableNitrogen() == null
+            ? null
+            : SugarAcidityZoneRestMapper.toResponse(composition.yeastAssimilableNitrogen()), // NOSONAR
         composition.totalVolume() == null ? null : composition.totalVolume().liters(), // NOSONAR
         List.copyOf(composition.warnings()),
         toResponse(candidate.distance())

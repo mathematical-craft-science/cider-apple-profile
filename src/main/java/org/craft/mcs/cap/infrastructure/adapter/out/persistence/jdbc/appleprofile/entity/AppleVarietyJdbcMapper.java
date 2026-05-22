@@ -56,6 +56,59 @@ public final class AppleVarietyJdbcMapper {
     );
   }
 
+  public static @NonNull AppleVarietyJdbcEntity updateFromDomain(
+      @NonNull AppleVariety appleVariety,
+      @NonNull AppleVarietyJdbcEntity entity
+  ) {
+    requireNonNull(appleVariety, "apple variety cannot be null");
+    requireNonNull(entity, "apple variety row cannot be null");
+
+    final var updated = fromDomain(appleVariety);
+
+    entity.name = updated.name;
+
+    entity.sugarKind = updated.sugarKind;
+    entity.sugarExactValue = updated.sugarExactValue;
+    entity.sugarMinValue = updated.sugarMinValue;
+    entity.sugarMaxValue = updated.sugarMaxValue;
+    entity.sugarMeanValue = updated.sugarMeanValue;
+    entity.sugarMedianValue = updated.sugarMedianValue;
+    entity.sugarStandardDeviation = updated.sugarStandardDeviation;
+    entity.sugarSampleSize = updated.sugarSampleSize;
+
+    entity.phKind = updated.phKind;
+    entity.phExactValue = updated.phExactValue;
+    entity.phMinValue = updated.phMinValue;
+    entity.phMaxValue = updated.phMaxValue;
+    entity.phMeanValue = updated.phMeanValue;
+    entity.phMedianValue = updated.phMedianValue;
+    entity.phStandardDeviation = updated.phStandardDeviation;
+    entity.phSampleSize = updated.phSampleSize;
+
+    entity.titratableAcidityKind = updated.titratableAcidityKind;
+    entity.titratableAcidityExactValue = updated.titratableAcidityExactValue;
+    entity.titratableAcidityMinValue = updated.titratableAcidityMinValue;
+    entity.titratableAcidityMaxValue = updated.titratableAcidityMaxValue;
+    entity.titratableAcidityMeanValue = updated.titratableAcidityMeanValue;
+    entity.titratableAcidityMedianValue = updated.titratableAcidityMedianValue;
+    entity.titratableAcidityStandardDeviation = updated.titratableAcidityStandardDeviation;
+    entity.titratableAciditySampleSize = updated.titratableAciditySampleSize;
+
+    entity.tanninityKind = updated.tanninityKind;
+    entity.tanninityExactValue = updated.tanninityExactValue;
+    entity.tanninityMinValue = updated.tanninityMinValue;
+    entity.tanninityMaxValue = updated.tanninityMaxValue;
+    entity.tanninityMeanValue = updated.tanninityMeanValue;
+    entity.tanninityMedianValue = updated.tanninityMedianValue;
+    entity.tanninityStandardDeviation = updated.tanninityStandardDeviation;
+    entity.tanninitySampleSize = updated.tanninitySampleSize;
+
+    entity.chemicalProfileSource = updated.chemicalProfileSource;
+    entity.chemicalProfileConfidence = updated.chemicalProfileConfidence;
+
+    return entity;
+  }
+
   public static @NonNull AppleVarietyJdbcEntity fromResultSet(@NonNull ResultSet resultSet)
       throws SQLException {
     requireNonNull(resultSet, "apple variety result set cannot be null");
