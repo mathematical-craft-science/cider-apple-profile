@@ -10,6 +10,7 @@ import java.util.UUID;
 import org.craft.mcs.cap.core.appleprofile.application.port.in.AppleVarietyClassificationSystem;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.dto.AppleVarietyClassificationResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.dto.AppleVarietyNorthAmericanResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.dto.AppleVarietyPotentialAbvResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.dto.AppleVarietySugarAcidityZonePointBatchResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.dto.AppleVarietySugarAcidityZonePointQueryRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.dto.AppleVarietySugarAcidityZoneResponse;
@@ -68,6 +69,25 @@ public interface AppleVarietyClassificationApi {
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = AppleVarietySugarAcidityZoneResponse.class))
   )
   @NonNull ResponseEntity<@NonNull AppleVarietySugarAcidityZoneResponse> assessSugarAcidityZone(
+      @Parameter(description = "Apple variety identifier.", schema = @Schema(format = "uuid"))
+      @NonNull UUID varietyId
+  );
+
+  @Operation(
+      summary = "Predict apple variety potential ABV",
+      description = "Predicts potential ABV from the apple variety reference sugar value using the configured ABV prediction strategy."
+  )
+  @ApiResponse(
+      responseCode = "200",
+      description = "Potential ABV prediction.",
+      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = AppleVarietyPotentialAbvResponse.class))
+  )
+  @ApiResponse(
+      responseCode = "422",
+      description = "Chemical profile does not contain sugar.",
+      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
+  )
+  @NonNull ResponseEntity<@NonNull AppleVarietyPotentialAbvResponse> predictPotentialAbv(
       @Parameter(description = "Apple variety identifier.", schema = @Schema(format = "uuid"))
       @NonNull UUID varietyId
   );

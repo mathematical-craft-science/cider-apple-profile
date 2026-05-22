@@ -7,7 +7,7 @@ import org.craft.mcs.cap.core.feedstock.application.port.in.FeedstockBatchCurren
 import org.craft.mcs.cap.core.feedstock.application.port.in.PredictFeedstockBatchCurrentPotentialAbvUseCase;
 import org.craft.mcs.cap.core.feedstock.application.port.out.FeedstockBatchRepository;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
-import org.craft.mcs.cap.core.fermentation.domain.PotentialAbvPredictor;
+import org.craft.mcs.cap.core.cideranalysis.abv.domain.PotentialAbvPredictor;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
 import org.craft.mcs.cap.shared.kernel.chemical.capability.ChemicalProfileCapability;
@@ -24,7 +24,7 @@ import static java.util.Objects.requireNonNull;
  * Application service for potential ABV prediction from the current feedstock batch profile.
  *
  * <p>The service uses the latest measurement of the batch, verifies that sugar is present through
- * {@link ChemicalProfileCapability#ABV_PREDICTION}, then delegates fermentation math to the
+ * {@link ChemicalProfileCapability#ABV_PREDICTION}, then delegates ABV analysis math to the
  * configured {@link PotentialAbvPredictor}. The assumed final gravity is currently fixed at 1.000
  * until yeast-aware and fermentation-model strategies become available.
  */
