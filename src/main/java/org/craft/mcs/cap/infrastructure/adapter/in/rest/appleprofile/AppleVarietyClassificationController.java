@@ -6,15 +6,18 @@ import org.craft.mcs.cap.core.appleprofile.application.port.in.AppleVarietyClass
 import org.craft.mcs.cap.core.appleprofile.application.port.in.AssessAppleVarietySugarAcidityZoneUseCase;
 import org.craft.mcs.cap.core.appleprofile.application.port.in.ClassifyAppleVarietyUseCase;
 import org.craft.mcs.cap.core.appleprofile.application.port.in.ClassifyAppleVarietyNorthAmericanUseCase;
+import org.craft.mcs.cap.core.appleprofile.application.port.in.PredictAppleVarietyPotentialAbvUseCase;
 import org.craft.mcs.cap.core.appleprofile.application.port.in.QueryAppleVarietySugarAcidityZonePointsUseCase;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyId;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.dto.AppleVarietyClassificationResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.dto.AppleVarietyNorthAmericanResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.dto.AppleVarietyPotentialAbvResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.dto.AppleVarietySugarAcidityZonePointBatchResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.dto.AppleVarietySugarAcidityZonePointQueryRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.dto.AppleVarietySugarAcidityZoneResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.mapper.AppleVarietyClassificationRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.mapper.AppleVarietyNorthAmericanRestMapper;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.mapper.AppleVarietyPotentialAbvRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.mapper.AppleVarietySugarAcidityZoneRestMapper;
 import org.jspecify.annotations.NonNull;
 import org.springframework.http.ResponseEntity;
@@ -35,6 +38,7 @@ public final class AppleVarietyClassificationController implements AppleVarietyC
   private final @NonNull ClassifyAppleVarietyUseCase classifyAppleVarietyUseCase;
   private final @NonNull ClassifyAppleVarietyNorthAmericanUseCase classifyAppleVarietyNorthAmericanUseCase;
   private final @NonNull AssessAppleVarietySugarAcidityZoneUseCase assessAppleVarietySugarAcidityZoneUseCase;
+  private final @NonNull PredictAppleVarietyPotentialAbvUseCase predictAppleVarietyPotentialAbvUseCase;
   private final @NonNull QueryAppleVarietySugarAcidityZonePointsUseCase queryAppleVarietySugarAcidityZonePointsUseCase;
 
   @Override
@@ -78,6 +82,20 @@ public final class AppleVarietyClassificationController implements AppleVarietyC
 
     return ResponseEntity.ok(
         AppleVarietySugarAcidityZoneRestMapper.toResponse(result)
+    );
+  }
+
+  @Override
+  @GetMapping(value = "/apple-varieties/{varietyId}/abv-prediction", produces = APPLICATION_JSON_VALUE)
+  public @NonNull ResponseEntity<@NonNull AppleVarietyPotentialAbvResponse> predictPotentialAbv(
+      @PathVariable @NonNull UUID varietyId
+  ) {
+    final var result = predictAppleVarietyPotentialAbvUseCase.predict(
+        AppleVarietyId.of(varietyId)
+    );
+
+    return ResponseEntity.ok(
+        AppleVarietyPotentialAbvRestMapper.toResponse(result)
     );
   }
 

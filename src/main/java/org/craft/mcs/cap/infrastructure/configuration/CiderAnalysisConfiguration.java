@@ -7,6 +7,8 @@ import org.craft.mcs.cap.core.cideranalysis.classification.profile.BuiltInCiderC
 import org.craft.mcs.cap.core.cideranalysis.classification.profile.northamerican.NorthAmericanProfileCalculator;
 import org.craft.mcs.cap.core.cideranalysis.composition.calculation.domain.BuiltInChemicalProfileCompositionCalculatorSelector;
 import org.craft.mcs.cap.core.cideranalysis.composition.calculation.domain.ChemicalProfileCompositionCalculatorSelector;
+import org.craft.mcs.cap.core.cideranalysis.composition.contribution.domain.CompositionContributionRoleAssessor;
+import org.craft.mcs.cap.core.cideranalysis.composition.contribution.domain.TargetAwareCompositionContributionRoleAssessor;
 import org.craft.mcs.cap.core.cideranalysis.composition.optimization.domain.BuiltInCompositionOptimizationStrategySelector;
 import org.craft.mcs.cap.core.cideranalysis.composition.optimization.domain.CompositionOptimizationStrategySelector;
 import org.craft.mcs.cap.core.cideranalysis.profiletarget.scoring.domain.ProfileAxisNormalizerSelector;
@@ -111,5 +113,10 @@ class CiderAnalysisConfiguration {
   @Bean
   ProfileTargetObjectiveFunctionFactory profileTargetObjectiveFunctionFactory() {
     return new BuiltInProfileTargetObjectiveFunctionFactory();
+  }
+
+  @Bean
+  CompositionContributionRoleAssessor compositionContributionRoleAssessor() {
+    return new TargetAwareCompositionContributionRoleAssessor();
   }
 }

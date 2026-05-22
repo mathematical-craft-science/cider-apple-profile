@@ -18,6 +18,8 @@ import org.craft.mcs.cap.core.feedstock.application.port.in.PredefinedFeedstockP
 import org.craft.mcs.cap.core.feedstock.application.port.in.ScoreFeedstockBatchProfileTargetCommand;
 import org.craft.mcs.cap.core.feedstock.application.port.out.FeedstockMeasurementQueryRepository;
 import org.craft.mcs.cap.core.feedstock.application.port.out.LatestFeedstockMeasurementSugarAcidityPointCandidateQuery;
+import org.craft.mcs.cap.core.feedstock.application.usecase.FeedstockBatchProfileTargetScorableCandidateProvider;
+import org.craft.mcs.cap.core.feedstock.application.usecase.FeedstockProfileTargetObjectiveResolver;
 import org.craft.mcs.cap.core.feedstock.application.usecase.ScoreFeedstockBatchProfileTargetService;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurement;
@@ -89,11 +91,13 @@ class ScoreFeedstockBatchProfileTargetServiceTest {
     final var geometryProfile = BuiltInSugarAcidityZoneProfiles.rectangularZoneGeometryProfile();
 
     return new ScoreFeedstockBatchProfileTargetService(
-        new FeedstockBatchCurrentMeasurementQueryService(repository),
-        new ChemicalProfileAxisExtractor(),
-        new ChemicalProfileCapabilityAssessor(),
-        new RectangleSugarAcidityZoneAssessor(thresholds, geometryProfile),
-        new ZoneGeometrySugarAcidityTargetResolver(geometryProfile),
+        new FeedstockBatchProfileTargetScorableCandidateProvider(
+            new FeedstockBatchCurrentMeasurementQueryService(repository),
+            new ChemicalProfileAxisExtractor(),
+            new ChemicalProfileCapabilityAssessor(),
+            new RectangleSugarAcidityZoneAssessor(thresholds, geometryProfile)
+        ),
+        new FeedstockProfileTargetObjectiveResolver(new ZoneGeometrySugarAcidityTargetResolver(geometryProfile)),
         new ScoreProfileTargetDistanceCandidatesService(
             new BuiltInProfileAxisNormalizerSelector(thresholds),
             new BuiltInProfileTargetScoringPurposeNormalizerPolicy(),
