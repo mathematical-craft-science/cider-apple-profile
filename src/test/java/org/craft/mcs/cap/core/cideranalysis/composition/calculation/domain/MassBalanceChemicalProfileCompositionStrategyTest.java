@@ -22,14 +22,16 @@ class MassBalanceChemicalProfileCompositionStrategyTest {
   @Test
   void calculatesCompositionFromAbsoluteVolumes() {
     final var result = calculator.calculate(ChemicalProfileCompositionRequest.calculateTanninWhenComplete(List.of(
-        source("a", axes("1.060", "5.0", "1000"), volume("10"), volume("20")),
-        source("b", axes("1.045", "8.0", "2500"), volume("20"), volume("30"))
+        source("a", axes("1.060", "5.0", "1000", "120"), volume("10"), volume("20")),
+        source("b", axes("1.045", "8.0", "2500", "210"), volume("20"), volume("30"))
     )));
 
     assertThat(result.profile().sugar().value()).isEqualByComparingTo("1.050000000");
     assertThat(result.profile().acidity().value()).isEqualByComparingTo("7.000000000");
     assertThat(result.profile().tannin()).isNotNull();
     assertThat(result.profile().tannin().value()).isEqualByComparingTo("2000.000000000");
+    assertThat(result.yeastAssimilableNitrogen()).isNotNull();
+    assertThat(result.yeastAssimilableNitrogen().value()).isEqualByComparingTo("180.000000000");
     assertThat(result.profile().sugar().valueKind()).isEqualTo(MeasurementValueKind.CALCULATED);
     assertThat(result.totalVolume()).isNotNull();
     assertThat(result.totalVolume().liters()).isEqualByComparingTo("30");
@@ -73,6 +75,18 @@ class MassBalanceChemicalProfileCompositionStrategyTest {
 
     assertThat(result.profile().tannin()).isNull();
     assertThat(result.warnings()).containsExactly(ChemicalProfileCompositionWarning.TANNIN_INCOMPLETE);
+  }
+
+  @Test
+  void warnsWhenYanIsOnlyPartiallyAvailable() {
+    final var result = calculator.calculate(ChemicalProfileCompositionRequest.calculateTanninWhenComplete(List.of(
+        source("a", axes("1.060", "5.0", null, "120"), CompositionProportion.of("1")),
+        source("b", axes("1.040", "9.0", null, null), CompositionProportion.of("1"))
+    )));
+
+    assertThat(result.yeastAssimilableNitrogen()).isNull();
+    assertThat(result.warnings())
+        .containsExactly(ChemicalProfileCompositionWarning.YEAST_ASSIMILABLE_NITROGEN_INCOMPLETE);
   }
 
   @Test
@@ -155,10 +169,22 @@ class MassBalanceChemicalProfileCompositionStrategyTest {
       @NonNull String acidity,
       @Nullable String tannin
   ) {
+    return axes(sugar, acidity, tannin, null);
+  }
+
+  private static @NonNull ChemicalProfileAxes axes(
+      @NonNull String sugar,
+      @NonNull String acidity,
+      @Nullable String tannin,
+      @Nullable String yeastAssimilableNitrogen
+  ) {
     return ChemicalProfileAxes.of(
         axis(ChemicalAxis.SUGAR, sugar),
         axis(ChemicalAxis.ACIDITY, acidity),
-        tannin == null ? null : axis(ChemicalAxis.TANNINITY, tannin)
+        tannin == null ? null : axis(ChemicalAxis.TANNINITY, tannin),
+        yeastAssimilableNitrogen == null
+            ? null
+            : axis(ChemicalAxis.YEAST_ASSIMILABLE_NITROGEN, yeastAssimilableNitrogen)
     );
   }
 

@@ -7,6 +7,7 @@ import java.util.List;
 import org.craft.mcs.cap.core.cideranalysis.profiletarget.scoring.domain.ProfileAxisNormalizerCode;
 import org.craft.mcs.cap.core.cideranalysis.composition.calculation.domain.ChemicalProfileCompositionWarning;
 import org.craft.mcs.cap.shared.infrastructure.rest.profiletarget.dto.ProfileTargetDistanceResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.sugaracidity.dto.SugarAcidityAxisPointResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.sugaracidity.dto.SugarAcidityProfilePointResponse;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -18,6 +19,8 @@ public record ChemicalProfileCompositionResponse(
     @NonNull List<@NonNull ChemicalProfileCompositionSourceResponse> sources,
     @Schema(description = "Calculated profile point.")
     @NonNull SugarAcidityProfilePointResponse profile,
+    @Schema(description = "Calculated yeast-assimilable nitrogen in mg N/L, when every source contains YAN.")
+    @Nullable SugarAcidityAxisPointResponse yeastAssimilableNitrogen,
     @Schema(description = "Total composition volume in liters, when known.", example = "100.0")
     @Nullable BigDecimal totalVolumeLiters,
     @ArraySchema(schema = @Schema(description = "Composition warning.", implementation = ChemicalProfileCompositionWarning.class))

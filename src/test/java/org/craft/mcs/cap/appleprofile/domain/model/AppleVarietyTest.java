@@ -9,6 +9,7 @@ import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyName;
 import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.craft.mcs.cap.shared.kernel.measurement.ExactMeasurement;
+import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.junit.jupiter.api.Test;
 
@@ -58,6 +59,23 @@ class AppleVarietyTest {
 
     assertThat(updated).isSameAs(appleVariety);
     assertThat(appleVariety.chemicalProfile()).isEqualTo(updatedProfile);
+  }
+
+  @Test
+  void rejectsYeastAssimilableNitrogenInCatalogProfile() {
+    final var profile = ChemicalProfile.builder()
+        .sugar(ExactMeasurement.of(SugarConcentration.ofSpecificGravity(
+            SpecificGravityValue.of("1.048")
+        )))
+        .yeastAssimilableNitrogen(ExactMeasurement.of(YeastAssimilableNitrogenValue.of("140")))
+        .build();
+
+    assertThatThrownBy(() -> AppleVariety.create(
+        AppleVarietyId.of(UUID.fromString("00000000-0000-0000-0000-000000000001")),
+        AppleVarietyName.of("Kingston Black"),
+        profile
+    ))
+        .isInstanceOf(DomainRuleViolationException.class);
   }
 
   @Test

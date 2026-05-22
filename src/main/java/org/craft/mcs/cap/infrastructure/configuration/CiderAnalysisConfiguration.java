@@ -11,6 +11,7 @@ import org.craft.mcs.cap.core.cideranalysis.composition.contribution.domain.Comp
 import org.craft.mcs.cap.core.cideranalysis.composition.contribution.domain.TargetAwareCompositionContributionRoleAssessor;
 import org.craft.mcs.cap.core.cideranalysis.composition.optimization.domain.BuiltInCompositionOptimizationStrategySelector;
 import org.craft.mcs.cap.core.cideranalysis.composition.optimization.domain.CompositionOptimizationStrategySelector;
+import org.craft.mcs.cap.core.cideranalysis.fermentationstart.domain.FermentationStartReadinessAssessor;
 import org.craft.mcs.cap.core.cideranalysis.profiletarget.scoring.domain.ProfileAxisNormalizerSelector;
 import org.craft.mcs.cap.core.cideranalysis.profiletarget.scoring.domain.BuiltInProfileAxisNormalizerSelector;
 import org.craft.mcs.cap.core.cideranalysis.profiletarget.scoring.domain.BuiltInProfileTargetObjectiveFunctionFactory;
@@ -118,5 +119,10 @@ class CiderAnalysisConfiguration {
   @Bean
   CompositionContributionRoleAssessor compositionContributionRoleAssessor() {
     return new TargetAwareCompositionContributionRoleAssessor();
+  }
+
+  @Bean
+  FermentationStartReadinessAssessor fermentationStartReadinessAssessor() {
+    return new FermentationStartReadinessAssessor();
   }
 }

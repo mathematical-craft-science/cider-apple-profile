@@ -9,6 +9,7 @@ import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.dto.Stat
 import org.craft.mcs.cap.shared.kernel.chemical.value.PhValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
 import org.craft.mcs.cap.shared.kernel.measurement.ExactMeasurement;
 import org.craft.mcs.cap.shared.kernel.measurement.StatisticalMeasurement;
 import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
@@ -27,6 +28,7 @@ class ChemicalProfileRestMapperTest {
         new ExactChemicalMeasurementRequest("EXACT", "pH", new BigDecimal("3.55")),
         new ExactChemicalMeasurementRequest("EXACT", "g/L as lactic acid", new BigDecimal("6.0")),
         new ExactChemicalMeasurementRequest("EXACT", "g/L TAE", new BigDecimal("1.25")),
+        new ExactChemicalMeasurementRequest("EXACT", "mg N/L", new BigDecimal("140")),
         "lab",
         null
     ));
@@ -57,6 +59,11 @@ class ChemicalProfileRestMapperTest {
           final var tanninity = (TanninityValue) measurement.value();
           assertThat(tanninity.asBigDecimal()).isEqualByComparingTo("1250");
         });
+    assertThat(profile.yeastAssimilableNitrogen().orElseThrow())
+        .isInstanceOfSatisfying(ExactMeasurement.class, measurement -> {
+          final var yan = (YeastAssimilableNitrogenValue) measurement.value();
+          assertThat(yan.asBigDecimal()).isEqualByComparingTo("140");
+        });
   }
 
   @Test
@@ -70,6 +77,7 @@ class ChemicalProfileRestMapperTest {
             new BigDecimal("0.5"),
             4
         ),
+        null,
         null,
         null,
         null,
@@ -90,6 +98,7 @@ class ChemicalProfileRestMapperTest {
         null,
         new ExactChemicalMeasurementRequest("EXACT", "g/L as malic acid", new BigDecimal("5.8")),
         new ExactChemicalMeasurementRequest("EXACT", "mg/L", new BigDecimal("950")),
+        new ExactChemicalMeasurementRequest("EXACT", "ppm N", new BigDecimal("165")),
         null,
         null
     ));
@@ -108,12 +117,17 @@ class ChemicalProfileRestMapperTest {
         .isInstanceOfSatisfying(ExactChemicalMeasurementResponse.class, measurement ->
             assertThat(measurement.unit()).isEqualTo("mg/L TAE")
         );
+    assertThat(response.yeastAssimilableNitrogen())
+        .isInstanceOfSatisfying(ExactChemicalMeasurementResponse.class, measurement ->
+            assertThat(measurement.unit()).isEqualTo("mg N/L")
+        );
   }
 
   @Test
   void rejectsUnsupportedUnits() {
     assertThatThrownBy(() -> ChemicalProfileRestMapper.toDomain(new ChemicalProfileRequest(
         new ExactChemicalMeasurementRequest("EXACT", "banana", new BigDecimal("12.0")),
+        null,
         null,
         null,
         null,

@@ -23,7 +23,7 @@ public final class ProductionBatchJdbcMapper {
   public static @NonNull ProductionBatchJdbcEntity fromDomain(@NonNull ProductionBatch batch) {
     requireNonNull(batch, "production batch cannot be null");
 
-    final var entity = new ProductionBatchJdbcEntity(
+    return new ProductionBatchJdbcEntity(
         batch.batchId().value(),
         batch.ciderMakerId().value(),
         batch.name().value(),
@@ -36,7 +36,27 @@ public final class ProductionBatchJdbcMapper {
         batch.targetDistance() == null ? null : batch.targetDistance().value(), // NOSONAR
         batch.note()
     );
+  }
 
+  public static @NonNull ProductionBatchJdbcEntity updateFromDomain(
+      @NonNull ProductionBatch batch,
+      @NonNull ProductionBatchJdbcEntity entity
+  ) {
+    requireNonNull(batch, "production batch cannot be null");
+    requireNonNull(entity, "production batch row cannot be null");
+
+    final var updated = fromDomain(batch);
+
+    entity.ciderMakerId = updated.ciderMakerId;
+    entity.name = updated.name;
+    entity.kind = updated.kind;
+    entity.status = updated.status;
+    entity.totalVolumeLiters = updated.totalVolumeLiters;
+    entity.sugarSpecificGravity = updated.sugarSpecificGravity;
+    entity.acidityGLAsMalic = updated.acidityGLAsMalic;
+    entity.tanninMgLTea = updated.tanninMgLTea;
+    entity.targetDistance = updated.targetDistance;
+    entity.note = updated.note;
     return entity;
   }
 

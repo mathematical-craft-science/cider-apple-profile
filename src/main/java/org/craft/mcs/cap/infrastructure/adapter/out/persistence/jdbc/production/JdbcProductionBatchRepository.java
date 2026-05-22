@@ -22,7 +22,9 @@ class JdbcProductionBatchRepository
   public @NonNull ProductionBatch save(@NonNull ProductionBatch productionBatch) {
     requireNonNull(productionBatch, "production batch cannot be null");
 
-    final var entity = ProductionBatchJdbcMapper.fromDomain(productionBatch);
+    final var entity = repository.findById(productionBatch.batchId().value())
+        .map(existing -> ProductionBatchJdbcMapper.updateFromDomain(productionBatch, existing))
+        .orElseGet(() -> ProductionBatchJdbcMapper.fromDomain(productionBatch));
     final var saved = translateOptimisticLocking("production batch", () -> repository.save(entity));
 
     return ProductionBatchJdbcMapper.toDomain(saved);

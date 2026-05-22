@@ -3,6 +3,7 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.acl;
 import java.math.BigDecimal;
 import javax.measure.Quantity;
 import javax.measure.Unit;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.ChemicalProfileRestUnits;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.UnsupportedChemicalMeasurementUnitException;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.measurement.unit.BeverageUnits;
@@ -22,7 +23,7 @@ public final class TitratableAcidityQuantityNormalizer
     implements ExternalChemicalMeasurementNormalizer<TitratableAcidityValue> {
 
   private static final @NonNull String AXIS = "titratable acidity";
-  private static final @NonNull String CANONICAL_UNIT = "g/L as malic acid";
+  private static final @NonNull String CANONICAL_UNIT = ChemicalProfileRestUnits.TITRATABLE_ACIDITY;
 
   @Override
   public @NonNull TitratableAcidityValue normalizeValue(

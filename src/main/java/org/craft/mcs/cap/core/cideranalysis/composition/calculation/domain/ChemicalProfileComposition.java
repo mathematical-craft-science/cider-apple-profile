@@ -2,6 +2,7 @@ package org.craft.mcs.cap.core.cideranalysis.composition.calculation.domain;
 
 import java.math.BigDecimal;
 import java.util.List;
+import org.craft.mcs.cap.core.cideranalysis.sugaracidity.point.domain.SugarAcidityAxisPoint;
 import org.craft.mcs.cap.core.cideranalysis.sugaracidity.point.domain.SugarAcidityProfilePoint;
 import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;
 import org.jspecify.annotations.NonNull;
@@ -15,11 +16,12 @@ import static java.util.Objects.requireNonNull;
  *
  * <p>The composition keeps the exact sources used for calculation, the resulting profile point,
  * optional total volume when source weights are concrete volumes, and warnings for intentionally
- * partial axes such as incomplete tannin.
+ * partial axes such as incomplete tannin or YAN.
  */
 public record ChemicalProfileComposition(
     @NonNull List<@NonNull ChemicalProfileCompositionSource> sources,
     @NonNull SugarAcidityProfilePoint profile,
+    @Nullable SugarAcidityAxisPoint yeastAssimilableNitrogen,
     @Nullable VolumeValue totalVolume,
     @NonNull List<@NonNull ChemicalProfileCompositionWarning> warnings
 ) {
@@ -37,11 +39,13 @@ public record ChemicalProfileComposition(
   public static @NonNull ChemicalProfileComposition of(
       @NonNull List<@NonNull ChemicalProfileCompositionSource> sources,
       @NonNull SugarAcidityProfilePoint profile,
+      @Nullable SugarAcidityAxisPoint yeastAssimilableNitrogen,
       @NonNull List<@NonNull ChemicalProfileCompositionWarning> warnings
   ) {
     return new ChemicalProfileComposition(
         sources,
         profile,
+        yeastAssimilableNitrogen,
         totalVolume(sources),
         warnings
     );

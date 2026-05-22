@@ -11,6 +11,7 @@ public record ChemicalProfileRequest(
     @Schema(description = "pH measurement.") @Nullable ChemicalMeasurementRequest ph,
     @Schema(description = "Titratable acidity measurement. Supported units include g/L as malic acid, lactic acid, citric acid.") @Nullable ChemicalMeasurementRequest titratableAcidity,
     @Schema(description = "Tannin measurement. Supported units include mg/L TAE and g/L TAE.") @Nullable ChemicalMeasurementRequest tanninity,
+    @Schema(description = "Yeast-assimilable nitrogen measurement. Supported unit: mg N/L.") @Nullable ChemicalMeasurementRequest yeastAssimilableNitrogen,
     @Schema(description = "Data source description.", example = "lab") @Nullable String source,
     @Schema(description = "Confidence level for the profile data.", implementation = ConfidenceLevel.class) @Nullable ConfidenceLevel confidence
 ) {

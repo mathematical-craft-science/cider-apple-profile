@@ -35,6 +35,7 @@ class FeedstockMeasurementRestMapperTest {
                     3
                 ),
                 null,
+                null,
                 "lab",
                 null
             ),

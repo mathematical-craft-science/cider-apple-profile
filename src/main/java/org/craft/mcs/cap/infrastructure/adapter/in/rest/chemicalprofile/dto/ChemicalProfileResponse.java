@@ -15,6 +15,8 @@ public record ChemicalProfileResponse(
     @Nullable ChemicalMeasurementResponse titratableAcidity,
     @Schema(description = "Tannin measurement in mg/L TAE.")
     @Nullable ChemicalMeasurementResponse tanninity,
+    @Schema(description = "Yeast-assimilable nitrogen measurement in mg N/L.")
+    @Nullable ChemicalMeasurementResponse yeastAssimilableNitrogen,
     @Schema(description = "Data source description.", example = "lab")
     @Nullable String source,
     @Schema(description = "Confidence level for profile data.", implementation = ConfidenceLevel.class)

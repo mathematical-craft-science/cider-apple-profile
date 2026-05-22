@@ -87,6 +87,9 @@ public final class UpdateFeedstockMeasurementService
     patch.ph().or(current::ph).ifPresent(builder::ph);
     patch.titratableAcidity().or(current::titratableAcidity).ifPresent(builder::titratableAcidity);
     patch.tanninity().or(current::tanninity).ifPresent(builder::tanninity);
+    patch.yeastAssimilableNitrogen()
+        .or(current::yeastAssimilableNitrogen)
+        .ifPresent(builder::yeastAssimilableNitrogen);
 
     if (patch.source() != null) {
       builder.source(patch.source());

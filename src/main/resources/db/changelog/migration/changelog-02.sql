@@ -85,6 +85,15 @@ CREATE TABLE IF NOT EXISTS feedstock_measurements
     tanninity_standard_deviation NUMERIC(12, 4),
     tanninity_sample_size        INTEGER,
 
+    yan_kind                     VARCHAR(32),
+    yan_exact_mg_n_l             NUMERIC(12, 4),
+    yan_min_mg_n_l               NUMERIC(12, 4),
+    yan_max_mg_n_l               NUMERIC(12, 4),
+    yan_mean_mg_n_l              NUMERIC(12, 4),
+    yan_median_mg_n_l            NUMERIC(12, 4),
+    yan_standard_deviation       NUMERIC(12, 4),
+    yan_sample_size              INTEGER,
+
     chemical_profile_source     VARCHAR(255),
     chemical_profile_confidence VARCHAR(32),
 

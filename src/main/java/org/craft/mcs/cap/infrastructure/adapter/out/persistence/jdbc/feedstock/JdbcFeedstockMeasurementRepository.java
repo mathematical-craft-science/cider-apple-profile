@@ -24,7 +24,9 @@ class JdbcFeedstockMeasurementRepository
   public @NonNull FeedstockMeasurement save(@NonNull FeedstockMeasurement feedstockMeasurement) {
     requireNonNull(feedstockMeasurement, "feedstock measurement cannot be null");
 
-    final var entity = FeedstockMeasurementJdbcMapper.fromDomain(feedstockMeasurement);
+    final var entity = repository.findById(feedstockMeasurement.measurementId().value())
+        .map(existing -> FeedstockMeasurementJdbcMapper.updateFromDomain(feedstockMeasurement, existing))
+        .orElseGet(() -> FeedstockMeasurementJdbcMapper.fromDomain(feedstockMeasurement));
     final var saved = translateOptimisticLocking("feedstock measurement", () -> repository.save(entity));
 
     return FeedstockMeasurementJdbcMapper.toDomain(saved);

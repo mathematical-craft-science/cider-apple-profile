@@ -13,6 +13,8 @@ public record ChemicalProfileCompositionAxesRequest(
     @Schema(description = "Titratable acidity in g/L as malic acid.", example = "6.0")
     @NonNull BigDecimal acidity,
     @Schema(description = "Tannin in mg/L TAE, when available.", example = "1200")
-    @Nullable BigDecimal tannin
+    @Nullable BigDecimal tannin,
+    @Schema(description = "Yeast-assimilable nitrogen in mg N/L, when available.", example = "180")
+    @Nullable BigDecimal yeastAssimilableNitrogen
 ) {
 }
