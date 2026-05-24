@@ -1,6 +1,8 @@
 package org.craft.mcs.cap.core.production.application.port.out;
 
 import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
+import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -20,4 +22,8 @@ public sealed interface ProductionBatchTraceSource
   @Nullable String displayName();
 
   @NonNull VolumeValue volume();
+
+  @Nullable ChemicalProfileAxes profile();
+
+  @Nullable ConfidenceLevel confidence();
 }

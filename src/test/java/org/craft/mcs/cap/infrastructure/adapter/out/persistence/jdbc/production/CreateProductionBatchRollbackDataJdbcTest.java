@@ -4,6 +4,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -15,6 +16,8 @@ import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
 import org.craft.mcs.cap.core.feedstock.domain.model.value.CiderMakerId;
 import org.craft.mcs.cap.core.production.application.port.in.CreateProductionBatchCommand;
+import org.craft.mcs.cap.core.production.application.port.out.ProductionFeedstockTraceSnapshot;
+import org.craft.mcs.cap.core.production.application.port.out.ProductionFeedstockTraceSnapshotProvider;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchTraceRecorder;
 import org.craft.mcs.cap.core.production.application.usecase.CreateProductionBatchService;
 import org.craft.mcs.cap.core.production.domain.model.ProductionInput;
@@ -23,6 +26,11 @@ import org.craft.mcs.cap.core.production.domain.model.ProductionSourceCompositio
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchKind;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchName;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.MeasurementValueKind;
+import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;
@@ -138,8 +146,32 @@ class CreateProductionBatchRollbackDataJdbcTest {
     }
 
     @Bean
+    ProductionFeedstockTraceSnapshotProvider productionFeedstockTraceSnapshotProvider() {
+      return batchId -> new ProductionFeedstockTraceSnapshot(
+          ChemicalProfileAxes.of(
+              axis(ChemicalAxis.SUGAR, "1.050"),
+              axis(ChemicalAxis.ACIDITY, "6.1"),
+              axis(ChemicalAxis.TANNINITY, "1400")
+          ),
+          ConfidenceLevel.LAB_VERIFIED
+      );
+    }
+
+    @Bean
     Clock clock() {
       return Clock.fixed(Instant.parse("2026-05-18T10:15:30Z"), ZoneOffset.UTC);
+    }
+
+    private static AxisValue axis(ChemicalAxis axis, String value) {
+      return new AxisValue(
+          axis,
+          new BigDecimal(value),
+          MeasurementValueKind.EXACT,
+          null,
+          null,
+          null,
+          null
+      );
     }
   }
 

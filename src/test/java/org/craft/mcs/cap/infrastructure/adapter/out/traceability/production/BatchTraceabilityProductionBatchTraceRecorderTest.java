@@ -1,6 +1,7 @@
 package org.craft.mcs.cap.infrastructure.adapter.out.traceability.production;
 
 import java.time.Instant;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 import org.craft.mcs.cap.core.batchtraceability.application.port.in.AppendBatchTraceStepUseCase;
@@ -22,7 +23,10 @@ import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchKind;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchName;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.MeasurementValueKind;
+import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;
@@ -50,7 +54,9 @@ class BatchTraceabilityProductionBatchTraceRecorderTest {
         List.of(new ProductionBatchFeedstockTraceSource(
             FeedstockBatchId.of(sourceId),
             "Late juice",
-            VolumeValue.ofLiters("100")
+            VolumeValue.ofLiters("100"),
+            sourceAxes(),
+            ConfidenceLevel.LAB_VERIFIED
         )),
         occurredAt,
         "accepted input"
@@ -66,6 +72,10 @@ class BatchTraceabilityProductionBatchTraceRecorderTest {
           assertThat(inputSubject.subject().id()).isEqualTo(sourceId.toString());
           assertThat(inputSubject.subject().displayNameSnapshot()).isEqualTo("Late juice");
           assertThat(inputSubject.snapshot().volume().liters()).isEqualByComparingTo("100");
+          assertThat(inputSubject.snapshot().confidence()).isEqualTo(ConfidenceLevel.LAB_VERIFIED);
+          assertThat(inputSubject.snapshot().profile().valueOf(ChemicalAxis.ACIDITY))
+              .get()
+              .satisfies(value -> assertThat(value.value()).isEqualByComparingTo("6.1"));
         });
     assertThat(appendUseCase.step.outputs()).singleElement()
         .satisfies(outputSubject -> {
@@ -117,6 +127,26 @@ class BatchTraceabilityProductionBatchTraceRecorderTest {
             TitratableAcidityValue.of("5.8"),
             TanninityValue.of("1200")
         ),
+        null
+    );
+  }
+
+  private static ChemicalProfileAxes sourceAxes() {
+    return ChemicalProfileAxes.of(
+        axis(ChemicalAxis.SUGAR, "1.050"),
+        axis(ChemicalAxis.ACIDITY, "6.1"),
+        axis(ChemicalAxis.TANNINITY, "1400")
+    );
+  }
+
+  private static AxisValue axis(ChemicalAxis axis, String value) {
+    return new AxisValue(
+        axis,
+        new BigDecimal(value),
+        MeasurementValueKind.EXACT,
+        null,
+        null,
+        null,
         null
     );
   }

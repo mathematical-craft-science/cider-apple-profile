@@ -2,6 +2,8 @@ package org.craft.mcs.cap.core.production.application.port.out;
 
 import org.craft.mcs.cap.shared.application.ApplicationValidationException;
 
+import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
+import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
 import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -15,8 +17,18 @@ import static java.util.Objects.requireNonNull;
 public record ProductionBatchCompositionTraceSource(
     @NonNull String compositionResultId,
     @Nullable String displayName,
-    @NonNull VolumeValue volume
+    @NonNull VolumeValue volume,
+    @Nullable ChemicalProfileAxes profile,
+    @Nullable ConfidenceLevel confidence
 ) implements ProductionBatchTraceSource {
+
+  public ProductionBatchCompositionTraceSource(
+      @NonNull String compositionResultId,
+      @Nullable String displayName,
+      @NonNull VolumeValue volume
+  ) {
+    this(compositionResultId, displayName, volume, null, null);
+  }
 
   public ProductionBatchCompositionTraceSource {
     compositionResultId = requireNonNull(compositionResultId, "composition result id cannot be null").strip();

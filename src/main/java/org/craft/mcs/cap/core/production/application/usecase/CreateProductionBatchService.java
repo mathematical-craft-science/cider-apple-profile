@@ -18,6 +18,7 @@ import org.craft.mcs.cap.core.production.application.port.in.CreateProductionBat
 import org.craft.mcs.cap.core.production.application.port.in.ProductionBatchCreated;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchRepository;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchFeedstockTraceSource;
+import org.craft.mcs.cap.core.production.application.port.out.ProductionFeedstockTraceSnapshotProvider;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchTraceRecorder;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchTraceSource;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatch;
@@ -47,6 +48,7 @@ public class CreateProductionBatchService
   private final @NonNull FeedstockBatchRepository feedstockBatchRepository;
   private final @NonNull ProductionBatchRepository productionBatchRepository;
   private final @NonNull ProductionBatchTraceRecorder traceRecorder;
+  private final @NonNull ProductionFeedstockTraceSnapshotProvider feedstockTraceSnapshotProvider;
   private final @NonNull TransactionHelper transactionHelper;
   private final @NonNull Clock clock;
 
@@ -72,7 +74,7 @@ public class CreateProductionBatchService
       final var savedProductionBatch = productionBatchRepository.save(productionBatch);
       traceRecorder.recordCreated(
           savedProductionBatch,
-          traceSources(input, batchesById),
+          traceSources(input, batchesById, feedstockTraceSnapshotProvider),
           Instant.now(clock),
           command.note()
       );
@@ -125,17 +127,21 @@ public class CreateProductionBatchService
 
   private static @NonNull List<@NonNull ProductionBatchTraceSource> traceSources(
       @NonNull ProductionInput input,
-      @NonNull Map<@NonNull FeedstockBatchId, @NonNull FeedstockBatch> batchesById
+      @NonNull Map<@NonNull FeedstockBatchId, @NonNull FeedstockBatch> batchesById,
+      @NonNull ProductionFeedstockTraceSnapshotProvider feedstockTraceSnapshotProvider
   ) {
     final var sources = input.sourceComposition().sources();
     final var traceSources = new ArrayList<ProductionBatchTraceSource>(sources.size());
 
     for (final var source : sources) {
       final var batch = batchFor(source.feedstockBatchId(), batchesById);
+      final var snapshot = feedstockTraceSnapshotProvider.currentSnapshotFor(batch.batchId());
       traceSources.add(new ProductionBatchFeedstockTraceSource(
           batch.batchId(),
           batch.name().value(),
-          source.volume()
+          source.volume(),
+          snapshot.profile(),
+          snapshot.confidence()
       ));
     }
 

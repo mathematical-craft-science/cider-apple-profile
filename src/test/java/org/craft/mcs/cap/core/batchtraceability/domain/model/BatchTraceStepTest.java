@@ -117,7 +117,7 @@ class BatchTraceStepTest {
 
   @Test
   void rejectsEmptyMaterialSnapshot() {
-    assertThatThrownBy(() -> new BatchTraceMaterialSnapshot(null, null, " "))
+    assertThatThrownBy(() -> new BatchTraceMaterialSnapshot(null, null, null))
         .isInstanceOf(DomainRuleViolationException.class)
         .hasMessageContaining("at least one value");
   }

@@ -14,6 +14,7 @@ import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.MeasurementValueKind;
+import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
 import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;
 import org.junit.jupiter.api.Test;
 
@@ -84,7 +85,7 @@ class BatchTraceStepJdbcRowMapperTest {
         new BatchTraceMaterialSnapshot(
             VolumeValue.ofLiters("120.5"),
             profile,
-            "LAB_VERIFIED"
+            ConfidenceLevel.LAB_VERIFIED
         )
     );
     final var output = BatchTraceStepSubject.of(subject(
@@ -107,7 +108,7 @@ class BatchTraceStepJdbcRowMapperTest {
 
     assertThat(snapshot).isNotNull();
     assertThat(snapshot.volume().liters()).isEqualByComparingTo("120.5");
-    assertThat(snapshot.confidence()).isEqualTo("LAB_VERIFIED");
+    assertThat(snapshot.confidence()).isEqualTo(ConfidenceLevel.LAB_VERIFIED);
     assertThat(snapshot.profile().valueOf(ChemicalAxis.SUGAR))
         .get()
         .extracting(AxisValue::value, AxisValue::valueKind)

@@ -3,6 +3,8 @@ package org.craft.mcs.cap.core.production.application.port.out;
 import org.craft.mcs.cap.shared.application.ApplicationValidationException;
 
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
+import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
 import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -16,8 +18,18 @@ import static java.util.Objects.requireNonNull;
 public record ProductionBatchFeedstockTraceSource(
     @NonNull FeedstockBatchId feedstockBatchId,
     @Nullable String displayName,
-    @NonNull VolumeValue volume
+    @NonNull VolumeValue volume,
+    @Nullable ChemicalProfileAxes profile,
+    @Nullable ConfidenceLevel confidence
 ) implements ProductionBatchTraceSource {
+
+  public ProductionBatchFeedstockTraceSource(
+      @NonNull FeedstockBatchId feedstockBatchId,
+      @Nullable String displayName,
+      @NonNull VolumeValue volume
+  ) {
+    this(feedstockBatchId, displayName, volume, null, null);
+  }
 
   public ProductionBatchFeedstockTraceSource {
     requireNonNull(feedstockBatchId, "feedstock batch id cannot be null");

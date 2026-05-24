@@ -13,6 +13,7 @@ import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.MeasurementValueKind;
+import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
 import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -111,7 +112,7 @@ public final class BatchTraceStepJdbcRowMapper {
     }
 
     row.snapshotVolumeLiters = snapshot.volume() == null ? null : snapshot.volume().liters(); // NOSONAR
-    row.snapshotConfidence = snapshot.confidence();
+    row.snapshotConfidence = snapshot.confidence() == null ? null : snapshot.confidence().name(); // NOSONAR
     applyAxis(row, ChemicalAxis.SUGAR, snapshot.profile() == null
         ? null
         : snapshot.profile().valueOf(ChemicalAxis.SUGAR).orElse(null)); // NOSONAR
@@ -172,7 +173,11 @@ public final class BatchTraceStepJdbcRowMapper {
       return null;
     }
 
-    return new BatchTraceMaterialSnapshot(volume, profile, row.snapshotConfidence);
+    return new BatchTraceMaterialSnapshot(volume, profile, confidenceLevel(row.snapshotConfidence));
+  }
+
+  private static @Nullable ConfidenceLevel confidenceLevel(@Nullable String value) {
+    return value == null ? null : ConfidenceLevel.valueOf(value); // NOSONAR
   }
 
   private static @Nullable ChemicalProfileAxes toProfile(@NonNull BatchTraceStepSubjectJdbcRow row) {
