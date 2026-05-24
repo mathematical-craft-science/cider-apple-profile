@@ -9,4 +9,7 @@ public interface QueryBatchTraceabilityUseCase {
 
   @NonNull
   BatchTraceabilityGraph graphFor(@NonNull BatchTraceSubject subject);
+
+  @NonNull
+  BatchTraceabilityGraph sourceGraphFor(@NonNull BatchTraceSubject subject);
 }

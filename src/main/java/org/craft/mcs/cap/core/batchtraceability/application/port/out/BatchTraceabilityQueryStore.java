@@ -17,4 +17,13 @@ public interface BatchTraceabilityQueryStore {
    */
   @NonNull
   List<@NonNull BatchTraceStep> findByInputSubject(@NonNull BatchTraceSubject subject);
+
+  /**
+   * Finds immutable trace steps where the requested subject participates as a material output.
+   *
+   * <p>This is used by source/origin projections for a production batch: the production batch is
+   * the output, while source feedstock batches or composition results are inputs.
+   */
+  @NonNull
+  List<@NonNull BatchTraceStep> findByOutputSubject(@NonNull BatchTraceSubject subject);
 }

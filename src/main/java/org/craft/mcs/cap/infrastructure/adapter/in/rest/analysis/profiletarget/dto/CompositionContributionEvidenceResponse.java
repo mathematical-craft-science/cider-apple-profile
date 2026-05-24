@@ -9,15 +9,15 @@ import org.jspecify.annotations.NonNull;
 
 @Schema(description = "Per-axis evidence explaining a source contribution role relative to a selected target.")
 public record CompositionContributionEvidenceResponse(
-    @Schema(description = "Evaluated profile axis.", implementation = ProfileEvaluationAxis.class)
+    @Schema(description = "Evaluated profile axis.", implementation = ProfileEvaluationAxis.class, requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull ProfileEvaluationAxis axis,
-    @Schema(description = "Source axis value in canonical units.")
+    @Schema(description = "Source axis value in canonical units.", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull BigDecimal sourceValue,
-    @Schema(description = "Nearest target coordinate used for comparison.")
+    @Schema(description = "Nearest target coordinate used for comparison.", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull BigDecimal targetCoordinate,
-    @Schema(description = "Source value minus target coordinate. Positive means above target.")
+    @Schema(description = "Source value minus target coordinate. Positive means above target.", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull BigDecimal deviationFromTarget,
-    @Schema(description = "Role explained by this axis.", implementation = CompositionContributionRole.class)
+    @Schema(description = "Role explained by this axis.", implementation = CompositionContributionRole.class, requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull CompositionContributionRole role
 ) {
 }

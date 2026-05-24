@@ -9,13 +9,13 @@ import org.jspecify.annotations.NonNull;
 
 @Schema(description = "Potential ABV prediction response for an apple variety reference profile.")
 public record AppleVarietyPotentialAbvResponse(
-    @Schema(description = "Apple variety identifier.", format = "uuid")
+    @Schema(description = "Apple variety identifier.", format = "uuid", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull UUID varietyId,
-    @Schema(description = "Apple variety name.", example = "Kingston Black")
+    @Schema(description = "Apple variety name.", example = "Kingston Black", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull String varietyName,
-    @Schema(description = "Source value kind used for original gravity.", implementation = MeasurementValueKind.class, example = "EXACT")
+    @Schema(description = "Source value kind used for original gravity.", implementation = MeasurementValueKind.class, example = "EXACT", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull MeasurementValueKind originalGravityValueKind,
-    @Schema(description = "Potential ABV prediction.")
+    @Schema(description = "Potential ABV prediction.", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull PotentialAbvPredictionResponse prediction
 ) {
 }

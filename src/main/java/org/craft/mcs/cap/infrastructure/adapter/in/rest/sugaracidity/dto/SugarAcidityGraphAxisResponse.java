@@ -9,12 +9,15 @@ import org.jspecify.annotations.NonNull;
 
 @Schema(description = "Sugar-acidity graph axis metadata.")
 public record SugarAcidityGraphAxisResponse(
-    @Schema(description = "Axis code.", example = "SG") @NonNull String code,
-    @Schema(description = "Human-readable axis label.", example = "Specific gravity") @NonNull String label,
-    @Schema(description = "Axis unit.", example = "SG") @NonNull String unit,
-    @Schema(description = "Minimum axis value.", example = "1.000") @NonNull BigDecimal min,
-    @Schema(description = "Maximum axis value.", example = "1.080") @NonNull BigDecimal max,
-    @ArraySchema(schema = @Schema(description = "Threshold line value.", example = "1.045"))
+    @Schema(description = "Axis code.", example = "SG", requiredMode = Schema.RequiredMode.REQUIRED) @NonNull String code,
+    @Schema(description = "Human-readable axis label.", example = "Specific gravity", requiredMode = Schema.RequiredMode.REQUIRED) @NonNull String label,
+    @Schema(description = "Axis unit.", example = "SG", requiredMode = Schema.RequiredMode.REQUIRED) @NonNull String unit,
+    @Schema(description = "Minimum axis value.", example = "1.000", requiredMode = Schema.RequiredMode.REQUIRED) @NonNull BigDecimal min,
+    @Schema(description = "Maximum axis value.", example = "1.080", requiredMode = Schema.RequiredMode.REQUIRED) @NonNull BigDecimal max,
+    @ArraySchema(
+        arraySchema = @Schema(description = "Threshold line values.", requiredMode = Schema.RequiredMode.REQUIRED),
+        schema = @Schema(example = "1.045")
+    )
     @NonNull List<@NonNull BigDecimal> thresholdLines
 ) {
 }

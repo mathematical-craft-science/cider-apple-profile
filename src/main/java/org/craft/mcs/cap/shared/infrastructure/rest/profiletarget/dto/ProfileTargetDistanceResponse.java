@@ -16,29 +16,32 @@ import org.jspecify.annotations.Nullable;
 
 @Schema(description = "Distance from a chemical profile point to a profile target.")
 public record ProfileTargetDistanceResponse(
-    @Schema(description = "Distance status.", implementation = ProfileTargetDistanceStatus.class, example = "CALCULATED")
+    @Schema(description = "Distance status.", implementation = ProfileTargetDistanceStatus.class, example = "CALCULATED", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull ProfileTargetDistanceStatus status,
-    @Schema(description = "Normalized distance value. Zero means the point is inside the target.", example = "0.125")
+    @Schema(description = "Normalized distance value. Zero means the point is inside the target.", example = "0.125", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @Nullable BigDecimal value,
-    @Schema(description = "Whether the point is inside the sugar-acidity target geometry.", example = "true")
+    @Schema(description = "Whether the point is inside the sugar-acidity target geometry.", example = "true", requiredMode = Schema.RequiredMode.REQUIRED)
     boolean insideSugarAcidityTarget,
-    @Schema(description = "Whether the point is inside the full target, including optional tannin target.", example = "true")
+    @Schema(description = "Whether the point is inside the full target, including optional tannin target.", example = "true", requiredMode = Schema.RequiredMode.REQUIRED)
     boolean insideTarget,
-    @Schema(description = "Nearest target point in sugar-acidity space.")
+    @Schema(description = "Nearest target point in sugar-acidity space.", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull SugarAcidityCoordinatesResponse nearestTargetPoint,
-    @Schema(description = "Measured tannin in mg/L TAE, when available.", example = "1200")
+    @Schema(description = "Measured tannin in mg/L TAE, when available.", example = "1200", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @Nullable BigDecimal tannin,
-    @Schema(description = "Nearest target tannin in mg/L TAE, when tannin target is configured.", example = "1200")
+    @Schema(description = "Nearest target tannin in mg/L TAE, when tannin target is configured.", example = "1200", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @Nullable BigDecimal nearestTargetTannin,
-    @Schema(description = "Objective function code.", implementation = ProfileTargetObjectiveFunctionCode.class)
+    @Schema(description = "Objective function code.", implementation = ProfileTargetObjectiveFunctionCode.class, requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull ProfileTargetObjectiveFunctionCode objectiveFunction,
-    @Schema(description = "Distance metric used by objective function.", implementation = ProfileDistanceMetric.class)
+    @Schema(description = "Distance metric used by objective function.", implementation = ProfileDistanceMetric.class, requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull ProfileDistanceMetric metric,
-    @Schema(description = "Target kind.", implementation = SugarAcidityTargetKind.class)
+    @Schema(description = "Target kind.", implementation = SugarAcidityTargetKind.class, requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull SugarAcidityTargetKind targetKind,
-    @Schema(description = "Sugar-acidity target geometry shape.", implementation = SugarAcidityTargetGeometryShape.class)
+    @Schema(description = "Sugar-acidity target geometry shape.", implementation = SugarAcidityTargetGeometryShape.class, requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull SugarAcidityTargetGeometryShape targetShape,
-    @ArraySchema(schema = @Schema(description = "Missing profile axis.", implementation = ProfileEvaluationAxis.class))
+    @ArraySchema(
+        arraySchema = @Schema(description = "Missing profile axes.", requiredMode = Schema.RequiredMode.REQUIRED),
+        schema = @Schema(implementation = ProfileEvaluationAxis.class)
+    )
     @NonNull List<@NonNull ProfileEvaluationAxis> missingMeasurements
 ) {
 }

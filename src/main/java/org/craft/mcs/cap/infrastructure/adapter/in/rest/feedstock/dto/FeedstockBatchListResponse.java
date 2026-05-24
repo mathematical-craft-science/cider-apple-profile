@@ -8,7 +8,10 @@ import org.jspecify.annotations.NonNull;
 
 @Schema(description = "Feedstock batch list response.")
 public record FeedstockBatchListResponse(
-    @ArraySchema(schema = @Schema(description = "Feedstock batches.", implementation = FeedstockBatchResponse.class))
+    @ArraySchema(
+        arraySchema = @Schema(description = "Feedstock batches.", requiredMode = Schema.RequiredMode.REQUIRED),
+        schema = @Schema(implementation = FeedstockBatchResponse.class)
+    )
     @NonNull List<@NonNull FeedstockBatchResponse> batches
 ) {
 }

@@ -10,14 +10,14 @@ import org.jspecify.annotations.NonNull;
 
 @Schema(description = "Potential alcohol by volume prediction.")
 public record PotentialAbvPredictionResponse(
-    @Schema(description = "Original gravity used for prediction.", example = "1.052") @NonNull BigDecimal originalGravity,
-    @Schema(description = "Predicted final gravity used for prediction.", example = "1.000") @NonNull BigDecimal predictedFinalGravity,
-    @Schema(description = "Source of predicted final gravity assumption.", implementation = FinalGravityPredictionSource.class, example = "FIXED_DRY_CIDER_DEFAULT")
+    @Schema(description = "Original gravity used for prediction.", example = "1.052", requiredMode = Schema.RequiredMode.REQUIRED) @NonNull BigDecimal originalGravity,
+    @Schema(description = "Predicted final gravity used for prediction.", example = "1.000", requiredMode = Schema.RequiredMode.REQUIRED) @NonNull BigDecimal predictedFinalGravity,
+    @Schema(description = "Source of predicted final gravity assumption.", implementation = FinalGravityPredictionSource.class, example = "FIXED_DRY_CIDER_DEFAULT", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull FinalGravityPredictionSource predictedFinalGravitySource,
-    @Schema(description = "Potential ABV percentage.", example = "6.83") @NonNull BigDecimal potentialAbv,
-    @Schema(description = "Prediction method code.", implementation = AbvPredictionMethod.class, example = "STANDARD_GRAVITY_DROP")
+    @Schema(description = "Potential ABV percentage.", example = "6.83", requiredMode = Schema.RequiredMode.REQUIRED) @NonNull BigDecimal potentialAbv,
+    @Schema(description = "Prediction method code.", implementation = AbvPredictionMethod.class, example = "STANDARD_GRAVITY_DROP", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull AbvPredictionMethod method,
-    @Schema(description = "Prediction confidence code.", implementation = PredictionConfidence.class, example = "LOW")
+    @Schema(description = "Prediction confidence code.", implementation = PredictionConfidence.class, example = "LOW", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull PredictionConfidence confidence
 ) {
 }

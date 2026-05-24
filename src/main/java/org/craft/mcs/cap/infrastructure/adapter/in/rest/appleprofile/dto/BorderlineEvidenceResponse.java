@@ -8,8 +8,8 @@ import static java.util.Objects.requireNonNull;
 
 @Schema(description = "Evidence explaining why classification is close to a threshold boundary.")
 public record BorderlineEvidenceResponse(
-    @Schema(description = "Measured profile axis.", example = "ACIDITY") @NonNull String measure,
-    @Schema(description = "Condition describing the boundary.", example = "near HIGH threshold") @NonNull String borderlineCondition
+    @Schema(description = "Measured profile axis.", example = "ACIDITY", requiredMode = Schema.RequiredMode.REQUIRED) @NonNull String measure,
+    @Schema(description = "Condition describing the boundary.", example = "near HIGH threshold", requiredMode = Schema.RequiredMode.REQUIRED) @NonNull String borderlineCondition
 ) {
 
   public BorderlineEvidenceResponse {

@@ -48,10 +48,10 @@ public sealed interface SugarAcidityAxisPointResponse
     CalculatedSugarAcidityAxisPointResponse {
 
   @NonNull
-  @Schema(description = "Coordinate value for the graph axis.", example = "1.052")
+  @Schema(description = "Coordinate value for the graph axis.", example = "1.052", requiredMode = Schema.RequiredMode.REQUIRED)
   BigDecimal value();
 
   @NonNull
-  @Schema(description = "Axis point value discriminator.", implementation = MeasurementValueKind.class, example = "EXACT")
+  @Schema(description = "Axis point value discriminator.", implementation = MeasurementValueKind.class, example = "EXACT", requiredMode = Schema.RequiredMode.REQUIRED)
   MeasurementValueKind valueKind();
 }

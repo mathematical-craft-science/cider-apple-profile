@@ -9,17 +9,17 @@ import org.jspecify.annotations.NonNull;
 
 @Schema(description = "Feedstock batch current profile score against a target.")
 public record FeedstockBatchProfileTargetScoreResponse(
-    @Schema(description = "Feedstock batch identifier.", format = "uuid")
+    @Schema(description = "Feedstock batch identifier.", format = "uuid", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull UUID batchId,
-    @Schema(description = "Cider maker identifier.", format = "uuid")
+    @Schema(description = "Cider maker identifier.", format = "uuid", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull UUID ciderMakerId,
-    @Schema(description = "Current measurement identifier.", format = "uuid")
+    @Schema(description = "Current measurement identifier.", format = "uuid", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull UUID currentMeasurementId,
-    @Schema(description = "Current measurement name.", example = "Pressing measurement #1")
+    @Schema(description = "Current measurement name.", example = "Pressing measurement #1", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull String currentMeasurementName,
-    @Schema(description = "Current sugar-acidity profile point.")
+    @Schema(description = "Current sugar-acidity profile point.", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull SugarAcidityProfilePointResponse point,
-    @Schema(description = "Distance to target.")
+    @Schema(description = "Distance to target.", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull ProfileTargetDistanceResponse distance
 ) {
 }

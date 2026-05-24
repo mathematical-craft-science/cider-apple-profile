@@ -7,7 +7,7 @@ import org.jspecify.annotations.NonNull;
 
 @Schema(description = "Closed numeric range on a sugar-acidity graph axis.")
 public record SugarAcidityGraphRangeResponse(
-    @Schema(description = "Range minimum.", example = "4.5") @NonNull BigDecimal min,
-    @Schema(description = "Range maximum.", example = "7.5") @NonNull BigDecimal max
+    @Schema(description = "Range minimum.", example = "4.5", requiredMode = Schema.RequiredMode.REQUIRED) @NonNull BigDecimal min,
+    @Schema(description = "Range maximum.", example = "7.5", requiredMode = Schema.RequiredMode.REQUIRED) @NonNull BigDecimal max
 ) {
 }

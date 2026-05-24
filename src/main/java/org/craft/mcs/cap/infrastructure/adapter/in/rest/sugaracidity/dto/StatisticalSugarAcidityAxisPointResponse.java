@@ -11,11 +11,11 @@ import static java.util.Objects.requireNonNull;
 
 @Schema(description = "Statistical graph-axis point represented by mean or median value.")
 public record StatisticalSugarAcidityAxisPointResponse(
-    @Schema(description = "Axis value used as graph coordinate.", example = "5.2") @NonNull BigDecimal value,
-    @Schema(description = "Axis point value discriminator.", implementation = MeasurementValueKind.class, example = "STATISTICAL_MEAN")
+    @Schema(description = "Axis value used as graph coordinate.", example = "5.2", requiredMode = Schema.RequiredMode.REQUIRED) @NonNull BigDecimal value,
+    @Schema(description = "Axis point value discriminator.", implementation = MeasurementValueKind.class, example = "STATISTICAL_MEAN", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull MeasurementValueKind valueKind,
-    @Schema(description = "Standard deviation, when available.", example = "0.2") @Nullable BigDecimal standardDeviation,
-    @Schema(description = "Number of measurements in the statistical sample.", example = "3") @Nullable Integer sampleSize
+    @Schema(description = "Standard deviation, when available.", example = "0.2", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED) @Nullable BigDecimal standardDeviation,
+    @Schema(description = "Number of measurements in the statistical sample.", example = "3", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED) @Nullable Integer sampleSize
 ) implements SugarAcidityAxisPointResponse {
 
   public StatisticalSugarAcidityAxisPointResponse {

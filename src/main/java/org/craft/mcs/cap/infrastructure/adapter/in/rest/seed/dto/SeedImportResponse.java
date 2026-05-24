@@ -8,7 +8,7 @@ import static java.util.Objects.requireNonNull;
 
 @Schema(description = "Development seed import response.")
 public record SeedImportResponse(
-    @Schema(description = "Seed import result message.", example = "Apple variety seed imported successfully")
+    @Schema(description = "Seed import result message.", example = "Apple variety seed imported successfully", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull String message
 ) {
 

@@ -10,8 +10,8 @@ import static java.util.Objects.requireNonNull;
 
 @Schema(description = "Calculated graph-axis point value.")
 public record CalculatedSugarAcidityAxisPointResponse(
-    @Schema(description = "Calculated axis value.", example = "1.052") @NonNull BigDecimal value,
-    @Schema(description = "Axis point value discriminator.", implementation = MeasurementValueKind.class, example = "CALCULATED")
+    @Schema(description = "Calculated axis value.", example = "1.052", requiredMode = Schema.RequiredMode.REQUIRED) @NonNull BigDecimal value,
+    @Schema(description = "Axis point value discriminator.", implementation = MeasurementValueKind.class, example = "CALCULATED", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull MeasurementValueKind valueKind
 ) implements SugarAcidityAxisPointResponse {
 

@@ -7,9 +7,9 @@ import org.jspecify.annotations.NonNull;
 
 @Schema(description = "Sugar-acidity coordinate in canonical graph units.")
 public record SugarAcidityCoordinatesResponse(
-    @Schema(description = "Sugar coordinate in SG.", example = "1.060")
+    @Schema(description = "Sugar coordinate in SG.", example = "1.060", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull BigDecimal sugar,
-    @Schema(description = "Titratable acidity coordinate in g/L as malic acid.", example = "6.0")
+    @Schema(description = "Titratable acidity coordinate in g/L as malic acid.", example = "6.0", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull BigDecimal acidity
 ) {
 }

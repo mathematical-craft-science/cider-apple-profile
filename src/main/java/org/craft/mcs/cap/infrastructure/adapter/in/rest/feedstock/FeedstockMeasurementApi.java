@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.UUID;
@@ -19,13 +20,16 @@ import org.springframework.http.ResponseEntity;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 
-@Tag(name = "Feedstock measurements", description = "Feedstock measurement creation and read-model endpoints.")
+@Tag(
+    name = "Feedstock measurements",
+    description = "Feedstock measurement workspace endpoints: create, list, replace, patch and delete measurements."
+)
 public interface FeedstockMeasurementApi {
 
   @Operation(
       summary = "Create feedstock measurement",
       description = "Creates a feedstock measurement inside an existing batch. The cider maker is derived from the batch.",
-      requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+      requestBody = @RequestBody(
           description = "Feedstock measurement creation payload.",
           required = true,
           content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = CreateFeedstockMeasurementRequest.class))
@@ -47,7 +51,7 @@ public interface FeedstockMeasurementApi {
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
   )
   @NonNull ResponseEntity<@NonNull FeedstockMeasurementResponse> create(
-      @Parameter(description = "Feedstock batch identifier.", schema = @Schema(format = "uuid"))
+      @Parameter(description = "Feedstock batch identifier.", required = true, schema = @Schema(format = "uuid"))
       @NonNull UUID batchId,
       @NonNull CreateFeedstockMeasurementRequest request
   );
@@ -62,7 +66,7 @@ public interface FeedstockMeasurementApi {
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = FeedstockMeasurementListResponse.class))
   )
   @NonNull ResponseEntity<@NonNull FeedstockMeasurementListResponse> listByBatchId(
-      @Parameter(description = "Feedstock batch identifier.", schema = @Schema(format = "uuid"))
+      @Parameter(description = "Feedstock batch identifier.", required = true, schema = @Schema(format = "uuid"))
       @NonNull UUID batchId
   );
 
@@ -91,11 +95,11 @@ public interface FeedstockMeasurementApi {
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
   )
   @NonNull ResponseEntity<@NonNull FeedstockMeasurementResponse> update(
-      @Parameter(description = "Feedstock batch identifier.", schema = @Schema(format = "uuid"))
+      @Parameter(description = "Feedstock batch identifier.", required = true, schema = @Schema(format = "uuid"))
       @NonNull UUID batchId,
-      @Parameter(description = "Feedstock measurement identifier.", schema = @Schema(format = "uuid"))
+      @Parameter(description = "Feedstock measurement identifier.", required = true, schema = @Schema(format = "uuid"))
       @NonNull UUID measurementId,
-      @io.swagger.v3.oas.annotations.parameters.RequestBody(
+      @RequestBody(
           description = "Full feedstock measurement update payload.",
           required = true,
           content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = UpdateFeedstockMeasurementRequest.class))
@@ -128,11 +132,11 @@ public interface FeedstockMeasurementApi {
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
   )
   @NonNull ResponseEntity<@NonNull FeedstockMeasurementResponse> patch(
-      @Parameter(description = "Feedstock batch identifier.", schema = @Schema(format = "uuid"))
+      @Parameter(description = "Feedstock batch identifier.", required = true, schema = @Schema(format = "uuid"))
       @NonNull UUID batchId,
-      @Parameter(description = "Feedstock measurement identifier.", schema = @Schema(format = "uuid"))
+      @Parameter(description = "Feedstock measurement identifier.", required = true, schema = @Schema(format = "uuid"))
       @NonNull UUID measurementId,
-      @io.swagger.v3.oas.annotations.parameters.RequestBody(
+      @RequestBody(
           description = "Partial feedstock measurement update payload.",
           required = true,
           content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = PatchFeedstockMeasurementRequest.class))
@@ -156,9 +160,9 @@ public interface FeedstockMeasurementApi {
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
   )
   @NonNull ResponseEntity<Void> delete(
-      @Parameter(description = "Feedstock batch identifier.", schema = @Schema(format = "uuid"))
+      @Parameter(description = "Feedstock batch identifier.", required = true, schema = @Schema(format = "uuid"))
       @NonNull UUID batchId,
-      @Parameter(description = "Feedstock measurement identifier.", schema = @Schema(format = "uuid"))
+      @Parameter(description = "Feedstock measurement identifier.", required = true, schema = @Schema(format = "uuid"))
       @NonNull UUID measurementId
   );
 }

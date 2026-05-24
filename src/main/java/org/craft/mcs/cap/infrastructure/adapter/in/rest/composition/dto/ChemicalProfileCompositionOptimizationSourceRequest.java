@@ -8,11 +8,11 @@ import org.jspecify.annotations.Nullable;
 
 @Schema(description = "Optimization source with available volume constraint.")
 public record ChemicalProfileCompositionOptimizationSourceRequest(
-    @Schema(description = "Source reference.")
+    @Schema(description = "Source reference.", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull ChemicalProfileCompositionSourceReferenceRequest reference,
-    @Schema(description = "Source canonical chemical axes.")
+    @Schema(description = "Source canonical chemical axes.", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull ChemicalProfileCompositionAxesRequest axes,
-    @Schema(description = "Available source volume in liters.", example = "120.0")
+    @Schema(description = "Available source volume in liters.", example = "120.0", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @Nullable BigDecimal availableVolumeLiters
 ) {
 }

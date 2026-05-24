@@ -8,8 +8,8 @@ import static java.util.Objects.requireNonNull;
 
 @Schema(description = "Borderline classification reason.")
 public record BorderlineReasonDto(
-    @Schema(description = "Measured profile axis.", example = "SUGAR") @NonNull String measure,
-    @Schema(description = "Condition describing the boundary.") @NonNull String borderlineCondition
+    @Schema(description = "Measured profile axis.", example = "SUGAR", requiredMode = Schema.RequiredMode.REQUIRED) @NonNull String measure,
+    @Schema(description = "Condition describing the boundary.", requiredMode = Schema.RequiredMode.REQUIRED) @NonNull String borderlineCondition
 ) {
 
   public BorderlineReasonDto {

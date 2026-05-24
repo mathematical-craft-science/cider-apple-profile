@@ -8,9 +8,9 @@ import org.jspecify.annotations.NonNull;
 
 @Schema(description = "Feedstock source selected for production batch creation.")
 public record CreateProductionBatchSourceRequest(
-    @Schema(description = "Feedstock batch identifier.", format = "uuid", example = "b2a49b8a-3a19-4f8f-989d-9278f4e00d2f")
+    @Schema(description = "Feedstock batch identifier.", format = "uuid", example = "b2a49b8a-3a19-4f8f-989d-9278f4e00d2f", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull UUID feedstockBatchId,
-    @Schema(description = "Volume to use from the feedstock batch in liters.", example = "25.0")
+    @Schema(description = "Volume to use from the feedstock batch in liters.", example = "25.0", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull BigDecimal volumeLiters
 ) {
 }

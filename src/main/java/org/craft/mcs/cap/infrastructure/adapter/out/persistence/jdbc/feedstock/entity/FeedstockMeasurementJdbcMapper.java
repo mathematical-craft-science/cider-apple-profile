@@ -2,6 +2,7 @@ package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.feedstock.
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.UUID;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurement;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurementId;
@@ -136,8 +137,8 @@ public final class FeedstockMeasurementJdbcMapper {
     requireNonNull(resultSet, "feedstock measurement result set cannot be null");
 
     final var entity = new FeedstockMeasurementJdbcEntity();
-    entity.measurementId = resultSet.getObject("measurement_id", java.util.UUID.class);
-    entity.batch = AggregateReference.to(resultSet.getObject("batch_id", java.util.UUID.class));
+    entity.measurementId = resultSet.getObject("measurement_id", UUID.class);
+    entity.batch = AggregateReference.to(resultSet.getObject("batch_id", UUID.class));
     entity.name = resultSet.getString("name");
     entity.measuredAt = resultSet.getTimestamp("measured_at").toInstant();
     entity.note = resultSet.getString("note");

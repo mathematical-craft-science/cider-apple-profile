@@ -9,13 +9,13 @@ import static java.util.Objects.requireNonNull;
 
 @Schema(description = "Range chemical measurement response.")
 public record RangeChemicalMeasurementResponse(
-    @Schema(description = "Measurement shape.", example = "RANGE")
+    @Schema(description = "Measurement shape.", example = "RANGE", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull String kind,
-    @Schema(description = "Canonical measurement unit.", example = "g/L as malic acid")
+    @Schema(description = "Canonical measurement unit.", example = "g/L as malic acid", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull String unit,
-    @Schema(description = "Minimum canonical value.", example = "4.8")
+    @Schema(description = "Minimum canonical value.", example = "4.8", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull BigDecimal min,
-    @Schema(description = "Maximum canonical value.", example = "6.2")
+    @Schema(description = "Maximum canonical value.", example = "6.2", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull BigDecimal max
 ) implements ChemicalMeasurementResponse {
 

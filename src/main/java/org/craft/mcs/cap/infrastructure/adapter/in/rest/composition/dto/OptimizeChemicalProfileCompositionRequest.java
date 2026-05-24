@@ -20,33 +20,36 @@ import org.jspecify.annotations.Nullable;
 
 @Schema(description = "Request to optimize source composition against a profile target.")
 public record OptimizeChemicalProfileCompositionRequest(
-    @ArraySchema(schema = @Schema(description = "Optimization source.", implementation = ChemicalProfileCompositionOptimizationSourceRequest.class))
+    @ArraySchema(
+        arraySchema = @Schema(description = "Optimization sources.", requiredMode = Schema.RequiredMode.REQUIRED),
+        schema = @Schema(implementation = ChemicalProfileCompositionOptimizationSourceRequest.class)
+    )
     @NonNull List<@NonNull ChemicalProfileCompositionOptimizationSourceRequest> sources,
-    @Schema(description = "Policy for optional tannin calculation.", implementation = ChemicalProfileCompositionTanninPolicy.class)
+    @Schema(description = "Policy for optional tannin calculation.", implementation = ChemicalProfileCompositionTanninPolicy.class, nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @Nullable ChemicalProfileCompositionTanninPolicy tanninPolicy,
-    @Schema(description = "Required profile target.")
+    @Schema(description = "Required profile target.", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull ProfileTargetRequest target,
-    @Schema(description = "Optional tannin target range.")
+    @Schema(description = "Optional tannin target range.", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @Nullable ProfileTargetTanninRangeRequest tanninTarget,
-    @Schema(description = "Optional axis weights.")
+    @Schema(description = "Optional axis weights.", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @Nullable ProfileTargetObjectiveWeightsRequest weights,
-    @Schema(description = "Scoring purpose used to select defaults.", implementation = ProfileTargetScoringPurpose.class)
+    @Schema(description = "Scoring purpose used to select defaults.", implementation = ProfileTargetScoringPurpose.class, nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @Nullable ProfileTargetScoringPurpose scoringPurpose,
-    @Schema(description = "Optimization mode.", implementation = CompositionOptimizationMode.class)
+    @Schema(description = "Optimization mode.", implementation = CompositionOptimizationMode.class, requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull CompositionOptimizationMode mode,
-    @Schema(description = "Optimization algorithm.", implementation = CompositionOptimizationAlgorithm.class)
+    @Schema(description = "Optimization algorithm.", implementation = CompositionOptimizationAlgorithm.class, nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @Nullable CompositionOptimizationAlgorithm algorithm,
-    @Schema(description = "Composition calculator code.", implementation = ChemicalProfileCompositionCalculatorCode.class)
+    @Schema(description = "Composition calculator code.", implementation = ChemicalProfileCompositionCalculatorCode.class, nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @Nullable ChemicalProfileCompositionCalculatorCode calculator,
-    @Schema(description = "Axis normalizer code.", implementation = ProfileAxisNormalizerCode.class)
+    @Schema(description = "Axis normalizer code.", implementation = ProfileAxisNormalizerCode.class, nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @Nullable ProfileAxisNormalizerCode normalizer,
-    @Schema(description = "Objective function code.", implementation = ProfileTargetObjectiveFunctionCode.class)
+    @Schema(description = "Objective function code.", implementation = ProfileTargetObjectiveFunctionCode.class, nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @Nullable ProfileTargetObjectiveFunctionCode objectiveFunction,
-    @Schema(description = "Discrete search step in percent.", example = "5")
+    @Schema(description = "Discrete search step in percent.", example = "5", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @Nullable Integer stepPercent,
-    @Schema(description = "Maximum candidates returned.", example = "10")
+    @Schema(description = "Maximum candidates returned.", example = "10", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @Nullable Integer limit,
-    @Schema(description = "Target total volume in liters for absolute-volume optimization.", example = "100.0")
+    @Schema(description = "Target total volume in liters for absolute-volume optimization.", example = "100.0", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @Nullable BigDecimal targetTotalVolumeLiters
 ) {
 }

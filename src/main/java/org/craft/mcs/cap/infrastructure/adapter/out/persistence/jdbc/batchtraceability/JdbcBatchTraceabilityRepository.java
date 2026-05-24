@@ -135,7 +135,22 @@ class JdbcBatchTraceabilityRepository
   public @NonNull List<@NonNull BatchTraceStep> findByInputSubject(
       @NonNull BatchTraceSubject subject
   ) {
+    return findBySubjectRole(subject, BatchTraceStepSubjectRole.INPUT);
+  }
+
+  @Override
+  public @NonNull List<@NonNull BatchTraceStep> findByOutputSubject(
+      @NonNull BatchTraceSubject subject
+  ) {
+    return findBySubjectRole(subject, BatchTraceStepSubjectRole.OUTPUT);
+  }
+
+  private @NonNull List<@NonNull BatchTraceStep> findBySubjectRole(
+      @NonNull BatchTraceSubject subject,
+      @NonNull BatchTraceStepSubjectRole role
+  ) {
     requireNonNull(subject, "batch trace subject cannot be null");
+    requireNonNull(role, "batch trace subject role cannot be null");
 
     final var stepIds = jdbcTemplate.queryForList("""
             SELECT step.step_id
@@ -148,7 +163,7 @@ class JdbcBatchTraceabilityRepository
             ORDER BY step.occurred_at ASC, step.step_id ASC
             """,
         new MapSqlParameterSource()
-            .addValue("subjectRole", BatchTraceStepSubjectRole.INPUT.name())
+            .addValue("subjectRole", role.name())
             .addValue("subjectType", subject.type().name())
             .addValue("subjectId", subject.id()),
         UUID.class

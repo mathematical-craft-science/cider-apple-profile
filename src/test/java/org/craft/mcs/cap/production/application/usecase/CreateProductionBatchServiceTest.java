@@ -28,6 +28,7 @@ import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchTra
 import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchTraceSource;
 import org.craft.mcs.cap.core.production.application.usecase.CreateProductionBatchService;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatch;
+import org.craft.mcs.cap.core.production.domain.model.ProductionBatchId;
 import org.craft.mcs.cap.core.production.domain.model.ProductionInput;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceComponent;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceComposition;
@@ -253,6 +254,20 @@ class CreateProductionBatchServiceTest {
     public @NonNull ProductionBatch save(@NonNull ProductionBatch productionBatch) {
       transactionHelper.stage(() -> committed.add(productionBatch));
       return productionBatch;
+    }
+
+    @Override
+    public @NonNull Optional<@NonNull ProductionBatch> findById(@NonNull ProductionBatchId batchId) {
+      return committed.stream()
+          .filter(batch -> batch.batchId().equals(batchId))
+          .findFirst();
+    }
+
+    @Override
+    public @NonNull List<@NonNull ProductionBatch> findAllByCiderMakerId(@NonNull CiderMakerId ciderMakerId) {
+      return committed.stream()
+          .filter(batch -> batch.ciderMakerId().equals(ciderMakerId))
+          .toList();
     }
   }
 

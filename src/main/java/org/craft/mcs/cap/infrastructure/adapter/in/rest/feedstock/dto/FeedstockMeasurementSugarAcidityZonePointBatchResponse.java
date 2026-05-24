@@ -9,11 +9,17 @@ import org.jspecify.annotations.Nullable;
 
 @Schema(description = "Feedstock measurement sugar-acidity graph point batch response.")
 public record FeedstockMeasurementSugarAcidityZonePointBatchResponse(
-    @ArraySchema(schema = @Schema(description = "Plottable graph points.", implementation = FeedstockMeasurementSugarAcidityZoneResponse.class))
+    @ArraySchema(
+        arraySchema = @Schema(description = "Plottable graph points.", requiredMode = Schema.RequiredMode.REQUIRED),
+        schema = @Schema(implementation = FeedstockMeasurementSugarAcidityZoneResponse.class)
+    )
     @NonNull List<@NonNull FeedstockMeasurementSugarAcidityZoneResponse> points,
-    @ArraySchema(schema = @Schema(description = "Measurements that cannot be plotted because required measurements are missing.", implementation = UnplottableFeedstockMeasurementSugarAcidityZonePointResponse.class))
+    @ArraySchema(
+        arraySchema = @Schema(description = "Measurements that cannot be plotted because required measurements are missing.", requiredMode = Schema.RequiredMode.REQUIRED),
+        schema = @Schema(implementation = UnplottableFeedstockMeasurementSugarAcidityZonePointResponse.class)
+    )
     @NonNull List<@NonNull UnplottableFeedstockMeasurementSugarAcidityZonePointResponse> unplottable,
-    @Schema(description = "Opaque cursor for the next page. Omitted when the current page is the last one.")
+    @Schema(description = "Opaque cursor for the next page. Omitted when the current page is the last one.", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @Nullable String nextCursor
 ) {
 }

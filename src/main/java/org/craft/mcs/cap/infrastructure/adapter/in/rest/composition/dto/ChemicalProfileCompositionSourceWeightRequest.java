@@ -7,9 +7,9 @@ import org.jspecify.annotations.NonNull;
 
 @Schema(description = "Source weight, either absolute volume in liters or relative proportion.")
 public record ChemicalProfileCompositionSourceWeightRequest(
-    @Schema(description = "Weight kind.", implementation = ChemicalProfileCompositionSourceWeightKind.class, example = "ABSOLUTE_VOLUME_LITERS")
+    @Schema(description = "Weight kind.", implementation = ChemicalProfileCompositionSourceWeightKind.class, example = "ABSOLUTE_VOLUME_LITERS", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull ChemicalProfileCompositionSourceWeightKind kind,
-    @Schema(description = "Weight value. Liters for ABSOLUTE_VOLUME_LITERS, 0..1 proportion for PROPORTION.", example = "10")
+    @Schema(description = "Weight value. Liters for ABSOLUTE_VOLUME_LITERS, 0..1 proportion for PROPORTION.", example = "10", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull BigDecimal value
 ) {
 }

@@ -10,11 +10,14 @@ import org.jspecify.annotations.NonNull;
 
 @Schema(description = "Target-aware feedstock batch candidate search response.")
 public record FeedstockBatchProfileTargetCandidatesResponse(
-    @Schema(description = "Scoring purpose.", implementation = ProfileTargetScoringPurpose.class)
+    @Schema(description = "Scoring purpose.", implementation = ProfileTargetScoringPurpose.class, requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull ProfileTargetScoringPurpose purpose,
-    @Schema(description = "Normalizer selected for this scoring purpose.", implementation = ProfileAxisNormalizerCode.class)
+    @Schema(description = "Normalizer selected for this scoring purpose.", implementation = ProfileAxisNormalizerCode.class, requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull ProfileAxisNormalizerCode normalizerCode,
-    @ArraySchema(schema = @Schema(description = "Feedstock batch candidates.", implementation = FeedstockBatchProfileTargetCandidateResponse.class))
+    @ArraySchema(
+        arraySchema = @Schema(description = "Feedstock batch candidates.", requiredMode = Schema.RequiredMode.REQUIRED),
+        schema = @Schema(implementation = FeedstockBatchProfileTargetCandidateResponse.class)
+    )
     @NonNull List<@NonNull FeedstockBatchProfileTargetCandidateResponse> candidates
 ) {
 }

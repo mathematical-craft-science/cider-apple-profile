@@ -10,11 +10,14 @@ import org.jspecify.annotations.NonNull;
 
 @Schema(description = "Target-aware apple variety candidate search response.")
 public record AppleVarietyProfileTargetCandidatesResponse(
-    @Schema(description = "Scoring purpose.", implementation = ProfileTargetScoringPurpose.class)
+    @Schema(description = "Scoring purpose.", implementation = ProfileTargetScoringPurpose.class, requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull ProfileTargetScoringPurpose purpose,
-    @Schema(description = "Normalizer selected for this scoring purpose.", implementation = ProfileAxisNormalizerCode.class)
+    @Schema(description = "Normalizer selected for this scoring purpose.", implementation = ProfileAxisNormalizerCode.class, requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull ProfileAxisNormalizerCode normalizerCode,
-    @ArraySchema(schema = @Schema(description = "Apple variety candidates.", implementation = AppleVarietyProfileTargetCandidateResponse.class))
+    @ArraySchema(
+        arraySchema = @Schema(description = "Apple variety candidates.", requiredMode = Schema.RequiredMode.REQUIRED),
+        schema = @Schema(implementation = AppleVarietyProfileTargetCandidateResponse.class)
+    )
     @NonNull List<@NonNull AppleVarietyProfileTargetCandidateResponse> candidates
 ) {
 }

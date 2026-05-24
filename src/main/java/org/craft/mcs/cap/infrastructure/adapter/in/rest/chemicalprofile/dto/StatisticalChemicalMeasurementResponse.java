@@ -10,17 +10,17 @@ import static java.util.Objects.requireNonNull;
 
 @Schema(description = "Statistical chemical measurement response.")
 public record StatisticalChemicalMeasurementResponse(
-    @Schema(description = "Measurement shape.", example = "STATISTICAL")
+    @Schema(description = "Measurement shape.", example = "STATISTICAL", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull String kind,
-    @Schema(description = "Canonical measurement unit.", example = "g/L as malic acid")
+    @Schema(description = "Canonical measurement unit.", example = "g/L as malic acid", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull String unit,
-    @Schema(description = "Mean canonical value.", example = "5.2")
+    @Schema(description = "Mean canonical value.", example = "5.2", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull BigDecimal mean,
-    @Schema(description = "Median canonical value, when available.", example = "5.1")
+    @Schema(description = "Median canonical value, when available.", example = "5.1", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @Nullable BigDecimal median,
-    @Schema(description = "Standard deviation in canonical units, when available.", example = "0.2")
+    @Schema(description = "Standard deviation in canonical units, when available.", example = "0.2", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @Nullable BigDecimal standardDeviation,
-    @Schema(description = "Number of source measurements.", example = "3")
+    @Schema(description = "Number of source measurements.", example = "3", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @Nullable Integer sampleSize
 ) implements ChemicalMeasurementResponse {
 

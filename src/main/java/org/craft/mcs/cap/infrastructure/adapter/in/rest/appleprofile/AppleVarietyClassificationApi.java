@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.UUID;
@@ -33,10 +34,15 @@ public interface AppleVarietyClassificationApi {
       description = "Apple variety classification result.",
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = AppleVarietyClassificationResponse.class))
   )
+  @ApiResponse(
+      responseCode = "404",
+      description = "Apple variety not found.",
+      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
+  )
   @NonNull ResponseEntity<@NonNull AppleVarietyClassificationResponse> classify(
-      @Parameter(description = "Apple variety identifier.", schema = @Schema(format = "uuid"))
+      @Parameter(description = "Apple variety identifier.", required = true, schema = @Schema(format = "uuid"))
       @NonNull UUID varietyId,
-      @Parameter(description = "Classification system to apply.", schema = @Schema(implementation = AppleVarietyClassificationSystem.class))
+      @Parameter(description = "Classification system to apply.", required = true, schema = @Schema(implementation = AppleVarietyClassificationSystem.class))
       @NonNull AppleVarietyClassificationSystem system
   );
 
@@ -54,8 +60,13 @@ public interface AppleVarietyClassificationApi {
       description = "Chemical profile does not contain all required axes.",
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
   )
+  @ApiResponse(
+      responseCode = "404",
+      description = "Apple variety not found.",
+      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
+  )
   @NonNull ResponseEntity<@NonNull AppleVarietyNorthAmericanResponse> classifyNorthAmerican(
-      @Parameter(description = "Apple variety identifier.", schema = @Schema(format = "uuid"))
+      @Parameter(description = "Apple variety identifier.", required = true, schema = @Schema(format = "uuid"))
       @NonNull UUID varietyId
   );
 
@@ -68,8 +79,13 @@ public interface AppleVarietyClassificationApi {
       description = "Sugar-acidity zone assessment or unplottable result.",
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = AppleVarietySugarAcidityZoneResponse.class))
   )
+  @ApiResponse(
+      responseCode = "404",
+      description = "Apple variety not found.",
+      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
+  )
   @NonNull ResponseEntity<@NonNull AppleVarietySugarAcidityZoneResponse> assessSugarAcidityZone(
-      @Parameter(description = "Apple variety identifier.", schema = @Schema(format = "uuid"))
+      @Parameter(description = "Apple variety identifier.", required = true, schema = @Schema(format = "uuid"))
       @NonNull UUID varietyId
   );
 
@@ -87,8 +103,13 @@ public interface AppleVarietyClassificationApi {
       description = "Chemical profile does not contain sugar.",
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
   )
+  @ApiResponse(
+      responseCode = "404",
+      description = "Apple variety not found.",
+      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
+  )
   @NonNull ResponseEntity<@NonNull AppleVarietyPotentialAbvResponse> predictPotentialAbv(
-      @Parameter(description = "Apple variety identifier.", schema = @Schema(format = "uuid"))
+      @Parameter(description = "Apple variety identifier.", required = true, schema = @Schema(format = "uuid"))
       @NonNull UUID varietyId
   );
 
@@ -101,7 +122,17 @@ public interface AppleVarietyClassificationApi {
       description = "Batch of apple variety graph points.",
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = AppleVarietySugarAcidityZonePointBatchResponse.class))
   )
+  @ApiResponse(
+      responseCode = "400",
+      description = "Invalid graph point query.",
+      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
+  )
   @NonNull ResponseEntity<@NonNull AppleVarietySugarAcidityZonePointBatchResponse> listSugarAcidityZonePoints(
+      @RequestBody(
+          description = "Apple variety graph point query.",
+          required = true,
+          content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = AppleVarietySugarAcidityZonePointQueryRequest.class))
+      )
       @NonNull AppleVarietySugarAcidityZonePointQueryRequest request
   );
 }

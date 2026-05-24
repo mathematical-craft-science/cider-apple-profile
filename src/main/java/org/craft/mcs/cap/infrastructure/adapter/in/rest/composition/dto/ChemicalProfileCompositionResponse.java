@@ -15,19 +15,25 @@ import org.jspecify.annotations.Nullable;
 
 @Schema(description = "Calculated chemical profile composition response.")
 public record ChemicalProfileCompositionResponse(
-    @ArraySchema(schema = @Schema(description = "Composition source result.", implementation = ChemicalProfileCompositionSourceResponse.class))
+    @ArraySchema(
+        arraySchema = @Schema(description = "Composition source results.", requiredMode = Schema.RequiredMode.REQUIRED),
+        schema = @Schema(implementation = ChemicalProfileCompositionSourceResponse.class)
+    )
     @NonNull List<@NonNull ChemicalProfileCompositionSourceResponse> sources,
-    @Schema(description = "Calculated profile point.")
+    @Schema(description = "Calculated profile point.", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull SugarAcidityProfilePointResponse profile,
-    @Schema(description = "Calculated yeast-assimilable nitrogen in mg N/L, when every source contains YAN.")
+    @Schema(description = "Calculated yeast-assimilable nitrogen in mg N/L, when every source contains YAN.", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @Nullable SugarAcidityAxisPointResponse yeastAssimilableNitrogen,
-    @Schema(description = "Total composition volume in liters, when known.", example = "100.0")
+    @Schema(description = "Total composition volume in liters, when known.", example = "100.0", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @Nullable BigDecimal totalVolumeLiters,
-    @ArraySchema(schema = @Schema(description = "Composition warning.", implementation = ChemicalProfileCompositionWarning.class))
+    @ArraySchema(
+        arraySchema = @Schema(description = "Composition warnings.", requiredMode = Schema.RequiredMode.REQUIRED),
+        schema = @Schema(implementation = ChemicalProfileCompositionWarning.class)
+    )
     @NonNull List<@NonNull ChemicalProfileCompositionWarning> warnings,
-    @Schema(description = "Normalizer used for target distance.", implementation = ProfileAxisNormalizerCode.class)
+    @Schema(description = "Normalizer used for target distance.", implementation = ProfileAxisNormalizerCode.class, nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @Nullable ProfileAxisNormalizerCode normalizerCode,
-    @Schema(description = "Distance to target, when target was provided.")
+    @Schema(description = "Distance to target, when target was provided.", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @Nullable ProfileTargetDistanceResponse targetDistance
 ) {
 }

@@ -7,9 +7,9 @@ import org.jspecify.annotations.Nullable;
 
 @Schema(description = "Graph point coordinates computed from a chemical profile.")
 public record SugarAcidityProfilePointResponse(
-    @Schema(description = "Specific gravity coordinate.") @NonNull SugarAcidityAxisPointResponse sugar,
-    @Schema(description = "Titratable acidity coordinate.") @NonNull SugarAcidityAxisPointResponse acidity,
-    @Schema(description = "Tannin coordinate, when present.")
+    @Schema(description = "Specific gravity coordinate.", requiredMode = Schema.RequiredMode.REQUIRED) @NonNull SugarAcidityAxisPointResponse sugar,
+    @Schema(description = "Titratable acidity coordinate.", requiredMode = Schema.RequiredMode.REQUIRED) @NonNull SugarAcidityAxisPointResponse acidity,
+    @Schema(description = "Tannin coordinate, when present.", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @Nullable SugarAcidityAxisPointResponse tannin
 ) {
 }

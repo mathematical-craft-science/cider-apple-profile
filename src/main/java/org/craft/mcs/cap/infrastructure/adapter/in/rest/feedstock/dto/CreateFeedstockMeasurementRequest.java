@@ -9,9 +9,9 @@ import org.jspecify.annotations.Nullable;
 
 @Schema(description = "Request to create a feedstock measurement inside an existing batch.")
 public record CreateFeedstockMeasurementRequest(
-    @Schema(description = "Measurement name.", example = "Pressing measurement #1") @NonNull String name,
-    @Schema(description = "Measured chemical profile.") @NonNull ChemicalProfileRequest chemicalProfile,
-    @Schema(description = "Timestamp when the measurement was taken.", format = "date-time", example = "2026-10-18T10:15:30Z") @NonNull Instant measuredAt,
-    @Schema(description = "Optional measurement note.", example = "Measured immediately after pressing.") @Nullable String note
+    @Schema(description = "Measurement name.", example = "Pressing measurement #1", requiredMode = Schema.RequiredMode.REQUIRED) @NonNull String name,
+    @Schema(description = "Measured chemical profile.", requiredMode = Schema.RequiredMode.REQUIRED) @NonNull ChemicalProfileRequest chemicalProfile,
+    @Schema(description = "Timestamp when the measurement was taken.", format = "date-time", example = "2026-10-18T10:15:30Z", requiredMode = Schema.RequiredMode.REQUIRED) @NonNull Instant measuredAt,
+    @Schema(description = "Optional measurement note.", example = "Measured immediately after pressing.", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED) @Nullable String note
 ) {
 }

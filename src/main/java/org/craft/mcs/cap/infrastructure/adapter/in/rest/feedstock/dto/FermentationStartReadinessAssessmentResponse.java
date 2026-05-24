@@ -7,11 +7,16 @@ import org.craft.mcs.cap.core.cideranalysis.fermentationstart.domain.Fermentatio
 import org.jspecify.annotations.NonNull;
 
 
+@Schema(description = "Fermentation-start readiness assessment.")
 public record FermentationStartReadinessAssessmentResponse(
-    @Schema(implementation = FermentationStartReadinessStatus.class)
+    @Schema(description = "Overall readiness status.", implementation = FermentationStartReadinessStatus.class, requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull FermentationStartReadinessStatus status,
+    @Schema(description = "Assessment method code.", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull String method,
-    @ArraySchema(schema = @Schema(implementation = FermentationStartReadinessCheckResponse.class))
+    @ArraySchema(
+        arraySchema = @Schema(description = "Readiness checks.", requiredMode = Schema.RequiredMode.REQUIRED),
+        schema = @Schema(implementation = FermentationStartReadinessCheckResponse.class)
+    )
     @NonNull List<@NonNull FermentationStartReadinessCheckResponse> checks
 ) {
 }

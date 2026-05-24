@@ -10,10 +10,10 @@ import static java.util.Objects.requireNonNull;
 
 @Schema(description = "Range chemical measurement request.")
 public record RangeChemicalMeasurementRequest(
-    @Schema(description = "Measurement shape.", example = "RANGE") @NonNull String kind,
-    @Schema(description = "External measurement unit.", example = "g/L as malic acid") @Nullable String unit,
-    @Schema(description = "Minimum measured value.", example = "1.048") @NonNull BigDecimal min,
-    @Schema(description = "Maximum measured value.", example = "1.060") @NonNull BigDecimal max
+    @Schema(description = "Measurement shape.", example = "RANGE", requiredMode = Schema.RequiredMode.REQUIRED) @NonNull String kind,
+    @Schema(description = "External measurement unit.", example = "g/L as malic acid", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED) @Nullable String unit,
+    @Schema(description = "Minimum measured value.", example = "1.048", requiredMode = Schema.RequiredMode.REQUIRED) @NonNull BigDecimal min,
+    @Schema(description = "Maximum measured value.", example = "1.060", requiredMode = Schema.RequiredMode.REQUIRED) @NonNull BigDecimal max
 ) implements ChemicalMeasurementRequest {
 
   public RangeChemicalMeasurementRequest {

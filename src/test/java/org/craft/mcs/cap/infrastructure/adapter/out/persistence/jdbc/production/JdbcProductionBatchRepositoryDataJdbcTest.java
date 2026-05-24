@@ -59,11 +59,43 @@ class JdbcProductionBatchRepositoryDataJdbcTest {
     assertThat(result.note()).isEqualTo("Updated note");
   }
 
+  @Test
+  void findsProductionBatchById() {
+    final var saved = repository.save(productionBatch());
+
+    final var found = repository.findById(saved.batchId());
+
+    assertThat(found).get()
+        .extracting(batch -> batch.batchId())
+        .isEqualTo(saved.batchId());
+  }
+
+  @Test
+  void listsProductionBatchesByCiderMaker() {
+    final var ciderMakerId = CiderMakerId.of(UUID.randomUUID());
+    final var first = repository.save(productionBatch(ciderMakerId, "First production batch"));
+    final var second = repository.save(productionBatch(ciderMakerId, "Second production batch"));
+    repository.save(productionBatch(CiderMakerId.of(UUID.randomUUID()), "Other production batch"));
+
+    final var found = repository.findAllByCiderMakerId(ciderMakerId);
+
+    assertThat(found)
+        .extracting(batch -> batch.batchId())
+        .containsExactlyInAnyOrder(second.batchId(), first.batchId());
+  }
+
   private static ProductionBatch productionBatch() {
+    return productionBatch(CiderMakerId.of(UUID.randomUUID()), "Initial production batch");
+  }
+
+  private static ProductionBatch productionBatch(
+      CiderMakerId ciderMakerId,
+      String name
+  ) {
     return ProductionBatch.create(
         ProductionBatchId.newId(),
-        CiderMakerId.of(UUID.randomUUID()),
-        ProductionBatchName.of("Initial production batch"),
+        ciderMakerId,
+        ProductionBatchName.of(name),
         ProductionBatchKind.CIDER,
         VolumeValue.ofLiters("100"),
         new ProductionProfileSnapshot(

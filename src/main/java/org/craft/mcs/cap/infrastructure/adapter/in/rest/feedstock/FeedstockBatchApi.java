@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.time.LocalDate;
@@ -21,13 +22,16 @@ import org.springframework.http.ResponseEntity;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 
-@Tag(name = "Feedstock batches", description = "Feedstock batch creation and lookup endpoints.")
+@Tag(
+    name = "Feedstock batches",
+    description = "Feedstock batch workspace endpoints: create, list, update and soft-delete source material batches."
+)
 public interface FeedstockBatchApi {
 
   @Operation(
       summary = "Create feedstock batch",
       description = "Creates a feedstock batch with season dates, optional source and available volume.",
-      requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+      requestBody = @RequestBody(
           description = "Feedstock batch creation payload.",
           required = true,
           content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = CreateFeedstockBatchRequest.class))
@@ -37,6 +41,11 @@ public interface FeedstockBatchApi {
       responseCode = "201",
       description = "Feedstock batch created.",
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = FeedstockBatchResponse.class))
+  )
+  @ApiResponse(
+      responseCode = "400",
+      description = "Invalid feedstock batch request.",
+      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
   )
   @NonNull ResponseEntity<@NonNull FeedstockBatchResponse> create(
       @NonNull CreateFeedstockBatchRequest request
@@ -57,18 +66,18 @@ public interface FeedstockBatchApi {
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
   )
   @NonNull ResponseEntity<@NonNull FeedstockBatchListResponse> list(
-      @Parameter(description = "Cider maker identifier.", schema = @Schema(format = "uuid"))
+      @Parameter(description = "Cider maker identifier.", required = true, schema = @Schema(format = "uuid"))
       @NonNull UUID ciderMakerId,
-      @Parameter(description = "Optional season filter start date.", schema = @Schema(format = "date"))
+      @Parameter(description = "Optional season filter start date. Must be provided together with seasonEndsOn.", schema = @Schema(format = "date"))
       @Nullable LocalDate seasonStartsOn,
-      @Parameter(description = "Optional season filter end date.", schema = @Schema(format = "date"))
+      @Parameter(description = "Optional season filter end date. Must be provided together with seasonStartsOn.", schema = @Schema(format = "date"))
       @Nullable LocalDate seasonEndsOn
   );
 
   @Operation(
       summary = "Replace feedstock batch",
       description = "Replaces editable feedstock batch fields. The request must include the cider maker owner id for ownership validation.",
-      requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+      requestBody = @RequestBody(
           description = "Full feedstock batch update payload.",
           required = true,
           content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = UpdateFeedstockBatchRequest.class))
@@ -78,6 +87,11 @@ public interface FeedstockBatchApi {
       responseCode = "200",
       description = "Feedstock batch updated.",
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = FeedstockBatchResponse.class))
+  )
+  @ApiResponse(
+      responseCode = "400",
+      description = "Invalid feedstock batch update request.",
+      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
   )
   @ApiResponse(
       responseCode = "403",
@@ -95,7 +109,7 @@ public interface FeedstockBatchApi {
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
   )
   @NonNull ResponseEntity<@NonNull FeedstockBatchResponse> update(
-      @Parameter(description = "Feedstock batch identifier.", schema = @Schema(format = "uuid"))
+      @Parameter(description = "Feedstock batch identifier.", required = true, schema = @Schema(format = "uuid"))
       @NonNull UUID batchId,
       @NonNull UpdateFeedstockBatchRequest request
   );
@@ -108,6 +122,11 @@ public interface FeedstockBatchApi {
       responseCode = "200",
       description = "Feedstock batch patched.",
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = FeedstockBatchResponse.class))
+  )
+  @ApiResponse(
+      responseCode = "400",
+      description = "Invalid feedstock batch patch request.",
+      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
   )
   @ApiResponse(
       responseCode = "403",
@@ -125,9 +144,9 @@ public interface FeedstockBatchApi {
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
   )
   @NonNull ResponseEntity<@NonNull FeedstockBatchResponse> patch(
-      @Parameter(description = "Feedstock batch identifier.", schema = @Schema(format = "uuid"))
+      @Parameter(description = "Feedstock batch identifier.", required = true, schema = @Schema(format = "uuid"))
       @NonNull UUID batchId,
-      @io.swagger.v3.oas.annotations.parameters.RequestBody(
+      @RequestBody(
           description = "Partial feedstock batch update payload.",
           required = true,
           content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = PatchFeedstockBatchRequest.class))
@@ -156,9 +175,9 @@ public interface FeedstockBatchApi {
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
   )
   @NonNull ResponseEntity<Void> delete(
-      @Parameter(description = "Feedstock batch identifier.", schema = @Schema(format = "uuid"))
+      @Parameter(description = "Feedstock batch identifier.", required = true, schema = @Schema(format = "uuid"))
       @NonNull UUID batchId,
-      @Parameter(description = "Cider maker identifier used for ownership validation.", schema = @Schema(format = "uuid"))
+      @Parameter(description = "Cider maker identifier used for ownership validation.", required = true, schema = @Schema(format = "uuid"))
       @NonNull UUID ciderMakerId
   );
 }

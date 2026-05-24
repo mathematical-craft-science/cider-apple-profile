@@ -10,11 +10,11 @@ import org.jspecify.annotations.Nullable;
 
 @Schema(description = "Sugar-acidity graph assessment for an apple variety.")
 public record AppleVarietySugarAcidityZoneResponse(
-    @Schema(description = "Apple variety identifier.", format = "uuid", example = "6d62d888-2a2b-4f47-8f21-2ab2d54d8c2f") @NonNull UUID varietyId,
-    @Schema(description = "Apple variety name.", example = "Kingston Black") @NonNull String varietyName,
-    @Schema(description = "Whether the variety can be plotted.") boolean plottable,
-    @Schema(description = "Zone assessment when plottable.") @Nullable SugarAcidityZoneAssessmentResponse assessment,
-    @Schema(description = "Capability assessment explaining missing measurements.") @Nullable ChemicalProfileCapabilityAssessmentResponse capabilityAssessment
+    @Schema(description = "Apple variety identifier.", format = "uuid", example = "6d62d888-2a2b-4f47-8f21-2ab2d54d8c2f", requiredMode = Schema.RequiredMode.REQUIRED) @NonNull UUID varietyId,
+    @Schema(description = "Apple variety name.", example = "Kingston Black", requiredMode = Schema.RequiredMode.REQUIRED) @NonNull String varietyName,
+    @Schema(description = "Whether the variety can be plotted.", requiredMode = Schema.RequiredMode.REQUIRED) boolean plottable,
+    @Schema(description = "Zone assessment when plottable.", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED) @Nullable SugarAcidityZoneAssessmentResponse assessment,
+    @Schema(description = "Capability assessment explaining missing measurements.", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED) @Nullable ChemicalProfileCapabilityAssessmentResponse capabilityAssessment
 ) {
 
   public AppleVarietySugarAcidityZoneResponse(

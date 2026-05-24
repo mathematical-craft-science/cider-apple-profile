@@ -9,11 +9,11 @@ import static java.util.Objects.requireNonNull;
 
 @Schema(description = "Exact chemical measurement response.")
 public record ExactChemicalMeasurementResponse(
-    @Schema(description = "Measurement shape.", example = "EXACT")
+    @Schema(description = "Measurement shape.", example = "EXACT", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull String kind,
-    @Schema(description = "Canonical measurement unit.", example = "SG")
+    @Schema(description = "Canonical measurement unit.", example = "SG", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull String unit,
-    @Schema(description = "Canonical measured value.", example = "1.052")
+    @Schema(description = "Canonical measured value.", example = "1.052", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull BigDecimal value
 ) implements ChemicalMeasurementResponse {
 

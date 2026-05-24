@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.UUID;
@@ -30,8 +31,13 @@ public interface FeedstockMeasurementAssessmentApi {
       description = "Sugar-acidity zone assessment or unplottable result.",
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = FeedstockMeasurementSugarAcidityZoneResponse.class))
   )
+  @ApiResponse(
+      responseCode = "404",
+      description = "Feedstock measurement not found.",
+      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
+  )
   @NonNull ResponseEntity<@NonNull FeedstockMeasurementSugarAcidityZoneResponse> assessSugarAcidityZone(
-      @Parameter(description = "Feedstock measurement identifier.", schema = @Schema(format = "uuid"))
+      @Parameter(description = "Feedstock measurement identifier.", required = true, schema = @Schema(format = "uuid"))
       @NonNull UUID measurementId
   );
 
@@ -44,7 +50,17 @@ public interface FeedstockMeasurementAssessmentApi {
       description = "Batch of feedstock measurement graph points.",
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = FeedstockMeasurementSugarAcidityZonePointBatchResponse.class))
   )
+  @ApiResponse(
+      responseCode = "400",
+      description = "Invalid graph point query.",
+      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
+  )
   @NonNull ResponseEntity<@NonNull FeedstockMeasurementSugarAcidityZonePointBatchResponse> listSugarAcidityZonePoints(
+      @RequestBody(
+          description = "Feedstock measurement graph point query.",
+          required = true,
+          content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = FeedstockMeasurementSugarAcidityZonePointQueryRequest.class))
+      )
       @NonNull FeedstockMeasurementSugarAcidityZonePointQueryRequest request
   );
 
@@ -62,8 +78,13 @@ public interface FeedstockMeasurementAssessmentApi {
       description = "Chemical profile has no sugar measurement.",
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
   )
+  @ApiResponse(
+      responseCode = "404",
+      description = "Feedstock measurement not found.",
+      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
+  )
   @NonNull ResponseEntity<@NonNull FeedstockMeasurementPotentialAbvResponse> predictPotentialAbv(
-      @Parameter(description = "Feedstock measurement identifier.", schema = @Schema(format = "uuid"))
+      @Parameter(description = "Feedstock measurement identifier.", required = true, schema = @Schema(format = "uuid"))
       @NonNull UUID measurementId
   );
 }

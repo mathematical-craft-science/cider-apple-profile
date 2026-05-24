@@ -10,15 +10,24 @@ import org.jspecify.annotations.NonNull;
 
 @Schema(description = "Target-aware role of a profile source in a possible composition.")
 public record CompositionContributionRoleAssessmentResponse(
-    @ArraySchema(schema = @Schema(description = "All roles assigned to the source.", implementation = CompositionContributionRole.class))
+    @ArraySchema(
+        arraySchema = @Schema(description = "All roles assigned to the source.", requiredMode = Schema.RequiredMode.REQUIRED),
+        schema = @Schema(implementation = CompositionContributionRole.class)
+    )
     @NonNull List<@NonNull CompositionContributionRole> roles,
-    @Schema(description = "Primary role shown first to the user.", implementation = CompositionContributionRole.class)
+    @Schema(description = "Primary role shown first to the user.", implementation = CompositionContributionRole.class, requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull CompositionContributionRole primaryRole,
-    @ArraySchema(schema = @Schema(description = "Per-axis explanation for assigned roles.", implementation = CompositionContributionEvidenceResponse.class))
+    @ArraySchema(
+        arraySchema = @Schema(description = "Per-axis explanation for assigned roles.", requiredMode = Schema.RequiredMode.REQUIRED),
+        schema = @Schema(implementation = CompositionContributionEvidenceResponse.class)
+    )
     @NonNull List<@NonNull CompositionContributionEvidenceResponse> evidence,
-    @ArraySchema(schema = @Schema(description = "Axes missing for role assessment.", implementation = ChemicalAxis.class))
+    @ArraySchema(
+        arraySchema = @Schema(description = "Axes missing for role assessment.", requiredMode = Schema.RequiredMode.REQUIRED),
+        schema = @Schema(implementation = ChemicalAxis.class)
+    )
     @NonNull List<@NonNull ChemicalAxis> missingAxes,
-    @Schema(description = "Whether contribution role could be assessed.", example = "true")
+    @Schema(description = "Whether contribution role could be assessed.", example = "true", requiredMode = Schema.RequiredMode.REQUIRED)
     boolean assessable
 ) {
 }

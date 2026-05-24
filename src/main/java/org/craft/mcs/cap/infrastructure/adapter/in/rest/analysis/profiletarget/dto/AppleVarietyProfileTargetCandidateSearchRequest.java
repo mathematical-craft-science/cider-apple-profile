@@ -15,23 +15,23 @@ import static java.util.Objects.requireNonNull;
 
 @Schema(description = "Search request for target-aware apple variety candidates.")
 public record AppleVarietyProfileTargetCandidateSearchRequest(
-    @Schema(description = "Optional case-insensitive name fragment filter.", example = "kingston")
+    @Schema(description = "Optional case-insensitive name fragment filter.", example = "kingston", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @Nullable String nameContains,
-    @Schema(description = "Optional sugar-acidity zone filter.", implementation = SugarAcidityZone.class, example = "PERFECT_APPLES")
+    @Schema(description = "Optional sugar-acidity zone filter.", implementation = SugarAcidityZone.class, example = "PERFECT_APPLES", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @Nullable SugarAcidityZone zone,
-    @Schema(description = "Optional chemical profile capability filter.", implementation = ChemicalProfileCapability.class, example = "SUGAR_ACIDITY_PLOT")
+    @Schema(description = "Optional chemical profile capability filter.", implementation = ChemicalProfileCapability.class, example = "SUGAR_ACIDITY_PLOT", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @Nullable ChemicalProfileCapability capability,
-    @Schema(description = "Whether the optional capability must be met.", example = "true")
+    @Schema(description = "Whether the optional capability must be met.", example = "true", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @Nullable Boolean capable,
-    @Schema(description = "Scoring purpose.", implementation = ProfileTargetScoringPurpose.class, example = "BLENDING_PLANNING")
+    @Schema(description = "Scoring purpose.", implementation = ProfileTargetScoringPurpose.class, example = "BLENDING_PLANNING", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull ProfileTargetScoringPurpose purpose,
-    @Schema(description = "Target to score candidates against.")
+    @Schema(description = "Target to score candidates against.", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull ProfileTargetRequest target,
-    @Schema(description = "Optional tannin target range.")
+    @Schema(description = "Optional tannin target range.", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @Nullable ProfileTargetTanninRangeRequest tanninTarget,
-    @Schema(description = "Optional axis weights.")
+    @Schema(description = "Optional axis weights.", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @Nullable ProfileTargetObjectiveWeightsRequest weights,
-    @Schema(description = "Maximum results returned.", minimum = "1", maximum = "200", defaultValue = "50", example = "50")
+    @Schema(description = "Maximum results returned.", minimum = "1", maximum = "200", defaultValue = "50", example = "50", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @Nullable Integer limit
 ) {
 

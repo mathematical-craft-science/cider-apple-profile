@@ -1,5 +1,7 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.production.mapper;
 
+import java.util.List;
+import org.craft.mcs.cap.core.production.domain.model.ProductionBatch;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.value.CiderMakerId;
 import org.craft.mcs.cap.core.production.application.port.in.CreateProductionBatchCommand;
@@ -12,7 +14,9 @@ import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSna
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionTargetDistance;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.CreateProductionBatchRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.CreateProductionBatchSourceRequest;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.ProductionBatchDetailsResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.ProductionBatchCompositionResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.ProductionBatchListResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.ProductionBatchResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.ProductionBatchSourceResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.ProductionProfileSnapshotRequest;
@@ -64,6 +68,36 @@ public final class ProductionBatchRestMapper {
         batch.status(),
         toCompositionResponse(created.input()),
         batch.note()
+    );
+  }
+
+  public static @NonNull ProductionBatchDetailsResponse toDetailsResponse(
+      @NonNull ProductionBatch batch
+  ) {
+    requireNonNull(batch, "production batch cannot be null");
+
+    return new ProductionBatchDetailsResponse(
+        batch.batchId().value(),
+        batch.ciderMakerId().value(),
+        batch.name().value(),
+        batch.kind(),
+        batch.status(),
+        batch.volume().liters(),
+        toProfilePointResponse(batch.profile()),
+        batch.targetDistance() == null ? null : batch.targetDistance().value(), // NOSONAR
+        batch.note()
+    );
+  }
+
+  public static @NonNull ProductionBatchListResponse toListResponse(
+      @NonNull List<@NonNull ProductionBatch> batches
+  ) {
+    requireNonNull(batches, "production batches cannot be null");
+
+    return new ProductionBatchListResponse(
+        batches.stream()
+            .map(ProductionBatchRestMapper::toDetailsResponse)
+            .toList()
     );
   }
 
