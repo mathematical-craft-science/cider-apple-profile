@@ -1,5 +1,6 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.production.mapper;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -19,6 +20,8 @@ import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.BatchTrac
 import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
+import org.craft.mcs.cap.shared.infrastructure.rest.measurement.CanonicalUnitLabels;
+import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -54,6 +57,7 @@ public final class BatchTraceabilityRestMapper {
     return new BatchTraceEdgeResponse(
         edge.stepId().value(),
         edge.operationType(),
+        edge.occurredAt(),
         edge.inputs().stream()
             .map(BatchTraceabilityRestMapper::toResponse)
             .toList(),
@@ -86,7 +90,9 @@ public final class BatchTraceabilityRestMapper {
     }
 
     return new BatchTraceMaterialSnapshotResponse(
-        snapshot.volume() == null ? null : snapshot.volume().liters(), // NOSONAR
+        snapshot.volume() == null
+            ? null
+            : new DecimalQuantityResponse(snapshot.volume().liters(), CanonicalUnitLabels.VOLUME), // NOSONAR
         axes(snapshot.profile()),
         snapshot.confidence()
     );
@@ -107,14 +113,19 @@ public final class BatchTraceabilityRestMapper {
   }
 
   private static @NonNull BatchTraceAxisValueResponse toResponse(@NonNull AxisValue axisValue) {
+    final var unit = CanonicalUnitLabels.forAxis(axisValue.axis());
     return new BatchTraceAxisValueResponse(
         axisValue.axis(),
-        axisValue.value(),
+        new DecimalQuantityResponse(axisValue.value(), unit),
         axisValue.valueKind(),
-        axisValue.min(),
-        axisValue.max(),
-        axisValue.standardDeviation(),
+        quantity(axisValue.min(), unit),
+        quantity(axisValue.max(), unit),
+        quantity(axisValue.standardDeviation(), unit),
         axisValue.sampleSize()
     );
+  }
+
+  private static @Nullable DecimalQuantityResponse quantity(@Nullable BigDecimal value, @NonNull String unit) {
+    return value == null ? null : new DecimalQuantityResponse(value, unit);
   }
 }

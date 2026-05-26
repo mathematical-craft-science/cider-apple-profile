@@ -40,8 +40,4 @@ public sealed interface ChemicalMeasurementResponse
   @NonNull
   @Schema(description = "Measurement shape discriminator.", example = "EXACT", requiredMode = Schema.RequiredMode.REQUIRED)
   String kind();
-
-  @NonNull
-  @Schema(description = "Canonical measurement unit.", example = "SG", requiredMode = Schema.RequiredMode.REQUIRED)
-  String unit();
 }

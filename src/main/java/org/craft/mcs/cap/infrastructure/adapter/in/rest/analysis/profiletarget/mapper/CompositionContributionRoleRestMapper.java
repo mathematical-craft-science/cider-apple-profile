@@ -5,6 +5,8 @@ import org.craft.mcs.cap.core.cideranalysis.composition.contribution.domain.Comp
 import org.craft.mcs.cap.core.cideranalysis.composition.contribution.domain.CompositionContributionRoleAssessment;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.profiletarget.dto.CompositionContributionEvidenceResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.profiletarget.dto.CompositionContributionRoleAssessmentResponse;
+import org.craft.mcs.cap.shared.infrastructure.rest.measurement.CanonicalUnitLabels;
+import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -41,11 +43,12 @@ public final class CompositionContributionRoleRestMapper {
       @NonNull CompositionContributionEvidence evidence
   ) {
     requireNonNull(evidence, "composition contribution evidence cannot be null");
+    final var unit = CanonicalUnitLabels.forAxis(evidence.axis());
     return new CompositionContributionEvidenceResponse(
         evidence.axis(),
-        evidence.sourceValue(),
-        evidence.targetCoordinate(),
-        evidence.deviationFromTarget(),
+        new DecimalQuantityResponse(evidence.sourceValue(), unit),
+        new DecimalQuantityResponse(evidence.targetCoordinate(), unit),
+        new DecimalQuantityResponse(evidence.deviationFromTarget(), unit),
         evidence.role()
     );
   }

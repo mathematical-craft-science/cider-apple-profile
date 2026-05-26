@@ -59,6 +59,26 @@ class CalculateChemicalProfileCompositionServiceTest {
   }
 
   @Test
+  void calculatesChemicalProfileCompositionForSingleSource() {
+    final var result = service.calculate(new CalculateChemicalProfileCompositionCommand(
+        List.of(source("a", "1.060", "5.0", "10")),
+        ChemicalProfileCompositionTanninPolicy.CALCULATE_WHEN_COMPLETE
+    ));
+
+    final var composition = result.composition();
+    assertThat(composition.profile().sugar().value()).isEqualByComparingTo("1.060000000");
+    assertThat(composition.profile().acidity().value()).isEqualByComparingTo("5.000000000");
+    assertThat(composition.profile().tannin()).isNull();
+    assertThat(composition.totalVolume()).isNotNull();
+    assertThat(composition.totalVolume().liters()).isEqualByComparingTo("10");
+    assertThat(composition.sources()).singleElement()
+        .extracting(source -> source.reference().id())
+        .isEqualTo("a");
+    assertThat(composition.warnings()).isEmpty();
+    assertThat(result.targetDistance()).isNull();
+  }
+
+  @Test
   void calculatesTargetDistanceForChemicalProfileCompositionWhenTargetIsProvided() {
     final var result = service.calculate(new CalculateChemicalProfileCompositionCommand(
         List.of(

@@ -10,6 +10,7 @@ import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchStatu
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
 import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.craft.mcs.cap.shared.testing.jdbc.PostgresDataJdbcTestConfiguration;
@@ -68,6 +69,10 @@ class JdbcProductionBatchRepositoryDataJdbcTest {
     assertThat(found).get()
         .extracting(batch -> batch.batchId())
         .isEqualTo(saved.batchId());
+    assertThat(found.orElseThrow().profile().yeastAssimilableNitrogen())
+        .isNotNull()
+        .extracting(YeastAssimilableNitrogenValue::asBigDecimal)
+        .satisfies(value -> assertThat(value).isEqualByComparingTo("180"));
   }
 
   @Test
@@ -101,7 +106,8 @@ class JdbcProductionBatchRepositoryDataJdbcTest {
         new ProductionProfileSnapshot(
             SpecificGravityValue.of("1.052"),
             TitratableAcidityValue.of("5.8"),
-            TanninityValue.of("1200")
+            TanninityValue.of("1200"),
+            YeastAssimilableNitrogenValue.of("180")
         ),
         null,
         null

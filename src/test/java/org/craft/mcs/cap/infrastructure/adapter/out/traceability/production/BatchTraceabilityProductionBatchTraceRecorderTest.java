@@ -1,7 +1,7 @@
 package org.craft.mcs.cap.infrastructure.adapter.out.traceability.production;
 
-import java.time.Instant;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import org.craft.mcs.cap.core.batchtraceability.application.port.in.AppendBatchTraceStepUseCase;
@@ -13,7 +13,6 @@ import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.value.CiderMakerId;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchCompositionTraceSource;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchFeedstockTraceSource;
-import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchTraceSource;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatch;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatchId;
 import org.craft.mcs.cap.core.production.domain.model.ProductionInput;
@@ -22,13 +21,14 @@ import org.craft.mcs.cap.core.production.domain.model.ProductionSourceCompositio
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchKind;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchName;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
+import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.MeasurementValueKind;
-import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
 import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.jspecify.annotations.NonNull;
@@ -38,6 +38,59 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 
 class BatchTraceabilityProductionBatchTraceRecorderTest {
+
+  private static ProductionInput productionInput(UUID sourceId) {
+    return new ProductionInput(
+        ProductionSourceComposition.of(List.of(new ProductionSourceComponent(
+            FeedstockBatchId.of(sourceId),
+            VolumeValue.ofLiters("100")
+        ))),
+        new ProductionProfileSnapshot(
+            SpecificGravityValue.of("1.052"),
+            TitratableAcidityValue.of("5.8"),
+            TanninityValue.of("1200"),
+            YeastAssimilableNitrogenValue.of("180")
+        ),
+        null
+    );
+  }
+
+  @Test
+  void mapsCompositionResultInputToTraceSubject() {
+    final var appendUseCase = new CapturingAppendUseCase();
+    final var recorder = new BatchTraceabilityProductionBatchTraceRecorder(appendUseCase);
+    final var ciderMakerId = CiderMakerId.of(UUID.randomUUID());
+    final var sourceId = UUID.randomUUID().toString();
+    final var input = productionInput(UUID.randomUUID());
+    final var productionBatch = productionBatch(ciderMakerId, input);
+
+    recorder.recordCreated(
+        productionBatch,
+        List.of(new ProductionBatchCompositionTraceSource(
+            sourceId,
+            "Accepted composition",
+            VolumeValue.ofLiters("100")
+        )),
+        Instant.parse("2026-05-18T10:15:30Z"),
+        null
+    );
+
+    assertThat(appendUseCase.step.inputs()).singleElement()
+        .satisfies(inputSubject -> {
+          assertThat(inputSubject.subject().type()).isEqualTo(BatchTraceSubjectType.COMPOSITION_RESULT);
+          assertThat(inputSubject.subject().id()).isEqualTo(sourceId);
+          assertThat(inputSubject.subject().displayNameSnapshot()).isEqualTo("Accepted composition");
+        });
+  }
+
+  private static ChemicalProfileAxes sourceAxes() {
+    return ChemicalProfileAxes.of(
+        axis(ChemicalAxis.SUGAR, "1.050"),
+        axis(ChemicalAxis.ACIDITY, "6.1"),
+        axis(ChemicalAxis.TANNINITY, "1400"),
+        axis(ChemicalAxis.YEAST_ASSIMILABLE_NITROGEN, "180")
+    );
+  }
 
   @Test
   void mapsProductionCreatedFactToBatchTraceStep() {
@@ -76,6 +129,9 @@ class BatchTraceabilityProductionBatchTraceRecorderTest {
           assertThat(inputSubject.snapshot().profile().valueOf(ChemicalAxis.ACIDITY))
               .get()
               .satisfies(value -> assertThat(value.value()).isEqualByComparingTo("6.1"));
+          assertThat(inputSubject.snapshot().profile().valueOf(ChemicalAxis.YEAST_ASSIMILABLE_NITROGEN))
+              .get()
+              .satisfies(value -> assertThat(value.value()).isEqualByComparingTo("180"));
         });
     assertThat(appendUseCase.step.outputs()).singleElement()
         .satisfies(outputSubject -> {
@@ -85,58 +141,13 @@ class BatchTraceabilityProductionBatchTraceRecorderTest {
           assertThat(outputSubject.snapshot().profile().valueOf(ChemicalAxis.SUGAR))
               .get()
               .satisfies(value -> assertThat(value.valueKind()).isEqualTo(MeasurementValueKind.CALCULATED));
+          assertThat(outputSubject.snapshot().profile().valueOf(ChemicalAxis.YEAST_ASSIMILABLE_NITROGEN))
+              .get()
+              .satisfies(value -> {
+                assertThat(value.value()).isEqualByComparingTo("180");
+                assertThat(value.valueKind()).isEqualTo(MeasurementValueKind.CALCULATED);
+              });
         });
-  }
-
-  @Test
-  void mapsCompositionResultInputToTraceSubject() {
-    final var appendUseCase = new CapturingAppendUseCase();
-    final var recorder = new BatchTraceabilityProductionBatchTraceRecorder(appendUseCase);
-    final var ciderMakerId = CiderMakerId.of(UUID.randomUUID());
-    final var sourceId = UUID.randomUUID().toString();
-    final var input = productionInput(UUID.randomUUID());
-    final var productionBatch = productionBatch(ciderMakerId, input);
-
-    recorder.recordCreated(
-        productionBatch,
-        List.of(new ProductionBatchCompositionTraceSource(
-            sourceId,
-            "Accepted composition",
-            VolumeValue.ofLiters("100")
-        )),
-        Instant.parse("2026-05-18T10:15:30Z"),
-        null
-    );
-
-    assertThat(appendUseCase.step.inputs()).singleElement()
-        .satisfies(inputSubject -> {
-          assertThat(inputSubject.subject().type()).isEqualTo(BatchTraceSubjectType.COMPOSITION_RESULT);
-          assertThat(inputSubject.subject().id()).isEqualTo(sourceId);
-          assertThat(inputSubject.subject().displayNameSnapshot()).isEqualTo("Accepted composition");
-        });
-  }
-
-  private static ProductionInput productionInput(UUID sourceId) {
-    return new ProductionInput(
-        ProductionSourceComposition.of(List.of(new ProductionSourceComponent(
-            FeedstockBatchId.of(sourceId),
-            VolumeValue.ofLiters("100")
-        ))),
-        new ProductionProfileSnapshot(
-            SpecificGravityValue.of("1.052"),
-            TitratableAcidityValue.of("5.8"),
-            TanninityValue.of("1200")
-        ),
-        null
-    );
-  }
-
-  private static ChemicalProfileAxes sourceAxes() {
-    return ChemicalProfileAxes.of(
-        axis(ChemicalAxis.SUGAR, "1.050"),
-        axis(ChemicalAxis.ACIDITY, "6.1"),
-        axis(ChemicalAxis.TANNINITY, "1400")
-    );
   }
 
   private static AxisValue axis(ChemicalAxis axis, String value) {

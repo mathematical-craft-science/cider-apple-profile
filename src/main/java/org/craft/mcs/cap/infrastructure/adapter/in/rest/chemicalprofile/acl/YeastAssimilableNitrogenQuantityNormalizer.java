@@ -3,7 +3,7 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.acl;
 import java.math.BigDecimal;
 import javax.measure.Quantity;
 import javax.measure.Unit;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.ChemicalProfileRestUnits;
+import org.craft.mcs.cap.shared.infrastructure.rest.measurement.CanonicalUnitLabels;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.UnsupportedChemicalMeasurementUnitException;
 import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
 import org.craft.mcs.cap.shared.kernel.measurement.unit.BeverageUnits;
@@ -23,7 +23,7 @@ public final class YeastAssimilableNitrogenQuantityNormalizer
     implements ExternalChemicalMeasurementNormalizer<YeastAssimilableNitrogenValue> {
 
   private static final @NonNull String AXIS = "yeastAssimilableNitrogen";
-  private static final @NonNull String CANONICAL_UNIT = ChemicalProfileRestUnits.YEAST_ASSIMILABLE_NITROGEN;
+  private static final @NonNull String CANONICAL_UNIT = CanonicalUnitLabels.YEAST_ASSIMILABLE_NITROGEN;
 
   @Override
   public @NonNull YeastAssimilableNitrogenValue normalizeValue(

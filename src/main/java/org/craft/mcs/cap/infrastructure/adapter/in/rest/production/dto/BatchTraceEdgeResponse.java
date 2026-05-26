@@ -2,6 +2,7 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto;
 
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceOperationType;
@@ -14,6 +15,8 @@ public record BatchTraceEdgeResponse(
     @NonNull UUID stepId,
     @Schema(description = "Trace operation type.", implementation = BatchTraceOperationType.class, requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull BatchTraceOperationType operationType,
+    @Schema(description = "Business time when the trace operation occurred.", format = "date-time", requiredMode = Schema.RequiredMode.REQUIRED)
+    @NonNull Instant occurredAt,
     @ArraySchema(
         arraySchema = @Schema(description = "Input subjects consumed or referenced by the operation.", requiredMode = Schema.RequiredMode.REQUIRED),
         schema = @Schema(implementation = BatchTraceStepSubjectResponse.class)

@@ -2,6 +2,8 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.abv.mapper;
 
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.abv.dto.PotentialAbvPredictionResponse;
 import org.craft.mcs.cap.core.cideranalysis.abv.domain.PotentialAbvPrediction;
+import org.craft.mcs.cap.shared.infrastructure.rest.measurement.CanonicalUnitLabels;
+import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
@@ -18,10 +20,10 @@ public final class PotentialAbvPredictionRestMapper {
     requireNonNull(prediction, "potential ABV prediction cannot be null");
 
     return new PotentialAbvPredictionResponse(
-        prediction.originalGravity().asBigDecimal(),
-        prediction.predictedFinalGravity().asBigDecimal(),
+        new DecimalQuantityResponse(prediction.originalGravity().asBigDecimal(), CanonicalUnitLabels.SUGAR),
+        new DecimalQuantityResponse(prediction.predictedFinalGravity().asBigDecimal(), CanonicalUnitLabels.SUGAR),
         prediction.predictedFinalGravitySource(),
-        prediction.potentialAbv().percent(),
+        new DecimalQuantityResponse(prediction.potentialAbv().percent(), CanonicalUnitLabels.ABV),
         prediction.method(),
         prediction.confidence()
     );

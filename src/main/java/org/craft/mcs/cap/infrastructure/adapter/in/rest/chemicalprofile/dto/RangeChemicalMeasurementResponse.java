@@ -1,7 +1,7 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import java.math.BigDecimal;
+import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
@@ -11,17 +11,14 @@ import static java.util.Objects.requireNonNull;
 public record RangeChemicalMeasurementResponse(
     @Schema(description = "Measurement shape.", example = "RANGE", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull String kind,
-    @Schema(description = "Canonical measurement unit.", example = "g/L as malic acid", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NonNull String unit,
-    @Schema(description = "Minimum canonical value.", example = "4.8", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NonNull BigDecimal min,
-    @Schema(description = "Maximum canonical value.", example = "6.2", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NonNull BigDecimal max
+    @Schema(description = "Minimum canonical value.", requiredMode = Schema.RequiredMode.REQUIRED)
+    @NonNull DecimalQuantityResponse min,
+    @Schema(description = "Maximum canonical value.", requiredMode = Schema.RequiredMode.REQUIRED)
+    @NonNull DecimalQuantityResponse max
 ) implements ChemicalMeasurementResponse {
 
   public RangeChemicalMeasurementResponse {
     requireNonNull(kind, "measurement kind cannot be null");
-    requireNonNull(unit, "measurement unit cannot be null");
     requireNonNull(min, "range minimum value cannot be null");
     requireNonNull(max, "range maximum value cannot be null");
   }

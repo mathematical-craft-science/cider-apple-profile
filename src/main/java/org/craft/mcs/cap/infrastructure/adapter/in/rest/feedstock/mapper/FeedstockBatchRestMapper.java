@@ -14,6 +14,8 @@ import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.FeedstockB
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.FeedstockSeasonResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.PatchFeedstockBatchRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.UpdateFeedstockBatchRequest;
+import org.craft.mcs.cap.shared.infrastructure.rest.measurement.CanonicalUnitLabels;
+import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
 import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -55,7 +57,7 @@ public final class FeedstockBatchRestMapper {
         batch.type(),
         toResponse(batch.season()),
         batch.source() == null ? null : batch.source().value(), // NOSONAR
-        batch.availableVolume().liters(),
+        new DecimalQuantityResponse(batch.availableVolume().liters(), CanonicalUnitLabels.VOLUME),
         batch.note()
     );
   }
@@ -72,7 +74,7 @@ public final class FeedstockBatchRestMapper {
         batch.type(),
         toResponse(batch.season()),
         batch.source() == null ? null : batch.source().value(), // NOSONAR
-        batch.availableVolume().liters(),
+        new DecimalQuantityResponse(batch.availableVolume().liters(), CanonicalUnitLabels.VOLUME),
         batch.note()
     );
   }

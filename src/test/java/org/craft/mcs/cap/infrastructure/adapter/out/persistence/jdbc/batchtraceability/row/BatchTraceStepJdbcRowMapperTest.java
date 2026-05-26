@@ -78,7 +78,16 @@ class BatchTraceStepJdbcRowMapperTest {
             null,
             null
         ),
-        null
+        null,
+        new AxisValue(
+            ChemicalAxis.YEAST_ASSIMILABLE_NITROGEN,
+            new BigDecimal("180"),
+            MeasurementValueKind.EXACT,
+            null,
+            null,
+            null,
+            null
+        )
     );
     final var input = new BatchTraceStepSubject(
         subject(BatchTraceSubjectType.FEEDSTOCK_BATCH, "feedstock-1"),
@@ -117,6 +126,10 @@ class BatchTraceStepJdbcRowMapperTest {
         .get()
         .extracting(AxisValue::min, AxisValue::max)
         .containsExactly(new BigDecimal("5.2"), new BigDecimal("6.2"));
+    assertThat(snapshot.profile().valueOf(ChemicalAxis.YEAST_ASSIMILABLE_NITROGEN))
+        .get()
+        .extracting(AxisValue::value, AxisValue::valueKind)
+        .containsExactly(new BigDecimal("180"), MeasurementValueKind.EXACT);
   }
 
   private static BatchTraceSubject subject(BatchTraceSubjectType type, String id) {

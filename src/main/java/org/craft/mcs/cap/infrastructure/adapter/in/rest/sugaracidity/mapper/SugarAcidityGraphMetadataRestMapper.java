@@ -12,6 +12,8 @@ import org.craft.mcs.cap.core.cideranalysis.sugaracidity.graph.domain.RectangleS
 import org.craft.mcs.cap.core.cideranalysis.sugaracidity.graph.domain.SugarAcidityGraphMetadata;
 import org.craft.mcs.cap.core.cideranalysis.sugaracidity.graph.domain.SugarAcidityGraphRange;
 import org.craft.mcs.cap.core.cideranalysis.sugaracidity.graph.domain.SugarAcidityGraphZone;
+import org.craft.mcs.cap.shared.infrastructure.rest.measurement.CanonicalUnitLabels;
+import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
@@ -44,27 +46,30 @@ public final class SugarAcidityGraphMetadataRestMapper {
     return switch (zone) {
       case RectangleSugarAcidityGraphZone rectangle -> new RectangleSugarAcidityGraphZoneResponse( // NOSONAR
           rectangle.zone(),
-          rangeResponse(rectangle.sugarRange()),
-          rangeResponse(rectangle.acidityRange())
+          rangeResponse(rectangle.sugarRange(), CanonicalUnitLabels.SUGAR),
+          rangeResponse(rectangle.acidityRange(), CanonicalUnitLabels.TITRATABLE_ACIDITY)
       );
       case EllipseSugarAcidityGraphZone ellipse -> new EllipseSugarAcidityGraphZoneResponse( // NOSONAR
           ellipse.zone(),
-          ellipse.sugarCenter(),
-          ellipse.acidityCenter(),
-          ellipse.sugarRadius(),
-          ellipse.acidityRadius()
+          new DecimalQuantityResponse(ellipse.sugarCenter(), CanonicalUnitLabels.SUGAR),
+          new DecimalQuantityResponse(ellipse.acidityCenter(), CanonicalUnitLabels.TITRATABLE_ACIDITY),
+          new DecimalQuantityResponse(ellipse.sugarRadius(), CanonicalUnitLabels.SUGAR),
+          new DecimalQuantityResponse(ellipse.acidityRadius(), CanonicalUnitLabels.TITRATABLE_ACIDITY)
       );
     };
   }
 
   private static @NonNull SugarAcidityGraphRangeResponse rangeResponse(
-      @NonNull SugarAcidityGraphRange range
+      @NonNull SugarAcidityGraphRange range,
+      @NonNull String unit
   ) {
     requireNonNull(range, "sugar-acidity graph range cannot be null");
+    requireNonNull(unit, "sugar-acidity graph range unit cannot be null");
 
     return new SugarAcidityGraphRangeResponse(
         range.min(),
-        range.max()
+        range.max(),
+        unit
     );
   }
 
@@ -77,9 +82,11 @@ public final class SugarAcidityGraphMetadataRestMapper {
         axis.code(),
         axis.label(),
         axis.unit(),
-        axis.min(),
-        axis.max(),
-        axis.thresholdLines()
+        new DecimalQuantityResponse(axis.min(), axis.unit()),
+        new DecimalQuantityResponse(axis.max(), axis.unit()),
+        axis.thresholdLines().stream()
+            .map(value -> new DecimalQuantityResponse(value, axis.unit()))
+            .toList()
     );
   }
 }

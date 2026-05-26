@@ -137,6 +137,17 @@ class BatchTraceabilityProductionBatchTraceRecorder implements ProductionBatchTr
                 null,
                 null,
                 null
+            ),
+        profile.yeastAssimilableNitrogen() == null
+            ? null
+            : new AxisValue(
+                ChemicalAxis.YEAST_ASSIMILABLE_NITROGEN,
+                profile.yeastAssimilableNitrogen().asBigDecimal(),
+                MeasurementValueKind.CALCULATED,
+                null,
+                null,
+                null,
+                null
             )
     );
   }

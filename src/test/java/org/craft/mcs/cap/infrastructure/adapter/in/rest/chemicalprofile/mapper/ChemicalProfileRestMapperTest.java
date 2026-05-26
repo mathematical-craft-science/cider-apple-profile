@@ -107,19 +107,19 @@ class ChemicalProfileRestMapperTest {
 
     assertThat(response.sugar())
         .isInstanceOfSatisfying(ExactChemicalMeasurementResponse.class, measurement ->
-            assertThat(measurement.unit()).isEqualTo("SG")
+            assertThat(measurement.value().unit()).isEqualTo("SG")
         );
     assertThat(response.titratableAcidity())
         .isInstanceOfSatisfying(ExactChemicalMeasurementResponse.class, measurement ->
-            assertThat(measurement.unit()).isEqualTo("g/L as malic acid")
+            assertThat(measurement.value().unit()).isEqualTo("g/L as malic acid")
         );
     assertThat(response.tanninity())
         .isInstanceOfSatisfying(ExactChemicalMeasurementResponse.class, measurement ->
-            assertThat(measurement.unit()).isEqualTo("mg/L TAE")
+            assertThat(measurement.value().unit()).isEqualTo("mg/L TAE")
         );
     assertThat(response.yeastAssimilableNitrogen())
         .isInstanceOfSatisfying(ExactChemicalMeasurementResponse.class, measurement ->
-            assertThat(measurement.unit()).isEqualTo("mg N/L")
+            assertThat(measurement.value().unit()).isEqualTo("mg N/L")
         );
   }
 

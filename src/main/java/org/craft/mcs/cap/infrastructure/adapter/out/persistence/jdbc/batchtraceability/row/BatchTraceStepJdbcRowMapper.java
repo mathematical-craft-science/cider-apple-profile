@@ -122,6 +122,9 @@ public final class BatchTraceStepJdbcRowMapper {
     applyAxis(row, ChemicalAxis.TANNINITY, snapshot.profile() == null
         ? null
         : snapshot.profile().valueOf(ChemicalAxis.TANNINITY).orElse(null)); // NOSONAR
+    applyAxis(row, ChemicalAxis.YEAST_ASSIMILABLE_NITROGEN, snapshot.profile() == null
+        ? null
+        : snapshot.profile().valueOf(ChemicalAxis.YEAST_ASSIMILABLE_NITROGEN).orElse(null)); // NOSONAR
   }
 
   private static void applyAxis(
@@ -157,6 +160,14 @@ public final class BatchTraceStepJdbcRowMapper {
         row.tanninityMax = value.max();
         row.tanninityStandardDeviation = value.standardDeviation();
         row.tanninitySampleSize = value.sampleSize();
+      }
+      case YEAST_ASSIMILABLE_NITROGEN -> {
+        row.yeastAssimilableNitrogenValue = value.value();
+        row.yeastAssimilableNitrogenValueKind = value.valueKind();
+        row.yeastAssimilableNitrogenMin = value.min();
+        row.yeastAssimilableNitrogenMax = value.max();
+        row.yeastAssimilableNitrogenStandardDeviation = value.standardDeviation();
+        row.yeastAssimilableNitrogenSampleSize = value.sampleSize();
       }
     }
   }
@@ -208,10 +219,19 @@ public final class BatchTraceStepJdbcRowMapper {
         row.tanninityStandardDeviation,
         row.tanninitySampleSize
     );
+    final var yeastAssimilableNitrogen = toAxisValue(
+        ChemicalAxis.YEAST_ASSIMILABLE_NITROGEN,
+        row.yeastAssimilableNitrogenValue,
+        row.yeastAssimilableNitrogenValueKind,
+        row.yeastAssimilableNitrogenMin,
+        row.yeastAssimilableNitrogenMax,
+        row.yeastAssimilableNitrogenStandardDeviation,
+        row.yeastAssimilableNitrogenSampleSize
+    );
 
-    return sugar == null && acidity == null && tanninity == null
+    return sugar == null && acidity == null && tanninity == null && yeastAssimilableNitrogen == null
         ? null
-        : ChemicalProfileAxes.of(sugar, acidity, tanninity);
+        : ChemicalProfileAxes.of(sugar, acidity, tanninity, yeastAssimilableNitrogen);
   }
 
   private static @Nullable AxisValue toAxisValue(

@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS production_batches
     sugar_specific_gravity NUMERIC(12, 9)           NOT NULL,
     acidity_g_l_as_malic   NUMERIC(12, 6)           NOT NULL,
     tannin_mg_l_tae        NUMERIC(12, 4),
+    yan_mg_n_l             NUMERIC(12, 4),
     target_distance        NUMERIC(18, 9),
 
     note                   VARCHAR(2000),

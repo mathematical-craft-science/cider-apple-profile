@@ -19,6 +19,8 @@ import org.craft.mcs.cap.shared.infrastructure.rest.profiletarget.dto.ProfileTar
 import org.craft.mcs.cap.shared.infrastructure.rest.profiletarget.dto.ProfileTargetRequest;
 import org.craft.mcs.cap.shared.infrastructure.rest.profiletarget.dto.ProfileTargetTanninRangeRequest;
 import org.craft.mcs.cap.shared.infrastructure.rest.profiletarget.dto.SugarAcidityCoordinatesResponse;
+import org.craft.mcs.cap.shared.infrastructure.rest.measurement.CanonicalUnitLabels;
+import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -82,8 +84,8 @@ public final class ProfileTargetRestMapper {
         distance.insideSugarAcidityTarget(),
         distance.insideTarget(),
         toResponse(distance.nearestTargetPoint()),
-        distance.tannin(),
-        distance.nearestTargetTannin(),
+        quantity(distance.tannin(), CanonicalUnitLabels.TANNINITY),
+        quantity(distance.nearestTargetTannin(), CanonicalUnitLabels.TANNINITY),
         distance.objectiveFunction(),
         distance.metric(),
         distance.targetKind(),
@@ -124,8 +126,12 @@ public final class ProfileTargetRestMapper {
   ) {
     requireNonNull(coordinates, "sugar-acidity coordinates cannot be null");
     return new SugarAcidityCoordinatesResponse(
-        coordinates.sugar(),
-        coordinates.acidity()
+        new DecimalQuantityResponse(coordinates.sugar(), CanonicalUnitLabels.SUGAR),
+        new DecimalQuantityResponse(coordinates.acidity(), CanonicalUnitLabels.TITRATABLE_ACIDITY)
     );
+  }
+
+  private static @Nullable DecimalQuantityResponse quantity(@Nullable BigDecimal value, @NonNull String unit) {
+    return value == null ? null : new DecimalQuantityResponse(value, unit);
   }
 }

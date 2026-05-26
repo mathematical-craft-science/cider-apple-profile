@@ -13,6 +13,8 @@ public record ProductionProfileSnapshotRequest(
     @Schema(description = "Titratable acidity in g/L as malic acid.", example = "6.2", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull BigDecimal acidity,
     @Schema(description = "Tannin in mg/L TAE, when available.", example = "1200", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-    @Nullable BigDecimal tannin
+    @Nullable BigDecimal tannin,
+    @Schema(description = "Yeast-assimilable nitrogen in mg N/L, when available.", example = "180", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @Nullable BigDecimal yeastAssimilableNitrogen
 ) {
 }

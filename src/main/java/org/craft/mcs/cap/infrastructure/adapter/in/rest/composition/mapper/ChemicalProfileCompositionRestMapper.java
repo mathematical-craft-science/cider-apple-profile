@@ -51,6 +51,8 @@ import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.MeasurementValueKind;
+import org.craft.mcs.cap.shared.infrastructure.rest.measurement.CanonicalUnitLabels;
+import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
 import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -114,8 +116,13 @@ public final class ChemicalProfileCompositionRestMapper {
         SugarAcidityZoneRestMapper.toResponse(composition.profile()),
         composition.yeastAssimilableNitrogen() == null
             ? null
-            : SugarAcidityZoneRestMapper.toResponse(composition.yeastAssimilableNitrogen()), // NOSONAR
-        composition.totalVolume() == null ? null : composition.totalVolume().liters(), // NOSONAR
+            : SugarAcidityZoneRestMapper.toResponse( // NOSONAR
+                composition.yeastAssimilableNitrogen(),
+                CanonicalUnitLabels.YEAST_ASSIMILABLE_NITROGEN
+            ),
+        composition.totalVolume() == null
+            ? null
+            : new DecimalQuantityResponse(composition.totalVolume().liters(), CanonicalUnitLabels.VOLUME), // NOSONAR
         composition.warnings(),
         result.normalizerCode(),
         result.targetDistance() == null ? null : toResponse(result.targetDistance()) // NOSONAR
@@ -203,10 +210,11 @@ public final class ChemicalProfileCompositionRestMapper {
       @NonNull ChemicalProfileCompositionSource source
   ) {
     requireNonNull(source, "chemical profile composition source cannot be null");
+    final var requestedVolume = requestedVolume(source);
 
     return new ChemicalProfileCompositionSourceResponse(
         toResponse(source.reference()),
-        requestedVolume(source),
+        requestedVolume == null ? null : new DecimalQuantityResponse(requestedVolume, CanonicalUnitLabels.VOLUME), // NOSONAR
         proportion(source)
     );
   }
@@ -257,8 +265,13 @@ public final class ChemicalProfileCompositionRestMapper {
         SugarAcidityZoneRestMapper.toResponse(composition.profile()),
         composition.yeastAssimilableNitrogen() == null
             ? null
-            : SugarAcidityZoneRestMapper.toResponse(composition.yeastAssimilableNitrogen()), // NOSONAR
-        composition.totalVolume() == null ? null : composition.totalVolume().liters(), // NOSONAR
+            : SugarAcidityZoneRestMapper.toResponse( // NOSONAR
+                composition.yeastAssimilableNitrogen(),
+                CanonicalUnitLabels.YEAST_ASSIMILABLE_NITROGEN
+            ),
+        composition.totalVolume() == null
+            ? null
+            : new DecimalQuantityResponse(composition.totalVolume().liters(), CanonicalUnitLabels.VOLUME), // NOSONAR
         composition.warnings(),
         toResponse(candidate.distance())
     );
@@ -370,8 +383,8 @@ public final class ChemicalProfileCompositionRestMapper {
         distance.insideSugarAcidityTarget(),
         distance.insideTarget(),
         toResponse(distance.nearestTargetPoint()),
-        distance.tannin(),
-        distance.nearestTargetTannin(),
+        quantity(distance.tannin(), CanonicalUnitLabels.TANNINITY),
+        quantity(distance.nearestTargetTannin(), CanonicalUnitLabels.TANNINITY),
         distance.objectiveFunction(),
         distance.metric(),
         distance.targetKind(),
@@ -385,9 +398,13 @@ public final class ChemicalProfileCompositionRestMapper {
   ) {
     requireNonNull(coordinates, "sugar-acidity coordinates cannot be null");
     return new SugarAcidityCoordinatesResponse(
-        coordinates.sugar(),
-        coordinates.acidity()
+        new DecimalQuantityResponse(coordinates.sugar(), CanonicalUnitLabels.SUGAR),
+        new DecimalQuantityResponse(coordinates.acidity(), CanonicalUnitLabels.TITRATABLE_ACIDITY)
     );
+  }
+
+  private static @Nullable DecimalQuantityResponse quantity(@Nullable BigDecimal value, @NonNull String unit) {
+    return value == null ? null : new DecimalQuantityResponse(value, unit);
   }
 
   private static @NonNull AxisValue axis(@NonNull ChemicalAxis axis, @NonNull BigDecimal value) {

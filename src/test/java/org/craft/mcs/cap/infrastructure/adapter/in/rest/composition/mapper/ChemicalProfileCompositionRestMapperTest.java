@@ -61,7 +61,17 @@ class ChemicalProfileCompositionRestMapperTest {
     );
 
     assertThat(response.yeastAssimilableNitrogen()).isNotNull();
-    assertThat(response.yeastAssimilableNitrogen().value()).isEqualByComparingTo("210.000000000");
+    assertThat(response.yeastAssimilableNitrogen().value().value()).isEqualByComparingTo("210.000000000");
+    assertThat(response.yeastAssimilableNitrogen().value().unit()).isEqualTo("mg N/L");
+    assertThat(response.totalVolume()).isNotNull();
+    assertThat(response.totalVolume().unit()).isEqualTo("L");
+    assertThat(response.profile().sugar().value().unit()).isEqualTo("SG");
+    assertThat(response.profile().acidity().value().unit()).isEqualTo("g/L as malic acid");
+    assertThat(response.profile().tannin()).isNotNull();
+    assertThat(response.profile().tannin().value().unit()).isEqualTo("mg/L TAE");
+    assertThat(response.sources())
+        .extracting(source -> source.requestedVolume().unit())
+        .containsOnly("L");
   }
 
   private static @NonNull ChemicalProfileCompositionSourceRequest source(

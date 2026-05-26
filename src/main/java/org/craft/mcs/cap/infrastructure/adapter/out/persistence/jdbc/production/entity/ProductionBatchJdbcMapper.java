@@ -8,6 +8,7 @@ import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSna
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionTargetDistance;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
 import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.jspecify.annotations.NonNull;
@@ -33,6 +34,9 @@ public final class ProductionBatchJdbcMapper {
         batch.profile().sugar().asBigDecimal(),
         batch.profile().acidity().asBigDecimal(),
         batch.profile().tannin() == null ? null : batch.profile().tannin().asBigDecimal(), // NOSONAR
+        batch.profile().yeastAssimilableNitrogen() == null
+            ? null
+            : batch.profile().yeastAssimilableNitrogen().asBigDecimal(), // NOSONAR
         batch.targetDistance() == null ? null : batch.targetDistance().value(), // NOSONAR
         batch.note()
     );
@@ -55,6 +59,7 @@ public final class ProductionBatchJdbcMapper {
     entity.sugarSpecificGravity = updated.sugarSpecificGravity;
     entity.acidityGLAsMalic = updated.acidityGLAsMalic;
     entity.tanninMgLTea = updated.tanninMgLTea;
+    entity.yeastAssimilableNitrogenMgNL = updated.yeastAssimilableNitrogenMgNL;
     entity.targetDistance = updated.targetDistance;
     entity.note = updated.note;
     return entity;
@@ -73,7 +78,10 @@ public final class ProductionBatchJdbcMapper {
         new ProductionProfileSnapshot(
             SpecificGravityValue.of(requireNonNull(entity.sugarSpecificGravity, "production sugar cannot be null")),
             TitratableAcidityValue.of(requireNonNull(entity.acidityGLAsMalic, "production acidity cannot be null")),
-            entity.tanninMgLTea == null ? null : TanninityValue.of(entity.tanninMgLTea) // NOSONAR
+            entity.tanninMgLTea == null ? null : TanninityValue.of(entity.tanninMgLTea), // NOSONAR
+            entity.yeastAssimilableNitrogenMgNL == null
+                ? null
+                : YeastAssimilableNitrogenValue.of(entity.yeastAssimilableNitrogenMgNL) // NOSONAR
         ),
         entity.targetDistance == null ? null : ProductionTargetDistance.of(entity.targetDistance), // NOSONAR
         entity.note

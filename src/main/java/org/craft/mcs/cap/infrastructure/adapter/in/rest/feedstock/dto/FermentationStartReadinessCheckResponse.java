@@ -1,9 +1,9 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import java.math.BigDecimal;
 import org.craft.mcs.cap.core.cideranalysis.fermentationstart.domain.FermentationStartReadinessFactor;
 import org.craft.mcs.cap.core.cideranalysis.fermentationstart.domain.FermentationStartReadinessSeverity;
+import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -18,9 +18,7 @@ public record FermentationStartReadinessCheckResponse(
     @NonNull String code,
     @Schema(description = "Human-readable check message.", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull String message,
-    @Schema(description = "Measured or derived value used by the check.", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-    @Nullable BigDecimal value,
-    @Schema(description = "Value unit label.", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-    @Nullable String unit
+    @Schema(description = "Measured or derived quantity used by the check.", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @Nullable DecimalQuantityResponse value
 ) {
 }

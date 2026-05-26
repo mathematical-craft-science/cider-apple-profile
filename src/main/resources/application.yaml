@@ -7,15 +7,21 @@ spring:
     name: cider-apple-profile
   liquibase:
     change-log: db/changelog/master-changelog.xml
-    drop-first: true
-  jpa:
-    hibernate:
-      ddl-auto: validate
-    open-in-view: true
+    drop-first: off
   datasource:
     url: jdbc:postgresql://localhost:5832/cap_db
     username: username
     password: password
+
+management:
+  otlp:
+    metrics:
+      export:
+        enabled: false
+  tracing:
+    export:
+      otlp:
+        enabled: false
 
 springdoc:
   api-docs:

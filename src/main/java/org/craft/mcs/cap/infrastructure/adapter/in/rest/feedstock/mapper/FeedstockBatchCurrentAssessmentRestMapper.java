@@ -23,6 +23,7 @@ import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.FeedstockB
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.FeedstockSeasonRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.dto.UnplottableFeedstockBatchCurrentSugarAcidityZonePointResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.abv.mapper.PotentialAbvPredictionRestMapper;
+import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
 import org.craft.mcs.cap.shared.platform.query.ChemicalProfileCapabilityCriteria;
 import org.craft.mcs.cap.shared.platform.query.CursorPage;
 import org.craft.mcs.cap.shared.platform.query.CursorPageRequest;
@@ -147,8 +148,9 @@ public final class FeedstockBatchCurrentAssessmentRestMapper {
         check.severity(),
         check.code(),
         check.message(),
-        check.value(),
-        check.unit()
+        check.value() == null || check.unit() == null
+            ? null
+            : new DecimalQuantityResponse(check.value(), check.unit()) // NOSONAR
     );
   }
 

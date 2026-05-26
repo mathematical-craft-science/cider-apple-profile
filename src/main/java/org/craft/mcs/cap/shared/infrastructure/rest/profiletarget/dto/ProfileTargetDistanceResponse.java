@@ -10,6 +10,7 @@ import org.craft.mcs.cap.core.cideranalysis.profiletarget.scoring.domain.Profile
 import org.craft.mcs.cap.core.cideranalysis.profiletarget.scoring.domain.ProfileTargetObjectiveFunctionCode;
 import org.craft.mcs.cap.core.cideranalysis.sugaracidity.target.domain.SugarAcidityTargetGeometryShape;
 import org.craft.mcs.cap.core.cideranalysis.sugaracidity.target.domain.SugarAcidityTargetKind;
+import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -26,10 +27,10 @@ public record ProfileTargetDistanceResponse(
     boolean insideTarget,
     @Schema(description = "Nearest target point in sugar-acidity space.", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull SugarAcidityCoordinatesResponse nearestTargetPoint,
-    @Schema(description = "Measured tannin in mg/L TAE, when available.", example = "1200", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-    @Nullable BigDecimal tannin,
-    @Schema(description = "Nearest target tannin in mg/L TAE, when tannin target is configured.", example = "1200", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-    @Nullable BigDecimal nearestTargetTannin,
+    @Schema(description = "Measured tannin, when available.", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @Nullable DecimalQuantityResponse tannin,
+    @Schema(description = "Nearest target tannin, when tannin target is configured.", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @Nullable DecimalQuantityResponse nearestTargetTannin,
     @Schema(description = "Objective function code.", implementation = ProfileTargetObjectiveFunctionCode.class, requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull ProfileTargetObjectiveFunctionCode objectiveFunction,
     @Schema(description = "Distance metric used by objective function.", implementation = ProfileDistanceMetric.class, requiredMode = Schema.RequiredMode.REQUIRED)

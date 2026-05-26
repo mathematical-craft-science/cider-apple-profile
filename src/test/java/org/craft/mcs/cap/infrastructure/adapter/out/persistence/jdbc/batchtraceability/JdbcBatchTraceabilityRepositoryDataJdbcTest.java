@@ -65,6 +65,7 @@ class JdbcBatchTraceabilityRepositoryDataJdbcTest {
         .satisfies(foundStep -> {
           assertThat(foundStep.stepId()).isEqualTo(step.stepId());
           assertThat(foundStep.operationType()).isEqualTo(BatchTraceOperationType.SPLIT);
+          assertThat(foundStep.occurredAt()).isEqualTo(Instant.parse("2026-05-18T00:00:00Z"));
           assertThat(foundStep.inputs()).hasSize(1);
           assertThat(foundStep.outputs())
               .extracting(output -> output.subject().id())
@@ -96,6 +97,7 @@ class JdbcBatchTraceabilityRepositoryDataJdbcTest {
     assertThat(found).singleElement()
         .satisfies(foundStep -> {
           assertThat(foundStep.stepId()).isEqualTo(step.stepId());
+          assertThat(foundStep.occurredAt()).isEqualTo(Instant.parse("2026-05-18T00:00:00Z"));
           assertThat(foundStep.inputs())
               .extracting(input -> input.subject().id())
               .containsExactly("feedstock-1");

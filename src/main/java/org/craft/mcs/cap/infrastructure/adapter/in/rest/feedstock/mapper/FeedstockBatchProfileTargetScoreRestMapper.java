@@ -47,6 +47,8 @@ import org.craft.mcs.cap.shared.infrastructure.rest.profiletarget.dto.ProfileTar
 import org.craft.mcs.cap.shared.infrastructure.rest.profiletarget.dto.ProfileTargetTanninRangeRequest;
 import org.craft.mcs.cap.shared.infrastructure.rest.profiletarget.dto.SugarAcidityCoordinatesResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.sugaracidity.mapper.SugarAcidityZoneRestMapper;
+import org.craft.mcs.cap.shared.infrastructure.rest.measurement.CanonicalUnitLabels;
+import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
 import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;
 import org.craft.mcs.cap.shared.platform.query.ChemicalProfileCapabilityCriteria;
 import org.craft.mcs.cap.shared.platform.query.CursorPageRequest;
@@ -197,8 +199,8 @@ public final class FeedstockBatchProfileTargetScoreRestMapper {
         distance.insideSugarAcidityTarget(),
         distance.insideTarget(),
         toResponse(distance.nearestTargetPoint()),
-        distance.tannin(),
-        distance.nearestTargetTannin(),
+        quantity(distance.tannin(), CanonicalUnitLabels.TANNINITY),
+        quantity(distance.nearestTargetTannin(), CanonicalUnitLabels.TANNINITY),
         distance.objectiveFunction(),
         distance.metric(),
         distance.targetKind(),
@@ -220,8 +222,13 @@ public final class FeedstockBatchProfileTargetScoreRestMapper {
         SugarAcidityZoneRestMapper.toResponse(composition.profile()),
         composition.yeastAssimilableNitrogen() == null
             ? null
-            : SugarAcidityZoneRestMapper.toResponse(composition.yeastAssimilableNitrogen()), // NOSONAR
-        composition.totalVolume() == null ? null : composition.totalVolume().liters(), // NOSONAR
+            : SugarAcidityZoneRestMapper.toResponse( // NOSONAR
+                composition.yeastAssimilableNitrogen(),
+                CanonicalUnitLabels.YEAST_ASSIMILABLE_NITROGEN
+            ),
+        composition.totalVolume() == null
+            ? null
+            : new DecimalQuantityResponse(composition.totalVolume().liters(), CanonicalUnitLabels.VOLUME), // NOSONAR
         List.copyOf(composition.warnings()),
         toResponse(candidate.distance())
     );
@@ -231,9 +238,10 @@ public final class FeedstockBatchProfileTargetScoreRestMapper {
       @NonNull ChemicalProfileCompositionSource source
   ) {
     requireNonNull(source, "chemical profile composition source cannot be null");
+    final var requestedVolume = requestedVolume(source);
     return new FeedstockBatchCompositionOptimizationSourceResponse(
         UUID.fromString(source.reference().id()),
-        requestedVolume(source),
+        requestedVolume == null ? null : new DecimalQuantityResponse(requestedVolume, CanonicalUnitLabels.VOLUME), // NOSONAR
         proportion(source)
     );
   }
@@ -251,9 +259,13 @@ public final class FeedstockBatchProfileTargetScoreRestMapper {
   ) {
     requireNonNull(coordinates, "sugar-acidity coordinates cannot be null");
     return new SugarAcidityCoordinatesResponse(
-        coordinates.sugar(),
-        coordinates.acidity()
+        new DecimalQuantityResponse(coordinates.sugar(), CanonicalUnitLabels.SUGAR),
+        new DecimalQuantityResponse(coordinates.acidity(), CanonicalUnitLabels.TITRATABLE_ACIDITY)
     );
+  }
+
+  private static @Nullable DecimalQuantityResponse quantity(@Nullable BigDecimal value, @NonNull String unit) {
+    return value == null ? null : new DecimalQuantityResponse(value, unit);
   }
 
   private static @NonNull FeedstockProfileTargetSelection toTarget(
