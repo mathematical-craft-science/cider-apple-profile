@@ -38,6 +38,6 @@ public sealed interface ChemicalMeasurementRequest
     permits ExactChemicalMeasurementRequest, RangeChemicalMeasurementRequest, StatisticalChemicalMeasurementRequest {
 
   @NonNull
-  @Schema(description = "Measurement shape discriminator.", example = "EXACT")
+  @Schema(description = "Measurement shape discriminator.", example = "EXACT", requiredMode = Schema.RequiredMode.REQUIRED)
   String kind();
 }

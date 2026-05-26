@@ -9,15 +9,15 @@ import static java.util.Objects.requireNonNull;
 
 @Schema(description = "Custom rectangular sugar-acidity target.")
 public record CustomRectangleProfileTargetRequest(
-    @Schema(description = "Target shape.", example = "CUSTOM_RECTANGLE")
+    @Schema(description = "Target shape.", example = "CUSTOM_RECTANGLE", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull String kind,
-    @Schema(description = "Minimum sugar coordinate in SG.", example = "1.060")
+    @Schema(description = "Minimum sugar coordinate in SG.", example = "1.060", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull BigDecimal sugarMin,
-    @Schema(description = "Maximum sugar coordinate in SG.", example = "1.072")
+    @Schema(description = "Maximum sugar coordinate in SG.", example = "1.072", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull BigDecimal sugarMax,
-    @Schema(description = "Minimum titratable acidity coordinate in g/L as malic acid.", example = "4.5")
+    @Schema(description = "Minimum titratable acidity coordinate in g/L as malic acid.", example = "4.5", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull BigDecimal acidityMin,
-    @Schema(description = "Maximum titratable acidity coordinate in g/L as malic acid.", example = "7.5")
+    @Schema(description = "Maximum titratable acidity coordinate in g/L as malic acid.", example = "7.5", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull BigDecimal acidityMax
 ) implements ProfileTargetRequest {
 

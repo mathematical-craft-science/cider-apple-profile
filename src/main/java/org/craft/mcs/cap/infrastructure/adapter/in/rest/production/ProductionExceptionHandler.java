@@ -3,6 +3,8 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.production;
 import java.net.URI;
 import org.craft.mcs.cap.core.production.application.ProductionSourceInsufficientAvailableVolumeException;
 import org.craft.mcs.cap.core.production.application.ProductionSourceOwnershipMismatchException;
+import org.craft.mcs.cap.shared.infrastructure.rest.measurement.CanonicalUnitLabels;
+import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
 import org.jspecify.annotations.NonNull;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -54,8 +56,14 @@ public final class ProductionExceptionHandler {
         "Requested production source volume exceeds available feedstock batch volume."
     );
     problem.setProperty("batchId", exception.batchId().value().toString());
-    problem.setProperty("requestedVolumeLiters", exception.requestedVolume().liters());
-    problem.setProperty("availableVolumeLiters", exception.availableVolume().liters());
+    problem.setProperty(
+        "requestedVolume",
+        new DecimalQuantityResponse(exception.requestedVolume().liters(), CanonicalUnitLabels.VOLUME)
+    );
+    problem.setProperty(
+        "availableVolume",
+        new DecimalQuantityResponse(exception.availableVolume().liters(), CanonicalUnitLabels.VOLUME)
+    );
 
     return response(UNPROCESSABLE_ENTITY, problem);
   }

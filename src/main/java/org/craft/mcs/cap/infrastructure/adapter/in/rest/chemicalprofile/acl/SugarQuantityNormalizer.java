@@ -2,7 +2,7 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.acl;
 
 import java.math.BigDecimal;
 import javax.measure.Quantity;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.ChemicalProfileRestUnits;
+import org.craft.mcs.cap.shared.infrastructure.rest.measurement.CanonicalUnitLabels;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.UnsupportedChemicalMeasurementUnitException;
 import org.craft.mcs.cap.shared.kernel.measurement.unit.BeverageUnits;
 import org.craft.mcs.cap.shared.kernel.measurement.unit.Brix;
@@ -30,7 +30,7 @@ public final class SugarQuantityNormalizer
     implements ExternalChemicalMeasurementNormalizer<SugarConcentration> {
 
   private static final @NonNull String AXIS = "sugar";
-  private static final @NonNull String CANONICAL_UNIT = ChemicalProfileRestUnits.SUGAR;
+  private static final @NonNull String CANONICAL_UNIT = CanonicalUnitLabels.SUGAR;
   private static final @NonNull SugarConversionService SUGAR_CONVERSION_SERVICE =
       BuiltInSugarConversions.defaultService();
 

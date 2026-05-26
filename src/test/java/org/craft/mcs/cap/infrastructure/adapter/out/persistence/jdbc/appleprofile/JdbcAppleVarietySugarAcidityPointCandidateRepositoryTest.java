@@ -1,5 +1,6 @@
 package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.appleprofile;
 
+import java.util.List;
 import java.util.UUID;
 import org.craft.mcs.cap.core.appleprofile.application.port.out.AppleVarietySugarAcidityPointCandidateCursor;
 import org.craft.mcs.cap.core.appleprofile.application.port.out.AppleVarietySugarAcidityPointCandidateQuery;
@@ -27,7 +28,7 @@ class JdbcAppleVarietySugarAcidityPointCandidateRepositoryTest {
     final var jdbcTemplate = mock(NamedParameterJdbcTemplate.class);
     final var repository = new JdbcAppleVarietySugarAcidityPointCandidateRepository(jdbcTemplate);
 
-    doReturn(java.util.List.of())
+    doReturn(List.of())
         .when(jdbcTemplate)
         .query(anyString(), any(SqlParameterSource.class), isAAppleVarietyRowMapper());
 
@@ -49,7 +50,7 @@ class JdbcAppleVarietySugarAcidityPointCandidateRepositoryTest {
     final var jdbcTemplate = mock(NamedParameterJdbcTemplate.class);
     final var repository = new JdbcAppleVarietySugarAcidityPointCandidateRepository(jdbcTemplate);
 
-    doReturn(java.util.List.of())
+    doReturn(List.of())
         .when(jdbcTemplate)
         .query(anyString(), any(SqlParameterSource.class), isAAppleVarietyRowMapper());
 
@@ -74,7 +75,7 @@ class JdbcAppleVarietySugarAcidityPointCandidateRepositoryTest {
     final var repository = new JdbcAppleVarietySugarAcidityPointCandidateRepository(jdbcTemplate);
     final var cursorId = UUID.fromString("0194d5df-1111-7000-8000-000000000001");
 
-    doReturn(java.util.List.of())
+    doReturn(List.of())
         .when(jdbcTemplate)
         .query(anyString(), any(SqlParameterSource.class), isAAppleVarietyRowMapper());
 

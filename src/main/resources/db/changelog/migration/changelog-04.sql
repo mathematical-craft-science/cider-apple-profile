@@ -43,6 +43,13 @@ CREATE TABLE IF NOT EXISTS batch_trace_step_subjects
     tanninity_standard_deviation NUMERIC(12, 4),
     tanninity_sample_size        INTEGER,
 
+    yan_value                    NUMERIC(12, 4),
+    yan_value_kind               VARCHAR(32),
+    yan_min                      NUMERIC(12, 4),
+    yan_max                      NUMERIC(12, 4),
+    yan_standard_deviation       NUMERIC(12, 4),
+    yan_sample_size              INTEGER,
+
     CONSTRAINT fk_batch_trace_step_subjects_step
         FOREIGN KEY (step_id)
             REFERENCES batch_trace_steps (step_id)

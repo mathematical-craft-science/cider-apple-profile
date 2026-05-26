@@ -29,6 +29,7 @@ public class ProductionBatchJdbcEntity {
   @NonNull @Column("sugar_specific_gravity") BigDecimal sugarSpecificGravity;
   @NonNull @Column("acidity_g_l_as_malic") BigDecimal acidityGLAsMalic;
   @Nullable @Column("tannin_mg_l_tae") BigDecimal tanninMgLTea;
+  @Nullable @Column("yan_mg_n_l") BigDecimal yeastAssimilableNitrogenMgNL;
   @Nullable @Column("target_distance") BigDecimal targetDistance;
   @Nullable @Column("note") String note;
   @CreatedDate @Nullable @Column("created_at") Instant createdAt;
@@ -49,6 +50,7 @@ public class ProductionBatchJdbcEntity {
       @NonNull BigDecimal sugarSpecificGravity,
       @NonNull BigDecimal acidityGLAsMalic,
       @Nullable BigDecimal tanninMgLTea,
+      @Nullable BigDecimal yeastAssimilableNitrogenMgNL,
       @Nullable BigDecimal targetDistance,
       @Nullable String note
   ) {
@@ -61,6 +63,7 @@ public class ProductionBatchJdbcEntity {
     this.sugarSpecificGravity = requireNonNull(sugarSpecificGravity, "production sugar specific gravity cannot be null");
     this.acidityGLAsMalic = requireNonNull(acidityGLAsMalic, "production acidity cannot be null");
     this.tanninMgLTea = tanninMgLTea;
+    this.yeastAssimilableNitrogenMgNL = yeastAssimilableNitrogenMgNL;
     this.targetDistance = targetDistance;
     this.note = normalize(note);
   }

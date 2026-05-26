@@ -12,6 +12,7 @@ import com.tngtech.archunit.lang.ConditionEvents;
 import com.tngtech.archunit.lang.SimpleConditionEvent;
 import java.lang.annotation.Annotation;
 import java.util.List;
+import java.util.Locale;
 import org.jspecify.annotations.NonNull;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
@@ -145,7 +146,7 @@ class JdbcPersistenceModelArchitectureTest {
   }
 
   private static boolean hasReadModelQueryName(@NonNull JavaMethod method) {
-    final var name = method.getName().toLowerCase(java.util.Locale.ROOT);
+    final var name = method.getName().toLowerCase(Locale.ROOT);
     return name.contains("candidate")
         || name.contains("point")
         || name.contains("summary")

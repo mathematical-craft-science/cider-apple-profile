@@ -37,10 +37,10 @@ public sealed interface SugarAcidityGraphZoneResponse
     permits RectangleSugarAcidityGraphZoneResponse, EllipseSugarAcidityGraphZoneResponse {
 
   @NonNull
-  @Schema(description = "Zone code.", implementation = SugarAcidityZone.class, example = "PERFECT_APPLES")
+  @Schema(description = "Zone code.", implementation = SugarAcidityZone.class, example = "PERFECT_APPLES", requiredMode = Schema.RequiredMode.REQUIRED)
   SugarAcidityZone zone();
 
   @NonNull
-  @Schema(description = "Zone shape discriminator.", implementation = SugarAcidityGraphZoneShape.class, example = "RECTANGLE")
+  @Schema(description = "Zone shape discriminator.", implementation = SugarAcidityGraphZoneShape.class, example = "RECTANGLE", requiredMode = Schema.RequiredMode.REQUIRED)
   SugarAcidityGraphZoneShape shape();
 }

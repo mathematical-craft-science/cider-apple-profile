@@ -85,6 +85,24 @@ public class BatchTraceStepSubjectJdbcRow {
   @Nullable
   public Integer tanninitySampleSize;
 
+  @Nullable
+  public BigDecimal yeastAssimilableNitrogenValue;
+
+  @Nullable
+  public MeasurementValueKind yeastAssimilableNitrogenValueKind;
+
+  @Nullable
+  public BigDecimal yeastAssimilableNitrogenMin;
+
+  @Nullable
+  public BigDecimal yeastAssimilableNitrogenMax;
+
+  @Nullable
+  public BigDecimal yeastAssimilableNitrogenStandardDeviation;
+
+  @Nullable
+  public Integer yeastAssimilableNitrogenSampleSize;
+
   @SuppressWarnings("NullAway.Init")
   public BatchTraceStepSubjectJdbcRow() {
   }

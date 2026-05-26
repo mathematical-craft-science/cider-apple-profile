@@ -1,7 +1,6 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.mapper;
 
 import java.math.BigDecimal;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.ChemicalProfileRestUnits;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.acl.ExternalChemicalMeasurementNormalizer;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.acl.PhQuantityNormalizer;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.acl.SugarQuantityNormalizer;
@@ -18,6 +17,8 @@ import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.dto.Rang
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.dto.RangeChemicalMeasurementResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.dto.StatisticalChemicalMeasurementRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.dto.StatisticalChemicalMeasurementResponse;
+import org.craft.mcs.cap.shared.infrastructure.rest.measurement.CanonicalUnitLabels;
+import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfileSource;
 import org.craft.mcs.cap.shared.kernel.chemical.value.PhValue;
@@ -109,31 +110,31 @@ public final class ChemicalProfileRestMapper {
             .map(measurement -> toResponse(
                 measurement,
                 sugar -> sugar.specificGravity().asBigDecimal(),
-                ChemicalProfileRestUnits.SUGAR
+                CanonicalUnitLabels.SUGAR
             ))
             .orElse(null),  // NOSONAR
         profile.ph()
-            .map(measurement -> toResponse(measurement, PhValue::asBigDecimal, ChemicalProfileRestUnits.PH))
+            .map(measurement -> toResponse(measurement, PhValue::asBigDecimal, CanonicalUnitLabels.PH))
             .orElse(null),  // NOSONAR
         profile.titratableAcidity()
             .map(measurement -> toResponse(
                 measurement,
                 TitratableAcidityValue::asBigDecimal,
-                ChemicalProfileRestUnits.TITRATABLE_ACIDITY
+                CanonicalUnitLabels.TITRATABLE_ACIDITY
             ))
             .orElse(null),  // NOSONAR
         profile.tanninity()
             .map(measurement -> toResponse(
                 measurement,
                 TanninityValue::asBigDecimal,
-                ChemicalProfileRestUnits.TANNINITY
+                CanonicalUnitLabels.TANNINITY
             ))
             .orElse(null),  // NOSONAR
         profile.yeastAssimilableNitrogen()
             .map(measurement -> toResponse(
                 measurement,
                 YeastAssimilableNitrogenValue::asBigDecimal,
-                ChemicalProfileRestUnits.YEAST_ASSIMILABLE_NITROGEN
+                CanonicalUnitLabels.YEAST_ASSIMILABLE_NITROGEN
             ))
             .orElse(null),  // NOSONAR
         profile.source() == null ? null : profile.source().value(),  // NOSONAR
@@ -186,24 +187,25 @@ public final class ChemicalProfileRestMapper {
     return switch (measurement) {
       case ExactMeasurement<T> exact -> new ExactChemicalMeasurementResponse( // NOSONAR
           "EXACT",
-          unit,
-          extractor.extract(exact.value())
+          quantity(extractor.extract(exact.value()), unit)
       );
       case RangeMeasurement<T> range -> new RangeChemicalMeasurementResponse( // NOSONAR
           "RANGE",
-          unit,
-          extractor.extract(range.min()),
-          extractor.extract(range.max())
+          quantity(extractor.extract(range.min()), unit),
+          quantity(extractor.extract(range.max()), unit)
       );
       case StatisticalMeasurement<T> statistical -> new StatisticalChemicalMeasurementResponse( // NOSONAR
           "STATISTICAL",
-          unit,
-          extractor.extract(statistical.mean()),
-          statistical.median() == null ? null : extractor.extract(statistical.median()), // NOSONAR
-          statistical.standardDeviation(),
+          quantity(extractor.extract(statistical.mean()), unit),
+          statistical.median() == null ? null : quantity(extractor.extract(statistical.median()), unit), // NOSONAR
+          statistical.standardDeviation() == null ? null : quantity(statistical.standardDeviation(), unit), // NOSONAR
           statistical.sampleSize()
       );
     };
+  }
+
+  private static @NonNull DecimalQuantityResponse quantity(@NonNull BigDecimal value, @NonNull String unit) {
+    return new DecimalQuantityResponse(value, unit);
   }
 
   @FunctionalInterface

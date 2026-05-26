@@ -3,6 +3,7 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.composition;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.composition.dto.CalculateChemicalProfileCompositionRequest;
@@ -39,7 +40,7 @@ public interface ChemicalProfileCompositionApi {
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
   )
   @NonNull ResponseEntity<@NonNull ChemicalProfileCompositionResponse> calculate(
-      @io.swagger.v3.oas.annotations.parameters.RequestBody(
+      @RequestBody(
           description = "Composition calculation request.",
           required = true,
           content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = CalculateChemicalProfileCompositionRequest.class))
@@ -67,7 +68,7 @@ public interface ChemicalProfileCompositionApi {
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
   )
   @NonNull ResponseEntity<@NonNull OptimizeChemicalProfileCompositionResponse> optimize(
-      @io.swagger.v3.oas.annotations.parameters.RequestBody(
+      @RequestBody(
           description = "Composition optimization request.",
           required = true,
           content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = OptimizeChemicalProfileCompositionRequest.class))

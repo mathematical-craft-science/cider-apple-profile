@@ -7,11 +7,11 @@ import org.jspecify.annotations.Nullable;
 
 @Schema(description = "Axis weights used by profile target objective functions.")
 public record ProfileTargetObjectiveWeightsRequest(
-    @Schema(description = "Sugar axis weight.", example = "1.0")
+    @Schema(description = "Sugar axis weight.", example = "1.0", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @Nullable BigDecimal sugar,
-    @Schema(description = "Acidity axis weight.", example = "1.0")
+    @Schema(description = "Acidity axis weight.", example = "1.0", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @Nullable BigDecimal acidity,
-    @Schema(description = "Tannin axis weight.", example = "0.5")
+    @Schema(description = "Tannin axis weight.", example = "0.5", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @Nullable BigDecimal tannin
 ) {
 }

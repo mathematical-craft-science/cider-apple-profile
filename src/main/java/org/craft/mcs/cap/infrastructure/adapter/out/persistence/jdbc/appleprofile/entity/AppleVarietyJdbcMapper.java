@@ -3,6 +3,7 @@ package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.appleprofi
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Instant;
+import java.util.UUID;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.common.MeasurementKind;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVariety;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyId;
@@ -114,7 +115,7 @@ public final class AppleVarietyJdbcMapper {
     requireNonNull(resultSet, "apple variety result set cannot be null");
 
     final var entity = new AppleVarietyJdbcEntity();
-    entity.varietyId = resultSet.getObject("variety_id", java.util.UUID.class);
+    entity.varietyId = resultSet.getObject("variety_id", UUID.class);
     entity.name = resultSet.getString("name");
 
     entity.sugarKind = measurementKind(resultSet, "sugar_kind");

@@ -38,8 +38,6 @@ public sealed interface ChemicalMeasurementResponse
     permits ExactChemicalMeasurementResponse, RangeChemicalMeasurementResponse, StatisticalChemicalMeasurementResponse {
 
   @NonNull
+  @Schema(description = "Measurement shape discriminator.", example = "EXACT", requiredMode = Schema.RequiredMode.REQUIRED)
   String kind();
-
-  @NonNull
-  String unit();
 }

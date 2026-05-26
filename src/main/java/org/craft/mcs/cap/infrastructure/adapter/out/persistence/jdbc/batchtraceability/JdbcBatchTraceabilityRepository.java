@@ -87,6 +87,12 @@ class JdbcBatchTraceabilityRepository
     subject.tanninityMax = resultSet.getBigDecimal("tanninity_max");
     subject.tanninityStandardDeviation = resultSet.getBigDecimal("tanninity_standard_deviation");
     subject.tanninitySampleSize = integerValue(resultSet, "tanninity_sample_size");
+    subject.yeastAssimilableNitrogenValue = resultSet.getBigDecimal("yan_value");
+    subject.yeastAssimilableNitrogenValueKind = enumValue(MeasurementValueKind.class, resultSet.getString("yan_value_kind"));
+    subject.yeastAssimilableNitrogenMin = resultSet.getBigDecimal("yan_min");
+    subject.yeastAssimilableNitrogenMax = resultSet.getBigDecimal("yan_max");
+    subject.yeastAssimilableNitrogenStandardDeviation = resultSet.getBigDecimal("yan_standard_deviation");
+    subject.yeastAssimilableNitrogenSampleSize = integerValue(resultSet, "yan_sample_size");
     return new StepSubjectRow(resultSet.getObject("step_id", UUID.class), subject);
   }
 
@@ -135,7 +141,22 @@ class JdbcBatchTraceabilityRepository
   public @NonNull List<@NonNull BatchTraceStep> findByInputSubject(
       @NonNull BatchTraceSubject subject
   ) {
+    return findBySubjectRole(subject, BatchTraceStepSubjectRole.INPUT);
+  }
+
+  @Override
+  public @NonNull List<@NonNull BatchTraceStep> findByOutputSubject(
+      @NonNull BatchTraceSubject subject
+  ) {
+    return findBySubjectRole(subject, BatchTraceStepSubjectRole.OUTPUT);
+  }
+
+  private @NonNull List<@NonNull BatchTraceStep> findBySubjectRole(
+      @NonNull BatchTraceSubject subject,
+      @NonNull BatchTraceStepSubjectRole role
+  ) {
     requireNonNull(subject, "batch trace subject cannot be null");
+    requireNonNull(role, "batch trace subject role cannot be null");
 
     final var stepIds = jdbcTemplate.queryForList("""
             SELECT step.step_id
@@ -148,7 +169,7 @@ class JdbcBatchTraceabilityRepository
             ORDER BY step.occurred_at ASC, step.step_id ASC
             """,
         new MapSqlParameterSource()
-            .addValue("subjectRole", BatchTraceStepSubjectRole.INPUT.name())
+            .addValue("subjectRole", role.name())
             .addValue("subjectType", subject.type().name())
             .addValue("subjectId", subject.id()),
         UUID.class
@@ -232,7 +253,13 @@ class JdbcBatchTraceabilityRepository
               tanninity_min,
               tanninity_max,
               tanninity_standard_deviation,
-              tanninity_sample_size
+              tanninity_sample_size,
+              yan_value,
+              yan_value_kind,
+              yan_min,
+              yan_max,
+              yan_standard_deviation,
+              yan_sample_size
             )
             VALUES (
               :stepId,
@@ -260,7 +287,13 @@ class JdbcBatchTraceabilityRepository
               :tanninityMin,
               :tanninityMax,
               :tanninityStandardDeviation,
-              :tanninitySampleSize
+              :tanninitySampleSize,
+              :yanValue,
+              :yanValueKind,
+              :yanMin,
+              :yanMax,
+              :yanStandardDeviation,
+              :yanSampleSize
             )
             """,
         batch
@@ -297,7 +330,13 @@ class JdbcBatchTraceabilityRepository
         .addValue("tanninityMin", subject.tanninityMin)
         .addValue("tanninityMax", subject.tanninityMax)
         .addValue("tanninityStandardDeviation", subject.tanninityStandardDeviation)
-        .addValue("tanninitySampleSize", subject.tanninitySampleSize);
+        .addValue("tanninitySampleSize", subject.tanninitySampleSize)
+        .addValue("yanValue", subject.yeastAssimilableNitrogenValue)
+        .addValue("yanValueKind", enumName(subject.yeastAssimilableNitrogenValueKind))
+        .addValue("yanMin", subject.yeastAssimilableNitrogenMin)
+        .addValue("yanMax", subject.yeastAssimilableNitrogenMax)
+        .addValue("yanStandardDeviation", subject.yeastAssimilableNitrogenStandardDeviation)
+        .addValue("yanSampleSize", subject.yeastAssimilableNitrogenSampleSize);
   }
 
   private @NonNull Map<@NonNull UUID, @NonNull BatchTraceStepJdbcRow> findSteps(
@@ -355,7 +394,13 @@ class JdbcBatchTraceabilityRepository
               tanninity_min,
               tanninity_max,
               tanninity_standard_deviation,
-              tanninity_sample_size
+              tanninity_sample_size,
+              yan_value,
+              yan_value_kind,
+              yan_min,
+              yan_max,
+              yan_standard_deviation,
+              yan_sample_size
             FROM batch_trace_step_subjects
             WHERE step_id IN (:stepIds)
             ORDER BY step_id ASC, subject_role ASC, subject_order ASC

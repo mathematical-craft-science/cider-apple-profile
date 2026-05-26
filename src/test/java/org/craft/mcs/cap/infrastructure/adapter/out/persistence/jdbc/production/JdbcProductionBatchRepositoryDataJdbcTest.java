@@ -10,6 +10,7 @@ import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchStatu
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
 import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.craft.mcs.cap.shared.testing.jdbc.PostgresDataJdbcTestConfiguration;
@@ -59,17 +60,54 @@ class JdbcProductionBatchRepositoryDataJdbcTest {
     assertThat(result.note()).isEqualTo("Updated note");
   }
 
+  @Test
+  void findsProductionBatchById() {
+    final var saved = repository.save(productionBatch());
+
+    final var found = repository.findById(saved.batchId());
+
+    assertThat(found).get()
+        .extracting(batch -> batch.batchId())
+        .isEqualTo(saved.batchId());
+    assertThat(found.orElseThrow().profile().yeastAssimilableNitrogen())
+        .isNotNull()
+        .extracting(YeastAssimilableNitrogenValue::asBigDecimal)
+        .satisfies(value -> assertThat(value).isEqualByComparingTo("180"));
+  }
+
+  @Test
+  void listsProductionBatchesByCiderMaker() {
+    final var ciderMakerId = CiderMakerId.of(UUID.randomUUID());
+    final var first = repository.save(productionBatch(ciderMakerId, "First production batch"));
+    final var second = repository.save(productionBatch(ciderMakerId, "Second production batch"));
+    repository.save(productionBatch(CiderMakerId.of(UUID.randomUUID()), "Other production batch"));
+
+    final var found = repository.findAllByCiderMakerId(ciderMakerId);
+
+    assertThat(found)
+        .extracting(batch -> batch.batchId())
+        .containsExactlyInAnyOrder(second.batchId(), first.batchId());
+  }
+
   private static ProductionBatch productionBatch() {
+    return productionBatch(CiderMakerId.of(UUID.randomUUID()), "Initial production batch");
+  }
+
+  private static ProductionBatch productionBatch(
+      CiderMakerId ciderMakerId,
+      String name
+  ) {
     return ProductionBatch.create(
         ProductionBatchId.newId(),
-        CiderMakerId.of(UUID.randomUUID()),
-        ProductionBatchName.of("Initial production batch"),
+        ciderMakerId,
+        ProductionBatchName.of(name),
         ProductionBatchKind.CIDER,
         VolumeValue.ofLiters("100"),
         new ProductionProfileSnapshot(
             SpecificGravityValue.of("1.052"),
             TitratableAcidityValue.of("5.8"),
-            TanninityValue.of("1200")
+            TanninityValue.of("1200"),
+            YeastAssimilableNitrogenValue.of("180")
         ),
         null,
         null

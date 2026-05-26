@@ -4,6 +4,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -21,16 +22,24 @@ import org.craft.mcs.cap.core.feedstock.domain.model.value.CiderMakerId;
 import org.craft.mcs.cap.core.production.application.port.in.CreateProductionBatchCommand;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchRepository;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchFeedstockTraceSource;
+import org.craft.mcs.cap.core.production.application.port.out.ProductionFeedstockTraceSnapshot;
+import org.craft.mcs.cap.core.production.application.port.out.ProductionFeedstockTraceSnapshotProvider;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchTraceRecorder;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchTraceSource;
 import org.craft.mcs.cap.core.production.application.usecase.CreateProductionBatchService;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatch;
+import org.craft.mcs.cap.core.production.domain.model.ProductionBatchId;
 import org.craft.mcs.cap.core.production.domain.model.ProductionInput;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceComponent;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceComposition;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchKind;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchName;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.MeasurementValueKind;
+import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;
@@ -60,6 +69,7 @@ class CreateProductionBatchServiceTest {
         feedstockRepository,
         productionRepository,
         traceability,
+        batchId -> feedstockSnapshot(),
         transactionHelper,
         CLOCK
     );
@@ -76,6 +86,10 @@ class CreateProductionBatchServiceTest {
           assertThat(source.id()).isEqualTo(feedstockBatch.batchId().value().toString());
           assertThat(source.displayName()).isEqualTo("Late juice");
           assertThat(source.volume().liters()).isEqualByComparingTo("100");
+          assertThat(source.profile().valueOf(ChemicalAxis.SUGAR))
+              .get()
+              .satisfies(value -> assertThat(value.value()).isEqualByComparingTo("1.050"));
+          assertThat(source.confidence()).isEqualTo(ConfidenceLevel.LAB_VERIFIED);
         });
     assertThat(traceability.recorded.occurredAt()).isEqualTo(Instant.now(CLOCK));
     assertThat(traceability.recorded.note()).isEqualTo("accepted production input");
@@ -93,6 +107,7 @@ class CreateProductionBatchServiceTest {
         (productionBatch, sources, occurredAt, note) -> {
           throw new IllegalStateException("trace persistence failed");
         },
+        batchId -> feedstockSnapshot(),
         transactionHelper,
         CLOCK
     );
@@ -140,6 +155,29 @@ class CreateProductionBatchServiceTest {
         FeedstockType.APPLE_JUICE,
         FeedstockSeason.of(LocalDate.parse("2026-10-01"), LocalDate.parse("2026-12-15")),
         VolumeValue.ofLiters(volumeLiters)
+    );
+  }
+
+  private static ProductionFeedstockTraceSnapshot feedstockSnapshot() {
+    return new ProductionFeedstockTraceSnapshot(
+        ChemicalProfileAxes.of(
+            axis(ChemicalAxis.SUGAR, "1.050"),
+            axis(ChemicalAxis.ACIDITY, "6.1"),
+            axis(ChemicalAxis.TANNINITY, "1400")
+        ),
+        ConfidenceLevel.LAB_VERIFIED
+    );
+  }
+
+  private static AxisValue axis(ChemicalAxis axis, String value) {
+    return new AxisValue(
+        axis,
+        new BigDecimal(value),
+        MeasurementValueKind.EXACT,
+        null,
+        null,
+        null,
+        null
     );
   }
 
@@ -216,6 +254,20 @@ class CreateProductionBatchServiceTest {
     public @NonNull ProductionBatch save(@NonNull ProductionBatch productionBatch) {
       transactionHelper.stage(() -> committed.add(productionBatch));
       return productionBatch;
+    }
+
+    @Override
+    public @NonNull Optional<@NonNull ProductionBatch> findById(@NonNull ProductionBatchId batchId) {
+      return committed.stream()
+          .filter(batch -> batch.batchId().equals(batchId))
+          .findFirst();
+    }
+
+    @Override
+    public @NonNull List<@NonNull ProductionBatch> findAllByCiderMakerId(@NonNull CiderMakerId ciderMakerId) {
+      return committed.stream()
+          .filter(batch -> batch.ciderMakerId().equals(ciderMakerId))
+          .toList();
     }
   }
 

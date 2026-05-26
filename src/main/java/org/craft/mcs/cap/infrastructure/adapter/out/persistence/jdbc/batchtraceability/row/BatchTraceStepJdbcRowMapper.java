@@ -13,6 +13,7 @@ import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.MeasurementValueKind;
+import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
 import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -111,7 +112,7 @@ public final class BatchTraceStepJdbcRowMapper {
     }
 
     row.snapshotVolumeLiters = snapshot.volume() == null ? null : snapshot.volume().liters(); // NOSONAR
-    row.snapshotConfidence = snapshot.confidence();
+    row.snapshotConfidence = snapshot.confidence() == null ? null : snapshot.confidence().name(); // NOSONAR
     applyAxis(row, ChemicalAxis.SUGAR, snapshot.profile() == null
         ? null
         : snapshot.profile().valueOf(ChemicalAxis.SUGAR).orElse(null)); // NOSONAR
@@ -121,6 +122,9 @@ public final class BatchTraceStepJdbcRowMapper {
     applyAxis(row, ChemicalAxis.TANNINITY, snapshot.profile() == null
         ? null
         : snapshot.profile().valueOf(ChemicalAxis.TANNINITY).orElse(null)); // NOSONAR
+    applyAxis(row, ChemicalAxis.YEAST_ASSIMILABLE_NITROGEN, snapshot.profile() == null
+        ? null
+        : snapshot.profile().valueOf(ChemicalAxis.YEAST_ASSIMILABLE_NITROGEN).orElse(null)); // NOSONAR
   }
 
   private static void applyAxis(
@@ -157,6 +161,14 @@ public final class BatchTraceStepJdbcRowMapper {
         row.tanninityStandardDeviation = value.standardDeviation();
         row.tanninitySampleSize = value.sampleSize();
       }
+      case YEAST_ASSIMILABLE_NITROGEN -> {
+        row.yeastAssimilableNitrogenValue = value.value();
+        row.yeastAssimilableNitrogenValueKind = value.valueKind();
+        row.yeastAssimilableNitrogenMin = value.min();
+        row.yeastAssimilableNitrogenMax = value.max();
+        row.yeastAssimilableNitrogenStandardDeviation = value.standardDeviation();
+        row.yeastAssimilableNitrogenSampleSize = value.sampleSize();
+      }
     }
   }
 
@@ -172,7 +184,11 @@ public final class BatchTraceStepJdbcRowMapper {
       return null;
     }
 
-    return new BatchTraceMaterialSnapshot(volume, profile, row.snapshotConfidence);
+    return new BatchTraceMaterialSnapshot(volume, profile, confidenceLevel(row.snapshotConfidence));
+  }
+
+  private static @Nullable ConfidenceLevel confidenceLevel(@Nullable String value) {
+    return value == null ? null : ConfidenceLevel.valueOf(value); // NOSONAR
   }
 
   private static @Nullable ChemicalProfileAxes toProfile(@NonNull BatchTraceStepSubjectJdbcRow row) {
@@ -203,10 +219,19 @@ public final class BatchTraceStepJdbcRowMapper {
         row.tanninityStandardDeviation,
         row.tanninitySampleSize
     );
+    final var yeastAssimilableNitrogen = toAxisValue(
+        ChemicalAxis.YEAST_ASSIMILABLE_NITROGEN,
+        row.yeastAssimilableNitrogenValue,
+        row.yeastAssimilableNitrogenValueKind,
+        row.yeastAssimilableNitrogenMin,
+        row.yeastAssimilableNitrogenMax,
+        row.yeastAssimilableNitrogenStandardDeviation,
+        row.yeastAssimilableNitrogenSampleSize
+    );
 
-    return sugar == null && acidity == null && tanninity == null
+    return sugar == null && acidity == null && tanninity == null && yeastAssimilableNitrogen == null
         ? null
-        : ChemicalProfileAxes.of(sugar, acidity, tanninity);
+        : ChemicalProfileAxes.of(sugar, acidity, tanninity, yeastAssimilableNitrogen);
   }
 
   private static @Nullable AxisValue toAxisValue(

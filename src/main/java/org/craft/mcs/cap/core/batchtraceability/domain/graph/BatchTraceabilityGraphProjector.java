@@ -1,5 +1,6 @@
 package org.craft.mcs.cap.core.batchtraceability.domain.graph;
 
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStep;
@@ -27,12 +28,15 @@ public final class BatchTraceabilityGraphProjector {
   ) {
     final var nodesBySubject = new LinkedHashMap<BatchTraceSubject, BatchTraceNode>();
     final var edges = requireNonNull(steps, "batch trace steps cannot be null").stream()
+        .sorted(Comparator.comparing(BatchTraceStep::occurredAt)
+            .thenComparing(batchTraceStep -> batchTraceStep.stepId().value()))
         .map(step -> {
           registerNodes(nodesBySubject, step.inputs());
           registerNodes(nodesBySubject, step.outputs());
           return new BatchTraceEdge(
               step.stepId(),
               step.operationType(),
+              step.occurredAt(),
               step.inputs(),
               step.outputs()
           );

@@ -2,7 +2,7 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.acl;
 
 import java.math.BigDecimal;
 import javax.measure.Quantity;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.ChemicalProfileRestUnits;
+import org.craft.mcs.cap.shared.infrastructure.rest.measurement.CanonicalUnitLabels;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.UnsupportedChemicalMeasurementUnitException;
 import org.craft.mcs.cap.shared.kernel.chemical.value.PhValue;
 import org.craft.mcs.cap.shared.kernel.measurement.unit.BeverageUnits;
@@ -22,7 +22,7 @@ public final class PhQuantityNormalizer
     implements ExternalChemicalMeasurementNormalizer<PhValue> {
 
   private static final @NonNull String AXIS = "pH";
-  private static final @NonNull String CANONICAL_UNIT = ChemicalProfileRestUnits.PH;
+  private static final @NonNull String CANONICAL_UNIT = CanonicalUnitLabels.PH;
 
   @Override
   public @NonNull PhValue normalizeValue(

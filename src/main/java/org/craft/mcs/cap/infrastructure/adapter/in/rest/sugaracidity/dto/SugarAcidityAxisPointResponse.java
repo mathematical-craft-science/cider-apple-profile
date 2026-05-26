@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import io.swagger.v3.oas.annotations.media.DiscriminatorMapping;
 import io.swagger.v3.oas.annotations.media.Schema;
-import java.math.BigDecimal;
+import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.MeasurementValueKind;
 import org.jspecify.annotations.NonNull;
 
@@ -48,10 +48,10 @@ public sealed interface SugarAcidityAxisPointResponse
     CalculatedSugarAcidityAxisPointResponse {
 
   @NonNull
-  @Schema(description = "Coordinate value for the graph axis.", example = "1.052")
-  BigDecimal value();
+  @Schema(description = "Coordinate value for the graph axis.", requiredMode = Schema.RequiredMode.REQUIRED)
+  DecimalQuantityResponse value();
 
   @NonNull
-  @Schema(description = "Axis point value discriminator.", implementation = MeasurementValueKind.class, example = "EXACT")
+  @Schema(description = "Axis point value discriminator.", implementation = MeasurementValueKind.class, example = "EXACT", requiredMode = Schema.RequiredMode.REQUIRED)
   MeasurementValueKind valueKind();
 }

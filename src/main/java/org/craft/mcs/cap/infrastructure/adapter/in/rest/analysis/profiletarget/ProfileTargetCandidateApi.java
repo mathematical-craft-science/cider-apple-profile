@@ -39,6 +39,7 @@ public interface ProfileTargetCandidateApi {
   )
   @NonNull ResponseEntity<@NonNull AppleVarietyProfileTargetCandidatesResponse> appleVarietyCandidates(
       @RequestBody(
+          description = "Apple variety target-aware candidate search request.",
           required = true,
           content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = AppleVarietyProfileTargetCandidateSearchRequest.class))
       )
@@ -61,6 +62,7 @@ public interface ProfileTargetCandidateApi {
   )
   @NonNull ResponseEntity<@NonNull FeedstockBatchProfileTargetCandidatesResponse> feedstockBatchCandidates(
       @RequestBody(
+          description = "Current feedstock batch target-aware candidate search request.",
           required = true,
           content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = FeedstockBatchProfileTargetCandidateSearchRequest.class))
       )

@@ -14,6 +14,7 @@ import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.MeasurementValueKind;
+import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
 import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;
 import org.junit.jupiter.api.Test;
 
@@ -77,14 +78,23 @@ class BatchTraceStepJdbcRowMapperTest {
             null,
             null
         ),
-        null
+        null,
+        new AxisValue(
+            ChemicalAxis.YEAST_ASSIMILABLE_NITROGEN,
+            new BigDecimal("180"),
+            MeasurementValueKind.EXACT,
+            null,
+            null,
+            null,
+            null
+        )
     );
     final var input = new BatchTraceStepSubject(
         subject(BatchTraceSubjectType.FEEDSTOCK_BATCH, "feedstock-1"),
         new BatchTraceMaterialSnapshot(
             VolumeValue.ofLiters("120.5"),
             profile,
-            "LAB_VERIFIED"
+            ConfidenceLevel.LAB_VERIFIED
         )
     );
     final var output = BatchTraceStepSubject.of(subject(
@@ -107,7 +117,7 @@ class BatchTraceStepJdbcRowMapperTest {
 
     assertThat(snapshot).isNotNull();
     assertThat(snapshot.volume().liters()).isEqualByComparingTo("120.5");
-    assertThat(snapshot.confidence()).isEqualTo("LAB_VERIFIED");
+    assertThat(snapshot.confidence()).isEqualTo(ConfidenceLevel.LAB_VERIFIED);
     assertThat(snapshot.profile().valueOf(ChemicalAxis.SUGAR))
         .get()
         .extracting(AxisValue::value, AxisValue::valueKind)
@@ -116,6 +126,10 @@ class BatchTraceStepJdbcRowMapperTest {
         .get()
         .extracting(AxisValue::min, AxisValue::max)
         .containsExactly(new BigDecimal("5.2"), new BigDecimal("6.2"));
+    assertThat(snapshot.profile().valueOf(ChemicalAxis.YEAST_ASSIMILABLE_NITROGEN))
+        .get()
+        .extracting(AxisValue::value, AxisValue::valueKind)
+        .containsExactly(new BigDecimal("180"), MeasurementValueKind.EXACT);
   }
 
   private static BatchTraceSubject subject(BatchTraceSubjectType type, String id) {

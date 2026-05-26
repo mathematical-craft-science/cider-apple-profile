@@ -8,13 +8,13 @@ import org.jspecify.annotations.NonNull;
 
 @Schema(description = "Rectangular sugar-acidity graph zone.")
 public record RectangleSugarAcidityGraphZoneResponse(
-    @Schema(description = "Zone code.", implementation = SugarAcidityZone.class, example = "SUGAR_RICH_APPLES") @NonNull SugarAcidityZone zone,
-    @Schema(description = "Specific gravity range for the zone.") @NonNull SugarAcidityGraphRangeResponse sugarRange,
-    @Schema(description = "Titratable acidity range for the zone.") @NonNull SugarAcidityGraphRangeResponse acidityRange
+    @Schema(description = "Zone code.", implementation = SugarAcidityZone.class, example = "SUGAR_RICH_APPLES", requiredMode = Schema.RequiredMode.REQUIRED) @NonNull SugarAcidityZone zone,
+    @Schema(description = "Specific gravity range for the zone.", requiredMode = Schema.RequiredMode.REQUIRED) @NonNull SugarAcidityGraphRangeResponse sugarRange,
+    @Schema(description = "Titratable acidity range for the zone.", requiredMode = Schema.RequiredMode.REQUIRED) @NonNull SugarAcidityGraphRangeResponse acidityRange
 ) implements SugarAcidityGraphZoneResponse {
 
   @Override
-  @Schema(description = "Zone shape discriminator.", implementation = SugarAcidityGraphZoneShape.class, example = "RECTANGLE")
+  @Schema(description = "Zone shape discriminator.", implementation = SugarAcidityGraphZoneShape.class, example = "RECTANGLE", requiredMode = Schema.RequiredMode.REQUIRED)
   public @NonNull SugarAcidityGraphZoneShape shape() {
     return SugarAcidityGraphZoneShape.RECTANGLE;
   }

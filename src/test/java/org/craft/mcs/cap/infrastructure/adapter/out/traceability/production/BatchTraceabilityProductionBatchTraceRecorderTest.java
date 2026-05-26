@@ -1,5 +1,6 @@
 package org.craft.mcs.cap.infrastructure.adapter.out.traceability.production;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -12,7 +13,6 @@ import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.value.CiderMakerId;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchCompositionTraceSource;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchFeedstockTraceSource;
-import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchTraceSource;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatch;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatchId;
 import org.craft.mcs.cap.core.production.domain.model.ProductionInput;
@@ -21,10 +21,14 @@ import org.craft.mcs.cap.core.production.domain.model.ProductionSourceCompositio
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchKind;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchName;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
+import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.MeasurementValueKind;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
 import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.jspecify.annotations.NonNull;
@@ -35,47 +39,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class BatchTraceabilityProductionBatchTraceRecorderTest {
 
-  @Test
-  void mapsProductionCreatedFactToBatchTraceStep() {
-    final var appendUseCase = new CapturingAppendUseCase();
-    final var recorder = new BatchTraceabilityProductionBatchTraceRecorder(appendUseCase);
-    final var ciderMakerId = CiderMakerId.of(UUID.randomUUID());
-    final var sourceId = UUID.randomUUID();
-    final var input = productionInput(sourceId);
-    final var productionBatch = productionBatch(ciderMakerId, input);
-    final var occurredAt = Instant.parse("2026-05-18T10:15:30Z");
-
-    recorder.recordCreated(
-        productionBatch,
-        List.of(new ProductionBatchFeedstockTraceSource(
+  private static ProductionInput productionInput(UUID sourceId) {
+    return new ProductionInput(
+        ProductionSourceComposition.of(List.of(new ProductionSourceComponent(
             FeedstockBatchId.of(sourceId),
-            "Late juice",
             VolumeValue.ofLiters("100")
-        )),
-        occurredAt,
-        "accepted input"
+        ))),
+        new ProductionProfileSnapshot(
+            SpecificGravityValue.of("1.052"),
+            TitratableAcidityValue.of("5.8"),
+            TanninityValue.of("1200"),
+            YeastAssimilableNitrogenValue.of("180")
+        ),
+        null
     );
-
-    assertThat(appendUseCase.step).isNotNull();
-    assertThat(appendUseCase.step.operationType()).isEqualTo(BatchTraceOperationType.CREATE_PRODUCTION_BATCH);
-    assertThat(appendUseCase.step.occurredAt()).isEqualTo(occurredAt);
-    assertThat(appendUseCase.step.note()).isEqualTo("accepted input");
-    assertThat(appendUseCase.step.inputs()).singleElement()
-        .satisfies(inputSubject -> {
-          assertThat(inputSubject.subject().type()).isEqualTo(BatchTraceSubjectType.FEEDSTOCK_BATCH);
-          assertThat(inputSubject.subject().id()).isEqualTo(sourceId.toString());
-          assertThat(inputSubject.subject().displayNameSnapshot()).isEqualTo("Late juice");
-          assertThat(inputSubject.snapshot().volume().liters()).isEqualByComparingTo("100");
-        });
-    assertThat(appendUseCase.step.outputs()).singleElement()
-        .satisfies(outputSubject -> {
-          assertThat(outputSubject.subject().type()).isEqualTo(BatchTraceSubjectType.PRODUCTION_BATCH);
-          assertThat(outputSubject.subject().id()).isEqualTo(productionBatch.batchId().value().toString());
-          assertThat(outputSubject.snapshot().volume().liters()).isEqualByComparingTo("100");
-          assertThat(outputSubject.snapshot().profile().valueOf(ChemicalAxis.SUGAR))
-              .get()
-              .satisfies(value -> assertThat(value.valueKind()).isEqualTo(MeasurementValueKind.CALCULATED));
-        });
   }
 
   @Test
@@ -106,17 +83,81 @@ class BatchTraceabilityProductionBatchTraceRecorderTest {
         });
   }
 
-  private static ProductionInput productionInput(UUID sourceId) {
-    return new ProductionInput(
-        ProductionSourceComposition.of(List.of(new ProductionSourceComponent(
+  private static ChemicalProfileAxes sourceAxes() {
+    return ChemicalProfileAxes.of(
+        axis(ChemicalAxis.SUGAR, "1.050"),
+        axis(ChemicalAxis.ACIDITY, "6.1"),
+        axis(ChemicalAxis.TANNINITY, "1400"),
+        axis(ChemicalAxis.YEAST_ASSIMILABLE_NITROGEN, "180")
+    );
+  }
+
+  @Test
+  void mapsProductionCreatedFactToBatchTraceStep() {
+    final var appendUseCase = new CapturingAppendUseCase();
+    final var recorder = new BatchTraceabilityProductionBatchTraceRecorder(appendUseCase);
+    final var ciderMakerId = CiderMakerId.of(UUID.randomUUID());
+    final var sourceId = UUID.randomUUID();
+    final var input = productionInput(sourceId);
+    final var productionBatch = productionBatch(ciderMakerId, input);
+    final var occurredAt = Instant.parse("2026-05-18T10:15:30Z");
+
+    recorder.recordCreated(
+        productionBatch,
+        List.of(new ProductionBatchFeedstockTraceSource(
             FeedstockBatchId.of(sourceId),
-            VolumeValue.ofLiters("100")
-        ))),
-        new ProductionProfileSnapshot(
-            SpecificGravityValue.of("1.052"),
-            TitratableAcidityValue.of("5.8"),
-            TanninityValue.of("1200")
-        ),
+            "Late juice",
+            VolumeValue.ofLiters("100"),
+            sourceAxes(),
+            ConfidenceLevel.LAB_VERIFIED
+        )),
+        occurredAt,
+        "accepted input"
+    );
+
+    assertThat(appendUseCase.step).isNotNull();
+    assertThat(appendUseCase.step.operationType()).isEqualTo(BatchTraceOperationType.CREATE_PRODUCTION_BATCH);
+    assertThat(appendUseCase.step.occurredAt()).isEqualTo(occurredAt);
+    assertThat(appendUseCase.step.note()).isEqualTo("accepted input");
+    assertThat(appendUseCase.step.inputs()).singleElement()
+        .satisfies(inputSubject -> {
+          assertThat(inputSubject.subject().type()).isEqualTo(BatchTraceSubjectType.FEEDSTOCK_BATCH);
+          assertThat(inputSubject.subject().id()).isEqualTo(sourceId.toString());
+          assertThat(inputSubject.subject().displayNameSnapshot()).isEqualTo("Late juice");
+          assertThat(inputSubject.snapshot().volume().liters()).isEqualByComparingTo("100");
+          assertThat(inputSubject.snapshot().confidence()).isEqualTo(ConfidenceLevel.LAB_VERIFIED);
+          assertThat(inputSubject.snapshot().profile().valueOf(ChemicalAxis.ACIDITY))
+              .get()
+              .satisfies(value -> assertThat(value.value()).isEqualByComparingTo("6.1"));
+          assertThat(inputSubject.snapshot().profile().valueOf(ChemicalAxis.YEAST_ASSIMILABLE_NITROGEN))
+              .get()
+              .satisfies(value -> assertThat(value.value()).isEqualByComparingTo("180"));
+        });
+    assertThat(appendUseCase.step.outputs()).singleElement()
+        .satisfies(outputSubject -> {
+          assertThat(outputSubject.subject().type()).isEqualTo(BatchTraceSubjectType.PRODUCTION_BATCH);
+          assertThat(outputSubject.subject().id()).isEqualTo(productionBatch.batchId().value().toString());
+          assertThat(outputSubject.snapshot().volume().liters()).isEqualByComparingTo("100");
+          assertThat(outputSubject.snapshot().profile().valueOf(ChemicalAxis.SUGAR))
+              .get()
+              .satisfies(value -> assertThat(value.valueKind()).isEqualTo(MeasurementValueKind.CALCULATED));
+          assertThat(outputSubject.snapshot().profile().valueOf(ChemicalAxis.YEAST_ASSIMILABLE_NITROGEN))
+              .get()
+              .satisfies(value -> {
+                assertThat(value.value()).isEqualByComparingTo("180");
+                assertThat(value.valueKind()).isEqualTo(MeasurementValueKind.CALCULATED);
+              });
+        });
+  }
+
+  private static AxisValue axis(ChemicalAxis axis, String value) {
+    return new AxisValue(
+        axis,
+        new BigDecimal(value),
+        MeasurementValueKind.EXACT,
+        null,
+        null,
+        null,
         null
     );
   }

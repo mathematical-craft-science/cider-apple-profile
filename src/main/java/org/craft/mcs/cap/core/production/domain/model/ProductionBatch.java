@@ -44,6 +44,7 @@ public final class ProductionBatch {
 
   private @Nullable String note;
 
+  @SuppressWarnings("java:S107")
   private ProductionBatch(
       @NonNull ProductionBatchId batchId,
       @NonNull CiderMakerId ciderMakerId,
@@ -66,6 +67,7 @@ public final class ProductionBatch {
     this.note = normalize(note);
   }
 
+  @SuppressWarnings("java:S107")
   public static @NonNull ProductionBatch create(
       @NonNull ProductionBatchId batchId,
       @NonNull CiderMakerId ciderMakerId,
@@ -89,6 +91,7 @@ public final class ProductionBatch {
     );
   }
 
+  @SuppressWarnings("java:S107")
   public static @NonNull ProductionBatch restore(
       @NonNull ProductionBatchId batchId,
       @NonNull CiderMakerId ciderMakerId,

@@ -3,6 +3,7 @@ package org.craft.mcs.cap.feedstock.application.usecase;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import org.craft.mcs.cap.core.cideranalysis.composition.optimization.application.port.in.OptimizeChemicalProfileCompositionCommand;
 import org.craft.mcs.cap.core.cideranalysis.composition.optimization.application.port.in.OptimizeChemicalProfileCompositionResult;
 import org.craft.mcs.cap.core.cideranalysis.composition.optimization.application.port.in.OptimizeChemicalProfileCompositionUseCase;
 import org.craft.mcs.cap.core.cideranalysis.profiletarget.scoring.application.port.in.ProfileTargetScoringPurpose;
@@ -187,8 +188,7 @@ class OptimizeFeedstockBatchCompositionServiceTest {
     final var optimizer = mock(OptimizeChemicalProfileCompositionUseCase.class);
     when(optimizer.optimize(any()))
         .thenAnswer(invocation -> {
-          final org.craft.mcs.cap.core.cideranalysis.composition.optimization.application.port.in.OptimizeChemicalProfileCompositionCommand command =
-              invocation.getArgument(0);
+          final OptimizeChemicalProfileCompositionCommand command = invocation.getArgument(0);
           return new OptimizeChemicalProfileCompositionResult(
               command.mode(),
               command.algorithm(),
@@ -201,10 +201,8 @@ class OptimizeFeedstockBatchCompositionServiceTest {
     return optimizer;
   }
 
-  private static ArgumentCaptor<org.craft.mcs.cap.core.cideranalysis.composition.optimization.application.port.in.OptimizeChemicalProfileCompositionCommand> genericCommandCaptor() {
-    return ArgumentCaptor.forClass(
-        org.craft.mcs.cap.core.cideranalysis.composition.optimization.application.port.in.OptimizeChemicalProfileCompositionCommand.class
-    );
+  private static ArgumentCaptor<OptimizeChemicalProfileCompositionCommand> genericCommandCaptor() {
+    return ArgumentCaptor.forClass(OptimizeChemicalProfileCompositionCommand.class);
   }
 
   private static OptimizeFeedstockBatchCompositionCommand command(

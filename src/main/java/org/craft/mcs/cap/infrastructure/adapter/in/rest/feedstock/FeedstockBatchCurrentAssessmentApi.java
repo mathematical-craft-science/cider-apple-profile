@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.UUID;
@@ -44,7 +45,7 @@ public interface FeedstockBatchCurrentAssessmentApi {
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
   )
   @NonNull ResponseEntity<@NonNull FeedstockBatchCurrentSugarAcidityZoneResponse> assessSugarAcidityZone(
-      @Parameter(description = "Feedstock batch identifier.", schema = @Schema(format = "uuid"))
+      @Parameter(description = "Feedstock batch identifier.", required = true, schema = @Schema(format = "uuid"))
       @NonNull UUID batchId
   );
 
@@ -57,8 +58,13 @@ public interface FeedstockBatchCurrentAssessmentApi {
       description = "Batch of current feedstock graph points.",
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = FeedstockBatchCurrentSugarAcidityZonePointBatchResponse.class))
   )
+  @ApiResponse(
+      responseCode = "400",
+      description = "Invalid current feedstock graph point query.",
+      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
+  )
   @NonNull ResponseEntity<@NonNull FeedstockBatchCurrentSugarAcidityZonePointBatchResponse> listSugarAcidityZonePoints(
-      @io.swagger.v3.oas.annotations.parameters.RequestBody(
+      @RequestBody(
           description = "Current feedstock graph point query.",
           required = true,
           content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = FeedstockBatchCurrentSugarAcidityZonePointQueryRequest.class))
@@ -81,7 +87,7 @@ public interface FeedstockBatchCurrentAssessmentApi {
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
   )
   @NonNull ResponseEntity<@NonNull FeedstockBatchCurrentPotentialAbvResponse> predictPotentialAbv(
-      @Parameter(description = "Feedstock batch identifier.", schema = @Schema(format = "uuid"))
+      @Parameter(description = "Feedstock batch identifier.", required = true, schema = @Schema(format = "uuid"))
       @NonNull UUID batchId
   );
 
@@ -101,7 +107,7 @@ public interface FeedstockBatchCurrentAssessmentApi {
   )
   @NonNull ResponseEntity<@NonNull FeedstockBatchCurrentFermentationStartReadinessResponse>
       assessFermentationStartReadiness(
-      @Parameter(description = "Feedstock batch identifier.", schema = @Schema(format = "uuid"))
+      @Parameter(description = "Feedstock batch identifier.", required = true, schema = @Schema(format = "uuid"))
       @NonNull UUID batchId
   );
 
@@ -114,8 +120,13 @@ public interface FeedstockBatchCurrentAssessmentApi {
       description = "Target distance scores.",
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = FeedstockBatchProfileTargetScoreBatchResponse.class))
   )
+  @ApiResponse(
+      responseCode = "400",
+      description = "Invalid target scoring request.",
+      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
+  )
   @NonNull ResponseEntity<@NonNull FeedstockBatchProfileTargetScoreBatchResponse> scoreProfileTarget(
-      @io.swagger.v3.oas.annotations.parameters.RequestBody(
+      @RequestBody(
           description = "Target scoring request.",
           required = true,
           content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ScoreFeedstockBatchProfileTargetRequest.class))
@@ -132,8 +143,18 @@ public interface FeedstockBatchCurrentAssessmentApi {
       description = "Composition optimization result.",
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = OptimizeFeedstockBatchCompositionResponse.class))
   )
+  @ApiResponse(
+      responseCode = "400",
+      description = "Invalid composition optimization request.",
+      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
+  )
+  @ApiResponse(
+      responseCode = "422",
+      description = "Optimization request is valid but cannot be solved with the selected sources or target.",
+      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
+  )
   @NonNull ResponseEntity<@NonNull OptimizeFeedstockBatchCompositionResponse> optimizeComposition(
-      @io.swagger.v3.oas.annotations.parameters.RequestBody(
+      @RequestBody(
           description = "Composition optimization request.",
           required = true,
           content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = OptimizeFeedstockBatchCompositionRequest.class))

@@ -8,17 +8,17 @@ import org.jspecify.annotations.Nullable;
 
 @Schema(description = "Query request for apple variety sugar-acidity graph points.")
 public record AppleVarietySugarAcidityZonePointQueryRequest(
-    @Schema(description = "Optional case-insensitive name fragment filter.", example = "kingston")
+    @Schema(description = "Optional case-insensitive name fragment filter.", example = "kingston", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @Nullable String nameContains,
-    @Schema(description = "Optional sugar-acidity zone filter.", implementation = SugarAcidityZone.class, example = "PERFECT_APPLES")
+    @Schema(description = "Optional sugar-acidity zone filter.", implementation = SugarAcidityZone.class, example = "PERFECT_APPLES", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @Nullable SugarAcidityZone zone,
-    @Schema(description = "Optional chemical profile capability filter.", implementation = ChemicalProfileCapability.class, example = "SUGAR_ACIDITY_PLOT")
+    @Schema(description = "Optional chemical profile capability filter.", implementation = ChemicalProfileCapability.class, example = "SUGAR_ACIDITY_PLOT", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @Nullable ChemicalProfileCapability capability,
-    @Schema(description = "Whether the optional capability must be met.", example = "true")
+    @Schema(description = "Whether the optional capability must be met.", example = "true", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @Nullable Boolean capable,
-    @Schema(description = "Opaque cursor returned by the previous page.")
+    @Schema(description = "Opaque cursor returned by the previous page.", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @Nullable String after,
-    @Schema(description = "Maximum number of results.", example = "50")
+    @Schema(description = "Maximum number of results.", example = "50", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @Nullable Integer limit
 ) {
 }

@@ -8,9 +8,12 @@ import org.jspecify.annotations.NonNull;
 
 @Schema(description = "Sugar-acidity plot metadata for frontend graph rendering.")
 public record SugarAcidityGraphMetadataResponse(
-    @Schema(description = "Specific gravity axis metadata.") @NonNull SugarAcidityGraphAxisResponse sugarAxis,
-    @Schema(description = "Titratable acidity axis metadata.") @NonNull SugarAcidityGraphAxisResponse acidityAxis,
-    @ArraySchema(schema = @Schema(description = "Graph zones with geometry required for rendering.", implementation = SugarAcidityGraphZoneResponse.class))
+    @Schema(description = "Specific gravity axis metadata.", requiredMode = Schema.RequiredMode.REQUIRED) @NonNull SugarAcidityGraphAxisResponse sugarAxis,
+    @Schema(description = "Titratable acidity axis metadata.", requiredMode = Schema.RequiredMode.REQUIRED) @NonNull SugarAcidityGraphAxisResponse acidityAxis,
+    @ArraySchema(
+        arraySchema = @Schema(description = "Graph zones with geometry required for rendering.", requiredMode = Schema.RequiredMode.REQUIRED),
+        schema = @Schema(implementation = SugarAcidityGraphZoneResponse.class)
+    )
     @NonNull List<@NonNull SugarAcidityGraphZoneResponse> zones
 ) {
 }

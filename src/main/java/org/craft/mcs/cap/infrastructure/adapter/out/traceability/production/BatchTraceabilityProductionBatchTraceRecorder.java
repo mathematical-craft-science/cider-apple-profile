@@ -40,8 +40,6 @@ import static java.util.Objects.requireNonNull;
 @RequiredArgsConstructor
 class BatchTraceabilityProductionBatchTraceRecorder implements ProductionBatchTraceRecorder {
 
-  private static final @NonNull String ACCEPTED_PRODUCTION_INPUT = "ACCEPTED_PRODUCTION_INPUT";
-
   private final @NonNull AppendBatchTraceStepUseCase appendBatchTraceStepUseCase;
 
   @Override
@@ -76,7 +74,11 @@ class BatchTraceabilityProductionBatchTraceRecorder implements ProductionBatchTr
                 source.id(),
                 source.displayName()
             ),
-            BatchTraceMaterialSnapshot.ofVolume(source.volume())
+            new BatchTraceMaterialSnapshot(
+                source.volume(),
+                source.profile(),
+                source.confidence()
+            )
         ))
         .toList();
   }
@@ -100,7 +102,7 @@ class BatchTraceabilityProductionBatchTraceRecorder implements ProductionBatchTr
         new BatchTraceMaterialSnapshot(
             productionBatch.volume(),
             toAxes(productionBatch.profile()),
-            ACCEPTED_PRODUCTION_INPUT
+            null
         )
     );
   }
@@ -130,6 +132,17 @@ class BatchTraceabilityProductionBatchTraceRecorder implements ProductionBatchTr
             : new AxisValue(
                 ChemicalAxis.TANNINITY,
                 profile.tannin().asBigDecimal(),
+                MeasurementValueKind.CALCULATED,
+                null,
+                null,
+                null,
+                null
+            ),
+        profile.yeastAssimilableNitrogen() == null
+            ? null
+            : new AxisValue(
+                ChemicalAxis.YEAST_ASSIMILABLE_NITROGEN,
+                profile.yeastAssimilableNitrogen().asBigDecimal(),
                 MeasurementValueKind.CALCULATED,
                 null,
                 null,

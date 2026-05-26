@@ -17,6 +17,7 @@ import org.craft.mcs.cap.core.cideranalysis.classification.rule.ClassificationRu
 import org.craft.mcs.cap.shared.kernel.chemical.axis.MeasurementValueKind;
 import org.jmolecules.ddd.annotation.Service;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import static java.util.Objects.requireNonNull;
 import static org.craft.mcs.cap.shared.kernel.math.DecimalComparisons.isAtMost;
@@ -75,7 +76,7 @@ public class ClassificationConfidencePolicy {
 
   private static boolean isCloseTo(
       @NonNull BigDecimal value,
-      @org.jspecify.annotations.Nullable BigDecimal boundary
+      @Nullable BigDecimal boundary
   ) {
     if (boundary == null || boundary.signum() == 0) {
       return false;
