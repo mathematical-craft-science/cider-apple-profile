@@ -7,6 +7,7 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import static java.util.Objects.requireNonNull;
+import static java.util.Objects.requireNonNullElse;
 import static org.craft.mcs.cap.shared.kernel.math.DecimalComparisons.isPositive;
 
 
@@ -50,6 +51,6 @@ public record ProfileTargetObjectiveWeights(
   }
 
   public @NonNull BigDecimal tanninOrDefault() {
-    return tannin == null ? BigDecimal.ONE : tannin;
+    return requireNonNullElse(tannin, BigDecimal.ONE); // NOSONAR
   }
 }

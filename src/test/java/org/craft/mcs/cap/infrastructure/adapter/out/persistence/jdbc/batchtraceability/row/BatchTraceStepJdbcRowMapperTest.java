@@ -132,7 +132,10 @@ class BatchTraceStepJdbcRowMapperTest {
         .containsExactly(new BigDecimal("180"), MeasurementValueKind.EXACT);
   }
 
-  private static BatchTraceSubject subject(BatchTraceSubjectType type, String id) {
+  private static BatchTraceSubject subject(
+      BatchTraceSubjectType type,
+      String id
+  ) {
     return BatchTraceSubject.of(type, id);
   }
 }

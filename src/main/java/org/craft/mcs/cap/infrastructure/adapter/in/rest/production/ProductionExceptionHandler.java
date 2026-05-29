@@ -3,7 +3,7 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.production;
 import java.net.URI;
 import org.craft.mcs.cap.core.production.application.ProductionSourceInsufficientAvailableVolumeException;
 import org.craft.mcs.cap.core.production.application.ProductionSourceOwnershipMismatchException;
-import org.craft.mcs.cap.shared.infrastructure.rest.measurement.CanonicalUnitLabels;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.measurement.CanonicalUnitLabels;
 import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
 import org.jspecify.annotations.NonNull;
 import org.springframework.core.Ordered;

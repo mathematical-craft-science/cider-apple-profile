@@ -188,7 +188,10 @@ class MassBalanceChemicalProfileCompositionStrategyTest {
     );
   }
 
-  private static @NonNull AxisValue axis(@NonNull ChemicalAxis axis, @NonNull String value) {
+  private static @NonNull AxisValue axis(
+      @NonNull ChemicalAxis axis,
+      @NonNull String value
+  ) {
     return new AxisValue(
         axis,
         new BigDecimal(value),

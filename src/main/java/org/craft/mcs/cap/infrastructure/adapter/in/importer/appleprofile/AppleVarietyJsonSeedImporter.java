@@ -115,8 +115,9 @@ public final class AppleVarietyJsonSeedImporter {
       builder.tanninity(tanninity);
     }
 
-    if (dto.source() != null) {
-      builder.source(ChemicalProfileSource.of(dto.source())); // NOSONAR
+    final var source = dto.source();
+    if (source != null) {
+      builder.source(ChemicalProfileSource.of(source));
     }
 
     builder.confidence(dto.confidence());
@@ -146,13 +147,22 @@ public final class AppleVarietyJsonSeedImporter {
           factory.create(range.max())
       );
 
-      case StatisticalMeasurementSeedDto statistical -> StatisticalMeasurement.of(
-          factory.create(statistical.mean()),
-          statistical.median() == null ? null : factory.create(statistical.median()),  // NOSONAR
-          statistical.standardDeviation() == null ? null : new BigDecimal(statistical.standardDeviation()),
-          statistical.sampleSize()
-      );
+      case StatisticalMeasurementSeedDto statistical -> statisticalMeasurement(statistical, factory);
     };
+  }
+
+  private static <T extends Comparable<T>> @NonNull StatisticalMeasurement<T> statisticalMeasurement(
+      @NonNull StatisticalMeasurementSeedDto statistical,
+      @NonNull StringValueFactory<T> factory
+  ) {
+    final var median = statistical.median();
+    final var standardDeviation = statistical.standardDeviation();
+    return StatisticalMeasurement.of(
+        factory.create(statistical.mean()),
+        median == null ? null : factory.create(median),
+        standardDeviation == null ? null : new BigDecimal(standardDeviation),
+        statistical.sampleSize()
+    );
   }
 
   @FunctionalInterface

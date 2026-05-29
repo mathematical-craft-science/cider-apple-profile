@@ -3,7 +3,7 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.dto;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
-import org.craft.mcs.cap.shared.kernel.chemical.capability.ChemicalProfileCapability;
+import org.craft.mcs.cap.core.cideranalysis.profileaxis.domain.ChemicalProfileCapability;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.jspecify.annotations.NonNull;
 

@@ -67,7 +67,11 @@ class FermentationStartReadinessAssessorTest {
         .anySatisfy(check -> assertThat(check.code()).isEqualTo("SUGAR_MISSING"));
   }
 
-  private static ChemicalProfile profile(String sugar, String ph, String yan) {
+  private static ChemicalProfile profile(
+      String sugar,
+      String ph,
+      String yan
+  ) {
     return ChemicalProfile.builder()
         .sugar(ExactMeasurement.of(SugarConcentration.ofSpecificGravity(SpecificGravityValue.of(sugar))))
         .ph(ExactMeasurement.of(PhValue.of(ph)))

@@ -44,12 +44,16 @@ public final class RequiredNullableOpenApiCustomizer implements OpenApiCustomize
       @NonNull Class<?> dtoClass
   ) {
     final var schema = schemas.get(dtoClass.getSimpleName());
-    if (schema == null || schema.getProperties() == null) {  // NOSONAR
+    if (schema == null) {
+      return;
+    }
+    final var properties = schema.getProperties();
+    if (properties == null) {
       return;
     }
 
     for (final var component : dtoClass.getRecordComponents()) {
-      final var property = property(schema, component);
+      final var property = property(properties, component);
       if (property == null) {
         continue;
       }
@@ -63,10 +67,10 @@ public final class RequiredNullableOpenApiCustomizer implements OpenApiCustomize
   }
 
   private static @Nullable Schema<?> property(
-      @NonNull Schema<?> schema,
+      @NonNull Map<String, Schema> properties,
       @NonNull RecordComponent component
   ) {
-    return schema.getProperties().get(component.getName());
+    return properties.get(component.getName());
   }
 
   private static boolean isRequired(@NonNull RecordComponent component) {

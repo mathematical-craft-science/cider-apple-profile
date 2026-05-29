@@ -1,14 +1,15 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.profiletarget;
 
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.appleprofile.application.port.in.QueryAppleVarietyProfileTargetCandidatesUseCase;
+import org.craft.mcs.cap.core.appleprofile.application.profiletarget.port.in.QueryAppleVarietyProfileTargetCandidatesUseCase;
 import org.craft.mcs.cap.core.cideranalysis.sugaracidity.target.domain.SugarAcidityTargetResolver;
-import org.craft.mcs.cap.core.feedstock.application.port.in.QueryFeedstockBatchProfileTargetCandidatesUseCase;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.profiletarget.dto.AppleVarietyProfileTargetCandidatesResponse;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.profiletarget.dto.AppleVarietyProfileTargetCandidateSearchRequest;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.profiletarget.dto.FeedstockBatchProfileTargetCandidatesResponse;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.profiletarget.dto.FeedstockBatchProfileTargetCandidateSearchRequest;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.profiletarget.mapper.ProfileTargetCandidateRestMapper;
+import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.QueryFeedstockBatchProfileTargetCandidatesUseCase;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.profiletarget.applevariety.dto.AppleVarietyProfileTargetCandidatesResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.profiletarget.applevariety.dto.AppleVarietyProfileTargetCandidateSearchRequest;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.profiletarget.applevariety.mapper.AppleVarietyProfileTargetCandidateRestMapper;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.profiletarget.feedstock.dto.FeedstockBatchProfileTargetCandidatesResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.profiletarget.feedstock.dto.FeedstockBatchProfileTargetCandidateSearchRequest;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.profiletarget.feedstock.mapper.FeedstockBatchProfileTargetCandidateRestMapper;
 import org.jspecify.annotations.NonNull;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -36,10 +37,10 @@ public final class ProfileTargetCandidateController implements ProfileTargetCand
       @RequestBody @NonNull AppleVarietyProfileTargetCandidateSearchRequest request
   ) {
     final var candidates = queryAppleVarietyCandidatesUseCase.query(
-        ProfileTargetCandidateRestMapper.toQuery(request, targetResolver)
+        AppleVarietyProfileTargetCandidateRestMapper.toQuery(request, targetResolver)
     );
 
-    return ResponseEntity.ok(ProfileTargetCandidateRestMapper.toResponse(candidates));
+    return ResponseEntity.ok(AppleVarietyProfileTargetCandidateRestMapper.toResponse(candidates));
   }
 
   @Override
@@ -52,9 +53,9 @@ public final class ProfileTargetCandidateController implements ProfileTargetCand
       @RequestBody @NonNull FeedstockBatchProfileTargetCandidateSearchRequest request
   ) {
     final var candidates = queryFeedstockBatchCandidatesUseCase.query(
-        ProfileTargetCandidateRestMapper.toFeedstockQuery(request)
+        FeedstockBatchProfileTargetCandidateRestMapper.toQuery(request)
     );
 
-    return ResponseEntity.ok(ProfileTargetCandidateRestMapper.toResponse(candidates));
+    return ResponseEntity.ok(FeedstockBatchProfileTargetCandidateRestMapper.toResponse(candidates));
   }
 }

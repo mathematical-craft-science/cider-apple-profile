@@ -71,7 +71,10 @@ class JdbcPersistenceModelArchitectureTest {
   ) {
     return new ArchCondition<>("have a field annotated with @" + annotationType.getSimpleName()) {
       @Override
-      public void check(@NonNull JavaClass item, @NonNull ConditionEvents events) {
+      public void check(
+          @NonNull JavaClass item,
+          @NonNull ConditionEvents events
+      ) {
         final var hasAnnotatedField = item.getAllFields()
             .stream()
             .anyMatch(field -> field.isAnnotatedWith(annotationType));
@@ -94,7 +97,10 @@ class JdbcPersistenceModelArchitectureTest {
   ) {
     return new ArchCondition<>("not have Spring Data JDBC mapping annotations on fields") {
       @Override
-      public void check(@NonNull JavaClass item, @NonNull ConditionEvents events) {
+      public void check(
+          @NonNull JavaClass item,
+          @NonNull ConditionEvents events
+      ) {
         final var violations = item.getAllFields()
             .stream()
             .flatMap(field -> fieldViolations(field, List.of(annotationTypes)).stream())
@@ -126,7 +132,10 @@ class JdbcPersistenceModelArchitectureTest {
   private static @NonNull ArchCondition<JavaClass> notDeclareReadModelQueryMethods() {
     return new ArchCondition<>("not declare read-model query methods") {
       @Override
-      public void check(@NonNull JavaClass item, @NonNull ConditionEvents events) {
+      public void check(
+          @NonNull JavaClass item,
+          @NonNull ConditionEvents events
+      ) {
         final var violations = item.getMethods()
             .stream()
             .filter(method -> method.getOwner().equals(item))

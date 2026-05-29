@@ -10,7 +10,10 @@ public interface SugarConversionStrategy<F extends SugarValue, T extends SugarVa
 
   T convert(F source);
 
-  default boolean supports(Class<?> source, Class<?> target) {
+  default boolean supports(
+      Class<?> source,
+      Class<?> target
+  ) {
     return sourceType().equals(source) && targetType().equals(target);
   }
 }

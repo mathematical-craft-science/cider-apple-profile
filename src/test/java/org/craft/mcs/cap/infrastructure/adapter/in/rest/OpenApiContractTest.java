@@ -89,7 +89,21 @@ class OpenApiContractTest {
     assertStringFormat(schemaProperty(openApi, "FeedstockMeasurementResponse", "measuredAt"), "date-time");
     assertStringFormat(schemaProperty(openApi, "FeedstockSeasonResponse", "startsOn"), "date");
     assertArray(schemaProperty(openApi, "AppleVarietySugarAcidityZonePointBatchResponse", "points"));
+    assertArray(schemaProperty(openApi, "FeedstockBatchCurrentSugarAcidityZonePointBatchResponse", "points"));
     assertArray(schemaProperty(openApi, "FeedstockMeasurementSugarAcidityZonePointBatchResponse", "unplottable"));
+    assertStringFormat(schemaProperty(openApi, "FeedstockBatchGraphPointResponse", "batchId"), "uuid");
+    assertStringFormat(schemaProperty(openApi, "FeedstockBatchGraphPointResponse", "ciderMakerId"), "uuid");
+    assertStringFormat(schemaProperty(openApi, "FeedstockBatchGraphPointResponse", "currentMeasurementId"), "uuid");
+    assertStringFormat(schemaProperty(openApi, "FeedstockBatchGraphPointResponse", "measuredAt"), "date-time");
+    assertArray(schemaProperty(openApi, "FeedstockBatchGraphPointResponse", "missingAxes"));
+    assertRequiredProperties(openApi, "FeedstockBatchGraphPointResponse",
+        "batchId", "batchName", "ciderMakerId", "currentMeasurementId", "measuredAt", "plottable", "missingAxes");
+    assertNotRequiredProperties(openApi, "FeedstockBatchGraphPointResponse",
+        "point", "zone", "assessment", "capabilityAssessment");
+    assertNullable(schemaProperty(openApi, "FeedstockBatchGraphPointResponse", "point"));
+    assertNullable(schemaProperty(openApi, "FeedstockBatchGraphPointResponse", "zone"));
+    assertNullable(schemaProperty(openApi, "FeedstockBatchGraphPointResponse", "assessment"));
+    assertNullable(schemaProperty(openApi, "FeedstockBatchGraphPointResponse", "capabilityAssessment"));
 
     assertEnumProperty(openApi, "CreateFeedstockBatchRequest", "type", "APPLE_JUICE");
     assertEnumProperty(openApi, "ChemicalProfileCapabilityAssessmentResponse", "capability", "SUGAR_ACIDITY_PLOT");
@@ -511,7 +525,11 @@ class OpenApiContractTest {
         .isFalse();
   }
 
-  private static JsonNode operation(JsonNode openApi, String path, String method) {
+  private static JsonNode operation(
+      JsonNode openApi,
+      String path,
+      String method
+  ) {
     final var operation = openApi.path("paths").path(path).path(method);
     assertThat(operation.isMissingNode())
         .as("%s %s operation exists", method, path)
@@ -519,7 +537,11 @@ class OpenApiContractTest {
     return operation;
   }
 
-  private static JsonNode schemaProperty(JsonNode openApi, String schemaName, String propertyName) {
+  private static JsonNode schemaProperty(
+      JsonNode openApi,
+      String schemaName,
+      String propertyName
+  ) {
     final var property = openApi
         .path("components")
         .path("schemas")
@@ -551,7 +573,10 @@ class OpenApiContractTest {
     assertThat(required).doesNotContain(propertyNames);
   }
 
-  private static List<String> requiredProperties(JsonNode openApi, String schemaName) {
+  private static List<String> requiredProperties(
+      JsonNode openApi,
+      String schemaName
+  ) {
     return StreamSupport.stream(openApi
             .path("components")
             .path("schemas")
@@ -592,14 +617,20 @@ class OpenApiContractTest {
         .isEqualTo(required);
   }
 
-  private static void assertOneOfSchema(JsonNode openApi, String schemaName) {
+  private static void assertOneOfSchema(
+      JsonNode openApi,
+      String schemaName
+  ) {
     final var schema = openApi.path("components").path("schemas").path(schemaName);
     assertThat(schema.path("oneOf").isArray())
         .as("%s should remain a discriminated oneOf union", schemaName)
         .isTrue();
   }
 
-  private static void assertNoAllOfSchema(JsonNode openApi, String schemaName) {
+  private static void assertNoAllOfSchema(
+      JsonNode openApi,
+      String schemaName
+  ) {
     final var schema = openApi.path("components").path("schemas").path(schemaName);
     assertThat(schema.has("allOf"))
         .as("%s should be a flat object schema for TypeScript generators", schemaName)
@@ -631,12 +662,18 @@ class OpenApiContractTest {
         .isEmpty();
   }
 
-  private static void assertStringFormat(JsonNode property, String format) {
+  private static void assertStringFormat(
+      JsonNode property,
+      String format
+  ) {
     assertThat(hasType(property, "string")).isTrue();
     assertThat(property.path("format").asText()).isEqualTo(format);
   }
 
-  private static boolean hasType(JsonNode property, String type) {
+  private static boolean hasType(
+      JsonNode property,
+      String type
+  ) {
     if (type.equals(property.path("type").asText())) {
       return true;
     }
@@ -721,7 +758,10 @@ class OpenApiContractTest {
         .isEmpty();
   }
 
-  private static JsonNode resolveSchema(JsonNode openApi, JsonNode schema) {
+  private static JsonNode resolveSchema(
+      JsonNode openApi,
+      JsonNode schema
+  ) {
     final var ref = schema.path("$ref").asText();
     if (ref.isBlank()) {
       return schema;

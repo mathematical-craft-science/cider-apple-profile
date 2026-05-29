@@ -13,8 +13,8 @@ import tech.units.indriya.quantity.Quantities;
 import static java.util.Objects.requireNonNull;
 
 
-public abstract class MeasuredValue<Q extends Quantity<Q>, SELF extends MeasuredValue<Q, SELF>> // NOSONAR
-    implements Comparable<SELF> {
+public abstract class MeasuredValue<Q extends Quantity<Q>, S extends MeasuredValue<Q, S>>
+    implements Comparable<S> {
 
   private final Quantity<Q> value;
   private final Unit<Q> unit;
@@ -86,22 +86,22 @@ public abstract class MeasuredValue<Q extends Quantity<Q>, SELF extends Measured
   }
 
   @Override
-  public final int compareTo(@NonNull SELF other) {
+  public final int compareTo(@NonNull S other) {
     requireNonNull(other);
     return this.asBigDecimal().compareTo(other.asBigDecimal());
   }
 
-  public final boolean isLessThan(@NonNull SELF other) {
+  public final boolean isLessThan(@NonNull S other) {
     requireNonNull(other, "measured value to compare cannot be null");
     return compareTo(other) < 0;
   }
 
-  public final boolean isGreaterThan(@NonNull SELF other) {
+  public final boolean isGreaterThan(@NonNull S other) {
     requireNonNull(other, "measured value to compare cannot be null");
     return compareTo(other) > 0;
   }
 
-  public final boolean exceeds(@NonNull SELF limit) {
+  public final boolean exceeds(@NonNull S limit) {
     requireNonNull(limit, "measured value limit cannot be null");
     return isGreaterThan(limit);
   }

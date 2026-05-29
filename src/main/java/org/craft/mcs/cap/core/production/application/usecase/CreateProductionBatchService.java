@@ -6,9 +6,10 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchNotFoundException;
-import org.craft.mcs.cap.core.feedstock.application.port.out.FeedstockBatchRepository;
+import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchRepository;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.core.production.application.ProductionSourceInsufficientAvailableVolumeException;
@@ -87,7 +88,8 @@ public class CreateProductionBatchService
       @NonNull CreateProductionBatchCommand command
   ) {
     final var sources = command.input().sourceComposition().sources();
-    final var batchesById = new LinkedHashMap<FeedstockBatchId, FeedstockBatch>(sources.size()); // NOSONAR
+    final Map<@NonNull FeedstockBatchId, @NonNull FeedstockBatch> batchesById =
+        LinkedHashMap.newLinkedHashMap(sources.size());
 
     for (final var source : sources) {
       final var batch = feedstockBatchRepository.findById(source.feedstockBatchId())
@@ -152,10 +154,7 @@ public class CreateProductionBatchService
       @NonNull FeedstockBatchId batchId,
       @NonNull Map<@NonNull FeedstockBatchId, @NonNull FeedstockBatch> batchesById
   ) {
-    final var batch = batchesById.get(batchId);
-    if (batch == null) { // NOSONAR
-      throw new IllegalStateException("loaded feedstock batch map does not contain source " + batchId.value());
-    }
-    return batch;
+    return Optional.ofNullable(batchesById.get(batchId))
+        .orElseThrow(() -> new IllegalStateException("loaded feedstock batch map does not contain source " + batchId.value()));
   }
 }

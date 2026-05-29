@@ -150,7 +150,10 @@ class BatchTraceabilityProductionBatchTraceRecorderTest {
         });
   }
 
-  private static AxisValue axis(ChemicalAxis axis, String value) {
+  private static AxisValue axis(
+      ChemicalAxis axis,
+      String value
+  ) {
     return new AxisValue(
         axis,
         new BigDecimal(value),

@@ -81,7 +81,10 @@ public final class ChunkedCursorPageCollector {
   @FunctionalInterface
   public interface CandidateFetcher<C extends @NonNull Object, T extends @NonNull Object> {
 
-    @NonNull List<T> fetch(@Nullable C afterCursor, int limit);
+    @NonNull List<T> fetch(
+        @Nullable C afterCursor,
+        int limit
+    );
   }
 
   @FunctionalInterface

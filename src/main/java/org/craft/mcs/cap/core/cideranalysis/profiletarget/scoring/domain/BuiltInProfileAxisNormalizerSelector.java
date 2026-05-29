@@ -4,6 +4,7 @@ import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
 
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.Optional;
 import org.craft.mcs.cap.core.cideranalysis.sugaracidity.zone.domain.SugarAcidityZoneThresholds;
 import org.jspecify.annotations.NonNull;
 
@@ -56,10 +57,7 @@ public final class BuiltInProfileAxisNormalizerSelector implements ProfileAxisNo
       @NonNull ProfileAxisNormalizerCode code
   ) {
     requireNonNull(code, "profile axis normalizer code cannot be null");
-    final var normalizer = normalizers.get(code);
-    if (normalizer == null) { // NOSONAR
-      throw new DomainRuleViolationException("No profile axis normalizer registered for code: " + code);
-    }
-    return normalizer;
+    return Optional.ofNullable(normalizers.get(code))
+        .orElseThrow(() -> new DomainRuleViolationException("No profile axis normalizer registered for code: " + code));
   }
 }

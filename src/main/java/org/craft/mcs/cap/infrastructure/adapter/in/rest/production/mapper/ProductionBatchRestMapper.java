@@ -1,5 +1,6 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.production.mapper;
 
+import java.math.BigDecimal;
 import java.util.List;
 import org.craft.mcs.cap.core.cideranalysis.abv.domain.PotentialAbvPredictor;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatch;
@@ -22,17 +23,18 @@ import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.Productio
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.ProductionBatchSourceResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.ProductionProfileSnapshotRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.abv.mapper.PotentialAbvPredictionRestMapper;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.sugaracidity.dto.CalculatedSugarAcidityAxisPointResponse;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.sugaracidity.dto.SugarAcidityProfilePointResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.sugaracidity.dto.CalculatedSugarAcidityAxisPointResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.sugaracidity.dto.SugarAcidityProfilePointResponse;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
-import org.craft.mcs.cap.shared.infrastructure.rest.measurement.CanonicalUnitLabels;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.measurement.CanonicalUnitLabels;
 import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
 import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import static java.util.Objects.requireNonNull;
 
@@ -52,11 +54,11 @@ public final class ProductionBatchRestMapper {
         ProductionBatchName.of(request.name()),
         requireNonNull(request.kind(), "production batch kind cannot be null"),
         new ProductionInput(
-            ProductionSourceComposition.of(request.sources().stream()
+            ProductionSourceComposition.of(requireNonNull(request.sources(), "production sources cannot be null").stream()
                 .map(ProductionBatchRestMapper::toSourceComponent)
                 .toList()),
-            toProfileSnapshot(request.profile()),
-            request.targetDistance() == null ? null : ProductionTargetDistance.of(request.targetDistance()) // NOSONAR
+            toProfileSnapshot(requireNonNull(request.profile(), "production profile snapshot cannot be null")),
+            toTargetDistance(request.targetDistance())
         ),
         request.note()
     );
@@ -92,16 +94,11 @@ public final class ProductionBatchRestMapper {
         batch.status(),
         new DecimalQuantityResponse(batch.volume().liters(), CanonicalUnitLabels.VOLUME),
         toProfilePointResponse(batch.profile()),
-        batch.profile().yeastAssimilableNitrogen() == null
-            ? null
-            : new DecimalQuantityResponse( // NOSONAR
-                batch.profile().yeastAssimilableNitrogen().asBigDecimal(), // NOSONAR
-                CanonicalUnitLabels.YEAST_ASSIMILABLE_NITROGEN
-            ),
+        toYeastAssimilableNitrogenResponse(batch.profile()),
         PotentialAbvPredictionRestMapper.toResponse(potentialAbvPredictor.predict(
             SugarConcentration.ofSpecificGravity(batch.profile().sugar())
         )),
-        batch.targetDistance() == null ? null : batch.targetDistance().value(), // NOSONAR
+        toTargetDistanceValue(batch.targetDistance()),
         batch.note()
     );
   }
@@ -126,7 +123,7 @@ public final class ProductionBatchRestMapper {
     requireNonNull(request, "create production batch source request cannot be null");
     return new ProductionSourceComponent(
         FeedstockBatchId.of(requireNonNull(request.feedstockBatchId(), "feedstock batch id cannot be null")),
-        VolumeValue.ofLiters(request.volumeLiters())
+        VolumeValue.ofLiters(requireNonNull(request.volumeLiters(), "production source volume cannot be null"))
     );
   }
 
@@ -135,12 +132,10 @@ public final class ProductionBatchRestMapper {
   ) {
     requireNonNull(request, "production profile snapshot request cannot be null");
     return new ProductionProfileSnapshot(
-        SpecificGravityValue.of(request.sugar()),
-        TitratableAcidityValue.of(request.acidity()),
-        request.tannin() == null ? null : TanninityValue.of(request.tannin()), // NOSONAR
-        request.yeastAssimilableNitrogen() == null
-            ? null
-            : YeastAssimilableNitrogenValue.of(request.yeastAssimilableNitrogen()) // NOSONAR
+        SpecificGravityValue.of(requireNonNull(request.sugar(), "production sugar cannot be null")),
+        TitratableAcidityValue.of(requireNonNull(request.acidity(), "production acidity cannot be null")),
+        toTanninValue(request),
+        toYeastAssimilableNitrogenValue(request)
     );
   }
 
@@ -155,14 +150,9 @@ public final class ProductionBatchRestMapper {
             .map(ProductionBatchRestMapper::toSourceResponse)
             .toList(),
         toProfilePointResponse(input.profile()),
-        input.profile().yeastAssimilableNitrogen() == null
-            ? null
-            : new DecimalQuantityResponse( // NOSONAR
-                input.profile().yeastAssimilableNitrogen().asBigDecimal(), // NOSONAR
-                CanonicalUnitLabels.YEAST_ASSIMILABLE_NITROGEN
-            ),
+        toYeastAssimilableNitrogenResponse(input.profile()),
         new DecimalQuantityResponse(composition.totalVolume().liters(), CanonicalUnitLabels.VOLUME),
-        input.targetDistance() == null ? null : input.targetDistance().value() // NOSONAR
+        toTargetDistanceValue(input.targetDistance())
     );
   }
 
@@ -186,12 +176,49 @@ public final class ProductionBatchRestMapper {
             profile.acidity().asBigDecimal(),
             CanonicalUnitLabels.TITRATABLE_ACIDITY
         ),
-        profile.tannin() == null
-            ? null
-            : new CalculatedSugarAcidityAxisPointResponse( // NOSONAR
-                profile.tannin().asBigDecimal(), // NOSONAR
-                CanonicalUnitLabels.TANNINITY
-            )
+        toTanninAxisPointResponse(profile)
     );
+  }
+
+  private static @Nullable ProductionTargetDistance toTargetDistance(@Nullable BigDecimal distance) {
+    return distance == null ? null : ProductionTargetDistance.of(distance);
+  }
+
+  private static @Nullable BigDecimal toTargetDistanceValue(
+      @Nullable ProductionTargetDistance distance
+  ) {
+    return distance == null ? null : distance.value();
+  }
+
+  private static @Nullable TanninityValue toTanninValue(@NonNull ProductionProfileSnapshotRequest request) {
+    return request.tannin() == null
+           ? null
+           : TanninityValue.of(request.tannin());  // NOSONAR
+  }
+
+  private static @Nullable YeastAssimilableNitrogenValue toYeastAssimilableNitrogenValue(
+      @NonNull ProductionProfileSnapshotRequest request
+  ) {
+    return request.yeastAssimilableNitrogen() == null
+        ? null
+        : YeastAssimilableNitrogenValue.of(request.yeastAssimilableNitrogen()); // NOSONAR
+  }
+
+  private static @Nullable DecimalQuantityResponse toYeastAssimilableNitrogenResponse(
+      @NonNull ProductionProfileSnapshot profile
+  ) {
+    final var yan = profile.yeastAssimilableNitrogen();
+    return yan == null
+        ? null
+        : new DecimalQuantityResponse(yan.asBigDecimal(), CanonicalUnitLabels.YEAST_ASSIMILABLE_NITROGEN);
+  }
+
+  private static @Nullable CalculatedSugarAcidityAxisPointResponse toTanninAxisPointResponse(
+      @NonNull ProductionProfileSnapshot profile
+  ) {
+    final var tannin = profile.tannin();
+    return tannin == null
+        ? null
+        : new CalculatedSugarAcidityAxisPointResponse(tannin.asBigDecimal(), CanonicalUnitLabels.TANNINITY);
   }
 }

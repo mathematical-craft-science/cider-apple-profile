@@ -67,8 +67,14 @@ abstract class AbstractSugarAcidityZoneAssessor
     return new SugarAcidityProfilePoint(
         axes.valueOf(ChemicalAxis.SUGAR).map(AbstractSugarAcidityZoneAssessor::pointOf).orElseThrow(),
         axes.valueOf(ChemicalAxis.ACIDITY).map(AbstractSugarAcidityZoneAssessor::pointOf).orElseThrow(),
-        axes.valueOf(ChemicalAxis.TANNINITY).map(AbstractSugarAcidityZoneAssessor::pointOf).orElse(null) // NOSONAR
+        optionalPointOf(axes.valueOf(ChemicalAxis.TANNINITY))
     );
+  }
+
+  private static @Nullable SugarAcidityAxisPoint optionalPointOf(
+      @NonNull Optional<@NonNull AxisValue> value
+  ) {
+    return value.map(AbstractSugarAcidityZoneAssessor::pointOf).orElse(null); // NOSONAR
   }
 
   protected static @NonNull SugarAcidityLevel levelOf(

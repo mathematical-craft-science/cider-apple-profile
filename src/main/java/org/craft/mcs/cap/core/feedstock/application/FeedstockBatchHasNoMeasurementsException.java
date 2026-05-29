@@ -15,7 +15,7 @@ public final class FeedstockBatchHasNoMeasurementsException
   @Serial
   private static final long serialVersionUID = 1L;
 
-  private final @NonNull FeedstockBatchId batchId; // NOSONAR
+  private final transient @NonNull FeedstockBatchId batchId;
 
   public FeedstockBatchHasNoMeasurementsException(@NonNull FeedstockBatchId batchId) {
     super("feedstock batch has no measurements: " + requireNonNull(batchId, "feedstock batch id cannot be null").value());

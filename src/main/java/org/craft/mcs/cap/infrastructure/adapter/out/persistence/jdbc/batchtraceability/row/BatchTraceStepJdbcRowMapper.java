@@ -3,6 +3,7 @@ package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.batchtrace
 import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
+import java.util.UUID;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceId;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceMaterialSnapshot;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStep;
@@ -32,7 +33,7 @@ public final class BatchTraceStepJdbcRowMapper {
     final var row = new BatchTraceStepJdbcRow(
         step.stepId().value(),
         step.batchTraceId().value(),
-        step.parentStepId() == null ? null : step.parentStepId().value(), // NOSONAR
+        stepIdValue(step.parentStepId()),
         step.operationType(),
         step.occurredAt(),
         step.performedBy(),
@@ -50,7 +51,7 @@ public final class BatchTraceStepJdbcRowMapper {
     return new BatchTraceStep(
         BatchTraceId.of(requireNonNull(row.traceId, "batch trace id cannot be null")),
         BatchTraceStepId.of(requireNonNull(row.stepId, "batch trace step id cannot be null")),
-        row.parentStepId == null ? null : BatchTraceStepId.of(row.parentStepId), // NOSONAR
+        stepId(row.parentStepId),
         requireNonNull(row.operationType, "batch trace operation type cannot be null"),
         toSubjects(row, BatchTraceStepSubjectRole.INPUT),
         toSubjects(row, BatchTraceStepSubjectRole.OUTPUT),
@@ -111,20 +112,16 @@ public final class BatchTraceStepJdbcRowMapper {
       return;
     }
 
-    row.snapshotVolumeLiters = snapshot.volume() == null ? null : snapshot.volume().liters(); // NOSONAR
-    row.snapshotConfidence = snapshot.confidence() == null ? null : snapshot.confidence().name(); // NOSONAR
-    applyAxis(row, ChemicalAxis.SUGAR, snapshot.profile() == null
-        ? null
-        : snapshot.profile().valueOf(ChemicalAxis.SUGAR).orElse(null)); // NOSONAR
-    applyAxis(row, ChemicalAxis.ACIDITY, snapshot.profile() == null
-        ? null
-        : snapshot.profile().valueOf(ChemicalAxis.ACIDITY).orElse(null)); // NOSONAR
-    applyAxis(row, ChemicalAxis.TANNINITY, snapshot.profile() == null
-        ? null
-        : snapshot.profile().valueOf(ChemicalAxis.TANNINITY).orElse(null)); // NOSONAR
-    applyAxis(row, ChemicalAxis.YEAST_ASSIMILABLE_NITROGEN, snapshot.profile() == null
-        ? null
-        : snapshot.profile().valueOf(ChemicalAxis.YEAST_ASSIMILABLE_NITROGEN).orElse(null)); // NOSONAR
+    row.snapshotVolumeLiters = volumeLiters(snapshot.volume());
+    row.snapshotConfidence = confidenceName(snapshot.confidence());
+    applyAxis(row, ChemicalAxis.SUGAR, axisValue(snapshot.profile(), ChemicalAxis.SUGAR));
+    applyAxis(row, ChemicalAxis.ACIDITY, axisValue(snapshot.profile(), ChemicalAxis.ACIDITY));
+    applyAxis(row, ChemicalAxis.TANNINITY, axisValue(snapshot.profile(), ChemicalAxis.TANNINITY));
+    applyAxis(
+        row,
+        ChemicalAxis.YEAST_ASSIMILABLE_NITROGEN,
+        axisValue(snapshot.profile(), ChemicalAxis.YEAST_ASSIMILABLE_NITROGEN)
+    );
   }
 
   private static void applyAxis(
@@ -175,9 +172,7 @@ public final class BatchTraceStepJdbcRowMapper {
   private static @Nullable BatchTraceMaterialSnapshot toSnapshot(
       @NonNull BatchTraceStepSubjectJdbcRow row
   ) {
-    final var volume = row.snapshotVolumeLiters == null
-        ? null
-        : VolumeValue.ofLiters(row.snapshotVolumeLiters); // NOSONAR
+    final var volume = volumeValue(row.snapshotVolumeLiters);
     final var profile = toProfile(row);
 
     if (volume == null && profile == null && row.snapshotConfidence == null) {
@@ -188,7 +183,7 @@ public final class BatchTraceStepJdbcRowMapper {
   }
 
   private static @Nullable ConfidenceLevel confidenceLevel(@Nullable String value) {
-    return value == null ? null : ConfidenceLevel.valueOf(value); // NOSONAR
+    return value == null ? null : ConfidenceLevel.valueOf(value);
   }
 
   private static @Nullable ChemicalProfileAxes toProfile(@NonNull BatchTraceStepSubjectJdbcRow row) {
@@ -256,5 +251,37 @@ public final class BatchTraceStepJdbcRowMapper {
         standardDeviation,
         sampleSize
     );
+  }
+
+  private static @Nullable UUID stepIdValue(@Nullable BatchTraceStepId stepId) {
+    return stepId == null ? null : stepId.value();
+  }
+
+  private static @Nullable BatchTraceStepId stepId(@Nullable UUID value) {
+    return value == null ? null : BatchTraceStepId.of(value);
+  }
+
+  private static @Nullable BigDecimal volumeLiters(@Nullable VolumeValue volume) {
+    return volume == null ? null : volume.liters();
+  }
+
+  private static @Nullable VolumeValue volumeValue(@Nullable BigDecimal liters) {
+    return liters == null ? null : VolumeValue.ofLiters(liters);
+  }
+
+  private static @Nullable String confidenceName(@Nullable ConfidenceLevel confidence) {
+    return confidence == null ? null : confidence.name();
+  }
+
+  private static @Nullable AxisValue axisValue(
+      @Nullable ChemicalProfileAxes profile,
+      @NonNull ChemicalAxis axis
+  ) {
+    if (profile == null) {
+      return null;
+    }
+
+    final var value = profile.valueOf(axis);
+    return value.orElse(null); // NOSONAR
   }
 }

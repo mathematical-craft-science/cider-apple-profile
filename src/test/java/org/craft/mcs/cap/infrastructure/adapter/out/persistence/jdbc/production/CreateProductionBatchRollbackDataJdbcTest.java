@@ -8,7 +8,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import org.craft.mcs.cap.core.feedstock.application.port.out.FeedstockBatchRepository;
+import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchRepository;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockBatchName;
@@ -162,7 +162,10 @@ class CreateProductionBatchRollbackDataJdbcTest {
       return Clock.fixed(Instant.parse("2026-05-18T10:15:30Z"), ZoneOffset.UTC);
     }
 
-    private static AxisValue axis(ChemicalAxis axis, String value) {
+    private static AxisValue axis(
+        ChemicalAxis axis,
+        String value
+    ) {
       return new AxisValue(
           axis,
           new BigDecimal(value),

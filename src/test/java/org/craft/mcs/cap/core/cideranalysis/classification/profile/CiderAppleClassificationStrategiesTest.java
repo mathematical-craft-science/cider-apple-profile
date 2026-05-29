@@ -35,7 +35,10 @@ class CiderAppleClassificationStrategiesTest {
   );
 
   @NonNull
-  private static ChemicalProfile profile(@NonNull String acidity, @NonNull String tanninity) {
+  private static ChemicalProfile profile(
+      @NonNull String acidity,
+      @NonNull String tanninity
+  ) {
     return ChemicalProfile.builder()
         .sugar(ExactMeasurement.of(SugarConcentration.ofSpecificGravity(
             SpecificGravityValue.of("1.050")

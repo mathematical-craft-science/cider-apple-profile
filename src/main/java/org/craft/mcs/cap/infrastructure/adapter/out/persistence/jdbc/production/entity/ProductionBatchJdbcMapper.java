@@ -1,5 +1,6 @@
 package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.production.entity;
 
+import java.math.BigDecimal;
 import org.craft.mcs.cap.core.feedstock.domain.model.value.CiderMakerId;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatch;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatchId;
@@ -12,6 +13,7 @@ import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenVa
 import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import static java.util.Objects.requireNonNull;
 
@@ -24,6 +26,7 @@ public final class ProductionBatchJdbcMapper {
   public static @NonNull ProductionBatchJdbcEntity fromDomain(@NonNull ProductionBatch batch) {
     requireNonNull(batch, "production batch cannot be null");
 
+    final var profile = batch.profile();
     return new ProductionBatchJdbcEntity(
         batch.batchId().value(),
         batch.ciderMakerId().value(),
@@ -31,13 +34,11 @@ public final class ProductionBatchJdbcMapper {
         batch.kind(),
         batch.status(),
         batch.volume().liters(),
-        batch.profile().sugar().asBigDecimal(),
-        batch.profile().acidity().asBigDecimal(),
-        batch.profile().tannin() == null ? null : batch.profile().tannin().asBigDecimal(), // NOSONAR
-        batch.profile().yeastAssimilableNitrogen() == null
-            ? null
-            : batch.profile().yeastAssimilableNitrogen().asBigDecimal(), // NOSONAR
-        batch.targetDistance() == null ? null : batch.targetDistance().value(), // NOSONAR
+        profile.sugar().asBigDecimal(),
+        profile.acidity().asBigDecimal(),
+        tanninValue(profile),
+        yeastAssimilableNitrogenValue(profile),
+        targetDistanceValue(batch.targetDistance()),
         batch.note()
     );
   }
@@ -78,14 +79,38 @@ public final class ProductionBatchJdbcMapper {
         new ProductionProfileSnapshot(
             SpecificGravityValue.of(requireNonNull(entity.sugarSpecificGravity, "production sugar cannot be null")),
             TitratableAcidityValue.of(requireNonNull(entity.acidityGLAsMalic, "production acidity cannot be null")),
-            entity.tanninMgLTea == null ? null : TanninityValue.of(entity.tanninMgLTea), // NOSONAR
-            entity.yeastAssimilableNitrogenMgNL == null
-                ? null
-                : YeastAssimilableNitrogenValue.of(entity.yeastAssimilableNitrogenMgNL) // NOSONAR
+            toTanninValue(entity.tanninMgLTea),
+            toYeastAssimilableNitrogenValue(entity.yeastAssimilableNitrogenMgNL)
         ),
-        entity.targetDistance == null ? null : ProductionTargetDistance.of(entity.targetDistance), // NOSONAR
+        toTargetDistance(entity.targetDistance),
         entity.note
     );
+  }
+
+  private static @Nullable BigDecimal tanninValue(@NonNull ProductionProfileSnapshot profile) {
+    final var tannin = profile.tannin();
+    return tannin == null ? null : tannin.asBigDecimal();
+  }
+
+  private static @Nullable BigDecimal yeastAssimilableNitrogenValue(@NonNull ProductionProfileSnapshot profile) {
+    final var yeastAssimilableNitrogen = profile.yeastAssimilableNitrogen();
+    return yeastAssimilableNitrogen == null ? null : yeastAssimilableNitrogen.asBigDecimal();
+  }
+
+  private static @Nullable BigDecimal targetDistanceValue(@Nullable ProductionTargetDistance targetDistance) {
+    return targetDistance == null ? null : targetDistance.value();
+  }
+
+  private static @Nullable TanninityValue toTanninValue(@Nullable BigDecimal value) {
+    return value == null ? null : TanninityValue.of(value);
+  }
+
+  private static @Nullable YeastAssimilableNitrogenValue toYeastAssimilableNitrogenValue(@Nullable BigDecimal value) {
+    return value == null ? null : YeastAssimilableNitrogenValue.of(value);
+  }
+
+  private static @Nullable ProductionTargetDistance toTargetDistance(@Nullable BigDecimal value) {
+    return value == null ? null : ProductionTargetDistance.of(value);
   }
 
 }
