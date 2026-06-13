@@ -17,7 +17,7 @@ import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.dto.Rang
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.dto.RangeChemicalMeasurementResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.dto.StatisticalChemicalMeasurementRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.dto.StatisticalChemicalMeasurementResponse;
-import org.craft.mcs.cap.shared.infrastructure.rest.measurement.CanonicalUnitLabels;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.measurement.CanonicalUnitLabels;
 import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfileSource;
@@ -93,9 +93,7 @@ public final class ChemicalProfileRestMapper {
       builder.yeastAssimilableNitrogen(yeastAssimilableNitrogen);
     }
 
-    if (request.source() != null) {
-      builder.source(ChemicalProfileSource.of(request.source())); // NOSONAR
-    }
+    applySource(builder, request.source());
 
     builder.confidence(request.confidence());
 
@@ -106,40 +104,72 @@ public final class ChemicalProfileRestMapper {
     requireNonNull(profile, "chemical profile cannot be null");
 
     return new ChemicalProfileResponse(
-        profile.sugar()
-            .map(measurement -> toResponse(
-                measurement,
-                sugar -> sugar.specificGravity().asBigDecimal(),
-                CanonicalUnitLabels.SUGAR
-            ))
-            .orElse(null),  // NOSONAR
-        profile.ph()
-            .map(measurement -> toResponse(measurement, PhValue::asBigDecimal, CanonicalUnitLabels.PH))
-            .orElse(null),  // NOSONAR
-        profile.titratableAcidity()
-            .map(measurement -> toResponse(
-                measurement,
-                TitratableAcidityValue::asBigDecimal,
-                CanonicalUnitLabels.TITRATABLE_ACIDITY
-            ))
-            .orElse(null),  // NOSONAR
-        profile.tanninity()
-            .map(measurement -> toResponse(
-                measurement,
-                TanninityValue::asBigDecimal,
-                CanonicalUnitLabels.TANNINITY
-            ))
-            .orElse(null),  // NOSONAR
-        profile.yeastAssimilableNitrogen()
-            .map(measurement -> toResponse(
-                measurement,
-                YeastAssimilableNitrogenValue::asBigDecimal,
-                CanonicalUnitLabels.YEAST_ASSIMILABLE_NITROGEN
-            ))
-            .orElse(null),  // NOSONAR
-        profile.source() == null ? null : profile.source().value(),  // NOSONAR
+        sugarResponse(profile),
+        phResponse(profile),
+        titratableAcidityResponse(profile),
+        tanninityResponse(profile),
+        yeastAssimilableNitrogenResponse(profile),
+        sourceResponse(profile),
         profile.confidence()
     );
+  }
+
+  private static void applySource(
+      ChemicalProfile.@NonNull Builder builder,
+      @Nullable String source
+  ) {
+    if (source != null) {
+      builder.source(ChemicalProfileSource.of(source));
+    }
+  }
+
+  private static @Nullable ChemicalMeasurementResponse sugarResponse(@NonNull ChemicalProfile profile) {
+    final var measurement = profile.sugar();
+    return measurement.map(
+        sugarConcentrationMeasuredCharacteristic -> toResponse(sugarConcentrationMeasuredCharacteristic,
+            sugar -> sugar.specificGravity().asBigDecimal(), CanonicalUnitLabels.SUGAR))
+        .orElse(null); // NOSONAR
+  }
+
+  private static @Nullable ChemicalMeasurementResponse phResponse(@NonNull ChemicalProfile profile) {
+    final var measurement = profile.ph();
+    return measurement.map(
+        phValueMeasuredCharacteristic -> toResponse(phValueMeasuredCharacteristic, PhValue::asBigDecimal,
+            CanonicalUnitLabels.PH))
+        .orElse(null); // NOSONAR
+  }
+
+  private static @Nullable ChemicalMeasurementResponse titratableAcidityResponse(
+      @NonNull ChemicalProfile profile
+  ) {
+    final var measurement = profile.titratableAcidity();
+    return measurement.map(
+        titratableAcidityValueMeasuredCharacteristic -> toResponse(titratableAcidityValueMeasuredCharacteristic,
+            TitratableAcidityValue::asBigDecimal, CanonicalUnitLabels.TITRATABLE_ACIDITY))
+        .orElse(null); // NOSONAR
+  }
+
+  private static @Nullable ChemicalMeasurementResponse tanninityResponse(@NonNull ChemicalProfile profile) {
+    final var measurement = profile.tanninity();
+    return measurement.map(tanninityValueMeasuredCharacteristic -> toResponse(tanninityValueMeasuredCharacteristic,
+        TanninityValue::asBigDecimal, CanonicalUnitLabels.TANNINITY))
+        .orElse(null); // NOSONAR
+  }
+
+  private static @Nullable ChemicalMeasurementResponse yeastAssimilableNitrogenResponse(
+      @NonNull ChemicalProfile profile
+  ) {
+    final var measurement = profile.yeastAssimilableNitrogen();
+    return measurement.map(yeastAssimilableNitrogenValueMeasuredCharacteristic -> toResponse(
+        yeastAssimilableNitrogenValueMeasuredCharacteristic,
+        YeastAssimilableNitrogenValue::asBigDecimal,
+        CanonicalUnitLabels.YEAST_ASSIMILABLE_NITROGEN
+    )).orElse(null); // NOSONAR
+  }
+
+  private static @Nullable String sourceResponse(@NonNull ChemicalProfile profile) {
+    final var source = profile.source();
+    return source == null ? null : source.value();
   }
 
   private static <T extends Comparable<T>> @Nullable MeasuredCharacteristic<T> toMeasurement(
@@ -162,9 +192,7 @@ public final class ChemicalProfileRestMapper {
       );
       case StatisticalChemicalMeasurementRequest statistical -> StatisticalMeasurement.of(
           normalizer.normalizeValue(statistical.mean(), statistical.unit()),
-          statistical.median() == null
-          ? null
-          : normalizer.normalizeValue(statistical.median(), statistical.unit()), // NOSONAR
+          normalizedMedian(statistical, normalizer),
           normalizer.normalizeStandardDeviation(
               statistical.mean(),
               statistical.standardDeviation(),
@@ -185,27 +213,80 @@ public final class ChemicalProfileRestMapper {
     requireNonNull(unit, "measurement unit cannot be null");
 
     return switch (measurement) {
-      case ExactMeasurement<T> exact -> new ExactChemicalMeasurementResponse( // NOSONAR
-          "EXACT",
-          quantity(extractor.extract(exact.value()), unit)
-      );
-      case RangeMeasurement<T> range -> new RangeChemicalMeasurementResponse( // NOSONAR
-          "RANGE",
-          quantity(extractor.extract(range.min()), unit),
-          quantity(extractor.extract(range.max()), unit)
-      );
-      case StatisticalMeasurement<T> statistical -> new StatisticalChemicalMeasurementResponse( // NOSONAR
-          "STATISTICAL",
-          quantity(extractor.extract(statistical.mean()), unit),
-          statistical.median() == null ? null : quantity(extractor.extract(statistical.median()), unit), // NOSONAR
-          statistical.standardDeviation() == null ? null : quantity(statistical.standardDeviation(), unit), // NOSONAR
-          statistical.sampleSize()
-      );
+      case ExactMeasurement<T> exact -> exactResponse(exact, extractor, unit);
+      case RangeMeasurement<T> range -> rangeResponse(range, extractor, unit);
+      case StatisticalMeasurement<T> statistical -> statisticalResponse(statistical, extractor, unit);
     };
   }
 
-  private static @NonNull DecimalQuantityResponse quantity(@NonNull BigDecimal value, @NonNull String unit) {
+  private static <T extends Comparable<T>> @Nullable T normalizedMedian(
+      @NonNull StatisticalChemicalMeasurementRequest statistical,
+      @NonNull ExternalChemicalMeasurementNormalizer<T> normalizer
+  ) {
+    final var median = statistical.median();
+    return median == null
+        ? null
+        : normalizer.normalizeValue(median, statistical.unit());
+  }
+
+  private static <T extends Comparable<T>> @NonNull ExactChemicalMeasurementResponse exactResponse(
+      @NonNull ExactMeasurement<T> exact,
+      @NonNull CanonicalValueExtractor<T> extractor,
+      @NonNull String unit
+  ) {
+    return new ExactChemicalMeasurementResponse(
+        "EXACT",
+        quantity(extractor.extract(exact.value()), unit)
+    );
+  }
+
+  private static <T extends Comparable<T>> @NonNull RangeChemicalMeasurementResponse rangeResponse(
+      @NonNull RangeMeasurement<T> range,
+      @NonNull CanonicalValueExtractor<T> extractor,
+      @NonNull String unit
+  ) {
+    return new RangeChemicalMeasurementResponse(
+        "RANGE",
+        quantity(extractor.extract(range.min()), unit),
+        quantity(extractor.extract(range.max()), unit)
+    );
+  }
+
+  private static <T extends Comparable<T>> @NonNull StatisticalChemicalMeasurementResponse statisticalResponse(
+      @NonNull StatisticalMeasurement<T> statistical,
+      @NonNull CanonicalValueExtractor<T> extractor,
+      @NonNull String unit
+  ) {
+    return new StatisticalChemicalMeasurementResponse(
+        "STATISTICAL",
+        quantity(extractor.extract(statistical.mean()), unit),
+        medianQuantity(statistical, extractor, unit),
+        optionalQuantity(statistical.standardDeviation(), unit),
+        statistical.sampleSize()
+    );
+  }
+
+  private static <T extends Comparable<T>> @Nullable DecimalQuantityResponse medianQuantity(
+      @NonNull StatisticalMeasurement<T> statistical,
+      @NonNull CanonicalValueExtractor<T> extractor,
+      @NonNull String unit
+  ) {
+    final var median = statistical.median();
+    return median == null ? null : quantity(extractor.extract(median), unit);
+  }
+
+  private static @NonNull DecimalQuantityResponse quantity(
+      @NonNull BigDecimal value,
+      @NonNull String unit
+  ) {
     return new DecimalQuantityResponse(value, unit);
+  }
+
+  private static @Nullable DecimalQuantityResponse optionalQuantity(
+      @Nullable BigDecimal value,
+      @NonNull String unit
+  ) {
+    return value == null ? null : new DecimalQuantityResponse(value, unit);
   }
 
   @FunctionalInterface

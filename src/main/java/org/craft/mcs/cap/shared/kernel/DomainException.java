@@ -21,7 +21,10 @@ public abstract class DomainException extends RuntimeException {
     super(message);
   }
 
-  protected DomainException(@NonNull String message, @Nullable Throwable cause) {
+  protected DomainException(
+      @NonNull String message,
+      @Nullable Throwable cause
+  ) {
     super(message, cause);
   }
 }

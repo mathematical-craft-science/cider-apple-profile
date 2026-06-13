@@ -45,11 +45,13 @@ public class ClassificationConfidencePolicy {
       @NonNull AxisRange range,
       @NonNull List<@NonNull BorderlineEvidence> evidence
   ) {
-    if (axisValue.min() == null || axisValue.max() == null) {
+    final var min = axisValue.min();
+    final var max = axisValue.max();
+    if (min == null || max == null) {
       return;
     }
 
-    if (!range.contains(axisValue.min()) || !range.contains(axisValue.max())) {  // NOSONAR
+    if (!range.contains(min) || !range.contains(max)) {
       evidence.add(new BorderlineEvidence(axisValue.axis(), BorderlineReason.RANGE_OVERLAPS_BOUNDARY));
     }
   }

@@ -12,7 +12,10 @@ import org.jspecify.annotations.Nullable;
 public interface ExternalChemicalMeasurementNormalizer<T extends Comparable<T>> {
 
   @NonNull
-  T normalizeValue(@NonNull BigDecimal value, @Nullable String unit);
+  T normalizeValue(
+      @NonNull BigDecimal value,
+      @Nullable String unit
+  );
 
   @Nullable
   BigDecimal normalizeStandardDeviation(

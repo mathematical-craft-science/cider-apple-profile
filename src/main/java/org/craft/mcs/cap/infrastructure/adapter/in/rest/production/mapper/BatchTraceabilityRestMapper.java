@@ -20,7 +20,7 @@ import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.BatchTrac
 import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
-import org.craft.mcs.cap.shared.infrastructure.rest.measurement.CanonicalUnitLabels;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.measurement.CanonicalUnitLabels;
 import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -90,12 +90,15 @@ public final class BatchTraceabilityRestMapper {
     }
 
     return new BatchTraceMaterialSnapshotResponse(
-        snapshot.volume() == null
-            ? null
-            : new DecimalQuantityResponse(snapshot.volume().liters(), CanonicalUnitLabels.VOLUME), // NOSONAR
+        volume(snapshot),
         axes(snapshot.profile()),
         snapshot.confidence()
     );
+  }
+
+  private static @Nullable DecimalQuantityResponse volume(@NonNull BatchTraceMaterialSnapshot snapshot) {
+    final var volume = snapshot.volume();
+    return volume == null ? null : new DecimalQuantityResponse(volume.liters(), CanonicalUnitLabels.VOLUME);
   }
 
   private static @NonNull List<@NonNull BatchTraceAxisValueResponse> axes(
@@ -125,7 +128,10 @@ public final class BatchTraceabilityRestMapper {
     );
   }
 
-  private static @Nullable DecimalQuantityResponse quantity(@Nullable BigDecimal value, @NonNull String unit) {
+  private static @Nullable DecimalQuantityResponse quantity(
+      @Nullable BigDecimal value,
+      @NonNull String unit
+  ) {
     return value == null ? null : new DecimalQuantityResponse(value, unit);
   }
 }

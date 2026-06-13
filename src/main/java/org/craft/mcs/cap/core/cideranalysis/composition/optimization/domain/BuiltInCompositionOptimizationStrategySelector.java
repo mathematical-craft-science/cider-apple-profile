@@ -2,6 +2,7 @@ package org.craft.mcs.cap.core.cideranalysis.composition.optimization.domain;
 
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.Optional;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
@@ -35,10 +36,7 @@ public final class BuiltInCompositionOptimizationStrategySelector implements Com
       @NonNull CompositionOptimizationAlgorithm algorithm
   ) {
     requireNonNull(algorithm, "composition optimization algorithm cannot be null");
-    final var strategy = strategies.get(algorithm);
-    if (strategy == null) { // NOSONAR
-      throw new UnsupportedCompositionOptimizationStrategyException(algorithm);
-    }
-    return strategy;
+    return Optional.ofNullable(strategies.get(algorithm))
+        .orElseThrow(() -> new UnsupportedCompositionOptimizationStrategyException(algorithm));
   }
 }

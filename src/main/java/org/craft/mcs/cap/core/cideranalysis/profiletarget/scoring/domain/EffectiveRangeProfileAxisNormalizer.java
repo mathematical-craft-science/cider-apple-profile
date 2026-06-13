@@ -7,6 +7,7 @@ import java.math.MathContext;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
@@ -64,11 +65,13 @@ public final class EffectiveRangeProfileAxisNormalizer implements ProfileAxisNor
   ) {
     requireNonNull(axis, "profile evaluation axis cannot be null");
     requireNonNull(value, "axis value cannot be null");
-    final var range = ranges.get(axis);
-    if (range == null) { // NOSONAR
-      throw new DomainRuleViolationException("No effective normalization range configured for axis: " + axis);
-    }
+    final var range = rangeFor(axis);
     return value.subtract(range.min())
         .divide(range.max().subtract(range.min()), MATH_CONTEXT);
+  }
+
+  private @NonNull ProfileAxisNormalizationRange rangeFor(@NonNull ProfileEvaluationAxis axis) {
+    return Optional.ofNullable(ranges.get(axis))
+        .orElseThrow(() -> new DomainRuleViolationException("No effective normalization range configured for axis: " + axis));
   }
 }

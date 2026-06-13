@@ -76,9 +76,14 @@ public final class DistanceToTargetAreaObjectiveFunction implements ProfileTarge
     requireNonNull(objective, "sugar-acidity profile objective cannot be null");
     return score(
         SugarAcidityCoordinates.from(point),
-        point.tannin() == null ? null : point.tannin().value(), // NOSONAR
+        tanninValue(point),
         objective
     );
+  }
+
+  private static @Nullable BigDecimal tanninValue(@NonNull SugarAcidityProfilePoint point) {
+    final var tannin = point.tannin();
+    return tannin == null ? null : tannin.value();
   }
 
   private @NonNull ProfileTargetDistance score(

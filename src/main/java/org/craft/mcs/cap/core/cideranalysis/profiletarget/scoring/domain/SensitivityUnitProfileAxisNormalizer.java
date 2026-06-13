@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.Optional;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
@@ -57,10 +58,12 @@ public final class SensitivityUnitProfileAxisNormalizer implements ProfileAxisNo
   ) {
     requireNonNull(axis, "profile evaluation axis cannot be null");
     requireNonNull(value, "axis value cannot be null");
-    final var unit = units.get(axis);
-    if (unit == null) { // NOSONAR
-      throw new DomainRuleViolationException("No sensitivity unit configured for axis: " + axis);
-    }
+    final var unit = unitFor(axis);
     return value.divide(unit, MATH_CONTEXT);
+  }
+
+  private @NonNull BigDecimal unitFor(@NonNull ProfileEvaluationAxis axis) {
+    return Optional.ofNullable(units.get(axis))
+        .orElseThrow(() -> new DomainRuleViolationException("No sensitivity unit configured for axis: " + axis));
   }
 }

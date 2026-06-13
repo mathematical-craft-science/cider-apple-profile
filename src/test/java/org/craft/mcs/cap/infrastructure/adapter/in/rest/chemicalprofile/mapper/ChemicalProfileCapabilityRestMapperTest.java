@@ -1,8 +1,8 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.mapper;
 
 import java.util.Set;
-import org.craft.mcs.cap.shared.kernel.chemical.capability.ChemicalProfileCapability;
-import org.craft.mcs.cap.shared.kernel.chemical.capability.ChemicalProfileCapabilityAssessment;
+import org.craft.mcs.cap.core.cideranalysis.profileaxis.domain.ChemicalProfileCapability;
+import org.craft.mcs.cap.core.cideranalysis.profileaxis.domain.ChemicalProfileCapabilityAssessment;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.junit.jupiter.api.Test;
 

@@ -38,7 +38,10 @@ public final class SqlQueryBuilder {
     return this;
   }
 
-  public @NonNull SqlQueryBuilder parameter(@NonNull String name, @Nullable Object value) {
+  public @NonNull SqlQueryBuilder parameter(
+      @NonNull String name,
+      @Nullable Object value
+  ) {
     parameters.addValue(requireNonNull(name, "sql parameter name cannot be null"), value);
     return this;
   }

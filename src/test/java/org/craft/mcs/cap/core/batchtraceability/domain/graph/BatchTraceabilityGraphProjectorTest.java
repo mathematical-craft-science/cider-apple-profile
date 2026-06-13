@@ -166,7 +166,10 @@ class BatchTraceabilityGraphProjectorTest {
     );
   }
 
-  private static BatchTraceSubject subject(BatchTraceSubjectType type, String id) {
+  private static BatchTraceSubject subject(
+      BatchTraceSubjectType type,
+      String id
+  ) {
     return BatchTraceSubject.of(type, id);
   }
 }

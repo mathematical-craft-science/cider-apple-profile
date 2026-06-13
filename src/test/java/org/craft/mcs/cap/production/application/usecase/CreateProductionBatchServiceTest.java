@@ -1,10 +1,10 @@
 package org.craft.mcs.cap.production.application.usecase;
 
+import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
-import org.craft.mcs.cap.core.feedstock.application.port.out.FeedstockBatchRepository;
+import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchRepository;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockBatchName;
@@ -20,12 +20,11 @@ import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
 import org.craft.mcs.cap.core.feedstock.domain.model.value.CiderMakerId;
 import org.craft.mcs.cap.core.production.application.port.in.CreateProductionBatchCommand;
-import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchRepository;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchFeedstockTraceSource;
-import org.craft.mcs.cap.core.production.application.port.out.ProductionFeedstockTraceSnapshot;
-import org.craft.mcs.cap.core.production.application.port.out.ProductionFeedstockTraceSnapshotProvider;
+import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchRepository;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchTraceRecorder;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchTraceSource;
+import org.craft.mcs.cap.core.production.application.port.out.ProductionFeedstockTraceSnapshot;
 import org.craft.mcs.cap.core.production.application.usecase.CreateProductionBatchService;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatch;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatchId;
@@ -35,11 +34,11 @@ import org.craft.mcs.cap.core.production.domain.model.ProductionSourceCompositio
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchKind;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchName;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
+import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.MeasurementValueKind;
-import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;
@@ -169,7 +168,10 @@ class CreateProductionBatchServiceTest {
     );
   }
 
-  private static AxisValue axis(ChemicalAxis axis, String value) {
+  private static AxisValue axis(
+      ChemicalAxis axis,
+      String value
+  ) {
     return new AxisValue(
         axis,
         new BigDecimal(value),

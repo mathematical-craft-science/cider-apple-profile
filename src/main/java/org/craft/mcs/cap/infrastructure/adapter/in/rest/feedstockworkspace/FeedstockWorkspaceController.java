@@ -1,0 +1,34 @@
+package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstockworkspace;
+
+import lombok.RequiredArgsConstructor;
+import org.craft.mcs.cap.core.feedstock.application.workspace.port.in.QueryFeedstockWorkspaceBatchesUseCase;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstockworkspace.dto.FeedstockWorkspaceBatchQueryRequest;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstockworkspace.dto.FeedstockWorkspaceResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstockworkspace.mapper.FeedstockWorkspaceRestMapper;
+import org.jspecify.annotations.NonNull;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+
+
+@RestController
+@RequiredArgsConstructor
+public final class FeedstockWorkspaceController implements FeedstockWorkspaceApi {
+
+  private final @NonNull QueryFeedstockWorkspaceBatchesUseCase queryFeedstockWorkspaceBatchesUseCase;
+
+  @Override
+  @PostMapping(value = "/feedstock-workspace/batches", consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
+  public @NonNull ResponseEntity<@NonNull FeedstockWorkspaceResponse> batches(
+      @RequestBody @NonNull FeedstockWorkspaceBatchQueryRequest request
+  ) {
+    final var view = queryFeedstockWorkspaceBatchesUseCase.query(
+        FeedstockWorkspaceRestMapper.toQuery(request)
+    );
+
+    return ResponseEntity.ok(FeedstockWorkspaceRestMapper.toResponse(view));
+  }
+}

@@ -20,7 +20,10 @@ public abstract class ApplicationException extends RuntimeException {
     super(message);
   }
 
-  protected ApplicationException(@NonNull String message, @Nullable Throwable cause) {
+  protected ApplicationException(
+      @NonNull String message,
+      @Nullable Throwable cause
+  ) {
     super(message, cause);
   }
 }

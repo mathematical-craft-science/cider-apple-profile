@@ -164,11 +164,12 @@ public final class DiscretizedBoundedChemicalProfileCompositionOptimizationStrat
       @NonNull ChemicalProfileCompositionOptimizationRequest request,
       @NonNull BigDecimal sharePercent
   ) {
-    if (request.targetTotalVolume() == null) {
+    final var targetTotalVolume = request.targetTotalVolume();
+    if (targetTotalVolume == null) {
       throw new IllegalStateException("absolute volume optimization target total volume is missing");
     }
 
-    return request.targetTotalVolume().liters() // NOSONAR
+    return targetTotalVolume.liters()
         .multiply(sharePercent)
         .divide(BigDecimal.valueOf(PERCENT), COMPOSITION_SCALE, RoundingMode.HALF_UP);
   }

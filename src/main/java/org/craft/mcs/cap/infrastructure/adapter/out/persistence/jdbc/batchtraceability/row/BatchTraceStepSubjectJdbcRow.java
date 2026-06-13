@@ -121,7 +121,10 @@ public class BatchTraceStepSubjectJdbcRow {
     this.displayNameSnapshot = normalize(displayNameSnapshot);
   }
 
-  private static @NonNull String normalizeRequired(@NonNull String value, @NonNull String message) {
+  private static @NonNull String normalizeRequired(
+      @NonNull String value,
+      @NonNull String message
+  ) {
     final var normalized = requireNonNull(value, message).strip();
     if (normalized.isEmpty()) {
       throw new IllegalArgumentException(message);

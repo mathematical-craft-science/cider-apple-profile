@@ -2,8 +2,8 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.sugaracidity;
 
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.cideranalysis.sugaracidity.graph.domain.SugarAcidityGraphMetadata;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.sugaracidity.dto.SugarAcidityGraphMetadataResponse;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.sugaracidity.mapper.SugarAcidityGraphMetadataRestMapper;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.sugaracidity.dto.SugarAcidityGraphMetadataResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.sugaracidity.mapper.SugarAcidityGraphMetadataRestMapper;
 import org.jspecify.annotations.NonNull;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

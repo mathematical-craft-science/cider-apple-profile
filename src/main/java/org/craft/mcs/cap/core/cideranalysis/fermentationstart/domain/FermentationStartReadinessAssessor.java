@@ -18,6 +18,7 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import static java.util.Objects.requireNonNull;
+import static java.util.Objects.requireNonNullElse;
 
 
 /**
@@ -80,10 +81,9 @@ public final class FermentationStartReadinessAssessor {
   }
 
   private static @NonNull FermentationStartReadinessCheck phCheck(@NonNull ChemicalProfile profile) {
-    final var value = representativeValue(
-        profile.ph().orElse(null),  // NOSONAR
-        PhValue::asBigDecimal
-    );
+    final var value = profile.ph()
+        .map(characteristic -> representativeValue(characteristic, PhValue::asBigDecimal))
+        .orElse(null);
 
     if (value == null) {
       return check(
@@ -129,10 +129,9 @@ public final class FermentationStartReadinessAssessor {
   }
 
   private static @NonNull FermentationStartReadinessCheck yanCheck(@NonNull ChemicalProfile profile) {
-    final var value = representativeValue(
-        profile.yeastAssimilableNitrogen().orElse(null), // NOSONAR
-        YeastAssimilableNitrogenValue::asBigDecimal
-    );
+    final var value = profile.yeastAssimilableNitrogen()
+        .map(characteristic -> representativeValue(characteristic, YeastAssimilableNitrogenValue::asBigDecimal))
+        .orElse(null);
 
     if (value == null) {
       return check(
@@ -220,10 +219,18 @@ public final class FermentationStartReadinessAssessor {
     return switch (characteristic) {
       case null -> null;
       case ExactMeasurement<T>(T value) -> extractor.apply(value);
-      case RangeMeasurement<T>(T min, T max) ->
-          extractor.apply(min).add(extractor.apply(max)).divide(BigDecimal.valueOf(2), 6, RoundingMode.HALF_UP);
-      case StatisticalMeasurement<T>(T mean, T median, BigDecimal ignored, Integer ignoredSampleSize) -> // NOSONAR
-          extractor.apply(median == null ? mean : median);
+      case RangeMeasurement<T>(T min, T max) -> extractor.apply(min)
+          .add(extractor.apply(max))
+          .divide(BigDecimal.valueOf(2), 6, RoundingMode.HALF_UP);
+      case StatisticalMeasurement<T> statistical -> extractor.apply(representativeStatisticalValue(statistical));
     };
+  }
+
+  private static <T extends Comparable<T>> @NonNull T representativeStatisticalValue(
+      @NonNull StatisticalMeasurement<T> measurement
+  ) {
+    requireNonNull(measurement, "statistical measurement cannot be null");
+    final var median = measurement.median();
+    return requireNonNullElse(median, measurement.mean()); // NOSONAR
   }
 }

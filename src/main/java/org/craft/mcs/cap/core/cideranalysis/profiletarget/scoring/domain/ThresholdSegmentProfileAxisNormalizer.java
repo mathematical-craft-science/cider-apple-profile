@@ -7,6 +7,7 @@ import java.math.MathContext;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.List;
+import java.util.Optional;
 import org.craft.mcs.cap.core.cideranalysis.sugaracidity.zone.domain.SugarAcidityZoneThresholds;
 import org.jspecify.annotations.NonNull;
 
@@ -62,10 +63,7 @@ public final class ThresholdSegmentProfileAxisNormalizer implements ProfileAxisN
   ) {
     requireNonNull(axis, "profile evaluation axis cannot be null");
     requireNonNull(value, "axis value cannot be null");
-    final var axisBreakpoints = breakpoints.get(axis);
-    if (axisBreakpoints == null) { // NOSONAR
-      throw new DomainRuleViolationException("No threshold breakpoints configured for axis: " + axis);
-    }
+    final var axisBreakpoints = breakpointsFor(axis);
     final var segmentIndex = segmentIndex(axisBreakpoints, value);
     final var segmentMin = axisBreakpoints.get(segmentIndex);
     final var segmentMax = axisBreakpoints.get(segmentIndex + 1);
@@ -102,5 +100,10 @@ public final class ThresholdSegmentProfileAxisNormalizer implements ProfileAxisN
       }
     }
     return List.copyOf(values);
+  }
+
+  private @NonNull List<@NonNull BigDecimal> breakpointsFor(@NonNull ProfileEvaluationAxis axis) {
+    return Optional.ofNullable(breakpoints.get(axis))
+        .orElseThrow(() -> new DomainRuleViolationException("No threshold breakpoints configured for axis: " + axis));
   }
 }

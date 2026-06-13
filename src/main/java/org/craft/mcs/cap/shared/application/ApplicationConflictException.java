@@ -16,7 +16,10 @@ public abstract class ApplicationConflictException extends ApplicationException 
     super(message);
   }
 
-  protected ApplicationConflictException(@NonNull String message, @Nullable Throwable cause) {
+  protected ApplicationConflictException(
+      @NonNull String message,
+      @Nullable Throwable cause
+  ) {
     super(message, cause);
   }
 }

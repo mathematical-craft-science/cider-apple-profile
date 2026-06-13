@@ -125,7 +125,11 @@ class TargetAwareCompositionContributionRoleAssessorTest {
     );
   }
 
-  private static ChemicalProfileAxes axes(String sugar, String acidity, String tannin) {
+  private static ChemicalProfileAxes axes(
+      String sugar,
+      String acidity,
+      String tannin
+  ) {
     return ChemicalProfileAxes.of(
         axis(ChemicalAxis.SUGAR, sugar),
         axis(ChemicalAxis.ACIDITY, acidity),
@@ -133,7 +137,10 @@ class TargetAwareCompositionContributionRoleAssessorTest {
     );
   }
 
-  private static AxisValue axis(ChemicalAxis axis, String value) {
+  private static AxisValue axis(
+      ChemicalAxis axis,
+      String value
+  ) {
     return new AxisValue(
         axis,
         new BigDecimal(value),

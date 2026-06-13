@@ -2,6 +2,7 @@ package org.craft.mcs.cap.core.cideranalysis.composition.calculation.domain;
 
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.Optional;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
@@ -35,10 +36,7 @@ public final class BuiltInChemicalProfileCompositionCalculatorSelector
       @NonNull ChemicalProfileCompositionCalculatorCode code
   ) {
     requireNonNull(code, "chemical profile composition calculator code cannot be null");
-    final var calculator = calculators.get(code);
-    if (calculator == null) { // NOSONAR
-      throw new UnsupportedChemicalProfileCompositionCalculatorException(code);
-    }
-    return calculator;
+    return Optional.ofNullable(calculators.get(code))
+        .orElseThrow(() -> new UnsupportedChemicalProfileCompositionCalculatorException(code));
   }
 }

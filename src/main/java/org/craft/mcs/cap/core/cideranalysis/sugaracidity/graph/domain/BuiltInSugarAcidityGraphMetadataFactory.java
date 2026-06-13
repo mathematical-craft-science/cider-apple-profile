@@ -57,11 +57,7 @@ public final class BuiltInSugarAcidityGraphMetadataFactory {
       @NonNull SugarAcidityZoneGeometry geometry
   ) {
     return switch (geometry) {
-      case RectangleSugarAcidityZoneGeometry rectangle -> new RectangleSugarAcidityGraphZone( // NOSONAR
-          rectangle.zone(),
-          new SugarAcidityGraphRange(rectangle.sugarRange().min(), rectangle.sugarRange().max()),
-          new SugarAcidityGraphRange(rectangle.acidityRange().min(), rectangle.acidityRange().max())
-      );
+      case RectangleSugarAcidityZoneGeometry rectangle -> rectangleGraphZone(rectangle);
       case EllipseSugarAcidityZoneGeometry ellipse -> new EllipseSugarAcidityGraphZone(
           ellipse.zone(),
           ellipse.sugarCenter(),
@@ -70,5 +66,15 @@ public final class BuiltInSugarAcidityGraphMetadataFactory {
           ellipse.acidityRadius()
       );
     };
+  }
+
+  private static @NonNull RectangleSugarAcidityGraphZone rectangleGraphZone(
+      @NonNull RectangleSugarAcidityZoneGeometry rectangle
+  ) {
+    return new RectangleSugarAcidityGraphZone(
+        rectangle.zone(),
+        new SugarAcidityGraphRange(rectangle.sugarRange().min(), rectangle.sugarRange().max()),
+        new SugarAcidityGraphRange(rectangle.acidityRange().min(), rectangle.acidityRange().max())
+    );
   }
 }

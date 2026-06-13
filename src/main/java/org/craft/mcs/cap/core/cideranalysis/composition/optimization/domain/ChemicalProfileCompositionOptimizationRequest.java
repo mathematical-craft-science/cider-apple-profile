@@ -58,18 +58,26 @@ public record ChemicalProfileCompositionOptimizationRequest(
               + " combinations"
       );
     }
-    if (mode == CompositionOptimizationMode.ABSOLUTE_VOLUME && targetTotalVolume == null) {
-      throw new InvalidChemicalProfileCompositionOptimizationException("absolute volume composition optimization requires target total volume");
-    }
-    if (mode == CompositionOptimizationMode.ABSOLUTE_VOLUME && targetTotalVolume.isZero()) { // NOSONAR
-      throw new InvalidChemicalProfileCompositionOptimizationException("absolute volume composition optimization requires target total volume greater than zero");
-    }
-    if (mode == CompositionOptimizationMode.PROPORTION && targetTotalVolume != null) {
+    if (mode == CompositionOptimizationMode.ABSOLUTE_VOLUME) {
+      validateAbsoluteVolumeTarget(targetTotalVolume);
+    } else if (targetTotalVolume != null) {
       throw new InvalidChemicalProfileCompositionOptimizationException("proportion composition optimization must not define target total volume");
     }
   }
 
-  private static long gridCombinations(int sourceCount, int stepPercent) {
+  private static void validateAbsoluteVolumeTarget(@Nullable VolumeValue targetTotalVolume) {
+    if (targetTotalVolume == null) {
+      throw new InvalidChemicalProfileCompositionOptimizationException("absolute volume composition optimization requires target total volume");
+    }
+    if (targetTotalVolume.isZero()) {
+      throw new InvalidChemicalProfileCompositionOptimizationException("absolute volume composition optimization requires target total volume greater than zero");
+    }
+  }
+
+  private static long gridCombinations(
+      int sourceCount,
+      int stepPercent
+  ) {
     final var units = 100 / stepPercent;
     final var n = units + sourceCount - 1;
     final var k = sourceCount - 1;

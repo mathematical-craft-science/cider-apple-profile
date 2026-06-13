@@ -206,11 +206,10 @@ public final class TargetAwareCompositionContributionRoleAssessor
 
   private static @Nullable BigDecimal nullableValueOf(
       @NonNull ChemicalProfileAxes axes,
-      @NonNull ChemicalAxis axis // NOSONAR
+      @NonNull ChemicalAxis axis
   ) {
-    return axes.valueOf(axis)
-        .map(AxisValue::value)
-        .orElse(null); // NOSONAR
+    final var value = axes.valueOf(axis).map(AxisValue::value);
+    return value.orElse(null); // NOSONAR
   }
 
   @Override
