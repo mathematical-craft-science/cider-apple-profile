@@ -30,13 +30,17 @@ Act as a senior Java architect and production-grade software engineer for the Ci
 - Prefer readability and domain semantics over satisfying static analyzers mechanically.
 - In doubtful places, keep domain semantics and readability first.
 - Real Sonar/IDEA findings must be fixed in code.
-- False positives, especially around JSpecify `@NonNull` and framework-bound DTOs, may be marked with a targeted `// NOSONAR`.
+- False positives, especially around JSpecify `@NonNull` and framework-bound DTOs, may be marked with
+  a targeted `// NOSONAR`.
 - Do not make code less expressive only to silence a false positive.
 - Avoid unnecessary abstractions and patterns for their own sake.
 - Prefer composition over inheritance.
 - Use succinct comments only when they clarify non-obvious domain or algorithmic decisions.
-- Strategy classes and abstract-class implementations must have a short comment or Javadoc explaining which approach they implement.
+- Strategy classes and abstract-class implementations must have a short comment or Javadoc explaining
+  which approach they implement.
 - If a method declaration has more than one parameter, place parameters on separate lines.
+- Keep source and documentation lines at 120 characters or less; wrap long annotations, comments,
+  Javadoc, and argument lists.
 
 ## Nullness
 
@@ -46,7 +50,8 @@ Act as a senior Java architect and production-grade software engineer for the Ci
 - Annotate method parameters, return types, fields, and generic type parameters where useful.
 - Do not use `Optional` as a field or parameter just to satisfy nullness tooling.
 - Use `Optional` mainly as a return type or local transformation tool when it improves clarity.
-- Prefer functional Optional style: use `value.orElse(null) // NOSONAR` instead of `value.isPresent() ? value.get() : null`.
+- Prefer functional Optional style: use `value.orElse(null) // NOSONAR` instead of
+  `value.isPresent() ? value.get() : null`.
 
 ## Architecture
 
@@ -57,7 +62,8 @@ Act as a senior Java architect and production-grade software engineer for the Ci
 - Validate invariants in constructors or static factories.
 - Domain methods must not throw technical exceptions such as `IllegalArgumentException` for business rule failures.
 - Business rule failures must use domain exceptions derived from `DomainException`.
-- Application failures should use application exceptions such as not found, forbidden, conflict, or unprocessable exceptions.
+- Application failures should use application exceptions such as not found, forbidden, conflict, or
+  unprocessable exceptions.
 - Core/domain code must not depend on Spring infrastructure exceptions such as `org.springframework.dao.*`.
 - Infrastructure exceptions must be translated at adapters/ACL boundaries.
 
@@ -74,9 +80,11 @@ Act as a senior Java architect and production-grade software engineer for the Ci
   - `core.batchtraceability`: material traceability across feedstock and production;
   - `core.appleprofile`: base apple variety catalog/reference profile;
   - `core.varietyprofile`: regional variety profiles, provenance, contributors, source imports;
-  - `core.cideranalysis`: reusable analysis tools such as graph projection, profile targets, distance, composition, classification, ABV/readiness.
+  - `core.cideranalysis`: reusable analysis tools such as graph projection, profile targets,
+    distance, composition, classification, ABV/readiness.
 - AppleVariety catalog concerns must stay separate from graph/target analysis concerns.
-- Feedstock screens must work from `FeedstockBatch`; measurements are current-state/history sources, not the primary UI entity.
+- Feedstock screens must work from `FeedstockBatch`; measurements are current-state/history sources,
+  not the primary UI entity.
 
 ## Persistence
 
@@ -87,7 +95,8 @@ Act as a senior Java architect and production-grade software engineer for the Ci
 - Use common JDBC query helpers only when dynamic filtering repeats across repositories.
 - JDBC aggregate entity classes must consistently use Spring Data mapping annotations.
 - JDBC row/read-model classes should not pretend to be aggregate entities.
-- Aggregate entities that represent mutable aggregate state should have audit fields and optimistic locking where needed.
+- Aggregate entities that represent mutable aggregate state should have audit fields and optimistic
+  locking where needed.
 - Use `AggregateReference<T, ID>` where Spring Data JDBC aggregate references make the model clearer.
 - Do not introduce technical IDs or persistence fields into domain objects unless the domain needs them.
 
@@ -99,7 +108,8 @@ Act as a senior Java architect and production-grade software engineer for the Ci
 - Traceability is a separate context that records immutable steps, inputs, outputs, snapshots, and occurrence time.
 - `BatchTraceStep` should be immutable after append; do not mutate outputs later.
 - Source tree or traceability graph projections must be built from immutable trace steps.
-- Trace snapshots must preserve historical truth, including chemical axes, volume, confidence, YAN where relevant, and `occurredAt`.
+- Trace snapshots must preserve historical truth, including chemical axes, volume, confidence,
+  YAN where relevant, and `occurredAt`.
 
 ## Domain Rules
 
@@ -108,7 +118,8 @@ Act as a senior Java architect and production-grade software engineer for the Ci
 - Graph and workspace views for feedstock use the latest/current measurement only.
 - The "latest measurement only" rule belongs in application/query layer.
 - `ProductionBatch` creation should consume an already chosen source composition or source selection.
-- Composition calculation/optimization must happen before creation of a production batch, not inside the creation use case.
+- Composition calculation/optimization must happen before creation of a production batch, not inside
+  the creation use case.
 - The platform follows the Technologist-In-Control Principle:
   - the system provides data, candidates, assessments, warnings, and recommendations;
   - the technologist makes and confirms the production decision.
@@ -129,7 +140,8 @@ Act as a senior Java architect and production-grade software engineer for the Ci
 - REST response DTOs for physical quantities must use `value + unit`, not a bare numeric value.
 - Do not encode units in core variable names when the type or context already defines canonical units.
 - If units are not represented by Value Objects, document the canonical unit at the model boundary.
-- YAN is used for fermentation-start/readiness assessment and composition calculation, but it must not participate in target distance or optimization target axes.
+- YAN is used for fermentation-start/readiness assessment and composition calculation, but it must
+  not participate in target distance or optimization target axes.
 - Target/distance/blending axes are sugar, acidity, and optional tannin.
 
 ## REST And API
@@ -159,7 +171,8 @@ Act as a senior Java architect and production-grade software engineer for the Ci
   - forbidden/ownership mismatch to 403;
   - conflicts such as optimistic locking to 409;
   - validation or capability-not-met cases to 400/422 depending on meaning.
-- Infrastructure adapters should translate persistence conflicts into application/infrastructure-neutral exceptions before they reach core services.
+- Infrastructure adapters should translate persistence conflicts into application/infrastructure-neutral
+  exceptions before they reach core services.
 
 ## Testing
 
@@ -184,7 +197,8 @@ Act as a senior Java architect and production-grade software engineer for the Ci
 ## Frontend And Workspace Alignment
 
 - Backend should expose business scenario data and read models, not arbitrary screen widgets.
-- Since there is no BFF, backend may provide application read models that reduce frontend stitching when they represent a stable business workspace.
+- Since there is no BFF, backend may provide application read models that reduce frontend stitching
+  when they represent a stable business workspace.
 - Feedstock workspace should support:
   - batch list;
   - latest measurement state;

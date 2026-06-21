@@ -12,12 +12,20 @@ import tech.units.indriya.quantity.Quantities;
 import static java.util.Objects.requireNonNull;
 
 
+/**
+ * Value object for material volume in CAP canonical volume units.
+ *
+ * <p>Volume is represented in liters and is used by feedstock, production, composition, and
+ * traceability accounting. Keeping the accepted range here gives adapters a single source for
+ * metadata while preserving volume validation in the shared kernel.
+ */
 @ValueObject
 public final class VolumeValue
     extends MeasuredValue<Volume, VolumeValue> {
 
   private static final BigDecimal MIN = BigDecimal.ZERO;
   private static final BigDecimal MAX = new BigDecimal("1000000000.000");
+  private static final BigDecimal STEP = new BigDecimal("0.1");
   private static final Unit<Volume> UNIT = BeverageUnits.LITRE;
 
   public VolumeValue(@NonNull Quantity<Volume> value) {
@@ -27,6 +35,18 @@ public final class VolumeValue
   public static @NonNull VolumeValue ofLiters(@NonNull BigDecimal liters) {
     requireNonNull(liters, "volume value cannot be null");
     return new VolumeValue(Quantities.getQuantity(liters, UNIT));
+  }
+
+  public static @NonNull BigDecimal minValue() {
+    return MIN;
+  }
+
+  public static @NonNull BigDecimal maxValue() {
+    return MAX;
+  }
+
+  public static @NonNull BigDecimal stepValue() {
+    return STEP;
   }
 
   public static @NonNull VolumeValue ofLiters(@NonNull String liters) {

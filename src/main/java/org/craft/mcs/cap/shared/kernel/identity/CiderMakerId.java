@@ -1,4 +1,4 @@
-package org.craft.mcs.cap.core.feedstock.domain.model.value;
+package org.craft.mcs.cap.shared.kernel.identity;
 
 import java.util.UUID;
 import org.jmolecules.ddd.annotation.ValueObject;

@@ -27,6 +27,7 @@ public record ChemicalProfileCompositionOptimizationRequest(
     @NonNull ChemicalProfileCompositionTanninPolicy tanninPolicy,
     @NonNull ProfileTargetObjective targetObjective,
     @NonNull ProfileTargetObjectiveFunction objectiveFunction,
+    @NonNull List<@NonNull CompositionOptimizationCriterion> criteria,
     @NonNull DiscretizedCompositionOptimizationSettings settings,
     @NonNull CompositionOptimizationMode mode,
     @Nullable VolumeValue targetTotalVolume
@@ -37,6 +38,7 @@ public record ChemicalProfileCompositionOptimizationRequest(
     requireNonNull(tanninPolicy, "chemical profile composition tannin policy cannot be null");
     requireNonNull(targetObjective, "profile target objective cannot be null");
     requireNonNull(objectiveFunction, "profile target objective function cannot be null");
+    criteria = List.copyOf(requireNonNull(criteria, "composition optimization criteria cannot be null"));
     requireNonNull(settings, "discretized composition optimization settings cannot be null");
     requireNonNull(mode, "composition optimization mode cannot be null");
 

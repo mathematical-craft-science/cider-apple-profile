@@ -15,7 +15,7 @@ import static org.craft.mcs.cap.shared.kernel.math.DecimalComparisons.isNegative
  *
  * <p>The value is calculated before production creation by composition/scoring use cases. Zero
  * means that the accepted production profile is inside the target area; higher values mean a larger
- * normalized deviation. The production context stores it only as accepted decision metadata.
+ * normalized deviation. The production context stores it only as accepted assessment metadata.
  */
 @ValueObject
 public record ProductionTargetDistance(@NonNull BigDecimal value) {

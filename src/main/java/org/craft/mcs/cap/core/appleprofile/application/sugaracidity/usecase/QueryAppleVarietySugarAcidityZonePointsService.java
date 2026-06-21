@@ -31,7 +31,7 @@ import static java.util.Objects.requireNonNull;
  *
  * <p>The service performs cursor pagination over repository candidates, applies application-level
  * capability and zone filters, and returns both plottable and unplottable results according to the
- * requested filters. It keeps graph UI queries out of the aggregate repository contract and makes
+ * requested filters. It keeps graph read queries out of the aggregate repository contract and makes
  * catalog exploration independent from feedstock workspace queries.
  */
 @Component

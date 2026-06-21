@@ -13,12 +13,19 @@ import tech.units.indriya.quantity.Quantities;
 import static java.util.Objects.requireNonNull;
 
 
+/**
+ * Value object for pH measurements in chemical profiles.
+ *
+ * <p>pH is a dimensionless acidity measure used as supporting fermentation and safety context.
+ * The class keeps pH validation centralized and exposes bounds for generic unit metadata.
+ */
 @ValueObject
 public final class PhValue
     extends MeasuredValue<Acidity, PhValue> {
 
   private static final BigDecimal MIN = BigDecimal.ZERO;
   private static final BigDecimal MAX = new BigDecimal("15.0");
+  private static final BigDecimal STEP = new BigDecimal("0.01");
   private static final Unit<Acidity> UNIT = UCUM.PH;
 
   public PhValue(@NonNull Quantity<Acidity> value) {
@@ -29,6 +36,18 @@ public final class PhValue
   public static PhValue of(@NonNull BigDecimal ph) {
     requireNonNull(ph, "pH value cannot be null");
     return new PhValue(Quantities.getQuantity(ph, UNIT));
+  }
+
+  public static @NonNull BigDecimal minValue() {
+    return MIN;
+  }
+
+  public static @NonNull BigDecimal maxValue() {
+    return MAX;
+  }
+
+  public static @NonNull BigDecimal stepValue() {
+    return STEP;
   }
 
   @NonNull

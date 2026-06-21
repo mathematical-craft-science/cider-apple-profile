@@ -12,20 +12,27 @@ import static java.util.Objects.requireNonNull;
  * Canonical unit labels exposed by REST transport DTOs.
  *
  * <p>Core values are normalized to CAP canonical units. REST responses should return physical
- * numeric values together with these labels so UI clients do not duplicate domain unit knowledge.
+ * numeric values together with these labels so API clients do not duplicate domain unit knowledge.
  */
 public final class CanonicalUnitLabels {
 
   public static final @NonNull String SUGAR = BeverageUnits.label(BeverageUnits.SG);
+  public static final @NonNull String SUGAR_SHORT = "SG";
   public static final @NonNull String PH = BeverageUnits.label(BeverageUnits.PH);
+  public static final @NonNull String PH_SHORT = "pH";
   public static final @NonNull String TITRATABLE_ACIDITY =
       BeverageUnits.label(BeverageUnits.GRAM_PER_LITER_AS_MALIC_ACID);
+  public static final @NonNull String TITRATABLE_ACIDITY_SHORT = "g/L";
   public static final @NonNull String TANNINITY =
       BeverageUnits.label(BeverageUnits.MILLIGRAM_PER_LITER_AS_TANNIC_ACID);
+  public static final @NonNull String TANNINITY_SHORT = "mg/L";
   public static final @NonNull String YEAST_ASSIMILABLE_NITROGEN =
       BeverageUnits.label(BeverageUnits.YAN);
+  public static final @NonNull String YEAST_ASSIMILABLE_NITROGEN_SHORT = "mg N/L";
   public static final @NonNull String ABV = BeverageUnits.label(BeverageUnits.PERCENT_ABV);
+  public static final @NonNull String ABV_SHORT = "% ABV";
   public static final @NonNull String VOLUME = BeverageUnits.label(BeverageUnits.LITRE);
+  public static final @NonNull String VOLUME_SHORT = "L";
 
   private CanonicalUnitLabels() {
   }

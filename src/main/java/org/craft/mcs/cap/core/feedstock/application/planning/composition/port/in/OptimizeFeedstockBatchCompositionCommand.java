@@ -1,19 +1,20 @@
 package org.craft.mcs.cap.core.feedstock.application.planning.composition.port.in;
 
-import org.craft.mcs.cap.shared.application.ApplicationValidationException;
-
-import org.craft.mcs.cap.core.cideranalysis.profiletarget.scoring.application.port.in.ProfileTargetScoringPurpose;
+import java.util.List;
 import org.craft.mcs.cap.core.cideranalysis.composition.calculation.domain.ChemicalProfileCompositionCalculatorCode;
 import org.craft.mcs.cap.core.cideranalysis.composition.optimization.domain.CompositionOptimizationAlgorithm;
+import org.craft.mcs.cap.core.cideranalysis.composition.optimization.domain.CompositionOptimizationCriterion;
 import org.craft.mcs.cap.core.cideranalysis.composition.optimization.domain.CompositionOptimizationMode;
 import org.craft.mcs.cap.core.cideranalysis.composition.optimization.domain.DiscretizedCompositionOptimizationSettings;
+import org.craft.mcs.cap.core.cideranalysis.profiletarget.scoring.application.port.in.ProfileTargetScoringPurpose;
 import org.craft.mcs.cap.core.cideranalysis.profiletarget.scoring.domain.ProfileAxisNormalizerCode;
 import org.craft.mcs.cap.core.cideranalysis.profiletarget.scoring.domain.ProfileTargetObjectiveFunctionCode;
 import org.craft.mcs.cap.core.cideranalysis.profiletarget.scoring.domain.ProfileTargetObjectiveWeights;
 import org.craft.mcs.cap.core.cideranalysis.sugaracidity.target.domain.TanninTargetRange;
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.FeedstockProfileTargetSelection;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockMeasurementPointFilters;
-import org.craft.mcs.cap.core.feedstock.domain.model.value.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
+import org.craft.mcs.cap.shared.application.ApplicationValidationException;
 import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;
 import org.craft.mcs.cap.shared.platform.query.CursorPageRequest;
 import org.jspecify.annotations.NonNull;
@@ -29,6 +30,7 @@ public record OptimizeFeedstockBatchCompositionCommand(
     @NonNull FeedstockProfileTargetSelection target,
     @Nullable TanninTargetRange tanninTarget,
     @NonNull ProfileTargetObjectiveWeights weights,
+    @NonNull List<@NonNull CompositionOptimizationCriterion> criteria,
     @NonNull DiscretizedCompositionOptimizationSettings settings,
     @NonNull CompositionOptimizationMode mode,
     @NonNull CompositionOptimizationAlgorithm algorithm,
@@ -45,6 +47,7 @@ public record OptimizeFeedstockBatchCompositionCommand(
     requireNonNull(purpose, "profile target scoring purpose cannot be null");
     requireNonNull(target, "feedstock batch profile target cannot be null");
     requireNonNull(weights, "profile target objective weights cannot be null");
+    criteria = List.copyOf(requireNonNull(criteria, "composition optimization criteria cannot be null"));
     requireNonNull(settings, "discretized composition optimization settings cannot be null");
     requireNonNull(mode, "composition optimization mode cannot be null");
     requireNonNull(algorithm, "composition optimization algorithm cannot be null");

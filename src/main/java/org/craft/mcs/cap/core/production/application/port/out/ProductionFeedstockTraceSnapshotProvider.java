@@ -1,6 +1,6 @@
 package org.craft.mcs.cap.core.production.application.port.out;
 
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
+import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.jspecify.annotations.NonNull;
 
 

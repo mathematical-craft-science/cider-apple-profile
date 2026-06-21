@@ -15,6 +15,7 @@ import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.MeasurementValueKind;
+import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
 import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -43,6 +44,7 @@ class DiscretizedBoundedChemicalProfileCompositionOptimizationStrategyTest {
             EffectiveRangeProfileAxisNormalizer.ciderBlendingDefaults(),
             ProfileTargetObjectiveWeights.balanced()
         ),
+        List.of(),
         new DiscretizedCompositionOptimizationSettings(50, 3),
         CompositionOptimizationMode.PROPORTION,
         null
@@ -67,12 +69,75 @@ class DiscretizedBoundedChemicalProfileCompositionOptimizationStrategyTest {
             EffectiveRangeProfileAxisNormalizer.ciderBlendingDefaults(),
             ProfileTargetObjectiveWeights.balanced()
         ),
+        List.of(),
         new DiscretizedCompositionOptimizationSettings(50, 10),
         CompositionOptimizationMode.ABSOLUTE_VOLUME,
         VolumeValue.ofLiters("100")
     ), calculator);
 
     assertThat(result.evaluatedCandidates()).isZero();
+    assertThat(result.candidates()).isEmpty();
+  }
+
+  @Test
+  void ranksByObjectiveScoreWithYanReadinessPenalty() {
+    final var result = strategy.optimize(new ChemicalProfileCompositionOptimizationRequest(
+        List.of(
+            source("low-yan-a", "1.050", "6.0", "60", null),
+            source("low-yan-b", "1.050", "6.0", "60", null),
+            source("ready-a", "1.052", "6.2", "200", null),
+            source("ready-b", "1.052", "6.2", "200", null)
+        ),
+        ChemicalProfileCompositionTanninPolicy.CALCULATE_WHEN_COMPLETE,
+        target("1.049", "1.051", "5.9", "6.1"),
+        new DistanceToTargetAreaObjectiveFunction(
+            EffectiveRangeProfileAxisNormalizer.ciderBlendingDefaults(),
+            ProfileTargetObjectiveWeights.balanced()
+        ),
+        List.of(new YeastAssimilableNitrogenReadinessCriterion(
+            YeastAssimilableNitrogenValue.of("140"),
+            null,
+            new BigDecimal("10"),
+            CompositionOptimizationMissingPolicy.PENALIZE_IF_MISSING,
+            BigDecimal.ONE
+        )),
+        new DiscretizedCompositionOptimizationSettings(50, 3),
+        CompositionOptimizationMode.PROPORTION,
+        null
+    ), calculator);
+
+    assertThat(result.candidates()).isNotEmpty();
+    assertThat(result.candidates().getFirst().objectiveAssessment().penalties()).isEmpty();
+    assertThat(result.candidates().getFirst().distance().value()).isNotNull();
+    assertThat(result.candidates().getFirst().distance().value()).isGreaterThan(BigDecimal.ZERO);
+  }
+
+  @Test
+  void excludesCandidatesWithMissingYanWhenPolicyRequiresIt() {
+    final var result = strategy.optimize(new ChemicalProfileCompositionOptimizationRequest(
+        List.of(
+            source("without-yan", "1.050", "6.0", null),
+            source("with-yan", "1.052", "6.2", "200", null)
+        ),
+        ChemicalProfileCompositionTanninPolicy.CALCULATE_WHEN_COMPLETE,
+        target("1.049", "1.051", "5.9", "6.1"),
+        new DistanceToTargetAreaObjectiveFunction(
+            EffectiveRangeProfileAxisNormalizer.ciderBlendingDefaults(),
+            ProfileTargetObjectiveWeights.balanced()
+        ),
+        List.of(new YeastAssimilableNitrogenReadinessCriterion(
+            YeastAssimilableNitrogenValue.of("140"),
+            null,
+            BigDecimal.ONE,
+            CompositionOptimizationMissingPolicy.EXCLUDE_IF_MISSING,
+            BigDecimal.ONE
+        )),
+        new DiscretizedCompositionOptimizationSettings(50, 3),
+        CompositionOptimizationMode.PROPORTION,
+        null
+    ), calculator);
+
+    assertThat(result.evaluatedCandidates()).isEqualTo(1);
     assertThat(result.candidates()).isEmpty();
   }
 
@@ -98,12 +163,25 @@ class DiscretizedBoundedChemicalProfileCompositionOptimizationStrategyTest {
       @NonNull String acidity,
       @Nullable VolumeValue availableVolume
   ) {
+    return source(id, sugar, acidity, null, availableVolume);
+  }
+
+  private static @NonNull ChemicalProfileCompositionOptimizationSource source(
+      @NonNull String id,
+      @NonNull String sugar,
+      @NonNull String acidity,
+      @Nullable String yeastAssimilableNitrogen,
+      @Nullable VolumeValue availableVolume
+  ) {
     return new ChemicalProfileCompositionOptimizationSource(
         new ChemicalProfileCompositionSourceReference("FEEDSTOCK_BATCH", id),
         ChemicalProfileAxes.of(
             axis(ChemicalAxis.SUGAR, sugar),
             axis(ChemicalAxis.ACIDITY, acidity),
-            null
+            null,
+            yeastAssimilableNitrogen == null
+                ? null
+                : axis(ChemicalAxis.YEAST_ASSIMILABLE_NITROGEN, yeastAssimilableNitrogen)
         ),
         availableVolume
     );

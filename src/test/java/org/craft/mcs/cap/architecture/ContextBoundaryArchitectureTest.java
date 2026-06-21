@@ -10,6 +10,7 @@ import com.tngtech.archunit.lang.ArchRule;
 import com.tngtech.archunit.lang.ConditionEvents;
 import com.tngtech.archunit.lang.SimpleConditionEvent;
 import java.util.Locale;
+import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.jspecify.annotations.NonNull;
 
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
@@ -60,6 +61,24 @@ class ContextBoundaryArchitectureTest {
           .should()
           .dependOnClassesThat()
           .resideInAPackage("org.craft.mcs.cap.core.cideranalysis..");
+
+  @ArchTest
+  static final ArchRule production_domain_does_not_depend_on_feedstock_domain =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.core.production.domain..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAPackage("org.craft.mcs.cap.core.feedstock.domain..");
+
+  @ArchTest
+  static final ArchRule production_domain_does_not_use_feedstock_batch_id_directly =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.core.production.domain..")
+          .should()
+          .dependOnClassesThat()
+          .areAssignableTo(FeedstockBatchId.class);
 
   @ArchTest
   static final ArchRule aggregate_repository_ports_do_not_expose_read_model_queries =

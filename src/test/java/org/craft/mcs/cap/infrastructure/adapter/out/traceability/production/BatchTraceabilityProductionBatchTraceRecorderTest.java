@@ -9,8 +9,8 @@ import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceOperation
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStep;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStepId;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceSubjectType;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
-import org.craft.mcs.cap.core.feedstock.domain.model.value.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
+import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchCompositionTraceSource;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchFeedstockTraceSource;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatch;
@@ -18,6 +18,7 @@ import org.craft.mcs.cap.core.production.domain.model.ProductionBatchId;
 import org.craft.mcs.cap.core.production.domain.model.ProductionInput;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceComponent;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceComposition;
+import org.craft.mcs.cap.core.production.domain.model.ProductionSourceReference;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchKind;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchName;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
@@ -42,7 +43,7 @@ class BatchTraceabilityProductionBatchTraceRecorderTest {
   private static ProductionInput productionInput(UUID sourceId) {
     return new ProductionInput(
         ProductionSourceComposition.of(List.of(new ProductionSourceComponent(
-            FeedstockBatchId.of(sourceId),
+            ProductionSourceReference.feedstockBatch(sourceId),
             VolumeValue.ofLiters("100")
         ))),
         new ProductionProfileSnapshot(

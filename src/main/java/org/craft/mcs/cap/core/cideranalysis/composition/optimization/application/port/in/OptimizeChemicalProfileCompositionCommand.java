@@ -6,6 +6,7 @@ import org.craft.mcs.cap.core.cideranalysis.composition.calculation.domain.Chemi
 import org.craft.mcs.cap.core.cideranalysis.composition.optimization.domain.CompositionOptimizationAlgorithm;
 import org.craft.mcs.cap.core.cideranalysis.composition.optimization.domain.CompositionOptimizationMode;
 import org.craft.mcs.cap.core.cideranalysis.composition.optimization.domain.ChemicalProfileCompositionOptimizationSource;
+import org.craft.mcs.cap.core.cideranalysis.composition.optimization.domain.CompositionOptimizationCriterion;
 import org.craft.mcs.cap.core.cideranalysis.composition.optimization.domain.DiscretizedCompositionOptimizationSettings;
 import org.craft.mcs.cap.core.cideranalysis.profiletarget.scoring.application.port.in.ProfileTargetScoringPurpose;
 import org.craft.mcs.cap.core.cideranalysis.profiletarget.scoring.domain.ProfileAxisNormalizerCode;
@@ -25,6 +26,7 @@ public record OptimizeChemicalProfileCompositionCommand(
     @NonNull ProfileTargetObjective targetObjective,
     @NonNull ProfileTargetObjectiveWeights targetWeights,
     @NonNull ProfileTargetScoringPurpose scoringPurpose,
+    @NonNull List<@NonNull CompositionOptimizationCriterion> criteria,
     @NonNull DiscretizedCompositionOptimizationSettings settings,
     @NonNull CompositionOptimizationMode mode,
     @NonNull CompositionOptimizationAlgorithm algorithm,
@@ -40,6 +42,7 @@ public record OptimizeChemicalProfileCompositionCommand(
     requireNonNull(targetObjective, "profile target objective cannot be null");
     requireNonNull(targetWeights, "profile target objective weights cannot be null");
     requireNonNull(scoringPurpose, "profile target scoring purpose cannot be null");
+    criteria = List.copyOf(requireNonNull(criteria, "composition optimization criteria cannot be null"));
     requireNonNull(settings, "discretized composition optimization settings cannot be null");
     requireNonNull(mode, "composition optimization mode cannot be null");
     requireNonNull(algorithm, "composition optimization algorithm cannot be null");

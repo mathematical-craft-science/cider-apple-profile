@@ -2,8 +2,8 @@ package org.craft.mcs.cap.core.feedstock.application;
 
 import java.io.Serial;
 import org.craft.mcs.cap.shared.application.ApplicationForbiddenException;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
-import org.craft.mcs.cap.core.feedstock.domain.model.value.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
+import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;

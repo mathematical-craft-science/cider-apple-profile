@@ -5,11 +5,11 @@ import org.craft.mcs.cap.core.cideranalysis.composition.calculation.application.
 import org.craft.mcs.cap.core.cideranalysis.composition.calculation.domain.ChemicalProfileCompositionCalculatorCode;
 import org.craft.mcs.cap.core.cideranalysis.composition.calculation.domain.ChemicalProfileCompositionTanninPolicy;
 import org.craft.mcs.cap.core.cideranalysis.profiletarget.scoring.application.port.in.ProfileTargetScoringPurpose;
-import org.craft.mcs.cap.core.cideranalysis.profiletarget.scoring.domain.ProfileTargetObjectiveFunctionCode;
 import org.craft.mcs.cap.core.cideranalysis.sugaracidity.target.domain.SugarAcidityTargetResolver;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.calculation.dto.CalculateChemicalProfileCompositionRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.calculation.dto.ChemicalProfileCompositionResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.common.mapper.ChemicalProfileCompositionCommonRestMapper;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.composition.mapper.CompositionPlanningRestDefaults;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.sugaracidity.mapper.SugarAcidityZoneRestMapper;
 import org.jspecify.annotations.NonNull;
 
@@ -20,7 +20,6 @@ import static org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composit
 import static org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.common.mapper.ChemicalProfileCompositionCommonRestMapper.toVolumeResponse;
 import static org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.common.mapper.ChemicalProfileCompositionCommonRestMapper.toWeights;
 import static org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.common.mapper.ChemicalProfileCompositionCommonRestMapper.toYeastAssimilableNitrogenResponse;
-import static org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.mapper.ProfileTargetRestMapper.normalizerFor;
 
 
 public final class ChemicalProfileCompositionCalculationRestMapper {
@@ -44,10 +43,13 @@ public final class ChemicalProfileCompositionCalculationRestMapper {
         request.calculator(),
         ChemicalProfileCompositionCalculatorCode.MASS_BALANCE
     );
-    final var normalizer = requireNonNullElse(request.normalizer(), normalizerFor(scoringPurpose));
+    final var normalizer = requireNonNullElse(
+        request.normalizer(),
+        CompositionPlanningRestDefaults.profileTargetNormalizer()
+    );
     final var objectiveFunction = requireNonNullElse(
         request.objectiveFunction(),
-        ProfileTargetObjectiveFunctionCode.DISTANCE_TO_TARGET_AREA
+        CompositionPlanningRestDefaults.profileTargetObjectiveFunction()
     );
     final var sources = requireNonNull(
         request.sources(),

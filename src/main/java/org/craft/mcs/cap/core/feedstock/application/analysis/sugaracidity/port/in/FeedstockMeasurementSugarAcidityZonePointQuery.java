@@ -1,6 +1,6 @@
 package org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in;
 
-import org.craft.mcs.cap.core.feedstock.domain.model.value.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
 import org.craft.mcs.cap.shared.platform.query.CursorPageRequest;
 import org.jspecify.annotations.NonNull;
 

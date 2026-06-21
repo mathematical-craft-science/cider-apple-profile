@@ -8,12 +8,12 @@ import org.craft.mcs.cap.core.cideranalysis.composition.optimization.domain.Chem
 import org.craft.mcs.cap.core.cideranalysis.composition.optimization.domain.CompositionOptimizationAlgorithm;
 import org.craft.mcs.cap.core.cideranalysis.composition.optimization.domain.DiscretizedCompositionOptimizationSettings;
 import org.craft.mcs.cap.core.cideranalysis.profiletarget.scoring.application.port.in.ProfileTargetScoringPurpose;
-import org.craft.mcs.cap.core.cideranalysis.profiletarget.scoring.domain.ProfileTargetObjectiveFunctionCode;
 import org.craft.mcs.cap.core.cideranalysis.sugaracidity.target.domain.SugarAcidityTargetResolver;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.common.mapper.ChemicalProfileCompositionCommonRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.optimization.dto.ChemicalProfileCompositionOptimizationCandidateResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.optimization.dto.OptimizeChemicalProfileCompositionRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.optimization.dto.OptimizeChemicalProfileCompositionResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.composition.mapper.CompositionOptimizationRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.sugaracidity.mapper.SugarAcidityZoneRestMapper;
 import org.jspecify.annotations.NonNull;
 
@@ -24,7 +24,6 @@ import static org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composit
 import static org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.common.mapper.ChemicalProfileCompositionCommonRestMapper.toVolumeResponse;
 import static org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.common.mapper.ChemicalProfileCompositionCommonRestMapper.toWeights;
 import static org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.common.mapper.ChemicalProfileCompositionCommonRestMapper.toYeastAssimilableNitrogenResponse;
-import static org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.mapper.ProfileTargetRestMapper.normalizerFor;
 
 
 public final class ChemicalProfileCompositionOptimizationRestMapper {
@@ -53,10 +52,13 @@ public final class ChemicalProfileCompositionOptimizationRestMapper {
         request.calculator(),
         ChemicalProfileCompositionCalculatorCode.MASS_BALANCE
     );
-    final var normalizer = requireNonNullElse(request.normalizer(), normalizerFor(scoringPurpose));
+    final var normalizer = requireNonNullElse(
+        request.normalizer(),
+        CompositionOptimizationRestMapper.defaultOptimizationNormalizer()
+    );
     final var objectiveFunction = requireNonNullElse(
         request.objectiveFunction(),
-        ProfileTargetObjectiveFunctionCode.DISTANCE_TO_TARGET_AREA
+        CompositionOptimizationRestMapper.defaultOptimizationObjectiveFunction()
     );
     final var settings = new DiscretizedCompositionOptimizationSettings(
         requireNonNullElse(request.stepPercent(), DiscretizedCompositionOptimizationSettings.DEFAULT_STEP_PERCENT),
@@ -79,6 +81,7 @@ public final class ChemicalProfileCompositionOptimizationRestMapper {
         targetObjective,
         toWeights(request.weights()),
         scoringPurpose,
+        CompositionOptimizationRestMapper.toCriteria(request.yanReadiness()),
         settings,
         mode,
         algorithm,
@@ -130,7 +133,8 @@ public final class ChemicalProfileCompositionOptimizationRestMapper {
         toYeastAssimilableNitrogenResponse(composition.yeastAssimilableNitrogen()),
         toVolumeResponse(composition.totalVolume()),
         composition.warnings(),
-        ChemicalProfileCompositionCommonRestMapper.toResponse(candidate.distance())
+        ChemicalProfileCompositionCommonRestMapper.toResponse(candidate.distance()),
+        CompositionOptimizationRestMapper.toResponse(candidate.objectiveAssessment())
     );
   }
 }

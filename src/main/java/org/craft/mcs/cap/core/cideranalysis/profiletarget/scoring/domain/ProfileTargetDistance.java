@@ -17,9 +17,9 @@ import static org.craft.mcs.cap.shared.kernel.math.DecimalComparisons.isNegative
 /**
  * Result of scoring a profile point against a target objective.
  *
- * <p>The object is intentionally verbose because the API needs to explain optimization decisions:
+ * <p>The object is intentionally verbose because the API needs to explain optimization assessments:
  * the original point, nearest target point, optional tannin values, selected objective function,
- * metric, weights and missing measurements all travel together. This lets a UI show why one
+ * metric, weights and missing measurements all travel together. This lets a client show why one
  * candidate ranked better than another instead of exposing only a scalar score.
  */
 public record ProfileTargetDistance(

@@ -3,6 +3,7 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.production;
 import java.net.URI;
 import org.craft.mcs.cap.core.production.application.ProductionSourceInsufficientAvailableVolumeException;
 import org.craft.mcs.cap.core.production.application.ProductionSourceOwnershipMismatchException;
+import org.craft.mcs.cap.core.production.domain.model.ProductionSourceReference;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.measurement.CanonicalUnitLabels;
 import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
 import org.jspecify.annotations.NonNull;
@@ -36,9 +37,9 @@ public final class ProductionExceptionHandler {
         FORBIDDEN,
         SOURCE_OWNERSHIP_MISMATCH,
         "Production source belongs to another cider maker",
-        "Feedstock batch cannot be used by this cider maker."
+        "Production source cannot be used by this cider maker."
     );
-    problem.setProperty("batchId", exception.batchId().value().toString());
+    addSourceProperties(problem, exception.sourceReference());
     problem.setProperty("expectedCiderMakerId", exception.expectedCiderMakerId().value().toString());
     problem.setProperty("actualCiderMakerId", exception.actualCiderMakerId().value().toString());
 
@@ -52,10 +53,10 @@ public final class ProductionExceptionHandler {
     final var problem = create(
         UNPROCESSABLE_ENTITY,
         INSUFFICIENT_AVAILABLE_VOLUME,
-        "Insufficient available feedstock volume",
-        "Requested production source volume exceeds available feedstock batch volume."
+        "Insufficient available source volume",
+        "Requested production source volume exceeds available source volume."
     );
-    problem.setProperty("batchId", exception.batchId().value().toString());
+    addSourceProperties(problem, exception.sourceReference());
     problem.setProperty(
         "requestedVolume",
         new DecimalQuantityResponse(exception.requestedVolume().liters(), CanonicalUnitLabels.VOLUME)
@@ -66,5 +67,14 @@ public final class ProductionExceptionHandler {
     );
 
     return response(UNPROCESSABLE_ENTITY, problem);
+  }
+
+  private static void addSourceProperties(
+      @NonNull ProblemDetail problem,
+      @NonNull ProductionSourceReference sourceReference
+  ) {
+    problem.setProperty("sourceType", sourceReference.type().name());
+    problem.setProperty("sourceId", sourceReference.id().toString());
+    problem.setProperty("batchId", sourceReference.id().toString());
   }
 }
