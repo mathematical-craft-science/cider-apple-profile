@@ -5,7 +5,7 @@ import org.craft.mcs.cap.core.cideranalysis.composition.calculation.domain.Chemi
 import org.craft.mcs.cap.core.cideranalysis.profiletarget.scoring.domain.ProfileTargetDistance;
 import org.craft.mcs.cap.core.cideranalysis.sugaracidity.point.domain.SugarAcidityAxisPoint;
 import org.craft.mcs.cap.core.cideranalysis.sugaracidity.point.domain.SugarAcidityProfilePoint;
-import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;
+import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

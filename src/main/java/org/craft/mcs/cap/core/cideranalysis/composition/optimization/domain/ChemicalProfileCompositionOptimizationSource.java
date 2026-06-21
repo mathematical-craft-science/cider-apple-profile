@@ -2,7 +2,7 @@ package org.craft.mcs.cap.core.cideranalysis.composition.optimization.domain;
 
 import org.craft.mcs.cap.core.cideranalysis.composition.calculation.domain.ChemicalProfileCompositionSourceReference;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
-import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;
+import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

@@ -21,7 +21,7 @@ import org.craft.mcs.cap.core.cideranalysis.profileaxis.domain.ChemicalProfileCa
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
 import org.craft.mcs.cap.shared.kernel.measurement.ExactMeasurement;
-import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;
+import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.craft.mcs.cap.core.cideranalysis.sugaracidity.zone.domain.BuiltInSugarAcidityZoneProfiles;

@@ -2,7 +2,7 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.abv.mapper;
 
 import java.math.BigDecimal;
 import org.craft.mcs.cap.core.cideranalysis.abv.domain.AbvPredictionMethod;
-import org.craft.mcs.cap.core.cideranalysis.abv.domain.AbvValue;
+import org.craft.mcs.cap.shared.kernel.measurement.value.AbvValue;
 import org.craft.mcs.cap.core.cideranalysis.abv.domain.FinalGravityPredictionSource;
 import org.craft.mcs.cap.core.cideranalysis.abv.domain.PotentialAbvPrediction;
 import org.craft.mcs.cap.core.cideranalysis.abv.domain.PredictionConfidence;

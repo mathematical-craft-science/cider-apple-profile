@@ -13,7 +13,7 @@ import org.craft.mcs.cap.core.cideranalysis.profiletarget.scoring.domain.Profile
 import org.craft.mcs.cap.core.cideranalysis.profiletarget.scoring.domain.ProfileTargetObjective;
 import org.craft.mcs.cap.core.cideranalysis.profiletarget.scoring.domain.ProfileTargetObjectiveFunctionCode;
 import org.craft.mcs.cap.core.cideranalysis.profiletarget.scoring.domain.ProfileTargetObjectiveWeights;
-import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;
+import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

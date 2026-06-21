@@ -9,7 +9,7 @@ import org.craft.mcs.cap.core.cideranalysis.sugaracidity.point.domain.SugarAcidi
 import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.MeasurementValueKind;
-import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;
+import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

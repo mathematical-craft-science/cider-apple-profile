@@ -1,6 +1,7 @@
 package org.craft.mcs.cap.core.cideranalysis.abv.domain;
 
 import java.math.BigDecimal;
+import org.craft.mcs.cap.shared.kernel.measurement.value.AbvValue;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;

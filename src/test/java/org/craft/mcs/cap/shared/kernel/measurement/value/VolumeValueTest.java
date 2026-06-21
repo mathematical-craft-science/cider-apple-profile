@@ -1,4 +1,4 @@
-package org.craft.mcs.cap.shared.kernel.measurement;
+package org.craft.mcs.cap.shared.kernel.measurement.value;
 
 import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
 
@@ -35,7 +35,7 @@ class VolumeValueTest {
     final var left = VolumeValue.ofLiters("12.50");
     final var right = VolumeValue.ofLiters("12.500");
 
-    assertThat(left.compareTo(right)).isZero();
+    assertThat(left).isEqualByComparingTo(right);
     assertThat(left).isEqualTo(right);
     assertThat(left).hasSameHashCodeAs(right);
   }

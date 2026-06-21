@@ -19,7 +19,7 @@ import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
 import org.craft.mcs.cap.shared.platform.TransactionHelper;
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.craft.mcs.cap.shared.kernel.measurement.ExactMeasurement;
-import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;
+import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.jspecify.annotations.NonNull;

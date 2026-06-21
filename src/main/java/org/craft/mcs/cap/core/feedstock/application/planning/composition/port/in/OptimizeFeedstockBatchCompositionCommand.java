@@ -15,7 +15,7 @@ import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockMeasurementPointFilters;
 import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
 import org.craft.mcs.cap.shared.application.ApplicationValidationException;
-import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;
+import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.craft.mcs.cap.shared.platform.query.CursorPageRequest;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;

@@ -2,7 +2,7 @@ package org.craft.mcs.cap.core.feedstock.application.workspace.port.in;
 
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockBatchName;
-import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;
+import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

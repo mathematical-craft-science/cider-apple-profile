@@ -34,7 +34,7 @@ import org.craft.mcs.cap.shared.kernel.chemical.axis.MeasurementValueKind;
 import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
-import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;
+import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.craft.mcs.cap.shared.platform.persistence.SpringTransactionHelper;
 import org.craft.mcs.cap.shared.testing.jdbc.PostgresDataJdbcTestConfiguration;

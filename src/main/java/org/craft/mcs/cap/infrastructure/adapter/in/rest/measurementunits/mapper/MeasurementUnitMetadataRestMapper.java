@@ -11,7 +11,8 @@ import org.craft.mcs.cap.shared.kernel.chemical.value.PhValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
-import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;
+import org.craft.mcs.cap.shared.kernel.measurement.value.AbvValue;
+import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.jspecify.annotations.NonNull;
 
@@ -69,6 +70,14 @@ public final class MeasurementUnitMetadataRestMapper {
                 PhValue.minValue(),
                 PhValue.maxValue(),
                 PhValue.stepValue()
+            ),
+            unit(
+                MeasurementUnitCode.ABV,
+                CanonicalUnitLabels.ABV_SHORT,
+                CanonicalUnitLabels.ABV,
+                AbvValue.minValue(),
+                AbvValue.maxValue(),
+                AbvValue.stepValue()
             ),
             unit(
                 MeasurementUnitCode.VOLUME,

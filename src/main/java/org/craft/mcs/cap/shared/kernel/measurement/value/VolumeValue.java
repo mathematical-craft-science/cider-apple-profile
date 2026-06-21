@@ -1,9 +1,10 @@
-package org.craft.mcs.cap.shared.kernel.measurement;
+package org.craft.mcs.cap.shared.kernel.measurement.value;
 
 import java.math.BigDecimal;
 import javax.measure.Quantity;
 import javax.measure.Unit;
 import javax.measure.quantity.Volume;
+import org.craft.mcs.cap.shared.kernel.measurement.MeasuredValue;
 import org.craft.mcs.cap.shared.kernel.measurement.unit.BeverageUnits;
 import org.jmolecules.ddd.annotation.ValueObject;
 import org.jspecify.annotations.NonNull;

@@ -12,7 +12,7 @@ import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockBatchN
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
 import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
-import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;
+import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.junit.jupiter.api.Test;
 
 import static java.util.UUID.randomUUID;

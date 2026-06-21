@@ -1,4 +1,4 @@
-package org.craft.mcs.cap.core.cideranalysis.abv.domain;
+package org.craft.mcs.cap.shared.kernel.measurement.value;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -14,6 +14,13 @@ import tech.units.indriya.quantity.Quantities;
 import static java.util.Objects.requireNonNull;
 
 
+/**
+ * Value object for alcohol by volume in CAP canonical ABV units.
+ *
+ * <p>ABV is represented as percent ABV and can be produced by prediction, current fermentation
+ * calculations, or final product assessment. Keeping the value in the shared measurement kernel
+ * prevents analysis-specific packages from owning a general beverage measurement.
+ */
 @ValueObject
 public final class AbvValue
     extends MeasuredValue<AlcoholByVolume, AbvValue> {
@@ -21,6 +28,7 @@ public final class AbvValue
   private static final int SCALE = 3;
   private static final BigDecimal MIN = BigDecimal.ZERO;
   private static final BigDecimal MAX = new BigDecimal("100.000");
+  private static final BigDecimal STEP = new BigDecimal("0.1");
   private static final Unit<AlcoholByVolume> UNIT = BeverageUnits.PERCENT_ABV;
 
   public AbvValue(@NonNull Quantity<AlcoholByVolume> value) {
@@ -41,6 +49,18 @@ public final class AbvValue
   @NonNull
   public static AbvValue from(@NonNull Quantity<AlcoholByVolume> quantity) {
     return new AbvValue(quantity);
+  }
+
+  public static @NonNull BigDecimal minValue() {
+    return MIN;
+  }
+
+  public static @NonNull BigDecimal maxValue() {
+    return MAX;
+  }
+
+  public static @NonNull BigDecimal stepValue() {
+    return STEP;
   }
 
   @NonNull

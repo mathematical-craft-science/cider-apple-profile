@@ -15,7 +15,7 @@ import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.MeasurementValueKind;
 import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
-import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;
+import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

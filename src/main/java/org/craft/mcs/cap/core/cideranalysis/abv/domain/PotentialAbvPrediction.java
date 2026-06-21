@@ -1,5 +1,6 @@
 package org.craft.mcs.cap.core.cideranalysis.abv.domain;
 
+import org.craft.mcs.cap.shared.kernel.measurement.value.AbvValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.jspecify.annotations.NonNull;
 

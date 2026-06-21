@@ -55,7 +55,7 @@ import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.sugaracidity.dto.SugarAcidityAxisPointResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.sugaracidity.mapper.SugarAcidityZoneRestMapper;
 import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
-import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;
+import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.craft.mcs.cap.shared.platform.query.CursorPageRequest;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;

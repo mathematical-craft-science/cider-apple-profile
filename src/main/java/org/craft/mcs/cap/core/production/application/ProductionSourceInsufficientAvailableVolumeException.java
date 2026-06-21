@@ -3,7 +3,7 @@ package org.craft.mcs.cap.core.production.application;
 import java.io.Serial;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceReference;
 import org.craft.mcs.cap.shared.application.ApplicationUnprocessableException;
-import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;
+import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;

@@ -41,7 +41,7 @@ import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtracto
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
 import org.craft.mcs.cap.shared.kernel.measurement.ExactMeasurement;
-import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;
+import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.junit.jupiter.api.Test;

@@ -10,7 +10,7 @@ import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSource
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
 import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
-import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;
+import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.jmolecules.ddd.annotation.AggregateRoot;
 import org.jmolecules.ddd.annotation.Identity;
 import org.jspecify.annotations.NonNull;
