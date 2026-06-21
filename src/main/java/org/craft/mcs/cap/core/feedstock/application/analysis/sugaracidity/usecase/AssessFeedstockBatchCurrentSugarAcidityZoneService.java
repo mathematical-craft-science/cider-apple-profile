@@ -7,7 +7,7 @@ import org.craft.mcs.cap.core.feedstock.application.measurement.query.FeedstockB
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.AssessFeedstockBatchCurrentSugarAcidityZoneUseCase;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockBatchCurrentSugarAcidityZoneResult;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchRepository;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
+import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 

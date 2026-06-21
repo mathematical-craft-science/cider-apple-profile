@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 import org.craft.mcs.cap.core.cideranalysis.composition.calculation.domain.ChemicalProfileCompositionWarning;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.composition.dto.CompositionOptimizationObjectiveAssessmentResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.ProfileTargetDistanceResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.sugaracidity.dto.SugarAcidityAxisPointResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.sugaracidity.dto.SugarAcidityProfilePointResponse;
@@ -31,6 +32,8 @@ public record FeedstockBatchCompositionOptimizationCandidateResponse(
     )
     @NonNull List<@NonNull ChemicalProfileCompositionWarning> warnings,
     @Schema(description = "Distance from candidate profile to target.", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NonNull ProfileTargetDistanceResponse targetDistance
+    @NonNull ProfileTargetDistanceResponse targetDistance,
+    @Schema(description = "Full objective assessment used to rank this candidate.", requiredMode = Schema.RequiredMode.REQUIRED)
+    @NonNull CompositionOptimizationObjectiveAssessmentResponse objectiveAssessment
 ) {
 }

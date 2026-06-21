@@ -5,7 +5,9 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import org.craft.mcs.cap.core.cideranalysis.composition.calculation.domain.AbsoluteCompositionVolume;
+import org.craft.mcs.cap.core.cideranalysis.composition.calculation.domain.ChemicalProfileComposition;
 import org.craft.mcs.cap.core.cideranalysis.composition.calculation.domain.ChemicalProfileCompositionCalculator;
 import org.craft.mcs.cap.core.cideranalysis.composition.calculation.domain.ChemicalProfileCompositionRequest;
 import org.craft.mcs.cap.core.cideranalysis.composition.calculation.domain.ChemicalProfileCompositionSource;
@@ -25,8 +27,9 @@ import static java.util.Objects.requireNonNull;
  * with {@code stepPercent = 5} it checks {@code 0%, 5%, 10% ... 100%} shares for each source,
  * constrained so the shares sum to 100. It keeps combinations with at least two selected sources,
  * converts shares according to {@link CompositionOptimizationMode}, calculates each candidate with
- * the supplied {@link ChemicalProfileCompositionCalculator}, and ranks by
- * {@link ProfileTargetDistance}.
+ * the supplied {@link ChemicalProfileCompositionCalculator}, and ranks by objective score.
+ * Objective score starts with {@link ProfileTargetDistance} and may include optional criteria such
+ * as YAN readiness penalties.
  *
  * <p>This algorithm is appropriate when a cider maker selects a small number of feedstock batches
  * and wants an understandable recommendation. It is not a general-purpose solver; future
@@ -54,7 +57,7 @@ public final class DiscretizedBoundedChemicalProfileCompositionOptimizationStrat
     enumerateShares(request, calculator, shares, 0, PERCENT / request.settings().stepPercent(), evaluated, candidates);
 
     final var rankedCandidates = candidates.stream()
-        .sorted(DiscretizedBoundedChemicalProfileCompositionOptimizationStrategy::compareByDistance)
+        .sorted(DiscretizedBoundedChemicalProfileCompositionOptimizationStrategy::compareByObjective)
         .limit(request.settings().limit())
         .toList();
 
@@ -104,7 +107,25 @@ public final class DiscretizedBoundedChemicalProfileCompositionOptimizationStrat
         request.tanninPolicy()
     ));
     final var distance = request.objectiveFunction().distanceTo(composition.profile(), request.targetObjective());
-    candidates.add(new ChemicalProfileCompositionOptimizationCandidate(composition, distance));
+    objectiveAssessment(request, composition, distance)
+        .map(assessment -> new ChemicalProfileCompositionOptimizationCandidate(
+            composition,
+            distance,
+            assessment
+        ))
+        .ifPresent(candidates::add);
+  }
+
+  private static @NonNull Optional<@NonNull CompositionOptimizationObjectiveAssessment> objectiveAssessment(
+      @NonNull ChemicalProfileCompositionOptimizationRequest request,
+      @NonNull ChemicalProfileComposition composition,
+      @NonNull ProfileTargetDistance distance
+  ) {
+    return CompositionOptimizationObjectiveScorer.assess(
+        composition,
+        distance,
+        request.criteria()
+    );
   }
 
   private static int selectedSourceCount(int @NonNull [] shares) {
@@ -184,16 +205,38 @@ public final class DiscretizedBoundedChemicalProfileCompositionOptimizationStrat
         && volume.exceeds(availableVolume);
   }
 
-  private static int compareByDistance(
+  private static int compareByObjective(
       @NonNull ChemicalProfileCompositionOptimizationCandidate left,
       @NonNull ChemicalProfileCompositionOptimizationCandidate right
   ) {
     return Comparator
         .comparing(
+            ChemicalProfileCompositionOptimizationCandidate::objectiveAssessment,
+            DiscretizedBoundedChemicalProfileCompositionOptimizationStrategy::compareObjectiveAssessments
+        )
+        .thenComparing(
             ChemicalProfileCompositionOptimizationCandidate::distance,
             DiscretizedBoundedChemicalProfileCompositionOptimizationStrategy::compareDistances
         )
         .compare(left, right);
+  }
+
+  private static int compareObjectiveAssessments(
+      @NonNull CompositionOptimizationObjectiveAssessment left,
+      @NonNull CompositionOptimizationObjectiveAssessment right
+  ) {
+    final var leftScore = left.score();
+    final var rightScore = right.score();
+    if (leftScore == null && rightScore == null) {
+      return 0;
+    }
+    if (leftScore == null) {
+      return 1;
+    }
+    if (rightScore == null) {
+      return -1;
+    }
+    return leftScore.compareTo(rightScore);
   }
 
   private static int compareDistances(

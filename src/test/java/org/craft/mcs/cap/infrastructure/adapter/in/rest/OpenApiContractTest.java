@@ -43,6 +43,7 @@ class OpenApiContractTest {
     assertJsonResponse(openApi, "/analysis/apple-varieties/profile-target-candidates", "post");
     assertJsonResponse(openApi, "/analysis/feedstock-batches/profile-target-candidates", "post");
     assertJsonResponse(openApi, "/chemical-profiles/sugar-acidity-zone/plot-metadata", "get");
+    assertJsonResponse(openApi, "/measurement-units/metadata", "get");
     assertJsonResponse(openApi, "/chemical-profile-compositions/calculations", "post");
     assertJsonResponse(openApi, "/chemical-profile-compositions/optimizations", "post");
     assertJsonResponse(openApi, "/feedstock-batches", "get");
@@ -135,11 +136,24 @@ class OpenApiContractTest {
     assertNullable(schemaProperty(openApi, "CreateFeedstockBatchRequest", "source"));
     assertNullable(schemaProperty(openApi, "CreateFeedstockBatchRequest", "note"));
 
-    assertRequiredProperties(openApi, "CreateFeedstockMeasurementRequest", "name", "chemicalProfile", "measuredAt");
+    assertRequiredProperties(
+        openApi,
+        "CreateFeedstockMeasurementRequest",
+        "name",
+        "chemicalProfile",
+        "measuredAt"
+    );
     assertNotRequiredProperties(openApi, "CreateFeedstockMeasurementRequest", "note");
     assertNullable(schemaProperty(openApi, "CreateFeedstockMeasurementRequest", "note"));
 
-    assertRequiredProperties(openApi, "FeedstockMeasurementResponse", "measurementId", "ciderMakerId", "batchId", "name");
+    assertRequiredProperties(
+        openApi,
+        "FeedstockMeasurementResponse",
+        "measurementId",
+        "ciderMakerId",
+        "batchId",
+        "name"
+    );
     assertNotRequiredProperties(openApi, "FeedstockMeasurementResponse", "measuredAt", "chemicalProfile", "note");
     assertNullable(schemaProperty(openApi, "FeedstockMeasurementResponse", "measuredAt"));
     assertNullable(schemaProperty(openApi, "FeedstockMeasurementResponse", "chemicalProfile"));
@@ -149,7 +163,13 @@ class OpenApiContractTest {
     assertNotRequiredProperties(openApi, "SugarAcidityProfilePointResponse", "tannin");
     assertNullable(schemaProperty(openApi, "SugarAcidityProfilePointResponse", "tannin"));
 
-    assertRequiredProperties(openApi, "ProfileTargetDistanceResponse", "status", "insideSugarAcidityTarget", "insideTarget");
+    assertRequiredProperties(
+        openApi,
+        "ProfileTargetDistanceResponse",
+        "status",
+        "insideSugarAcidityTarget",
+        "insideTarget"
+    );
     assertRequiredProperties(openApi, "SugarAcidityCoordinatesResponse", "sugar", "acidity");
     assertNotRequiredProperties(
         openApi,
@@ -163,7 +183,29 @@ class OpenApiContractTest {
     assertNullable(schemaProperty(openApi, "ProfileTargetDistanceResponse", "nearestTargetTannin"));
 
     assertRequiredProperties(openApi, "SugarAcidityGraphRangeResponse", "min", "max");
-    assertRequiredProperties(openApi, "SugarAcidityGraphAxisResponse", "code", "label", "unit", "min", "max", "thresholdLines");
+    assertRequiredProperties(
+        openApi,
+        "SugarAcidityGraphAxisResponse",
+        "code",
+        "label",
+        "unit",
+        "min",
+        "max",
+        "thresholdLines"
+    );
+    assertRequiredProperties(openApi, "MeasurementUnitsMetadataResponse", "units");
+    assertRequiredProperties(
+        openApi,
+        "MeasurementUnitMetadataResponse",
+        "code",
+        "canonicalUnit",
+        "shortLabel",
+        "fullLabel",
+        "min",
+        "max",
+        "step"
+    );
+    assertEnumProperty(openApi, "MeasurementUnitMetadataResponse", "code", "SG");
     assertRequiredProperties(
         openApi,
         "EllipseSugarAcidityGraphZoneResponse",
@@ -174,8 +216,19 @@ class OpenApiContractTest {
         "acidityRadius"
     );
 
-    assertRequiredProperties(openApi, "FeedstockBatchCurrentSugarAcidityZonePointQueryRequest", "ciderMakerId");
-    assertNotRequiredProperties(openApi, "FeedstockBatchCurrentSugarAcidityZonePointQueryRequest", "batchId", "season", "after", "limit");
+    assertRequiredProperties(
+        openApi,
+        "FeedstockBatchCurrentSugarAcidityZonePointQueryRequest",
+        "ciderMakerId"
+    );
+    assertNotRequiredProperties(
+        openApi,
+        "FeedstockBatchCurrentSugarAcidityZonePointQueryRequest",
+        "batchId",
+        "season",
+        "after",
+        "limit"
+    );
     assertNullable(schemaProperty(openApi, "FeedstockBatchCurrentSugarAcidityZonePointQueryRequest", "batchId"));
     assertNullable(schemaProperty(openApi, "FeedstockBatchCurrentSugarAcidityZonePointQueryRequest", "season"));
 
@@ -265,7 +318,13 @@ class OpenApiContractTest {
     assertNullable(schemaProperty(openApi, "AppleVarietyProfileTargetCandidateSearchRequest", "weights"));
     assertNullable(schemaProperty(openApi, "AppleVarietyProfileTargetCandidateSearchRequest", "limit"));
 
-    assertRequiredProperties(openApi, "FeedstockBatchProfileTargetCandidateSearchRequest", "ciderMakerId", "purpose", "target");
+    assertRequiredProperties(
+        openApi,
+        "FeedstockBatchProfileTargetCandidateSearchRequest",
+        "ciderMakerId",
+        "purpose",
+        "target"
+    );
     assertNotRequiredProperties(
         openApi,
         "FeedstockBatchProfileTargetCandidateSearchRequest",
@@ -336,7 +395,15 @@ class OpenApiContractTest {
   void openApiDescribesProductionAndFeedstockRequiredNullableContracts() throws Exception {
     final var openApi = openApi();
 
-    assertRequiredProperties(openApi, "CreateProductionBatchRequest", "ciderMakerId", "name", "kind", "sources", "profile");
+    assertRequiredProperties(
+        openApi,
+        "CreateProductionBatchRequest",
+        "ciderMakerId",
+        "name",
+        "kind",
+        "sources",
+        "profile"
+    );
     assertNotRequiredProperties(openApi, "CreateProductionBatchRequest", "targetDistance", "note");
     assertNullable(schemaProperty(openApi, "CreateProductionBatchRequest", "targetDistance"));
     assertNullable(schemaProperty(openApi, "CreateProductionBatchRequest", "note"));
@@ -369,7 +436,16 @@ class OpenApiContractTest {
     assertNullable(schemaProperty(openApi, "ProductionBatchDetailsResponse", "targetDistance"));
     assertNullable(schemaProperty(openApi, "ProductionBatchDetailsResponse", "note"));
 
-    assertRequiredProperties(openApi, "ProductionBatchResponse", "batchId", "ciderMakerId", "name", "kind", "status", "composition");
+    assertRequiredProperties(
+        openApi,
+        "ProductionBatchResponse",
+        "batchId",
+        "ciderMakerId",
+        "name",
+        "kind",
+        "status",
+        "composition"
+    );
     assertNotRequiredProperties(openApi, "ProductionBatchResponse", "note");
     assertNullable(schemaProperty(openApi, "ProductionBatchResponse", "note"));
     assertRequiredProperties(openApi, "ProductionBatchCompositionResponse", "sources", "profile", "totalVolume");
@@ -387,7 +463,15 @@ class OpenApiContractTest {
     assertRequiredProperties(openApi, "BatchTraceNodeResponse", "subject");
     assertNotRequiredProperties(openApi, "BatchTraceNodeResponse", "snapshot");
     assertNullable(schemaProperty(openApi, "BatchTraceNodeResponse", "snapshot"));
-    assertRequiredProperties(openApi, "BatchTraceEdgeResponse", "stepId", "operationType", "occurredAt", "inputs", "outputs");
+    assertRequiredProperties(
+        openApi,
+        "BatchTraceEdgeResponse",
+        "stepId",
+        "operationType",
+        "occurredAt",
+        "inputs",
+        "outputs"
+    );
     assertStringFormat(schemaProperty(openApi, "BatchTraceEdgeResponse", "occurredAt"), "date-time");
     assertRequiredProperties(openApi, "BatchTraceStepSubjectResponse", "subject");
     assertNotRequiredProperties(openApi, "BatchTraceStepSubjectResponse", "snapshot");
@@ -400,13 +484,28 @@ class OpenApiContractTest {
     assertNullable(schemaProperty(openApi, "BatchTraceMaterialSnapshotResponse", "volume"));
     assertNullable(schemaProperty(openApi, "BatchTraceMaterialSnapshotResponse", "confidence"));
     assertRequiredProperties(openApi, "BatchTraceAxisValueResponse", "axis", "value", "valueKind");
-    assertNotRequiredProperties(openApi, "BatchTraceAxisValueResponse", "min", "max", "standardDeviation", "sampleSize");
+    assertNotRequiredProperties(
+        openApi,
+        "BatchTraceAxisValueResponse",
+        "min",
+        "max",
+        "standardDeviation",
+        "sampleSize"
+    );
     assertNullable(schemaProperty(openApi, "BatchTraceAxisValueResponse", "min"));
     assertNullable(schemaProperty(openApi, "BatchTraceAxisValueResponse", "max"));
     assertNullable(schemaProperty(openApi, "BatchTraceAxisValueResponse", "standardDeviation"));
     assertNullable(schemaProperty(openApi, "BatchTraceAxisValueResponse", "sampleSize"));
 
-    assertRequiredProperties(openApi, "UpdateFeedstockBatchRequest", "ciderMakerId", "name", "type", "season", "availableVolumeLiters");
+    assertRequiredProperties(
+        openApi,
+        "UpdateFeedstockBatchRequest",
+        "ciderMakerId",
+        "name",
+        "type",
+        "season",
+        "availableVolumeLiters"
+    );
     assertRequiredProperties(
         openApi,
         "FeedstockBatchResponse",
@@ -421,7 +520,16 @@ class OpenApiContractTest {
     assertNullable(schemaProperty(openApi, "UpdateFeedstockBatchRequest", "source"));
     assertNullable(schemaProperty(openApi, "UpdateFeedstockBatchRequest", "note"));
     assertRequiredProperties(openApi, "PatchFeedstockBatchRequest", "ciderMakerId");
-    assertNotRequiredProperties(openApi, "PatchFeedstockBatchRequest", "name", "type", "season", "source", "availableVolumeLiters", "note");
+    assertNotRequiredProperties(
+        openApi,
+        "PatchFeedstockBatchRequest",
+        "name",
+        "type",
+        "season",
+        "source",
+        "availableVolumeLiters",
+        "note"
+    );
     assertNullable(schemaProperty(openApi, "PatchFeedstockBatchRequest", "name"));
     assertNullable(schemaProperty(openApi, "PatchFeedstockBatchRequest", "season"));
     assertNullable(schemaProperty(openApi, "PatchFeedstockBatchRequest", "note"));
@@ -429,7 +537,14 @@ class OpenApiContractTest {
     assertRequiredProperties(openApi, "UpdateFeedstockMeasurementRequest", "name", "chemicalProfile", "measuredAt");
     assertNotRequiredProperties(openApi, "UpdateFeedstockMeasurementRequest", "note");
     assertNullable(schemaProperty(openApi, "UpdateFeedstockMeasurementRequest", "note"));
-    assertNotRequiredProperties(openApi, "PatchFeedstockMeasurementRequest", "name", "chemicalProfile", "measuredAt", "note");
+    assertNotRequiredProperties(
+        openApi,
+        "PatchFeedstockMeasurementRequest",
+        "name",
+        "chemicalProfile",
+        "measuredAt",
+        "note"
+    );
     assertNullable(schemaProperty(openApi, "PatchFeedstockMeasurementRequest", "name"));
     assertNullable(schemaProperty(openApi, "PatchFeedstockMeasurementRequest", "chemicalProfile"));
     assertNullable(schemaProperty(openApi, "PatchFeedstockMeasurementRequest", "measuredAt"));
@@ -737,6 +852,8 @@ class OpenApiContractTest {
   private static void assertNoBareNumericResponsePropertiesOutsideAllowList(@NonNull JsonNode openApi) {
     final var allowedBareNumericProperties = Set.of(
         "DecimalQuantityResponse.value",
+        "CompositionOptimizationObjectiveAssessmentResponse.score",
+        "CompositionOptimizationPenaltyResponse.value",
         "ProfileTargetDistanceResponse.value",
         "ChemicalProfileCompositionSourceResponse.proportion",
         "FeedstockBatchCompositionOptimizationSourceResponse.proportion",

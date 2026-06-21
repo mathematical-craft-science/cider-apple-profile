@@ -11,7 +11,7 @@ import static java.util.Objects.requireNonNull;
  *
  * <p>{@code evaluatedCandidates} counts candidate compositions actually calculated and scored after
  * cheap pruning, such as source availability checks. {@code candidates} is already sorted by best
- * distance first and truncated by the strategy settings.
+ * objective score first and truncated by the strategy settings.
  */
 public record ChemicalProfileCompositionOptimizationResult(
     int evaluatedCandidates,

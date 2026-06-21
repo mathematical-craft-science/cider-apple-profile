@@ -17,6 +17,7 @@ import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.ProfileTargetRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.ProfileTargetTanninRangeRequest;
 import org.craft.mcs.cap.core.cideranalysis.profileaxis.domain.ChemicalProfileCapability;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.composition.dto.CompositionOptimizationYanReadinessRequest;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -58,6 +59,8 @@ public record OptimizeFeedstockBatchCompositionRequest(
     @Nullable ProfileAxisNormalizerCode normalizer,
     @Schema(description = "Objective function code.", implementation = ProfileTargetObjectiveFunctionCode.class, nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @Nullable ProfileTargetObjectiveFunctionCode objectiveFunction,
+    @Schema(description = "Optional YAN readiness criterion. YAN affects objective score as a readiness penalty, not profile-target distance.", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @Nullable CompositionOptimizationYanReadinessRequest yanReadiness,
     @Schema(description = "Discrete search step in percent.", example = "5", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @Nullable Integer stepPercent,
     @Schema(description = "Maximum optimization candidates returned.", example = "10", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)

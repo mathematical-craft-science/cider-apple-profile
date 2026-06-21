@@ -1,6 +1,6 @@
 package org.craft.mcs.cap.core.production.domain.model;
 
-import org.craft.mcs.cap.core.feedstock.domain.model.value.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchKind;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchName;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchStatus;
@@ -16,7 +16,7 @@ import static java.util.Objects.requireNonNull;
 
 
 /**
- * Aggregate root for a committed production lot.
+ * Aggregate root for a confirmed production lot.
  *
  * <p>The aggregate owns production state after a material input has been accepted: product kind,
  * planned status, current volume and the chemical profile snapshot at creation time. Source tree and

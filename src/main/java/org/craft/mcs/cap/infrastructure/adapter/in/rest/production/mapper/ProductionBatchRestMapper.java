@@ -4,13 +4,13 @@ import java.math.BigDecimal;
 import java.util.List;
 import org.craft.mcs.cap.core.cideranalysis.abv.domain.PotentialAbvPredictor;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatch;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
-import org.craft.mcs.cap.core.feedstock.domain.model.value.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
 import org.craft.mcs.cap.core.production.application.port.in.CreateProductionBatchCommand;
 import org.craft.mcs.cap.core.production.application.port.in.ProductionBatchCreated;
 import org.craft.mcs.cap.core.production.domain.model.ProductionInput;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceComponent;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceComposition;
+import org.craft.mcs.cap.core.production.domain.model.ProductionSourceReference;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchName;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionTargetDistance;
@@ -122,7 +122,10 @@ public final class ProductionBatchRestMapper {
   ) {
     requireNonNull(request, "create production batch source request cannot be null");
     return new ProductionSourceComponent(
-        FeedstockBatchId.of(requireNonNull(request.feedstockBatchId(), "feedstock batch id cannot be null")),
+        ProductionSourceReference.feedstockBatch(requireNonNull(
+            request.feedstockBatchId(),
+            "feedstock batch id cannot be null"
+        )),
         VolumeValue.ofLiters(requireNonNull(request.volumeLiters(), "production source volume cannot be null"))
     );
   }
@@ -160,10 +163,12 @@ public final class ProductionBatchRestMapper {
       @NonNull ProductionSourceComponent source
   ) {
     requireNonNull(source, "production source component cannot be null");
-    return new ProductionBatchSourceResponse(
-        source.feedstockBatchId().value(),
-        new DecimalQuantityResponse(source.volume().liters(), CanonicalUnitLabels.VOLUME)
-    );
+    return switch (source.reference().type()) {
+      case FEEDSTOCK_BATCH -> new ProductionBatchSourceResponse(
+          source.reference().id(),
+          new DecimalQuantityResponse(source.volume().liters(), CanonicalUnitLabels.VOLUME)
+      );
+    };
   }
 
   private static @NonNull SugarAcidityProfilePointResponse toProfilePointResponse(

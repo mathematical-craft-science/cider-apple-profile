@@ -3,7 +3,7 @@ package org.craft.mcs.cap.core.feedstock.domain.model.measurement;
 import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
 
 import java.time.Instant;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
+import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.value.FeedstockMeasurementName;
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.jmolecules.ddd.annotation.AggregateRoot;

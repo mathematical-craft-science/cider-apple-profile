@@ -10,11 +10,11 @@ import java.util.Optional;
 import java.util.UUID;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchRepository;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
+import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockBatchName;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
-import org.craft.mcs.cap.core.feedstock.domain.model.value.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
 import org.craft.mcs.cap.core.production.application.port.in.CreateProductionBatchCommand;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionFeedstockTraceSnapshot;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionFeedstockTraceSnapshotProvider;
@@ -23,6 +23,7 @@ import org.craft.mcs.cap.core.production.application.usecase.CreateProductionBat
 import org.craft.mcs.cap.core.production.domain.model.ProductionInput;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceComponent;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceComposition;
+import org.craft.mcs.cap.core.production.domain.model.ProductionSourceReference;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchKind;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchName;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
@@ -105,7 +106,7 @@ class CreateProductionBatchRollbackDataJdbcTest {
         ProductionBatchKind.CIDER,
         new ProductionInput(
             ProductionSourceComposition.of(List.of(new ProductionSourceComponent(
-                feedstockBatch.batchId(),
+                ProductionSourceReference.feedstockBatch(feedstockBatch.batchId().value()),
                 VolumeValue.ofLiters("100")
             ))),
             new ProductionProfileSnapshot(

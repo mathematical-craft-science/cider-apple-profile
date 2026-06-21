@@ -13,12 +13,20 @@ import tech.units.indriya.quantity.Quantities;
 import static java.util.Objects.requireNonNull;
 
 
+/**
+ * Value object for tannin content in CAP canonical tannin units.
+ *
+ * <p>Tannin is represented as mg/L TAE and can participate in target-aware composition analysis
+ * when the scenario explicitly includes tannin. The value object centralizes range validation for
+ * domain logic and transport metadata.
+ */
 @ValueObject
 public final class TanninityValue
     extends MeasuredValue<Tanninity, TanninityValue> {
 
   private static final BigDecimal MIN = BigDecimal.ZERO;
   private static final BigDecimal MAX = new BigDecimal("12000");
+  private static final BigDecimal STEP = BigDecimal.ONE;
   private static final Unit<Tanninity> UNIT = BeverageUnits.MILLIGRAM_PER_LITER_AS_TANNIC_ACID;
 
   public TanninityValue(@NonNull Quantity<Tanninity> value) {
@@ -37,6 +45,10 @@ public final class TanninityValue
 
   public static @NonNull BigDecimal maxValue() {
     return MAX;
+  }
+
+  public static @NonNull BigDecimal stepValue() {
+    return STEP;
   }
 
   @NonNull

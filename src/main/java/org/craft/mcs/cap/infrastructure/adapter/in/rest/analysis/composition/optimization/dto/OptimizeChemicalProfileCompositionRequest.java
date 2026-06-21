@@ -11,6 +11,7 @@ import org.craft.mcs.cap.core.cideranalysis.composition.optimization.domain.Comp
 import org.craft.mcs.cap.core.cideranalysis.composition.optimization.domain.CompositionOptimizationMode;
 import org.craft.mcs.cap.core.cideranalysis.profiletarget.scoring.domain.ProfileAxisNormalizerCode;
 import org.craft.mcs.cap.core.cideranalysis.profiletarget.scoring.domain.ProfileTargetObjectiveFunctionCode;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.composition.dto.CompositionOptimizationYanReadinessRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.ProfileTargetObjectiveWeightsRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.ProfileTargetRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.ProfileTargetTanninRangeRequest;
@@ -45,6 +46,8 @@ public record OptimizeChemicalProfileCompositionRequest(
     @Nullable ProfileAxisNormalizerCode normalizer,
     @Schema(description = "Objective function code.", implementation = ProfileTargetObjectiveFunctionCode.class, nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @Nullable ProfileTargetObjectiveFunctionCode objectiveFunction,
+    @Schema(description = "Optional YAN readiness criterion. YAN affects objective score as a readiness penalty, not profile-target distance.", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @Nullable CompositionOptimizationYanReadinessRequest yanReadiness,
     @Schema(description = "Discrete search step in percent.", example = "5", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @Nullable Integer stepPercent,
     @Schema(description = "Maximum candidates returned.", example = "10", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)

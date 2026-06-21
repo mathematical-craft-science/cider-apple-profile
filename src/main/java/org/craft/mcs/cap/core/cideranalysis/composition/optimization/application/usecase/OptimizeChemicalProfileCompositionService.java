@@ -59,6 +59,7 @@ public final class OptimizeChemicalProfileCompositionService
             command.tanninPolicy(),
             command.targetObjective(),
             objectiveFunction,
+            command.criteria(),
             command.settings(),
             command.mode(),
             command.targetTotalVolume()

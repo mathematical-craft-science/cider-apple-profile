@@ -3,7 +3,7 @@ package org.craft.mcs.cap.feedstock.application.batch.port.in;
 import java.util.HashSet;
 import java.util.Set;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.FeedstockBatchCriteria;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
+import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.craft.mcs.cap.shared.application.ApplicationValidationException;
 import org.junit.jupiter.api.Test;
 

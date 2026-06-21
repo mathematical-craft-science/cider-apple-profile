@@ -13,12 +13,20 @@ import tech.units.indriya.quantity.Quantities;
 import static java.util.Objects.requireNonNull;
 
 
+/**
+ * Value object for yeast assimilable nitrogen in CAP canonical YAN units.
+ *
+ * <p>YAN is represented as mg N/L and is used for fermentation-start readiness and nutrient risk
+ * assessment. It intentionally remains outside target distance axes so optimization can show
+ * readiness trade-offs without treating YAN as a blend target coordinate.
+ */
 @ValueObject
 public final class YeastAssimilableNitrogenValue
     extends MeasuredValue<YeastAssimilableNitrogen, YeastAssimilableNitrogenValue> {
 
   private static final BigDecimal MIN = BigDecimal.ZERO;
   private static final BigDecimal MAX = new BigDecimal("2000.0");
+  private static final BigDecimal STEP = BigDecimal.ONE;
   private static final Unit<YeastAssimilableNitrogen> UNIT =
       BeverageUnits.MILLIGRAM_NITROGEN_PER_LITER;
 
@@ -29,6 +37,18 @@ public final class YeastAssimilableNitrogenValue
   public static @NonNull YeastAssimilableNitrogenValue of(@NonNull BigDecimal milligramsNitrogenPerLiter) {
     requireNonNull(milligramsNitrogenPerLiter, "YAN value cannot be null");
     return new YeastAssimilableNitrogenValue(Quantities.getQuantity(milligramsNitrogenPerLiter, UNIT));
+  }
+
+  public static @NonNull BigDecimal minValue() {
+    return MIN;
+  }
+
+  public static @NonNull BigDecimal maxValue() {
+    return MAX;
+  }
+
+  public static @NonNull BigDecimal stepValue() {
+    return STEP;
   }
 
   public static @NonNull YeastAssimilableNitrogenValue of(@NonNull String milligramsNitrogenPerLiter) {

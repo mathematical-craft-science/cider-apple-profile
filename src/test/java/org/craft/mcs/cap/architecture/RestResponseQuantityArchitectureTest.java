@@ -27,6 +27,8 @@ class RestResponseQuantityArchitectureTest {
 
   private static final @NonNull Set<@NonNull String> ALLOWED_BARE_DECIMAL_RESPONSE_FIELDS = Set.of(
       "org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse.value",
+      "org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.composition.dto.CompositionOptimizationObjectiveAssessmentResponse.score",
+      "org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.composition.dto.CompositionOptimizationPenaltyResponse.value",
       "org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.ProfileTargetDistanceResponse.value",
       "org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.common.dto.ChemicalProfileCompositionSourceResponse.proportion",
       "org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.composition.dto.FeedstockBatchCompositionOptimizationSourceResponse.proportion",

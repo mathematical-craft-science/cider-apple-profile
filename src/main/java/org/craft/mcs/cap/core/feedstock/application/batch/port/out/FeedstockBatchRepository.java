@@ -3,8 +3,8 @@ package org.craft.mcs.cap.core.feedstock.application.batch.port.out;
 import java.util.List;
 import java.util.Optional;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
-import org.craft.mcs.cap.core.feedstock.domain.model.value.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
+import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
 import org.jspecify.annotations.NonNull;
 
 

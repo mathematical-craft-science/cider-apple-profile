@@ -1,9 +1,9 @@
 package org.craft.mcs.cap.core.production.application;
 
 import java.io.Serial;
+import org.craft.mcs.cap.core.production.domain.model.ProductionSourceReference;
 import org.craft.mcs.cap.shared.application.ApplicationForbiddenException;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
-import org.craft.mcs.cap.core.feedstock.domain.model.value.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
@@ -16,24 +16,24 @@ public final class ProductionSourceOwnershipMismatchException
   @Serial
   private static final long serialVersionUID = 1L;
 
-  private final transient @NonNull FeedstockBatchId batchId;
+  private final transient @NonNull ProductionSourceReference sourceReference;
   private final transient @NonNull CiderMakerId expectedCiderMakerId;
   private final transient @NonNull CiderMakerId actualCiderMakerId;
 
   public ProductionSourceOwnershipMismatchException(
-      @NonNull FeedstockBatchId batchId,
+      @NonNull ProductionSourceReference sourceReference,
       @NonNull CiderMakerId expectedCiderMakerId,
       @NonNull CiderMakerId actualCiderMakerId
   ) {
-    super("feedstock batch belongs to another cider maker: "
-        + requireNonNull(batchId, "feedstock batch id cannot be null").value());
-    this.batchId = batchId;
+    super("production source belongs to another cider maker: "
+        + requireNonNull(sourceReference, "production source reference cannot be null").id());
+    this.sourceReference = sourceReference;
     this.expectedCiderMakerId = requireNonNull(expectedCiderMakerId, "expected cider maker id cannot be null");
     this.actualCiderMakerId = requireNonNull(actualCiderMakerId, "actual cider maker id cannot be null");
   }
 
-  public @NonNull FeedstockBatchId batchId() {
-    return batchId;
+  public @NonNull ProductionSourceReference sourceReference() {
+    return sourceReference;
   }
 
   public @NonNull CiderMakerId expectedCiderMakerId() {

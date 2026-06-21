@@ -11,6 +11,13 @@ import org.jspecify.annotations.NonNull;
 import tech.units.indriya.quantity.Quantities;
 
 
+/**
+ * Value object for sugar concentration represented as specific gravity.
+ *
+ * <p>Specific gravity is the canonical sugar unit inside CAP core. The value object enforces the
+ * accepted domain range and exposes that range for transport metadata without leaking REST or UI
+ * concerns into the domain model.
+ */
 @ValueObject
 public final class SpecificGravityValue
     extends MeasuredValue<SpecificGravity, SpecificGravityValue>
@@ -18,6 +25,7 @@ public final class SpecificGravityValue
 
   private static final BigDecimal MIN = new BigDecimal("1.000");
   private static final BigDecimal MAX = new BigDecimal("1.200");
+  private static final BigDecimal STEP = new BigDecimal("0.001");
   private static final Unit<SpecificGravity> UNIT = BeverageUnits.SG;
 
   public SpecificGravityValue(@NonNull Quantity<SpecificGravity> value) {
@@ -27,6 +35,18 @@ public final class SpecificGravityValue
   @NonNull
   public static SpecificGravityValue of(@NonNull BigDecimal value) {
     return new SpecificGravityValue(Quantities.getQuantity(value, UNIT));
+  }
+
+  public static @NonNull BigDecimal minValue() {
+    return MIN;
+  }
+
+  public static @NonNull BigDecimal maxValue() {
+    return MAX;
+  }
+
+  public static @NonNull BigDecimal stepValue() {
+    return STEP;
   }
 
   @NonNull

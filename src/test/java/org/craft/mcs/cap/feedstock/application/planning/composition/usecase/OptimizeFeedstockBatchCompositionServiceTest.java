@@ -32,14 +32,14 @@ import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.o
 import org.craft.mcs.cap.core.feedstock.application.planning.composition.usecase.OptimizeFeedstockBatchCompositionService;
 import org.craft.mcs.cap.core.feedstock.application.planning.composition.InsufficientFeedstockCompositionSourcesException;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
+import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockBatchName;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurement;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurementId;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.value.FeedstockMeasurementName;
-import org.craft.mcs.cap.core.feedstock.domain.model.value.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
@@ -219,6 +219,7 @@ class OptimizeFeedstockBatchCompositionServiceTest {
         new PredefinedFeedstockProfileTargetSelection(SugarAcidityZone.PERFECT_APPLES),
         tanninTarget,
         ProfileTargetObjectiveWeights.balanced(),
+        List.of(),
         new DiscretizedCompositionOptimizationSettings(5, 3),
         CompositionOptimizationMode.PROPORTION,
         CompositionOptimizationAlgorithm.DISCRETIZED_BOUNDED_SEARCH,

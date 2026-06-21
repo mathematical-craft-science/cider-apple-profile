@@ -25,7 +25,7 @@ import org.craft.mcs.cap.core.feedstock.application.workspace.port.in.FeedstockW
 import org.craft.mcs.cap.core.feedstock.application.workspace.port.in.FeedstockWorkspaceView;
 import org.craft.mcs.cap.core.feedstock.application.workspace.port.in.QueryFeedstockWorkspaceBatchesUseCase;
 import org.craft.mcs.cap.core.feedstock.application.measurement.query.FeedstockBatchCurrentMeasurementQueryService;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
+import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurement;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
@@ -38,12 +38,12 @@ import static java.util.Objects.requireNonNull;
 
 
 /**
- * Screen-level read model for the Feedstock Workspace.
+ * Application read model for the Feedstock Workspace.
  *
  * <p>This query service deliberately composes batch metadata, latest measurement state, graph
  * projection, target candidate scoring, ABV, YAN and fermentation-start readiness into one
- * application read model. It is not a domain aggregate; its responsibility is to give the UI a
- * coherent workspace snapshot without forcing the frontend to stitch several business endpoints
+ * application read model. It is not a domain aggregate; its responsibility is to give API clients a
+ * coherent workspace snapshot without forcing them to stitch several business endpoints
  * together.
  */
 @Component

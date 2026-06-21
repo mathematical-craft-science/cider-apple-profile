@@ -1,7 +1,7 @@
 package org.craft.mcs.cap.core.feedstock.application.batch.port.in;
 
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
-import org.craft.mcs.cap.core.feedstock.domain.model.value.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

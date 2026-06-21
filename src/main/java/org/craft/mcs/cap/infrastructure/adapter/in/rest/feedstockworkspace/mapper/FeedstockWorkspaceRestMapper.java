@@ -16,7 +16,7 @@ import org.craft.mcs.cap.core.feedstock.application.workspace.port.in.FeedstockW
 import org.craft.mcs.cap.core.feedstock.application.workspace.port.in.FeedstockWorkspaceTargetAnalysisView;
 import org.craft.mcs.cap.core.feedstock.application.workspace.port.in.FeedstockWorkspaceView;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
-import org.craft.mcs.cap.core.feedstock.domain.model.value.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.abv.mapper.PotentialAbvPredictionRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.profiletarget.common.mapper.CompositionContributionRoleRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.mapper.ChemicalProfileCapabilityRestMapper;

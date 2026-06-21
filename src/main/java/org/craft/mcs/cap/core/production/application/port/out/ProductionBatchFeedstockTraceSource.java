@@ -2,7 +2,7 @@ package org.craft.mcs.cap.core.production.application.port.out;
 
 import org.craft.mcs.cap.shared.application.ApplicationValidationException;
 
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
+import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
 import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
 import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;

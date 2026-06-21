@@ -2,6 +2,7 @@ package org.craft.mcs.cap.core.cideranalysis.sugaracidity.query;
 
 import java.util.Set;
 import org.craft.mcs.cap.core.cideranalysis.sugaracidity.zone.domain.SugarAcidityZone;
+import org.craft.mcs.cap.shared.application.ApplicationValidationException;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
@@ -16,7 +17,7 @@ public record SugarAcidityZoneCriteria(
     zones = Set.copyOf(zones);
 
     if (zones.isEmpty()) {
-      throw new IllegalArgumentException("sugar-acidity zones cannot be empty");
+      throw new ApplicationValidationException("sugar-acidity zones cannot be empty");
     }
   }
 
