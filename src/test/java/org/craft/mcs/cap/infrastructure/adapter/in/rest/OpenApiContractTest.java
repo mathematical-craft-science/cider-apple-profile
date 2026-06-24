@@ -619,6 +619,7 @@ class OpenApiContractTest {
         openApi,
         "FeedstockWorkspaceBatchResponse",
         "currentMeasurement",
+        "profileSummary",
         "measurementFreshness",
         "sugarAcidity",
         "potentialAbv",
@@ -627,6 +628,7 @@ class OpenApiContractTest {
         "targetCandidate"
     );
     assertNullable(schemaProperty(openApi, "FeedstockWorkspaceBatchResponse", "currentMeasurement"));
+    assertNullable(schemaProperty(openApi, "FeedstockWorkspaceBatchResponse", "profileSummary"));
     assertNullable(schemaProperty(openApi, "FeedstockWorkspaceBatchResponse", "measurementFreshness"));
     assertNullable(schemaProperty(openApi, "FeedstockWorkspaceBatchResponse", "sugarAcidity"));
     assertNullable(schemaProperty(openApi, "FeedstockWorkspaceBatchResponse", "potentialAbv"));
@@ -652,6 +654,35 @@ class OpenApiContractTest {
     );
     assertNotRequiredProperties(openApi, "FeedstockWorkspaceCurrentMeasurementResponse", "note");
     assertNullable(schemaProperty(openApi, "FeedstockWorkspaceCurrentMeasurementResponse", "note"));
+
+    assertNotRequiredProperties(
+        openApi,
+        "FeedstockWorkspaceProfileSummaryResponse",
+        "sugar",
+        "titratableAcidity",
+        "ph",
+        "tannin",
+        "yan"
+    );
+    assertNullable(schemaProperty(openApi, "FeedstockWorkspaceProfileSummaryResponse", "sugar"));
+    assertNullable(schemaProperty(openApi, "FeedstockWorkspaceProfileSummaryResponse", "titratableAcidity"));
+    assertNullable(schemaProperty(openApi, "FeedstockWorkspaceProfileSummaryResponse", "ph"));
+    assertNullable(schemaProperty(openApi, "FeedstockWorkspaceProfileSummaryResponse", "tannin"));
+    assertNullable(schemaProperty(openApi, "FeedstockWorkspaceProfileSummaryResponse", "yan"));
+
+    assertRequiredProperties(openApi, "FeedstockWorkspaceProfileValueResponse", "value", "valueKind");
+    assertNotRequiredProperties(
+        openApi,
+        "FeedstockWorkspaceProfileValueResponse",
+        "min",
+        "max",
+        "standardDeviation",
+        "sampleSize"
+    );
+    assertNullable(schemaProperty(openApi, "FeedstockWorkspaceProfileValueResponse", "min"));
+    assertNullable(schemaProperty(openApi, "FeedstockWorkspaceProfileValueResponse", "max"));
+    assertNullable(schemaProperty(openApi, "FeedstockWorkspaceProfileValueResponse", "standardDeviation"));
+    assertNullable(schemaProperty(openApi, "FeedstockWorkspaceProfileValueResponse", "sampleSize"));
 
     assertRequiredProperties(openApi, "FeedstockWorkspaceMeasurementFreshnessResponse", "status", "stale");
     assertNotRequiredProperties(openApi, "FeedstockWorkspaceMeasurementFreshnessResponse", "reason");

@@ -19,6 +19,12 @@ public record FeedstockWorkspaceBatchResponse(
     )
     @Nullable FeedstockWorkspaceCurrentMeasurementResponse currentMeasurement,
     @Schema(
+        description = "Compact current chemical profile projection for board rows.",
+        nullable = true,
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
+    @Nullable FeedstockWorkspaceProfileSummaryResponse profileSummary,
+    @Schema(
         description = "Freshness assessment for the latest measurement.",
         nullable = true,
         requiredMode = Schema.RequiredMode.NOT_REQUIRED

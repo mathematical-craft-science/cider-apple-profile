@@ -1,5 +1,8 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstockworkspace.mapper;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.function.Function;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.port.in.ProfileTargetScoringPurpose;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.point.domain.SugarAcidityAxisPoint;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileEvaluation;
@@ -41,6 +44,8 @@ import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstockworkspace.dto.F
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstockworkspace.dto.FeedstockWorkspacePlanningReadinessCheckResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstockworkspace.dto.FeedstockWorkspacePlanningReadinessResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstockworkspace.dto.FeedstockWorkspacePotentialAbvResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstockworkspace.dto.FeedstockWorkspaceProfileSummaryResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstockworkspace.dto.FeedstockWorkspaceProfileValueResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstockworkspace.dto.FeedstockWorkspaceResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstockworkspace.dto.FeedstockWorkspaceRoleExplanationResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstockworkspace.dto.FeedstockWorkspaceSugarAcidityResponse;
@@ -52,7 +57,19 @@ import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.mapper.ProfileTargetRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.sugaracidity.dto.SugarAcidityAxisPointResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.sugaracidity.mapper.SugarAcidityZoneRestMapper;
+import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
+import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.MeasurementValueKind;
+import org.craft.mcs.cap.shared.kernel.chemical.value.PhValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TanninityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
+import org.craft.mcs.cap.shared.kernel.measurement.ExactMeasurement;
+import org.craft.mcs.cap.shared.kernel.measurement.MeasuredCharacteristic;
+import org.craft.mcs.cap.shared.kernel.measurement.RangeMeasurement;
+import org.craft.mcs.cap.shared.kernel.measurement.StatisticalMeasurement;
+import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.craft.mcs.cap.shared.platform.query.CursorPageRequest;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -99,6 +116,7 @@ public final class FeedstockWorkspaceRestMapper {
     return new FeedstockWorkspaceBatchResponse(
         FeedstockBatchRestMapper.toResponse(view.batch()),
         toCurrentMeasurementResponse(view.currentMeasurement()),
+        toProfileSummaryResponse(view.currentMeasurement()),
         toMeasurementFreshnessResponse(view.measurementFreshness()),
         toSugarAcidityResponse(view.sugarAcidity()),
         toPotentialAbvResponse(view.potentialAbv()),
@@ -151,6 +169,55 @@ public final class FeedstockWorkspaceRestMapper {
       @Nullable FeedstockPlanningCurrentMeasurementView view
   ) {
     return view == null ? null : toResponse(view);
+  }
+
+  private static @Nullable FeedstockWorkspaceProfileSummaryResponse toProfileSummaryResponse(
+      @Nullable FeedstockPlanningCurrentMeasurementView view
+  ) {
+    return view == null ? null : toProfileSummaryResponse(view.chemicalProfile());
+  }
+
+  private static @NonNull FeedstockWorkspaceProfileSummaryResponse toProfileSummaryResponse(
+      @NonNull ChemicalProfile profile
+  ) {
+    requireNonNull(profile, "chemical profile cannot be null");
+    return new FeedstockWorkspaceProfileSummaryResponse(
+        profile.sugar()
+            .map(measurement -> toProfileValue(
+                measurement,
+                FeedstockWorkspaceRestMapper::specificGravity,
+                CanonicalUnitLabels.SUGAR
+            ))
+            .orElse(null), // NOSONAR
+        profile.titratableAcidity()
+            .map(measurement -> toProfileValue(
+                measurement,
+                TitratableAcidityValue::asBigDecimal,
+                CanonicalUnitLabels.TITRATABLE_ACIDITY
+            ))
+            .orElse(null), // NOSONAR
+        profile.ph()
+            .map(measurement -> toProfileValue(
+                measurement,
+                PhValue::asBigDecimal,
+                CanonicalUnitLabels.PH
+            ))
+            .orElse(null), // NOSONAR
+        profile.tanninity()
+            .map(measurement -> toProfileValue(
+                measurement,
+                TanninityValue::asBigDecimal,
+                CanonicalUnitLabels.TANNINITY
+            ))
+            .orElse(null), // NOSONAR
+        profile.yeastAssimilableNitrogen()
+            .map(measurement -> toProfileValue(
+                measurement,
+                YeastAssimilableNitrogenValue::asBigDecimal,
+                CanonicalUnitLabels.YEAST_ASSIMILABLE_NITROGEN
+            ))
+            .orElse(null) // NOSONAR
+    );
   }
 
   private static @Nullable FeedstockWorkspacePotentialAbvResponse toPotentialAbvResponse(
@@ -316,6 +383,105 @@ public final class FeedstockWorkspaceRestMapper {
         ),
         CanonicalUnitLabels.YEAST_ASSIMILABLE_NITROGEN
     );
+  }
+
+  private static <T extends Comparable<T>> @NonNull FeedstockWorkspaceProfileValueResponse toProfileValue(
+      @NonNull MeasuredCharacteristic<T> measurement,
+      @NonNull Function<@NonNull T, @NonNull BigDecimal> extractor,
+      @NonNull String unit
+  ) {
+    requireNonNull(measurement, "measured characteristic cannot be null");
+    requireNonNull(extractor, "profile value extractor cannot be null");
+    requireNonNull(unit, "profile value unit cannot be null");
+
+    return switch (measurement) {
+      case ExactMeasurement<T> exact -> exactProfileValue(exact, extractor, unit);
+      case RangeMeasurement<T> range -> rangeProfileValue(range, extractor, unit);
+      case StatisticalMeasurement<T> statistical -> statisticalProfileValue(statistical, extractor, unit);
+    };
+  }
+
+  private static <T extends Comparable<T>> @NonNull FeedstockWorkspaceProfileValueResponse exactProfileValue(
+      @NonNull ExactMeasurement<T> measurement,
+      @NonNull Function<@NonNull T, @NonNull BigDecimal> extractor,
+      @NonNull String unit
+  ) {
+    return new FeedstockWorkspaceProfileValueResponse(
+        quantity(extractor.apply(measurement.value()), unit),
+        MeasurementValueKind.EXACT,
+        null,
+        null,
+        null,
+        null
+    );
+  }
+
+  private static <T extends Comparable<T>> @NonNull FeedstockWorkspaceProfileValueResponse rangeProfileValue(
+      @NonNull RangeMeasurement<T> measurement,
+      @NonNull Function<@NonNull T, @NonNull BigDecimal> extractor,
+      @NonNull String unit
+  ) {
+    final var min = extractor.apply(measurement.min());
+    final var max = extractor.apply(measurement.max());
+    return new FeedstockWorkspaceProfileValueResponse(
+        quantity(rangeMidpoint(min, max), unit),
+        MeasurementValueKind.RANGE_MIDPOINT,
+        quantity(min, unit),
+        quantity(max, unit),
+        null,
+        null
+    );
+  }
+
+  private static <T extends Comparable<T>> @NonNull FeedstockWorkspaceProfileValueResponse statisticalProfileValue(
+      @NonNull StatisticalMeasurement<T> measurement,
+      @NonNull Function<@NonNull T, @NonNull BigDecimal> extractor,
+      @NonNull String unit
+  ) {
+    final var hasMedian = measurement.median() != null;
+    return new FeedstockWorkspaceProfileValueResponse(
+        quantity(extractor.apply(statisticalValue(measurement, hasMedian)), unit),
+        hasMedian ? MeasurementValueKind.STATISTICAL_MEDIAN : MeasurementValueKind.STATISTICAL_MEAN,
+        null,
+        null,
+        nullableQuantity(measurement.standardDeviation(), unit),
+        measurement.sampleSize()
+    );
+  }
+
+  private static <T extends Comparable<T>> @NonNull T statisticalValue(
+      @NonNull StatisticalMeasurement<T> measurement,
+      boolean hasMedian
+  ) {
+    return hasMedian
+        ? requireNonNull(measurement.median(), "statistical profile value median cannot be null")
+        : measurement.mean();
+  }
+
+  private static @NonNull BigDecimal specificGravity(@NonNull SugarConcentration concentration) {
+    requireNonNull(concentration, "sugar concentration cannot be null");
+    return concentration.specificGravity().asBigDecimal();
+  }
+
+  private static @NonNull BigDecimal rangeMidpoint(
+      @NonNull BigDecimal min,
+      @NonNull BigDecimal max
+  ) {
+    return min.add(max).divide(BigDecimal.valueOf(2), RoundingMode.UNNECESSARY);
+  }
+
+  private static @NonNull DecimalQuantityResponse quantity(
+      @NonNull BigDecimal value,
+      @NonNull String unit
+  ) {
+    return new DecimalQuantityResponse(value, unit);
+  }
+
+  private static @Nullable DecimalQuantityResponse nullableQuantity(
+      @Nullable BigDecimal value,
+      @NonNull String unit
+  ) {
+    return value == null ? null : quantity(value, unit);
   }
 
   private static @Nullable FeedstockSeason toSeason(@Nullable FeedstockSeasonRequest request) {
