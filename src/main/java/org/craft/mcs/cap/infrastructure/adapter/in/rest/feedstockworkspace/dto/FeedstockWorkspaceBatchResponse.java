@@ -19,7 +19,10 @@ public record FeedstockWorkspaceBatchResponse(
     )
     @Nullable FeedstockWorkspaceCurrentMeasurementResponse currentMeasurement,
     @Schema(
-        description = "Compact current chemical profile projection for board rows.",
+        description = """
+            Compact current profile projection for board rows. It is derived from currentMeasurement
+            and does not replace the original measurement payload.
+            """,
         nullable = true,
         requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )

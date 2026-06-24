@@ -7,39 +7,58 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 
-@Schema(description = "Compact chemical profile value for feedstock planning board rows.")
+/**
+ * Compact board-row projection of one current chemical profile value.
+ *
+ * <p>This transport shape is intentionally not the original measurement model. It flattens exact,
+ * range, and statistical measurements into one display-oriented value while preserving enough
+ * context to explain how that compact value was derived. The full source measurement remains
+ * available through {@link FeedstockWorkspaceCurrentMeasurementResponse#chemicalProfile()}.
+ */
+@Schema(
+    description = """
+        Compact board-row projection of one current chemical profile value. This is not the original
+        measurement model: exact, range, and statistical measurements are flattened into one display
+        value with valueKind explaining how that value was derived. The full source measurement is
+        available in currentMeasurement.chemicalProfile.
+        """
+)
 public record FeedstockWorkspaceProfileValueResponse(
     @Schema(
-        description = "Canonical value used for compact board display.",
+        description = """
+            Canonical compact value for board display. For exact measurements this is the measured
+            value, for ranges this is the midpoint, and for statistical measurements this is median
+            when present or mean otherwise.
+            """,
         requiredMode = Schema.RequiredMode.REQUIRED
     )
     @NonNull DecimalQuantityResponse value,
     @Schema(
-        description = "Source value shape used to compute the compact value.",
+        description = "Source measurement shape used to derive the compact board value.",
         implementation = MeasurementValueKind.class,
         requiredMode = Schema.RequiredMode.REQUIRED
     )
     @NonNull MeasurementValueKind valueKind,
     @Schema(
-        description = "Minimum value for range-based measurements.",
+        description = "Original minimum value for range-based measurements.",
         nullable = true,
         requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )
     @Nullable DecimalQuantityResponse min,
     @Schema(
-        description = "Maximum value for range-based measurements.",
+        description = "Original maximum value for range-based measurements.",
         nullable = true,
         requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )
     @Nullable DecimalQuantityResponse max,
     @Schema(
-        description = "Standard deviation for statistical measurements.",
+        description = "Original standard deviation for statistical measurements.",
         nullable = true,
         requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )
     @Nullable DecimalQuantityResponse standardDeviation,
     @Schema(
-        description = "Sample size for statistical measurements.",
+        description = "Original sample size for statistical measurements.",
         nullable = true,
         requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )

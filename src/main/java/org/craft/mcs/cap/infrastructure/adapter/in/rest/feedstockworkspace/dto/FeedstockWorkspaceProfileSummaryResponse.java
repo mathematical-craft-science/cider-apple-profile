@@ -4,7 +4,20 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import org.jspecify.annotations.Nullable;
 
 
-@Schema(description = "Compact current chemical profile projection for feedstock planning board rows.")
+/**
+ * Compact current chemical profile projection for feedstock planning board rows.
+ *
+ * <p>This response is optimized for the operational board table. It gives the frontend stable,
+ * flat, unit-aware values without forcing it to interpret the full measurement tree. It must not be
+ * used as an edit model or as a replacement for the original current measurement payload.
+ */
+@Schema(
+    description = """
+        Compact current chemical profile projection for feedstock planning board rows. This is a
+        board read model, not an edit model and not a replacement for currentMeasurement. It gives
+        stable, flat, unit-aware values derived from the current measurement.
+        """
+)
 public record FeedstockWorkspaceProfileSummaryResponse(
     @Schema(
         description = "Sugar in canonical SG units.",
