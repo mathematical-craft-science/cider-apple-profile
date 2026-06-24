@@ -3,10 +3,10 @@ package org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.usec
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.cideranalysis.composition.contribution.domain.CompositionContributionRoleAssessmentRequest;
-import org.craft.mcs.cap.core.cideranalysis.composition.contribution.domain.CompositionContributionRoleAssessor;
-import org.craft.mcs.cap.core.cideranalysis.profiletarget.scoring.application.port.in.ScoreProfileTargetDistanceCandidatesCommand;
-import org.craft.mcs.cap.core.cideranalysis.profiletarget.scoring.application.port.in.ScoreProfileTargetDistanceCandidatesUseCase;
+import org.craft.mcs.cap.core.profileanalysis.composition.contribution.domain.CompositionContributionRoleAssessmentRequest;
+import org.craft.mcs.cap.core.profileanalysis.composition.contribution.domain.CompositionContributionRoleAssessor;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.port.in.ScoreProfileTargetDistanceCandidatesCommand;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.port.in.ScoreProfileTargetDistanceCandidatesUseCase;
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.FeedstockBatchProfileTargetCandidate;
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.FeedstockBatchProfileTargetCandidateQuery;
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.FeedstockBatchProfileTargetCandidates;
@@ -23,7 +23,7 @@ import static java.util.Objects.requireNonNull;
  *
  * <p>This use case is intentionally separate from the generic feedstock profile-target score
  * endpoint. It enriches distance-scored current batch profiles with contribution roles for
- * analysis/workspace screens where a technologist evaluates source material against a selected
+ * target-aware analysis clients where a technologist evaluates source material against a selected
  * target.
  */
 @Component
@@ -71,13 +71,17 @@ public final class QueryFeedstockBatchProfileTargetCandidatesService
                   "feedstock measurement candidate is missing for score"
               );
               final var measurement = candidate.measurement();
+              final var roleAssessmentRequest = new CompositionContributionRoleAssessmentRequest(
+                  candidate.axes(),
+                  objective
+              );
               return new FeedstockBatchProfileTargetCandidate(
                   measurement.batchId(),
                   measurement.measurementId(),
                   measurement.name(),
                   candidate.candidate().point(),
                   score.distance(),
-                  contributionRoleAssessor.assess(new CompositionContributionRoleAssessmentRequest(candidate.axes(), objective))
+                  contributionRoleAssessor.assess(roleAssessmentRequest)
               );
             })
             .toList()

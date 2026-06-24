@@ -1,0 +1,29 @@
+package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstockworkspace.dto;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.FeedstockPlanningReadinessFactor;
+import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.FeedstockPlanningSignalSeverity;
+import org.jspecify.annotations.NonNull;
+
+
+@Schema(description = "Single planning-readiness check for a feedstock workspace batch.")
+public record FeedstockWorkspacePlanningReadinessCheckResponse(
+    @Schema(
+        description = "Checked planning factor.",
+        implementation = FeedstockPlanningReadinessFactor.class,
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
+    @NonNull FeedstockPlanningReadinessFactor factor,
+    @Schema(
+        description = "Semantic severity of the check. API clients choose the visual representation.",
+        enumAsRef = true,
+        implementation = FeedstockPlanningSignalSeverity.class,
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
+    @NonNull FeedstockPlanningSignalSeverity severity,
+    @Schema(description = "Machine-readable check code.", requiredMode = Schema.RequiredMode.REQUIRED)
+    @NonNull String code,
+    @Schema(description = "Human-readable check message.", requiredMode = Schema.RequiredMode.REQUIRED)
+    @NonNull String message
+) {
+}

@@ -14,11 +14,11 @@ import static java.util.Objects.requireNonNull;
 
 
 /**
- * Application service for removing a feedstock batch from the active workspace.
+ * Application service for removing a feedstock batch from active source material.
  *
  * <p>The service checks cider-maker ownership before delegating deletion to the repository. The
  * persistence adapter may implement this as soft delete; the use case expresses the domain intent
- * that the batch should no longer participate in normal workspace queries.
+ * that the batch should no longer participate in normal feedstock queries.
  */
 @Component
 @RequiredArgsConstructor

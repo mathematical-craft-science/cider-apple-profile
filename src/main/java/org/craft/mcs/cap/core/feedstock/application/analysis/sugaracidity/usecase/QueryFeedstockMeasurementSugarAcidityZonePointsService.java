@@ -4,9 +4,9 @@ import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.projection.domain.SugarAcidityProfileEvaluation;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.projection.domain.SugarAcidityProfileProjector;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.zone.domain.SugarAcidityZoneAssessment;
+import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileEvaluation;
+import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileProjector;
+import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.SugarAcidityZoneAssessment;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockMeasurementSugarAcidityZonePointQuery;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockMeasurementSugarAcidityZoneResult;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.QueryFeedstockMeasurementSugarAcidityZonePointsUseCase;
@@ -14,12 +14,12 @@ import org.craft.mcs.cap.core.feedstock.application.measurement.port.out.Feedsto
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.out.FeedstockMeasurementSugarAcidityPointCandidateCursor;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.out.FeedstockMeasurementSugarAcidityPointCandidateQuery;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurement;
-import org.craft.mcs.cap.core.cideranalysis.profileaxis.domain.ChemicalProfileCapabilityCriteria;
+import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityCriteria;
 import org.craft.mcs.cap.shared.platform.query.ChunkedCursorPageCollector;
 import org.craft.mcs.cap.shared.platform.query.CursorPage;
 import org.craft.mcs.cap.shared.platform.query.MalformedCursorException;
 import org.craft.mcs.cap.shared.platform.query.OpaqueCursorCodec;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.query.SugarAcidityZoneCriteria;
+import org.craft.mcs.cap.core.profileanalysis.sugaracidity.query.SugarAcidityZoneCriteria;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
@@ -80,9 +80,7 @@ public final class QueryFeedstockMeasurementSugarAcidityZonePointsService
         query.ciderMakerId(),
         sample.batchId(),
         sample.name(),
-        evaluation.plottable(),
-        evaluation.assessment(),
-        evaluation.capabilityAssessment()
+        evaluation
     );
   }
 
@@ -122,7 +120,7 @@ public final class QueryFeedstockMeasurementSugarAcidityZonePointsService
       return true;
     }
 
-    final SugarAcidityZoneAssessment assessment = result.assessment();
+    final SugarAcidityZoneAssessment assessment = result.evaluation().assessment();
     return assessment != null
         && criteria.zones().contains(assessment.zone());
   }
@@ -144,7 +142,10 @@ public final class QueryFeedstockMeasurementSugarAcidityZonePointsService
 
     try {
       final var parts = OpaqueCursorCodec.decode(cursor, 2);
-      return new FeedstockMeasurementSugarAcidityPointCandidateCursor(Instant.parse(parts.getFirst()), UUID.fromString(parts.get(1)));
+      return new FeedstockMeasurementSugarAcidityPointCandidateCursor(
+          Instant.parse(parts.getFirst()),
+          UUID.fromString(parts.get(1))
+      );
     } catch (IllegalArgumentException exception) {
       throw new MalformedCursorException(exception);
     }

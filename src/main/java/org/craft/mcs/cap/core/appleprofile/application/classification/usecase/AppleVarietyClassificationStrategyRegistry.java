@@ -5,12 +5,12 @@ import org.craft.mcs.cap.shared.application.ApplicationValidationException;
 import java.util.Map;
 import java.util.Optional;
 import org.craft.mcs.cap.core.appleprofile.application.classification.port.in.AppleVarietyClassificationSystem;
-import org.craft.mcs.cap.core.cideranalysis.classification.engine.ClassificationStrategy;
-import org.craft.mcs.cap.core.cideranalysis.classification.profile.BuiltInCiderClassificationThresholds;
-import org.craft.mcs.cap.core.cideranalysis.classification.profile.french.FrenchClassificationStrategy;
-import org.craft.mcs.cap.core.cideranalysis.classification.profile.longashton.LongAshton4ClassificationStrategy;
-import org.craft.mcs.cap.core.cideranalysis.classification.profile.longashton.LongAshton7ClassificationStrategy;
-import org.craft.mcs.cap.core.cideranalysis.classification.profile.spanish.SpanishClassificationStrategy;
+import org.craft.mcs.cap.core.profileanalysis.classification.engine.ClassificationStrategy;
+import org.craft.mcs.cap.core.profileanalysis.classification.profile.BuiltInCiderClassificationThresholds;
+import org.craft.mcs.cap.core.profileanalysis.classification.profile.french.FrenchClassificationStrategy;
+import org.craft.mcs.cap.core.profileanalysis.classification.profile.longashton.LongAshton4ClassificationStrategy;
+import org.craft.mcs.cap.core.profileanalysis.classification.profile.longashton.LongAshton7ClassificationStrategy;
+import org.craft.mcs.cap.core.profileanalysis.classification.profile.spanish.SpanishClassificationStrategy;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 
@@ -55,6 +55,8 @@ public class AppleVarietyClassificationStrategyRegistry {
     requireNonNull(system, "apple variety classification system cannot be null");
 
     return (ClassificationStrategy<C>) Optional.ofNullable(strategies.get(system))
-        .orElseThrow(() -> new ApplicationValidationException("unsupported apple variety classification system: " + system));
+        .orElseThrow(() -> new ApplicationValidationException(
+            "unsupported apple variety classification system: " + system
+        ));
   }
 }

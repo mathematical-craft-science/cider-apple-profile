@@ -1,7 +1,7 @@
 package org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.usecase;
 
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.projection.domain.SugarAcidityProfileProjector;
+import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileProjector;
 import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchNotFoundException;
 import org.craft.mcs.cap.core.feedstock.application.measurement.query.FeedstockBatchCurrentMeasurementQueryService;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.AssessFeedstockBatchCurrentSugarAcidityZoneUseCase;
@@ -20,7 +20,7 @@ import static java.util.Objects.requireNonNull;
  *
  * <p>Current means the latest measurement selected by
  * {@link FeedstockBatchCurrentMeasurementQueryService}. The service returns an unplottable result
- * when sugar/acidity capability is missing so the workspace can show actionable warnings instead of
+ * when sugar/acidity capability is missing so clients can show actionable warnings instead of
  * hiding incomplete batches.
  */
 @Component
@@ -47,9 +47,7 @@ public final class AssessFeedstockBatchCurrentSugarAcidityZoneService
         batch.ciderMakerId(),
         currentMeasurement.measurementId(),
         currentMeasurement.measuredAt(),
-        evaluation.plottable(),
-        evaluation.assessment(),
-        evaluation.capabilityAssessment()
+        evaluation
     );
   }
 }

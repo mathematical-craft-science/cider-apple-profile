@@ -6,7 +6,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
-import org.craft.mcs.cap.core.cideranalysis.profileaxis.domain.ChemicalProfileCapabilityNotMetException;
+import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityNotMetException;
 import org.jspecify.annotations.NonNull;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;

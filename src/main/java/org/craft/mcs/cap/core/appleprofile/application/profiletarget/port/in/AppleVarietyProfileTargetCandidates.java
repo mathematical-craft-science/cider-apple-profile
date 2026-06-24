@@ -1,8 +1,8 @@
 package org.craft.mcs.cap.core.appleprofile.application.profiletarget.port.in;
 
 import java.util.List;
-import org.craft.mcs.cap.core.cideranalysis.profiletarget.scoring.application.port.in.ProfileTargetScoringPurpose;
-import org.craft.mcs.cap.core.cideranalysis.profiletarget.scoring.domain.ProfileAxisNormalizerCode;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.port.in.ProfileTargetScoringPurpose;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileAxisNormalizerCode;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;

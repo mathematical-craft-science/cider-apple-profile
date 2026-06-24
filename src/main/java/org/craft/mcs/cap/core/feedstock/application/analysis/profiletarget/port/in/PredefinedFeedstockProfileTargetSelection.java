@@ -1,6 +1,6 @@
 package org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in;
 
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.zone.domain.SugarAcidityZone;
+import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.SugarAcidityZone;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;

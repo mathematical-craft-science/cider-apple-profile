@@ -3,8 +3,8 @@ package org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.usec
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.cideranalysis.profiletarget.scoring.application.port.in.ScoreProfileTargetDistanceCandidatesCommand;
-import org.craft.mcs.cap.core.cideranalysis.profiletarget.scoring.application.port.in.ScoreProfileTargetDistanceCandidatesUseCase;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.port.in.ScoreProfileTargetDistanceCandidatesCommand;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.port.in.ScoreProfileTargetDistanceCandidatesUseCase;
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.FeedstockBatchProfileTargetScore;
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.FeedstockBatchProfileTargetScores;
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.ScoreFeedstockBatchProfileTargetCommand;
@@ -18,7 +18,7 @@ import static java.util.Objects.requireNonNull;
 /**
  * Scores current feedstock batch profiles against a selected target area.
  *
- * <p>This service adapts the feedstock workspace to the generic profile-target scoring use case.
+ * <p>This service adapts current feedstock batch profiles to the generic profile-target scoring use case.
  * It selects only the latest measurement per batch, filters unplottable or non-matching profiles,
  * resolves either a predefined zone target or a custom rectangle, then ranks candidates by target
  * distance. It does not generate new compositions and does not add screen-specific analysis

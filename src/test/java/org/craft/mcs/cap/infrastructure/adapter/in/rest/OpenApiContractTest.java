@@ -60,6 +60,7 @@ class OpenApiContractTest {
     assertJsonResponse(openApi, "/feedstock-batches/{batchId}/fermentation-start-readiness", "get");
     assertJsonResponse(openApi, "/feedstock-batches/profile-target-scores", "post");
     assertJsonResponse(openApi, "/feedstock-batches/composition-optimizations", "post");
+    assertJsonResponse(openApi, "/feedstock-workspace/batches", "post");
     assertJsonResponse(openApi, "/feedstock-measurements/{measurementId}/sugar-acidity-zone", "get");
     assertJsonResponse(openApi, "/feedstock-measurements/sugar-acidity-zone-points", "post");
     assertJsonResponse(openApi, "/feedstock-measurements/{measurementId}/abv-prediction", "get");
@@ -82,6 +83,7 @@ class OpenApiContractTest {
     assertJsonRequest(openApi, "/feedstock-batches/sugar-acidity-zone-points", "post");
     assertJsonRequest(openApi, "/feedstock-batches/profile-target-scores", "post");
     assertJsonRequest(openApi, "/feedstock-batches/composition-optimizations", "post");
+    assertJsonRequest(openApi, "/feedstock-workspace/batches", "post");
     assertJsonRequest(openApi, "/feedstock-measurements/sugar-acidity-zone-points", "post");
     assertJsonRequest(openApi, "/production-batches", "post");
 
@@ -579,6 +581,145 @@ class OpenApiContractTest {
     assertNullable(schemaProperty(openApi, "FeedstockBatchCompositionOptimizationSourceResponse", "requestedVolume"));
   }
 
+  @Test
+  void openApiDescribesFeedstockWorkspaceRequiredNullableContracts() throws Exception {
+    final var openApi = openApi();
+
+    assertRequiredProperties(openApi, "FeedstockWorkspaceBatchQueryRequest", "ciderMakerId");
+    assertNotRequiredProperties(
+        openApi,
+        "FeedstockWorkspaceBatchQueryRequest",
+        "season",
+        "target",
+        "tanninTarget",
+        "weights",
+        "purpose",
+        "targetCandidateLimit"
+    );
+    assertNullable(schemaProperty(openApi, "FeedstockWorkspaceBatchQueryRequest", "season"));
+    assertNullable(schemaProperty(openApi, "FeedstockWorkspaceBatchQueryRequest", "target"));
+    assertNullable(schemaProperty(openApi, "FeedstockWorkspaceBatchQueryRequest", "tanninTarget"));
+    assertNullable(schemaProperty(openApi, "FeedstockWorkspaceBatchQueryRequest", "weights"));
+    assertNullable(schemaProperty(openApi, "FeedstockWorkspaceBatchQueryRequest", "purpose"));
+    assertNullable(schemaProperty(openApi, "FeedstockWorkspaceBatchQueryRequest", "targetCandidateLimit"));
+
+    assertRequiredProperties(openApi, "FeedstockWorkspaceResponse", "batches");
+    assertArray(schemaProperty(openApi, "FeedstockWorkspaceResponse", "batches"));
+    assertNotRequiredProperties(openApi, "FeedstockWorkspaceResponse", "targetAnalysis");
+    assertNullable(schemaProperty(openApi, "FeedstockWorkspaceResponse", "targetAnalysis"));
+
+    assertRequiredProperties(
+        openApi,
+        "FeedstockWorkspaceBatchResponse",
+        "batch",
+        "planningReadiness",
+        "dataQuality"
+    );
+    assertNotRequiredProperties(
+        openApi,
+        "FeedstockWorkspaceBatchResponse",
+        "currentMeasurement",
+        "measurementFreshness",
+        "sugarAcidity",
+        "potentialAbv",
+        "yeastAssimilableNitrogen",
+        "fermentationStartReadiness",
+        "targetCandidate"
+    );
+    assertNullable(schemaProperty(openApi, "FeedstockWorkspaceBatchResponse", "currentMeasurement"));
+    assertNullable(schemaProperty(openApi, "FeedstockWorkspaceBatchResponse", "measurementFreshness"));
+    assertNullable(schemaProperty(openApi, "FeedstockWorkspaceBatchResponse", "sugarAcidity"));
+    assertNullable(schemaProperty(openApi, "FeedstockWorkspaceBatchResponse", "potentialAbv"));
+    assertNullable(schemaProperty(openApi, "FeedstockWorkspaceBatchResponse", "yeastAssimilableNitrogen"));
+    assertNullable(schemaProperty(openApi, "FeedstockWorkspaceBatchResponse", "fermentationStartReadiness"));
+    assertNullable(schemaProperty(openApi, "FeedstockWorkspaceBatchResponse", "targetCandidate"));
+
+    assertRequiredProperties(
+        openApi,
+        "FeedstockWorkspaceCurrentMeasurementResponse",
+        "measurementId",
+        "name",
+        "measuredAt",
+        "chemicalProfile"
+    );
+    assertStringFormat(
+        schemaProperty(openApi, "FeedstockWorkspaceCurrentMeasurementResponse", "measurementId"),
+        "uuid"
+    );
+    assertStringFormat(
+        schemaProperty(openApi, "FeedstockWorkspaceCurrentMeasurementResponse", "measuredAt"),
+        "date-time"
+    );
+    assertNotRequiredProperties(openApi, "FeedstockWorkspaceCurrentMeasurementResponse", "note");
+    assertNullable(schemaProperty(openApi, "FeedstockWorkspaceCurrentMeasurementResponse", "note"));
+
+    assertRequiredProperties(openApi, "FeedstockWorkspaceMeasurementFreshnessResponse", "status", "stale");
+    assertNotRequiredProperties(openApi, "FeedstockWorkspaceMeasurementFreshnessResponse", "reason");
+    assertNullable(schemaProperty(openApi, "FeedstockWorkspaceMeasurementFreshnessResponse", "reason"));
+
+    assertRequiredProperties(
+        openApi,
+        "FeedstockWorkspaceSugarAcidityResponse",
+        "plottable",
+        "capabilityAssessment"
+    );
+    assertNotRequiredProperties(openApi, "FeedstockWorkspaceSugarAcidityResponse", "point", "assessment");
+    assertNullable(schemaProperty(openApi, "FeedstockWorkspaceSugarAcidityResponse", "point"));
+    assertNullable(schemaProperty(openApi, "FeedstockWorkspaceSugarAcidityResponse", "assessment"));
+
+    assertRequiredProperties(
+        openApi,
+        "FeedstockWorkspacePotentialAbvResponse",
+        "originalGravityValueKind",
+        "prediction"
+    );
+    assertRequiredProperties(openApi, "FeedstockWorkspaceTargetAnalysisResponse", "purpose", "normalizerCode");
+    assertRequiredProperties(
+        openApi,
+        "FeedstockWorkspaceTargetCandidateResponse",
+        "point",
+        "distance",
+        "contributionRole",
+        "roleExplanation"
+    );
+    assertRequiredProperties(openApi, "FeedstockWorkspaceRoleExplanationResponse", "summary", "reasons");
+    assertArray(schemaProperty(openApi, "FeedstockWorkspaceRoleExplanationResponse", "reasons"));
+    assertRequiredProperties(openApi, "FeedstockWorkspacePlanningReadinessResponse", "status", "checks");
+    assertArray(schemaProperty(openApi, "FeedstockWorkspacePlanningReadinessResponse", "checks"));
+    assertRequiredProperties(
+        openApi,
+        "FeedstockWorkspacePlanningReadinessCheckResponse",
+        "factor",
+        "severity",
+        "code",
+        "message"
+    );
+    assertRequiredProperties(openApi, "FeedstockWorkspaceDataQualityResponse", "status", "indicators");
+    assertArray(schemaProperty(openApi, "FeedstockWorkspaceDataQualityResponse", "indicators"));
+    assertRequiredProperties(
+        openApi,
+        "FeedstockWorkspaceDataQualityIndicatorResponse",
+        "code",
+        "severity",
+        "message"
+    );
+    assertEnumSchema(openApi, "FeedstockPlanningSignalSeverity", "OK", "INFO", "WARNING", "BLOCKING");
+    assertMissingSchema(openApi, "FeedstockPlanningReadinessSeverity");
+    assertMissingSchema(openApi, "FeedstockPlanningDataQualitySeverity");
+    assertPropertyReferencesSchema(
+        openApi,
+        "FeedstockWorkspacePlanningReadinessCheckResponse",
+        "severity",
+        "FeedstockPlanningSignalSeverity"
+    );
+    assertPropertyReferencesSchema(
+        openApi,
+        "FeedstockWorkspaceDataQualityIndicatorResponse",
+        "severity",
+        "FeedstockPlanningSignalSeverity"
+    );
+  }
+
   private JsonNode openApi() throws Exception {
     final var response = HttpClient.newHttpClient().send(
         HttpRequest.newBuilder(URI.create("http://localhost:" + port + "/v3/api-docs"))
@@ -668,6 +809,64 @@ class OpenApiContractTest {
         .as("%s.%s exists", schemaName, propertyName)
         .isFalse();
     return property;
+  }
+
+  private static void assertMissingSchema(
+      JsonNode openApi,
+      String schemaName
+  ) {
+    final var schema = openApi
+        .path("components")
+        .path("schemas")
+        .path(schemaName);
+
+    assertThat(schema.isMissingNode())
+        .as("%s schema should not be generated", schemaName)
+        .isTrue();
+  }
+
+  private static void assertPropertyReferencesSchema(
+      JsonNode openApi,
+      String schemaName,
+      String propertyName,
+      String expectedSchemaName
+  ) {
+    final var property = schemaProperty(openApi, schemaName, propertyName);
+
+    assertThat(referencedSchemaName(property))
+        .as("%s.%s schema reference", schemaName, propertyName)
+        .isEqualTo(expectedSchemaName);
+  }
+
+  private static void assertEnumSchema(
+      JsonNode openApi,
+      String schemaName,
+      String... values
+  ) {
+    final var schema = openApi
+        .path("components")
+        .path("schemas")
+        .path(schemaName);
+
+    assertThat(schema.isMissingNode())
+        .as("%s schema exists", schemaName)
+        .isFalse();
+    assertThat(schema.path("type").asText())
+        .as("%s schema type", schemaName)
+        .isEqualTo("string");
+    assertThat(StreamSupport.stream(schema.path("enum").spliterator(), false)
+        .map(JsonNode::asText)
+        .toList())
+        .as("%s enum values", schemaName)
+        .containsExactly(values);
+  }
+
+  private static String referencedSchemaName(JsonNode schema) {
+    final var ref = schema.path("$ref").asText(null);
+    assertThat(ref)
+        .as("schema reference")
+        .isNotBlank();
+    return ref.substring(ref.lastIndexOf('/') + 1);
   }
 
   private static void assertRequiredProperties(

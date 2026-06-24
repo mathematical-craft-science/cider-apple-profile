@@ -1,11 +1,11 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.sugaracidity.mapper;
 
 import java.util.UUID;
-import org.craft.mcs.cap.core.cideranalysis.profileaxis.domain.ChemicalProfileCapability;
-import org.craft.mcs.cap.core.cideranalysis.profileaxis.domain.ChemicalProfileCapabilityCriteria;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.query.SugarAcidityZoneCriteria;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.zone.domain.SugarAcidityZone;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.zone.domain.SugarAcidityZoneAssessment;
+import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapability;
+import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityCriteria;
+import org.craft.mcs.cap.core.profileanalysis.sugaracidity.query.SugarAcidityZoneCriteria;
+import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.SugarAcidityZone;
+import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.SugarAcidityZoneAssessment;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.FeedstockBatchCriteria;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockMeasurementPointFilters;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockMeasurementSugarAcidityZoneAssessment;
@@ -74,15 +74,16 @@ public final class FeedstockMeasurementSugarAcidityZoneRestMapper {
       @NonNull FeedstockMeasurementSugarAcidityZoneResult result
   ) {
     requireNonNull(result, "feedstock measurement sugar-acidity zone result cannot be null");
+    final var evaluation = result.evaluation();
 
     return new FeedstockMeasurementSugarAcidityZoneResponse(
         result.measurementId().value(),
         result.ciderMakerId().value(),
         result.batchId().value(),
         result.measurementName().value(),
-        result.plottable(),
-        toAssessmentResponse(result.assessment()),
-        ChemicalProfileCapabilityRestMapper.toResponse(result.capabilityAssessment())
+        evaluation.plottable(),
+        toAssessmentResponse(evaluation.assessment()),
+        ChemicalProfileCapabilityRestMapper.toResponse(evaluation.capabilityAssessment())
     );
   }
 
@@ -93,11 +94,11 @@ public final class FeedstockMeasurementSugarAcidityZoneRestMapper {
 
     return new FeedstockMeasurementSugarAcidityZonePointBatchResponse(
         page.items().stream()
-            .filter(FeedstockMeasurementSugarAcidityZoneResult::plottable)
+            .filter(result -> result.evaluation().plottable())
             .map(FeedstockMeasurementSugarAcidityZoneRestMapper::toResponse)
             .toList(),
         page.items().stream()
-            .filter(result -> !result.plottable())
+            .filter(result -> !result.evaluation().plottable())
             .map(FeedstockMeasurementSugarAcidityZoneRestMapper::toUnplottableResponse)
             .toList(),
         page.nextCursor()
@@ -114,7 +115,7 @@ public final class FeedstockMeasurementSugarAcidityZoneRestMapper {
         result.ciderMakerId().value(),
         result.batchId().value(),
         result.measurementName().value(),
-        ChemicalProfileCapabilityRestMapper.toResponse(result.capabilityAssessment())
+        ChemicalProfileCapabilityRestMapper.toResponse(result.evaluation().capabilityAssessment())
     );
   }
 

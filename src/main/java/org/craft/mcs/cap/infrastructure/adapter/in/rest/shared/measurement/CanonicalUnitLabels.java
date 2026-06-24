@@ -1,6 +1,6 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.measurement;
 
-import org.craft.mcs.cap.core.cideranalysis.profiletarget.scoring.domain.ProfileEvaluationAxis;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileEvaluationAxis;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.measurement.unit.BeverageUnits;
 import org.jspecify.annotations.NonNull;

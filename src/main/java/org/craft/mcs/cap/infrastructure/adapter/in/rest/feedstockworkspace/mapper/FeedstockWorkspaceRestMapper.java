@@ -1,20 +1,26 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstockworkspace.mapper;
 
-import org.craft.mcs.cap.core.cideranalysis.profiletarget.scoring.application.port.in.ProfileTargetScoringPurpose;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.point.domain.SugarAcidityAxisPoint;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.projection.domain.SugarAcidityProfileEvaluation;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.target.domain.RectangleSugarAcidityTargetGeometry;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.target.domain.TanninTargetRange;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.port.in.ProfileTargetScoringPurpose;
+import org.craft.mcs.cap.core.profileanalysis.sugaracidity.point.domain.SugarAcidityAxisPoint;
+import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileEvaluation;
+import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.RectangleSugarAcidityTargetGeometry;
+import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.TanninTargetRange;
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.CustomRectangleFeedstockProfileTargetSelection;
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.FeedstockProfileTargetSelection;
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.PredefinedFeedstockProfileTargetSelection;
-import org.craft.mcs.cap.core.feedstock.application.workspace.port.in.FeedstockTargetCandidateView;
-import org.craft.mcs.cap.core.feedstock.application.workspace.port.in.FeedstockWorkspaceBatchView;
-import org.craft.mcs.cap.core.feedstock.application.workspace.port.in.FeedstockWorkspaceBatchViewQuery;
-import org.craft.mcs.cap.core.feedstock.application.workspace.port.in.FeedstockWorkspaceCurrentMeasurementView;
-import org.craft.mcs.cap.core.feedstock.application.workspace.port.in.FeedstockWorkspacePotentialAbvView;
-import org.craft.mcs.cap.core.feedstock.application.workspace.port.in.FeedstockWorkspaceTargetAnalysisView;
-import org.craft.mcs.cap.core.feedstock.application.workspace.port.in.FeedstockWorkspaceView;
+import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.FeedstockPlanningTargetCandidateView;
+import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.FeedstockPlanningBatchView;
+import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.FeedstockPlanningBatchViewQuery;
+import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.FeedstockPlanningCurrentMeasurementView;
+import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.FeedstockPlanningDataQualityIndicator;
+import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.FeedstockPlanningDataQualityView;
+import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.FeedstockPlanningMeasurementFreshnessView;
+import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.FeedstockPlanningReadinessCheck;
+import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.FeedstockPlanningReadinessView;
+import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.FeedstockPlanningPotentialAbvView;
+import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.FeedstockPlanningRoleExplanationView;
+import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.FeedstockPlanningTargetAnalysisView;
+import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.FeedstockPlanningView;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.abv.mapper.PotentialAbvPredictionRestMapper;
@@ -29,8 +35,14 @@ import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstockworkspace.dto.F
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstockworkspace.dto.FeedstockWorkspaceBatchQueryRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstockworkspace.dto.FeedstockWorkspaceBatchResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstockworkspace.dto.FeedstockWorkspaceCurrentMeasurementResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstockworkspace.dto.FeedstockWorkspaceDataQualityIndicatorResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstockworkspace.dto.FeedstockWorkspaceDataQualityResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstockworkspace.dto.FeedstockWorkspaceMeasurementFreshnessResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstockworkspace.dto.FeedstockWorkspacePlanningReadinessCheckResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstockworkspace.dto.FeedstockWorkspacePlanningReadinessResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstockworkspace.dto.FeedstockWorkspacePotentialAbvResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstockworkspace.dto.FeedstockWorkspaceResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstockworkspace.dto.FeedstockWorkspaceRoleExplanationResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstockworkspace.dto.FeedstockWorkspaceSugarAcidityResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstockworkspace.dto.FeedstockWorkspaceTargetAnalysisResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.measurement.CanonicalUnitLabels;
@@ -54,12 +66,12 @@ public final class FeedstockWorkspaceRestMapper {
   private FeedstockWorkspaceRestMapper() {
   }
 
-  public static @NonNull FeedstockWorkspaceBatchViewQuery toQuery(
+  public static @NonNull FeedstockPlanningBatchViewQuery toQuery(
       @NonNull FeedstockWorkspaceBatchQueryRequest request
   ) {
     requireNonNull(request, "feedstock workspace batch view request cannot be null");
     final var purpose = purpose(request);
-    return new FeedstockWorkspaceBatchViewQuery(
+    return new FeedstockPlanningBatchViewQuery(
         CiderMakerId.of(request.ciderMakerId()),
         toSeason(request.season()),
         toTargetSelection(request.target()),
@@ -70,7 +82,7 @@ public final class FeedstockWorkspaceRestMapper {
     );
   }
 
-  public static @NonNull FeedstockWorkspaceResponse toResponse(@NonNull FeedstockWorkspaceView view) {
+  public static @NonNull FeedstockWorkspaceResponse toResponse(@NonNull FeedstockPlanningView view) {
     requireNonNull(view, "feedstock workspace view cannot be null");
     return new FeedstockWorkspaceResponse(
         view.batches().stream()
@@ -81,15 +93,18 @@ public final class FeedstockWorkspaceRestMapper {
   }
 
   private static @NonNull FeedstockWorkspaceBatchResponse toResponse(
-      @NonNull FeedstockWorkspaceBatchView view
+      @NonNull FeedstockPlanningBatchView view
   ) {
     requireNonNull(view, "feedstock workspace batch view cannot be null");
     return new FeedstockWorkspaceBatchResponse(
         FeedstockBatchRestMapper.toResponse(view.batch()),
         toCurrentMeasurementResponse(view.currentMeasurement()),
+        toMeasurementFreshnessResponse(view.measurementFreshness()),
         toSugarAcidityResponse(view.sugarAcidity()),
         toPotentialAbvResponse(view.potentialAbv()),
         toYeastAssimilableNitrogenResponse(view.yeastAssimilableNitrogen()),
+        toResponse(view.planningReadiness()),
+        toResponse(view.dataQuality()),
         toFermentationStartReadinessResponse(view),
         toTargetCandidateResponse(view.targetCandidate())
     );
@@ -124,19 +139,28 @@ public final class FeedstockWorkspaceRestMapper {
         : SugarAcidityZoneRestMapper.toResponse(assessment);
     return new FeedstockWorkspaceSugarAcidityResponse(
         evaluation.plottable(),
+        evaluation.point()
+            .map(SugarAcidityZoneRestMapper::toResponse)
+            .orElse(null), // NOSONAR
         assessmentResponse,
         ChemicalProfileCapabilityRestMapper.toResponse(evaluation.capabilityAssessment())
     );
   }
 
   private static @Nullable FeedstockWorkspaceCurrentMeasurementResponse toCurrentMeasurementResponse(
-      @Nullable FeedstockWorkspaceCurrentMeasurementView view
+      @Nullable FeedstockPlanningCurrentMeasurementView view
   ) {
     return view == null ? null : toResponse(view);
   }
 
   private static @Nullable FeedstockWorkspacePotentialAbvResponse toPotentialAbvResponse(
-      @Nullable FeedstockWorkspacePotentialAbvView view
+      @Nullable FeedstockPlanningPotentialAbvView view
+  ) {
+    return view == null ? null : toResponse(view);
+  }
+
+  private static @Nullable FeedstockWorkspaceMeasurementFreshnessResponse toMeasurementFreshnessResponse(
+      @Nullable FeedstockPlanningMeasurementFreshnessView view
   ) {
     return view == null ? null : toResponse(view);
   }
@@ -148,26 +172,26 @@ public final class FeedstockWorkspaceRestMapper {
   }
 
   private static @Nullable FeedstockWorkspaceTargetCandidateResponse toTargetCandidateResponse(
-      @Nullable FeedstockTargetCandidateView view
+      @Nullable FeedstockPlanningTargetCandidateView view
   ) {
     return view == null ? null : toResponse(view);
   }
 
   private static @Nullable FeedstockWorkspaceTargetAnalysisResponse toTargetAnalysisResponse(
-      @Nullable FeedstockWorkspaceTargetAnalysisView view
+      @Nullable FeedstockPlanningTargetAnalysisView view
   ) {
     return view == null ? null : toResponse(view);
   }
 
   private static @Nullable FermentationStartReadinessAssessmentResponse toFermentationStartReadinessResponse(
-      @NonNull FeedstockWorkspaceBatchView view
+      @NonNull FeedstockPlanningBatchView view
   ) {
     final var readiness = view.fermentationStartReadiness();
     return readiness == null ? null : FeedstockBatchReadinessRestMapper.toResponse(readiness);
   }
 
   private static @NonNull FeedstockWorkspaceCurrentMeasurementResponse toResponse(
-      @NonNull FeedstockWorkspaceCurrentMeasurementView view
+      @NonNull FeedstockPlanningCurrentMeasurementView view
   ) {
     requireNonNull(view, "feedstock workspace current measurement view cannot be null");
     return new FeedstockWorkspaceCurrentMeasurementResponse(
@@ -180,7 +204,7 @@ public final class FeedstockWorkspaceRestMapper {
   }
 
   private static @NonNull FeedstockWorkspacePotentialAbvResponse toResponse(
-      @NonNull FeedstockWorkspacePotentialAbvView view
+      @NonNull FeedstockPlanningPotentialAbvView view
   ) {
     requireNonNull(view, "feedstock workspace potential ABV view cannot be null");
     return new FeedstockWorkspacePotentialAbvResponse(
@@ -190,7 +214,7 @@ public final class FeedstockWorkspaceRestMapper {
   }
 
   private static @NonNull FeedstockWorkspaceTargetCandidateResponse toResponse(
-      @NonNull FeedstockTargetCandidateView view
+      @NonNull FeedstockPlanningTargetCandidateView view
   ) {
     requireNonNull(view, "feedstock target candidate view cannot be null");
     return new FeedstockWorkspaceTargetCandidateResponse(
@@ -199,12 +223,81 @@ public final class FeedstockWorkspaceRestMapper {
         requireNonNull(
             CompositionContributionRoleRestMapper.toResponse(view.contributionRole()),
             "composition contribution role response cannot be null"
-        )
+        ),
+        toResponse(view.roleExplanation())
+    );
+  }
+
+  private static @NonNull FeedstockWorkspaceMeasurementFreshnessResponse toResponse(
+      @NonNull FeedstockPlanningMeasurementFreshnessView view
+  ) {
+    requireNonNull(view, "feedstock workspace measurement freshness view cannot be null");
+    return new FeedstockWorkspaceMeasurementFreshnessResponse(
+        view.status(),
+        view.stale(),
+        view.reason()
+    );
+  }
+
+  private static @NonNull FeedstockWorkspacePlanningReadinessResponse toResponse(
+      @NonNull FeedstockPlanningReadinessView view
+  ) {
+    requireNonNull(view, "feedstock workspace planning readiness view cannot be null");
+    return new FeedstockWorkspacePlanningReadinessResponse(
+        view.status(),
+        view.checks().stream()
+            .map(FeedstockWorkspaceRestMapper::toResponse)
+            .toList()
+    );
+  }
+
+  private static @NonNull FeedstockWorkspacePlanningReadinessCheckResponse toResponse(
+      @NonNull FeedstockPlanningReadinessCheck check
+  ) {
+    requireNonNull(check, "feedstock workspace planning readiness check cannot be null");
+    return new FeedstockWorkspacePlanningReadinessCheckResponse(
+        check.factor(),
+        check.severity(),
+        check.code(),
+        check.message()
+    );
+  }
+
+  private static @NonNull FeedstockWorkspaceDataQualityResponse toResponse(
+      @NonNull FeedstockPlanningDataQualityView view
+  ) {
+    requireNonNull(view, "feedstock workspace data quality view cannot be null");
+    return new FeedstockWorkspaceDataQualityResponse(
+        view.status(),
+        view.indicators().stream()
+            .map(FeedstockWorkspaceRestMapper::toResponse)
+            .toList()
+    );
+  }
+
+  private static @NonNull FeedstockWorkspaceDataQualityIndicatorResponse toResponse(
+      @NonNull FeedstockPlanningDataQualityIndicator indicator
+  ) {
+    requireNonNull(indicator, "feedstock workspace data quality indicator cannot be null");
+    return new FeedstockWorkspaceDataQualityIndicatorResponse(
+        indicator.code(),
+        indicator.severity(),
+        indicator.message()
+    );
+  }
+
+  private static @NonNull FeedstockWorkspaceRoleExplanationResponse toResponse(
+      @NonNull FeedstockPlanningRoleExplanationView view
+  ) {
+    requireNonNull(view, "feedstock workspace role explanation view cannot be null");
+    return new FeedstockWorkspaceRoleExplanationResponse(
+        view.summary(),
+        view.reasons()
     );
   }
 
   private static @NonNull FeedstockWorkspaceTargetAnalysisResponse toResponse(
-      @NonNull FeedstockWorkspaceTargetAnalysisView view
+      @NonNull FeedstockPlanningTargetAnalysisView view
   ) {
     requireNonNull(view, "feedstock workspace target analysis view cannot be null");
     return new FeedstockWorkspaceTargetAnalysisResponse(view.purpose(), view.normalizerCode());

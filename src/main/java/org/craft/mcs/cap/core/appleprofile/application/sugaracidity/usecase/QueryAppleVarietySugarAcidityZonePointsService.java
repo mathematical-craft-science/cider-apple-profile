@@ -10,15 +10,15 @@ import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.out.App
 import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.out.AppleVarietySugarAcidityPointCandidateQuery;
 import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.out.AppleVarietySugarAcidityPointCandidateRepository;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVariety;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.projection.domain.SugarAcidityProfileEvaluation;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.projection.domain.SugarAcidityProfileProjector;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.zone.domain.SugarAcidityZoneAssessment;
-import org.craft.mcs.cap.core.cideranalysis.profileaxis.domain.ChemicalProfileCapabilityCriteria;
+import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileEvaluation;
+import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileProjector;
+import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.SugarAcidityZoneAssessment;
+import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityCriteria;
 import org.craft.mcs.cap.shared.platform.query.ChunkedCursorPageCollector;
 import org.craft.mcs.cap.shared.platform.query.CursorPage;
 import org.craft.mcs.cap.shared.platform.query.MalformedCursorException;
 import org.craft.mcs.cap.shared.platform.query.OpaqueCursorCodec;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.query.SugarAcidityZoneCriteria;
+import org.craft.mcs.cap.core.profileanalysis.sugaracidity.query.SugarAcidityZoneCriteria;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
@@ -32,7 +32,7 @@ import static java.util.Objects.requireNonNull;
  * <p>The service performs cursor pagination over repository candidates, applies application-level
  * capability and zone filters, and returns both plottable and unplottable results according to the
  * requested filters. It keeps graph read queries out of the aggregate repository contract and makes
- * catalog exploration independent from feedstock workspace queries.
+ * catalog exploration independent from feedstock batch queries.
  */
 @Component
 @RequiredArgsConstructor
@@ -87,9 +87,7 @@ public final class QueryAppleVarietySugarAcidityZonePointsService
     return new AppleVarietySugarAcidityZoneResult(
         variety.varietyId(),
         variety.name(),
-        evaluation.plottable(),
-        evaluation.assessment(),
-        evaluation.capabilityAssessment()
+        evaluation
     );
   }
 
@@ -116,7 +114,7 @@ public final class QueryAppleVarietySugarAcidityZonePointsService
       return true;
     }
 
-    final SugarAcidityZoneAssessment assessment = result.assessment();
+    final SugarAcidityZoneAssessment assessment = result.evaluation().assessment();
     return assessment != null
         && criteria.zones().contains(assessment.zone());
   }

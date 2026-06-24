@@ -2,9 +2,9 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.ca
 
 import java.math.BigDecimal;
 import java.util.List;
-import org.craft.mcs.cap.core.cideranalysis.composition.calculation.application.port.in.CalculateChemicalProfileCompositionResult;
-import org.craft.mcs.cap.core.cideranalysis.composition.calculation.domain.ChemicalProfileCompositionRequest;
-import org.craft.mcs.cap.core.cideranalysis.composition.calculation.domain.MassBalanceChemicalProfileCompositionStrategy;
+import org.craft.mcs.cap.core.profileanalysis.composition.calculation.application.port.in.CalculateChemicalProfileCompositionResult;
+import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionRequest;
+import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.MassBalanceChemicalProfileCompositionStrategy;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.calculation.dto.CalculateChemicalProfileCompositionRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.calculation.dto.ChemicalProfileCompositionSourceRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.calculation.dto.ChemicalProfileCompositionSourceWeightKind;

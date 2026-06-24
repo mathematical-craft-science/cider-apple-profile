@@ -15,7 +15,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
  * OpenAPI-facing contract for the canonical unit metadata endpoint.
  *
  * <p>The endpoint gives clients stable transport metadata for numeric inputs without exposing
- * graph-specific thresholds, profile target rules, or cider analysis scenarios.
+ * graph-specific thresholds, profile target rules, or profile analysis scenarios.
  */
 @Tag(name = "Measurement units", description = "Canonical CAP measurement units and numeric input metadata.")
 public interface MeasurementUnitMetadataApi {

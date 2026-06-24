@@ -1,27 +1,24 @@
 package org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in;
 
-import org.craft.mcs.cap.shared.application.ApplicationValidationException;
-
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurementId;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.value.FeedstockMeasurementName;
-import org.craft.mcs.cap.core.cideranalysis.profileaxis.domain.ChemicalProfileCapabilityAssessment;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.zone.domain.SugarAcidityZoneAssessment;
+import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileEvaluation;
 import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
 
 import static java.util.Objects.requireNonNull;
 
 
+/**
+ * Historical feedstock-measurement identity bound to a generic sugar-acidity profile evaluation.
+ */
 public record FeedstockMeasurementSugarAcidityZoneResult(
     @NonNull FeedstockMeasurementId measurementId,
     @NonNull CiderMakerId ciderMakerId,
     @NonNull FeedstockBatchId batchId,
     @NonNull FeedstockMeasurementName measurementName,
-    boolean plottable,
-    @Nullable SugarAcidityZoneAssessment assessment,
-    @NonNull ChemicalProfileCapabilityAssessment capabilityAssessment
+    @NonNull SugarAcidityProfileEvaluation evaluation
 ) {
 
   public FeedstockMeasurementSugarAcidityZoneResult {
@@ -29,10 +26,6 @@ public record FeedstockMeasurementSugarAcidityZoneResult(
     requireNonNull(ciderMakerId, "cider maker id cannot be null");
     requireNonNull(batchId, "feedstock batch id cannot be null");
     requireNonNull(measurementName, "feedstock measurement name cannot be null");
-    requireNonNull(capabilityAssessment, "chemical profile capability assessment cannot be null");
-
-    if (plottable && assessment == null) {
-      throw new ApplicationValidationException("plottable feedstock measurement result must contain assessment");
-    }
+    requireNonNull(evaluation, "sugar-acidity profile evaluation cannot be null");
   }
 }

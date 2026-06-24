@@ -1,7 +1,7 @@
 package org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.usecase;
 
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.projection.domain.SugarAcidityProfileProjector;
+import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileProjector;
 import org.craft.mcs.cap.core.feedstock.application.FeedstockMeasurementNotFoundException;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.AssessFeedstockMeasurementSugarAcidityZoneUseCase;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockMeasurementSugarAcidityZoneResult;
@@ -40,7 +40,9 @@ public final class AssessFeedstockMeasurementSugarAcidityZoneService
     final var sample = feedstockMeasurementRepository.findById(measurementId)
         .orElseThrow(() -> new FeedstockMeasurementNotFoundException(measurementId));
     final var batch = feedstockBatchRepository.findById(sample.batchId())
-        .orElseThrow(() -> new IllegalStateException("feedstock measurement batch not found: " + sample.batchId().value()));
+        .orElseThrow(() -> new IllegalStateException(
+            "feedstock measurement batch not found: " + sample.batchId().value()
+        ));
     final var evaluation = sugarAcidityProfileProjector.project(sample.chemicalProfile());
 
     return new FeedstockMeasurementSugarAcidityZoneResult(
@@ -48,9 +50,7 @@ public final class AssessFeedstockMeasurementSugarAcidityZoneService
         batch.ciderMakerId(),
         sample.batchId(),
         sample.name(),
-        evaluation.plottable(),
-        evaluation.assessment(),
-        evaluation.capabilityAssessment()
+        evaluation
     );
   }
 }

@@ -15,7 +15,7 @@ import static java.util.Objects.requireNonNull;
 
 
 /**
- * Read-side use case for listing feedstock batches in a cider maker workspace.
+ * Read-side use case for listing feedstock batches owned by a cider maker.
  *
  * <p>The service keeps the list endpoint focused on batch metadata and stock state. Optional season
  * filtering uses date-range overlap because cider-making seasons are practical periods rather than

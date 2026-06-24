@@ -22,7 +22,7 @@ import static java.util.Objects.requireNonNull;
 /**
  * Aggregate root for a physical lot of available raw material owned by a cider maker.
  *
- * <p>A batch is the operational entity a user manages in the workspace: it has a season, optional
+ * <p>A batch is the operational entity a cider maker manages as source material: it has a season, optional
  * source/origin, available volume and lifecycle state. Chemical values are intentionally not stored
  * on the batch itself; they are measured over time by {@code FeedstockMeasurement}. Application
  * query services define the current profile as the latest measurement for the batch.

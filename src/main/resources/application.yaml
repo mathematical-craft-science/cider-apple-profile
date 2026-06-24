@@ -35,6 +35,10 @@ sentry:
   enabled: false
 
 cap:
-  cider-analysis:
+  feedstock:
+    planning:
+      measurement-freshness:
+        stale-after: 14d
+  profile-analysis:
     sugar-acidity:
       assessor: rectangle # или ellipse

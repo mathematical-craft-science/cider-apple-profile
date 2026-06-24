@@ -10,11 +10,18 @@ import org.jspecify.annotations.Nullable;
 @Schema(description = "Feedstock Workspace read model.")
 public record FeedstockWorkspaceResponse(
     @ArraySchema(
-        arraySchema = @Schema(description = "Feedstock Workspace batches.", requiredMode = Schema.RequiredMode.REQUIRED),
+        arraySchema = @Schema(
+            description = "Feedstock Workspace batches.",
+            requiredMode = Schema.RequiredMode.REQUIRED
+        ),
         schema = @Schema(implementation = FeedstockWorkspaceBatchResponse.class)
     )
     @NonNull List<@NonNull FeedstockWorkspaceBatchResponse> batches,
-    @Schema(description = "Target-analysis metadata when request contains target.", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @Schema(
+        description = "Target-analysis metadata when request contains target.",
+        nullable = true,
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     @Nullable FeedstockWorkspaceTargetAnalysisResponse targetAnalysis
 ) {
 }

@@ -11,9 +11,17 @@ import org.jspecify.annotations.NonNull;
 public record FeedstockWorkspaceTargetCandidateResponse(
     @Schema(description = "Current profile point used for target scoring.", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull SugarAcidityProfilePointResponse point,
-    @Schema(description = "Distance from current profile to selected target.", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(
+        description = "Distance from current profile to selected target.",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
     @NonNull ProfileTargetDistanceResponse distance,
     @Schema(description = "Target-aware contribution role.", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NonNull CompositionContributionRoleAssessmentResponse contributionRole
+    @NonNull CompositionContributionRoleAssessmentResponse contributionRole,
+    @Schema(
+        description = "Compact role explanation for board rows and quick review.",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
+    @NonNull FeedstockWorkspaceRoleExplanationResponse roleExplanation
 ) {
 }

@@ -3,6 +3,7 @@ package org.craft.mcs.cap.core.feedstock.application.planning.composition;
 import java.io.Serial;
 import org.craft.mcs.cap.shared.application.ApplicationException;
 import org.craft.mcs.cap.shared.application.ApplicationValidationException;
+import org.jspecify.annotations.NonNull;
 
 
 public final class InsufficientFeedstockCompositionSourcesException extends ApplicationException {
@@ -30,6 +31,7 @@ public final class InsufficientFeedstockCompositionSourcesException extends Appl
     return minimumSourceCount;
   }
 
+  @NonNull
   private static String message(
       int sourceCount,
       int minimumSourceCount

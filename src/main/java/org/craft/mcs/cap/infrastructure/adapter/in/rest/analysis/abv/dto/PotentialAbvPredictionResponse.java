@@ -1,9 +1,9 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.abv.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import org.craft.mcs.cap.core.cideranalysis.abv.domain.AbvPredictionMethod;
-import org.craft.mcs.cap.core.cideranalysis.abv.domain.FinalGravityPredictionSource;
-import org.craft.mcs.cap.core.cideranalysis.abv.domain.PredictionConfidence;
+import org.craft.mcs.cap.core.profileanalysis.abv.domain.AbvPredictionMethod;
+import org.craft.mcs.cap.core.profileanalysis.abv.domain.FinalGravityPredictionSource;
+import org.craft.mcs.cap.core.profileanalysis.abv.domain.PredictionConfidence;
 import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
 import org.jspecify.annotations.NonNull;
 

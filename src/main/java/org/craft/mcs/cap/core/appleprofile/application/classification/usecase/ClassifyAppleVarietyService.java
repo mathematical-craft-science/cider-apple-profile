@@ -8,9 +8,9 @@ import org.craft.mcs.cap.core.appleprofile.application.classification.port.in.Cl
 import org.craft.mcs.cap.core.appleprofile.application.port.out.AppleVarietyRepository;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyId;
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
-import org.craft.mcs.cap.core.cideranalysis.classification.result.ClassificationResult;
-import org.craft.mcs.cap.core.cideranalysis.classification.engine.ClassificationStrategy;
-import org.craft.mcs.cap.core.cideranalysis.classification.engine.ChemicalProfileClassifier;
+import org.craft.mcs.cap.core.profileanalysis.classification.result.ClassificationResult;
+import org.craft.mcs.cap.core.profileanalysis.classification.engine.ClassificationStrategy;
+import org.craft.mcs.cap.core.profileanalysis.classification.engine.ChemicalProfileClassifier;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;

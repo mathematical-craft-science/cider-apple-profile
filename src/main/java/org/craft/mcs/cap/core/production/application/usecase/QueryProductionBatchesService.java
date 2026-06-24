@@ -16,7 +16,7 @@ import static java.util.Objects.requireNonNull;
 
 
 /**
- * Read-side application service for production batch workspace screens.
+ * Read-side application service for production batch queries.
  *
  * <p>The service exposes only production batch state. Source tree, inputs and historical snapshots
  * are read through Batch Traceability endpoints so production DTOs stay focused on the aggregate.
