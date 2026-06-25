@@ -3,7 +3,7 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstockworkspace.dto;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
-import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.FeedstockPlanningDataQualityStatus;
+import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in.FeedstockCurrentProfileDataQualityStatus;
 import org.jspecify.annotations.NonNull;
 
 
@@ -11,10 +11,10 @@ import org.jspecify.annotations.NonNull;
 public record FeedstockWorkspaceDataQualityResponse(
     @Schema(
         description = "Overall data quality status.",
-        implementation = FeedstockPlanningDataQualityStatus.class,
+        implementation = FeedstockCurrentProfileDataQualityStatus.class,
         requiredMode = Schema.RequiredMode.REQUIRED
     )
-    @NonNull FeedstockPlanningDataQualityStatus status,
+    @NonNull FeedstockCurrentProfileDataQualityStatus status,
     @ArraySchema(
         arraySchema = @Schema(description = "Data quality indicators.", requiredMode = Schema.RequiredMode.REQUIRED),
         schema = @Schema(implementation = FeedstockWorkspaceDataQualityIndicatorResponse.class)

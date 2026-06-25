@@ -7,11 +7,11 @@ import java.util.List;
 import java.util.UUID;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.FeedstockBatchSummary;
 import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.FeedstockPlanningBatchView;
-import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.FeedstockPlanningCurrentMeasurementView;
-import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.FeedstockPlanningDataQualityStatus;
-import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.FeedstockPlanningDataQualityView;
-import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.FeedstockPlanningReadinessStatus;
-import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.FeedstockPlanningReadinessView;
+import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in.FeedstockCurrentMeasurementView;
+import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in.FeedstockCurrentProfileDataQualityStatus;
+import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in.FeedstockCurrentProfileDataQualityView;
+import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in.FeedstockPlanningReadinessStatus;
+import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in.FeedstockPlanningReadinessView;
 import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.FeedstockPlanningView;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockBatchName;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
@@ -91,7 +91,7 @@ class FeedstockWorkspaceRestMapperTest {
   private static @NonNull FeedstockPlanningBatchView batchView() {
     return new FeedstockPlanningBatchView(
         batch(),
-        new FeedstockPlanningCurrentMeasurementView(
+        new FeedstockCurrentMeasurementView(
             FeedstockMeasurementId.newId(),
             FeedstockMeasurementName.of("Current profile"),
             Instant.parse("2026-05-20T10:00:00Z"),
@@ -103,7 +103,7 @@ class FeedstockWorkspaceRestMapperTest {
         null,
         null,
         new FeedstockPlanningReadinessView(FeedstockPlanningReadinessStatus.READY, List.of()),
-        new FeedstockPlanningDataQualityView(FeedstockPlanningDataQualityStatus.READY, List.of()),
+        new FeedstockCurrentProfileDataQualityView(FeedstockCurrentProfileDataQualityStatus.READY, List.of()),
         null,
         null
     );

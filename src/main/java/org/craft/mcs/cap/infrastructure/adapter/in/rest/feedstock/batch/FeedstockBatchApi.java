@@ -14,6 +14,7 @@ import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.batch.dto.Feed
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.batch.dto.FeedstockBatchResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.batch.dto.PatchFeedstockBatchRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.batch.dto.UpdateFeedstockBatchRequest;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.detail.dto.FeedstockBatchDetailResponse;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.http.ProblemDetail;
@@ -34,13 +35,19 @@ public interface FeedstockBatchApi {
       requestBody = @RequestBody(
           description = "Feedstock batch creation payload.",
           required = true,
-          content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = CreateFeedstockBatchRequest.class))
+          content = @Content(
+              mediaType = APPLICATION_JSON_VALUE,
+              schema = @Schema(implementation = CreateFeedstockBatchRequest.class)
+          )
       )
   )
   @ApiResponse(
       responseCode = "201",
       description = "Feedstock batch created.",
-      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = FeedstockBatchResponse.class))
+      content = @Content(
+          mediaType = APPLICATION_JSON_VALUE,
+          schema = @Schema(implementation = FeedstockBatchResponse.class)
+      )
   )
   @ApiResponse(
       responseCode = "400",
@@ -58,7 +65,10 @@ public interface FeedstockBatchApi {
   @ApiResponse(
       responseCode = "200",
       description = "Feedstock batch list.",
-      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = FeedstockBatchListResponse.class))
+      content = @Content(
+          mediaType = APPLICATION_JSON_VALUE,
+          schema = @Schema(implementation = FeedstockBatchListResponse.class)
+      )
   )
   @ApiResponse(
       responseCode = "400",
@@ -68,25 +78,76 @@ public interface FeedstockBatchApi {
   @NonNull ResponseEntity<@NonNull FeedstockBatchListResponse> list(
       @Parameter(description = "Cider maker identifier.", required = true, schema = @Schema(format = "uuid"))
       @NonNull UUID ciderMakerId,
-      @Parameter(description = "Optional season filter start date. Must be provided together with seasonEndsOn.", schema = @Schema(format = "date"))
+      @Parameter(
+          description = "Optional season filter start date. Must be provided together with seasonEndsOn.",
+          schema = @Schema(format = "date")
+      )
       @Nullable LocalDate seasonStartsOn,
-      @Parameter(description = "Optional season filter end date. Must be provided together with seasonStartsOn.", schema = @Schema(format = "date"))
+      @Parameter(
+          description = "Optional season filter end date. Must be provided together with seasonStartsOn.",
+          schema = @Schema(format = "date")
+      )
       @Nullable LocalDate seasonEndsOn
   );
 
   @Operation(
+      summary = "Get feedstock batch detail",
+      description = """
+          Returns feedstock batch metadata, measurement history and current-profile read model for a
+          batch detail page. The current profile is derived from the latest measurement only.
+          """
+  )
+  @ApiResponse(
+      responseCode = "200",
+      description = "Feedstock batch detail.",
+      content = @Content(
+          mediaType = APPLICATION_JSON_VALUE,
+          schema = @Schema(implementation = FeedstockBatchDetailResponse.class)
+      )
+  )
+  @ApiResponse(
+      responseCode = "403",
+      description = "Batch belongs to another cider maker.",
+      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
+  )
+  @ApiResponse(
+      responseCode = "404",
+      description = "Feedstock batch not found.",
+      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
+  )
+  @NonNull ResponseEntity<@NonNull FeedstockBatchDetailResponse> get(
+      @Parameter(description = "Feedstock batch identifier.", required = true, schema = @Schema(format = "uuid"))
+      @NonNull UUID batchId,
+      @Parameter(
+          description = "Cider maker identifier used for ownership validation.",
+          required = true,
+          schema = @Schema(format = "uuid")
+      )
+      @NonNull UUID ciderMakerId
+  );
+
+  @Operation(
       summary = "Replace feedstock batch",
-      description = "Replaces editable feedstock batch fields. The request must include the cider maker owner id for ownership validation.",
+      description = """
+          Replaces editable feedstock batch fields. The request must include the cider maker owner id
+          for ownership validation.
+          """,
       requestBody = @RequestBody(
           description = "Full feedstock batch update payload.",
           required = true,
-          content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = UpdateFeedstockBatchRequest.class))
+          content = @Content(
+              mediaType = APPLICATION_JSON_VALUE,
+              schema = @Schema(implementation = UpdateFeedstockBatchRequest.class)
+          )
       )
   )
   @ApiResponse(
       responseCode = "200",
       description = "Feedstock batch updated.",
-      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = FeedstockBatchResponse.class))
+      content = @Content(
+          mediaType = APPLICATION_JSON_VALUE,
+          schema = @Schema(implementation = FeedstockBatchResponse.class)
+      )
   )
   @ApiResponse(
       responseCode = "400",
@@ -121,7 +182,10 @@ public interface FeedstockBatchApi {
   @ApiResponse(
       responseCode = "200",
       description = "Feedstock batch patched.",
-      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = FeedstockBatchResponse.class))
+      content = @Content(
+          mediaType = APPLICATION_JSON_VALUE,
+          schema = @Schema(implementation = FeedstockBatchResponse.class)
+      )
   )
   @ApiResponse(
       responseCode = "400",
@@ -149,14 +213,20 @@ public interface FeedstockBatchApi {
       @RequestBody(
           description = "Partial feedstock batch update payload.",
           required = true,
-          content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = PatchFeedstockBatchRequest.class))
+          content = @Content(
+              mediaType = APPLICATION_JSON_VALUE,
+              schema = @Schema(implementation = PatchFeedstockBatchRequest.class)
+          )
       )
       @NonNull PatchFeedstockBatchRequest request
   );
 
   @Operation(
       summary = "Delete feedstock batch",
-      description = "Soft-deletes a feedstock batch. The batch disappears from normal workspace queries while historical rows remain in persistence."
+      description = """
+          Soft-deletes a feedstock batch. The batch disappears from normal workspace queries while
+          historical rows remain in persistence.
+          """
   )
   @ApiResponse(responseCode = "204", description = "Feedstock batch deleted.")
   @ApiResponse(
@@ -177,7 +247,11 @@ public interface FeedstockBatchApi {
   @NonNull ResponseEntity<Void> delete(
       @Parameter(description = "Feedstock batch identifier.", required = true, schema = @Schema(format = "uuid"))
       @NonNull UUID batchId,
-      @Parameter(description = "Cider maker identifier used for ownership validation.", required = true, schema = @Schema(format = "uuid"))
+      @Parameter(
+          description = "Cider maker identifier used for ownership validation.",
+          required = true,
+          schema = @Schema(format = "uuid")
+      )
       @NonNull UUID ciderMakerId
   );
 }

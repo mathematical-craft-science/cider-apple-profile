@@ -10,6 +10,8 @@ import org.craft.mcs.cap.core.feedstock.application.batch.port.in.DeleteFeedstoc
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.ListFeedstockBatchesQuery;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.ListFeedstockBatchesUseCase;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.UpdateFeedstockBatchUseCase;
+import org.craft.mcs.cap.core.feedstock.application.detail.port.in.GetFeedstockBatchDetailQuery;
+import org.craft.mcs.cap.core.feedstock.application.detail.port.in.GetFeedstockBatchDetailUseCase;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
@@ -20,6 +22,8 @@ import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.batch.dto.Feed
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.batch.dto.PatchFeedstockBatchRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.batch.dto.UpdateFeedstockBatchRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.batch.mapper.FeedstockBatchRestMapper;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.detail.dto.FeedstockBatchDetailResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.detail.mapper.FeedstockBatchDetailRestMapper;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.http.ResponseEntity;
@@ -42,6 +46,7 @@ public final class FeedstockBatchController implements FeedstockBatchApi {
 
   private final @NonNull CreateFeedstockBatchUseCase createFeedstockBatchUseCase;
   private final @NonNull ListFeedstockBatchesUseCase listFeedstockBatchesUseCase;
+  private final @NonNull GetFeedstockBatchDetailUseCase getFeedstockBatchDetailUseCase;
   private final @NonNull UpdateFeedstockBatchUseCase updateFeedstockBatchUseCase;
   private final @NonNull DeleteFeedstockBatchUseCase deleteFeedstockBatchUseCase;
 
@@ -76,6 +81,20 @@ public final class FeedstockBatchController implements FeedstockBatchApi {
             .map(FeedstockBatchRestMapper::toResponse)
             .toList()
     ));
+  }
+
+  @Override
+  @GetMapping(value = "/feedstock-batches/{batchId}", produces = APPLICATION_JSON_VALUE)
+  public @NonNull ResponseEntity<@NonNull FeedstockBatchDetailResponse> get(
+      @PathVariable @NonNull UUID batchId,
+      @RequestParam @NonNull UUID ciderMakerId
+  ) {
+    final var detail = getFeedstockBatchDetailUseCase.get(new GetFeedstockBatchDetailQuery(
+        FeedstockBatchId.of(batchId),
+        CiderMakerId.of(ciderMakerId)
+    ));
+
+    return ResponseEntity.ok(FeedstockBatchDetailRestMapper.toResponse(detail));
   }
 
   @PutMapping(

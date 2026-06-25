@@ -42,7 +42,13 @@ public final class PotentialAbvPredictor {
       @NonNull SugarConcentration sugar
   ) {
     requireNonNull(sugar, "sugar concentration cannot be null");
-    final var originalGravity = sugar.specificGravity();
+    return predict(sugar.specificGravity());
+  }
+
+  public @NonNull PotentialAbvPrediction predict(
+      @NonNull SpecificGravityValue originalGravity
+  ) {
+    requireNonNull(originalGravity, "original gravity cannot be null");
     final var finalGravityPrediction = finalGravityPredictionStrategy.predictFinalGravity(
         new FinalGravityPredictionInput(originalGravity)
     );

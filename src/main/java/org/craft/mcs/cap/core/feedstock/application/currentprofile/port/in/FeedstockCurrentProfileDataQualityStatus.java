@@ -1,13 +1,13 @@
-package org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in;
+package org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in;
 
 
 /**
- * Aggregated data-quality status for a feedstock planning row.
+ * Aggregated data-quality status for the current feedstock profile.
  */
-public enum FeedstockPlanningDataQualityStatus {
+public enum FeedstockCurrentProfileDataQualityStatus {
 
   /**
-   * The current evidence is sufficient for planning data-quality purposes.
+   * The current evidence is sufficient for profile data-quality purposes.
    */
   READY,
 

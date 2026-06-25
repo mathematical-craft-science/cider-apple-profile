@@ -1,4 +1,4 @@
-package org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in;
+package org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in;
 
 import java.util.List;
 import org.jspecify.annotations.NonNull;
@@ -18,7 +18,7 @@ public record FeedstockPlanningReadinessView(
 ) {
 
   public FeedstockPlanningReadinessView {
-    requireNonNull(status, "feedstock planning planning readiness status cannot be null");
-    checks = List.copyOf(requireNonNull(checks, "feedstock planning planning readiness checks cannot be null"));
+    requireNonNull(status, "feedstock planning readiness status cannot be null");
+    checks = List.copyOf(requireNonNull(checks, "feedstock planning readiness checks cannot be null"));
   }
 }

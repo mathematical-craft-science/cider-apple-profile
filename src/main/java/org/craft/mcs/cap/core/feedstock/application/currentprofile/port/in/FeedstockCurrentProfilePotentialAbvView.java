@@ -1,4 +1,4 @@
-package org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in;
+package org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in;
 
 import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPrediction;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.MeasurementValueKind;
@@ -7,12 +7,15 @@ import org.jspecify.annotations.NonNull;
 import static java.util.Objects.requireNonNull;
 
 
-public record FeedstockPlanningPotentialAbvView(
+/**
+ * Potential ABV assessment derived from the current feedstock profile sugar evidence.
+ */
+public record FeedstockCurrentProfilePotentialAbvView(
     @NonNull MeasurementValueKind originalGravityValueKind,
     @NonNull PotentialAbvPrediction prediction
 ) {
 
-  public FeedstockPlanningPotentialAbvView {
+  public FeedstockCurrentProfilePotentialAbvView {
     requireNonNull(originalGravityValueKind, "original gravity value kind cannot be null");
     requireNonNull(prediction, "potential ABV prediction cannot be null");
   }

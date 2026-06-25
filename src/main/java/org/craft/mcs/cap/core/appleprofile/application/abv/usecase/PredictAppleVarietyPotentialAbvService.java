@@ -56,7 +56,7 @@ public final class PredictAppleVarietyPotentialAbvService
         variety.varietyId(),
         variety.name(),
         sugar.valueKind(),
-        predictor.predict(SpecificGravityValue.of(sugar.value()), SpecificGravityValue.of("1.000"))
+        predictor.predict(SpecificGravityValue.of(sugar.value()))
     );
   }
 }

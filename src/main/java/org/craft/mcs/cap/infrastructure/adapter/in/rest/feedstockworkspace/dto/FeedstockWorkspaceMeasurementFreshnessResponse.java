@@ -1,7 +1,7 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstockworkspace.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.FeedstockPlanningMeasurementFreshnessStatus;
+import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in.FeedstockCurrentMeasurementFreshnessStatus;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -10,10 +10,10 @@ import org.jspecify.annotations.Nullable;
 public record FeedstockWorkspaceMeasurementFreshnessResponse(
     @Schema(
         description = "Freshness status.",
-        implementation = FeedstockPlanningMeasurementFreshnessStatus.class,
+        implementation = FeedstockCurrentMeasurementFreshnessStatus.class,
         requiredMode = Schema.RequiredMode.REQUIRED
     )
-    @NonNull FeedstockPlanningMeasurementFreshnessStatus status,
+    @NonNull FeedstockCurrentMeasurementFreshnessStatus status,
     @Schema(description = "Whether the current measurement is stale.", requiredMode = Schema.RequiredMode.REQUIRED)
     boolean stale,
     @Schema(

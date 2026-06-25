@@ -8,6 +8,8 @@ import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in.FeedstockCurrentProfileDataQualityView;
+import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in.FeedstockPlanningReadinessView;
 import org.craft.mcs.cap.core.profileanalysis.abv.domain.FixedFinalGravityPredictionStrategy;
 import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPredictor;
 import org.craft.mcs.cap.core.profileanalysis.abv.domain.StandardGravityDropAbvPredictionStrategy;
@@ -27,14 +29,14 @@ import org.craft.mcs.cap.core.feedstock.application.batch.port.in.ListFeedstockB
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.PredefinedFeedstockProfileTargetSelection;
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.QueryFeedstockBatchProfileTargetCandidatesUseCase;
 import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.FeedstockPlanningBatchViewQuery;
-import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.FeedstockPlanningDataQualityStatus;
-import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.FeedstockPlanningMeasurementFreshnessStatus;
-import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.FeedstockPlanningReadinessStatus;
+import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in.FeedstockCurrentProfileDataQualityStatus;
+import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in.FeedstockCurrentMeasurementFreshnessStatus;
+import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in.FeedstockPlanningReadinessStatus;
 import org.craft.mcs.cap.core.feedstock.application.measurement.query.FeedstockBatchCurrentMeasurementQueryService;
 import org.craft.mcs.cap.core.feedstock.application.measurement.port.out.FeedstockMeasurementQueryRepository;
-import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.usecase.FeedstockPlanningBatchAssessmentService;
+import org.craft.mcs.cap.core.feedstock.application.currentprofile.usecase.FeedstockCurrentProfileAssessmentService;
 import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.usecase.FeedstockPlanningContributionRoleExplainer;
-import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.usecase.FeedstockPlanningMeasurementFreshnessPolicy;
+import org.craft.mcs.cap.core.feedstock.application.currentprofile.usecase.FeedstockCurrentMeasurementFreshnessPolicy;
 import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.usecase.QueryFeedstockPlanningBatchesService;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockBatchName;
@@ -95,7 +97,7 @@ class QueryFeedstockPlanningBatchesServiceTest {
     assertThat(row.measurementFreshness())
         .isNotNull()
         .extracting(freshness -> freshness.status())
-        .isEqualTo(FeedstockPlanningMeasurementFreshnessStatus.CURRENT);
+        .isEqualTo(FeedstockCurrentMeasurementFreshnessStatus.CURRENT);
     assertThat(row.sugarAcidity()).isNotNull();
     assertThat(row.sugarAcidity().plottable()).isTrue();
     assertThat(row.sugarAcidity().point()).isPresent();
@@ -104,12 +106,12 @@ class QueryFeedstockPlanningBatchesServiceTest {
     assertThat(row.yeastAssimilableNitrogen().axis()).isEqualTo(ChemicalAxis.YEAST_ASSIMILABLE_NITROGEN);
     assertThat(row.planningReadiness())
         .isNotNull()
-        .extracting(readiness -> readiness.status())
+        .extracting(FeedstockPlanningReadinessView::status)
         .isEqualTo(FeedstockPlanningReadinessStatus.NEEDS_ATTENTION);
     assertThat(row.dataQuality())
         .isNotNull()
-        .extracting(dataQuality -> dataQuality.status())
-        .isEqualTo(FeedstockPlanningDataQualityStatus.NEEDS_ATTENTION);
+        .extracting(FeedstockCurrentProfileDataQualityView::status)
+        .isEqualTo(FeedstockCurrentProfileDataQualityStatus.NEEDS_ATTENTION);
     assertThat(row.fermentationStartReadiness()).isNotNull();
     assertThat(row.fermentationStartReadiness().status()).isEqualTo(FermentationStartReadinessStatus.NEEDS_ATTENTION);
     assertThat(row.targetCandidate()).isNull();
@@ -150,7 +152,7 @@ class QueryFeedstockPlanningBatchesServiceTest {
         listBatches,
         measurementRepository,
         targetCandidates,
-        new FeedstockPlanningMeasurementFreshnessPolicy(Duration.ofDays(3))
+        new FeedstockCurrentMeasurementFreshnessPolicy(Duration.ofDays(3))
     );
     when(listBatches.list(any())).thenReturn(List.of(batch));
     when(measurementRepository.findLatestByBatchIds(Set.of(batchId))).thenReturn(List.of(measurement));
@@ -162,7 +164,7 @@ class QueryFeedstockPlanningBatchesServiceTest {
         .satisfies(row -> assertThat(row.measurementFreshness())
             .isNotNull()
             .satisfies(freshness -> {
-              assertThat(freshness.status()).isEqualTo(FeedstockPlanningMeasurementFreshnessStatus.STALE);
+              assertThat(freshness.status()).isEqualTo(FeedstockCurrentMeasurementFreshnessStatus.STALE);
               assertThat(freshness.stale()).isTrue();
               assertThat(freshness.reason()).isEqualTo(
                   "Current measurement is older than configured freshness threshold"
@@ -179,7 +181,7 @@ class QueryFeedstockPlanningBatchesServiceTest {
         listBatches,
         measurementRepository,
         targetCandidates,
-        FeedstockPlanningMeasurementFreshnessPolicy.defaultPolicy()
+        new FeedstockCurrentMeasurementFreshnessPolicy(Duration.ofDays(14))
     );
   }
 
@@ -187,7 +189,7 @@ class QueryFeedstockPlanningBatchesServiceTest {
       ListFeedstockBatchesUseCase listBatches,
       FeedstockMeasurementQueryRepository measurementRepository,
       QueryFeedstockBatchProfileTargetCandidatesUseCase targetCandidates,
-      FeedstockPlanningMeasurementFreshnessPolicy measurementFreshnessPolicy
+      FeedstockCurrentMeasurementFreshnessPolicy measurementFreshnessPolicy
   ) {
     return new QueryFeedstockPlanningBatchesService(
         listBatches,
@@ -199,7 +201,7 @@ class QueryFeedstockPlanningBatchesServiceTest {
             new StandardGravityDropAbvPredictionStrategy()
         ),
         new FermentationStartReadinessAssessor(),
-        new FeedstockPlanningBatchAssessmentService(CLOCK, measurementFreshnessPolicy),
+        new FeedstockCurrentProfileAssessmentService(CLOCK, measurementFreshnessPolicy),
         new FeedstockPlanningContributionRoleExplainer()
     );
   }

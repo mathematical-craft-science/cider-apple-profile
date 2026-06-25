@@ -1,10 +1,10 @@
-package org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in;
+package org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in;
 
 
 /**
- * Freshness state of the current measurement used by the planning read model.
+ * Freshness state of the latest measurement used as the current feedstock profile evidence.
  */
-public enum FeedstockPlanningMeasurementFreshnessStatus {
+public enum FeedstockCurrentMeasurementFreshnessStatus {
 
   /**
    * The measurement is within the configured freshness threshold.

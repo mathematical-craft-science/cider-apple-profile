@@ -1,4 +1,4 @@
-package org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in;
+package org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in;
 
 
 /**

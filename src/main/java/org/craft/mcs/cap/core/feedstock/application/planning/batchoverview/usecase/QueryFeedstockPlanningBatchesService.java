@@ -9,19 +9,20 @@ import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.Fermentat
 import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapability;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileEvaluation;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileProjector;
+import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockMeasurementPointFilters;
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.FeedstockBatchProfileTargetCandidate;
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.FeedstockBatchProfileTargetCandidateQuery;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.FeedstockBatchSummary;
-import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockMeasurementPointFilters;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.ListFeedstockBatchesQuery;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.ListFeedstockBatchesUseCase;
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.QueryFeedstockBatchProfileTargetCandidatesUseCase;
+import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in.FeedstockCurrentMeasurementView;
+import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in.FeedstockCurrentProfilePotentialAbvView;
+import org.craft.mcs.cap.core.feedstock.application.currentprofile.usecase.FeedstockCurrentProfileAssessmentService;
+import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.FeedstockPlanningTargetAnalysisView;
 import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.FeedstockPlanningTargetCandidateView;
 import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.FeedstockPlanningBatchView;
 import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.FeedstockPlanningBatchViewQuery;
-import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.FeedstockPlanningCurrentMeasurementView;
-import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.FeedstockPlanningPotentialAbvView;
-import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.FeedstockPlanningTargetAnalysisView;
 import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.FeedstockPlanningView;
 import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.QueryFeedstockPlanningBatchesUseCase;
 import org.craft.mcs.cap.core.feedstock.application.measurement.query.FeedstockBatchCurrentMeasurementQueryService;
@@ -50,15 +51,13 @@ import static java.util.Objects.requireNonNull;
 @RequiredArgsConstructor
 public final class QueryFeedstockPlanningBatchesService implements QueryFeedstockPlanningBatchesUseCase {
 
-  private static final @NonNull SpecificGravityValue DRY_CIDER_FINAL_GRAVITY = SpecificGravityValue.of("1.000");
-
   private final @NonNull ListFeedstockBatchesUseCase listFeedstockBatchesUseCase;
   private final @NonNull FeedstockBatchCurrentMeasurementQueryService currentMeasurementQueryService;
   private final @NonNull QueryFeedstockBatchProfileTargetCandidatesUseCase queryTargetCandidatesUseCase;
   private final @NonNull SugarAcidityProfileProjector sugarAcidityProfileProjector;
   private final @NonNull PotentialAbvPredictor potentialAbvPredictor;
   private final @NonNull FermentationStartReadinessAssessor fermentationStartReadinessAssessor;
-  private final @NonNull FeedstockPlanningBatchAssessmentService batchAssessmentService;
+  private final @NonNull FeedstockCurrentProfileAssessmentService batchAssessmentService;
   private final @NonNull FeedstockPlanningContributionRoleExplainer contributionRoleExplainer;
 
   @Override
@@ -154,11 +153,11 @@ public final class QueryFeedstockPlanningBatchesService implements QueryFeedstoc
     );
   }
 
-  private static @NonNull FeedstockPlanningCurrentMeasurementView toCurrentMeasurement(
+  private static @NonNull FeedstockCurrentMeasurementView toCurrentMeasurement(
       @NonNull FeedstockMeasurement measurement
   ) {
     requireNonNull(measurement, "feedstock measurement cannot be null");
-    return new FeedstockPlanningCurrentMeasurementView(
+    return new FeedstockCurrentMeasurementView(
         measurement.measurementId(),
         measurement.name(),
         measurement.measuredAt(),
@@ -167,7 +166,9 @@ public final class QueryFeedstockPlanningBatchesService implements QueryFeedstoc
     );
   }
 
-  private @Nullable FeedstockPlanningPotentialAbvView potentialAbv(@NonNull SugarAcidityProfileEvaluation evaluation) {
+  private @Nullable FeedstockCurrentProfilePotentialAbvView potentialAbv(
+      @NonNull SugarAcidityProfileEvaluation evaluation
+  ) {
     final var capability = sugarAcidityProfileProjector.assessCapability(
         evaluation,
         ChemicalProfileCapability.ABV_PREDICTION
@@ -178,9 +179,9 @@ public final class QueryFeedstockPlanningBatchesService implements QueryFeedstoc
 
     final var sugar = evaluation.axes().valueOf(ChemicalAxis.SUGAR)
         .orElseThrow(() -> new IllegalStateException("ABV-capable profile must have sugar axis"));
-    return new FeedstockPlanningPotentialAbvView(
+    return new FeedstockCurrentProfilePotentialAbvView(
         sugar.valueKind(),
-        potentialAbvPredictor.predict(SpecificGravityValue.of(sugar.value()), DRY_CIDER_FINAL_GRAVITY)
+        potentialAbvPredictor.predict(SpecificGravityValue.of(sugar.value()))
     );
   }
 

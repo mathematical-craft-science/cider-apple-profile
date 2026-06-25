@@ -66,7 +66,7 @@ public final class PredictFeedstockMeasurementPotentialAbvService
         sample.batchId(),
         sample.name(),
         sugar.valueKind(),
-        predictor.predict(SpecificGravityValue.of(sugar.value()), SpecificGravityValue.of("1.000"))
+        predictor.predict(SpecificGravityValue.of(sugar.value()))
     );
   }
 }

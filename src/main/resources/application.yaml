@@ -36,7 +36,7 @@ sentry:
 
 cap:
   feedstock:
-    planning:
+    current-profile:
       measurement-freshness:
         stale-after: 14d
   profile-analysis:

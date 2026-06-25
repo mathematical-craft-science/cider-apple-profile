@@ -1,10 +1,10 @@
-package org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in;
+package org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in;
 
 
 /**
- * Stable machine-readable data-quality and evidence-shape indicator for feedstock planning rows.
+ * Stable machine-readable data-quality and evidence-shape indicator for the current feedstock profile.
  */
-public enum FeedstockPlanningDataQualityIndicatorCode {
+public enum FeedstockCurrentProfileDataQualityIndicatorCode {
 
   /**
    * The batch has no current measurement, so planning cannot use a reliable current chemical state.

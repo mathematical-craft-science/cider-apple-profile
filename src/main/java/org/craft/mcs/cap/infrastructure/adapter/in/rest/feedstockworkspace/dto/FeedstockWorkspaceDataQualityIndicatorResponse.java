@@ -1,8 +1,8 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstockworkspace.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.FeedstockPlanningDataQualityIndicatorCode;
-import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.FeedstockPlanningSignalSeverity;
+import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in.FeedstockCurrentProfileDataQualityIndicatorCode;
+import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in.FeedstockCurrentProfileSignalSeverity;
 import org.jspecify.annotations.NonNull;
 
 
@@ -10,17 +10,17 @@ import org.jspecify.annotations.NonNull;
 public record FeedstockWorkspaceDataQualityIndicatorResponse(
     @Schema(
         description = "Indicator code.",
-        implementation = FeedstockPlanningDataQualityIndicatorCode.class,
+        implementation = FeedstockCurrentProfileDataQualityIndicatorCode.class,
         requiredMode = Schema.RequiredMode.REQUIRED
     )
-    @NonNull FeedstockPlanningDataQualityIndicatorCode code,
+    @NonNull FeedstockCurrentProfileDataQualityIndicatorCode code,
     @Schema(
         description = "Semantic severity of the indicator. API clients choose the visual representation.",
         enumAsRef = true,
-        implementation = FeedstockPlanningSignalSeverity.class,
+        implementation = FeedstockCurrentProfileSignalSeverity.class,
         requiredMode = Schema.RequiredMode.REQUIRED
     )
-    @NonNull FeedstockPlanningSignalSeverity severity,
+    @NonNull FeedstockCurrentProfileSignalSeverity severity,
     @Schema(description = "Human-readable indicator message.", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull String message
 ) {
