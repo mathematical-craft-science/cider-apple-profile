@@ -1,17 +1,17 @@
 package org.craft.mcs.cap.feedstock.application.analysis.profiletarget.usecase;
 
 import java.util.List;
-import org.craft.mcs.cap.core.cideranalysis.profiletarget.scoring.application.port.in.ProfileTargetScoringPurpose;
-import org.craft.mcs.cap.core.cideranalysis.profiletarget.scoring.application.usecase.BuiltInProfileTargetScoringPurposeNormalizerPolicy;
-import org.craft.mcs.cap.core.cideranalysis.profiletarget.scoring.application.usecase.ScoreProfileTargetDistanceCandidatesService;
-import org.craft.mcs.cap.core.cideranalysis.profiletarget.scoring.domain.BuiltInProfileTargetObjectiveFunctionFactory;
-import org.craft.mcs.cap.core.cideranalysis.profiletarget.scoring.domain.ProfileTargetObjectiveWeights;
-import org.craft.mcs.cap.core.cideranalysis.profiletarget.scoring.domain.BuiltInProfileAxisNormalizerSelector;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.projection.domain.SugarAcidityProfileProjector;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.target.domain.ZoneGeometrySugarAcidityTargetResolver;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.zone.domain.BuiltInSugarAcidityZoneProfiles;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.zone.domain.RectangleSugarAcidityZoneAssessor;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.zone.domain.SugarAcidityZone;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.port.in.ProfileTargetScoringPurpose;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.usecase.BuiltInProfileTargetScoringPurposeNormalizerPolicy;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.usecase.ScoreProfileTargetDistanceCandidatesService;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.BuiltInProfileTargetObjectiveFunctionFactory;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetObjectiveWeights;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.BuiltInProfileAxisNormalizerSelector;
+import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileProjector;
+import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.ZoneGeometrySugarAcidityTargetResolver;
+import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.BuiltInSugarAcidityZoneProfiles;
+import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.RectangleSugarAcidityZoneAssessor;
+import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.SugarAcidityZone;
 import org.craft.mcs.cap.core.feedstock.application.measurement.query.FeedstockBatchCurrentMeasurementQueryService;
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.FeedstockBatchProfileTargetScore;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockMeasurementPointFilters;
@@ -29,7 +29,7 @@ import org.craft.mcs.cap.core.feedstock.domain.model.measurement.value.Feedstock
 import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
-import org.craft.mcs.cap.core.cideranalysis.profileaxis.domain.ChemicalProfileCapabilityAssessor;
+import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityAssessor;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.measurement.ExactMeasurement;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;

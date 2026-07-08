@@ -4,7 +4,7 @@
  * <p>This context owns the AppleVariety aggregate as a catalog entity. Regional observations and
  * contributed source-specific profiles belong to {@code core.varietyprofile}. Reusable
  * classification, graph, distance, target and composition algorithms belong to
- * {@code core.cideranalysis}; AppleVariety application slices only adapt catalog profiles to those
+ * {@code core.profileanalysis}; AppleVariety application slices only adapt catalog profiles to those
  * analysis tools.
  */
 @BoundedContext

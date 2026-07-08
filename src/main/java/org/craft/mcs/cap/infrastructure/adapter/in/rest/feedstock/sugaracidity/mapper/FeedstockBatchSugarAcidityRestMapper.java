@@ -2,12 +2,12 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.sugaracidity.
 
 import java.util.List;
 import java.util.UUID;
-import org.craft.mcs.cap.core.cideranalysis.profileaxis.domain.ChemicalProfileCapabilityAssessment;
-import org.craft.mcs.cap.core.cideranalysis.profileaxis.domain.ChemicalProfileCapability;
-import org.craft.mcs.cap.core.cideranalysis.profileaxis.domain.ChemicalProfileCapabilityCriteria;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.query.SugarAcidityZoneCriteria;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.zone.domain.SugarAcidityZone;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.zone.domain.SugarAcidityZoneAssessment;
+import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityAssessment;
+import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapability;
+import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityCriteria;
+import org.craft.mcs.cap.core.profileanalysis.sugaracidity.query.SugarAcidityZoneCriteria;
+import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.SugarAcidityZone;
+import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.SugarAcidityZoneAssessment;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.FeedstockBatchCriteria;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockBatchCurrentSugarAcidityZonePointQuery;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockBatchCurrentSugarAcidityZoneResult;
@@ -63,19 +63,20 @@ public final class FeedstockBatchSugarAcidityRestMapper {
   ) {
     requireNonNull(result, "feedstock batch current sugar-acidity zone result cannot be null");
 
-    final var assessment = result.assessment();
+    final var evaluation = result.evaluation();
+    final var assessment = evaluation.assessment();
     return new FeedstockBatchGraphPointResponse(
         result.batchId().value(),
         result.batchName().value(),
         result.ciderMakerId().value(),
         result.currentMeasurementId().value(),
         result.measuredAt(),
-        result.plottable(),
+        evaluation.plottable(),
         toPointResponse(assessment),
         toZoneResponse(assessment),
-        missingAxes(result.capabilityAssessment()),
+        missingAxes(evaluation.capabilityAssessment()),
         toAssessmentResponse(assessment),
-        ChemicalProfileCapabilityRestMapper.toResponse(result.capabilityAssessment())
+        ChemicalProfileCapabilityRestMapper.toResponse(evaluation.capabilityAssessment())
     );
   }
 

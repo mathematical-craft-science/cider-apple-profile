@@ -2,12 +2,12 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.composition.mapp
 
 import java.math.BigDecimal;
 import java.util.List;
-import org.craft.mcs.cap.core.cideranalysis.composition.optimization.domain.CompositionOptimizationCriterion;
-import org.craft.mcs.cap.core.cideranalysis.composition.optimization.domain.CompositionOptimizationObjectiveAssessment;
-import org.craft.mcs.cap.core.cideranalysis.composition.optimization.domain.CompositionOptimizationPenalty;
-import org.craft.mcs.cap.core.cideranalysis.composition.optimization.domain.YeastAssimilableNitrogenReadinessCriterion;
-import org.craft.mcs.cap.core.cideranalysis.profiletarget.scoring.domain.ProfileAxisNormalizerCode;
-import org.craft.mcs.cap.core.cideranalysis.profiletarget.scoring.domain.ProfileTargetObjectiveFunctionCode;
+import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.CompositionOptimizationCriterion;
+import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.CompositionOptimizationObjectiveAssessment;
+import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.CompositionOptimizationPenalty;
+import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.YeastAssimilableNitrogenReadinessCriterion;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileAxisNormalizerCode;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetObjectiveFunctionCode;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.composition.dto.CompositionOptimizationObjectiveAssessmentResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.composition.dto.CompositionOptimizationPenaltyResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.composition.dto.CompositionOptimizationYanReadinessRequest;

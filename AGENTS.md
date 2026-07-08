@@ -15,6 +15,9 @@ Act as a senior Java architect and production-grade software engineer for the Ci
 - Java 25 by default.
 - No preview features.
 - Use stable Java language and API features only.
+- Prefer stable language and API features by newest applicable Java version first: Java 25, then
+  Java 24, Java 23, Java 22, Java 21, and so on down to Java 8 when older constructs are the
+  clearest available option.
 - Spring-compatible enterprise Gradle project.
 - Prefer modern Java idioms over legacy styles:
   - records where appropriate;
@@ -34,6 +37,8 @@ Act as a senior Java architect and production-grade software engineer for the Ci
   a targeted `// NOSONAR`.
 - Do not make code less expressive only to silence a false positive.
 - Avoid unnecessary abstractions and patterns for their own sake.
+- Apply design patterns only when they help preserve SOLID, DRY, OOP principles, domain clarity,
+  or architectural boundaries.
 - Prefer composition over inheritance.
 - Use succinct comments only when they clarify non-obvious domain or algorithmic decisions.
 - Strategy classes and abstract-class implementations must have a short comment or Javadoc explaining
@@ -80,7 +85,7 @@ Act as a senior Java architect and production-grade software engineer for the Ci
   - `core.batchtraceability`: material traceability across feedstock and production;
   - `core.appleprofile`: base apple variety catalog/reference profile;
   - `core.varietyprofile`: regional variety profiles, provenance, contributors, source imports;
-  - `core.cideranalysis`: reusable analysis tools such as graph projection, profile targets,
+  - `core.profileanalysis`: reusable analysis tools such as graph projection, profile targets,
     distance, composition, classification, ABV/readiness.
 - AppleVariety catalog concerns must stay separate from graph/target analysis concerns.
 - Feedstock screens must work from `FeedstockBatch`; measurements are current-state/history sources,

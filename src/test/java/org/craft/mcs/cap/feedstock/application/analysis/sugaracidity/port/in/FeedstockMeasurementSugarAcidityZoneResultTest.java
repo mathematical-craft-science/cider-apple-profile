@@ -6,14 +6,14 @@ import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.value.FeedstockMeasurementName;
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
-import org.craft.mcs.cap.core.cideranalysis.profileaxis.domain.ChemicalProfileCapability;
-import org.craft.mcs.cap.core.cideranalysis.profileaxis.domain.ChemicalProfileCapabilityAssessment;
-import org.craft.mcs.cap.core.cideranalysis.profileaxis.domain.ChemicalProfileCapabilityAssessor;
+import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapability;
+import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityAssessment;
+import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityAssessor;
+import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileEvaluation;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
 import org.craft.mcs.cap.shared.kernel.measurement.ExactMeasurement;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
-import org.craft.mcs.cap.shared.application.ApplicationValidationException;
 import org.junit.jupiter.api.Test;
 
 import static java.util.UUID.randomUUID;
@@ -24,17 +24,15 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class FeedstockMeasurementSugarAcidityZoneResultTest {
 
   @Test
-  void rejectsPlottableResultWithoutAssessment() {
+  void rejectsMissingEvaluation() {
     assertThatThrownBy(() -> new FeedstockMeasurementSugarAcidityZoneResult(
             FeedstockMeasurementId.newId(),
             CiderMakerId.of(randomUUID()),
             FeedstockBatchId.newId(),
             FeedstockMeasurementName.of("Partial batch"),
-            true,
-            null,
-            capabilityAssessment()
+            null
         ))
-        .isInstanceOf(ApplicationValidationException.class);
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test
@@ -44,13 +42,11 @@ class FeedstockMeasurementSugarAcidityZoneResultTest {
         CiderMakerId.of(randomUUID()),
         FeedstockBatchId.newId(),
         FeedstockMeasurementName.of("Partial batch"),
-        false,
-        null,
-        capabilityAssessment()
+        evaluation()
     );
 
-    assertThat(result.plottable()).isFalse();
-    assertThat(result.assessment()).isNull();
+    assertThat(result.evaluation().plottable()).isFalse();
+    assertThat(result.evaluation().assessment()).isNull();
   }
 
   private static ChemicalProfileCapabilityAssessment capabilityAssessment() {
@@ -62,5 +58,14 @@ class FeedstockMeasurementSugarAcidityZoneResultTest {
             .build()),
         ChemicalProfileCapability.SUGAR_ACIDITY_PLOT
     );
+  }
+
+  private static SugarAcidityProfileEvaluation evaluation() {
+    final var axes = new ChemicalProfileAxisExtractor().extract(ChemicalProfile.builder()
+        .sugar(ExactMeasurement.of(SugarConcentration.ofSpecificGravity(
+            SpecificGravityValue.of("1.050")
+        )))
+        .build());
+    return new SugarAcidityProfileEvaluation(axes, capabilityAssessment(), false, null);
   }
 }

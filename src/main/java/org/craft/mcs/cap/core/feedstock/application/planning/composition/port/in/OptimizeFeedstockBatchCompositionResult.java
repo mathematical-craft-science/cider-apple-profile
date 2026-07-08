@@ -2,7 +2,7 @@ package org.craft.mcs.cap.core.feedstock.application.planning.composition.port.i
 
 import org.craft.mcs.cap.shared.application.ApplicationValidationException;
 
-import org.craft.mcs.cap.core.cideranalysis.composition.optimization.application.port.in.OptimizeChemicalProfileCompositionResult;
+import org.craft.mcs.cap.core.profileanalysis.composition.optimization.application.port.in.OptimizeChemicalProfileCompositionResult;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;

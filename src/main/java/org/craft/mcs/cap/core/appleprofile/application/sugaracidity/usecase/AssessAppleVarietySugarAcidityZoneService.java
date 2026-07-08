@@ -6,7 +6,7 @@ import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.in.Appl
 import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.in.AssessAppleVarietySugarAcidityZoneUseCase;
 import org.craft.mcs.cap.core.appleprofile.application.port.out.AppleVarietyRepository;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyId;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.projection.domain.SugarAcidityProfileProjector;
+import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileProjector;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 
@@ -42,9 +42,7 @@ public final class AssessAppleVarietySugarAcidityZoneService
     return new AppleVarietySugarAcidityZoneResult(
         variety.varietyId(),
         variety.name(),
-        evaluation.plottable(),
-        evaluation.assessment(),
-        evaluation.capabilityAssessment()
+        evaluation
     );
   }
 }

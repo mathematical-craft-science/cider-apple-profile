@@ -6,7 +6,7 @@ import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchName;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchStatus;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionTargetDistance;
-import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;
+import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.jmolecules.ddd.annotation.AggregateRoot;
 import org.jmolecules.ddd.annotation.Identity;
 import org.jspecify.annotations.NonNull;

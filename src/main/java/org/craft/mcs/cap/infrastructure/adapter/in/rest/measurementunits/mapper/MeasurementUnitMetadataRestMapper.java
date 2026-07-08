@@ -1,7 +1,9 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.measurementunits.mapper;
 
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.util.List;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurementunits.dto.MeasurementFreshnessMetadataResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurementunits.dto.MeasurementUnitCode;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurementunits.dto.MeasurementUnitMetadataResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurementunits.dto.MeasurementUnitsMetadataResponse;
@@ -11,9 +13,12 @@ import org.craft.mcs.cap.shared.kernel.chemical.value.PhValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
-import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;
+import org.craft.mcs.cap.shared.kernel.measurement.value.AbvValue;
+import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.jspecify.annotations.NonNull;
+
+import static java.util.Objects.requireNonNull;
 
 
 /**
@@ -27,7 +32,10 @@ public final class MeasurementUnitMetadataRestMapper {
   private MeasurementUnitMetadataRestMapper() {
   }
 
-  public static @NonNull MeasurementUnitsMetadataResponse toResponse() {
+  public static @NonNull MeasurementUnitsMetadataResponse toResponse(
+      @NonNull Duration measurementStaleAfter
+  ) {
+    requireNonNull(measurementStaleAfter, "measurement stale duration cannot be null");
     return new MeasurementUnitsMetadataResponse(
         List.of(
             unit(
@@ -71,6 +79,14 @@ public final class MeasurementUnitMetadataRestMapper {
                 PhValue.stepValue()
             ),
             unit(
+                MeasurementUnitCode.ABV,
+                CanonicalUnitLabels.ABV_SHORT,
+                CanonicalUnitLabels.ABV,
+                AbvValue.minValue(),
+                AbvValue.maxValue(),
+                AbvValue.stepValue()
+            ),
+            unit(
                 MeasurementUnitCode.VOLUME,
                 CanonicalUnitLabels.VOLUME_SHORT,
                 CanonicalUnitLabels.VOLUME,
@@ -78,7 +94,8 @@ public final class MeasurementUnitMetadataRestMapper {
                 VolumeValue.maxValue(),
                 VolumeValue.stepValue()
             )
-        )
+        ),
+        new MeasurementFreshnessMetadataResponse(measurementStaleAfter.toString())
     );
   }
 

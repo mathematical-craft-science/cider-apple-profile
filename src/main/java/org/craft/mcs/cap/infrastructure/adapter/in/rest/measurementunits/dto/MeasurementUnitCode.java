@@ -16,5 +16,6 @@ public enum MeasurementUnitCode {
   TANNINITY,
   YAN,
   PH,
+  ABV,
   VOLUME
 }

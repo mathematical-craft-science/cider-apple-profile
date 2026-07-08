@@ -10,7 +10,7 @@ import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
 import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.feedstock.batch.entity.FeedstockBatchJdbcMapper;
 import org.craft.mcs.cap.shared.application.ConcurrentResourceModificationException;
-import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;
+import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.craft.mcs.cap.shared.testing.jdbc.PostgresDataJdbcTestConfiguration;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

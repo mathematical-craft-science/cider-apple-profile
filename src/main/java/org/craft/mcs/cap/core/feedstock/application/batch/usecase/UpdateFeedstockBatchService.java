@@ -18,7 +18,7 @@ import static java.util.Objects.requireNonNull;
 /**
  * Application service for editing feedstock batch metadata and available stock volume.
  *
- * <p>The service is the ownership boundary for workspace edits: it verifies that the requested
+ * <p>The service is the ownership boundary for feedstock batch changes: it verifies that the requested
  * cider maker owns the batch before applying partial changes to the aggregate. It does not edit
  * chemical profile values because those belong to measurement history.
  */

@@ -10,7 +10,7 @@ import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSource
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
 import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
-import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;
+import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.jmolecules.ddd.annotation.AggregateRoot;
 import org.jmolecules.ddd.annotation.Identity;
 import org.jspecify.annotations.NonNull;
@@ -22,7 +22,7 @@ import static java.util.Objects.requireNonNull;
 /**
  * Aggregate root for a physical lot of available raw material owned by a cider maker.
  *
- * <p>A batch is the operational entity a user manages in the workspace: it has a season, optional
+ * <p>A batch is the operational entity a cider maker manages as source material: it has a season, optional
  * source/origin, available volume and lifecycle state. Chemical values are intentionally not stored
  * on the batch itself; they are measured over time by {@code FeedstockMeasurement}. Application
  * query services define the current profile as the latest measurement for the batch.

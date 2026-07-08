@@ -60,7 +60,7 @@ class ContextBoundaryArchitectureTest {
           )
           .should()
           .dependOnClassesThat()
-          .resideInAPackage("org.craft.mcs.cap.core.cideranalysis..");
+          .resideInAPackage("org.craft.mcs.cap.core.profileanalysis..");
 
   @ArchTest
   static final ArchRule production_domain_does_not_depend_on_feedstock_domain =

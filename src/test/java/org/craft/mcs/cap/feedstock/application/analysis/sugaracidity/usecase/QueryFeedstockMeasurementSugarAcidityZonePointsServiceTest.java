@@ -3,7 +3,7 @@ package org.craft.mcs.cap.feedstock.application.analysis.sugaracidity.usecase;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.projection.domain.SugarAcidityProfileProjector;
+import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileProjector;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.FeedstockBatchCriteria;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockMeasurementPointFilters;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockMeasurementSugarAcidityZonePointQuery;
@@ -16,21 +16,21 @@ import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasur
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurementId;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.value.FeedstockMeasurementName;
 import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
-import org.craft.mcs.cap.core.cideranalysis.profileaxis.domain.ChemicalProfileCapabilityCriteria;
+import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityCriteria;
 import org.craft.mcs.cap.shared.platform.query.CursorPageRequest;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.query.SugarAcidityZoneCriteria;
+import org.craft.mcs.cap.core.profileanalysis.sugaracidity.query.SugarAcidityZoneCriteria;
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
-import org.craft.mcs.cap.core.cideranalysis.profileaxis.domain.ChemicalProfileCapability;
-import org.craft.mcs.cap.core.cideranalysis.profileaxis.domain.ChemicalProfileCapabilityAssessor;
+import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapability;
+import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityAssessor;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
 import org.craft.mcs.cap.shared.kernel.measurement.ExactMeasurement;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.zone.domain.BuiltInSugarAcidityZoneProfiles;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.zone.domain.RectangleSugarAcidityZoneAssessor;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.zone.domain.SugarAcidityZone;
+import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.BuiltInSugarAcidityZoneProfiles;
+import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.RectangleSugarAcidityZoneAssessor;
+import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.SugarAcidityZone;
 import org.junit.jupiter.api.Test;
 
 import static java.util.UUID.randomUUID;
@@ -73,8 +73,8 @@ class QueryFeedstockMeasurementSugarAcidityZonePointsServiceTest {
     assertThat(result.nextCursor()).isNotNull();
     assertThat(result.items()).hasSize(1);
     assertThat(result.items().getFirst().measurementId()).isEqualTo(alpha.measurementId());
-    assertThat(result.items().getFirst().plottable()).isTrue();
-    assertThat(result.items().getFirst().assessment().zone()).isEqualTo(SugarAcidityZone.PERFECT_APPLES);
+    assertThat(result.items().getFirst().evaluation().plottable()).isTrue();
+    assertThat(result.items().getFirst().evaluation().assessment().zone()).isEqualTo(SugarAcidityZone.PERFECT_APPLES);
   }
 
   @Test
@@ -132,9 +132,9 @@ class QueryFeedstockMeasurementSugarAcidityZonePointsServiceTest {
     ));
 
     assertThat(result.items()).hasSize(1);
-    assertThat(result.items().getFirst().plottable()).isFalse();
-    assertThat(result.items().getFirst().assessment()).isNull();
-    assertThat(result.items().getFirst().capabilityAssessment().capability())
+    assertThat(result.items().getFirst().evaluation().plottable()).isFalse();
+    assertThat(result.items().getFirst().evaluation().assessment()).isNull();
+    assertThat(result.items().getFirst().evaluation().capabilityAssessment().capability())
         .isEqualTo(ChemicalProfileCapability.SUGAR_ACIDITY_PLOT);
   }
 

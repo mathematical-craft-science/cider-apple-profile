@@ -1,7 +1,7 @@
 package org.craft.mcs.cap.core.feedstock.application.analysis.readiness.usecase;
 
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.cideranalysis.fermentationstart.domain.FermentationStartReadinessAssessor;
+import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.FermentationStartReadinessAssessor;
 import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchNotFoundException;
 import org.craft.mcs.cap.core.feedstock.application.analysis.readiness.port.in.AssessFeedstockBatchCurrentFermentationStartReadinessUseCase;
 import org.craft.mcs.cap.core.feedstock.application.analysis.readiness.port.in.FeedstockBatchCurrentFermentationStartReadinessResult;
@@ -19,7 +19,7 @@ import static java.util.Objects.requireNonNull;
  * fermentation.
  *
  * <p>The use case deliberately applies the batch-level "latest measurement only" rule: historical
- * measurements remain visible in the workspace, but fermentation-start decisions are based on the
+ * measurements remain visible in batch history, but fermentation-start assessments are based on the
  * current measured profile of the feedstock batch.
  */
 @Component

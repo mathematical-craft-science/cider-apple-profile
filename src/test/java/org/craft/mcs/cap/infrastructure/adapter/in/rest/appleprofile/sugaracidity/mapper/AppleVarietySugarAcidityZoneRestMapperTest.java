@@ -4,11 +4,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.in.AppleVarietySugarAcidityZoneResult;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyId;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyName;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.zone.domain.BuiltInSugarAcidityZoneProfiles;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.zone.domain.RectangleSugarAcidityZoneAssessor;
+import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileEvaluation;
+import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.BuiltInSugarAcidityZoneProfiles;
+import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.RectangleSugarAcidityZoneAssessor;
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
-import org.craft.mcs.cap.core.cideranalysis.profileaxis.domain.ChemicalProfileCapability;
-import org.craft.mcs.cap.core.cideranalysis.profileaxis.domain.ChemicalProfileCapabilityAssessor;
+import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapability;
+import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityAssessor;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
@@ -46,9 +47,7 @@ class AppleVarietySugarAcidityZoneRestMapperTest {
         new AppleVarietySugarAcidityZoneResult(
             AppleVarietyId.of("00000000-0000-0000-0000-000000000001"),
             AppleVarietyName.of("Kingston Black"),
-            true,
-            assessment,
-            capabilityAssessment
+            new SugarAcidityProfileEvaluation(axes, capabilityAssessment, true, assessment)
         )
     );
 
@@ -65,8 +64,9 @@ class AppleVarietySugarAcidityZoneRestMapperTest {
             SpecificGravityValue.of("1.050")
         )))
         .build();
+    final var axes = new ChemicalProfileAxisExtractor().extract(profile);
     final var capabilityAssessment = new ChemicalProfileCapabilityAssessor().assess(
-        new ChemicalProfileAxisExtractor().extract(profile),
+        axes,
         ChemicalProfileCapability.SUGAR_ACIDITY_PLOT
     );
 
@@ -74,9 +74,7 @@ class AppleVarietySugarAcidityZoneRestMapperTest {
         new AppleVarietySugarAcidityZoneResult(
             AppleVarietyId.of("00000000-0000-0000-0000-000000000001"),
             AppleVarietyName.of("Partial Profile"),
-            false,
-            null,
-            capabilityAssessment
+            new SugarAcidityProfileEvaluation(axes, capabilityAssessment, false, null)
         )
     );
 

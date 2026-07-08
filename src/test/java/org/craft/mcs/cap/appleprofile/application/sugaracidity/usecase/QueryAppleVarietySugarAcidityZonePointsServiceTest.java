@@ -9,23 +9,23 @@ import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.usecase.Quer
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVariety;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyId;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyName;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.projection.domain.SugarAcidityProfileProjector;
-import org.craft.mcs.cap.core.cideranalysis.profileaxis.domain.ChemicalProfileCapabilityCriteria;
+import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileProjector;
+import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityCriteria;
 import org.craft.mcs.cap.shared.platform.query.CursorPageRequest;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.query.SugarAcidityZoneCriteria;
+import org.craft.mcs.cap.core.profileanalysis.sugaracidity.query.SugarAcidityZoneCriteria;
 import org.craft.mcs.cap.shared.platform.query.TextSearchCriteria;
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
-import org.craft.mcs.cap.core.cideranalysis.profileaxis.domain.ChemicalProfileCapability;
-import org.craft.mcs.cap.core.cideranalysis.profileaxis.domain.ChemicalProfileCapabilityAssessor;
+import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapability;
+import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityAssessor;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
 import org.craft.mcs.cap.shared.kernel.measurement.ExactMeasurement;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.zone.domain.BuiltInSugarAcidityZoneProfiles;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.zone.domain.RectangleSugarAcidityZoneAssessor;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.zone.domain.SugarAcidityZone;
+import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.BuiltInSugarAcidityZoneProfiles;
+import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.RectangleSugarAcidityZoneAssessor;
+import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.SugarAcidityZone;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -59,8 +59,8 @@ class QueryAppleVarietySugarAcidityZonePointsServiceTest {
     assertThat(result.nextCursor()).isNotNull();
     assertThat(result.items()).hasSize(1);
     assertThat(result.items().getFirst().varietyId()).isEqualTo(alpha.varietyId());
-    assertThat(result.items().getFirst().plottable()).isTrue();
-    assertThat(result.items().getFirst().assessment().zone()).isEqualTo(SugarAcidityZone.PERFECT_APPLES);
+    assertThat(result.items().getFirst().evaluation().plottable()).isTrue();
+    assertThat(result.items().getFirst().evaluation().assessment().zone()).isEqualTo(SugarAcidityZone.PERFECT_APPLES);
   }
 
   @Test
@@ -112,8 +112,8 @@ class QueryAppleVarietySugarAcidityZonePointsServiceTest {
     ));
 
     assertThat(result.items()).hasSize(1);
-    assertThat(result.items().getFirst().plottable()).isFalse();
-    assertThat(result.items().getFirst().assessment()).isNull();
+    assertThat(result.items().getFirst().evaluation().plottable()).isFalse();
+    assertThat(result.items().getFirst().evaluation().assessment()).isNull();
   }
 
   @Test

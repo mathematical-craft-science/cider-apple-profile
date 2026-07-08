@@ -2,7 +2,7 @@ package org.craft.mcs.cap.core.production.domain.model;
 
 import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
 
-import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;
+import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.jmolecules.ddd.annotation.ValueObject;
 import org.jspecify.annotations.NonNull;
 

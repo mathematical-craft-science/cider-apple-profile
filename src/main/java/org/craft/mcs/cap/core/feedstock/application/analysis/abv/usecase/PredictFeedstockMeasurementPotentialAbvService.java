@@ -7,12 +7,12 @@ import org.craft.mcs.cap.core.feedstock.application.analysis.abv.port.in.Predict
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchRepository;
 import org.craft.mcs.cap.core.feedstock.application.measurement.port.out.FeedstockMeasurementRepository;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurementId;
-import org.craft.mcs.cap.core.cideranalysis.profileaxis.domain.ChemicalProfileCapability;
-import org.craft.mcs.cap.core.cideranalysis.profileaxis.domain.ChemicalProfileCapabilityAssessor;
-import org.craft.mcs.cap.core.cideranalysis.profileaxis.domain.ChemicalProfileCapabilityNotMetException;
+import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapability;
+import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityAssessor;
+import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityNotMetException;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
-import org.craft.mcs.cap.core.cideranalysis.abv.domain.PotentialAbvPredictor;
+import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPredictor;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
@@ -47,7 +47,9 @@ public final class PredictFeedstockMeasurementPotentialAbvService
     final var sample = feedstockMeasurementRepository.findById(measurementId)
         .orElseThrow(() -> new FeedstockMeasurementNotFoundException(measurementId));
     final var batch = feedstockBatchRepository.findById(sample.batchId())
-        .orElseThrow(() -> new IllegalStateException("feedstock measurement batch not found: " + sample.batchId().value()));
+        .orElseThrow(() -> new IllegalStateException(
+            "feedstock measurement batch not found: " + sample.batchId().value()
+        ));
     final var axes = axisExtractor.extract(sample.chemicalProfile());
     final var capability = capabilityAssessor.assess(axes, ChemicalProfileCapability.ABV_PREDICTION);
 
@@ -64,7 +66,7 @@ public final class PredictFeedstockMeasurementPotentialAbvService
         sample.batchId(),
         sample.name(),
         sugar.valueKind(),
-        predictor.predict(SpecificGravityValue.of(sugar.value()), SpecificGravityValue.of("1.000"))
+        predictor.predict(SpecificGravityValue.of(sugar.value()))
     );
   }
 }

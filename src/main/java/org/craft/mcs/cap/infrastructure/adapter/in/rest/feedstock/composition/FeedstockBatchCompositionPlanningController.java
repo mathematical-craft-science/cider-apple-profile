@@ -1,7 +1,7 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.composition;
 
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.cideranalysis.composition.optimization.domain.DiscretizedCompositionOptimizationSettings;
+import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.DiscretizedCompositionOptimizationSettings;
 import org.craft.mcs.cap.core.feedstock.application.planning.composition.port.in.OptimizeFeedstockBatchCompositionUseCase;
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.ScoreFeedstockBatchProfileTargetUseCase;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.composition.dto.FeedstockBatchProfileTargetScoreBatchResponse;

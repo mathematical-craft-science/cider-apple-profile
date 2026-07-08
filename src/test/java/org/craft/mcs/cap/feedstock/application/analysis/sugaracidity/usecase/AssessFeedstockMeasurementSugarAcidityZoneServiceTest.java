@@ -2,7 +2,7 @@ package org.craft.mcs.cap.feedstock.application.analysis.sugaracidity.usecase;
 
 import java.time.LocalDate;
 import java.util.Optional;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.projection.domain.SugarAcidityProfileProjector;
+import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileProjector;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchRepository;
 import org.craft.mcs.cap.core.feedstock.application.measurement.port.out.FeedstockMeasurementRepository;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.usecase.AssessFeedstockMeasurementSugarAcidityZoneService;
@@ -16,16 +16,16 @@ import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.value.FeedstockMeasurementName;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
-import org.craft.mcs.cap.core.cideranalysis.profileaxis.domain.ChemicalProfileCapability;
-import org.craft.mcs.cap.core.cideranalysis.profileaxis.domain.ChemicalProfileCapabilityAssessor;
+import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapability;
+import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityAssessor;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
 import org.craft.mcs.cap.shared.kernel.measurement.ExactMeasurement;
-import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;
+import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.zone.domain.BuiltInSugarAcidityZoneProfiles;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.zone.domain.RectangleSugarAcidityZoneAssessor;
+import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.BuiltInSugarAcidityZoneProfiles;
+import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.RectangleSugarAcidityZoneAssessor;
 import org.junit.jupiter.api.Test;
 
 import static java.util.UUID.randomUUID;
@@ -63,11 +63,11 @@ class AssessFeedstockMeasurementSugarAcidityZoneServiceTest {
 
     final var result = service.assess(sample.measurementId());
 
-    assertThat(result.plottable()).isFalse();
-    assertThat(result.assessment()).isNull();
-    assertThat(result.capabilityAssessment().capability())
+    assertThat(result.evaluation().plottable()).isFalse();
+    assertThat(result.evaluation().assessment()).isNull();
+    assertThat(result.evaluation().capabilityAssessment().capability())
         .isEqualTo(ChemicalProfileCapability.SUGAR_ACIDITY_PLOT);
-    assertThat(result.capabilityAssessment().missingAxes())
+    assertThat(result.evaluation().capabilityAssessment().missingAxes())
         .containsExactly(ChemicalAxis.ACIDITY);
   }
 

@@ -1,8 +1,8 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.profiletarget.common.mapper;
 
 import java.util.Comparator;
-import org.craft.mcs.cap.core.cideranalysis.composition.contribution.domain.CompositionContributionEvidence;
-import org.craft.mcs.cap.core.cideranalysis.composition.contribution.domain.CompositionContributionRoleAssessment;
+import org.craft.mcs.cap.core.profileanalysis.composition.contribution.domain.CompositionContributionEvidence;
+import org.craft.mcs.cap.core.profileanalysis.composition.contribution.domain.CompositionContributionRoleAssessment;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.profiletarget.common.dto.CompositionContributionEvidenceResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.profiletarget.common.dto.CompositionContributionRoleAssessmentResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.measurement.CanonicalUnitLabels;

@@ -1,8 +1,8 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.readiness.mapper;
 
 import java.math.BigDecimal;
-import org.craft.mcs.cap.core.cideranalysis.fermentationstart.domain.FermentationStartReadinessAssessment;
-import org.craft.mcs.cap.core.cideranalysis.fermentationstart.domain.FermentationStartReadinessCheck;
+import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.FermentationStartReadinessAssessment;
+import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.FermentationStartReadinessCheck;
 import org.craft.mcs.cap.core.feedstock.application.analysis.readiness.port.in.FeedstockBatchCurrentFermentationStartReadinessResult;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.readiness.dto.FeedstockBatchCurrentFermentationStartReadinessResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.readiness.dto.FermentationStartReadinessAssessmentResponse;
@@ -57,7 +57,8 @@ public final class FeedstockBatchReadinessRestMapper {
         check.severity(),
         check.code(),
         check.message(),
-        toQuantityResponse(check.value(), check.unit())
+        toQuantityResponse(check.value(), check.unit()),
+        check.managedByAction() == null ? null : check.managedByAction().name() // NOSONAR
     );
   }
 

@@ -4,7 +4,7 @@ import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasur
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.value.FeedstockMeasurementName;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.zone.domain.SugarAcidityZoneAssessment;
+import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.SugarAcidityZoneAssessment;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;

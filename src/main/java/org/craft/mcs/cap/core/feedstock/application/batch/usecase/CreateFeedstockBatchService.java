@@ -15,7 +15,7 @@ import static java.util.Objects.requireNonNull;
 
 
 /**
- * Application service for registering a new feedstock batch in a cider maker workspace.
+ * Application service for registering a new feedstock batch for a cider maker.
  *
  * <p>The service creates the operational batch aggregate with season/source/available-volume
  * metadata. Chemical data is intentionally not captured here; it is added through

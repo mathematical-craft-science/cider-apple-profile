@@ -1,7 +1,7 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.zone.domain.SugarAcidityZone;
+import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.SugarAcidityZone;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;

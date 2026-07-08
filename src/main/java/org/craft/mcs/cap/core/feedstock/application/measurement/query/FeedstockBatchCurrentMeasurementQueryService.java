@@ -1,6 +1,7 @@
 package org.craft.mcs.cap.core.feedstock.application.measurement.query;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchHasNoMeasurementsException;
@@ -31,8 +32,15 @@ public final class FeedstockBatchCurrentMeasurementQueryService {
   public @NonNull FeedstockMeasurement requireCurrentMeasurement(@NonNull FeedstockBatchId batchId) {
     requireNonNull(batchId, "feedstock batch id cannot be null");
 
-    return feedstockMeasurementQueryRepository.findLatestByBatchId(batchId)
+    return findCurrentMeasurement(batchId)
         .orElseThrow(() -> new FeedstockBatchHasNoMeasurementsException(batchId));
+  }
+
+  public @NonNull Optional<@NonNull FeedstockMeasurement> findCurrentMeasurement(
+      @NonNull FeedstockBatchId batchId
+  ) {
+    requireNonNull(batchId, "feedstock batch id cannot be null");
+    return feedstockMeasurementQueryRepository.findLatestByBatchId(batchId);
   }
 
   public @NonNull List<@NonNull FeedstockMeasurement> findCurrentSugarAcidityPointCandidates(

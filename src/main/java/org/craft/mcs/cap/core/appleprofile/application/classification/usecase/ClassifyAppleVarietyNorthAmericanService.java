@@ -7,10 +7,10 @@ import org.craft.mcs.cap.core.appleprofile.application.classification.port.in.Cl
 import org.craft.mcs.cap.core.appleprofile.application.port.out.AppleVarietyRepository;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyId;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
-import org.craft.mcs.cap.core.cideranalysis.classification.profile.northamerican.NorthAmericanProfileCalculator;
-import org.craft.mcs.cap.core.cideranalysis.profileaxis.domain.ChemicalProfileCapability;
-import org.craft.mcs.cap.core.cideranalysis.profileaxis.domain.ChemicalProfileCapabilityAssessor;
-import org.craft.mcs.cap.core.cideranalysis.profileaxis.domain.ChemicalProfileCapabilityNotMetException;
+import org.craft.mcs.cap.core.profileanalysis.classification.profile.northamerican.NorthAmericanProfileCalculator;
+import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapability;
+import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityAssessor;
+import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityNotMetException;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 

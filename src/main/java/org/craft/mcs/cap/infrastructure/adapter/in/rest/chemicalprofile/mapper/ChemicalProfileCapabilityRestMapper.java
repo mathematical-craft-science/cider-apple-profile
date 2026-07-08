@@ -4,7 +4,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.dto.ChemicalProfileCapabilityAssessmentResponse;
-import org.craft.mcs.cap.core.cideranalysis.profileaxis.domain.ChemicalProfileCapabilityAssessment;
+import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityAssessment;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.jspecify.annotations.NonNull;
 

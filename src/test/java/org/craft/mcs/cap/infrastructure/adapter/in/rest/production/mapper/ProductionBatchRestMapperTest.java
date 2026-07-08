@@ -2,12 +2,12 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.production.mapper;
 
 import java.util.List;
 import java.util.UUID;
-import org.craft.mcs.cap.core.cideranalysis.abv.domain.AbvPredictionMethod;
-import org.craft.mcs.cap.core.cideranalysis.abv.domain.FinalGravityPredictionSource;
-import org.craft.mcs.cap.core.cideranalysis.abv.domain.FixedFinalGravityPredictionStrategy;
-import org.craft.mcs.cap.core.cideranalysis.abv.domain.PotentialAbvPredictor;
-import org.craft.mcs.cap.core.cideranalysis.abv.domain.PredictionConfidence;
-import org.craft.mcs.cap.core.cideranalysis.abv.domain.StandardGravityDropAbvPredictionStrategy;
+import org.craft.mcs.cap.core.profileanalysis.abv.domain.AbvPredictionMethod;
+import org.craft.mcs.cap.core.profileanalysis.abv.domain.FinalGravityPredictionSource;
+import org.craft.mcs.cap.core.profileanalysis.abv.domain.FixedFinalGravityPredictionStrategy;
+import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPredictor;
+import org.craft.mcs.cap.core.profileanalysis.abv.domain.PredictionConfidence;
+import org.craft.mcs.cap.core.profileanalysis.abv.domain.StandardGravityDropAbvPredictionStrategy;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
 import org.craft.mcs.cap.core.production.application.port.in.ProductionBatchCreated;
@@ -23,7 +23,7 @@ import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSna
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
-import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;
+import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.junit.jupiter.api.Test;
 

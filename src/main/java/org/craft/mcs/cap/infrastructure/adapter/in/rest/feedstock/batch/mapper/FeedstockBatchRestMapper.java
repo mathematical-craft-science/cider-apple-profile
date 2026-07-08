@@ -18,7 +18,7 @@ import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.batch.dto.Patc
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.batch.dto.UpdateFeedstockBatchRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.measurement.CanonicalUnitLabels;
 import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
-import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;
+import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

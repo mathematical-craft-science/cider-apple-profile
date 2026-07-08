@@ -10,15 +10,26 @@ import org.jspecify.annotations.Nullable;
 
 @Schema(description = "Latest measurement used as current feedstock batch profile in the workspace.")
 public record FeedstockWorkspaceCurrentMeasurementResponse(
-    @Schema(description = "Current measurement identifier.", format = "uuid", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(
+        description = "Current measurement identifier.",
+        format = "uuid",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
     @NonNull UUID measurementId,
     @Schema(description = "Current measurement name.", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull String name,
     @Schema(description = "Measurement timestamp.", format = "date-time", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull Instant measuredAt,
-    @Schema(description = "Current chemical profile in canonical service units.", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(
+        description = "Current chemical profile in canonical service units.",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
     @NonNull ChemicalProfileResponse chemicalProfile,
-    @Schema(description = "Optional measurement note.", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @Schema(
+        description = "Optional measurement note.",
+        nullable = true,
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     @Nullable String note
 ) {
 }

@@ -2,9 +2,9 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile;
 
 
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
-import org.craft.mcs.cap.core.cideranalysis.profileaxis.domain.ChemicalProfileCapability;
-import org.craft.mcs.cap.core.cideranalysis.profileaxis.domain.ChemicalProfileCapabilityAssessment;
-import org.craft.mcs.cap.core.cideranalysis.profileaxis.domain.ChemicalProfileCapabilityNotMetException;
+import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapability;
+import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityAssessment;
+import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityNotMetException;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatusCode;
 

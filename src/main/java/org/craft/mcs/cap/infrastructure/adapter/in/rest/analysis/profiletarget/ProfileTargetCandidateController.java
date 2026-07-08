@@ -2,7 +2,7 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.profiletarget;
 
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.appleprofile.application.profiletarget.port.in.QueryAppleVarietyProfileTargetCandidatesUseCase;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.target.domain.SugarAcidityTargetResolver;
+import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.SugarAcidityTargetResolver;
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.QueryFeedstockBatchProfileTargetCandidatesUseCase;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.profiletarget.applevariety.dto.AppleVarietyProfileTargetCandidatesResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.profiletarget.applevariety.dto.AppleVarietyProfileTargetCandidateSearchRequest;

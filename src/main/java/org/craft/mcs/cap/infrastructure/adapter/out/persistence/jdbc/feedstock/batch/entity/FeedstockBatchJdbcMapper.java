@@ -6,7 +6,7 @@ import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockBatchN
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSource;
 import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
-import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;
+import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;

@@ -1,8 +1,8 @@
 package org.craft.mcs.cap.core.appleprofile.application.profiletarget.port.in;
 
-import org.craft.mcs.cap.core.cideranalysis.profiletarget.scoring.application.port.in.ProfileTargetScoringPurpose;
-import org.craft.mcs.cap.core.cideranalysis.profiletarget.scoring.domain.ProfileTargetObjective;
-import org.craft.mcs.cap.core.cideranalysis.profiletarget.scoring.domain.ProfileTargetObjectiveWeights;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.port.in.ProfileTargetScoringPurpose;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetObjective;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetObjectiveWeights;
 import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.in.AppleVarietyPointFilters;
 import org.craft.mcs.cap.shared.application.ApplicationValidationException;
 import org.craft.mcs.cap.shared.platform.query.CursorPageRequest;
@@ -26,7 +26,9 @@ public record AppleVarietyProfileTargetCandidateQuery(
     requireNonNull(weights, "profile target objective weights cannot be null");
 
     if (limit < 1 || limit > CursorPageRequest.MAX_LIMIT) {
-      throw new ApplicationValidationException("apple variety profile target candidate limit must be between 1 and " + CursorPageRequest.MAX_LIMIT);
+      throw new ApplicationValidationException(
+          "apple variety profile target candidate limit must be between 1 and " + CursorPageRequest.MAX_LIMIT
+      );
     }
   }
 }

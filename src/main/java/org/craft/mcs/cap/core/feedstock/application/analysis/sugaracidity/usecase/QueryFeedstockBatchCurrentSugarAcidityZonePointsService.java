@@ -6,9 +6,9 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.projection.domain.SugarAcidityProfileEvaluation;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.projection.domain.SugarAcidityProfileProjector;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.zone.domain.SugarAcidityZoneAssessment;
+import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileEvaluation;
+import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileProjector;
+import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.SugarAcidityZoneAssessment;
 import org.craft.mcs.cap.core.feedstock.application.measurement.query.FeedstockBatchCurrentMeasurementQueryService;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockBatchCurrentSugarAcidityZonePointQuery;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockBatchCurrentSugarAcidityZoneResult;
@@ -19,12 +19,12 @@ import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.o
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurement;
-import org.craft.mcs.cap.core.cideranalysis.profileaxis.domain.ChemicalProfileCapabilityCriteria;
+import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityCriteria;
 import org.craft.mcs.cap.shared.platform.query.ChunkedCursorPageCollector;
 import org.craft.mcs.cap.shared.platform.query.CursorPage;
 import org.craft.mcs.cap.shared.platform.query.MalformedCursorException;
 import org.craft.mcs.cap.shared.platform.query.OpaqueCursorCodec;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.query.SugarAcidityZoneCriteria;
+import org.craft.mcs.cap.core.profileanalysis.sugaracidity.query.SugarAcidityZoneCriteria;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
@@ -38,7 +38,7 @@ import static java.util.stream.Collectors.toMap;
  *
  * <p>The service applies the product rule that only the latest measurement of each batch represents
  * the current batch profile. It then evaluates capability and zone filters in the application
- * layer, returning cursor pages for workspace graph rendering.
+ * layer, returning cursor pages for feedstock graph clients.
  */
 @Component
 @RequiredArgsConstructor
@@ -92,9 +92,7 @@ public final class QueryFeedstockBatchCurrentSugarAcidityZonePointsService
         query.ciderMakerId(),
         measurement.measurementId(),
         measurement.measuredAt(),
-        evaluation.plottable(),
-        evaluation.assessment(),
-        evaluation.capabilityAssessment()
+        evaluation
     );
   }
 
@@ -140,7 +138,7 @@ public final class QueryFeedstockBatchCurrentSugarAcidityZonePointsService
       return true;
     }
 
-    final SugarAcidityZoneAssessment assessment = result.assessment();
+    final SugarAcidityZoneAssessment assessment = result.evaluation().assessment();
     return assessment != null
         && criteria.zones().contains(assessment.zone());
   }
@@ -162,7 +160,10 @@ public final class QueryFeedstockBatchCurrentSugarAcidityZonePointsService
 
     try {
       final var parts = OpaqueCursorCodec.decode(cursor, 2);
-      return new FeedstockMeasurementSugarAcidityPointCandidateCursor(Instant.parse(parts.getFirst()), UUID.fromString(parts.get(1)));
+      return new FeedstockMeasurementSugarAcidityPointCandidateCursor(
+          Instant.parse(parts.getFirst()),
+          UUID.fromString(parts.get(1))
+      );
     } catch (IllegalArgumentException exception) {
       throw new MalformedCursorException(exception);
     }

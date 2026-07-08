@@ -18,7 +18,7 @@ import static java.util.Objects.requireNonNull;
  * Application service for deleting one feedstock measurement from a batch history.
  *
  * <p>The service validates the parent batch and ensures the measurement belongs to it before
- * deletion. This prevents cross-batch measurement manipulation through ids from another workspace
+ * deletion. This prevents cross-batch measurement manipulation through ids from another batch
  * path.
  */
 @Component

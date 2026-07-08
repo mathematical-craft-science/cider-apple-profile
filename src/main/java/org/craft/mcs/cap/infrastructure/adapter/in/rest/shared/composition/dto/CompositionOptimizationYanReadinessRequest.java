@@ -2,7 +2,7 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.composition.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
-import org.craft.mcs.cap.core.cideranalysis.composition.optimization.domain.CompositionOptimizationMissingPolicy;
+import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.CompositionOptimizationMissingPolicy;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

@@ -12,17 +12,66 @@ import org.jspecify.annotations.Nullable;
 public record FeedstockWorkspaceBatchResponse(
     @Schema(description = "Feedstock batch metadata and available volume.", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull FeedstockBatchResponse batch,
-    @Schema(description = "Latest measurement used as current batch profile.", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @Schema(
+        description = "Latest measurement used as current batch profile.",
+        nullable = true,
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     @Nullable FeedstockWorkspaceCurrentMeasurementResponse currentMeasurement,
-    @Schema(description = "Sugar-acidity graph projection of the current measurement.", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @Schema(
+        description = """
+            Compact current profile projection for board rows. It is derived from currentMeasurement
+            and does not replace the original measurement payload.
+            """,
+        nullable = true,
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
+    @Nullable FeedstockWorkspaceProfileSummaryResponse profileSummary,
+    @Schema(
+        description = "Freshness assessment for the latest measurement.",
+        nullable = true,
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
+    @Nullable FeedstockWorkspaceMeasurementFreshnessResponse measurementFreshness,
+    @Schema(
+        description = "Sugar-acidity graph projection of the current measurement.",
+        nullable = true,
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     @Nullable FeedstockWorkspaceSugarAcidityResponse sugarAcidity,
-    @Schema(description = "Potential ABV prediction from current sugar measurement.", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @Schema(
+        description = "Potential ABV prediction from current sugar measurement.",
+        nullable = true,
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     @Nullable FeedstockWorkspacePotentialAbvResponse potentialAbv,
-    @Schema(description = "Current YAN axis value in mg N/L when measured.", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @Schema(
+        description = "Current YAN axis value in mg N/L when measured.",
+        nullable = true,
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     @Nullable SugarAcidityAxisPointResponse yeastAssimilableNitrogen,
-    @Schema(description = "Fermentation-start readiness assessment for current profile.", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @Schema(
+        description = "Readiness assessment for using the batch in composition planning.",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
+    @NonNull FeedstockWorkspacePlanningReadinessResponse planningReadiness,
+    @Schema(
+        description = "Data quality summary for the current batch evidence.",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
+    @NonNull FeedstockWorkspaceDataQualityResponse dataQuality,
+    @Schema(
+        description = "Fermentation-start readiness assessment for current profile.",
+        nullable = true,
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     @Nullable FermentationStartReadinessAssessmentResponse fermentationStartReadiness,
-    @Schema(description = "Target-aware candidate data when request contains target and batch is scorable.", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @Schema(
+        description = "Target-aware candidate data when request contains target and batch is scorable.",
+        nullable = true,
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     @Nullable FeedstockWorkspaceTargetCandidateResponse targetCandidate
 ) {
 }

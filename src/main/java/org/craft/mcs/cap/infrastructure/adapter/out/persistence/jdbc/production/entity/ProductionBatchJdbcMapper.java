@@ -10,7 +10,7 @@ import org.craft.mcs.cap.core.production.domain.model.value.ProductionTargetDist
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
-import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;
+import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;

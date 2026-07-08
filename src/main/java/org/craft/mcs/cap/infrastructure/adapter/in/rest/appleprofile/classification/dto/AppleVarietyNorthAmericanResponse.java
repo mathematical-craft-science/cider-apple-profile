@@ -2,7 +2,7 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.classifica
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.UUID;
-import org.craft.mcs.cap.core.cideranalysis.classification.profile.northamerican.NorthAmericanLevel;
+import org.craft.mcs.cap.core.profileanalysis.classification.profile.northamerican.NorthAmericanLevel;
 import org.jspecify.annotations.NonNull;
 
 @Schema(description = "North American cider profile terms for an apple variety.")

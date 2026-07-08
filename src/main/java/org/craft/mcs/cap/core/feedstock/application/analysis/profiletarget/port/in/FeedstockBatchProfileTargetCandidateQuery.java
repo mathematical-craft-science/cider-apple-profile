@@ -1,8 +1,8 @@
 package org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in;
 
-import org.craft.mcs.cap.core.cideranalysis.profiletarget.scoring.application.port.in.ProfileTargetScoringPurpose;
-import org.craft.mcs.cap.core.cideranalysis.profiletarget.scoring.domain.ProfileTargetObjectiveWeights;
-import org.craft.mcs.cap.core.cideranalysis.sugaracidity.target.domain.TanninTargetRange;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.port.in.ProfileTargetScoringPurpose;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetObjectiveWeights;
+import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.TanninTargetRange;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockMeasurementPointFilters;
 import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
 import org.craft.mcs.cap.shared.application.ApplicationValidationException;
@@ -31,7 +31,9 @@ public record FeedstockBatchProfileTargetCandidateQuery(
     requireNonNull(weights, "profile target objective weights cannot be null");
 
     if (limit < 1 || limit > CursorPageRequest.MAX_LIMIT) {
-      throw new ApplicationValidationException("profile target candidate limit must be between 1 and " + CursorPageRequest.MAX_LIMIT);
+      throw new ApplicationValidationException(
+          "profile target candidate limit must be between 1 and " + CursorPageRequest.MAX_LIMIT
+      );
     }
   }
 }

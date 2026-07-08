@@ -4,7 +4,7 @@ import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
 
 import java.math.BigDecimal;
 import java.util.List;
-import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;
+import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.jmolecules.ddd.annotation.ValueObject;
 import org.jspecify.annotations.NonNull;
 

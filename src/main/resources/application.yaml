@@ -35,6 +35,30 @@ sentry:
   enabled: false
 
 cap:
-  cider-analysis:
+  feedstock:
+    current-profile:
+      measurement-freshness:
+        stale-after: 14d
+  profile-analysis:
     sugar-acidity:
       assessor: rectangle # или ellipse
+    readiness:
+      ph:
+        generic-yeast-tolerance-min: 2.8
+        cider-guidance-min: 3.3
+        cider-guidance-max: 3.8
+        high-microbial-risk: 4.0
+        source-code: CURATED_CIDER_PH_RULES_V1
+        source-comment: >
+          Curated defaults from Merwin/Valois/Padilla-Zakour, Jolicoeur,
+          WSU/MSU cider materials, future yeast manufacturer datasheets,
+          and generic enology references as fallback.
+      yan:
+        severe-low: 75
+        low: 150
+        high: 400
+        source-code: CURATED_CIDER_YAN_RULES_V1
+        source-comment: >
+          Curated defaults from cider nitrogen references, Bisson/Butzke
+          stuck-fermentation guidance, AWRI/Lallemand YAN guidance,
+          and UC Davis Brix-based nutrient recommendations.

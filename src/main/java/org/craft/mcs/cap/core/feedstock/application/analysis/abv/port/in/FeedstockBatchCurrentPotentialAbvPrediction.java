@@ -4,7 +4,7 @@ import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurementId;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.value.FeedstockMeasurementName;
 import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
-import org.craft.mcs.cap.core.cideranalysis.abv.domain.PotentialAbvPrediction;
+import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPrediction;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.MeasurementValueKind;
 import org.jspecify.annotations.NonNull;
 

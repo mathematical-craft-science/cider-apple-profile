@@ -1,8 +1,8 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.profiletarget.common.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import org.craft.mcs.cap.core.cideranalysis.composition.contribution.domain.CompositionContributionRole;
-import org.craft.mcs.cap.core.cideranalysis.profiletarget.scoring.domain.ProfileEvaluationAxis;
+import org.craft.mcs.cap.core.profileanalysis.composition.contribution.domain.CompositionContributionRole;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileEvaluationAxis;
 import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
 import org.jspecify.annotations.NonNull;
 

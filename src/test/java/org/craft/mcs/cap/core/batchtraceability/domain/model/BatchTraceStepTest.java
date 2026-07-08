@@ -5,7 +5,7 @@ import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import org.craft.mcs.cap.shared.kernel.measurement.VolumeValue;
+import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
