@@ -4,6 +4,9 @@ import java.time.Clock;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.craft.mcs.cap.core.profileanalysis.ph.domain.PhPlanningGuidance;
+import org.craft.mcs.cap.core.profileanalysis.ph.domain.PhPlanningGuidanceCode;
+import org.craft.mcs.cap.core.profileanalysis.ph.domain.PhPlanningGuidancePolicy;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileEvaluation;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.FeedstockBatchSummary;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in.FeedstockCurrentProfileDataQualityIndicator;
@@ -46,6 +49,7 @@ public final class FeedstockCurrentProfileAssessmentService {
 
   private final @NonNull Clock clock;
   private final @NonNull FeedstockCurrentMeasurementFreshnessPolicy measurementFreshnessPolicy;
+  private final @NonNull PhPlanningGuidancePolicy phPlanningGuidancePolicy;
 
   public @NonNull FeedstockCurrentMeasurementFreshnessView freshness(
       @NonNull FeedstockMeasurement measurement
@@ -123,6 +127,7 @@ public final class FeedstockCurrentProfileAssessmentService {
             ? "Tannin is available"
             : "Tannin is missing; target-aware structure assessment will be incomplete"
     ));
+    checks.add(phPlanningGuidanceCheck(phPlanningGuidancePolicy.assess(profile)));
     return new FeedstockPlanningReadinessView(planningStatus(checks), checks);
   }
 
@@ -315,6 +320,28 @@ public final class FeedstockCurrentProfileAssessmentService {
         present ? presentCode : missingCode,
         present ? presentMessage : missingMessage
     );
+  }
+
+  private static @NonNull FeedstockPlanningReadinessCheck phPlanningGuidanceCheck(
+      @NonNull PhPlanningGuidance guidance
+  ) {
+    requireNonNull(guidance, "pH planning guidance cannot be null");
+    return planningCheck(
+        FeedstockPlanningReadinessFactor.PH,
+        phPlanningSeverity(guidance.code()),
+        guidance.code().name(),
+        guidance.message()
+    );
+  }
+
+  private static @NonNull FeedstockCurrentProfileSignalSeverity phPlanningSeverity(
+      @NonNull PhPlanningGuidanceCode code
+  ) {
+    requireNonNull(code, "pH planning guidance code cannot be null");
+    return switch (code) {
+      case PH_PLANNING_IDEAL -> FeedstockCurrentProfileSignalSeverity.OK;
+      case PH_PLANNING_LOW, PH_PLANNING_HIGH, PH_MISSING -> FeedstockCurrentProfileSignalSeverity.WARNING;
+    };
   }
 
   private static @NonNull FeedstockPlanningReadinessCheck planningCheck(

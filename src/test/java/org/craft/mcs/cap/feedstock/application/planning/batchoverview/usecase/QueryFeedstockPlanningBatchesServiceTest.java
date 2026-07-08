@@ -4,6 +4,7 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.Month;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Set;
@@ -15,6 +16,7 @@ import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPredictor;
 import org.craft.mcs.cap.core.profileanalysis.abv.domain.StandardGravityDropAbvPredictionStrategy;
 import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.FermentationStartReadinessAssessor;
 import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.FermentationStartReadinessStatus;
+import org.craft.mcs.cap.core.profileanalysis.ph.domain.PhPlanningGuidancePolicy;
 import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityAssessor;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.port.in.ProfileTargetScoringPurpose;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileAxisNormalizerCode;
@@ -70,8 +72,8 @@ class QueryFeedstockPlanningBatchesServiceTest {
       UUID.fromString("7c18963c-26d7-45c0-af2c-07998f4f6d6b")
   );
   private static final FeedstockSeason SEASON = FeedstockSeason.of(
-      LocalDate.of(2026, 9, 1),
-      LocalDate.of(2026, 12, 31)
+      LocalDate.of(2026, Month.SEPTEMBER, 1),
+      LocalDate.of(2026, Month.DECEMBER, 31)
   );
   private static final Clock CLOCK = Clock.fixed(Instant.parse("2026-05-10T10:00:00Z"), ZoneOffset.UTC);
 
@@ -201,7 +203,11 @@ class QueryFeedstockPlanningBatchesServiceTest {
             new StandardGravityDropAbvPredictionStrategy()
         ),
         new FermentationStartReadinessAssessor(),
-        new FeedstockCurrentProfileAssessmentService(CLOCK, measurementFreshnessPolicy),
+        new FeedstockCurrentProfileAssessmentService(
+            CLOCK,
+            measurementFreshnessPolicy,
+            PhPlanningGuidancePolicy.curatedCiderV1()
+        ),
         new FeedstockPlanningContributionRoleExplainer()
     );
   }

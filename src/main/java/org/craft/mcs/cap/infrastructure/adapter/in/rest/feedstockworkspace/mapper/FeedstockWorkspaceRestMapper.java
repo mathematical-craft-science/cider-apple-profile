@@ -18,6 +18,7 @@ import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in.Feeds
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in.FeedstockPlanningReadinessCheck;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in.FeedstockPlanningReadinessView;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in.FeedstockCurrentProfilePotentialAbvView;
+import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.FeedstockPlanningRoleEvidenceFact;
 import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.FeedstockPlanningRoleExplanationView;
 import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.FeedstockPlanningTargetAnalysisView;
 import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.FeedstockPlanningView;
@@ -45,6 +46,7 @@ import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstockworkspace.dto.F
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstockworkspace.dto.FeedstockWorkspaceProfileSummaryResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstockworkspace.dto.FeedstockWorkspaceProfileValueResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstockworkspace.dto.FeedstockWorkspaceResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstockworkspace.dto.FeedstockWorkspaceRoleEvidenceFactResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstockworkspace.dto.FeedstockWorkspaceRoleExplanationResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstockworkspace.dto.FeedstockWorkspaceSugarAcidityResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstockworkspace.dto.FeedstockWorkspaceTargetAnalysisResponse;
@@ -319,8 +321,21 @@ public final class FeedstockWorkspaceRestMapper {
   ) {
     requireNonNull(view, "feedstock workspace role explanation view cannot be null");
     return new FeedstockWorkspaceRoleExplanationResponse(
-        view.summary(),
-        view.reasons()
+        view.evidence().stream()
+            .map(FeedstockWorkspaceRestMapper::toResponse)
+            .toList()
+    );
+  }
+
+  private static @NonNull FeedstockWorkspaceRoleEvidenceFactResponse toResponse(
+      @NonNull FeedstockPlanningRoleEvidenceFact fact
+  ) {
+    requireNonNull(fact, "feedstock workspace role evidence fact cannot be null");
+    return new FeedstockWorkspaceRoleEvidenceFactResponse(
+        fact.axis(),
+        fact.direction(),
+        fact.effect(),
+        fact.severity()
     );
   }
 

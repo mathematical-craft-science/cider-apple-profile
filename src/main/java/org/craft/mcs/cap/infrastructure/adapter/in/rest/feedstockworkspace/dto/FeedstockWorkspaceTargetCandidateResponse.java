@@ -19,7 +19,7 @@ public record FeedstockWorkspaceTargetCandidateResponse(
     @Schema(description = "Target-aware contribution role.", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull CompositionContributionRoleAssessmentResponse contributionRole,
     @Schema(
-        description = "Compact role explanation for board rows and quick review.",
+        description = "Typed role explanation facts for board rows and quick review.",
         requiredMode = Schema.RequiredMode.REQUIRED
     )
     @NonNull FeedstockWorkspaceRoleExplanationResponse roleExplanation

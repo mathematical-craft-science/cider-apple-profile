@@ -6,17 +6,15 @@ import java.util.List;
 import org.jspecify.annotations.NonNull;
 
 
-@Schema(description = "Compact explanation for the target-aware role of a feedstock batch.")
+@Schema(description = "Semantic facts extending target-aware contribution evidence for frontend interpretation.")
 public record FeedstockWorkspaceRoleExplanationResponse(
-    @Schema(description = "Short role summary.", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NonNull String summary,
     @ArraySchema(
         arraySchema = @Schema(
-            description = "Short reasons behind the role assignment.",
+            description = "Typed semantic facts aligned by axis with contribution-role evidence.",
             requiredMode = Schema.RequiredMode.REQUIRED
         ),
-        schema = @Schema(implementation = String.class)
+        schema = @Schema(implementation = FeedstockWorkspaceRoleEvidenceFactResponse.class)
     )
-    @NonNull List<@NonNull String> reasons
+    @NonNull List<@NonNull FeedstockWorkspaceRoleEvidenceFactResponse> evidence
 ) {
 }

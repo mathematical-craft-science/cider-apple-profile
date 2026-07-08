@@ -22,7 +22,10 @@ public interface MeasurementUnitMetadataApi {
 
   @Operation(
       summary = "Get measurement unit metadata",
-      description = "Returns CAP canonical unit labels and accepted value ranges for configuring numeric UI controls."
+      description = """
+          Returns CAP canonical unit labels, accepted value ranges and measurement freshness
+          metadata for configuring numeric UI controls and data-age indicators.
+          """
   )
   @ApiResponse(
       responseCode = "200",

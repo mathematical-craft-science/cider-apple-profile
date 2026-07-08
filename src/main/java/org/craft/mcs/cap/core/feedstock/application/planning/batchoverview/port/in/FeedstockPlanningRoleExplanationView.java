@@ -7,15 +7,16 @@ import static java.util.Objects.requireNonNull;
 
 
 /**
- * Compact explanation of a target-aware source role for a planning row.
+ * Typed explanation facts for a target-aware source role in feedstock planning.
+ *
+ * <p>This read model intentionally avoids user-facing text. It gives clients stable facts from
+ * which UI copy, badges, tooltips, and localized explanations can be derived.
  */
 public record FeedstockPlanningRoleExplanationView(
-    @NonNull String summary,
-    @NonNull List<@NonNull String> reasons
+    @NonNull List<@NonNull FeedstockPlanningRoleEvidenceFact> evidence
 ) {
 
   public FeedstockPlanningRoleExplanationView {
-    requireNonNull(summary, "feedstock planning role explanation summary cannot be null");
-    reasons = List.copyOf(requireNonNull(reasons, "feedstock planning role explanation reasons cannot be null"));
+    evidence = List.copyOf(requireNonNull(evidence, "feedstock planning role explanation evidence cannot be null"));
   }
 }

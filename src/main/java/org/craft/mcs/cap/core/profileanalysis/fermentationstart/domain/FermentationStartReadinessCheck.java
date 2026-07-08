@@ -13,8 +13,20 @@ public record FermentationStartReadinessCheck(
     @NonNull String code,
     @NonNull String message,
     @Nullable BigDecimal value,
-    @Nullable String unit
+    @Nullable String unit,
+    @Nullable FermentationStartPreparationActionType managedByAction
 ) {
+
+  public FermentationStartReadinessCheck(
+      @NonNull FermentationStartReadinessFactor factor,
+      @NonNull FermentationStartReadinessSeverity severity,
+      @NonNull String code,
+      @NonNull String message,
+      @Nullable BigDecimal value,
+      @Nullable String unit
+  ) {
+    this(factor, severity, code, message, value, unit, null);
+  }
 
   public FermentationStartReadinessCheck {
     requireNonNull(factor, "fermentation start readiness factor cannot be null");

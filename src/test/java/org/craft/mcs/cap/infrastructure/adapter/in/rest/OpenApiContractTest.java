@@ -196,7 +196,8 @@ class OpenApiContractTest {
         "max",
         "thresholdLines"
     );
-    assertRequiredProperties(openApi, "MeasurementUnitsMetadataResponse", "units");
+    assertRequiredProperties(openApi, "MeasurementUnitsMetadataResponse", "units", "measurementFreshness");
+    assertRequiredProperties(openApi, "MeasurementFreshnessMetadataResponse", "staleAfter");
     assertRequiredProperties(
         openApi,
         "MeasurementUnitMetadataResponse",
@@ -555,8 +556,15 @@ class OpenApiContractTest {
 
     assertRequiredProperties(openApi, "FeedstockBatchCurrentFermentationStartReadinessResponse",
         "batchId", "ciderMakerId", "currentMeasurementId", "currentMeasurementName", "assessment");
-    assertNotRequiredProperties(openApi, "FermentationStartReadinessCheckResponse", "value", "unit");
+    assertNotRequiredProperties(
+        openApi,
+        "FermentationStartReadinessCheckResponse",
+        "value",
+        "unit",
+        "managedByAction"
+    );
     assertNullable(schemaProperty(openApi, "FermentationStartReadinessCheckResponse", "value"));
+    assertNullable(schemaProperty(openApi, "FermentationStartReadinessCheckResponse", "managedByAction"));
     assertRequiredProperties(
         openApi,
         "FeedstockBatchCompositionOptimizationCandidateResponse",
@@ -714,8 +722,16 @@ class OpenApiContractTest {
         "contributionRole",
         "roleExplanation"
     );
-    assertRequiredProperties(openApi, "FeedstockWorkspaceRoleExplanationResponse", "summary", "reasons");
-    assertArray(schemaProperty(openApi, "FeedstockWorkspaceRoleExplanationResponse", "reasons"));
+    assertRequiredProperties(openApi, "FeedstockWorkspaceRoleExplanationResponse", "evidence");
+    assertArray(schemaProperty(openApi, "FeedstockWorkspaceRoleExplanationResponse", "evidence"));
+    assertRequiredProperties(
+        openApi,
+        "FeedstockWorkspaceRoleEvidenceFactResponse",
+        "axis",
+        "direction",
+        "effect",
+        "severity"
+    );
     assertRequiredProperties(openApi, "FeedstockWorkspacePlanningReadinessResponse", "status", "checks");
     assertArray(schemaProperty(openApi, "FeedstockWorkspacePlanningReadinessResponse", "checks"));
     assertRequiredProperties(

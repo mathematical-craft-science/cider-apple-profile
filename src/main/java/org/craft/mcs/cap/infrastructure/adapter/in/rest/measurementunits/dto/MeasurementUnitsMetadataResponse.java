@@ -22,6 +22,11 @@ public record MeasurementUnitsMetadataResponse(
         ),
         schema = @Schema(implementation = MeasurementUnitMetadataResponse.class)
     )
-    @NonNull List<@NonNull MeasurementUnitMetadataResponse> units
+    @NonNull List<@NonNull MeasurementUnitMetadataResponse> units,
+    @Schema(
+        description = "Freshness policy for latest measurement evidence.",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
+    @NonNull MeasurementFreshnessMetadataResponse measurementFreshness
 ) {
 }

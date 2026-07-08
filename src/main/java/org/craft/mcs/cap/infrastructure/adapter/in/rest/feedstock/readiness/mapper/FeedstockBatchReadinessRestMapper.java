@@ -57,7 +57,8 @@ public final class FeedstockBatchReadinessRestMapper {
         check.severity(),
         check.code(),
         check.message(),
-        toQuantityResponse(check.value(), check.unit())
+        toQuantityResponse(check.value(), check.unit()),
+        check.managedByAction() == null ? null : check.managedByAction().name() // NOSONAR
     );
   }
 

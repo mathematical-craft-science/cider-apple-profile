@@ -36,6 +36,7 @@ import org.craft.mcs.cap.core.profileanalysis.abv.domain.FixedFinalGravityPredic
 import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPredictor;
 import org.craft.mcs.cap.core.profileanalysis.abv.domain.StandardGravityDropAbvPredictionStrategy;
 import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.FermentationStartReadinessAssessor;
+import org.craft.mcs.cap.core.profileanalysis.ph.domain.PhPlanningGuidancePolicy;
 import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityAssessor;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileEvaluation;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileProjector;
@@ -87,7 +88,8 @@ class GetFeedstockBatchDetailServiceTest {
         new FermentationStartReadinessAssessor(),
         new FeedstockCurrentProfileAssessmentService(
             CLOCK,
-            new FeedstockCurrentMeasurementFreshnessPolicy(Duration.ofDays(3))
+            new FeedstockCurrentMeasurementFreshnessPolicy(Duration.ofDays(3)),
+            PhPlanningGuidancePolicy.curatedCiderV1()
         )
     );
   }

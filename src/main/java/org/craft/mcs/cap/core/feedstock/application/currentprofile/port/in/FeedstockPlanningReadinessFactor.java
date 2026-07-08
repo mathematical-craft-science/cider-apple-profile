@@ -35,6 +35,12 @@ public enum FeedstockPlanningReadinessFactor {
   TANNIN,
 
   /**
+   * pH is assessed as planning guidance. It does not participate in target distance or composition
+   * optimization, but helps the technologist notice yeast-stress or microbial-risk preparation needs.
+   */
+  PH,
+
+  /**
    * Available feedstock volume is present. A batch with zero available volume cannot be selected
    * as a material source for a production candidate.
    */
