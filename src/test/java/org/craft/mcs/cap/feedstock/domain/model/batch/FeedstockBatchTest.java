@@ -7,8 +7,10 @@ import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockBatchN
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSource;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockVessel;
 import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
 import org.craft.mcs.cap.shared.kernel.DomainConflictException;
+import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.junit.jupiter.api.Test;
 
@@ -26,7 +28,8 @@ class FeedstockBatchTest {
         FeedstockBatchId.newId(),
         CiderMakerId.of(randomUUID()),
         FeedstockBatchName.of("Late season fruit"),
-        FeedstockType.APPLE_JUICE,
+        FeedstockVessel.of("Tank A-01"),
+        FeedstockType.JUICE,
         FeedstockSeason.of(LocalDate.parse("2026-10-01"), LocalDate.parse("2026-12-15")),
         VolumeValue.ofLiters("250.000")
     );
@@ -47,7 +50,8 @@ class FeedstockBatchTest {
         FeedstockBatchId.newId(),
         CiderMakerId.of(randomUUID()),
         FeedstockBatchName.of("Late season fruit"),
-        FeedstockType.APPLE_JUICE,
+        FeedstockVessel.of("Tank A-01"),
+        FeedstockType.JUICE,
         FeedstockSeason.of(LocalDate.parse("2026-10-01"), LocalDate.parse("2026-12-15")),
         VolumeValue.ofLiters("250.000")
     );
@@ -65,7 +69,8 @@ class FeedstockBatchTest {
         FeedstockBatchId.newId(),
         CiderMakerId.of(randomUUID()),
         FeedstockBatchName.of("Late season fruit"),
-        FeedstockType.APPLE_JUICE,
+        FeedstockVessel.of("Tank A-01"),
+        FeedstockType.JUICE,
         FeedstockSeason.of(LocalDate.parse("2026-10-01"), LocalDate.parse("2026-12-15")),
         VolumeValue.ofLiters("250.000")
     );
@@ -73,5 +78,37 @@ class FeedstockBatchTest {
     assertThatThrownBy(() -> batch.consumeAvailableVolume(VolumeValue.ofLiters("251.000")))
         .isInstanceOf(DomainConflictException.class)
         .hasMessageContaining("exceeds available volume");
+  }
+
+  @Test
+  void rejectsCreatingBatchWithZeroAvailableVolume() {
+    assertThatThrownBy(() -> FeedstockBatch.create(
+        FeedstockBatchId.newId(),
+        CiderMakerId.of(randomUUID()),
+        FeedstockBatchName.of("Late season fruit"),
+        FeedstockVessel.of("Tank A-01"),
+        FeedstockType.JUICE,
+        FeedstockSeason.of(LocalDate.parse("2026-10-01"), LocalDate.parse("2026-12-15")),
+        VolumeValue.ofLiters("0")
+    ))
+        .isInstanceOf(DomainRuleViolationException.class)
+        .hasMessageContaining("available volume must be greater than zero");
+  }
+
+  @Test
+  void rejectsChangingBatchAvailableVolumeToZero() {
+    final var batch = FeedstockBatch.create(
+        FeedstockBatchId.newId(),
+        CiderMakerId.of(randomUUID()),
+        FeedstockBatchName.of("Late season fruit"),
+        FeedstockVessel.of("Tank A-01"),
+        FeedstockType.JUICE,
+        FeedstockSeason.of(LocalDate.parse("2026-10-01"), LocalDate.parse("2026-12-15")),
+        VolumeValue.ofLiters("250.000")
+    );
+
+    assertThatThrownBy(() -> batch.changeAvailableVolume(VolumeValue.ofLiters("0")))
+        .isInstanceOf(DomainRuleViolationException.class)
+        .hasMessageContaining("available volume must be greater than zero");
   }
 }

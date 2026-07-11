@@ -26,7 +26,7 @@ public final class VolumeValue
 
   private static final BigDecimal MIN = BigDecimal.ZERO;
   private static final BigDecimal MAX = new BigDecimal("1000000000.000");
-  private static final BigDecimal STEP = new BigDecimal("0.1");
+  private static final BigDecimal STEP = new BigDecimal("0.001");
   private static final Unit<Volume> UNIT = BeverageUnits.LITRE;
 
   public VolumeValue(@NonNull Quantity<Volume> value) {

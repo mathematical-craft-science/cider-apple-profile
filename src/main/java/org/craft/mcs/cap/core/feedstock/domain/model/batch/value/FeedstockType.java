@@ -1,24 +1,15 @@
 package org.craft.mcs.cap.core.feedstock.domain.model.batch.value;
 
-import org.jspecify.annotations.NonNull;
-
-
+/**
+ * Domain-level material form of a feedstock batch.
+ *
+ * <p>The enum intentionally does not encode fruit family or UI labels. Fruit origin belongs to
+ * source/provenance data, while human-readable labels are a transport/UI concern.
+ */
 public enum FeedstockType {
 
-  APPLE_JUICE("Apple juice"),
-  APPLE_MUST("Apple must"),
-  PERRY_JUICE("Perry juice"),
-  PERRY_MUST("Perry must"),
-  BLEND("Blend"),
-  UNKNOWN("Unknown");
-
-  private final @NonNull String displayName;
-
-  FeedstockType(@NonNull String displayName) {
-    this.displayName = displayName;
-  }
-
-  public @NonNull String displayName() {
-    return displayName;
-  }
+  JUICE,
+  MUST,
+  BLEND,
+  UNKNOWN
 }

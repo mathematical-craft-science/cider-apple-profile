@@ -14,6 +14,7 @@ import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason
 import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.value.FeedstockMeasurementName;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockVessel;
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapability;
 import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityAssessor;
@@ -119,7 +120,8 @@ class PredictFeedstockMeasurementPotentialAbvServiceTest {
         batchId,
         ciderMakerId,
         FeedstockBatchName.of("Test batch"),
-        FeedstockType.APPLE_JUICE,
+        FeedstockVessel.of("Tank A-01"),
+        FeedstockType.JUICE,
         FeedstockSeason.of(LocalDate.parse("2026-01-01"), LocalDate.parse("2026-12-31")),
         VolumeValue.ofLiters("100")
     );

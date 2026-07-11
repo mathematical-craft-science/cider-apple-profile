@@ -11,6 +11,7 @@ import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockBatchName;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockVessel;
 import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.junit.jupiter.api.Test;
@@ -52,7 +53,8 @@ class ListFeedstockBatchesServiceTest {
         FeedstockBatchId.newId(),
         ciderMakerId,
         FeedstockBatchName.of(name),
-        FeedstockType.APPLE_JUICE,
+        FeedstockVessel.of("Tank A-01"),
+        FeedstockType.JUICE,
         FeedstockSeason.of(LocalDate.parse(startsOn), LocalDate.parse(endsOn)),
         VolumeValue.ofLiters("250.000")
     );

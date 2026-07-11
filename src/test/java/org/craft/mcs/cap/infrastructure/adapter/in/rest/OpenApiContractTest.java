@@ -109,7 +109,8 @@ class OpenApiContractTest {
     assertNullable(schemaProperty(openApi, "FeedstockBatchGraphPointResponse", "assessment"));
     assertNullable(schemaProperty(openApi, "FeedstockBatchGraphPointResponse", "capabilityAssessment"));
 
-    assertEnumProperty(openApi, "CreateFeedstockBatchRequest", "type", "APPLE_JUICE");
+    assertEnumProperty(openApi, "CreateFeedstockBatchRequest", "type", "JUICE");
+    assertEnumPropertyValues(openApi, "CreateFeedstockBatchRequest", "type", "JUICE", "MUST", "BLEND", "UNKNOWN");
     assertEnumProperty(openApi, "ChemicalProfileCapabilityAssessmentResponse", "capability", "SUGAR_ACIDITY_PLOT");
     assertEnumProperty(openApi, "PotentialAbvPredictionResponse", "confidence", "LOW");
     assertNoLegacyPhysicalQuantityResponseFields(openApi);
@@ -135,9 +136,11 @@ class OpenApiContractTest {
         "season",
         "availableVolumeLiters"
     );
-    assertNotRequiredProperties(openApi, "CreateFeedstockBatchRequest", "source", "note");
+    assertNotRequiredProperties(openApi, "CreateFeedstockBatchRequest", "vessel", "source", "note");
+    assertNullable(schemaProperty(openApi, "CreateFeedstockBatchRequest", "vessel"));
     assertNullable(schemaProperty(openApi, "CreateFeedstockBatchRequest", "source"));
     assertNullable(schemaProperty(openApi, "CreateFeedstockBatchRequest", "note"));
+    assertExclusiveMinimumZero(schemaProperty(openApi, "CreateFeedstockBatchRequest", "availableVolumeLiters"));
 
     assertRequiredProperties(
         openApi,
@@ -520,14 +523,19 @@ class OpenApiContractTest {
         "season",
         "availableVolume"
     );
-    assertNotRequiredProperties(openApi, "UpdateFeedstockBatchRequest", "source", "note");
+    assertNotRequiredProperties(openApi, "UpdateFeedstockBatchRequest", "vessel", "source", "note");
+    assertNotRequiredProperties(openApi, "FeedstockBatchResponse", "vessel", "source", "note");
+    assertNullable(schemaProperty(openApi, "UpdateFeedstockBatchRequest", "vessel"));
     assertNullable(schemaProperty(openApi, "UpdateFeedstockBatchRequest", "source"));
     assertNullable(schemaProperty(openApi, "UpdateFeedstockBatchRequest", "note"));
+    assertNullable(schemaProperty(openApi, "FeedstockBatchResponse", "vessel"));
+    assertExclusiveMinimumZero(schemaProperty(openApi, "UpdateFeedstockBatchRequest", "availableVolumeLiters"));
     assertRequiredProperties(openApi, "PatchFeedstockBatchRequest", "ciderMakerId");
     assertNotRequiredProperties(
         openApi,
         "PatchFeedstockBatchRequest",
         "name",
+        "vessel",
         "type",
         "season",
         "source",
@@ -535,8 +543,10 @@ class OpenApiContractTest {
         "note"
     );
     assertNullable(schemaProperty(openApi, "PatchFeedstockBatchRequest", "name"));
+    assertNullable(schemaProperty(openApi, "PatchFeedstockBatchRequest", "vessel"));
     assertNullable(schemaProperty(openApi, "PatchFeedstockBatchRequest", "season"));
     assertNullable(schemaProperty(openApi, "PatchFeedstockBatchRequest", "note"));
+    assertExclusiveMinimumZero(schemaProperty(openApi, "PatchFeedstockBatchRequest", "availableVolumeLiters"));
 
     assertRequiredProperties(openApi, "UpdateFeedstockMeasurementRequest", "name", "chemicalProfile", "measuredAt");
     assertNotRequiredProperties(openApi, "UpdateFeedstockMeasurementRequest", "note");
@@ -1007,6 +1017,22 @@ class OpenApiContractTest {
         .containsExactly(values);
   }
 
+  private static void assertEnumPropertyValues(
+      JsonNode openApi,
+      String schemaName,
+      String propertyName,
+      String... values
+  ) {
+    final var schema = resolveSchema(openApi, schemaProperty(openApi, schemaName, propertyName));
+
+    assertThat(schema.path("type").asText()).isEqualTo("string");
+    assertThat(StreamSupport.stream(schema.path("enum").spliterator(), false)
+        .map(JsonNode::asText)
+        .toList())
+        .as("%s.%s enum values", schemaName, propertyName)
+        .containsExactly(values);
+  }
+
   private static String referencedSchemaName(JsonNode schema) {
     final var ref = schema.path("$ref").asText(null);
     assertThat(ref)
@@ -1128,6 +1154,21 @@ class OpenApiContractTest {
   ) {
     assertThat(hasType(property, "string")).isTrue();
     assertThat(property.path("format").asText()).isEqualTo(format);
+  }
+
+  private static void assertExclusiveMinimumZero(JsonNode property) {
+    final var exclusiveMinimum = property.path("exclusiveMinimum");
+
+    assertThat(exclusiveMinimum.isMissingNode())
+        .as("property has exclusive minimum: %s", property)
+        .isFalse();
+    if (exclusiveMinimum.isBoolean()) {
+      assertThat(property.path("minimum").asText()).isEqualTo("0");
+      assertThat(exclusiveMinimum.asBoolean()).isTrue();
+      return;
+    }
+
+    assertThat(exclusiveMinimum.asText()).isEqualTo("0");
   }
 
   private static boolean hasType(

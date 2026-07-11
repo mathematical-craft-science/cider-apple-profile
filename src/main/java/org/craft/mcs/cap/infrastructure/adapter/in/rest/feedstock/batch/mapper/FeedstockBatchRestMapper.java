@@ -9,6 +9,7 @@ import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockBatchName;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSource;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockVessel;
 import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.batch.dto.CreateFeedstockBatchRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.batch.dto.FeedstockBatchResponse;
@@ -41,6 +42,7 @@ public final class FeedstockBatchRestMapper {
     return new CreateFeedstockBatchCommand(
         CiderMakerId.of(requireNonNull(request.ciderMakerId(), CIDER_MAKER_ID_REQUIRED)),
         FeedstockBatchName.of(request.name()),
+        vesselOf(request.vessel()),
         requireNonNull(request.type(), "feedstock type cannot be null"),
         FeedstockSeason.of(request.season().startsOn(), request.season().endsOn()),
         sourceOf(request.source()),
@@ -58,6 +60,7 @@ public final class FeedstockBatchRestMapper {
         batch.batchId().value(),
         batch.ciderMakerId().value(),
         batch.name().value(),
+        toResponse(batch.vessel()),
         batch.type(),
         toResponse(batch.season()),
         toResponse(batch.source()),
@@ -75,6 +78,7 @@ public final class FeedstockBatchRestMapper {
         batch.batchId().value(),
         batch.ciderMakerId().value(),
         batch.name().value(),
+        toResponse(batch.vessel()),
         batch.type(),
         toResponse(batch.season()),
         toResponse(batch.source()),
@@ -95,6 +99,8 @@ public final class FeedstockBatchRestMapper {
         batchId,
         CiderMakerId.of(requireNonNull(request.ciderMakerId(), CIDER_MAKER_ID_REQUIRED)),
         FeedstockBatchName.of(request.name()),
+        vesselOf(request.vessel()),
+        isBlank(request.vessel()),
         requireNonNull(request.type(), "feedstock type cannot be null"),
         FeedstockSeason.of(request.season().startsOn(), request.season().endsOn()),
         sourceOf(request.source()),
@@ -116,6 +122,8 @@ public final class FeedstockBatchRestMapper {
         batchId,
         CiderMakerId.of(requireNonNull(request.ciderMakerId(), CIDER_MAKER_ID_REQUIRED)),
         nameOf(request.name()),
+        vesselOf(request.vessel()),
+        isPresentBlank(request.vessel()),
         request.type(),
         seasonOf(request.season()),
         sourceOf(request.source()),
@@ -134,8 +142,16 @@ public final class FeedstockBatchRestMapper {
     return source == null ? null : source.value();
   }
 
+  private static @Nullable String toResponse(@Nullable FeedstockVessel vessel) {
+    return vessel == null ? null : vessel.value();
+  }
+
   private static @Nullable FeedstockBatchName nameOf(@Nullable String name) {
     return name == null ? null : FeedstockBatchName.of(name);
+  }
+
+  private static @Nullable FeedstockVessel vesselOf(@Nullable String vessel) {
+    return isBlank(vessel) ? null : FeedstockVessel.of(vessel);
   }
 
   private static @Nullable FeedstockSeason seasonOf(@Nullable FeedstockSeasonRequest request) {
