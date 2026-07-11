@@ -14,6 +14,7 @@ import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockBatchName;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockVessel;
 import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
 import org.craft.mcs.cap.core.production.application.port.in.CreateProductionBatchCommand;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionFeedstockTraceSnapshot;
@@ -125,7 +126,8 @@ class CreateProductionBatchRollbackDataJdbcTest {
         FeedstockBatchId.newId(),
         ciderMakerId,
         FeedstockBatchName.of("Late juice"),
-        FeedstockType.APPLE_JUICE,
+        FeedstockVessel.of("Tank A-01"),
+        FeedstockType.JUICE,
         FeedstockSeason.of(LocalDate.parse("2026-10-01"), LocalDate.parse("2026-12-15")),
         VolumeValue.ofLiters("250")
     );

@@ -31,7 +31,10 @@ public interface FeedstockBatchApi {
 
   @Operation(
       summary = "Create feedstock batch",
-      description = "Creates a feedstock batch with season dates, optional source and available volume.",
+      description = """
+          Creates a feedstock batch with optional vessel, season dates, optional source and
+          available volume.
+          """,
       requestBody = @RequestBody(
           description = "Feedstock batch creation payload.",
           required = true,
@@ -177,7 +180,7 @@ public interface FeedstockBatchApi {
 
   @Operation(
       summary = "Patch feedstock batch",
-      description = "Partially updates editable feedstock batch fields. Blank optional text values clear the field."
+      description = "Partially updates editable feedstock batch fields. Blank optional text values clear that field."
   )
   @ApiResponse(
       responseCode = "200",

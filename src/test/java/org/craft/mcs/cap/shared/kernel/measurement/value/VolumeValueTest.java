@@ -25,6 +25,11 @@ class VolumeValueTest {
   }
 
   @Test
+  void exposesMilliliterPrecisionStepForInputMetadata() {
+    assertThat(VolumeValue.stepValue()).isEqualByComparingTo("0.001");
+  }
+
+  @Test
   void rejectsNegativeVolume() {
     assertThatThrownBy(() -> VolumeValue.ofLiters("-0.1"))
         .isInstanceOf(DomainRuleViolationException.class);
@@ -35,8 +40,9 @@ class VolumeValueTest {
     final var left = VolumeValue.ofLiters("12.50");
     final var right = VolumeValue.ofLiters("12.500");
 
-    assertThat(left).isEqualByComparingTo(right);
-    assertThat(left).isEqualTo(right);
-    assertThat(left).hasSameHashCodeAs(right);
+    assertThat(left)
+        .isEqualByComparingTo(right)
+        .isEqualTo(right)
+        .hasSameHashCodeAs(right);
   }
 }

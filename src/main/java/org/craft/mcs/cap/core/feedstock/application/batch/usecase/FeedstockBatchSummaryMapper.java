@@ -21,6 +21,7 @@ public final class FeedstockBatchSummaryMapper {
         batch.batchId(),
         batch.ciderMakerId(),
         batch.name(),
+        batch.vessel(),
         batch.type(),
         batch.season(),
         batch.source(),

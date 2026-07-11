@@ -12,6 +12,7 @@ import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockBatchName;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockVessel;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurement;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurementId;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.value.FeedstockMeasurementName;
@@ -86,7 +87,8 @@ class UpdateFeedstockMeasurementServiceTest {
         FeedstockBatchId.newId(),
         CiderMakerId.of(randomUUID()),
         FeedstockBatchName.of("Late season fruit"),
-        FeedstockType.APPLE_JUICE,
+        FeedstockVessel.of("Tank A-01"),
+        FeedstockType.JUICE,
         FeedstockSeason.of(LocalDate.parse("2026-10-01"), LocalDate.parse("2026-12-15")),
         VolumeValue.ofLiters("250.000")
     );

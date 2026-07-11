@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS feedstock_batches
     batch_id                 UUID                     NOT NULL PRIMARY KEY,
     cider_maker_id           UUID                     NOT NULL,
     name                     VARCHAR(160)             NOT NULL,
+    vessel                   VARCHAR(160),
     type                     VARCHAR(32)              NOT NULL,
     season_starts_on         DATE                     NOT NULL,
     season_ends_on           DATE                     NOT NULL,
@@ -18,11 +19,21 @@ CREATE TABLE IF NOT EXISTS feedstock_batches
     CONSTRAINT chk_feedstock_batches_season_dates
         CHECK (season_ends_on >= season_starts_on),
     CONSTRAINT chk_feedstock_batches_available_volume
-        CHECK (available_volume_liters >= 0)
+        CHECK (available_volume_liters > 0)
 );
 
 CREATE INDEX IF NOT EXISTS idx_feedstock_batches_cider_maker_id
     ON feedstock_batches (cider_maker_id);
+
+ALTER TABLE IF EXISTS feedstock_batches
+    ADD COLUMN IF NOT EXISTS vessel VARCHAR(160);
+
+ALTER TABLE IF EXISTS feedstock_batches
+    DROP CONSTRAINT IF EXISTS chk_feedstock_batches_available_volume;
+
+ALTER TABLE IF EXISTS feedstock_batches
+    ADD CONSTRAINT chk_feedstock_batches_available_volume
+        CHECK (available_volume_liters > 0) NOT VALID;
 
 CREATE INDEX IF NOT EXISTS idx_feedstock_batches_cider_maker_season
     ON feedstock_batches (cider_maker_id, season_starts_on, season_ends_on);

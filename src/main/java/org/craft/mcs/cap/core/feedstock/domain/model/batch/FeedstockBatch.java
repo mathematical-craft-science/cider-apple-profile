@@ -8,6 +8,7 @@ import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockBatchN
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSource;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockVessel;
 import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
@@ -22,10 +23,11 @@ import static java.util.Objects.requireNonNull;
 /**
  * Aggregate root for a physical lot of available raw material owned by a cider maker.
  *
- * <p>A batch is the operational entity a cider maker manages as source material: it has a season, optional
- * source/origin, available volume and lifecycle state. Chemical values are intentionally not stored
- * on the batch itself; they are measured over time by {@code FeedstockMeasurement}. Application
- * query services define the current profile as the latest measurement for the batch.
+ * <p>A batch is the operational entity a cider maker manages as source material: it has a season,
+ * optional vessel, optional source/origin, available volume and lifecycle state. Chemical values are
+ * intentionally not stored on the batch itself; they are measured over time by
+ * {@code FeedstockMeasurement}. Application query services define the current profile as the latest
+ * measurement for the batch.
  *
  * <p>The aggregate owns stock invariants such as consuming no more volume than is available. This
  * keeps production-batch creation and future blending reservations anchored to the feedstock
@@ -40,6 +42,8 @@ public final class FeedstockBatch {
   private final @NonNull CiderMakerId ciderMakerId;
 
   private @NonNull FeedstockBatchName name;
+
+  private @Nullable FeedstockVessel vessel;
 
   private @NonNull FeedstockType type;
 
@@ -58,6 +62,7 @@ public final class FeedstockBatch {
       @NonNull FeedstockBatchId batchId,
       @NonNull CiderMakerId ciderMakerId,
       @NonNull FeedstockBatchName name,
+      @Nullable FeedstockVessel vessel,
       @NonNull FeedstockType type,
       @NonNull FeedstockSeason season,
       @Nullable FeedstockSource source,
@@ -68,6 +73,7 @@ public final class FeedstockBatch {
     this.batchId = requireNonNull(batchId, "feedstock batch id cannot be null");
     this.ciderMakerId = requireNonNull(ciderMakerId, "cider maker id cannot be null");
     this.name = requireNonNull(name, "feedstock batch name cannot be null");
+    this.vessel = vessel;
     this.type = requireNonNull(type, "feedstock type cannot be null");
     this.season = requireNonNull(season, "feedstock season cannot be null");
     this.source = source;
@@ -80,14 +86,17 @@ public final class FeedstockBatch {
       @NonNull FeedstockBatchId batchId,
       @NonNull CiderMakerId ciderMakerId,
       @NonNull FeedstockBatchName name,
+      @Nullable FeedstockVessel vessel,
       @NonNull FeedstockType type,
       @NonNull FeedstockSeason season,
       @NonNull VolumeValue availableVolume
   ) {
+    requirePositiveAvailableVolume(availableVolume);
     return new FeedstockBatch(
         batchId,
         ciderMakerId,
         name,
+        vessel,
         type,
         season,
         null,
@@ -102,6 +111,7 @@ public final class FeedstockBatch {
       @NonNull FeedstockBatchId batchId,
       @NonNull CiderMakerId ciderMakerId,
       @NonNull FeedstockBatchName name,
+      @Nullable FeedstockVessel vessel,
       @NonNull FeedstockType type,
       @NonNull FeedstockSeason season,
       @Nullable FeedstockSource source,
@@ -113,6 +123,7 @@ public final class FeedstockBatch {
         batchId,
         ciderMakerId,
         name,
+        vessel,
         type,
         season,
         source,
@@ -132,6 +143,10 @@ public final class FeedstockBatch {
 
   public @NonNull FeedstockBatchName name() {
     return name;
+  }
+
+  public @Nullable FeedstockVessel vessel() {
+    return vessel;
   }
 
   public @NonNull FeedstockType type() {
@@ -167,6 +182,16 @@ public final class FeedstockBatch {
     return this;
   }
 
+  public @NonNull FeedstockBatch changeVessel(@NonNull FeedstockVessel vessel) {
+    this.vessel = requireNonNull(vessel, "feedstock vessel cannot be null");
+    return this;
+  }
+
+  public @NonNull FeedstockBatch clearVessel() {
+    this.vessel = null;
+    return this;
+  }
+
   public @NonNull FeedstockBatch changeType(@NonNull FeedstockType type) {
     this.type = requireNonNull(type, "feedstock type cannot be null");
     return this;
@@ -188,7 +213,12 @@ public final class FeedstockBatch {
   }
 
   public @NonNull FeedstockBatch changeAvailableVolume(@NonNull VolumeValue availableVolume) {
-    this.availableVolume = requireNonNull(availableVolume, "available volume cannot be null");
+    this.availableVolume = requirePositiveAvailableVolume(availableVolume);
+    return this;
+  }
+
+  public @NonNull FeedstockBatch ensureAvailableVolumeIsPositive() {
+    requirePositiveAvailableVolume(availableVolume);
     return this;
   }
 
@@ -227,5 +257,13 @@ public final class FeedstockBatch {
 
     final var normalized = value.strip();
     return normalized.isEmpty() ? null : normalized;
+  }
+
+  private static @NonNull VolumeValue requirePositiveAvailableVolume(@NonNull VolumeValue availableVolume) {
+    requireNonNull(availableVolume, "available volume cannot be null");
+    if (availableVolume.isZero()) {
+      throw new DomainRuleViolationException("feedstock batch available volume must be greater than zero");
+    }
+    return availableVolume;
   }
 }

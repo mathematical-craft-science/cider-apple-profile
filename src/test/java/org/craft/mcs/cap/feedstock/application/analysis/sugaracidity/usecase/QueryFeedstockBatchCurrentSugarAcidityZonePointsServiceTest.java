@@ -1,6 +1,7 @@
 package org.craft.mcs.cap.feedstock.application.analysis.sugaracidity.usecase;
 
 import java.time.LocalDate;
+import java.time.Month;
 import java.util.List;
 import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityAssessor;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileProjector;
@@ -19,6 +20,7 @@ import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockBatchName;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockVessel;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurement;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurementId;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.value.FeedstockMeasurementName;
@@ -116,8 +118,9 @@ class QueryFeedstockBatchCurrentSugarAcidityZonePointsServiceTest {
         FeedstockBatchId.newId(),
         ciderMakerId,
         FeedstockBatchName.of("Late season juice"),
-        FeedstockType.APPLE_JUICE,
-        FeedstockSeason.of(LocalDate.of(2026, 9, 1), LocalDate.of(2026, 12, 31)),
+        FeedstockVessel.of("Tank A-01"),
+        FeedstockType.JUICE,
+        FeedstockSeason.of(LocalDate.of(2026, Month.SEPTEMBER, 1), LocalDate.of(2026, Month.DECEMBER, 31)),
         VolumeValue.ofLiters("100")
     );
   }

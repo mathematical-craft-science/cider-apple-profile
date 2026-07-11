@@ -39,6 +39,7 @@ public final class UpdateFeedstockBatchService
   private @NonNull FeedstockBatchSummary updateInTransaction(@NonNull UpdateFeedstockBatchCommand command) {
     final var batch = findOwnedBatch(command);
     applyChanges(batch, command);
+    batch.ensureAvailableVolumeIsPositive();
     return toSummary(feedstockBatchRepository.save(batch));
   }
 
@@ -70,6 +71,7 @@ public final class UpdateFeedstockBatchService
     if (name != null) {
       batch.rename(name);
     }
+    applyVesselChange(batch, command);
     final var type = command.type();
     if (type != null) {
       batch.changeType(type);
@@ -94,8 +96,23 @@ public final class UpdateFeedstockBatchService
       batch.clearSource();
       return;
     }
-    if (command.source() != null) {
-      batch.changeSource(command.source());
+    final var source = command.source();
+    if (source != null) {
+      batch.changeSource(source);
+    }
+  }
+
+  private static void applyVesselChange(
+      @NonNull FeedstockBatch batch,
+      @NonNull UpdateFeedstockBatchCommand command
+  ) {
+    if (command.clearVessel()) {
+      batch.clearVessel();
+      return;
+    }
+    final var vessel = command.vessel();
+    if (vessel != null) {
+      batch.changeVessel(vessel);
     }
   }
 
@@ -107,8 +124,9 @@ public final class UpdateFeedstockBatchService
       batch.clearNote();
       return;
     }
-    if (command.note() != null) {
-      batch.changeNote(command.note());
+    final var note = command.note();
+    if (note != null) {
+      batch.changeNote(note);
     }
   }
 
@@ -117,6 +135,7 @@ public final class UpdateFeedstockBatchService
         batch.batchId(),
         batch.ciderMakerId(),
         batch.name(),
+        batch.vessel(),
         batch.type(),
         batch.season(),
         batch.source(),
