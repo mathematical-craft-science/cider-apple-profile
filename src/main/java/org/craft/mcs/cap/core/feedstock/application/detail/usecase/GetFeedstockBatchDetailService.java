@@ -23,6 +23,7 @@ import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.Fermentat
 import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapability;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileEvaluation;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileProjector;
+import org.craft.mcs.cap.shared.application.ApplicationInvariantViolationException;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
@@ -144,7 +145,7 @@ public final class GetFeedstockBatchDetailService implements GetFeedstockBatchDe
     }
 
     final var sugar = evaluation.axes().valueOf(ChemicalAxis.SUGAR)
-        .orElseThrow(() -> new IllegalStateException("ABV-capable profile must have sugar axis"));
+        .orElseThrow(() -> new ApplicationInvariantViolationException("ABV-capable profile must have sugar axis"));
     return new FeedstockCurrentProfilePotentialAbvView(
         sugar.valueKind(),
         potentialAbvPredictor.predict(SpecificGravityValue.of(sugar.value()))

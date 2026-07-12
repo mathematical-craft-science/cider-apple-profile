@@ -4,9 +4,8 @@ import java.time.LocalDate;
 import java.util.List;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.FeedstockBatchSummary;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.ListFeedstockBatchesQuery;
-import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchRepository;
+import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchQueryRepository;
 import org.craft.mcs.cap.core.feedstock.application.batch.usecase.ListFeedstockBatchesService;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockBatchName;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
@@ -26,12 +25,12 @@ class ListFeedstockBatchesServiceTest {
 
   @Test
   void filtersBatchesByOverlappingSeason() {
-    final var repository = mock(FeedstockBatchRepository.class);
+    final var repository = mock(FeedstockBatchQueryRepository.class);
     final var service = new ListFeedstockBatchesService(repository);
     final var ciderMakerId = CiderMakerId.of(randomUUID());
     final var matching = batch(ciderMakerId, "Late", "2026-10-01", "2026-12-15");
     final var outside = batch(ciderMakerId, "Early", "2026-08-01", "2026-08-31");
-    when(repository.findAllByCiderMakerId(ciderMakerId)).thenReturn(List.of(matching, outside));
+    when(repository.findSummariesByCiderMakerId(ciderMakerId)).thenReturn(List.of(matching, outside));
 
     final var result = service.list(new ListFeedstockBatchesQuery(
         ciderMakerId,
@@ -43,20 +42,22 @@ class ListFeedstockBatchesServiceTest {
         .containsExactly(matching.batchId());
   }
 
-  private static FeedstockBatch batch(
+  private static FeedstockBatchSummary batch(
       CiderMakerId ciderMakerId,
       String name,
       String startsOn,
       String endsOn
   ) {
-    return FeedstockBatch.create(
+    return new FeedstockBatchSummary(
         FeedstockBatchId.newId(),
         ciderMakerId,
         FeedstockBatchName.of(name),
         FeedstockVessel.of("Tank A-01"),
         FeedstockType.JUICE,
         FeedstockSeason.of(LocalDate.parse(startsOn), LocalDate.parse(endsOn)),
-        VolumeValue.ofLiters("250.000")
+        null,
+        VolumeValue.ofLiters("250.000"),
+        null
     );
   }
 }

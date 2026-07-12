@@ -54,7 +54,7 @@ public final class NorthAmericanProfileCalculator {
       return NorthAmericanLevel.VERY_HIGH;
     }
 
-    throw new IllegalStateException("value does not fit any range: " + value);
+    throw new DomainRuleViolationException("value does not fit any range: " + value);
   }
 
   private static @NonNull BigDecimal axisValue(

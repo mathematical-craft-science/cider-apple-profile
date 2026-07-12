@@ -1,6 +1,5 @@
 package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.feedstock.batch;
 
-import java.util.List;
 import java.util.UUID;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.feedstock.batch.entity.FeedstockBatchJdbcEntity;
 import org.jspecify.annotations.NonNull;
@@ -12,11 +11,6 @@ import org.springframework.data.repository.query.Param;
 
 interface SpringDataFeedstockBatchJdbcRepository
     extends ListCrudRepository<FeedstockBatchJdbcEntity, @NonNull UUID> {
-
-  @NonNull
-  List<@NonNull FeedstockBatchJdbcEntity> findAllByCiderMakerIdAndDeletedAtIsNullOrderByCreatedAtAscBatchIdAsc(
-      @NonNull UUID ciderMakerId
-  );
 
   @Modifying
   @Query("""

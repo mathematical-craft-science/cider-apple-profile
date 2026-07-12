@@ -23,15 +23,15 @@ import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.BuiltInSu
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.RectangleSugarAcidityZoneAssessor;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.SugarAcidityZone;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockMeasurementPointFilters;
+import org.craft.mcs.cap.core.feedstock.application.batch.port.in.FeedstockBatchSummary;
+import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchQueryRepository;
 import org.craft.mcs.cap.core.feedstock.application.measurement.query.FeedstockBatchCurrentMeasurementQueryService;
 import org.craft.mcs.cap.core.feedstock.application.planning.composition.port.in.OptimizeFeedstockBatchCompositionCommand;
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.PredefinedFeedstockProfileTargetSelection;
-import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchRepository;
 import org.craft.mcs.cap.core.feedstock.application.measurement.port.out.FeedstockMeasurementQueryRepository;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.out.LatestFeedstockMeasurementSugarAcidityPointCandidateQuery;
 import org.craft.mcs.cap.core.feedstock.application.planning.composition.usecase.OptimizeFeedstockBatchCompositionService;
 import org.craft.mcs.cap.core.feedstock.application.planning.composition.InsufficientFeedstockCompositionSourcesException;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockBatchName;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
@@ -69,7 +69,7 @@ class OptimizeFeedstockBatchCompositionServiceTest {
   @Test
   void buildsOptimizationProblemFromCurrentFeedstockBatchMeasurements() {
     final var measurementRepository = mock(FeedstockMeasurementQueryRepository.class);
-    final var batchRepository = mock(FeedstockBatchRepository.class);
+    final var batchRepository = mock(FeedstockBatchQueryRepository.class);
     final var optimizer = mockOptimizer();
     final var service = service(measurementRepository, batchRepository, optimizer);
     final var ciderMakerId = CiderMakerId.of(randomUUID());
@@ -80,7 +80,7 @@ class OptimizeFeedstockBatchCompositionServiceTest {
     final var secondUsableMeasurement = sample(secondUsableBatch.batchId(), profile("1.070", "6.0"));
     final var incompleteMeasurement = sample(incompleteBatch.batchId(), acidityOnlyProfile("6.0"));
 
-    when(batchRepository.findAllByCiderMakerId(ciderMakerId))
+    when(batchRepository.findSummariesByCiderMakerId(ciderMakerId))
         .thenReturn(List.of(usableBatch, secondUsableBatch, incompleteBatch));
     when(measurementRepository.findLatestSugarAcidityPointCandidates(any()))
         .thenReturn(List.of(incompleteMeasurement, usableMeasurement, secondUsableMeasurement));
@@ -118,14 +118,14 @@ class OptimizeFeedstockBatchCompositionServiceTest {
   @Test
   void requiresTanninWhenTanninTargetIsProvided() {
     final var measurementRepository = mock(FeedstockMeasurementQueryRepository.class);
-    final var batchRepository = mock(FeedstockBatchRepository.class);
+    final var batchRepository = mock(FeedstockBatchQueryRepository.class);
     final var optimizer = mockOptimizer();
     final var service = service(measurementRepository, batchRepository, optimizer);
     final var ciderMakerId = CiderMakerId.of(randomUUID());
     final var firstBatch = batch(ciderMakerId, "20");
     final var secondBatch = batch(ciderMakerId, "30");
 
-    when(batchRepository.findAllByCiderMakerId(ciderMakerId))
+    when(batchRepository.findSummariesByCiderMakerId(ciderMakerId))
         .thenReturn(List.of(firstBatch, secondBatch));
     when(measurementRepository.findLatestSugarAcidityPointCandidates(any()))
         .thenReturn(List.of(
@@ -149,13 +149,13 @@ class OptimizeFeedstockBatchCompositionServiceTest {
   @Test
   void rejectsOptimizationWhenLessThanTwoUsableSourcesRemainAfterFiltering() {
     final var measurementRepository = mock(FeedstockMeasurementQueryRepository.class);
-    final var batchRepository = mock(FeedstockBatchRepository.class);
+    final var batchRepository = mock(FeedstockBatchQueryRepository.class);
     final var optimizer = mockOptimizer();
     final var service = service(measurementRepository, batchRepository, optimizer);
     final var ciderMakerId = CiderMakerId.of(randomUUID());
     final var batch = batch(ciderMakerId, "20");
 
-    when(batchRepository.findAllByCiderMakerId(ciderMakerId))
+    when(batchRepository.findSummariesByCiderMakerId(ciderMakerId))
         .thenReturn(List.of(batch));
     when(measurementRepository.findLatestSugarAcidityPointCandidates(any()))
         .thenReturn(List.of(sample(batch.batchId(), profile("1.065", "5.5"))));
@@ -169,7 +169,7 @@ class OptimizeFeedstockBatchCompositionServiceTest {
 
   private static OptimizeFeedstockBatchCompositionService service(
       FeedstockMeasurementQueryRepository measurementRepository,
-      FeedstockBatchRepository batchRepository,
+      FeedstockBatchQueryRepository batchRepository,
       OptimizeChemicalProfileCompositionUseCase optimizer
   ) {
     final var thresholds = BuiltInSugarAcidityZoneProfiles.thresholds();
@@ -232,18 +232,20 @@ class OptimizeFeedstockBatchCompositionServiceTest {
     );
   }
 
-  private static FeedstockBatch batch(
+  private static FeedstockBatchSummary batch(
       CiderMakerId ciderMakerId,
       String availableVolumeLiters
   ) {
-    return FeedstockBatch.create(
+    return new FeedstockBatchSummary(
         FeedstockBatchId.newId(),
         ciderMakerId,
         FeedstockBatchName.of("Harvest batch"),
         FeedstockVessel.of("Tank A-01"),
         FeedstockType.JUICE,
         FeedstockSeason.of(LocalDate.parse("2026-09-01"), LocalDate.parse("2026-12-31")),
-        VolumeValue.ofLiters(availableVolumeLiters)
+        null,
+        VolumeValue.ofLiters(availableVolumeLiters),
+        null
     );
   }
 

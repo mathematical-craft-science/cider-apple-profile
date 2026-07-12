@@ -144,7 +144,9 @@ public final class DiscretizedBoundedChemicalProfileCompositionOptimizationStrat
   ) {
     final var optimizationSources = request.sources();
     if (shares.length != optimizationSources.size()) {
-      throw new IllegalStateException("share vector size does not match optimization source count");
+      throw new InvalidChemicalProfileCompositionOptimizationException(
+          "share vector size does not match optimization source count"
+      );
     }
 
     final var sources = new ArrayList<ChemicalProfileCompositionSource>();
@@ -187,7 +189,9 @@ public final class DiscretizedBoundedChemicalProfileCompositionOptimizationStrat
   ) {
     final var targetTotalVolume = request.targetTotalVolume();
     if (targetTotalVolume == null) {
-      throw new IllegalStateException("absolute volume optimization target total volume is missing");
+      throw new InvalidChemicalProfileCompositionOptimizationException(
+          "absolute volume optimization target total volume is missing"
+      );
     }
 
     return targetTotalVolume.liters()

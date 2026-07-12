@@ -25,4 +25,25 @@ class DomainExceptionArchitectureTest {
           .should()
           .dependOnClassesThat()
           .areAssignableTo(IllegalArgumentException.class);
+
+  @ArchTest
+  static final ArchRule domain_code_uses_domain_exceptions_instead_of_technical_state_exceptions =
+      noClasses()
+          .that()
+          .resideInAnyPackage(
+              "org.craft.mcs.cap.core..domain..",
+              "org.craft.mcs.cap.shared.kernel.."
+          )
+          .should()
+          .dependOnClassesThat()
+          .areAssignableTo(IllegalStateException.class);
+
+  @ArchTest
+  static final ArchRule core_code_does_not_construct_technical_state_exceptions =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.core..")
+          .should()
+          .dependOnClassesThat()
+          .areAssignableTo(IllegalStateException.class);
 }

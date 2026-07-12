@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.FeedstockBatchSummary;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.ListFeedstockBatchesQuery;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.ListFeedstockBatchesUseCase;
-import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchRepository;
+import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchQueryRepository;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
@@ -25,7 +25,7 @@ import static java.util.Objects.requireNonNull;
 public final class ListFeedstockBatchesService
     implements ListFeedstockBatchesUseCase {
 
-  private final @NonNull FeedstockBatchRepository feedstockBatchRepository;
+  private final @NonNull FeedstockBatchQueryRepository feedstockBatchQueryRepository;
 
   @Override
   public @NonNull List<@NonNull FeedstockBatchSummary> list(
@@ -33,10 +33,9 @@ public final class ListFeedstockBatchesService
   ) {
     requireNonNull(query, "list feedstock batches query cannot be null");
 
-    return feedstockBatchRepository.findAllByCiderMakerId(query.ciderMakerId())
+    return feedstockBatchQueryRepository.findSummariesByCiderMakerId(query.ciderMakerId())
         .stream()
         .filter(batch -> query.season() == null || overlaps(batch.season(), query.season()))
-        .map(FeedstockBatchSummaryMapper::toSummary)
         .toList();
   }
 

@@ -1,6 +1,7 @@
 package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.production;
 
 import java.util.UUID;
+import org.craft.mcs.cap.core.production.application.port.in.ProductionBatchView;
 import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatch;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatchId;
@@ -11,6 +12,7 @@ import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSna
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
+import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.production.query.JdbcProductionBatchQueryRepository;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.craft.mcs.cap.shared.testing.jdbc.PostgresDataJdbcTestConfiguration;
@@ -27,7 +29,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Import({
     PostgresDataJdbcTestConfiguration.class,
-    JdbcProductionBatchRepository.class
+    JdbcProductionBatchRepository.class,
+    JdbcProductionBatchQueryRepository.class
 })
 class JdbcProductionBatchRepositoryDataJdbcTest {
 
@@ -36,6 +39,9 @@ class JdbcProductionBatchRepositoryDataJdbcTest {
 
   @Autowired
   private JdbcProductionBatchRepository repository;
+
+  @Autowired
+  private JdbcProductionBatchQueryRepository queryRepository;
 
   @Test
   void savesExistingProductionBatchAsUpdate() {
@@ -64,10 +70,10 @@ class JdbcProductionBatchRepositoryDataJdbcTest {
   void findsProductionBatchById() {
     final var saved = repository.save(productionBatch());
 
-    final var found = repository.findById(saved.batchId());
+    final var found = queryRepository.findViewById(saved.batchId());
 
     assertThat(found).get()
-        .extracting(batch -> batch.batchId())
+        .extracting(ProductionBatchView::batchId)
         .isEqualTo(saved.batchId());
     assertThat(found.orElseThrow().profile().yeastAssimilableNitrogen())
         .isNotNull()
@@ -82,10 +88,10 @@ class JdbcProductionBatchRepositoryDataJdbcTest {
     final var second = repository.save(productionBatch(ciderMakerId, "Second production batch"));
     repository.save(productionBatch(CiderMakerId.of(UUID.randomUUID()), "Other production batch"));
 
-    final var found = repository.findAllByCiderMakerId(ciderMakerId);
+    final var found = queryRepository.findViewsByCiderMakerId(ciderMakerId);
 
     assertThat(found)
-        .extracting(batch -> batch.batchId())
+        .extracting(ProductionBatchView::batchId)
         .containsExactlyInAnyOrder(second.batchId(), first.batchId());
   }
 

@@ -201,6 +201,16 @@ public final class FeedstockMeasurementJdbcMapper {
   public static @NonNull FeedstockMeasurement toDomain(@NonNull FeedstockMeasurementJdbcEntity entity) {
     requireNonNull(entity, "feedstock measurement row cannot be null");
 
+    return FeedstockMeasurement.create(
+        measurementId(entity),
+        batchId(entity),
+        measurementName(entity),
+        toChemicalProfile(entity),
+        requireNonNull(entity.measuredAt, "measured at cannot be null")
+    ).changeNote(entity.note);
+  }
+
+  private static @NonNull ChemicalProfile toChemicalProfile(@NonNull FeedstockMeasurementJdbcEntity entity) {
     final var builder = ChemicalProfile.builder();
 
     toCharacteristic(
@@ -234,13 +244,19 @@ public final class FeedstockMeasurementJdbcMapper {
 
     builder.confidence(entity.chemicalProfileConfidence);
 
-    return FeedstockMeasurement.create(
-        FeedstockMeasurementId.of(requireNonNull(entity.measurementId, "feedstock measurement id cannot be null")),
-        FeedstockBatchId.of(requireNonNull(entity.batch, "feedstock batch reference cannot be null").getId()),
-        FeedstockMeasurementName.of(requireNonNull(entity.name, "feedstock measurement name cannot be null")),
-        builder.build(),
-        requireNonNull(entity.measuredAt, "measured at cannot be null")
-    ).changeNote(entity.note);
+    return builder.build();
+  }
+
+  private static @NonNull FeedstockMeasurementId measurementId(@NonNull FeedstockMeasurementJdbcEntity entity) {
+    return FeedstockMeasurementId.of(requireNonNull(entity.measurementId, "feedstock measurement id cannot be null"));
+  }
+
+  private static @NonNull FeedstockBatchId batchId(@NonNull FeedstockMeasurementJdbcEntity entity) {
+    return FeedstockBatchId.of(requireNonNull(entity.batch, "feedstock batch reference cannot be null").getId());
+  }
+
+  private static @NonNull FeedstockMeasurementName measurementName(@NonNull FeedstockMeasurementJdbcEntity entity) {
+    return FeedstockMeasurementName.of(requireNonNull(entity.name, "feedstock measurement name cannot be null"));
   }
 
   @Nullable

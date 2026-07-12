@@ -13,6 +13,7 @@ import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtracto
 import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapability;
 import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityAssessor;
 import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityNotMetException;
+import org.craft.mcs.cap.shared.application.ApplicationInvariantViolationException;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
@@ -54,7 +55,7 @@ public final class PredictFeedstockBatchCurrentPotentialAbvService
     }
 
     final var sugar = axes.valueOf(ChemicalAxis.SUGAR)
-        .orElseThrow(() -> new IllegalStateException("ABV-capable profile must have sugar axis"));
+        .orElseThrow(() -> new ApplicationInvariantViolationException("ABV-capable profile must have sugar axis"));
 
     return new FeedstockBatchCurrentPotentialAbvPrediction(
         currentMeasurement.batchId(),

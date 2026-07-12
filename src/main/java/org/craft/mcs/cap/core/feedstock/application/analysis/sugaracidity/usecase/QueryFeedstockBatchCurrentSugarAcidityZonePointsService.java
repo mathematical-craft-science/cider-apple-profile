@@ -13,10 +13,10 @@ import org.craft.mcs.cap.core.feedstock.application.measurement.query.FeedstockB
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockBatchCurrentSugarAcidityZonePointQuery;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockBatchCurrentSugarAcidityZoneResult;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.QueryFeedstockBatchCurrentSugarAcidityZonePointsUseCase;
-import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchRepository;
+import org.craft.mcs.cap.core.feedstock.application.batch.port.in.FeedstockBatchSummary;
+import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchQueryRepository;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.out.FeedstockMeasurementSugarAcidityPointCandidateCursor;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.out.LatestFeedstockMeasurementSugarAcidityPointCandidateQuery;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurement;
 import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityCriteria;
@@ -47,7 +47,7 @@ public final class QueryFeedstockBatchCurrentSugarAcidityZonePointsService
 
   private static final int PAGE_LOOKAHEAD = 1;
 
-  private final @NonNull FeedstockBatchRepository feedstockBatchRepository;
+  private final @NonNull FeedstockBatchQueryRepository feedstockBatchQueryRepository;
   private final @NonNull FeedstockBatchCurrentMeasurementQueryService currentMeasurementQueryService;
   private final @NonNull SugarAcidityProfileProjector sugarAcidityProfileProjector;
 
@@ -57,9 +57,9 @@ public final class QueryFeedstockBatchCurrentSugarAcidityZonePointsService
   ) {
     requireNonNull(query, "feedstock batch current sugar-acidity zone point query cannot be null");
 
-    final var batchesById = feedstockBatchRepository.findAllByCiderMakerId(query.ciderMakerId())
+    final var batchesById = feedstockBatchQueryRepository.findSummariesByCiderMakerId(query.ciderMakerId())
         .stream()
-        .collect(toMap(FeedstockBatch::batchId, Function.identity()));
+        .collect(toMap(FeedstockBatchSummary::batchId, Function.identity()));
 
     return ChunkedCursorPageCollector.collect(
         decodeCursor(query.page().after()),
@@ -83,7 +83,7 @@ public final class QueryFeedstockBatchCurrentSugarAcidityZonePointsService
   private @NonNull FeedstockBatchCurrentSugarAcidityZoneResult toResult(
       @NonNull FeedstockMeasurement measurement,
       @NonNull FeedstockBatchCurrentSugarAcidityZonePointQuery query,
-      @NonNull FeedstockBatch batch,
+      @NonNull FeedstockBatchSummary batch,
       @NonNull SugarAcidityProfileEvaluation evaluation
   ) {
     return new FeedstockBatchCurrentSugarAcidityZoneResult(
@@ -99,7 +99,7 @@ public final class QueryFeedstockBatchCurrentSugarAcidityZonePointsService
   private @NonNull Optional<@NonNull FeedstockBatchCurrentSugarAcidityZoneResult> toResultIfMatches(
       @NonNull FeedstockMeasurement measurement,
       @NonNull FeedstockBatchCurrentSugarAcidityZonePointQuery query,
-      @NonNull Map<@NonNull FeedstockBatchId, @NonNull FeedstockBatch> batchesById
+      @NonNull Map<@NonNull FeedstockBatchId, @NonNull FeedstockBatchSummary> batchesById
   ) {
     final var batch = batchesById.get(measurement.batchId());
     if (batch == null) {

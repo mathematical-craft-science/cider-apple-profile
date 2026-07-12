@@ -8,6 +8,7 @@ import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.i
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchRepository;
 import org.craft.mcs.cap.core.feedstock.application.measurement.port.out.FeedstockMeasurementRepository;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurementId;
+import org.craft.mcs.cap.shared.application.ApplicationInvariantViolationException;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 
@@ -40,7 +41,7 @@ public final class AssessFeedstockMeasurementSugarAcidityZoneService
     final var sample = feedstockMeasurementRepository.findById(measurementId)
         .orElseThrow(() -> new FeedstockMeasurementNotFoundException(measurementId));
     final var batch = feedstockBatchRepository.findById(sample.batchId())
-        .orElseThrow(() -> new IllegalStateException(
+        .orElseThrow(() -> new ApplicationInvariantViolationException(
             "feedstock measurement batch not found: " + sample.batchId().value()
         ));
     final var evaluation = sugarAcidityProfileProjector.project(sample.chemicalProfile());

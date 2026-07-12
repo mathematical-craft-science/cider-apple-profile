@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.FeedstockBatchCriteria;
 import org.craft.mcs.cap.core.feedstock.application.measurement.port.in.FeedstockMeasurementSummary;
@@ -112,45 +111,6 @@ class JdbcFeedstockMeasurementQueryRepository
   }
 
   @Override
-  public @NonNull List<@NonNull FeedstockMeasurement> findAllByCiderMakerId(@NonNull CiderMakerId ciderMakerId) {
-    requireNonNull(ciderMakerId, "cider maker id cannot be null");
-
-    return queryMeasurements("""
-        select sample.*
-        from feedstock_measurements sample
-        where sample.batch_id in (
-          select batch.batch_id
-          from feedstock_batches batch
-          where batch.cider_maker_id = :ciderMakerId
-            and batch.deleted_at is null
-        )
-        """, Map.of("ciderMakerId", ciderMakerId.value()));
-  }
-
-  @Override
-  public @NonNull List<@NonNull FeedstockMeasurement> findAllByCiderMakerIdAndSeason(
-      @NonNull CiderMakerId ciderMakerId,
-      @NonNull FeedstockSeason season
-  ) {
-    requireNonNull(ciderMakerId, "cider maker id cannot be null");
-    requireNonNull(season, "feedstock season cannot be null");
-
-    return queryMeasurements("""
-        select sample.*
-        from feedstock_measurements sample
-        join feedstock_batches batch on sample.batch_id = batch.batch_id
-        where batch.cider_maker_id = :ciderMakerId
-          and batch.deleted_at is null
-          and batch.season_starts_on <= :seasonEndsOn
-          and batch.season_ends_on >= :seasonStartsOn
-        """, Map.of(
-        "ciderMakerId", ciderMakerId.value(),
-        "seasonStartsOn", season.startsOn(),
-        "seasonEndsOn", season.endsOn()
-    ));
-  }
-
-  @Override
   public @NonNull List<@NonNull FeedstockMeasurement> findSugarAcidityPointCandidates(
       @NonNull FeedstockMeasurementSugarAcidityPointCandidateQuery query
   ) {
@@ -239,20 +199,9 @@ class JdbcFeedstockMeasurementQueryRepository
         WHERE sample.batch_id = :batchId
           AND batch.deleted_at IS NULL
         ORDER BY sample.measured_at DESC, sample.name ASC
-        """, Map.of("batchId", batchId.value()), (resultSet, rowNumber) -> {
-      final var measurement = FeedstockMeasurementJdbcMapper.toDomain(
-          FeedstockMeasurementJdbcMapper.fromResultSet(resultSet)
-      );
-      return new FeedstockMeasurementSummary(
-          measurement.measurementId(),
-          CiderMakerId.of(resultSet.getObject("cider_maker_id", UUID.class)),
-          measurement.batchId(),
-          measurement.name(),
-          measurement.measuredAt(),
-          measurement.chemicalProfile(),
-          measurement.note()
-      );
-    });
+        """, Map.of("batchId", batchId.value()), (resultSet, rowNumber) ->
+        FeedstockMeasurementSummaryJdbcMapper.fromResultSet(resultSet)
+    );
   }
 
   private @NonNull List<@NonNull FeedstockMeasurement> queryMeasurements(

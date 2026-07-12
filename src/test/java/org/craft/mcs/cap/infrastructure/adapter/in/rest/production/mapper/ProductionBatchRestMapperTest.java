@@ -11,6 +11,7 @@ import org.craft.mcs.cap.core.profileanalysis.abv.domain.StandardGravityDropAbvP
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
 import org.craft.mcs.cap.core.production.application.port.in.ProductionBatchCreated;
+import org.craft.mcs.cap.core.production.application.port.in.ProductionBatchView;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatch;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatchId;
 import org.craft.mcs.cap.core.production.domain.model.ProductionInput;
@@ -19,6 +20,7 @@ import org.craft.mcs.cap.core.production.domain.model.ProductionSourceCompositio
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceReference;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchKind;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchName;
+import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchStatus;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
@@ -39,7 +41,7 @@ class ProductionBatchRestMapperTest {
 
   @Test
   void mapsYanAndCalculatedPotentialAbvToDetailsResponse() {
-    final var batch = productionBatch();
+    final var batch = productionBatchView();
 
     final var response = ProductionBatchRestMapper.toDetailsResponse(batch, potentialAbvPredictor);
 
@@ -86,7 +88,7 @@ class ProductionBatchRestMapperTest {
 
   @Test
   void mapsYanAndCalculatedPotentialAbvToListResponseItems() {
-    final var response = ProductionBatchRestMapper.toListResponse(List.of(productionBatch()), potentialAbvPredictor);
+    final var response = ProductionBatchRestMapper.toListResponse(List.of(productionBatchView()), potentialAbvPredictor);
 
     assertThat(response.batches()).hasSize(1);
     final var item = response.batches().getFirst();
@@ -104,6 +106,20 @@ class ProductionBatchRestMapperTest {
         CiderMakerId.of(UUID.randomUUID()),
         ProductionBatchName.of("Late season cuvee"),
         ProductionBatchKind.CIDER,
+        VolumeValue.ofLiters("120"),
+        profileSnapshot(),
+        null,
+        null
+    );
+  }
+
+  private static ProductionBatchView productionBatchView() {
+    return new ProductionBatchView(
+        ProductionBatchId.newId(),
+        CiderMakerId.of(UUID.randomUUID()),
+        ProductionBatchName.of("Late season cuvee"),
+        ProductionBatchKind.CIDER,
+        ProductionBatchStatus.PLANNED,
         VolumeValue.ofLiters("120"),
         profileSnapshot(),
         null,

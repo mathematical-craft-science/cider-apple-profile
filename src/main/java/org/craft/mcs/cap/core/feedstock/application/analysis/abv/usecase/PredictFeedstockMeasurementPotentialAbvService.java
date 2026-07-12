@@ -13,6 +13,7 @@ import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfile
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
 import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPredictor;
+import org.craft.mcs.cap.shared.application.ApplicationInvariantViolationException;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
@@ -47,7 +48,7 @@ public final class PredictFeedstockMeasurementPotentialAbvService
     final var sample = feedstockMeasurementRepository.findById(measurementId)
         .orElseThrow(() -> new FeedstockMeasurementNotFoundException(measurementId));
     final var batch = feedstockBatchRepository.findById(sample.batchId())
-        .orElseThrow(() -> new IllegalStateException(
+        .orElseThrow(() -> new ApplicationInvariantViolationException(
             "feedstock measurement batch not found: " + sample.batchId().value()
         ));
     final var axes = axisExtractor.extract(sample.chemicalProfile());
@@ -58,7 +59,7 @@ public final class PredictFeedstockMeasurementPotentialAbvService
     }
 
     final var sugar = axes.valueOf(ChemicalAxis.SUGAR)
-        .orElseThrow(() -> new IllegalStateException("ABV-capable profile must have sugar axis"));
+        .orElseThrow(() -> new ApplicationInvariantViolationException("ABV-capable profile must have sugar axis"));
 
     return new FeedstockMeasurementPotentialAbvPrediction(
         sample.measurementId(),

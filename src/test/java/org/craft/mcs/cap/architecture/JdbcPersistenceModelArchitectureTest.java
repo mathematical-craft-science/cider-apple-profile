@@ -156,7 +156,9 @@ class JdbcPersistenceModelArchitectureTest {
 
   private static boolean hasReadModelQueryName(@NonNull JavaMethod method) {
     final var name = method.getName().toLowerCase(Locale.ROOT);
-    return name.contains("candidate")
+    return name.startsWith("findall")
+        || name.startsWith("list")
+        || name.contains("candidate")
         || name.contains("point")
         || name.contains("summary")
         || name.contains("projection")

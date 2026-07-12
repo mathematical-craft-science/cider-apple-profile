@@ -12,10 +12,10 @@ import org.craft.mcs.cap.core.feedstock.application.measurement.query.FeedstockB
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockBatchCurrentSugarAcidityZonePointQuery;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockBatchCurrentSugarAcidityZoneResult;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockMeasurementPointFilters;
-import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchRepository;
+import org.craft.mcs.cap.core.feedstock.application.batch.port.in.FeedstockBatchSummary;
+import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchQueryRepository;
 import org.craft.mcs.cap.core.feedstock.application.measurement.port.out.FeedstockMeasurementQueryRepository;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.usecase.QueryFeedstockBatchCurrentSugarAcidityZonePointsService;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockBatchName;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
@@ -48,14 +48,14 @@ class QueryFeedstockBatchCurrentSugarAcidityZonePointsServiceTest {
 
   @Test
   void queriesLatestMeasurementPerBatchForCurrentGraphPoints() {
-    final var batchRepository = mock(FeedstockBatchRepository.class);
+    final var batchRepository = mock(FeedstockBatchQueryRepository.class);
     final var repository = mock(FeedstockMeasurementQueryRepository.class);
     final var service = service(batchRepository, repository);
     final var ciderMakerId = CiderMakerId.of(randomUUID());
     final var batch = batch(ciderMakerId);
     final var current = measurement("Current", batch.batchId());
 
-    when(batchRepository.findAllByCiderMakerId(ciderMakerId)).thenReturn(List.of(batch));
+    when(batchRepository.findSummariesByCiderMakerId(ciderMakerId)).thenReturn(List.of(batch));
     when(repository.findLatestSugarAcidityPointCandidates(any())).thenReturn(List.of(current));
 
     final var result = service.query(new FeedstockBatchCurrentSugarAcidityZonePointQuery(
@@ -74,7 +74,7 @@ class QueryFeedstockBatchCurrentSugarAcidityZonePointsServiceTest {
   }
 
   private static QueryFeedstockBatchCurrentSugarAcidityZonePointsService service(
-      FeedstockBatchRepository batchRepository,
+      FeedstockBatchQueryRepository batchRepository,
       FeedstockMeasurementQueryRepository repository
   ) {
     return new QueryFeedstockBatchCurrentSugarAcidityZonePointsService(
@@ -113,15 +113,17 @@ class QueryFeedstockBatchCurrentSugarAcidityZonePointsServiceTest {
     );
   }
 
-  private static FeedstockBatch batch(CiderMakerId ciderMakerId) {
-    return FeedstockBatch.create(
+  private static FeedstockBatchSummary batch(CiderMakerId ciderMakerId) {
+    return new FeedstockBatchSummary(
         FeedstockBatchId.newId(),
         ciderMakerId,
         FeedstockBatchName.of("Late season juice"),
         FeedstockVessel.of("Tank A-01"),
         FeedstockType.JUICE,
         FeedstockSeason.of(LocalDate.of(2026, Month.SEPTEMBER, 1), LocalDate.of(2026, Month.DECEMBER, 31)),
-        VolumeValue.ofLiters("100")
+        null,
+        VolumeValue.ofLiters("100"),
+        null
     );
   }
 }

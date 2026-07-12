@@ -9,6 +9,7 @@ import java.util.stream.Stream;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileEvaluationAxis;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetObjective;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.SugarAcidityCoordinates;
+import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
@@ -265,7 +266,7 @@ public final class TargetAwareCompositionContributionRoleAssessor
         case -1 -> BELOW_TARGET;
         case 0 -> MATCHES_TARGET;
         case 1 -> ABOVE_TARGET;
-        default -> throw new IllegalStateException("unexpected BigDecimal signum");
+        default -> throw new DomainRuleViolationException("unexpected BigDecimal signum");
       };
     }
 

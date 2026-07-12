@@ -48,6 +48,18 @@ class ContextBoundaryArchitectureTest {
           );
 
   @ArchTest
+  static final ArchRule core_domain_does_not_depend_on_spring_or_jakarta_persistence =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.core..domain..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAnyPackage(
+              "org.springframework..",
+              "jakarta.persistence.."
+          );
+
+  @ArchTest
   static final ArchRule bounded_context_domains_do_not_depend_on_cider_analysis =
       noClasses()
           .that()
@@ -72,6 +84,15 @@ class ContextBoundaryArchitectureTest {
           .resideInAPackage("org.craft.mcs.cap.core.feedstock.domain..");
 
   @ArchTest
+  static final ArchRule production_application_does_not_depend_on_feedstock_context =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.core.production.application..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAPackage("org.craft.mcs.cap.core.feedstock..");
+
+  @ArchTest
   static final ArchRule production_domain_does_not_use_feedstock_batch_id_directly =
       noClasses()
           .that()
@@ -88,6 +109,15 @@ class ContextBoundaryArchitectureTest {
           .and()
           .haveSimpleNameEndingWith("Repository")
           .should(notDeclareReadModelQueryMethods());
+
+  @ArchTest
+  static final ArchRule jdbc_aggregate_entity_mapping_does_not_depend_on_application_read_models =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc..entity..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAPackage("org.craft.mcs.cap.core..application..port.in..");
 
   private static @NonNull ArchCondition<JavaClass> notDeclareReadModelQueryMethods() {
     return new ArchCondition<>("not declare read-model query methods") {
@@ -130,7 +160,9 @@ class ContextBoundaryArchitectureTest {
 
   private static boolean hasReadModelQueryName(@NonNull JavaMethod method) {
     final var name = method.getName().toLowerCase(Locale.ROOT);
-    return name.contains("candidate")
+    return name.startsWith("findall")
+        || name.startsWith("list")
+        || name.contains("candidate")
         || name.contains("point")
         || name.contains("summary")
         || name.contains("projection")
