@@ -1,6 +1,7 @@
 package org.craft.mcs.cap.core.feedstock.application.measurement.usecase;
 
 import lombok.RequiredArgsConstructor;
+import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
 import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchNotFoundException;
 import org.craft.mcs.cap.core.feedstock.application.measurement.port.in.CreateFeedstockMeasurementCommand;
 import org.craft.mcs.cap.core.feedstock.application.measurement.port.in.CreateFeedstockMeasurementUseCase;
@@ -31,6 +32,7 @@ public final class CreateFeedstockMeasurementService
 
   private final @NonNull FeedstockBatchRepository feedstockBatchRepository;
   private final @NonNull FeedstockMeasurementRepository feedstockMeasurementRepository;
+  private final @NonNull FeedstockAccessControl feedstockAccessControl;
   private final @NonNull TransactionHelper transactionHelper;
 
   @Override
@@ -40,6 +42,7 @@ public final class CreateFeedstockMeasurementService
     return transactionHelper.callInTransactionNonNull(() -> {
       final var batch = feedstockBatchRepository.findById(command.batchId())
           .orElseThrow(() -> new FeedstockBatchNotFoundException(command.batchId()));
+      feedstockAccessControl.requireWriteAccess(batch.ciderMakerId());
 
       final var sample = FeedstockMeasurement.create(
           FeedstockMeasurementId.newId(),

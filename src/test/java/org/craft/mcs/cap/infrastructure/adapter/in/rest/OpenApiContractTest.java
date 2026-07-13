@@ -2,34 +2,189 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.StreamSupport;
-import org.craft.mcs.cap.TestcontainersConfiguration;
+import org.craft.mcs.cap.core.account.application.port.in.EnsureCurrentAccountProvisionedUseCase;
+import org.craft.mcs.cap.core.account.application.port.in.GetCurrentAccountUseCase;
+import org.craft.mcs.cap.core.account.application.port.in.ListAccountWorkspacesUseCase;
+import org.craft.mcs.cap.core.account.application.port.in.ListWorkspaceMembersUseCase;
+import org.craft.mcs.cap.core.account.application.port.in.UpdateAccountProfileUseCase;
+import org.craft.mcs.cap.core.account.application.port.in.UpdateUserPreferencesUseCase;
+import org.craft.mcs.cap.core.appleprofile.application.abv.port.in.PredictAppleVarietyPotentialAbvUseCase;
+import org.craft.mcs.cap.core.appleprofile.application.classification.port.in.ClassifyAppleVarietyNorthAmericanUseCase;
+import org.craft.mcs.cap.core.appleprofile.application.classification.port.in.ClassifyAppleVarietyUseCase;
+import org.craft.mcs.cap.core.appleprofile.application.profiletarget.port.in.QueryAppleVarietyProfileTargetCandidatesUseCase;
+import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.in.AssessAppleVarietySugarAcidityZoneUseCase;
+import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.in.QueryAppleVarietySugarAcidityZonePointsUseCase;
+import org.craft.mcs.cap.core.batchtraceability.application.port.in.QueryBatchTraceabilityUseCase;
+import org.craft.mcs.cap.core.feedstock.application.analysis.abv.port.in.PredictFeedstockBatchCurrentPotentialAbvUseCase;
+import org.craft.mcs.cap.core.feedstock.application.analysis.abv.port.in.PredictFeedstockMeasurementPotentialAbvUseCase;
+import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.QueryFeedstockBatchProfileTargetCandidatesUseCase;
+import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.ScoreFeedstockBatchProfileTargetUseCase;
+import org.craft.mcs.cap.core.feedstock.application.analysis.readiness.port.in.AssessFeedstockBatchCurrentFermentationStartReadinessUseCase;
+import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.AssessFeedstockBatchCurrentSugarAcidityZoneUseCase;
+import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.AssessFeedstockMeasurementSugarAcidityZoneUseCase;
+import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.QueryFeedstockBatchCurrentSugarAcidityZonePointsUseCase;
+import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.QueryFeedstockMeasurementSugarAcidityZonePointsUseCase;
+import org.craft.mcs.cap.core.feedstock.application.batch.port.in.CreateFeedstockBatchUseCase;
+import org.craft.mcs.cap.core.feedstock.application.batch.port.in.DeleteFeedstockBatchUseCase;
+import org.craft.mcs.cap.core.feedstock.application.batch.port.in.ListFeedstockBatchesUseCase;
+import org.craft.mcs.cap.core.feedstock.application.batch.port.in.UpdateFeedstockBatchUseCase;
+import org.craft.mcs.cap.core.feedstock.application.currentprofile.usecase.FeedstockCurrentMeasurementFreshnessPolicy;
+import org.craft.mcs.cap.core.feedstock.application.detail.port.in.GetFeedstockBatchDetailUseCase;
+import org.craft.mcs.cap.core.feedstock.application.measurement.port.in.CreateFeedstockMeasurementUseCase;
+import org.craft.mcs.cap.core.feedstock.application.measurement.port.in.DeleteFeedstockMeasurementUseCase;
+import org.craft.mcs.cap.core.feedstock.application.measurement.port.in.ListFeedstockMeasurementsUseCase;
+import org.craft.mcs.cap.core.feedstock.application.measurement.port.in.UpdateFeedstockMeasurementUseCase;
+import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.QueryFeedstockPlanningBatchesUseCase;
+import org.craft.mcs.cap.core.feedstock.application.planning.composition.port.in.OptimizeFeedstockBatchCompositionUseCase;
+import org.craft.mcs.cap.core.production.application.port.in.CreateProductionBatchUseCase;
+import org.craft.mcs.cap.core.production.application.port.in.GetProductionBatchUseCase;
+import org.craft.mcs.cap.core.production.application.port.in.ListProductionBatchesUseCase;
+import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPredictor;
+import org.craft.mcs.cap.core.profileanalysis.composition.calculation.application.port.in.CalculateChemicalProfileCompositionUseCase;
+import org.craft.mcs.cap.core.profileanalysis.composition.optimization.application.port.in.OptimizeChemicalProfileCompositionUseCase;
+import org.craft.mcs.cap.core.profileanalysis.sugaracidity.graph.domain.SugarAcidityGraphMetadata;
+import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.SugarAcidityTargetResolver;
+import org.craft.mcs.cap.infrastructure.adapter.in.importer.appleprofile.AppleVarietyJsonSeedImporter;
+import org.craft.mcs.cap.infrastructure.configuration.OpenApiConfiguration;
+import org.craft.mcs.cap.infrastructure.configuration.openapi.DecimalMinOpenApiCustomizer;
+import org.craft.mcs.cap.infrastructure.configuration.openapi.PolymorphicSchemaFlatteningCustomizer;
+import org.craft.mcs.cap.infrastructure.configuration.openapi.RequiredNullableOpenApiCustomizer;
+import org.craft.mcs.cap.infrastructure.configuration.openapi.RestDtoSchemaTypeScanner;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springdoc.core.configuration.SpringDocConfiguration;
+import org.springdoc.core.configuration.SpringDocJavadocConfiguration;
+import org.springdoc.core.configuration.SpringDocSecurityConfiguration;
+import org.springdoc.core.properties.SpringDocConfigProperties;
+import org.springdoc.webmvc.core.configuration.SpringDocWebMvcConfiguration;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
-@Import(TestcontainersConfiguration.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@WebMvcTest
+@AutoConfigureMockMvc(addFilters = false)
+@EnableConfigurationProperties(SpringDocConfigProperties.class)
+@Import({
+    OpenApiConfiguration.class,
+    SpringDocConfiguration.class,
+    SpringDocJavadocConfiguration.class,
+    SpringDocSecurityConfiguration.class,
+    SpringDocWebMvcConfiguration.class,
+    DecimalMinOpenApiCustomizer.class,
+    PolymorphicSchemaFlatteningCustomizer.class,
+    RequiredNullableOpenApiCustomizer.class,
+    RestDtoSchemaTypeScanner.class
+})
+@MockitoBean(types = {
+    EnsureCurrentAccountProvisionedUseCase.class,
+    GetCurrentAccountUseCase.class,
+    ListAccountWorkspacesUseCase.class,
+    ListWorkspaceMembersUseCase.class,
+    UpdateAccountProfileUseCase.class,
+    UpdateUserPreferencesUseCase.class,
+    PredictAppleVarietyPotentialAbvUseCase.class,
+    ClassifyAppleVarietyNorthAmericanUseCase.class,
+    ClassifyAppleVarietyUseCase.class,
+    QueryAppleVarietyProfileTargetCandidatesUseCase.class,
+    AssessAppleVarietySugarAcidityZoneUseCase.class,
+    QueryAppleVarietySugarAcidityZonePointsUseCase.class,
+    QueryBatchTraceabilityUseCase.class,
+    PredictFeedstockBatchCurrentPotentialAbvUseCase.class,
+    PredictFeedstockMeasurementPotentialAbvUseCase.class,
+    QueryFeedstockBatchProfileTargetCandidatesUseCase.class,
+    ScoreFeedstockBatchProfileTargetUseCase.class,
+    AssessFeedstockBatchCurrentFermentationStartReadinessUseCase.class,
+    AssessFeedstockBatchCurrentSugarAcidityZoneUseCase.class,
+    AssessFeedstockMeasurementSugarAcidityZoneUseCase.class,
+    QueryFeedstockBatchCurrentSugarAcidityZonePointsUseCase.class,
+    QueryFeedstockMeasurementSugarAcidityZonePointsUseCase.class,
+    CreateFeedstockBatchUseCase.class,
+    DeleteFeedstockBatchUseCase.class,
+    ListFeedstockBatchesUseCase.class,
+    UpdateFeedstockBatchUseCase.class,
+    FeedstockCurrentMeasurementFreshnessPolicy.class,
+    GetFeedstockBatchDetailUseCase.class,
+    CreateFeedstockMeasurementUseCase.class,
+    DeleteFeedstockMeasurementUseCase.class,
+    ListFeedstockMeasurementsUseCase.class,
+    UpdateFeedstockMeasurementUseCase.class,
+    QueryFeedstockPlanningBatchesUseCase.class,
+    OptimizeFeedstockBatchCompositionUseCase.class,
+    CreateProductionBatchUseCase.class,
+    GetProductionBatchUseCase.class,
+    ListProductionBatchesUseCase.class,
+    PotentialAbvPredictor.class,
+    CalculateChemicalProfileCompositionUseCase.class,
+    OptimizeChemicalProfileCompositionUseCase.class,
+    SugarAcidityGraphMetadata.class,
+    SugarAcidityTargetResolver.class,
+    AppleVarietyJsonSeedImporter.class
+})
 class OpenApiContractTest {
 
-  @LocalServerPort
-  private int port;
+  @Autowired
+  private MockMvc mockMvc;
 
   private final ObjectMapper objectMapper = new ObjectMapper();
+
+  @Test
+  void openApiDescribesBearerJwtAuthentication() throws Exception {
+    final var openApi = openApi();
+    final var bearerAuth = openApi.path("components").path("securitySchemes").path("bearerAuth");
+
+    assertThat(List.of(
+        bearerAuth.path("type").asText(),
+        bearerAuth.path("scheme").asText(),
+        bearerAuth.path("bearerFormat").asText(),
+        openApi.path("security").path(0).has("bearerAuth")
+    )).containsExactly("http", "bearer", "JWT", true);
+  }
+
+  @Test
+  void openApiDescribesEveryAccountDtoProperty() throws Exception {
+    final var openApi = openApi();
+    final var accountSchemaNames = List.of(
+        "AccountMeResponse",
+        "AccountMembershipResponse",
+        "AccountPreferencesResponse",
+        "AccountUserResponse",
+        "AccountWorkspaceListResponse",
+        "AccountWorkspaceMemberListResponse",
+        "AccountWorkspaceMemberResponse",
+        "AccountWorkspaceResponse",
+        "UpdateAccountPreferencesRequest",
+        "UpdateAccountProfileRequest"
+    );
+    final var propertiesWithoutDescription = accountSchemaNames.stream()
+        .flatMap(schemaName -> openApi.path("components")
+            .path("schemas")
+            .path(schemaName)
+            .path("properties")
+            .properties()
+            .stream()
+            .filter(property -> property.getValue().path("description").asText().isBlank())
+            .map(property -> schemaName + "." + property.getKey()))
+        .sorted()
+        .toList();
+
+    assertThat(propertiesWithoutDescription)
+        .as("account DTO properties must have semantic OpenAPI descriptions")
+        .isEmpty();
+  }
 
   @Test
   void openApiDescribesJsonMediaTypesAndStrongDtoSchemas() throws Exception {
@@ -69,6 +224,13 @@ class OpenApiContractTest {
     assertJsonResponse(openApi, "/production-batches", "post", "201");
     assertJsonResponse(openApi, "/production-batches/{batchId}", "get");
     assertJsonResponse(openApi, "/production-batches/{batchId}/traceability", "get");
+    assertJsonResponse(openApi, "/account/me", "get");
+    assertJsonResponse(openApi, "/account/profile", "get");
+    assertJsonResponse(openApi, "/account/profile", "patch");
+    assertJsonResponse(openApi, "/account/preferences", "get");
+    assertJsonResponse(openApi, "/account/preferences", "patch");
+    assertJsonResponse(openApi, "/account/workspaces", "get");
+    assertJsonResponse(openApi, "/account/workspaces/{workspaceId}/members", "get");
 
     assertJsonRequest(openApi, "/feedstock-batches", "post");
     assertJsonRequest(openApi, "/feedstock-batches/{batchId}", "put");
@@ -87,6 +249,8 @@ class OpenApiContractTest {
     assertJsonRequest(openApi, "/feedstock-workspace/batches", "post");
     assertJsonRequest(openApi, "/feedstock-measurements/sugar-acidity-zone-points", "post");
     assertJsonRequest(openApi, "/production-batches", "post");
+    assertJsonRequest(openApi, "/account/profile", "patch");
+    assertJsonRequest(openApi, "/account/preferences", "patch");
 
     assertStringFormat(schemaProperty(openApi, "AppleVarietyClassificationResponse", "varietyId"), "uuid");
     assertStringFormat(schemaProperty(openApi, "FeedstockBatchResponse", "batchId"), "uuid");
@@ -126,6 +290,29 @@ class OpenApiContractTest {
         "confidence"
     );
     assertRequiredProperties(openApi, "DecimalQuantityResponse", "value", "unit");
+    assertRequiredProperties(
+        openApi,
+        "AccountMeResponse",
+        "user",
+        "activeWorkspace",
+        "memberships",
+        "preferences",
+        "permissions"
+    );
+    assertRequiredProperties(
+        openApi,
+        "AccountWorkspaceResponse",
+        "workspaceId",
+        "ciderMakerId",
+        "name",
+        "type"
+    );
+    assertStringFormat(schemaProperty(openApi, "AccountWorkspaceResponse", "workspaceId"), "uuid");
+    assertStringFormat(schemaProperty(openApi, "AccountWorkspaceResponse", "ciderMakerId"), "uuid");
+    assertRequiredProperties(openApi, "UpdateAccountProfileRequest", "displayName");
+    assertNotRequiredProperties(openApi, "UpdateAccountProfileRequest", "avatarUrl");
+    assertNullable(schemaProperty(openApi, "UpdateAccountProfileRequest", "avatarUrl"));
+    assertRequiredProperties(openApi, "UpdateAccountPreferencesRequest", "locale", "timeZone");
 
     assertRequiredProperties(
         openApi,
@@ -877,20 +1064,18 @@ class OpenApiContractTest {
   }
 
   private JsonNode openApi() throws Exception {
-    final var response = HttpClient.newHttpClient().send(
-        HttpRequest.newBuilder(URI.create("http://localhost:" + port + "/v3/api-docs"))
-            .GET()
-            .build(),
-        HttpResponse.BodyHandlers.ofString()
-    );
+    final var response = mockMvc.perform(get("/v3/api-docs"))
+        .andExpect(status().isOk())
+        .andReturn()
+        .getResponse();
 
-    assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
-    assertThat(response.headers().firstValue("content-type"))
-        .hasValueSatisfying(contentType ->
-            assertThat(MediaType.parseMediaType(contentType).isCompatibleWith(MediaType.APPLICATION_JSON)).isTrue()
-        );
+    assertThat(response.getContentType())
+        .isNotNull()
+        .satisfies(contentType -> assertThat(
+            MediaType.parseMediaType(contentType).isCompatibleWith(MediaType.APPLICATION_JSON)
+        ).isTrue());
 
-    return objectMapper.readTree(response.body());
+    return objectMapper.readTree(response.getContentAsString());
   }
 
   private static void assertJsonResponse(

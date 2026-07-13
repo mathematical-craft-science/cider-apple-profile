@@ -1,6 +1,7 @@
 package org.craft.mcs.cap.core.feedstock.application.batch.usecase;
 
 import lombok.RequiredArgsConstructor;
+import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.CreateFeedstockBatchCommand;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.CreateFeedstockBatchUseCase;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.FeedstockBatchCreated;
@@ -27,11 +28,13 @@ public final class CreateFeedstockBatchService
     implements CreateFeedstockBatchUseCase {
 
   private final @NonNull FeedstockBatchRepository feedstockBatchRepository;
+  private final @NonNull FeedstockAccessControl feedstockAccessControl;
   private final @NonNull TransactionHelper transactionHelper;
 
   @Override
   public @NonNull FeedstockBatchCreated create(@NonNull CreateFeedstockBatchCommand command) {
     requireNonNull(command, "create feedstock batch command cannot be null");
+    feedstockAccessControl.requireWriteAccess(command.ciderMakerId());
 
     return transactionHelper.callInTransactionNonNull(() -> {
       final var batch = FeedstockBatch.create(

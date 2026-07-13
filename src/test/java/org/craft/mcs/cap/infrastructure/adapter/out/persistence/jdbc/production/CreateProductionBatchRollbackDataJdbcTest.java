@@ -8,6 +8,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.craft.mcs.cap.core.production.application.authorization.port.out.ProductionAccessControl;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchRepository;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
@@ -163,6 +164,19 @@ class CreateProductionBatchRollbackDataJdbcTest {
     @Bean
     Clock clock() {
       return Clock.fixed(Instant.parse("2026-05-18T10:15:30Z"), ZoneOffset.UTC);
+    }
+
+    @Bean
+    ProductionAccessControl productionAccessControl() {
+      return new ProductionAccessControl() {
+        @Override
+        public void requireReadAccess(@NonNull CiderMakerId ciderMakerId) {
+        }
+
+        @Override
+        public void requireWriteAccess(@NonNull CiderMakerId ciderMakerId) {
+        }
+      };
     }
 
     private static AxisValue axis(

@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileEvaluation;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileProjector;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.SugarAcidityZoneAssessment;
@@ -43,6 +44,7 @@ public final class QueryFeedstockMeasurementSugarAcidityZonePointsService
   private static final int PAGE_LOOKAHEAD = 1;
 
   private final @NonNull FeedstockMeasurementQueryRepository feedstockMeasurementQueryRepository;
+  private final @NonNull FeedstockAccessControl feedstockAccessControl;
   private final @NonNull SugarAcidityProfileProjector sugarAcidityProfileProjector;
 
   @Override
@@ -50,6 +52,7 @@ public final class QueryFeedstockMeasurementSugarAcidityZonePointsService
       @NonNull FeedstockMeasurementSugarAcidityZonePointQuery query
   ) {
     requireNonNull(query, "feedstock measurement sugar-acidity zone point query cannot be null");
+    feedstockAccessControl.requireReadAccess(query.ciderMakerId());
 
     return ChunkedCursorPageCollector.collect(
         decodeCursor(query.page().after()),

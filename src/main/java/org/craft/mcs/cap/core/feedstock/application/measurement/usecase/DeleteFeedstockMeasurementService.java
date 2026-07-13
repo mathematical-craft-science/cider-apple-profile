@@ -1,6 +1,7 @@
 package org.craft.mcs.cap.core.feedstock.application.measurement.usecase;
 
 import lombok.RequiredArgsConstructor;
+import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
 import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchNotFoundException;
 import org.craft.mcs.cap.core.feedstock.application.FeedstockMeasurementNotFoundException;
 import org.craft.mcs.cap.core.feedstock.application.measurement.port.in.DeleteFeedstockMeasurementCommand;
@@ -28,6 +29,7 @@ public final class DeleteFeedstockMeasurementService
 
   private final @NonNull FeedstockBatchRepository feedstockBatchRepository;
   private final @NonNull FeedstockMeasurementRepository feedstockMeasurementRepository;
+  private final @NonNull FeedstockAccessControl feedstockAccessControl;
   private final @NonNull TransactionHelper transactionHelper;
 
   @Override
@@ -35,8 +37,9 @@ public final class DeleteFeedstockMeasurementService
     requireNonNull(command, "delete feedstock measurement command cannot be null");
 
     transactionHelper.executeInTransaction(() -> {
-      feedstockBatchRepository.findById(command.batchId())
+      final var batch = feedstockBatchRepository.findById(command.batchId())
           .orElseThrow(() -> new FeedstockBatchNotFoundException(command.batchId()));
+      feedstockAccessControl.requireWriteAccess(batch.ciderMakerId());
       final var measurement = feedstockMeasurementRepository.findById(command.measurementId())
           .orElseThrow(() -> new FeedstockMeasurementNotFoundException(command.measurementId()));
 

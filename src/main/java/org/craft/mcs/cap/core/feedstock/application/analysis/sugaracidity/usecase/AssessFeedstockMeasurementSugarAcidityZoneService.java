@@ -1,13 +1,15 @@
 package org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.usecase;
 
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileProjector;
+import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
+import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchNotFoundException;
 import org.craft.mcs.cap.core.feedstock.application.FeedstockMeasurementNotFoundException;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.AssessFeedstockMeasurementSugarAcidityZoneUseCase;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockMeasurementSugarAcidityZoneResult;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchRepository;
 import org.craft.mcs.cap.core.feedstock.application.measurement.port.out.FeedstockMeasurementRepository;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurementId;
+import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileProjector;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 
@@ -29,6 +31,7 @@ public final class AssessFeedstockMeasurementSugarAcidityZoneService
 
   private final @NonNull FeedstockMeasurementRepository feedstockMeasurementRepository;
   private final @NonNull FeedstockBatchRepository feedstockBatchRepository;
+  private final @NonNull FeedstockAccessControl feedstockAccessControl;
   private final @NonNull SugarAcidityProfileProjector sugarAcidityProfileProjector;
 
   @Override
@@ -40,9 +43,8 @@ public final class AssessFeedstockMeasurementSugarAcidityZoneService
     final var sample = feedstockMeasurementRepository.findById(measurementId)
         .orElseThrow(() -> new FeedstockMeasurementNotFoundException(measurementId));
     final var batch = feedstockBatchRepository.findById(sample.batchId())
-        .orElseThrow(() -> new IllegalStateException(
-            "feedstock measurement batch not found: " + sample.batchId().value()
-        ));
+        .orElseThrow(() -> new FeedstockBatchNotFoundException(sample.batchId()));
+    feedstockAccessControl.requireReadAccess(batch.ciderMakerId());
     final var evaluation = sugarAcidityProfileProjector.project(sample.chemicalProfile());
 
     return new FeedstockMeasurementSugarAcidityZoneResult(

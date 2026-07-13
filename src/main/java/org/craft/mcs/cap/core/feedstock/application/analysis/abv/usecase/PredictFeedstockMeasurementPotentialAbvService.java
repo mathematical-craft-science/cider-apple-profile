@@ -1,6 +1,7 @@
 package org.craft.mcs.cap.core.feedstock.application.analysis.abv.usecase;
 
 import lombok.RequiredArgsConstructor;
+import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
 import org.craft.mcs.cap.core.feedstock.application.FeedstockMeasurementNotFoundException;
 import org.craft.mcs.cap.core.feedstock.application.analysis.abv.port.in.FeedstockMeasurementPotentialAbvPrediction;
 import org.craft.mcs.cap.core.feedstock.application.analysis.abv.port.in.PredictFeedstockMeasurementPotentialAbvUseCase;
@@ -34,6 +35,7 @@ public final class PredictFeedstockMeasurementPotentialAbvService
 
   private final @NonNull FeedstockMeasurementRepository feedstockMeasurementRepository;
   private final @NonNull FeedstockBatchRepository feedstockBatchRepository;
+  private final @NonNull FeedstockAccessControl feedstockAccessControl;
   private final @NonNull ChemicalProfileAxisExtractor axisExtractor;
   private final @NonNull ChemicalProfileCapabilityAssessor capabilityAssessor;
   private final @NonNull PotentialAbvPredictor predictor;
@@ -50,6 +52,7 @@ public final class PredictFeedstockMeasurementPotentialAbvService
         .orElseThrow(() -> new IllegalStateException(
             "feedstock measurement batch not found: " + sample.batchId().value()
         ));
+    feedstockAccessControl.requireReadAccess(batch.ciderMakerId());
     final var axes = axisExtractor.extract(sample.chemicalProfile());
     final var capability = capabilityAssessor.assess(axes, ChemicalProfileCapability.ABV_PREDICTION);
 

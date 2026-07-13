@@ -1,6 +1,7 @@
 package org.craft.mcs.cap.feedstock.application.analysis.profiletarget.usecase;
 
 import java.util.List;
+import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.port.in.ProfileTargetScoringPurpose;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.usecase.BuiltInProfileTargetScoringPurposeNormalizerPolicy;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.usecase.ScoreProfileTargetDistanceCandidatesService;
@@ -105,7 +106,8 @@ class ScoreFeedstockBatchProfileTargetServiceTest {
             new BuiltInProfileAxisNormalizerSelector(thresholds),
             new BuiltInProfileTargetScoringPurposeNormalizerPolicy(),
             new BuiltInProfileTargetObjectiveFunctionFactory()
-        )
+        ),
+        mock(FeedstockAccessControl.class)
     );
   }
 

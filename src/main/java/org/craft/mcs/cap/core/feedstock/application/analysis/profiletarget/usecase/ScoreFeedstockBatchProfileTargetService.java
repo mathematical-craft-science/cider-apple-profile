@@ -3,6 +3,7 @@ package org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.usec
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.port.in.ScoreProfileTargetDistanceCandidatesCommand;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.port.in.ScoreProfileTargetDistanceCandidatesUseCase;
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.FeedstockBatchProfileTargetScore;
@@ -32,12 +33,14 @@ public final class ScoreFeedstockBatchProfileTargetService
   private final @NonNull FeedstockBatchProfileTargetScorableCandidateProvider candidateProvider;
   private final @NonNull FeedstockProfileTargetObjectiveResolver objectiveResolver;
   private final @NonNull ScoreProfileTargetDistanceCandidatesUseCase scoreProfileTargetDistanceCandidatesUseCase;
+  private final @NonNull FeedstockAccessControl feedstockAccessControl;
 
   @Override
   public @NonNull FeedstockBatchProfileTargetScores score(
       @NonNull ScoreFeedstockBatchProfileTargetCommand command
   ) {
     requireNonNull(command, "score feedstock batch profile target command cannot be null");
+    feedstockAccessControl.requireReadAccess(command.ciderMakerId());
 
     final var candidates = candidateProvider.findCandidates(command);
     final var candidatesByReference = candidates.stream()

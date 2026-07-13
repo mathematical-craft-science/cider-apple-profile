@@ -1,0 +1,51 @@
+package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.account.entity;
+
+import java.time.Instant;
+import java.util.UUID;
+import org.craft.mcs.cap.core.account.domain.model.WorkspaceType;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.annotation.Version;
+import org.springframework.data.relational.core.mapping.Column;
+import org.springframework.data.relational.core.mapping.Table;
+
+import static java.util.Objects.requireNonNull;
+
+
+/** Spring Data JDBC aggregate entity for a CAP workspace. */
+@Table("workspaces")
+public class WorkspaceJdbcEntity {
+
+  @Id @NonNull @Column("workspace_id") UUID workspaceId;
+  @NonNull @Column("cider_maker_id") UUID ciderMakerId;
+  @NonNull @Column("name") String name;
+  @NonNull @Column("type") WorkspaceType type;
+  @Nullable @Column("external_organization_provider") String externalOrganizationProvider;
+  @Nullable @Column("external_organization_subject") String externalOrganizationSubject;
+  @CreatedDate @Nullable @Column("created_at") Instant createdAt;
+  @LastModifiedDate @Nullable @Column("updated_at") Instant updatedAt;
+  @Version @Column("version") long version;
+
+  @SuppressWarnings("NullAway.Init")
+  public WorkspaceJdbcEntity() {
+  }
+
+  WorkspaceJdbcEntity(
+      @NonNull UUID workspaceId,
+      @NonNull UUID ciderMakerId,
+      @NonNull String name,
+      @NonNull WorkspaceType type,
+      @Nullable String externalOrganizationProvider,
+      @Nullable String externalOrganizationSubject
+  ) {
+    this.workspaceId = requireNonNull(workspaceId, "workspace id cannot be null");
+    this.ciderMakerId = requireNonNull(ciderMakerId, "cider maker id cannot be null");
+    this.name = requireNonNull(name, "workspace name cannot be null");
+    this.type = requireNonNull(type, "workspace type cannot be null");
+    this.externalOrganizationProvider = externalOrganizationProvider;
+    this.externalOrganizationSubject = externalOrganizationSubject;
+  }
+}

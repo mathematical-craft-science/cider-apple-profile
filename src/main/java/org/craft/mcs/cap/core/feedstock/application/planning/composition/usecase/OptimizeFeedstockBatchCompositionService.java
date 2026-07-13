@@ -5,6 +5,7 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
 import org.craft.mcs.cap.core.profileanalysis.composition.optimization.application.port.in.OptimizeChemicalProfileCompositionCommand;
 import org.craft.mcs.cap.core.profileanalysis.composition.optimization.application.port.in.OptimizeChemicalProfileCompositionUseCase;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionSourceReference;
@@ -60,12 +61,14 @@ public final class OptimizeFeedstockBatchCompositionService implements OptimizeF
   private final @NonNull SugarAcidityProfileProjector sugarAcidityProfileProjector;
   private final @NonNull SugarAcidityTargetResolver targetResolver;
   private final @NonNull OptimizeChemicalProfileCompositionUseCase optimizeChemicalProfileCompositionUseCase;
+  private final @NonNull FeedstockAccessControl feedstockAccessControl;
 
   @Override
   public @NonNull OptimizeFeedstockBatchCompositionResult optimize(
       @NonNull OptimizeFeedstockBatchCompositionCommand command
   ) {
     requireNonNull(command, "optimize feedstock batch composition command cannot be null");
+    feedstockAccessControl.requireReadAccess(command.ciderMakerId());
 
     final var batchesById = feedstockBatchRepository.findAllByCiderMakerId(command.ciderMakerId())
         .stream()

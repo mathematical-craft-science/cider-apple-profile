@@ -8,6 +8,7 @@ import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
 import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchNotFoundException;
 import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchOwnershipMismatchException;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchRepository;
@@ -79,6 +80,7 @@ class GetFeedstockBatchDetailServiceTest {
   ) {
     return new GetFeedstockBatchDetailService(
         batchRepository,
+        mock(FeedstockAccessControl.class),
         listMeasurements,
         new FeedstockBatchCurrentMeasurementQueryService(measurementRepository),
         projector(),

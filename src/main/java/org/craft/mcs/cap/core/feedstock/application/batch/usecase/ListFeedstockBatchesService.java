@@ -2,6 +2,7 @@ package org.craft.mcs.cap.core.feedstock.application.batch.usecase;
 
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.FeedstockBatchSummary;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.ListFeedstockBatchesQuery;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.ListFeedstockBatchesUseCase;
@@ -26,12 +27,14 @@ public final class ListFeedstockBatchesService
     implements ListFeedstockBatchesUseCase {
 
   private final @NonNull FeedstockBatchRepository feedstockBatchRepository;
+  private final @NonNull FeedstockAccessControl feedstockAccessControl;
 
   @Override
   public @NonNull List<@NonNull FeedstockBatchSummary> list(
       @NonNull ListFeedstockBatchesQuery query
   ) {
     requireNonNull(query, "list feedstock batches query cannot be null");
+    feedstockAccessControl.requireReadAccess(query.ciderMakerId());
 
     return feedstockBatchRepository.findAllByCiderMakerId(query.ciderMakerId())
         .stream()

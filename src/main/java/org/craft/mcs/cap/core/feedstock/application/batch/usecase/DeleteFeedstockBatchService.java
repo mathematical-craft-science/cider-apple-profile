@@ -1,6 +1,7 @@
 package org.craft.mcs.cap.core.feedstock.application.batch.usecase;
 
 import lombok.RequiredArgsConstructor;
+import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
 import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchNotFoundException;
 import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchOwnershipMismatchException;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.DeleteFeedstockBatchCommand;
@@ -26,11 +27,13 @@ public final class DeleteFeedstockBatchService
     implements DeleteFeedstockBatchUseCase {
 
   private final @NonNull FeedstockBatchRepository feedstockBatchRepository;
+  private final @NonNull FeedstockAccessControl feedstockAccessControl;
   private final @NonNull TransactionHelper transactionHelper;
 
   @Override
   public void delete(@NonNull DeleteFeedstockBatchCommand command) {
     requireNonNull(command, "delete feedstock batch command cannot be null");
+    feedstockAccessControl.requireWriteAccess(command.ciderMakerId());
 
     transactionHelper.executeInTransaction(() -> {
       final var batch = feedstockBatchRepository.findById(command.batchId())

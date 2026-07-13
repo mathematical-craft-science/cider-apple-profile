@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
+import org.craft.mcs.cap.core.production.application.authorization.port.out.ProductionAccessControl;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchRepository;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
@@ -51,6 +52,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
 
 
 class CreateProductionBatchServiceTest {
@@ -71,6 +73,7 @@ class CreateProductionBatchServiceTest {
         productionRepository,
         traceability,
         batchId -> feedstockSnapshot(),
+        mock(ProductionAccessControl.class),
         transactionHelper,
         CLOCK
     );
@@ -109,6 +112,7 @@ class CreateProductionBatchServiceTest {
           throw new IllegalStateException("trace persistence failed");
         },
         batchId -> feedstockSnapshot(),
+        mock(ProductionAccessControl.class),
         transactionHelper,
         CLOCK
     );

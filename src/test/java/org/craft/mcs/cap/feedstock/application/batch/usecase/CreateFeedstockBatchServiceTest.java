@@ -2,6 +2,7 @@ package org.craft.mcs.cap.feedstock.application.batch.usecase;
 
 import java.time.LocalDate;
 import java.util.function.Supplier;
+import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.CreateFeedstockBatchCommand;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchRepository;
 import org.craft.mcs.cap.core.feedstock.application.batch.usecase.CreateFeedstockBatchService;
@@ -31,7 +32,11 @@ class CreateFeedstockBatchServiceTest {
   @Test
   void createsFeedstockBatchWithOptionalSourceAndVessel() {
     final var repository = mock(FeedstockBatchRepository.class);
-    final var service = new CreateFeedstockBatchService(repository, transactionHelper());
+    final var service = new CreateFeedstockBatchService(
+        repository,
+        mock(FeedstockAccessControl.class),
+        transactionHelper()
+    );
     final var ciderMakerId = CiderMakerId.of(randomUUID());
     when(repository.save(any(FeedstockBatch.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -57,7 +62,11 @@ class CreateFeedstockBatchServiceTest {
   @Test
   void rejectsCreatingFeedstockBatchWithZeroAvailableVolume() {
     final var repository = mock(FeedstockBatchRepository.class);
-    final var service = new CreateFeedstockBatchService(repository, transactionHelper());
+    final var service = new CreateFeedstockBatchService(
+        repository,
+        mock(FeedstockAccessControl.class),
+        transactionHelper()
+    );
     final var command = new CreateFeedstockBatchCommand(
         CiderMakerId.of(randomUUID()),
         FeedstockBatchName.of("Late season fruit"),

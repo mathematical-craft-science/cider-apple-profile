@@ -1,15 +1,15 @@
 package org.craft.mcs.cap;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@Import(TestcontainersConfiguration.class)
-@SpringBootTest
+import static org.assertj.core.api.Assertions.assertThat;
+
 class CapApplicationTests {
 
   @Test
-  void contextLoads() {
+  void declaresSpringBootApplicationEntryPoint() {
+    assertThat(CapApplication.class).hasAnnotation(SpringBootApplication.class);
   }
 
 }

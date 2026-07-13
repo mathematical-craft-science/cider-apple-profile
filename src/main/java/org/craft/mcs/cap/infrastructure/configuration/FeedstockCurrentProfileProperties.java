@@ -3,6 +3,7 @@ package org.craft.mcs.cap.infrastructure.configuration;
 import java.time.Duration;
 import org.jspecify.annotations.NonNull;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.bind.DefaultValue;
 
 import static java.util.Objects.requireNonNull;
 
@@ -14,6 +15,7 @@ import static java.util.Objects.requireNonNull;
  */
 @ConfigurationProperties(prefix = "cap.feedstock.current-profile")
 public record FeedstockCurrentProfileProperties(
+    /* Policy settings used to assess the age of the latest feedstock measurement. */
     @NonNull MeasurementFreshnessProperties measurementFreshness
 ) {
 
@@ -25,7 +27,8 @@ public record FeedstockCurrentProfileProperties(
    * Configures freshness assessment for the latest measurement used as current batch evidence.
    */
   public record MeasurementFreshnessProperties(
-      @NonNull Duration staleAfter
+      /* Age after which the latest feedstock measurement is reported as stale. */
+      @DefaultValue("14d") @NonNull Duration staleAfter
   ) {
 
     public MeasurementFreshnessProperties {

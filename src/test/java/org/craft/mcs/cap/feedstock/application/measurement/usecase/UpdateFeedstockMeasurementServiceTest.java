@@ -3,6 +3,7 @@ package org.craft.mcs.cap.feedstock.application.measurement.usecase;
 import java.time.LocalDate;
 import java.util.Optional;
 import java.util.function.Supplier;
+import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
 import org.craft.mcs.cap.core.feedstock.application.measurement.port.in.UpdateFeedstockMeasurementCommand;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchRepository;
 import org.craft.mcs.cap.core.feedstock.application.measurement.port.out.FeedstockMeasurementRepository;
@@ -44,6 +45,7 @@ class UpdateFeedstockMeasurementServiceTest {
     final var service = new UpdateFeedstockMeasurementService(
         batchRepository,
         measurementRepository,
+        mock(FeedstockAccessControl.class),
         transactionHelper()
     );
     final var batch = batch();

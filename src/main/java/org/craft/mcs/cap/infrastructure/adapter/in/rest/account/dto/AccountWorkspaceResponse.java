@@ -1,0 +1,37 @@
+package org.craft.mcs.cap.infrastructure.adapter.in.rest.account.dto;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.UUID;
+import org.craft.mcs.cap.core.account.domain.model.WorkspaceType;
+import org.jspecify.annotations.NonNull;
+
+
+/** Transport representation of a CAP-owned product workspace. */
+@Schema(description = "CAP product workspace and its current cider-maker compatibility scope.")
+public record AccountWorkspaceResponse(
+    @Schema(
+        description = "Stable CAP identifier of the collaboration and future data-ownership scope.",
+        format = "uuid",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
+    @NonNull UUID workspaceId,
+    @Schema(
+        description = "Legacy cider-maker compatibility scope used by current business APIs.",
+        format = "uuid",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
+    @NonNull UUID ciderMakerId,
+    @Schema(
+        description = "Human-readable workspace name.",
+        example = "North Orchard Cidery",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
+    @NonNull String name,
+    @Schema(
+        description = "Business category of the CAP workspace.",
+        implementation = WorkspaceType.class,
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
+    @NonNull WorkspaceType type
+) {
+}

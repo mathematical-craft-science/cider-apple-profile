@@ -3,6 +3,7 @@ package org.craft.mcs.cap.feedstock.application.planning.composition.usecase;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
 import org.craft.mcs.cap.core.profileanalysis.composition.optimization.application.port.in.OptimizeChemicalProfileCompositionCommand;
 import org.craft.mcs.cap.core.profileanalysis.composition.optimization.application.port.in.OptimizeChemicalProfileCompositionResult;
 import org.craft.mcs.cap.core.profileanalysis.composition.optimization.application.port.in.OptimizeChemicalProfileCompositionUseCase;
@@ -184,7 +185,8 @@ class OptimizeFeedstockBatchCompositionServiceTest {
             new RectangleSugarAcidityZoneAssessor(thresholds, geometryProfile)
         ),
         new ZoneGeometrySugarAcidityTargetResolver(geometryProfile),
-        optimizer
+        optimizer,
+        mock(FeedstockAccessControl.class)
     );
   }
 

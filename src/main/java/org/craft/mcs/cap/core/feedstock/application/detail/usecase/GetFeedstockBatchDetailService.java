@@ -1,6 +1,7 @@
 package org.craft.mcs.cap.core.feedstock.application.detail.usecase;
 
 import lombok.RequiredArgsConstructor;
+import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
 import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchNotFoundException;
 import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchOwnershipMismatchException;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.FeedstockBatchSummary;
@@ -45,6 +46,7 @@ import static java.util.Objects.requireNonNull;
 public final class GetFeedstockBatchDetailService implements GetFeedstockBatchDetailUseCase {
 
   private final @NonNull FeedstockBatchRepository feedstockBatchRepository;
+  private final @NonNull FeedstockAccessControl feedstockAccessControl;
   private final @NonNull ListFeedstockMeasurementsUseCase listFeedstockMeasurementsUseCase;
   private final @NonNull FeedstockBatchCurrentMeasurementQueryService currentMeasurementQueryService;
   private final @NonNull SugarAcidityProfileProjector sugarAcidityProfileProjector;
@@ -55,6 +57,7 @@ public final class GetFeedstockBatchDetailService implements GetFeedstockBatchDe
   @Override
   public @NonNull FeedstockBatchDetailView get(@NonNull GetFeedstockBatchDetailQuery query) {
     requireNonNull(query, "feedstock batch detail query cannot be null");
+    feedstockAccessControl.requireReadAccess(query.ciderMakerId());
 
     final var batch = feedstockBatchRepository.findById(query.batchId())
         .orElseThrow(() -> new FeedstockBatchNotFoundException(query.batchId()));

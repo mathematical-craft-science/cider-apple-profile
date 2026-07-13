@@ -2,6 +2,7 @@ package org.craft.mcs.cap.feedstock.application.analysis.abv.usecase;
 
 import java.time.LocalDate;
 import java.util.Optional;
+import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchRepository;
 import org.craft.mcs.cap.core.feedstock.application.measurement.port.out.FeedstockMeasurementRepository;
 import org.craft.mcs.cap.core.feedstock.application.analysis.abv.usecase.PredictFeedstockMeasurementPotentialAbvService;
@@ -93,6 +94,7 @@ class PredictFeedstockMeasurementPotentialAbvServiceTest {
     return new PredictFeedstockMeasurementPotentialAbvService(
         repository,
         batchRepository,
+        mock(FeedstockAccessControl.class),
         new ChemicalProfileAxisExtractor(),
         new ChemicalProfileCapabilityAssessor(),
         new PotentialAbvPredictor(

@@ -2,6 +2,7 @@ package org.craft.mcs.cap.feedstock.application.batch.usecase;
 
 import java.time.LocalDate;
 import java.util.List;
+import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.FeedstockBatchSummary;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.ListFeedstockBatchesQuery;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchRepository;
@@ -27,7 +28,7 @@ class ListFeedstockBatchesServiceTest {
   @Test
   void filtersBatchesByOverlappingSeason() {
     final var repository = mock(FeedstockBatchRepository.class);
-    final var service = new ListFeedstockBatchesService(repository);
+    final var service = new ListFeedstockBatchesService(repository, mock(FeedstockAccessControl.class));
     final var ciderMakerId = CiderMakerId.of(randomUUID());
     final var matching = batch(ciderMakerId, "Late", "2026-10-01", "2026-12-15");
     final var outside = batch(ciderMakerId, "Early", "2026-08-01", "2026-08-31");

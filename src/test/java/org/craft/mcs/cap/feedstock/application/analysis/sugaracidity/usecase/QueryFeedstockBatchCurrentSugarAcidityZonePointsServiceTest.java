@@ -3,6 +3,7 @@ package org.craft.mcs.cap.feedstock.application.analysis.sugaracidity.usecase;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.List;
+import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
 import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityAssessor;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileProjector;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.BuiltInSugarAcidityZoneProfiles;
@@ -79,6 +80,7 @@ class QueryFeedstockBatchCurrentSugarAcidityZonePointsServiceTest {
   ) {
     return new QueryFeedstockBatchCurrentSugarAcidityZonePointsService(
         batchRepository,
+        mock(FeedstockAccessControl.class),
         new FeedstockBatchCurrentMeasurementQueryService(repository),
         projector()
     );

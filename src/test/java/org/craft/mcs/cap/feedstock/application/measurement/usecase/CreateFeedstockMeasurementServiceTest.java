@@ -3,6 +3,7 @@ package org.craft.mcs.cap.feedstock.application.measurement.usecase;
 import java.time.LocalDate;
 import java.util.Optional;
 import java.util.function.Supplier;
+import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
 import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchNotFoundException;
 import org.craft.mcs.cap.core.feedstock.application.measurement.port.in.CreateFeedstockMeasurementCommand;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchRepository;
@@ -41,7 +42,12 @@ class CreateFeedstockMeasurementServiceTest {
   void createsSampleInsideExistingBatchOwnedBySameCiderMaker() {
     final var batchRepository = mock(FeedstockBatchRepository.class);
     final var sampleRepository = mock(FeedstockMeasurementRepository.class);
-    final var service = new CreateFeedstockMeasurementService(batchRepository, sampleRepository, transactionHelper());
+    final var service = new CreateFeedstockMeasurementService(
+        batchRepository,
+        sampleRepository,
+        mock(FeedstockAccessControl.class),
+        transactionHelper()
+    );
     final var ciderMakerId = CiderMakerId.of(randomUUID());
     final var batch = batch(ciderMakerId);
     when(batchRepository.findById(batch.batchId())).thenReturn(Optional.of(batch));
@@ -65,6 +71,7 @@ class CreateFeedstockMeasurementServiceTest {
     final var service = new CreateFeedstockMeasurementService(
         batchRepository,
         mock(FeedstockMeasurementRepository.class),
+        mock(FeedstockAccessControl.class),
         transactionHelper()
     );
     final var batchId = FeedstockBatchId.newId();

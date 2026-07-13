@@ -1,6 +1,7 @@
 package org.craft.mcs.cap.core.feedstock.application.batch.usecase;
 
 import lombok.RequiredArgsConstructor;
+import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
 import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchNotFoundException;
 import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchOwnershipMismatchException;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.FeedstockBatchSummary;
@@ -28,11 +29,13 @@ public final class UpdateFeedstockBatchService
     implements UpdateFeedstockBatchUseCase {
 
   private final @NonNull FeedstockBatchRepository feedstockBatchRepository;
+  private final @NonNull FeedstockAccessControl feedstockAccessControl;
   private final @NonNull TransactionHelper transactionHelper;
 
   @Override
   public @NonNull FeedstockBatchSummary update(@NonNull UpdateFeedstockBatchCommand command) {
     requireNonNull(command, "update feedstock batch command cannot be null");
+    feedstockAccessControl.requireWriteAccess(command.ciderMakerId());
     return transactionHelper.callInTransactionNonNull(() -> updateInTransaction(command));
   }
 

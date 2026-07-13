@@ -3,6 +3,7 @@ package org.craft.mcs.cap.feedstock.application.batch.usecase;
 import java.time.LocalDate;
 import java.util.Optional;
 import java.util.function.Supplier;
+import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.UpdateFeedstockBatchCommand;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchRepository;
 import org.craft.mcs.cap.core.feedstock.application.batch.usecase.UpdateFeedstockBatchService;
@@ -33,7 +34,11 @@ class UpdateFeedstockBatchServiceTest {
   @Test
   void rejectsUpdatingFeedstockBatchAvailableVolumeToZero() {
     final var repository = mock(FeedstockBatchRepository.class);
-    final var service = new UpdateFeedstockBatchService(repository, transactionHelper());
+    final var service = new UpdateFeedstockBatchService(
+        repository,
+        mock(FeedstockAccessControl.class),
+        transactionHelper()
+    );
     final var ciderMakerId = CiderMakerId.of(randomUUID());
     final var batch = batch(ciderMakerId, VolumeValue.ofLiters("250.000"));
     when(repository.findById(batch.batchId())).thenReturn(Optional.of(batch));
@@ -60,7 +65,11 @@ class UpdateFeedstockBatchServiceTest {
   @Test
   void rejectsSavingEditedLegacyFeedstockBatchWithZeroAvailableVolume() {
     final var repository = mock(FeedstockBatchRepository.class);
-    final var service = new UpdateFeedstockBatchService(repository, transactionHelper());
+    final var service = new UpdateFeedstockBatchService(
+        repository,
+        mock(FeedstockAccessControl.class),
+        transactionHelper()
+    );
     final var ciderMakerId = CiderMakerId.of(randomUUID());
     final var batch = batch(ciderMakerId, VolumeValue.ofLiters("0"));
     when(repository.findById(batch.batchId())).thenReturn(Optional.of(batch));

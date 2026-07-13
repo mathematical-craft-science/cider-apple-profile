@@ -3,6 +3,7 @@ package org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.usec
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
 import org.craft.mcs.cap.core.profileanalysis.composition.contribution.domain.CompositionContributionRoleAssessmentRequest;
 import org.craft.mcs.cap.core.profileanalysis.composition.contribution.domain.CompositionContributionRoleAssessor;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.port.in.ScoreProfileTargetDistanceCandidatesCommand;
@@ -35,12 +36,14 @@ public final class QueryFeedstockBatchProfileTargetCandidatesService
   private final @NonNull FeedstockProfileTargetObjectiveResolver objectiveResolver;
   private final @NonNull ScoreProfileTargetDistanceCandidatesUseCase scoreProfileTargetDistanceCandidatesUseCase;
   private final @NonNull CompositionContributionRoleAssessor contributionRoleAssessor;
+  private final @NonNull FeedstockAccessControl feedstockAccessControl;
 
   @Override
   public @NonNull FeedstockBatchProfileTargetCandidates query(
       @NonNull FeedstockBatchProfileTargetCandidateQuery query
   ) {
     requireNonNull(query, "feedstock batch profile target candidate query cannot be null");
+    feedstockAccessControl.requireReadAccess(query.ciderMakerId());
 
     final var command = toScoreCommand(query);
     final var candidates = candidateProvider.findCandidates(command);

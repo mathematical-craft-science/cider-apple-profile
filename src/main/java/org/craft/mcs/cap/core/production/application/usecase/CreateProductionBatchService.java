@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.craft.mcs.cap.core.production.application.authorization.port.out.ProductionAccessControl;
 import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchNotFoundException;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchRepository;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
@@ -51,12 +52,14 @@ public class CreateProductionBatchService
   private final @NonNull ProductionBatchRepository productionBatchRepository;
   private final @NonNull ProductionBatchTraceRecorder traceRecorder;
   private final @NonNull ProductionFeedstockTraceSnapshotProvider feedstockTraceSnapshotProvider;
+  private final @NonNull ProductionAccessControl productionAccessControl;
   private final @NonNull TransactionHelper transactionHelper;
   private final @NonNull Clock clock;
 
   @Override
   public @NonNull ProductionBatchCreated create(@NonNull CreateProductionBatchCommand command) {
     requireNonNull(command, "create production batch command cannot be null");
+    productionAccessControl.requireWriteAccess(command.ciderMakerId());
 
     return transactionHelper.callInTransactionNonNull(() -> {
       final var batchesById = loadAndValidateBatches(command);

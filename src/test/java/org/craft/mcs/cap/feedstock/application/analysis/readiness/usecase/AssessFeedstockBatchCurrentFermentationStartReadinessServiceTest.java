@@ -2,6 +2,7 @@ package org.craft.mcs.cap.feedstock.application.analysis.readiness.usecase;
 
 import java.time.LocalDate;
 import java.util.Optional;
+import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
 import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.FermentationStartReadinessAssessor;
 import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.FermentationStartReadinessStatus;
 import org.craft.mcs.cap.core.feedstock.application.measurement.query.FeedstockBatchCurrentMeasurementQueryService;
@@ -42,6 +43,7 @@ class AssessFeedstockBatchCurrentFermentationStartReadinessServiceTest {
     final var measurementQueryRepository = mock(FeedstockMeasurementQueryRepository.class);
     final var service = new AssessFeedstockBatchCurrentFermentationStartReadinessService(
         batchRepository,
+        mock(FeedstockAccessControl.class),
         new FeedstockBatchCurrentMeasurementQueryService(measurementQueryRepository),
         new FermentationStartReadinessAssessor()
     );

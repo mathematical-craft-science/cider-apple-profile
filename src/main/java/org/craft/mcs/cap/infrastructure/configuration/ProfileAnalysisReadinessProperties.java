@@ -16,7 +16,9 @@ import static java.util.Objects.requireNonNull;
  */
 @ConfigurationProperties(prefix = "cap.profile-analysis.readiness")
 public record ProfileAnalysisReadinessProperties(
+    /* Curated pH thresholds used by planning guidance and fermentation-start readiness. */
     @NonNull PhProperties ph,
+    /* Curated YAN thresholds used by fermentation-start readiness. */
     @NonNull YanProperties yan
 ) {
 
@@ -29,11 +31,17 @@ public record ProfileAnalysisReadinessProperties(
    * Default pH thresholds and source marker for staged planning/readiness assessment.
    */
   public record PhProperties(
+      /* Generic lower pH tolerance used when no yeast-specific tolerance is available. */
       @NonNull BigDecimal genericYeastToleranceMin,
+      /* Lower bound of the curated cider pH guidance range. */
       @NonNull BigDecimal ciderGuidanceMin,
+      /* Upper bound of the curated cider pH guidance range. */
       @NonNull BigDecimal ciderGuidanceMax,
+      /* pH at or above which CAP reports elevated microbial risk. */
       @NonNull BigDecimal highMicrobialRisk,
+      /* Stable identifier of the curated pH rule set. */
       @NonNull String sourceCode,
+      /* Human-readable provenance note for the configured pH rule set. */
       @NonNull String sourceComment
   ) {
 
@@ -59,10 +67,15 @@ public record ProfileAnalysisReadinessProperties(
    * Default YAN thresholds and source marker for fermentation-start readiness assessment.
    */
   public record YanProperties(
+      /* YAN below which CAP reports a severe nitrogen deficiency. */
       @NonNull BigDecimal severeLow,
+      /* YAN below which CAP reports a nitrogen deficiency. */
       @NonNull BigDecimal low,
+      /* YAN above which CAP reports an elevated nitrogen level. */
       @NonNull BigDecimal high,
+      /* Stable identifier of the curated YAN rule set. */
       @NonNull String sourceCode,
+      /* Human-readable provenance note for the configured YAN rule set. */
       @NonNull String sourceComment
   ) {
 

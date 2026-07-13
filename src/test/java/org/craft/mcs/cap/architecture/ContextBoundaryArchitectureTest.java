@@ -52,6 +52,7 @@ class ContextBoundaryArchitectureTest {
       noClasses()
           .that()
           .resideInAnyPackage(
+              "org.craft.mcs.cap.core.account.domain..",
               "org.craft.mcs.cap.core.appleprofile.domain..",
               "org.craft.mcs.cap.core.batchtraceability.domain..",
               "org.craft.mcs.cap.core.feedstock.domain..",
@@ -61,6 +62,48 @@ class ContextBoundaryArchitectureTest {
           .should()
           .dependOnClassesThat()
           .resideInAPackage("org.craft.mcs.cap.core.profileanalysis..");
+
+  @ArchTest
+  static final ArchRule core_and_shared_do_not_depend_on_spring_security =
+      noClasses()
+          .that()
+          .resideInAnyPackage(
+              "org.craft.mcs.cap.core..",
+              "org.craft.mcs.cap.shared.."
+          )
+          .should()
+          .dependOnClassesThat()
+          .resideInAPackage("org.springframework.security..");
+
+  @ArchTest
+  static final ArchRule feedstock_application_does_not_depend_on_account_context =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.core.feedstock.application..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAPackage("org.craft.mcs.cap.core.account..");
+
+  @ArchTest
+  static final ArchRule production_application_does_not_depend_on_account_context =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.core.production.application..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAPackage("org.craft.mcs.cap.core.account..");
+
+  @ArchTest
+  static final ArchRule account_context_does_not_depend_on_feedstock_or_production_contexts =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.core.account..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAnyPackage(
+              "org.craft.mcs.cap.core.feedstock..",
+              "org.craft.mcs.cap.core.production.."
+          );
 
   @ArchTest
   static final ArchRule production_domain_does_not_depend_on_feedstock_domain =
