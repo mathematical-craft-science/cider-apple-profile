@@ -2,7 +2,9 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.account;
 
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.craft.mcs.cap.core.account.application.port.in.GetCurrentAccountProfileUseCase;
 import org.craft.mcs.cap.core.account.application.port.in.GetCurrentAccountUseCase;
+import org.craft.mcs.cap.core.account.application.port.in.GetCurrentUserPreferencesUseCase;
 import org.craft.mcs.cap.core.account.application.port.in.ListAccountWorkspacesUseCase;
 import org.craft.mcs.cap.core.account.application.port.in.ListWorkspaceMembersUseCase;
 import org.craft.mcs.cap.core.account.application.port.in.UpdateAccountProfileUseCase;
@@ -33,6 +35,8 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 public final class AccountController implements AccountApi {
 
   private final @NonNull GetCurrentAccountUseCase getCurrentAccountUseCase;
+  private final @NonNull GetCurrentAccountProfileUseCase getCurrentAccountProfileUseCase;
+  private final @NonNull GetCurrentUserPreferencesUseCase getCurrentUserPreferencesUseCase;
   private final @NonNull UpdateAccountProfileUseCase updateAccountProfileUseCase;
   private final @NonNull UpdateUserPreferencesUseCase updateUserPreferencesUseCase;
   private final @NonNull ListAccountWorkspacesUseCase listAccountWorkspacesUseCase;
@@ -47,7 +51,7 @@ public final class AccountController implements AccountApi {
   @Override
   @GetMapping(value = "/account/profile", produces = APPLICATION_JSON_VALUE)
   public @NonNull ResponseEntity<@NonNull AccountUserResponse> profile() {
-    return ResponseEntity.ok(AccountRestMapper.toResponse(getCurrentAccountUseCase.get().user()));
+    return ResponseEntity.ok(AccountRestMapper.toResponse(getCurrentAccountProfileUseCase.get()));
   }
 
   @Override
@@ -67,7 +71,7 @@ public final class AccountController implements AccountApi {
   @Override
   @GetMapping(value = "/account/preferences", produces = APPLICATION_JSON_VALUE)
   public @NonNull ResponseEntity<@NonNull AccountPreferencesResponse> preferences() {
-    return ResponseEntity.ok(AccountRestMapper.toResponse(getCurrentAccountUseCase.get().preferences()));
+    return ResponseEntity.ok(AccountRestMapper.toResponse(getCurrentUserPreferencesUseCase.get()));
   }
 
   @Override

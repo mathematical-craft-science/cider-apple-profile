@@ -22,9 +22,9 @@ class ClerkJwtActorMapperTest {
   void mapsClerkClaimsToProviderNeutralActor() {
     final var actor = mapper.toActor(jwtBuilder()
         .subject("user_123")
-        .claim("email", "technologist@example.com")
-        .claim("name", "CAP Technologist")
-        .claim("image_url", "https://example.com/avatar.png")
+        .claim("primaryEmail", "technologist@example.com")
+        .claim("fullName", "CAP Technologist")
+        .claim("imageUrl", "https://example.com/avatar.png")
         .claim("org_id", "org_123")
         .build());
 

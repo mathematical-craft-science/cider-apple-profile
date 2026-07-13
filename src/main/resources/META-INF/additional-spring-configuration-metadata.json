@@ -33,10 +33,6 @@
       "description": "Whether debug routes are public. Enable only in local or dev environments."
     },
     {
-      "name": "cap.feedstock.current-profile.measurement-freshness.stale-after",
-      "description": "Age after which the latest feedstock measurement is reported as stale."
-    },
-    {
       "name": "cap.profile-analysis.sugar-acidity.assessor",
       "description": "Geometry used to classify profile points against built-in sugar-acidity zones."
     },

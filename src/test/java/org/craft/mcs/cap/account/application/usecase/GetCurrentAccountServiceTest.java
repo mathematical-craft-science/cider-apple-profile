@@ -8,15 +8,21 @@ import org.craft.mcs.cap.core.account.application.model.AuthenticatedActor;
 import org.craft.mcs.cap.core.account.application.port.in.AccountUserView;
 import org.craft.mcs.cap.core.account.application.port.in.WorkspaceMembershipView;
 import org.craft.mcs.cap.core.account.application.port.in.WorkspaceView;
+import org.craft.mcs.cap.core.account.application.port.out.ActiveWorkspaceProvider;
 import org.craft.mcs.cap.core.account.application.port.out.AccountUserRepository;
 import org.craft.mcs.cap.core.account.application.port.out.CurrentActorProvider;
 import org.craft.mcs.cap.core.account.application.port.out.UserPreferencesRepository;
 import org.craft.mcs.cap.core.account.application.port.out.WorkspaceMembershipRepository;
 import org.craft.mcs.cap.core.account.application.port.out.WorkspaceRepository;
 import org.craft.mcs.cap.core.account.application.usecase.GetCurrentAccountService;
+import org.craft.mcs.cap.core.account.application.usecase.ActiveWorkspaceSelectionPolicy;
+import org.craft.mcs.cap.core.account.application.usecase.CurrentAccountMembershipReader;
+import org.craft.mcs.cap.core.account.application.usecase.CurrentAccountUserResolver;
+import org.craft.mcs.cap.core.account.application.usecase.CurrentWorkspaceContextResolver;
 import org.craft.mcs.cap.core.account.domain.model.AccountRole;
 import org.craft.mcs.cap.core.account.domain.model.AccountUser;
 import org.craft.mcs.cap.core.account.domain.model.AccountUserStatus;
+import org.craft.mcs.cap.core.account.domain.model.UserPreferences;
 import org.craft.mcs.cap.core.account.domain.model.Workspace;
 import org.craft.mcs.cap.core.account.domain.model.WorkspaceMembership;
 import org.craft.mcs.cap.core.account.domain.model.WorkspaceMembershipStatus;
@@ -51,6 +57,7 @@ class GetCurrentAccountServiceTest {
     final var workspaceRepository = mock(WorkspaceRepository.class);
     final var membershipRepository = mock(WorkspaceMembershipRepository.class);
     final var preferencesRepository = mock(UserPreferencesRepository.class);
+    final var activeWorkspaceProvider = mock(ActiveWorkspaceProvider.class);
     final var actor = actor();
     final var user = activeUser(actor);
     final var workspace = workspace();
@@ -62,12 +69,16 @@ class GetCurrentAccountServiceTest {
     when(membershipRepository.findAllByUserId(user.userId())).thenReturn(List.of(membership));
     when(workspaceRepository.findById(workspace.workspaceId())).thenReturn(Optional.of(workspace));
     when(preferencesRepository.findByUserId(any())).thenReturn(Optional.empty());
+    when(activeWorkspaceProvider.selectedWorkspaceId()).thenReturn(Optional.empty());
 
     final var service = new GetCurrentAccountService(
-        currentActorProvider,
-        userRepository,
-        workspaceRepository,
-        membershipRepository,
+        currentWorkspaceContextResolver(
+            currentActorProvider,
+            userRepository,
+            membershipRepository,
+            workspaceRepository,
+            activeWorkspaceProvider
+        ),
         preferencesRepository
     );
 
@@ -90,6 +101,59 @@ class GetCurrentAccountServiceTest {
   }
 
   @Test
+  void usesExplicitWorkspaceInsteadOfAlphabeticalMembershipOrder() {
+    final var currentActorProvider = mock(CurrentActorProvider.class);
+    final var userRepository = mock(AccountUserRepository.class);
+    final var workspaceRepository = mock(WorkspaceRepository.class);
+    final var membershipRepository = mock(WorkspaceMembershipRepository.class);
+    final var preferencesRepository = mock(UserPreferencesRepository.class);
+    final var activeWorkspaceProvider = mock(ActiveWorkspaceProvider.class);
+    final var actor = actor();
+    final var user = activeUser(actor);
+    final var alphabeticallyFirst = workspace("Alpha cidery");
+    final var selectedWorkspace = workspace("Zulu cidery");
+    final var firstMembership = membership(alphabeticallyFirst, user, AccountRole.VIEWER);
+    final var selectedMembership = membership(selectedWorkspace, user, AccountRole.OWNER);
+
+    when(currentActorProvider.currentActor()).thenReturn(Optional.of(actor));
+    when(userRepository.findByExternalIdentity(actor.identityProvider(), actor.externalSubject()))
+        .thenReturn(Optional.of(user));
+    when(membershipRepository.findAllByUserId(user.userId()))
+        .thenReturn(List.of(selectedMembership, firstMembership));
+    when(workspaceRepository.findById(alphabeticallyFirst.workspaceId()))
+        .thenReturn(Optional.of(alphabeticallyFirst));
+    when(workspaceRepository.findById(selectedWorkspace.workspaceId()))
+        .thenReturn(Optional.of(selectedWorkspace));
+    when(preferencesRepository.findByUserId(user.userId()))
+        .thenReturn(Optional.of(UserPreferences.defaults(user.userId())));
+    when(activeWorkspaceProvider.selectedWorkspaceId())
+        .thenReturn(Optional.of(selectedWorkspace.workspaceId()));
+
+    final var service = new GetCurrentAccountService(
+        currentWorkspaceContextResolver(
+            currentActorProvider,
+            userRepository,
+            membershipRepository,
+            workspaceRepository,
+            activeWorkspaceProvider
+        ),
+        preferencesRepository
+    );
+
+    final var account = service.get();
+
+    assertThat(account.activeWorkspace())
+        .returns(selectedWorkspace.workspaceId(), WorkspaceView::workspaceId)
+        .returns(DisplayName.of("Zulu cidery"), WorkspaceView::name);
+    assertThat(account.memberships())
+        .extracting(WorkspaceMembershipView::workspace)
+        .extracting(WorkspaceView::name)
+        .containsExactly(DisplayName.of("Alpha cidery"), DisplayName.of("Zulu cidery"));
+    assertThat(account.permissions())
+        .containsExactlyInAnyOrderElementsOf(AccountRole.OWNER.permissions());
+  }
+
+  @Test
   void rejectsExternallyAuthenticatedIdentityWhenCapAccountIsDisabled() {
     final var currentActorProvider = mock(CurrentActorProvider.class);
     final var userRepository = mock(AccountUserRepository.class);
@@ -108,10 +172,13 @@ class GetCurrentAccountServiceTest {
         .thenReturn(Optional.of(disabledUser));
 
     final var service = new GetCurrentAccountService(
-        currentActorProvider,
-        userRepository,
-        mock(WorkspaceRepository.class),
-        mock(WorkspaceMembershipRepository.class),
+        currentWorkspaceContextResolver(
+            currentActorProvider,
+            userRepository,
+            mock(WorkspaceMembershipRepository.class),
+            mock(WorkspaceRepository.class),
+            mock(ActiveWorkspaceProvider.class)
+        ),
         mock(UserPreferencesRepository.class)
     );
 
@@ -132,11 +199,30 @@ class GetCurrentAccountServiceTest {
     );
   }
 
+  private static @NonNull CurrentWorkspaceContextResolver currentWorkspaceContextResolver(
+      @NonNull CurrentActorProvider currentActorProvider,
+      @NonNull AccountUserRepository userRepository,
+      @NonNull WorkspaceMembershipRepository membershipRepository,
+      @NonNull WorkspaceRepository workspaceRepository,
+      @NonNull ActiveWorkspaceProvider activeWorkspaceProvider
+  ) {
+    return new CurrentWorkspaceContextResolver(
+        new CurrentAccountUserResolver(currentActorProvider, userRepository),
+        new CurrentAccountMembershipReader(membershipRepository, workspaceRepository),
+        activeWorkspaceProvider,
+        new ActiveWorkspaceSelectionPolicy()
+    );
+  }
+
   private static @NonNull Workspace workspace() {
+    return workspace("My cidery");
+  }
+
+  private static @NonNull Workspace workspace(@NonNull String name) {
     return new Workspace(
         WorkspaceId.newId(),
         CiderMakerId.of(UUID.randomUUID()),
-        DisplayName.of("My cidery"),
+        DisplayName.of(name),
         WorkspaceType.CIDERY,
         null,
         null
@@ -147,11 +233,19 @@ class GetCurrentAccountServiceTest {
       @NonNull Workspace workspace,
       @NonNull AccountUser user
   ) {
+    return membership(workspace, user, AccountRole.OWNER);
+  }
+
+  private static @NonNull WorkspaceMembership membership(
+      @NonNull Workspace workspace,
+      @NonNull AccountUser user,
+      @NonNull AccountRole role
+  ) {
     return new WorkspaceMembership(
         WorkspaceMembershipId.newId(),
         workspace.workspaceId(),
         user.userId(),
-        AccountRole.OWNER,
+        role,
         WorkspaceMembershipStatus.ACTIVE
     );
   }

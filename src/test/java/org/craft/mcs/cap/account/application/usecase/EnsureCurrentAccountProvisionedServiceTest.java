@@ -27,9 +27,11 @@ import org.craft.mcs.cap.core.account.domain.model.value.DisplayName;
 import org.craft.mcs.cap.core.account.domain.model.value.EmailAddress;
 import org.craft.mcs.cap.core.account.domain.model.value.ExternalOrganizationSubject;
 import org.craft.mcs.cap.core.account.domain.model.value.ExternalUserSubject;
+import org.craft.mcs.cap.core.account.domain.model.value.HttpUrl;
 import org.craft.mcs.cap.core.account.domain.model.value.IdentityProviderCode;
-import org.craft.mcs.cap.shared.platform.TransactionHelper;
+import org.craft.mcs.cap.core.account.domain.model.value.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.measurement.unit.TitratableAcidityBasis;
+import org.craft.mcs.cap.shared.platform.TransactionHelper;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -101,6 +103,65 @@ class EnsureCurrentAccountProvisionedServiceTest {
     ));
     verify(preferencesRepository).save(any(UserPreferences.class));
     verify(provisioningLock).acquire(actor.identityProvider(), actor.externalSubject());
+  }
+
+  @Test
+  void synchronizesProviderEmailWithoutOverwritingCapOwnedProfile() {
+    final var currentActorProvider = mock(CurrentActorProvider.class);
+    final var provisioningLock = mock(AccountProvisioningLock.class);
+    final var userRepository = mock(AccountUserRepository.class);
+    final var workspaceRepository = mock(WorkspaceRepository.class);
+    final var membershipRepository = mock(WorkspaceMembershipRepository.class);
+    final var settingsRepository = mock(WorkspaceSettingsRepository.class);
+    final var preferencesRepository = mock(UserPreferencesRepository.class);
+    final var existingUser = AccountUser.create(
+        IdentityProviderCode.CLERK,
+        ExternalUserSubject.of("user_123"),
+        EmailAddress.of("old-provider-email@example.com"),
+        DisplayName.of("Provider profile"),
+        HttpUrl.of("https://provider.example.com/avatar.png")
+    ).updateProfile(
+        DisplayName.of("CAP profile"),
+        HttpUrl.of("https://cap.example.com/avatar.png")
+    );
+    final var actor = new AuthenticatedActor(
+        existingUser.identityProvider(),
+        existingUser.externalSubject(),
+        EmailAddress.of("new-provider-email@example.com"),
+        DisplayName.of("Changed provider profile"),
+        HttpUrl.of("https://provider.example.com/changed-avatar.png"),
+        null
+    );
+    final var membership = WorkspaceMembership.createOwner(WorkspaceId.newId(), existingUser.userId());
+
+    when(currentActorProvider.currentActor()).thenReturn(Optional.of(actor));
+    when(userRepository.findByExternalIdentity(actor.identityProvider(), actor.externalSubject()))
+        .thenReturn(Optional.of(existingUser));
+    when(userRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0, AccountUser.class));
+    when(membershipRepository.findAllByUserId(existingUser.userId())).thenReturn(List.of(membership));
+    when(preferencesRepository.findByUserId(existingUser.userId()))
+        .thenReturn(Optional.of(UserPreferences.defaults(existingUser.userId())));
+
+    final var service = new EnsureCurrentAccountProvisionedService(
+        currentActorProvider,
+        provisioningLock,
+        userRepository,
+        workspaceRepository,
+        membershipRepository,
+        settingsRepository,
+        preferencesRepository,
+        workspaceProvisioningDefaults(),
+        directTransactionHelper()
+    );
+
+    service.ensureProvisioned();
+
+    final var userCaptor = ArgumentCaptor.forClass(AccountUser.class);
+    verify(userRepository).save(userCaptor.capture());
+    assertThat(userCaptor.getValue())
+        .returns(actor.email(), AccountUser::email)
+        .returns(DisplayName.of("CAP profile"), AccountUser::displayName)
+        .returns(HttpUrl.of("https://cap.example.com/avatar.png"), AccountUser::avatarUrl);
   }
 
   private static @NonNull AuthenticatedActor actor() {

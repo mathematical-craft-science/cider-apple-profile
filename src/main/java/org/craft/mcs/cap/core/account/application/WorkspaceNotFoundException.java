@@ -3,6 +3,7 @@ package org.craft.mcs.cap.core.account.application;
 import java.io.Serial;
 import org.craft.mcs.cap.core.account.domain.model.value.WorkspaceId;
 import org.craft.mcs.cap.shared.application.ApplicationNotFoundException;
+import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
 import org.jspecify.annotations.NonNull;
 
 
@@ -15,5 +16,9 @@ public final class WorkspaceNotFoundException extends ApplicationNotFoundExcepti
 
   public WorkspaceNotFoundException(@NonNull WorkspaceId workspaceId) {
     super("workspace not found: " + workspaceId.value());
+  }
+
+  public WorkspaceNotFoundException(@NonNull CiderMakerId ciderMakerId) {
+    super("workspace not found for cider maker scope: " + ciderMakerId.value());
   }
 }

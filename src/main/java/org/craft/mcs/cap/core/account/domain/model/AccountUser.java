@@ -14,10 +14,11 @@ import static java.util.Objects.requireNonNull;
 
 
 /**
- * CAP-owned account identity linked to an external authenticated subject.
+ * CAP account state linked to an external authenticated subject.
  *
- * <p>The aggregate stores product profile data only. Passwords, MFA, sessions, and provider-specific
- * security settings remain owned by the external identity provider.
+ * <p>The aggregate stores the provider identity link and email alongside the CAP-owned display
+ * profile. Passwords, MFA, sessions, and provider-specific security settings remain owned by the
+ * external identity provider.
  */
 @AggregateRoot
 public record AccountUser(
@@ -68,7 +69,7 @@ public record AccountUser(
    * Replaces the CAP-owned display profile without changing external identity or account status.
    *
    * <p>This operation represents an explicit user profile update inside CAP. It does not change
-   * verified email, provider linkage, or whether the account is allowed to use the product.
+   * provider-owned email, provider linkage, or whether the account is allowed to use the product.
    */
   public @NonNull AccountUser updateProfile(
       @NonNull DisplayName displayName,
@@ -86,16 +87,13 @@ public record AccountUser(
   }
 
   /**
-   * Refreshes provider-derived identity fields from the latest authenticated identity snapshot.
+   * Refreshes provider-owned identity data from the latest authenticated identity snapshot.
    *
-   * <p>The stable CAP user id, external provider linkage, and account status are preserved. The
-   * supplied email, display name, and avatar are treated as authoritative by this transition.
+   * <p>The email remains synchronized with the identity provider. CAP-owned display name
+   * and avatar are preserved because provider profile values are only initial defaults supplied
+   * when the account is first created.
    */
-  public @NonNull AccountUser synchronizeIdentity(
-      @NonNull EmailAddress email,
-      @NonNull DisplayName displayName,
-      @Nullable HttpUrl avatarUrl
-  ) {
+  public @NonNull AccountUser synchronizeProviderEmail(@NonNull EmailAddress email) {
     return new AccountUser(
         userId,
         identityProvider,

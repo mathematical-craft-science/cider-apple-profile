@@ -1,0 +1,13 @@
+package org.craft.mcs.cap.core.account.application.port.in;
+
+import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
+import org.jspecify.annotations.NonNull;
+
+
+/** Read-only Account application API for persisted workspace product settings. */
+public interface WorkspaceSettingsReader {
+
+  @NonNull WorkspaceSettingsView readCurrent();
+
+  @NonNull WorkspaceSettingsView readByCiderMakerId(@NonNull CiderMakerId ciderMakerId);
+}

@@ -43,6 +43,21 @@ class ConfigurationPropertiesMetadataTest {
         );
   }
 
+  @Test
+  void exposesMeasurementFreshnessOnlyAsWorkspaceProvisioningDefault() throws IOException {
+    final var propertyNames = StreamSupport.stream(
+            readMetadata().path("properties").spliterator(),
+            false
+        )
+        .map(property -> property.path("name").asText())
+        .filter(name -> name.startsWith("cap."))
+        .toList();
+
+    assertThat(propertyNames)
+        .contains("cap.account.default-workspace.settings.measurement-stale-after")
+        .noneMatch(name -> name.startsWith("cap.feedstock.current-profile.measurement-freshness"));
+  }
+
   private static JsonNode readMetadata() throws IOException {
     try (var input = requireNonNull(
         ConfigurationPropertiesMetadataTest.class.getClassLoader().getResourceAsStream(METADATA_RESOURCE),

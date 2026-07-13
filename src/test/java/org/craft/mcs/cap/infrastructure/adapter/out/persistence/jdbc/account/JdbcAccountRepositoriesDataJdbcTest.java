@@ -126,11 +126,7 @@ class JdbcAccountRepositoriesDataJdbcTest {
         DisplayName.of("Before"),
         null
     ));
-    final var updated = user.synchronizeIdentity(
-        EmailAddress.of("after@example.com"),
-        DisplayName.of("After"),
-        HttpUrl.of("https://example.com/avatar.png")
-    );
+    final var updated = user.synchronizeProviderEmail(EmailAddress.of("after@example.com"));
 
     userRepository.save(updated);
 

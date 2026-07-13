@@ -1,13 +1,19 @@
 package org.craft.mcs.cap.account.application.usecase;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.craft.mcs.cap.core.account.application.AccountAccessDeniedException;
 import org.craft.mcs.cap.core.account.application.model.AuthenticatedActor;
+import org.craft.mcs.cap.core.account.application.port.out.ActiveWorkspaceProvider;
 import org.craft.mcs.cap.core.account.application.port.out.AccountUserRepository;
 import org.craft.mcs.cap.core.account.application.port.out.CurrentActorProvider;
 import org.craft.mcs.cap.core.account.application.port.out.WorkspaceMembershipRepository;
 import org.craft.mcs.cap.core.account.application.port.out.WorkspaceRepository;
+import org.craft.mcs.cap.core.account.application.usecase.ActiveWorkspaceSelectionPolicy;
+import org.craft.mcs.cap.core.account.application.usecase.CurrentAccountMembershipReader;
+import org.craft.mcs.cap.core.account.application.usecase.CurrentAccountUserResolver;
+import org.craft.mcs.cap.core.account.application.usecase.CurrentWorkspaceContextResolver;
 import org.craft.mcs.cap.core.account.application.usecase.WorkspacePermissionAuthorizationService;
 import org.craft.mcs.cap.core.account.domain.model.AccountPermission;
 import org.craft.mcs.cap.core.account.domain.model.AccountRole;
@@ -63,7 +69,6 @@ class WorkspacePermissionAuthorizationServiceTest {
   void deniesAnotherWorkspaceScopeWithoutProvisioningIt() {
     final var fixture = fixture(AccountRole.OWNER);
     final var requestedScope = CiderMakerId.of(UUID.randomUUID());
-    when(fixture.workspaceRepository().findByCiderMakerId(requestedScope)).thenReturn(Optional.empty());
 
     assertThatThrownBy(() -> fixture.service().requirePermission(
         requestedScope,
@@ -81,6 +86,7 @@ class WorkspacePermissionAuthorizationServiceTest {
     final var userRepository = mock(AccountUserRepository.class);
     final var workspaceRepository = mock(WorkspaceRepository.class);
     final var membershipRepository = mock(WorkspaceMembershipRepository.class);
+    final var activeWorkspaceProvider = mock(ActiveWorkspaceProvider.class);
     final var actor = new AuthenticatedActor(
         IdentityProviderCode.CLERK,
         ExternalUserSubject.of("user_123"),
@@ -114,17 +120,19 @@ class WorkspacePermissionAuthorizationServiceTest {
     when(actorProvider.currentActor()).thenReturn(Optional.of(actor));
     when(userRepository.findByExternalIdentity(actor.identityProvider(), actor.externalSubject()))
         .thenReturn(Optional.of(user));
-    when(workspaceRepository.findByCiderMakerId(workspace.ciderMakerId()))
+    when(membershipRepository.findAllByUserId(user.userId())).thenReturn(List.of(membershipWithRole));
+    when(workspaceRepository.findById(workspace.workspaceId()))
         .thenReturn(Optional.of(workspace));
-    when(membershipRepository.findByWorkspaceIdAndUserId(workspace.workspaceId(), user.userId()))
-        .thenReturn(Optional.of(membershipWithRole));
+    when(activeWorkspaceProvider.selectedWorkspaceId()).thenReturn(Optional.of(workspace.workspaceId()));
 
     return new Fixture(
         new WorkspacePermissionAuthorizationService(
-            actorProvider,
-            userRepository,
-            workspaceRepository,
-            membershipRepository
+            new CurrentWorkspaceContextResolver(
+                new CurrentAccountUserResolver(actorProvider, userRepository),
+                new CurrentAccountMembershipReader(membershipRepository, workspaceRepository),
+                activeWorkspaceProvider,
+                new ActiveWorkspaceSelectionPolicy()
+            )
         ),
         userRepository,
         workspaceRepository,

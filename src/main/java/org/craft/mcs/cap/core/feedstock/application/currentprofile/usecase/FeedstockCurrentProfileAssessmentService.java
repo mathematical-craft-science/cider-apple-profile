@@ -4,16 +4,13 @@ import java.time.Clock;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.profileanalysis.ph.domain.PhPlanningGuidance;
-import org.craft.mcs.cap.core.profileanalysis.ph.domain.PhPlanningGuidanceCode;
-import org.craft.mcs.cap.core.profileanalysis.ph.domain.PhPlanningGuidancePolicy;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileEvaluation;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.FeedstockBatchSummary;
+import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentProfileSettings;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in.FeedstockCurrentProfileDataQualityIndicator;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in.FeedstockCurrentProfileDataQualityIndicatorCode;
-import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in.FeedstockCurrentProfileSignalSeverity;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in.FeedstockCurrentProfileDataQualityStatus;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in.FeedstockCurrentProfileDataQualityView;
+import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in.FeedstockCurrentProfileSignalSeverity;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in.FeedstockCurrentMeasurementFreshnessStatus;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in.FeedstockCurrentMeasurementFreshnessView;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in.FeedstockPlanningReadinessCheck;
@@ -21,6 +18,10 @@ import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in.Feeds
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in.FeedstockPlanningReadinessStatus;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in.FeedstockPlanningReadinessView;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurement;
+import org.craft.mcs.cap.core.profileanalysis.ph.domain.PhPlanningGuidance;
+import org.craft.mcs.cap.core.profileanalysis.ph.domain.PhPlanningGuidanceCode;
+import org.craft.mcs.cap.core.profileanalysis.ph.domain.PhPlanningGuidancePolicy;
+import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileEvaluation;
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
@@ -48,13 +49,17 @@ public final class FeedstockCurrentProfileAssessmentService {
       "Current measurement is older than configured freshness threshold";
 
   private final @NonNull Clock clock;
-  private final @NonNull FeedstockCurrentMeasurementFreshnessPolicy measurementFreshnessPolicy;
   private final @NonNull PhPlanningGuidancePolicy phPlanningGuidancePolicy;
 
   public @NonNull FeedstockCurrentMeasurementFreshnessView freshness(
-      @NonNull FeedstockMeasurement measurement
+      @NonNull FeedstockMeasurement measurement,
+      @NonNull FeedstockCurrentProfileSettings settings
   ) {
     requireNonNull(measurement, "feedstock measurement cannot be null");
+    requireNonNull(settings, "feedstock current profile settings cannot be null");
+    final var measurementFreshnessPolicy = new FeedstockCurrentMeasurementFreshnessPolicy(
+        settings.measurementStaleAfter()
+    );
     final var stale = measurementFreshnessPolicy.isStale(measurement.measuredAt(), clock.instant());
     if (!stale) {
       return new FeedstockCurrentMeasurementFreshnessView(

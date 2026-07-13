@@ -5,13 +5,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import org.craft.mcs.cap.core.account.application.port.in.EnsureCurrentAccountProvisionedUseCase;
+import org.craft.mcs.cap.core.account.application.port.in.GetCurrentAccountProfileUseCase;
 import org.craft.mcs.cap.core.account.application.port.in.GetCurrentAccountUseCase;
+import org.craft.mcs.cap.core.account.application.port.in.GetCurrentUserPreferencesUseCase;
 import org.craft.mcs.cap.core.account.application.port.in.ListAccountWorkspacesUseCase;
 import org.craft.mcs.cap.core.account.application.port.in.ListWorkspaceMembersUseCase;
 import org.craft.mcs.cap.core.account.application.port.in.UpdateAccountProfileUseCase;
 import org.craft.mcs.cap.core.account.application.port.in.UpdateUserPreferencesUseCase;
+import org.craft.mcs.cap.core.account.application.port.in.WorkspaceSettingsReader;
 import org.craft.mcs.cap.core.appleprofile.application.abv.port.in.PredictAppleVarietyPotentialAbvUseCase;
 import org.craft.mcs.cap.core.appleprofile.application.classification.port.in.ClassifyAppleVarietyNorthAmericanUseCase;
 import org.craft.mcs.cap.core.appleprofile.application.classification.port.in.ClassifyAppleVarietyUseCase;
@@ -32,7 +36,6 @@ import org.craft.mcs.cap.core.feedstock.application.batch.port.in.CreateFeedstoc
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.DeleteFeedstockBatchUseCase;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.ListFeedstockBatchesUseCase;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.UpdateFeedstockBatchUseCase;
-import org.craft.mcs.cap.core.feedstock.application.currentprofile.usecase.FeedstockCurrentMeasurementFreshnessPolicy;
 import org.craft.mcs.cap.core.feedstock.application.detail.port.in.GetFeedstockBatchDetailUseCase;
 import org.craft.mcs.cap.core.feedstock.application.measurement.port.in.CreateFeedstockMeasurementUseCase;
 import org.craft.mcs.cap.core.feedstock.application.measurement.port.in.DeleteFeedstockMeasurementUseCase;
@@ -71,6 +74,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.craft.mcs.cap.infrastructure.adapter.in.http.ActiveWorkspaceHttpHeaders.ACTIVE_WORKSPACE_ID;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -91,11 +95,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 })
 @MockitoBean(types = {
     EnsureCurrentAccountProvisionedUseCase.class,
+    GetCurrentAccountProfileUseCase.class,
     GetCurrentAccountUseCase.class,
+    GetCurrentUserPreferencesUseCase.class,
     ListAccountWorkspacesUseCase.class,
     ListWorkspaceMembersUseCase.class,
     UpdateAccountProfileUseCase.class,
     UpdateUserPreferencesUseCase.class,
+    WorkspaceSettingsReader.class,
     PredictAppleVarietyPotentialAbvUseCase.class,
     ClassifyAppleVarietyNorthAmericanUseCase.class,
     ClassifyAppleVarietyUseCase.class,
@@ -116,7 +123,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
     DeleteFeedstockBatchUseCase.class,
     ListFeedstockBatchesUseCase.class,
     UpdateFeedstockBatchUseCase.class,
-    FeedstockCurrentMeasurementFreshnessPolicy.class,
     GetFeedstockBatchDetailUseCase.class,
     CreateFeedstockMeasurementUseCase.class,
     DeleteFeedstockMeasurementUseCase.class,
@@ -157,6 +163,7 @@ class OpenApiContractTest {
   @Test
   void openApiDescribesEveryAccountDtoProperty() throws Exception {
     final var openApi = openApi();
+    final var schemas = openApi.path("components").path("schemas");
     final var accountSchemaNames = List.of(
         "AccountMeResponse",
         "AccountMembershipResponse",
@@ -169,21 +176,58 @@ class OpenApiContractTest {
         "UpdateAccountPreferencesRequest",
         "UpdateAccountProfileRequest"
     );
-    final var propertiesWithoutDescription = accountSchemaNames.stream()
-        .flatMap(schemaName -> openApi.path("components")
-            .path("schemas")
-            .path(schemaName)
-            .path("properties")
-            .properties()
-            .stream()
-            .filter(property -> property.getValue().path("description").asText().isBlank())
-            .map(property -> schemaName + "." + property.getKey()))
+    final var descriptionViolations = accountSchemaNames.stream()
+        .flatMap(schemaName -> accountDtoDescriptionViolations(schemas, schemaName))
         .sorted()
         .toList();
 
-    assertThat(propertiesWithoutDescription)
-        .as("account DTO properties must have semantic OpenAPI descriptions")
+    assertThat(descriptionViolations)
+        .as("account DTO schemas and properties must have semantic OpenAPI descriptions")
         .isEmpty();
+  }
+
+  @Test
+  void openApiDescribesExplicitActiveWorkspaceContext() throws Exception {
+    final var openApi = openApi();
+    final var accountMeOperation = operation(openApi, "/account/me", "get");
+    final var activeWorkspaceParameter = StreamSupport.stream(
+            accountMeOperation.path("parameters").spliterator(),
+            false
+        )
+        .filter(parameter -> ACTIVE_WORKSPACE_ID.equals(parameter.path("name").asText()))
+        .findFirst()
+        .orElseThrow();
+
+    assertThat(List.of(
+        activeWorkspaceParameter.path("in").asText(),
+        activeWorkspaceParameter.path("required").asBoolean(false),
+        activeWorkspaceParameter.path("schema").path("format").asText(),
+        accountMeOperation.path("responses").has("400"),
+        accountMeOperation.path("responses").has("422")
+    )).containsExactly("header", false, "uuid", true, true);
+  }
+
+  @Test
+  void openApiDescribesWorkspaceSpecificMeasurementFreshnessMetadata() throws Exception {
+    final var openApi = openApi();
+    final var metadataOperation = operation(openApi, "/measurement-units/metadata", "get");
+    final var activeWorkspaceParameter = StreamSupport.stream(
+            metadataOperation.path("parameters").spliterator(),
+            false
+        )
+        .filter(parameter -> ACTIVE_WORKSPACE_ID.equals(parameter.path("name").asText()))
+        .findFirst()
+        .orElseThrow();
+
+    assertThat(List.of(
+        activeWorkspaceParameter.path("in").asText(),
+        activeWorkspaceParameter.path("required").asBoolean(false),
+        activeWorkspaceParameter.path("schema").path("format").asText(),
+        metadataOperation.path("responses").has("401"),
+        metadataOperation.path("responses").has("400"),
+        metadataOperation.path("responses").has("403"),
+        metadataOperation.path("responses").has("422")
+    )).containsExactly("header", false, "uuid", true, true, true, true);
   }
 
   @Test
@@ -1331,6 +1375,25 @@ class OpenApiContractTest {
     assertThat(recursiveCompositionRefs)
         .as("schemas must not compose discriminated oneOf unions through allOf")
         .isEmpty();
+  }
+
+  private static Stream<String> accountDtoDescriptionViolations(
+      JsonNode schemas,
+      String schemaName
+  ) {
+    final var schema = schemas.path(schemaName);
+    if (schema.isMissingNode()) {
+      return Stream.of(schemaName + " schema is missing");
+    }
+
+    final var properties = schema.path("properties");
+    if (!properties.isObject()) {
+      return Stream.of(schemaName + " properties are missing");
+    }
+
+    return properties.properties().stream()
+        .filter(property -> property.getValue().path("description").asText().isBlank())
+        .map(property -> schemaName + "." + property.getKey() + " description is missing");
   }
 
   private static void assertStringFormat(

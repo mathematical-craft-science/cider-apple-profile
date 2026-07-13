@@ -15,7 +15,7 @@ import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatc
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in.FeedstockCurrentMeasurementFreshnessStatus;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in.FeedstockCurrentMeasurementFreshnessView;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in.FeedstockPlanningReadinessStatus;
-import org.craft.mcs.cap.core.feedstock.application.currentprofile.usecase.FeedstockCurrentMeasurementFreshnessPolicy;
+import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentProfileSettings;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.usecase.FeedstockCurrentProfileAssessmentService;
 import org.craft.mcs.cap.core.feedstock.application.detail.port.in.FeedstockBatchCurrentProfileOperationType;
 import org.craft.mcs.cap.core.feedstock.application.detail.port.in.FeedstockBatchCurrentProfileOperationView;
@@ -91,9 +91,9 @@ class GetFeedstockBatchDetailServiceTest {
         new FermentationStartReadinessAssessor(),
         new FeedstockCurrentProfileAssessmentService(
             CLOCK,
-            new FeedstockCurrentMeasurementFreshnessPolicy(Duration.ofDays(3)),
             PhPlanningGuidancePolicy.curatedCiderV1()
-        )
+        ),
+        _ -> new FeedstockCurrentProfileSettings(Duration.ofDays(3))
     );
   }
 

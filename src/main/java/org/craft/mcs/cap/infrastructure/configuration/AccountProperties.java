@@ -51,7 +51,7 @@ public record AccountProperties(
   ) {
 
     public DefaultWorkspaceSettingsProperties(
-        @DefaultValue("14d") @NonNull Duration measurementStaleAfter,
+        @NonNull Duration measurementStaleAfter,
         @DefaultValue("MALIC_ACID") @NonNull TitratableAcidityBasis defaultAcidityBasis
     ) {
       this.measurementStaleAfter = requireNonNull(

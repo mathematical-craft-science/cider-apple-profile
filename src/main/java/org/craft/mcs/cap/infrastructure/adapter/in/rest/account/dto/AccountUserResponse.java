@@ -17,7 +17,7 @@ public record AccountUserResponse(
     )
     @NonNull UUID userId,
     @Schema(
-        description = "Verified email obtained from the external identity provider.",
+        description = "Email obtained from the external identity provider.",
         format = "email",
         example = "technologist@example.com",
         requiredMode = Schema.RequiredMode.REQUIRED

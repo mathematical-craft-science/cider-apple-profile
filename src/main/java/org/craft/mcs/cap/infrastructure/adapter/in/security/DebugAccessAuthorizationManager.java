@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.account.application.port.in.GetCurrentAccountUseCase;
 import org.craft.mcs.cap.core.account.application.port.in.WorkspaceMembershipView;
 import org.craft.mcs.cap.core.account.domain.model.AccountRole;
+import org.craft.mcs.cap.shared.application.ApplicationException;
 import org.jspecify.annotations.NonNull;
 import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.authorization.AuthorizationManager;
@@ -32,9 +33,20 @@ public final class DebugAccessAuthorizationManager
       return new AuthorizationDecision(false);
     }
 
-    final var allowed = getCurrentAccountUseCase.get().memberships().stream()
-        .map(WorkspaceMembershipView::role)
-        .anyMatch(role -> role == AccountRole.OWNER || role == AccountRole.ADMIN);
-    return new AuthorizationDecision(allowed);
+    try {
+      final var account = getCurrentAccountUseCase.get();
+      final var activeWorkspaceId = account.activeWorkspace().workspaceId();
+      final var allowed = account.memberships().stream()
+          .filter(membership -> membership.workspace().workspaceId().equals(activeWorkspaceId))
+          .map(WorkspaceMembershipView::role)
+          .anyMatch(DebugAccessAuthorizationManager::canAccessDebugRoutes);
+      return new AuthorizationDecision(allowed);
+    } catch (ApplicationException _) {
+      return new AuthorizationDecision(false);
+    }
+  }
+
+  private static boolean canAccessDebugRoutes(@NonNull AccountRole role) {
+    return role == AccountRole.OWNER || role == AccountRole.ADMIN;
   }
 }

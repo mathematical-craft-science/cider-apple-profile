@@ -38,7 +38,7 @@ import org.craft.mcs.cap.core.feedstock.application.measurement.query.FeedstockB
 import org.craft.mcs.cap.core.feedstock.application.measurement.port.out.FeedstockMeasurementQueryRepository;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.usecase.FeedstockCurrentProfileAssessmentService;
 import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.usecase.FeedstockPlanningContributionRoleExplainer;
-import org.craft.mcs.cap.core.feedstock.application.currentprofile.usecase.FeedstockCurrentMeasurementFreshnessPolicy;
+import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentProfileSettings;
 import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.usecase.QueryFeedstockPlanningBatchesService;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockBatchName;
@@ -144,7 +144,7 @@ class QueryFeedstockPlanningBatchesServiceTest {
   }
 
   @Test
-  void appliesConfiguredMeasurementFreshnessPolicy() {
+  void appliesWorkspaceMeasurementFreshnessSetting() {
     final var batchId = FeedstockBatchId.newId();
     final var batch = batch(batchId);
     final var measurement = measurement(batchId);
@@ -155,7 +155,7 @@ class QueryFeedstockPlanningBatchesServiceTest {
         listBatches,
         measurementRepository,
         targetCandidates,
-        new FeedstockCurrentMeasurementFreshnessPolicy(Duration.ofDays(3))
+        Duration.ofDays(3)
     );
     when(listBatches.list(any())).thenReturn(List.of(batch));
     when(measurementRepository.findLatestByBatchIds(Set.of(batchId))).thenReturn(List.of(measurement));
@@ -184,7 +184,7 @@ class QueryFeedstockPlanningBatchesServiceTest {
         listBatches,
         measurementRepository,
         targetCandidates,
-        new FeedstockCurrentMeasurementFreshnessPolicy(Duration.ofDays(14))
+        Duration.ofDays(14)
     );
   }
 
@@ -192,7 +192,7 @@ class QueryFeedstockPlanningBatchesServiceTest {
       ListFeedstockBatchesUseCase listBatches,
       FeedstockMeasurementQueryRepository measurementRepository,
       QueryFeedstockBatchProfileTargetCandidatesUseCase targetCandidates,
-      FeedstockCurrentMeasurementFreshnessPolicy measurementFreshnessPolicy
+      Duration measurementStaleAfter
   ) {
     return new QueryFeedstockPlanningBatchesService(
         listBatches,
@@ -206,9 +206,9 @@ class QueryFeedstockPlanningBatchesServiceTest {
         new FermentationStartReadinessAssessor(),
         new FeedstockCurrentProfileAssessmentService(
             CLOCK,
-            measurementFreshnessPolicy,
             PhPlanningGuidancePolicy.curatedCiderV1()
         ),
+        _ -> new FeedstockCurrentProfileSettings(measurementStaleAfter),
         new FeedstockPlanningContributionRoleExplainer()
     );
   }

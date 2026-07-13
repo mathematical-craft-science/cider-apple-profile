@@ -18,17 +18,23 @@ import org.springframework.stereotype.Component;
 import static java.util.Objects.requireNonNull;
 
 
-/** Anti-corruption mapper from Clerk JWT claims to CAP's provider-neutral authenticated actor. */
+/**
+ * Anti-corruption mapper from Clerk JWT claims to CAP's provider-neutral authenticated actor.
+ *
+ * <p>CAP requires a custom primary-email claim because Clerk session tokens do not include profile
+ * data by default. Camel-case claim names follow Clerk's documented customization example; legacy
+ * aliases remain accepted for existing environments.
+ */
 @Component
 public final class ClerkJwtActorMapper {
 
   public @NonNull AuthenticatedActor toActor(@NonNull Jwt jwt) {
     requireNonNull(jwt, "JWT cannot be null");
     final var subject = required(jwt.getSubject(), "Clerk JWT subject is required");
-    final var email = required(firstClaim(jwt, "email", "primary_email_address"),
+    final var email = required(firstClaim(jwt, "primaryEmail", "email", "primary_email_address"),
         "Clerk JWT email claim is required");
     final var emailAddress = identityValue(() -> EmailAddress.of(email));
-    final var displayName = firstClaim(jwt, "name", "full_name", "username");
+    final var displayName = firstClaim(jwt, "fullName", "name", "full_name", "username");
     final var organizationSubject = firstClaim(jwt, "org_id", "organization_id");
 
     return new AuthenticatedActor(
@@ -38,7 +44,7 @@ public final class ClerkJwtActorMapper {
         identityValue(() -> DisplayName.of(
             displayName == null ? emailAddress.localPart() : displayName
         )),
-        identityValue(() -> HttpUrl.fromNullable(firstClaim(jwt, "image_url", "picture"))),
+        identityValue(() -> HttpUrl.fromNullable(firstClaim(jwt, "imageUrl", "image_url", "picture"))),
         organizationSubject == null ? null : ExternalOrganizationSubject.of(organizationSubject)
     );
   }

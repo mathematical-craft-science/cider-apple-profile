@@ -2,22 +2,23 @@ package org.craft.mcs.cap.core.account.application.usecase;
 
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.account.application.port.in.GetCurrentAccountUseCase;
 import org.craft.mcs.cap.core.account.application.port.in.ListAccountWorkspacesUseCase;
 import org.craft.mcs.cap.core.account.application.port.in.WorkspaceMembershipView;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 
 
-/** Lists current-account workspaces from the canonical account context read model. */
+/** Lists active current-account workspaces without requiring an active workspace selection. */
 @Component
 @RequiredArgsConstructor
 public final class ListAccountWorkspacesService implements ListAccountWorkspacesUseCase {
 
-  private final @NonNull GetCurrentAccountUseCase getCurrentAccountUseCase;
+  private final @NonNull CurrentAccountUserResolver currentAccountUserResolver;
+  private final @NonNull CurrentAccountMembershipReader currentAccountMembershipReader;
 
   @Override
   public @NonNull List<@NonNull WorkspaceMembershipView> list() {
-    return getCurrentAccountUseCase.get().memberships();
+    final var user = currentAccountUserResolver.resolve();
+    return currentAccountMembershipReader.readActive(user.userId());
   }
 }

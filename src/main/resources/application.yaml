@@ -50,10 +50,6 @@ cap:
     public-access:
       openapi: false
       debug: false
-  feedstock:
-    current-profile:
-      measurement-freshness:
-        stale-after: 14d
   profile-analysis:
     sugar-acidity:
       assessor: RECTANGLE # или ellipse

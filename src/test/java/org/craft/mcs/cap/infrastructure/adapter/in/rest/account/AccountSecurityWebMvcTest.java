@@ -5,10 +5,13 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 import org.craft.mcs.cap.core.account.application.AccountAccessDeniedException;
+import org.craft.mcs.cap.core.account.application.ActiveWorkspaceRequiredException;
 import org.craft.mcs.cap.core.account.application.port.in.AccountMeView;
 import org.craft.mcs.cap.core.account.application.port.in.AccountUserView;
 import org.craft.mcs.cap.core.account.application.port.in.EnsureCurrentAccountProvisionedUseCase;
+import org.craft.mcs.cap.core.account.application.port.in.GetCurrentAccountProfileUseCase;
 import org.craft.mcs.cap.core.account.application.port.in.GetCurrentAccountUseCase;
+import org.craft.mcs.cap.core.account.application.port.in.GetCurrentUserPreferencesUseCase;
 import org.craft.mcs.cap.core.account.application.port.in.ListAccountWorkspacesUseCase;
 import org.craft.mcs.cap.core.account.application.port.in.ListWorkspaceMembersUseCase;
 import org.craft.mcs.cap.core.account.application.port.in.UpdateAccountProfileUseCase;
@@ -89,6 +92,12 @@ class AccountSecurityWebMvcTest {
   private GetCurrentAccountUseCase getCurrentAccountUseCase;
 
   @MockitoBean
+  private GetCurrentAccountProfileUseCase getCurrentAccountProfileUseCase;
+
+  @MockitoBean
+  private GetCurrentUserPreferencesUseCase getCurrentUserPreferencesUseCase;
+
+  @MockitoBean
   private UpdateAccountProfileUseCase updateAccountProfileUseCase;
 
   @MockitoBean
@@ -130,6 +139,26 @@ class AccountSecurityWebMvcTest {
 
     mockMvc.perform(get("/account/me").with(jwt()))
         .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void requiresExplicitWorkspaceForMultiWorkspaceAccount() throws Exception {
+    when(getCurrentAccountUseCase.get()).thenThrow(new ActiveWorkspaceRequiredException());
+
+    mockMvc.perform(get("/account/me").with(jwt()))
+        .andExpect(status().is(422))
+        .andExpect(jsonPath("$.detail")
+            .value("active workspace selection is required when account has multiple active workspaces"));
+  }
+
+  @Test
+  void listsAvailableWorkspacesBeforeActiveWorkspaceSelection() throws Exception {
+    final var account = account(AccountRole.OWNER);
+    when(listAccountWorkspacesUseCase.list()).thenReturn(account.memberships());
+
+    mockMvc.perform(get("/account/workspaces").with(jwt()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.memberships[0].workspace.name").value("My cidery"));
   }
 
   @Test

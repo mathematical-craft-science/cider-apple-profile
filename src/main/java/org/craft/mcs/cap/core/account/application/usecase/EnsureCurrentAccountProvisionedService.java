@@ -22,7 +22,7 @@ import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 
 
-/** Atomically provisions and synchronizes the CAP account required after successful authentication. */
+/** Atomically provisions the CAP account and synchronizes its provider-owned email. */
 @Component
 @RequiredArgsConstructor
 public final class EnsureCurrentAccountProvisionedService
@@ -68,7 +68,7 @@ public final class EnsureCurrentAccountProvisionedService
 
   private @NonNull AccountUser resolveUser(@NonNull AuthenticatedActor actor) {
     return accountUserRepository.findByExternalIdentity(actor.identityProvider(), actor.externalSubject())
-        .map(existing -> synchronize(existing, actor))
+        .map(existing -> synchronizeProviderEmail(existing, actor))
         .orElseGet(() -> accountUserRepository.save(AccountUser.create(
             actor.identityProvider(),
             actor.externalSubject(),
@@ -78,15 +78,11 @@ public final class EnsureCurrentAccountProvisionedService
         )));
   }
 
-  private @NonNull AccountUser synchronize(
+  private @NonNull AccountUser synchronizeProviderEmail(
       @NonNull AccountUser existing,
       @NonNull AuthenticatedActor actor
   ) {
-    final var synchronizedUser = existing.synchronizeIdentity(
-        actor.email(),
-        actor.displayName(),
-        actor.avatarUrl()
-    );
+    final var synchronizedUser = existing.synchronizeProviderEmail(actor.email());
     return synchronizedUser.equals(existing) ? existing : accountUserRepository.save(synchronizedUser);
   }
 
