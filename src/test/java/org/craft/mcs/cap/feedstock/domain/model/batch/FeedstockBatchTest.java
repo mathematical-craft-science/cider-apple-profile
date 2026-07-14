@@ -8,7 +8,7 @@ import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSource;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockVessel;
-import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.DomainConflictException;
 import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
@@ -26,7 +26,7 @@ class FeedstockBatchTest {
   void createsBatchWithOptionalSourceAndAvailableVolume() {
     final var batch = FeedstockBatch.create(
         FeedstockBatchId.newId(),
-        CiderMakerId.of(randomUUID()),
+        WorkspaceId.of(randomUUID()),
         FeedstockBatchName.of("Late season fruit"),
         FeedstockVessel.of("Tank A-01"),
         FeedstockType.JUICE,
@@ -48,7 +48,7 @@ class FeedstockBatchTest {
     final var deletedAt = feedstockMeasurementInstant();
     final var batch = FeedstockBatch.create(
         FeedstockBatchId.newId(),
-        CiderMakerId.of(randomUUID()),
+        WorkspaceId.of(randomUUID()),
         FeedstockBatchName.of("Late season fruit"),
         FeedstockVessel.of("Tank A-01"),
         FeedstockType.JUICE,
@@ -67,7 +67,7 @@ class FeedstockBatchTest {
   void rejectsConsumingMoreThanAvailableVolumeAsDomainConflict() {
     final var batch = FeedstockBatch.create(
         FeedstockBatchId.newId(),
-        CiderMakerId.of(randomUUID()),
+        WorkspaceId.of(randomUUID()),
         FeedstockBatchName.of("Late season fruit"),
         FeedstockVessel.of("Tank A-01"),
         FeedstockType.JUICE,
@@ -84,7 +84,7 @@ class FeedstockBatchTest {
   void rejectsCreatingBatchWithZeroAvailableVolume() {
     assertThatThrownBy(() -> FeedstockBatch.create(
         FeedstockBatchId.newId(),
-        CiderMakerId.of(randomUUID()),
+        WorkspaceId.of(randomUUID()),
         FeedstockBatchName.of("Late season fruit"),
         FeedstockVessel.of("Tank A-01"),
         FeedstockType.JUICE,
@@ -99,7 +99,7 @@ class FeedstockBatchTest {
   void rejectsChangingBatchAvailableVolumeToZero() {
     final var batch = FeedstockBatch.create(
         FeedstockBatchId.newId(),
-        CiderMakerId.of(randomUUID()),
+        WorkspaceId.of(randomUUID()),
         FeedstockBatchName.of("Late season fruit"),
         FeedstockVessel.of("Tank A-01"),
         FeedstockType.JUICE,

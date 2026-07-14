@@ -3,7 +3,7 @@ package org.craft.mcs.cap.core.feedstock.application;
 import java.io.Serial;
 import org.craft.mcs.cap.shared.application.ApplicationForbiddenException;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
-import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
@@ -17,30 +17,30 @@ public final class FeedstockBatchOwnershipMismatchException
   private static final long serialVersionUID = 1L;
 
   private final transient @NonNull FeedstockBatchId batchId;
-  private final transient @NonNull CiderMakerId expectedCiderMakerId;
-  private final transient @NonNull CiderMakerId actualCiderMakerId;
+  private final transient @NonNull WorkspaceId expectedWorkspaceId;
+  private final transient @NonNull WorkspaceId actualWorkspaceId;
 
   public FeedstockBatchOwnershipMismatchException(
       @NonNull FeedstockBatchId batchId,
-      @NonNull CiderMakerId expectedCiderMakerId,
-      @NonNull CiderMakerId actualCiderMakerId
+      @NonNull WorkspaceId expectedWorkspaceId,
+      @NonNull WorkspaceId actualWorkspaceId
   ) {
-    super("feedstock batch belongs to another cider maker: "
+    super("feedstock batch belongs to another workspace: "
         + requireNonNull(batchId, "feedstock batch id cannot be null").value());
     this.batchId = batchId;
-    this.expectedCiderMakerId = requireNonNull(expectedCiderMakerId, "expected cider maker id cannot be null");
-    this.actualCiderMakerId = requireNonNull(actualCiderMakerId, "actual cider maker id cannot be null");
+    this.expectedWorkspaceId = requireNonNull(expectedWorkspaceId, "expected workspace id cannot be null");
+    this.actualWorkspaceId = requireNonNull(actualWorkspaceId, "actual workspace id cannot be null");
   }
 
   public @NonNull FeedstockBatchId batchId() {
     return batchId;
   }
 
-  public @NonNull CiderMakerId expectedCiderMakerId() {
-    return expectedCiderMakerId;
+  public @NonNull WorkspaceId expectedWorkspaceId() {
+    return expectedWorkspaceId;
   }
 
-  public @NonNull CiderMakerId actualCiderMakerId() {
-    return actualCiderMakerId;
+  public @NonNull WorkspaceId actualWorkspaceId() {
+    return actualWorkspaceId;
   }
 }

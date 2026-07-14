@@ -18,7 +18,13 @@ import org.jspecify.annotations.Nullable;
 public record FeedstockBatchGraphPointResponse(
     @Schema(description = "Feedstock batch identifier.", format = "uuid", example = "b2a49b8a-3a19-4f8f-989d-9278f4e00d2f", requiredMode = Schema.RequiredMode.REQUIRED) @NonNull UUID batchId,
     @Schema(description = "Feedstock batch name.", example = "Late season juice", requiredMode = Schema.RequiredMode.REQUIRED) @NonNull String batchName,
-    @Schema(description = "Cider maker identifier.", format = "uuid", example = "4d96759c-86ff-4d39-8b19-241bc60f82ff", requiredMode = Schema.RequiredMode.REQUIRED) @NonNull UUID ciderMakerId,
+    @Schema(
+        description = "Workspace identifier.",
+        format = "uuid",
+        example = "4d96759c-86ff-4d39-8b19-241bc60f82ff",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
+    @NonNull UUID workspaceId,
     @Schema(description = "Current feedstock measurement identifier.", format = "uuid", example = "ed7c0818-aad9-47dd-97c0-d1d37561ca18", requiredMode = Schema.RequiredMode.REQUIRED) @NonNull UUID currentMeasurementId,
     @Schema(description = "Measurement timestamp used as the current batch state.", format = "date-time", example = "2026-09-28T10:15:30Z", requiredMode = Schema.RequiredMode.REQUIRED) @NonNull Instant measuredAt,
     @Schema(description = "Whether the current batch profile has enough data to be plotted.", example = "true", requiredMode = Schema.RequiredMode.REQUIRED)

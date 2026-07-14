@@ -23,7 +23,7 @@ import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.
 import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.FeedstockPlanningTargetAnalysisView;
 import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.FeedstockPlanningView;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
-import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.abv.mapper.PotentialAbvPredictionRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.profiletarget.common.mapper.CompositionContributionRoleRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.mapper.ChemicalProfileCapabilityRestMapper;
@@ -78,7 +78,7 @@ public final class FeedstockWorkspaceRestMapper {
     requireNonNull(request, "feedstock workspace batch view request cannot be null");
     final var purpose = purpose(request);
     return new FeedstockPlanningBatchViewQuery(
-        CiderMakerId.of(request.ciderMakerId()),
+        WorkspaceId.of(request.workspaceId()),
         toSeason(request.season()),
         toTargetSelection(request.target()),
         toTanninTarget(request),

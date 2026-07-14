@@ -1,0 +1,196 @@
+package org.craft.mcs.cap.feedstock.application.inventory.usecase;
+
+import java.time.LocalDate;
+import java.util.Optional;
+import java.util.function.Supplier;
+import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchHasNoMeasurementsException;
+import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchInsufficientAvailableVolumeException;
+import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchOwnershipMismatchException;
+import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
+import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchRepository;
+import org.craft.mcs.cap.core.feedstock.application.inventory.port.in.ConsumeFeedstockBatchMaterialCommand;
+import org.craft.mcs.cap.core.feedstock.application.inventory.port.in.ConsumedFeedstockBatchMaterial;
+import org.craft.mcs.cap.core.feedstock.application.inventory.usecase.ConsumeFeedstockBatchMaterialService;
+import org.craft.mcs.cap.core.feedstock.application.measurement.query.FeedstockBatchCurrentMeasurementQueryService;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockBatchName;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockVessel;
+import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurement;
+import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurementId;
+import org.craft.mcs.cap.core.feedstock.domain.model.measurement.value.FeedstockMeasurementName;
+import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
+import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
+import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
+import org.craft.mcs.cap.shared.kernel.measurement.ExactMeasurement;
+import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
+import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
+import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
+import org.craft.mcs.cap.shared.platform.TransactionHelper;
+import org.jspecify.annotations.NonNull;
+import org.junit.jupiter.api.Test;
+
+import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementInstant;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
+
+
+class ConsumeFeedstockBatchMaterialServiceTest {
+
+  @Test
+  void consumesOwnedMaterialAndReturnsCurrentProfileSnapshot() {
+    final var repository = mock(FeedstockBatchRepository.class);
+    final var measurementQuery = mock(FeedstockBatchCurrentMeasurementQueryService.class);
+    final var accessControl = mock(FeedstockAccessControl.class);
+    final var workspaceId = WorkspaceId.newId();
+    final var batch = batch(workspaceId);
+    final var measurement = measurement(batch.batchId());
+    final var command = command(workspaceId, batch.batchId(), "100");
+    when(repository.findById(batch.batchId())).thenReturn(Optional.of(batch));
+    when(measurementQuery.requireCurrentMeasurement(batch.batchId())).thenReturn(measurement);
+    final var service = service(repository, measurementQuery, accessControl);
+
+    final var consumed = service.consume(command);
+
+    assertThat(consumed)
+        .returns(batch.batchId(), ConsumedFeedstockBatchMaterial::batchId)
+        .returns(batch.name().value(), material -> material.batchName().value())
+        .returns(command.volume(), ConsumedFeedstockBatchMaterial::volume)
+        .returns(measurement.chemicalProfile(), ConsumedFeedstockBatchMaterial::chemicalProfile)
+        .satisfies(result -> assertThat(batch.availableVolume()).isEqualTo(VolumeValue.ofLiters("150")));
+    verify(accessControl).requireWriteAccess(workspaceId);
+    verify(repository).save(batch);
+  }
+
+  @Test
+  void rejectsMaterialOwnedByAnotherWorkspaceBeforeReadingProfile() {
+    final var repository = mock(FeedstockBatchRepository.class);
+    final var measurementQuery = mock(FeedstockBatchCurrentMeasurementQueryService.class);
+    final var accessControl = mock(FeedstockAccessControl.class);
+    final var actualWorkspaceId = WorkspaceId.newId();
+    final var requestedWorkspaceId = WorkspaceId.newId();
+    final var batch = batch(actualWorkspaceId);
+    final var command = command(requestedWorkspaceId, batch.batchId(), "100");
+    when(repository.findById(batch.batchId())).thenReturn(Optional.of(batch));
+    final var service = service(repository, measurementQuery, accessControl);
+
+    assertThatThrownBy(() -> service.consume(command))
+        .isInstanceOf(FeedstockBatchOwnershipMismatchException.class);
+    verify(repository, never()).save(any());
+    verifyNoInteractions(measurementQuery);
+  }
+
+  @Test
+  void reportsAvailableVolumeBeforeMutatingBatch() {
+    final var repository = mock(FeedstockBatchRepository.class);
+    final var measurementQuery = mock(FeedstockBatchCurrentMeasurementQueryService.class);
+    final var accessControl = mock(FeedstockAccessControl.class);
+    final var workspaceId = WorkspaceId.newId();
+    final var batch = batch(workspaceId);
+    final var command = command(workspaceId, batch.batchId(), "251");
+    when(repository.findById(batch.batchId())).thenReturn(Optional.of(batch));
+    final var service = service(repository, measurementQuery, accessControl);
+
+    assertThatThrownBy(() -> service.consume(command))
+        .isInstanceOf(FeedstockBatchInsufficientAvailableVolumeException.class)
+        .satisfies(exception -> assertThat((FeedstockBatchInsufficientAvailableVolumeException) exception)
+            .returns(command.volume(), FeedstockBatchInsufficientAvailableVolumeException::requestedVolume)
+            .returns(batch.availableVolume(), FeedstockBatchInsufficientAvailableVolumeException::availableVolume));
+    verify(repository, never()).save(any());
+    verifyNoInteractions(measurementQuery);
+  }
+
+  @Test
+  void keepsVolumeUnchangedWhenCurrentProfileIsUnavailable() {
+    final var repository = mock(FeedstockBatchRepository.class);
+    final var measurementQuery = mock(FeedstockBatchCurrentMeasurementQueryService.class);
+    final var accessControl = mock(FeedstockAccessControl.class);
+    final var workspaceId = WorkspaceId.newId();
+    final var batch = batch(workspaceId);
+    final var command = command(workspaceId, batch.batchId(), "100");
+    when(repository.findById(batch.batchId())).thenReturn(Optional.of(batch));
+    when(measurementQuery.requireCurrentMeasurement(batch.batchId()))
+        .thenThrow(new FeedstockBatchHasNoMeasurementsException(batch.batchId()));
+    final var service = service(repository, measurementQuery, accessControl);
+
+    assertThatThrownBy(() -> service.consume(command))
+        .isInstanceOf(FeedstockBatchHasNoMeasurementsException.class)
+        .satisfies(exception -> assertThat(batch.availableVolume())
+            .isEqualTo(VolumeValue.ofLiters("250")));
+    verify(repository, never()).save(any());
+  }
+
+  private static @NonNull ConsumeFeedstockBatchMaterialService service(
+      @NonNull FeedstockBatchRepository repository,
+      @NonNull FeedstockBatchCurrentMeasurementQueryService measurementQuery,
+      @NonNull FeedstockAccessControl accessControl
+  ) {
+    return new ConsumeFeedstockBatchMaterialService(
+        repository,
+        measurementQuery,
+        accessControl,
+        transactionHelper()
+    );
+  }
+
+  private static @NonNull FeedstockBatch batch(@NonNull WorkspaceId workspaceId) {
+    return FeedstockBatch.create(
+        FeedstockBatchId.newId(),
+        workspaceId,
+        FeedstockBatchName.of("Late juice"),
+        FeedstockVessel.of("Tank A-01"),
+        FeedstockType.JUICE,
+        FeedstockSeason.of(LocalDate.parse("2026-10-01"), LocalDate.parse("2026-12-15")),
+        VolumeValue.ofLiters("250")
+    );
+  }
+
+  private static @NonNull FeedstockMeasurement measurement(@NonNull FeedstockBatchId batchId) {
+    return FeedstockMeasurement.create(
+        FeedstockMeasurementId.newId(),
+        batchId,
+        FeedstockMeasurementName.of("Current profile"),
+        ChemicalProfile.builder()
+            .sugar(ExactMeasurement.of(SugarConcentration.ofSpecificGravity(
+                SpecificGravityValue.of("1.052")
+            )))
+            .confidence(ConfidenceLevel.LAB_VERIFIED)
+            .build(),
+        feedstockMeasurementInstant()
+    );
+  }
+
+  private static @NonNull ConsumeFeedstockBatchMaterialCommand command(
+      @NonNull WorkspaceId workspaceId,
+      @NonNull FeedstockBatchId batchId,
+      @NonNull String volumeLiters
+  ) {
+    return new ConsumeFeedstockBatchMaterialCommand(
+        workspaceId,
+        batchId,
+        VolumeValue.ofLiters(volumeLiters)
+    );
+  }
+
+  private static @NonNull TransactionHelper transactionHelper() {
+    return new TransactionHelper() {
+      @Override
+      public @NonNull <T> T callInTransactionNonNull(@NonNull Supplier<T> supplier) {
+        return supplier.get();
+      }
+
+      @Override
+      public void executeInTransaction(@NonNull Runnable runnable) {
+        runnable.run();
+      }
+    };
+  }
+}

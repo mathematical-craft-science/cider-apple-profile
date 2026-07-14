@@ -47,7 +47,7 @@ public final class FeedstockMeasurementRestMapper {
 
     return new FeedstockMeasurementResponse(
         measurement.measurementId().value(),
-        measurement.ciderMakerId().value(),
+        measurement.workspaceId().value(),
         measurement.batchId().value(),
         measurement.name().value(),
         measurement.measuredAt(),
@@ -61,7 +61,7 @@ public final class FeedstockMeasurementRestMapper {
 
     return new FeedstockMeasurementResponse(
         measurement.measurementId().value(),
-        measurement.ciderMakerId().value(),
+        measurement.workspaceId().value(),
         measurement.batchId().value(),
         measurement.name().value(),
         measurement.measuredAt(),

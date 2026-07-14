@@ -7,7 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.account.application.port.out.WorkspaceMembershipRepository;
 import org.craft.mcs.cap.core.account.domain.model.WorkspaceMembership;
 import org.craft.mcs.cap.core.account.domain.model.value.AccountUserId;
-import org.craft.mcs.cap.core.account.domain.model.value.WorkspaceId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.account.entity.AccountJdbcMapper;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.support.JdbcPersistenceExceptionTranslator;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.account.entity.AccountUserJdbcEntity;

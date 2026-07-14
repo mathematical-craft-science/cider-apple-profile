@@ -68,14 +68,14 @@ public final class OptimizeFeedstockBatchCompositionService implements OptimizeF
       @NonNull OptimizeFeedstockBatchCompositionCommand command
   ) {
     requireNonNull(command, "optimize feedstock batch composition command cannot be null");
-    feedstockAccessControl.requireReadAccess(command.ciderMakerId());
+    feedstockAccessControl.requireReadAccess(command.workspaceId());
 
-    final var batchesById = feedstockBatchRepository.findAllByCiderMakerId(command.ciderMakerId())
+    final var batchesById = feedstockBatchRepository.findAllByWorkspaceId(command.workspaceId())
         .stream()
         .collect(Collectors.toMap(FeedstockBatch::batchId, Function.identity()));
     final var sources = currentMeasurementQueryService.findCurrentSugarAcidityPointCandidates(
             new LatestFeedstockMeasurementSugarAcidityPointCandidateQuery(
-                command.ciderMakerId(),
+                command.workspaceId(),
                 command.filters().batch(),
                 command.filters().season(),
                 null,

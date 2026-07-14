@@ -58,9 +58,9 @@ public final class QueryFeedstockBatchCurrentSugarAcidityZonePointsService
       @NonNull FeedstockBatchCurrentSugarAcidityZonePointQuery query
   ) {
     requireNonNull(query, "feedstock batch current sugar-acidity zone point query cannot be null");
-    feedstockAccessControl.requireReadAccess(query.ciderMakerId());
+    feedstockAccessControl.requireReadAccess(query.workspaceId());
 
-    final var batchesById = feedstockBatchRepository.findAllByCiderMakerId(query.ciderMakerId())
+    final var batchesById = feedstockBatchRepository.findAllByWorkspaceId(query.workspaceId())
         .stream()
         .collect(toMap(FeedstockBatch::batchId, Function.identity()));
 
@@ -70,7 +70,7 @@ public final class QueryFeedstockBatchCurrentSugarAcidityZonePointsService
         PAGE_LOOKAHEAD,
         (afterCursor, limit) -> currentMeasurementQueryService.findCurrentSugarAcidityPointCandidates(
             new LatestFeedstockMeasurementSugarAcidityPointCandidateQuery(
-                query.ciderMakerId(),
+                query.workspaceId(),
                 query.filters().batch(),
                 query.filters().season(),
                 afterCursor,
@@ -92,7 +92,7 @@ public final class QueryFeedstockBatchCurrentSugarAcidityZonePointsService
     return new FeedstockBatchCurrentSugarAcidityZoneResult(
         measurement.batchId(),
         batch.name(),
-        query.ciderMakerId(),
+        query.workspaceId(),
         measurement.measurementId(),
         measurement.measuredAt(),
         evaluation

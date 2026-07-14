@@ -17,7 +17,7 @@ import static java.util.Objects.requireNonNull;
 /**
  * Application service for removing a feedstock batch from active source material.
  *
- * <p>The service checks cider-maker ownership before delegating deletion to the repository. The
+ * <p>The service checks workspace ownership before delegating deletion to the repository. The
  * persistence adapter may implement this as soft delete; the use case expresses the domain intent
  * that the batch should no longer participate in normal feedstock queries.
  */
@@ -33,17 +33,17 @@ public final class DeleteFeedstockBatchService
   @Override
   public void delete(@NonNull DeleteFeedstockBatchCommand command) {
     requireNonNull(command, "delete feedstock batch command cannot be null");
-    feedstockAccessControl.requireWriteAccess(command.ciderMakerId());
+    feedstockAccessControl.requireWriteAccess(command.workspaceId());
 
     transactionHelper.executeInTransaction(() -> {
       final var batch = feedstockBatchRepository.findById(command.batchId())
           .orElseThrow(() -> new FeedstockBatchNotFoundException(command.batchId()));
 
-      if (!batch.ciderMakerId().equals(command.ciderMakerId())) {
+      if (!batch.workspaceId().equals(command.workspaceId())) {
         throw new FeedstockBatchOwnershipMismatchException(
             batch.batchId(),
-            command.ciderMakerId(),
-            batch.ciderMakerId()
+            command.workspaceId(),
+            batch.workspaceId()
         );
       }
 

@@ -17,9 +17,8 @@ import org.craft.mcs.cap.core.account.domain.model.value.ExternalUserSubject;
 import org.craft.mcs.cap.core.account.domain.model.value.HttpUrl;
 import org.craft.mcs.cap.core.account.domain.model.value.IdentityProviderCode;
 import org.craft.mcs.cap.core.account.domain.model.value.PhoneNumber;
-import org.craft.mcs.cap.core.account.domain.model.value.WorkspaceId;
 import org.craft.mcs.cap.core.account.domain.model.value.WorkspaceMembershipId;
-import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;
 import org.springframework.data.jdbc.core.mapping.AggregateReference;
 
@@ -70,7 +69,6 @@ public final class AccountJdbcMapper {
   public static @NonNull WorkspaceJdbcEntity fromDomain(@NonNull Workspace workspace) {
     return new WorkspaceJdbcEntity(
         workspace.workspaceId().value(),
-        workspace.ciderMakerId().value(),
         workspace.name().value(),
         workspace.type(),
         workspace.externalOrganizationProvider() == null
@@ -86,7 +84,6 @@ public final class AccountJdbcMapper {
       @NonNull Workspace workspace,
       @NonNull WorkspaceJdbcEntity entity
   ) {
-    entity.ciderMakerId = workspace.ciderMakerId().value();
     entity.name = workspace.name().value();
     entity.type = workspace.type();
     entity.externalOrganizationProvider = workspace.externalOrganizationProvider() == null
@@ -101,7 +98,6 @@ public final class AccountJdbcMapper {
   public static @NonNull Workspace toDomain(@NonNull WorkspaceJdbcEntity entity) {
     return new Workspace(
         WorkspaceId.of(entity.workspaceId),
-        CiderMakerId.of(entity.ciderMakerId),
         DisplayName.of(entity.name),
         entity.type,
         entity.externalOrganizationProvider == null

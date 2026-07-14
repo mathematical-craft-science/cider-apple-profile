@@ -5,6 +5,7 @@ import org.jmolecules.ddd.annotation.ValueObject;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
+import static org.craft.mcs.cap.shared.kernel.identity.UuidV7Generator.newUuid;
 
 
 /** Stable CAP identifier of an account user, independent of an external identity provider. */
@@ -16,7 +17,7 @@ public record AccountUserId(@NonNull UUID value) {
   }
 
   public static @NonNull AccountUserId newId() {
-    return new AccountUserId(UUID.randomUUID());
+    return new AccountUserId(newUuid());
   }
 
   public static @NonNull AccountUserId of(@NonNull UUID value) {

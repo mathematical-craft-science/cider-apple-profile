@@ -19,7 +19,7 @@ public sealed interface ProductionBatchTraceSource
 
   @NonNull String id();
 
-  @Nullable String displayName();
+  @Nullable ProductionSourceDisplayName displayName();
 
   @NonNull VolumeValue volume();
 

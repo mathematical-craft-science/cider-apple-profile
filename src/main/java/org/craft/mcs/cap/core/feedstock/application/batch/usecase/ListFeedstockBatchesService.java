@@ -15,7 +15,7 @@ import static java.util.Objects.requireNonNull;
 
 
 /**
- * Read-side use case for listing feedstock batches owned by a cider maker.
+ * Read-side use case for listing feedstock batches owned by a workspace.
  *
  * <p>The service keeps the list endpoint focused on batch metadata and stock state. Optional season
  * filtering uses date-range overlap because cider-making seasons are practical periods rather than
@@ -34,9 +34,9 @@ public final class ListFeedstockBatchesService
       @NonNull ListFeedstockBatchesQuery query
   ) {
     requireNonNull(query, "list feedstock batches query cannot be null");
-    feedstockAccessControl.requireReadAccess(query.ciderMakerId());
+    feedstockAccessControl.requireReadAccess(query.workspaceId());
 
-    return feedstockBatchRepository.findAllByCiderMakerId(query.ciderMakerId())
+    return feedstockBatchRepository.findAllByWorkspaceId(query.workspaceId())
         .stream()
         .filter(batch -> query.season() == null || overlaps(batch.season(), query.season()))
         .map(FeedstockBatchSummaryMapper::toSummary)

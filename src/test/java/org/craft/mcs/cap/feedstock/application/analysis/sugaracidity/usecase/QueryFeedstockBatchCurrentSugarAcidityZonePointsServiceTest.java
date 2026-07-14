@@ -25,7 +25,7 @@ import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockVessel
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurement;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurementId;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.value.FeedstockMeasurementName;
-import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
@@ -52,15 +52,15 @@ class QueryFeedstockBatchCurrentSugarAcidityZonePointsServiceTest {
     final var batchRepository = mock(FeedstockBatchRepository.class);
     final var repository = mock(FeedstockMeasurementQueryRepository.class);
     final var service = service(batchRepository, repository);
-    final var ciderMakerId = CiderMakerId.of(randomUUID());
-    final var batch = batch(ciderMakerId);
+    final var workspaceId = WorkspaceId.of(randomUUID());
+    final var batch = batch(workspaceId);
     final var current = measurement("Current", batch.batchId());
 
-    when(batchRepository.findAllByCiderMakerId(ciderMakerId)).thenReturn(List.of(batch));
+    when(batchRepository.findAllByWorkspaceId(workspaceId)).thenReturn(List.of(batch));
     when(repository.findLatestSugarAcidityPointCandidates(any())).thenReturn(List.of(current));
 
     final var result = service.query(new FeedstockBatchCurrentSugarAcidityZonePointQuery(
-        ciderMakerId,
+        workspaceId,
         new FeedstockMeasurementPointFilters(null, null, null, null),
         CursorPageRequest.firstPage()
     ));
@@ -115,10 +115,10 @@ class QueryFeedstockBatchCurrentSugarAcidityZonePointsServiceTest {
     );
   }
 
-  private static FeedstockBatch batch(CiderMakerId ciderMakerId) {
+  private static FeedstockBatch batch(WorkspaceId workspaceId) {
     return FeedstockBatch.create(
         FeedstockBatchId.newId(),
-        ciderMakerId,
+        workspaceId,
         FeedstockBatchName.of("Late season juice"),
         FeedstockVessel.of("Tank A-01"),
         FeedstockType.JUICE,

@@ -4,17 +4,16 @@ import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.account.application.port.out.WorkspaceRepository;
 import org.craft.mcs.cap.core.account.domain.model.Workspace;
-import org.craft.mcs.cap.core.account.domain.model.value.WorkspaceId;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.account.entity.AccountJdbcMapper;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.support.JdbcPersistenceExceptionTranslator;
-import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Repository;
 
 import static java.util.Objects.requireNonNull;
 
 
-/** Persists CAP Workspace aggregates and resolves legacy cider-maker ownership scopes. */
+/** Persists CAP Workspace aggregates. */
 @Repository
 @RequiredArgsConstructor
 class JdbcWorkspaceRepository implements WorkspaceRepository {
@@ -38,11 +37,5 @@ class JdbcWorkspaceRepository implements WorkspaceRepository {
   public @NonNull Optional<@NonNull Workspace> findById(@NonNull WorkspaceId workspaceId) {
     requireNonNull(workspaceId, "workspace id cannot be null");
     return repository.findById(workspaceId.value()).map(AccountJdbcMapper::toDomain);
-  }
-
-  @Override
-  public @NonNull Optional<@NonNull Workspace> findByCiderMakerId(@NonNull CiderMakerId ciderMakerId) {
-    requireNonNull(ciderMakerId, "cider maker id cannot be null");
-    return repository.findByCiderMakerId(ciderMakerId.value()).map(AccountJdbcMapper::toDomain);
   }
 }

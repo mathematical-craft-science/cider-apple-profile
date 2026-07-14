@@ -32,7 +32,6 @@ final class AccountViewMapper {
   static @NonNull WorkspaceView toView(@NonNull Workspace workspace) {
     return new WorkspaceView(
         workspace.workspaceId(),
-        workspace.ciderMakerId(),
         workspace.name(),
         workspace.type()
     );

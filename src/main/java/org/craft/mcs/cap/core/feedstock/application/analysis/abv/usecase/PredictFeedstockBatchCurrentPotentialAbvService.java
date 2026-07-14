@@ -47,7 +47,7 @@ public final class PredictFeedstockBatchCurrentPotentialAbvService
 
     final var batch = feedstockBatchRepository.findById(batchId)
         .orElseThrow(() -> new FeedstockBatchNotFoundException(batchId));
-    feedstockAccessControl.requireReadAccess(batch.ciderMakerId());
+    feedstockAccessControl.requireReadAccess(batch.workspaceId());
     final var currentMeasurement = currentMeasurementQueryService.requireCurrentMeasurement(batchId);
     final var axes = axisExtractor.extract(currentMeasurement.chemicalProfile());
     final var capability = capabilityAssessor.assess(axes, ChemicalProfileCapability.ABV_PREDICTION);
@@ -56,12 +56,11 @@ public final class PredictFeedstockBatchCurrentPotentialAbvService
       throw new ChemicalProfileCapabilityNotMetException(capability);
     }
 
-    final var sugar = axes.valueOf(ChemicalAxis.SUGAR)
-        .orElseThrow(() -> new IllegalStateException("ABV-capable profile must have sugar axis"));
+    final var sugar = axes.requireValueOf(ChemicalAxis.SUGAR);
 
     return new FeedstockBatchCurrentPotentialAbvPrediction(
         currentMeasurement.batchId(),
-        batch.ciderMakerId(),
+        batch.workspaceId(),
         currentMeasurement.measurementId(),
         currentMeasurement.name(),
         sugar.valueKind(),

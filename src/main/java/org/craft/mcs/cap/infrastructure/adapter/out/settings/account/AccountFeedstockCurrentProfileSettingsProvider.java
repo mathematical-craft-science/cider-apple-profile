@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.account.application.port.in.WorkspaceSettingsReader;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentProfileSettings;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.out.FeedstockCurrentProfileSettingsProvider;
-import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 
@@ -18,8 +18,8 @@ public final class AccountFeedstockCurrentProfileSettingsProvider
   private final @NonNull WorkspaceSettingsReader workspaceSettingsReader;
 
   @Override
-  public @NonNull FeedstockCurrentProfileSettings get(@NonNull CiderMakerId ciderMakerId) {
-    final var settings = workspaceSettingsReader.readByCiderMakerId(ciderMakerId);
+  public @NonNull FeedstockCurrentProfileSettings get(@NonNull WorkspaceId workspaceId) {
+    final var settings = workspaceSettingsReader.readByWorkspaceId(workspaceId);
     return new FeedstockCurrentProfileSettings(settings.measurementStaleAfter());
   }
 }

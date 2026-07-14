@@ -19,8 +19,8 @@ import static java.util.Objects.requireNonNull;
 
 @Schema(description = "Search request for target-aware feedstock batch candidates.")
 public record FeedstockBatchProfileTargetCandidateSearchRequest(
-    @Schema(description = "Cider maker identifier.", format = "uuid", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NonNull UUID ciderMakerId,
+    @Schema(description = "Workspace identifier.", format = "uuid", requiredMode = Schema.RequiredMode.REQUIRED)
+    @NonNull UUID workspaceId,
     @ArraySchema(
         arraySchema = @Schema(description = "Optional feedstock batch identifier filter.", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED),
         schema = @Schema(format = "uuid")
@@ -47,7 +47,7 @@ public record FeedstockBatchProfileTargetCandidateSearchRequest(
 ) {
 
   public FeedstockBatchProfileTargetCandidateSearchRequest {
-    requireNonNull(ciderMakerId, "cider maker id cannot be null");
+    requireNonNull(workspaceId, "workspace id cannot be null");
     requireNonNull(purpose, "profile target scoring purpose cannot be null");
     requireNonNull(target, "feedstock batch profile target cannot be null");
   }

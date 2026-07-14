@@ -5,7 +5,7 @@ import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.account.application.port.out.ActiveWorkspaceProvider;
-import org.craft.mcs.cap.core.account.domain.model.value.WorkspaceId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.application.ApplicationValidationException;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;

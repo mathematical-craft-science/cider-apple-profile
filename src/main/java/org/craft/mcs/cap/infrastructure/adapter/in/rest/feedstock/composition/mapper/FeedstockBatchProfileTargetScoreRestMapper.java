@@ -34,7 +34,7 @@ import org.craft.mcs.cap.core.feedstock.application.planning.composition.port.in
 import org.craft.mcs.cap.core.feedstock.application.planning.composition.port.in.OptimizeFeedstockBatchCompositionResult;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
-import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.common.dto.FeedstockSeasonRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.composition.dto.FeedstockBatchCompositionOptimizationCandidateResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.composition.dto.FeedstockBatchCompositionOptimizationSourceResponse;
@@ -77,7 +77,7 @@ public final class FeedstockBatchProfileTargetScoreRestMapper {
     final var purpose = requireNonNull(request.purpose(), "profile target scoring purpose cannot be null");
 
     return new ScoreFeedstockBatchProfileTargetCommand(
-        CiderMakerId.of(request.ciderMakerId()),
+        WorkspaceId.of(request.workspaceId()),
         new FeedstockMeasurementPointFilters(
             toBatchCriteria(request.batchId()),
             toSeason(request.season()),
@@ -135,7 +135,7 @@ public final class FeedstockBatchProfileTargetScoreRestMapper {
     );
 
     return new OptimizeFeedstockBatchCompositionCommand( // NOSONAR
-        CiderMakerId.of(request.ciderMakerId()),
+        WorkspaceId.of(request.workspaceId()),
         new FeedstockMeasurementPointFilters(
             toBatchCriteria(request.batchIds()),
             toSeason(request.season()),
@@ -187,7 +187,7 @@ public final class FeedstockBatchProfileTargetScoreRestMapper {
 
     return new FeedstockBatchProfileTargetScoreResponse(
         score.batchId().value(),
-        score.ciderMakerId().value(),
+        score.workspaceId().value(),
         score.currentMeasurementId().value(),
         score.currentMeasurementName().value(),
         SugarAcidityZoneRestMapper.toResponse(score.point()),

@@ -21,7 +21,7 @@ import static java.util.Objects.requireNonNull;
 public class ProductionBatchJdbcEntity {
 
   @Id @NonNull @Column("batch_id") UUID batchId;
-  @NonNull @Column("cider_maker_id") UUID ciderMakerId;
+  @NonNull @Column("workspace_id") UUID workspaceId;
   @NonNull @Column("name") String name;
   @NonNull @Column("kind") ProductionBatchKind kind;
   @NonNull @Column("status") ProductionBatchStatus status;
@@ -42,7 +42,7 @@ public class ProductionBatchJdbcEntity {
 
   ProductionBatchJdbcEntity(
       @NonNull UUID batchId,
-      @NonNull UUID ciderMakerId,
+      @NonNull UUID workspaceId,
       @NonNull String name,
       @NonNull ProductionBatchKind kind,
       @NonNull ProductionBatchStatus status,
@@ -55,7 +55,7 @@ public class ProductionBatchJdbcEntity {
       @Nullable String note
   ) {
     this.batchId = requireNonNull(batchId, "production batch id cannot be null");
-    this.ciderMakerId = requireNonNull(ciderMakerId, "cider maker id cannot be null");
+    this.workspaceId = requireNonNull(workspaceId, "workspace id cannot be null");
     this.name = requireNonNull(name, "production batch name cannot be null");
     this.kind = requireNonNull(kind, "production batch kind cannot be null");
     this.status = requireNonNull(status, "production batch status cannot be null");

@@ -18,7 +18,7 @@ import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.o
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurement;
-import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.feedstock.measurement.entity.FeedstockMeasurementJdbcMapper;
 import org.craft.mcs.cap.shared.platform.persistence.jdbc.SqlQueryBuilder;
 import org.craft.mcs.cap.shared.platform.persistence.jdbc.SqlQueryBuilder.SqlQueryOption;
@@ -39,14 +39,14 @@ class JdbcFeedstockMeasurementQueryRepository
 
   private final @NonNull NamedParameterJdbcTemplate jdbcTemplate;
 
-  private static @NonNull SqlQueryBuilder baseFeedstockMeasurementQuery(@NonNull CiderMakerId ciderMakerId) {
+  private static @NonNull SqlQueryBuilder baseFeedstockMeasurementQuery(@NonNull WorkspaceId workspaceId) {
     return SqlQueryBuilder.from("""
         select sample.*
         from feedstock_measurements sample
         join feedstock_batches batch on sample.batch_id = batch.batch_id
-        where batch.cider_maker_id = :ciderMakerId
+        where batch.workspace_id = :workspaceId
           and batch.deleted_at is null
-        """).parameter("ciderMakerId", ciderMakerId.value());
+        """).parameter("workspaceId", workspaceId.value());
   }
 
   private static @NonNull SqlQueryOption batchFilter(@Nullable FeedstockBatchCriteria batch) {
@@ -112,8 +112,8 @@ class JdbcFeedstockMeasurementQueryRepository
   }
 
   @Override
-  public @NonNull List<@NonNull FeedstockMeasurement> findAllByCiderMakerId(@NonNull CiderMakerId ciderMakerId) {
-    requireNonNull(ciderMakerId, "cider maker id cannot be null");
+  public @NonNull List<@NonNull FeedstockMeasurement> findAllByWorkspaceId(@NonNull WorkspaceId workspaceId) {
+    requireNonNull(workspaceId, "workspace id cannot be null");
 
     return queryMeasurements("""
         select sample.*
@@ -121,30 +121,30 @@ class JdbcFeedstockMeasurementQueryRepository
         where sample.batch_id in (
           select batch.batch_id
           from feedstock_batches batch
-          where batch.cider_maker_id = :ciderMakerId
+          where batch.workspace_id = :workspaceId
             and batch.deleted_at is null
         )
-        """, Map.of("ciderMakerId", ciderMakerId.value()));
+        """, Map.of("workspaceId", workspaceId.value()));
   }
 
   @Override
-  public @NonNull List<@NonNull FeedstockMeasurement> findAllByCiderMakerIdAndSeason(
-      @NonNull CiderMakerId ciderMakerId,
+  public @NonNull List<@NonNull FeedstockMeasurement> findAllByWorkspaceIdAndSeason(
+      @NonNull WorkspaceId workspaceId,
       @NonNull FeedstockSeason season
   ) {
-    requireNonNull(ciderMakerId, "cider maker id cannot be null");
+    requireNonNull(workspaceId, "workspace id cannot be null");
     requireNonNull(season, "feedstock season cannot be null");
 
     return queryMeasurements("""
         select sample.*
         from feedstock_measurements sample
         join feedstock_batches batch on sample.batch_id = batch.batch_id
-        where batch.cider_maker_id = :ciderMakerId
+        where batch.workspace_id = :workspaceId
           and batch.deleted_at is null
           and batch.season_starts_on <= :seasonEndsOn
           and batch.season_ends_on >= :seasonStartsOn
         """, Map.of(
-        "ciderMakerId", ciderMakerId.value(),
+        "workspaceId", workspaceId.value(),
         "seasonStartsOn", season.startsOn(),
         "seasonEndsOn", season.endsOn()
     ));
@@ -156,7 +156,7 @@ class JdbcFeedstockMeasurementQueryRepository
   ) {
     requireNonNull(query, "feedstock measurement point candidate query cannot be null");
 
-    final var sqlQuery = baseFeedstockMeasurementQuery(query.ciderMakerId())
+    final var sqlQuery = baseFeedstockMeasurementQuery(query.workspaceId())
         .with(batchFilter(query.batch()))
         .with(seasonFilter(query.season()))
         .with(afterCursor(query.after(), CursorDirection.ASCENDING))
@@ -173,7 +173,7 @@ class JdbcFeedstockMeasurementQueryRepository
   ) {
     requireNonNull(query, "latest feedstock measurement point candidate query cannot be null");
 
-    final var sqlQuery = baseFeedstockMeasurementQuery(query.ciderMakerId())
+    final var sqlQuery = baseFeedstockMeasurementQuery(query.workspaceId())
         .with(batchFilter(query.batch()))
         .with(seasonFilter(query.season()))
         .with(afterCursor(query.after(), CursorDirection.DESCENDING))
@@ -233,7 +233,7 @@ class JdbcFeedstockMeasurementQueryRepository
     requireNonNull(batchId, "feedstock batch id cannot be null");
 
     return jdbcTemplate.query("""
-        SELECT batch.cider_maker_id, sample.*
+        SELECT batch.workspace_id, sample.*
         FROM feedstock_measurements sample
         JOIN feedstock_batches batch ON sample.batch_id = batch.batch_id
         WHERE sample.batch_id = :batchId
@@ -245,7 +245,7 @@ class JdbcFeedstockMeasurementQueryRepository
       );
       return new FeedstockMeasurementSummary(
           measurement.measurementId(),
-          CiderMakerId.of(resultSet.getObject("cider_maker_id", UUID.class)),
+          WorkspaceId.of(resultSet.getObject("workspace_id", UUID.class)),
           measurement.batchId(),
           measurement.name(),
           measurement.measuredAt(),

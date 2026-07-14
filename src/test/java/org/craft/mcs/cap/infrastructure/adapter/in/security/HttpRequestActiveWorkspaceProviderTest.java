@@ -2,7 +2,7 @@ package org.craft.mcs.cap.infrastructure.adapter.in.security;
 
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.UUID;
-import org.craft.mcs.cap.core.account.domain.model.value.WorkspaceId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.application.ApplicationValidationException;
 import org.junit.jupiter.api.Test;
 

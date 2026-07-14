@@ -3,31 +3,21 @@ package org.craft.mcs.cap.core.production.application.usecase;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.production.application.authorization.port.out.ProductionAccessControl;
-import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchNotFoundException;
-import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchRepository;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
-import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
-import org.craft.mcs.cap.core.production.application.ProductionSourceInsufficientAvailableVolumeException;
-import org.craft.mcs.cap.core.production.application.ProductionSourceOwnershipMismatchException;
 import org.craft.mcs.cap.core.production.application.port.in.CreateProductionBatchCommand;
 import org.craft.mcs.cap.core.production.application.port.in.CreateProductionBatchUseCase;
 import org.craft.mcs.cap.core.production.application.port.in.ProductionBatchCreated;
+import org.craft.mcs.cap.core.production.application.port.out.ConsumedProductionSource;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchRepository;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchFeedstockTraceSource;
-import org.craft.mcs.cap.core.production.application.port.out.ProductionFeedstockTraceSnapshotProvider;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchTraceRecorder;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchTraceSource;
+import org.craft.mcs.cap.core.production.application.port.out.ProductionSourceInventory;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatch;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatchId;
-import org.craft.mcs.cap.core.production.domain.model.ProductionSourceComponent;
-import org.craft.mcs.cap.core.production.domain.model.ProductionInput;
-import org.craft.mcs.cap.core.production.domain.model.ProductionSourceReference;
+import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.craft.mcs.cap.shared.platform.TransactionHelper;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
@@ -45,13 +35,12 @@ import static java.util.Objects.requireNonNull;
  */
 @Component
 @RequiredArgsConstructor
-public class CreateProductionBatchService
+public final class CreateProductionBatchService
     implements CreateProductionBatchUseCase {
 
-  private final @NonNull FeedstockBatchRepository feedstockBatchRepository;
+  private final @NonNull ProductionSourceInventory sourceInventory;
   private final @NonNull ProductionBatchRepository productionBatchRepository;
   private final @NonNull ProductionBatchTraceRecorder traceRecorder;
-  private final @NonNull ProductionFeedstockTraceSnapshotProvider feedstockTraceSnapshotProvider;
   private final @NonNull ProductionAccessControl productionAccessControl;
   private final @NonNull TransactionHelper transactionHelper;
   private final @NonNull Clock clock;
@@ -59,14 +48,14 @@ public class CreateProductionBatchService
   @Override
   public @NonNull ProductionBatchCreated create(@NonNull CreateProductionBatchCommand command) {
     requireNonNull(command, "create production batch command cannot be null");
-    productionAccessControl.requireWriteAccess(command.ciderMakerId());
+    productionAccessControl.requireWriteAccess(command.workspaceId());
 
     return transactionHelper.callInTransactionNonNull(() -> {
-      final var batchesById = loadAndValidateBatches(command);
       final var input = command.input();
+      final var consumedSources = consumeSources(command);
       final var productionBatch = ProductionBatch.create(
           ProductionBatchId.newId(),
-          command.ciderMakerId(),
+          command.workspaceId(),
           command.name(),
           command.kind(),
           input.sourceComposition().totalVolume(),
@@ -75,11 +64,10 @@ public class CreateProductionBatchService
           command.note()
       );
 
-      consumeFeedstockVolumes(command, batchesById);
       final var savedProductionBatch = productionBatchRepository.save(productionBatch);
       traceRecorder.recordCreated(
           savedProductionBatch,
-          traceSources(input, batchesById, feedstockTraceSnapshotProvider),
+          traceSources(consumedSources),
           Instant.now(clock),
           command.note()
       );
@@ -88,92 +76,44 @@ public class CreateProductionBatchService
     });
   }
 
-  private @NonNull Map<@NonNull FeedstockBatchId, @NonNull FeedstockBatch> loadAndValidateBatches(
+  private @NonNull List<@NonNull ConsumedProductionSource> consumeSources(
       @NonNull CreateProductionBatchCommand command
   ) {
     final var sources = command.input().sourceComposition().sources();
-    final Map<@NonNull FeedstockBatchId, @NonNull FeedstockBatch> batchesById =
-        LinkedHashMap.newLinkedHashMap(sources.size());
+    final var consumedSources = new ArrayList<ConsumedProductionSource>(sources.size());
 
     for (final var source : sources) {
-      final var feedstockBatchId = feedstockBatchId(source);
-      final var batch = feedstockBatchRepository.findById(feedstockBatchId)
-          .orElseThrow(() -> new FeedstockBatchNotFoundException(feedstockBatchId));
-      if (!batch.ciderMakerId().equals(command.ciderMakerId())) {
-        throw new ProductionSourceOwnershipMismatchException(
-            source.reference(),
-            command.ciderMakerId(),
-            batch.ciderMakerId()
-        );
-      }
-      if (source.volume().exceeds(batch.availableVolume())) {
-        throw new ProductionSourceInsufficientAvailableVolumeException(
-            source.reference(),
-            source.volume(),
-            batch.availableVolume()
-        );
-      }
-      batchesById.put(feedstockBatchId, batch);
+      consumedSources.add(sourceInventory.consume(command.workspaceId(), source));
     }
 
-    return Map.copyOf(batchesById);
-  }
-
-  private void consumeFeedstockVolumes(
-      @NonNull CreateProductionBatchCommand command,
-      @NonNull Map<@NonNull FeedstockBatchId, @NonNull FeedstockBatch> batchesById
-  ) {
-    final var sources = command.input().sourceComposition().sources();
-
-    for (final ProductionSourceComponent source : sources) {
-      final var batch = batchFor(feedstockBatchId(source), batchesById);
-      batch.consumeAvailableVolume(source.volume());
-      feedstockBatchRepository.save(batch);
-    }
+    return List.copyOf(consumedSources);
   }
 
   private static @NonNull List<@NonNull ProductionBatchTraceSource> traceSources(
-      @NonNull ProductionInput input,
-      @NonNull Map<@NonNull FeedstockBatchId, @NonNull FeedstockBatch> batchesById,
-      @NonNull ProductionFeedstockTraceSnapshotProvider feedstockTraceSnapshotProvider
+      @NonNull List<@NonNull ConsumedProductionSource> consumedSources
   ) {
-    final var sources = input.sourceComposition().sources();
-    final var traceSources = new ArrayList<ProductionBatchTraceSource>(sources.size());
+    final var traceSources = new ArrayList<ProductionBatchTraceSource>(consumedSources.size());
 
-    for (final var source : sources) {
-      final var batch = batchFor(feedstockBatchId(source), batchesById);
-      final var snapshot = feedstockTraceSnapshotProvider.currentSnapshotFor(batch.batchId());
-      traceSources.add(new ProductionBatchFeedstockTraceSource(
-          batch.batchId(),
-          batch.name().value(),
-          source.volume(),
-          snapshot.profile(),
-          snapshot.confidence()
-      ));
+    for (final var source : consumedSources) {
+      traceSources.add(toTraceSource(source));
     }
 
     return List.copyOf(traceSources);
   }
 
-  private static @NonNull FeedstockBatchId feedstockBatchId(@NonNull ProductionSourceComponent source) {
-    requireNonNull(source, "production source component cannot be null");
-    return feedstockBatchId(source.reference());
-  }
-
-  private static @NonNull FeedstockBatchId feedstockBatchId(@NonNull ProductionSourceReference reference) {
-    requireNonNull(reference, "production source reference cannot be null");
-    return switch (reference.type()) {
-      case FEEDSTOCK_BATCH -> FeedstockBatchId.of(reference.id());
-    };
-  }
-
-  private static @NonNull FeedstockBatch batchFor(
-      @NonNull FeedstockBatchId batchId,
-      @NonNull Map<@NonNull FeedstockBatchId, @NonNull FeedstockBatch> batchesById
+  private static @NonNull ProductionBatchTraceSource toTraceSource(
+      @NonNull ConsumedProductionSource source
   ) {
-    return Optional.ofNullable(batchesById.get(batchId))
-        .orElseThrow(() -> new IllegalStateException(
-            "loaded feedstock batch map does not contain source " + batchId.value()
-        ));
+    requireNonNull(source, "consumed production source cannot be null");
+
+    return switch (source.reference().type()) {
+      case FEEDSTOCK_BATCH -> new ProductionBatchFeedstockTraceSource(
+          FeedstockBatchId.of(source.reference().id()),
+          source.displayName(),
+          source.volume(),
+          source.profile(),
+          source.confidence()
+      );
+    };
   }
 }

@@ -54,7 +54,7 @@ public final class UpdateFeedstockMeasurementService
   private @NonNull FeedstockBatch requireBatch(@NonNull UpdateFeedstockMeasurementCommand command) {
     final var batch = feedstockBatchRepository.findById(command.batchId())
         .orElseThrow(() -> new FeedstockBatchNotFoundException(command.batchId()));
-    feedstockAccessControl.requireWriteAccess(batch.ciderMakerId());
+    feedstockAccessControl.requireWriteAccess(batch.workspaceId());
     return batch;
   }
 
@@ -117,7 +117,7 @@ public final class UpdateFeedstockMeasurementService
   ) {
     return new FeedstockMeasurementSummary(
         measurement.measurementId(),
-        batch.ciderMakerId(),
+        batch.workspaceId(),
         measurement.batchId(),
         measurement.name(),
         measurement.measuredAt(),

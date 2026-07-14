@@ -72,7 +72,7 @@ class BatchTraceabilityProductionBatchTraceRecorder implements ProductionBatchTr
             new BatchTraceSubject(
                 toTraceSubjectType(source),
                 source.id(),
-                source.displayName()
+                displayNameOf(source)
             ),
             new BatchTraceMaterialSnapshot(
                 source.volume(),
@@ -90,6 +90,11 @@ class BatchTraceabilityProductionBatchTraceRecorder implements ProductionBatchTr
       case ProductionBatchFeedstockTraceSource ignored -> BatchTraceSubjectType.FEEDSTOCK_BATCH;
       case ProductionBatchCompositionTraceSource ignored -> BatchTraceSubjectType.COMPOSITION_RESULT;
     };
+  }
+
+  private static @Nullable String displayNameOf(@NonNull ProductionBatchTraceSource source) {
+    final var displayName = source.displayName();
+    return displayName == null ? null : displayName.value();
   }
 
   private static @NonNull BatchTraceStepSubject outputSubject(@NonNull ProductionBatch productionBatch) {

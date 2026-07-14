@@ -26,7 +26,6 @@ import org.craft.mcs.cap.core.account.domain.model.WorkspaceType;
 import org.craft.mcs.cap.core.account.domain.model.value.AccountUserId;
 import org.craft.mcs.cap.core.account.domain.model.value.DisplayName;
 import org.craft.mcs.cap.core.account.domain.model.value.EmailAddress;
-import org.craft.mcs.cap.core.account.domain.model.value.WorkspaceId;
 import org.craft.mcs.cap.core.account.domain.model.value.WorkspaceMembershipId;
 import org.craft.mcs.cap.infrastructure.adapter.in.importer.appleprofile.AppleVarietyJsonSeedImporter;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.application.ApplicationExceptionHandler;
@@ -34,7 +33,7 @@ import org.craft.mcs.cap.infrastructure.adapter.in.rest.seed.SeedDebugController
 import org.craft.mcs.cap.infrastructure.adapter.in.security.AccountProvisioningFilter;
 import org.craft.mcs.cap.infrastructure.adapter.in.security.DebugAccessAuthorizationManager;
 import org.craft.mcs.cap.infrastructure.configuration.SecurityConfiguration;
-import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
@@ -194,7 +193,6 @@ class AccountSecurityWebMvcTest {
     final var userId = AccountUserId.newId();
     final var workspace = new WorkspaceView(
         WorkspaceId.newId(),
-        CiderMakerId.of(UUID.randomUUID()),
         DisplayName.of("My cidery"),
         WorkspaceType.CIDERY
     );

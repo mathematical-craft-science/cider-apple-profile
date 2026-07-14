@@ -3,7 +3,7 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.measurementunits;
 import java.time.Duration;
 import org.craft.mcs.cap.core.account.application.port.in.WorkspaceSettingsReader;
 import org.craft.mcs.cap.core.account.application.port.in.WorkspaceSettingsView;
-import org.craft.mcs.cap.core.account.domain.model.value.WorkspaceId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurementunits.dto.MeasurementFreshnessMetadataResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurementunits.dto.MeasurementUnitsMetadataResponse;
 import org.junit.jupiter.api.Test;

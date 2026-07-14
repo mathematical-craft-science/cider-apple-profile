@@ -4,6 +4,7 @@ import java.util.UUID;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
+import static org.craft.mcs.cap.shared.kernel.identity.UuidV7Generator.newUuid;
 
 
 public record ProductionBatchId(@NonNull UUID value) {
@@ -13,7 +14,7 @@ public record ProductionBatchId(@NonNull UUID value) {
   }
 
   public static @NonNull ProductionBatchId newId() {
-    return new ProductionBatchId(UUID.randomUUID());
+    return new ProductionBatchId(newUuid());
   }
 
   public static @NonNull ProductionBatchId of(@NonNull UUID value) {

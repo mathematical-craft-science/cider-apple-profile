@@ -20,7 +20,6 @@ import static java.util.Objects.requireNonNull;
 public class WorkspaceJdbcEntity {
 
   @Id @NonNull @Column("workspace_id") UUID workspaceId;
-  @NonNull @Column("cider_maker_id") UUID ciderMakerId;
   @NonNull @Column("name") String name;
   @NonNull @Column("type") WorkspaceType type;
   @Nullable @Column("external_organization_provider") String externalOrganizationProvider;
@@ -35,14 +34,12 @@ public class WorkspaceJdbcEntity {
 
   WorkspaceJdbcEntity(
       @NonNull UUID workspaceId,
-      @NonNull UUID ciderMakerId,
       @NonNull String name,
       @NonNull WorkspaceType type,
       @Nullable String externalOrganizationProvider,
       @Nullable String externalOrganizationSubject
   ) {
     this.workspaceId = requireNonNull(workspaceId, "workspace id cannot be null");
-    this.ciderMakerId = requireNonNull(ciderMakerId, "cider maker id cannot be null");
     this.name = requireNonNull(name, "workspace name cannot be null");
     this.type = requireNonNull(type, "workspace type cannot be null");
     this.externalOrganizationProvider = externalOrganizationProvider;

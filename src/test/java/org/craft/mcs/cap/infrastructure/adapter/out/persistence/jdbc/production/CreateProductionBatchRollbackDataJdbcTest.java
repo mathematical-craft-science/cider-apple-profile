@@ -1,26 +1,18 @@
 package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.production;
 
+import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.time.ZoneOffset;
-import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import org.craft.mcs.cap.core.production.application.authorization.port.out.ProductionAccessControl;
-import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchRepository;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
-import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockBatchName;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockVessel;
-import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.core.production.application.port.in.CreateProductionBatchCommand;
-import org.craft.mcs.cap.core.production.application.port.out.ProductionFeedstockTraceSnapshot;
-import org.craft.mcs.cap.core.production.application.port.out.ProductionFeedstockTraceSnapshotProvider;
+import org.craft.mcs.cap.core.production.application.port.out.ConsumedProductionSource;
+import org.craft.mcs.cap.core.production.application.port.out.ProductionSourceDisplayName;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchTraceRecorder;
+import org.craft.mcs.cap.core.production.application.port.out.ProductionSourceInventory;
 import org.craft.mcs.cap.core.production.application.usecase.CreateProductionBatchService;
 import org.craft.mcs.cap.core.production.domain.model.ProductionInput;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceComponent;
@@ -52,6 +44,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import static java.util.Objects.requireNonNull;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -69,25 +62,56 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class CreateProductionBatchRollbackDataJdbcTest {
 
   @Autowired
-  private CreateProductionBatchService service;
+  private @NonNull CreateProductionBatchService service;
 
   @Autowired
-  private TestFeedstockBatchRepository feedstockBatchRepository;
-
-  @Autowired
-  private JdbcTemplate jdbcTemplate;
+  private @NonNull JdbcTemplate jdbcTemplate;
 
   @Test
   void rollsBackProductionBatchWhenTraceAppendFails() {
-    final var ciderMakerId = CiderMakerId.of(UUID.randomUUID());
-    final var feedstockBatch = feedstockBatch(ciderMakerId);
-    feedstockBatchRepository.batch = feedstockBatch;
+    final var workspaceId = WorkspaceId.of(UUID.randomUUID());
+    jdbcTemplate.update(
+        """
+            INSERT INTO workspaces (workspace_id, name, type, version, created_at, updated_at)
+            VALUES (?, 'Rollback workspace', 'CIDERY', 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+            """,
+        workspaceId.value()
+    );
+    final var sourceReference = ProductionSourceReference.feedstockBatch(UUID.randomUUID());
+    insertFeedstockSource(workspaceId, sourceReference);
+    final var command = command(workspaceId, sourceReference);
 
-    assertThatThrownBy(() -> service.create(command(ciderMakerId, feedstockBatch)))
+    assertThatThrownBy(() -> service.create(command))
         .isInstanceOf(IllegalStateException.class)
-        .hasMessageContaining("trace persistence failed");
+        .hasMessageContaining("trace persistence failed")
+        .satisfies(exception -> assertThat(rollbackState(sourceReference))
+            .returns(0L, RollbackState::productionBatchCount)
+            .returns(new BigDecimal("250.000"), RollbackState::availableFeedstockVolume));
+  }
 
-    assertThat(countProductionBatches()).isZero();
+  private void insertFeedstockSource(
+      @NonNull WorkspaceId workspaceId,
+      @NonNull ProductionSourceReference sourceReference
+  ) {
+    jdbcTemplate.update("""
+        INSERT INTO feedstock_batches (
+            batch_id, workspace_id, name, type, season_starts_on, season_ends_on,
+            available_volume_liters, version, created_at, updated_at
+        ) VALUES (?, ?, 'Late juice', 'JUICE', DATE '2026-01-01', DATE '2026-12-31',
+                  250, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+        """, sourceReference.id(), workspaceId.value());
+  }
+
+  private @NonNull RollbackState rollbackState(@NonNull ProductionSourceReference sourceReference) {
+    final var availableVolume = jdbcTemplate.queryForObject(
+        "SELECT available_volume_liters FROM feedstock_batches WHERE batch_id = ?",
+        BigDecimal.class,
+        sourceReference.id()
+    );
+    return new RollbackState(
+        countProductionBatches(),
+        requireNonNull(availableVolume, "available feedstock volume cannot be null")
+    );
   }
 
   private long countProductionBatches() {
@@ -98,17 +122,17 @@ class CreateProductionBatchRollbackDataJdbcTest {
     return count == null ? 0L : count; // NOSONAR
   }
 
-  private static CreateProductionBatchCommand command(
-      CiderMakerId ciderMakerId,
-      FeedstockBatch feedstockBatch
+  private static @NonNull CreateProductionBatchCommand command(
+      @NonNull WorkspaceId workspaceId,
+      @NonNull ProductionSourceReference sourceReference
   ) {
     return new CreateProductionBatchCommand(
-        ciderMakerId,
+        workspaceId,
         ProductionBatchName.of("Rollback candidate"),
         ProductionBatchKind.CIDER,
         new ProductionInput(
             ProductionSourceComposition.of(List.of(new ProductionSourceComponent(
-                ProductionSourceReference.feedstockBatch(feedstockBatch.batchId().value()),
+                sourceReference,
                 VolumeValue.ofLiters("100")
             ))),
             new ProductionProfileSnapshot(
@@ -122,25 +146,8 @@ class CreateProductionBatchRollbackDataJdbcTest {
     );
   }
 
-  private static FeedstockBatch feedstockBatch(CiderMakerId ciderMakerId) {
-    return FeedstockBatch.create(
-        FeedstockBatchId.newId(),
-        ciderMakerId,
-        FeedstockBatchName.of("Late juice"),
-        FeedstockVessel.of("Tank A-01"),
-        FeedstockType.JUICE,
-        FeedstockSeason.of(LocalDate.parse("2026-10-01"), LocalDate.parse("2026-12-15")),
-        VolumeValue.ofLiters("250")
-    );
-  }
-
   @TestConfiguration(proxyBeanMethods = false)
   static class TestSliceConfiguration {
-
-    @Bean
-    TestFeedstockBatchRepository feedstockBatchRepository() {
-      return new TestFeedstockBatchRepository();
-    }
 
     @Bean
     ProductionBatchTraceRecorder productionBatchTraceRecorder() {
@@ -150,15 +157,25 @@ class CreateProductionBatchRollbackDataJdbcTest {
     }
 
     @Bean
-    ProductionFeedstockTraceSnapshotProvider productionFeedstockTraceSnapshotProvider() {
-      return batchId -> new ProductionFeedstockTraceSnapshot(
-          ChemicalProfileAxes.of(
-              axis(ChemicalAxis.SUGAR, "1.050"),
-              axis(ChemicalAxis.ACIDITY, "6.1"),
-              axis(ChemicalAxis.TANNINITY, "1400")
-          ),
-          ConfidenceLevel.LAB_VERIFIED
-      );
+    ProductionSourceInventory productionSourceInventory(@NonNull JdbcTemplate jdbcTemplate) {
+      return (workspaceId, source) -> {
+        jdbcTemplate.update("""
+            UPDATE feedstock_batches
+            SET available_volume_liters = available_volume_liters - ?
+            WHERE batch_id = ? AND workspace_id = ?
+            """, source.volume().liters(), source.reference().id(), workspaceId.value());
+        return new ConsumedProductionSource(
+            source.reference(),
+            ProductionSourceDisplayName.of("Late juice"),
+            source.volume(),
+            ChemicalProfileAxes.of(
+                axis(ChemicalAxis.SUGAR, "1.050"),
+                axis(ChemicalAxis.ACIDITY, "6.1"),
+                axis(ChemicalAxis.TANNINITY, "1400")
+            ),
+            ConfidenceLevel.LAB_VERIFIED
+        );
+      };
     }
 
     @Bean
@@ -170,18 +187,18 @@ class CreateProductionBatchRollbackDataJdbcTest {
     ProductionAccessControl productionAccessControl() {
       return new ProductionAccessControl() {
         @Override
-        public void requireReadAccess(@NonNull CiderMakerId ciderMakerId) {
+        public void requireReadAccess(@NonNull WorkspaceId workspaceId) {
         }
 
         @Override
-        public void requireWriteAccess(@NonNull CiderMakerId ciderMakerId) {
+        public void requireWriteAccess(@NonNull WorkspaceId workspaceId) {
         }
       };
     }
 
-    private static AxisValue axis(
-        ChemicalAxis axis,
-        String value
+    private static @NonNull AxisValue axis(
+        @NonNull ChemicalAxis axis,
+        @NonNull String value
     ) {
       return new AxisValue(
           axis,
@@ -195,33 +212,10 @@ class CreateProductionBatchRollbackDataJdbcTest {
     }
   }
 
-  static final class TestFeedstockBatchRepository implements FeedstockBatchRepository {
-
-    private FeedstockBatch batch;
-
-    @Override
-    public @NonNull FeedstockBatch save(@NonNull FeedstockBatch feedstockBatch) {
-      batch = feedstockBatch;
-      return feedstockBatch;
-    }
-
-    @Override
-    public @NonNull Optional<@NonNull FeedstockBatch> findById(@NonNull FeedstockBatchId batchId) {
-      return batch != null && batch.batchId().equals(batchId)
-          ? Optional.of(batch)
-          : Optional.empty();
-    }
-
-    @Override
-    public @NonNull List<@NonNull FeedstockBatch> findAllByCiderMakerId(@NonNull CiderMakerId ciderMakerId) {
-      return batch != null && batch.ciderMakerId().equals(ciderMakerId)
-          ? List.of(batch)
-          : List.of();
-    }
-
-    @Override
-    public void delete(@NonNull FeedstockBatch feedstockBatch) {
-      batch = null;
-    }
+  private record RollbackState(
+      long productionBatchCount,
+      @NonNull BigDecimal availableFeedstockVolume
+  ) {
   }
+
 }

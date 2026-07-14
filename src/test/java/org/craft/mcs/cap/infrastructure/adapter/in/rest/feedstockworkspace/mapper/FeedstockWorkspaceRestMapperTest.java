@@ -28,7 +28,7 @@ import org.craft.mcs.cap.shared.kernel.chemical.value.PhValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
-import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.craft.mcs.cap.shared.kernel.measurement.ExactMeasurement;
 import org.craft.mcs.cap.shared.kernel.measurement.RangeMeasurement;
@@ -113,7 +113,7 @@ class FeedstockWorkspaceRestMapperTest {
   private static @NonNull FeedstockBatchSummary batch() {
     return new FeedstockBatchSummary(
         FeedstockBatchId.newId(),
-        CiderMakerId.of(UUID.fromString("7c18963c-26d7-45c0-af2c-07998f4f6d6b")),
+        WorkspaceId.of(UUID.fromString("7c18963c-26d7-45c0-af2c-07998f4f6d6b")),
         FeedstockBatchName.of("Late juice"),
         FeedstockVessel.of("Tank A-01"),
         FeedstockType.JUICE,

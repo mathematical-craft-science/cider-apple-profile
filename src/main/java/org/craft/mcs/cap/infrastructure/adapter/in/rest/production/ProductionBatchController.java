@@ -6,7 +6,6 @@ import org.craft.mcs.cap.core.batchtraceability.application.port.in.QueryBatchTr
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceSubject;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceSubjectType;
 import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPredictor;
-import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
 import org.craft.mcs.cap.core.production.application.port.in.CreateProductionBatchUseCase;
 import org.craft.mcs.cap.core.production.application.port.in.GetProductionBatchUseCase;
 import org.craft.mcs.cap.core.production.application.port.in.ListProductionBatchesQuery;
@@ -19,6 +18,7 @@ import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.Productio
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.ProductionBatchResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.mapper.BatchTraceabilityRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.mapper.ProductionBatchRestMapper;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -46,9 +46,9 @@ public final class ProductionBatchController implements ProductionBatchApi {
 
   @Override
   @GetMapping(produces = APPLICATION_JSON_VALUE)
-  public @NonNull ProductionBatchListResponse list(@RequestParam @NonNull UUID ciderMakerId) {
+  public @NonNull ProductionBatchListResponse list(@RequestParam @NonNull UUID workspaceId) {
     return ProductionBatchRestMapper.toListResponse(
-        listProductionBatchesUseCase.list(new ListProductionBatchesQuery(CiderMakerId.of(ciderMakerId))),
+        listProductionBatchesUseCase.list(new ListProductionBatchesQuery(WorkspaceId.of(workspaceId))),
         potentialAbvPredictor
     );
   }

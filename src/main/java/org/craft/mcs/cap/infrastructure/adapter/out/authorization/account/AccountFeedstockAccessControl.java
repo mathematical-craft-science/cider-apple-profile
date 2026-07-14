@@ -3,7 +3,7 @@ package org.craft.mcs.cap.infrastructure.adapter.out.authorization.account;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.account.application.port.in.WorkspacePermissionAuthorizer;
 import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
-import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 
@@ -19,12 +19,12 @@ public final class AccountFeedstockAccessControl implements FeedstockAccessContr
   private final @NonNull WorkspacePermissionAuthorizer workspacePermissionAuthorizer;
 
   @Override
-  public void requireReadAccess(@NonNull CiderMakerId ciderMakerId) {
-    workspacePermissionAuthorizer.requirePermission(ciderMakerId, FEEDSTOCK_READ);
+  public void requireReadAccess(@NonNull WorkspaceId workspaceId) {
+    workspacePermissionAuthorizer.requirePermission(workspaceId, FEEDSTOCK_READ);
   }
 
   @Override
-  public void requireWriteAccess(@NonNull CiderMakerId ciderMakerId) {
-    workspacePermissionAuthorizer.requirePermission(ciderMakerId, FEEDSTOCK_WRITE);
+  public void requireWriteAccess(@NonNull WorkspaceId workspaceId) {
+    workspacePermissionAuthorizer.requirePermission(workspaceId, FEEDSTOCK_WRITE);
   }
 }

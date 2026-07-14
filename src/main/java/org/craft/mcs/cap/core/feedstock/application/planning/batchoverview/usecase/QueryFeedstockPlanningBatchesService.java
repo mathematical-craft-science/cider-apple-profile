@@ -67,7 +67,7 @@ public final class QueryFeedstockPlanningBatchesService implements QueryFeedstoc
     requireNonNull(query, "feedstock planning batch view query cannot be null");
 
     final var batches = listFeedstockBatchesUseCase.list(new ListFeedstockBatchesQuery(
-        query.ciderMakerId(),
+        query.workspaceId(),
         query.season()
     ));
     final var batchIds = batches.stream()
@@ -80,7 +80,7 @@ public final class QueryFeedstockPlanningBatchesService implements QueryFeedstoc
             Function.identity()
         ));
     final var targetCandidates = targetCandidates(query);
-    final var currentProfileSettings = currentProfileSettingsProvider.get(query.ciderMakerId());
+    final var currentProfileSettings = currentProfileSettingsProvider.get(query.workspaceId());
 
     return new FeedstockPlanningView(
         batches.stream()
@@ -139,7 +139,7 @@ public final class QueryFeedstockPlanningBatchesService implements QueryFeedstoc
     }
 
     final var candidates = queryTargetCandidatesUseCase.query(new FeedstockBatchProfileTargetCandidateQuery(
-        query.ciderMakerId(),
+        query.workspaceId(),
         new FeedstockMeasurementPointFilters(null, query.season(), null, null),
         query.purpose(),
         target,
@@ -182,8 +182,7 @@ public final class QueryFeedstockPlanningBatchesService implements QueryFeedstoc
       return null;
     }
 
-    final var sugar = evaluation.axes().valueOf(ChemicalAxis.SUGAR)
-        .orElseThrow(() -> new IllegalStateException("ABV-capable profile must have sugar axis"));
+    final var sugar = evaluation.axes().requireValueOf(ChemicalAxis.SUGAR);
     return new FeedstockCurrentProfilePotentialAbvView(
         sugar.valueKind(),
         potentialAbvPredictor.predict(SpecificGravityValue.of(sugar.value()))

@@ -38,7 +38,7 @@ public final class ListFeedstockMeasurementsService
     requireNonNull(batchId, "feedstock batch id cannot be null");
     final var batch = feedstockBatchRepository.findById(batchId)
         .orElseThrow(() -> new FeedstockBatchNotFoundException(batchId));
-    feedstockAccessControl.requireReadAccess(batch.ciderMakerId());
+    feedstockAccessControl.requireReadAccess(batch.workspaceId());
     return feedstockMeasurementQueryRepository.findSummariesByBatchId(batchId);
   }
 }

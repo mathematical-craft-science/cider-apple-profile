@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPredictor;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatch;
-import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.core.production.application.port.in.CreateProductionBatchCommand;
 import org.craft.mcs.cap.core.production.application.port.in.ProductionBatchCreated;
 import org.craft.mcs.cap.core.production.domain.model.ProductionInput;
@@ -50,7 +50,7 @@ public final class ProductionBatchRestMapper {
     requireNonNull(request, "create production batch request cannot be null");
 
     return new CreateProductionBatchCommand(
-        CiderMakerId.of(requireNonNull(request.ciderMakerId(), "cider maker id cannot be null")),
+        WorkspaceId.of(requireNonNull(request.workspaceId(), "workspace id cannot be null")),
         ProductionBatchName.of(request.name()),
         requireNonNull(request.kind(), "production batch kind cannot be null"),
         new ProductionInput(
@@ -70,7 +70,7 @@ public final class ProductionBatchRestMapper {
 
     return new ProductionBatchResponse(
         batch.batchId().value(),
-        batch.ciderMakerId().value(),
+        batch.workspaceId().value(),
         batch.name().value(),
         batch.kind(),
         batch.status(),
@@ -88,7 +88,7 @@ public final class ProductionBatchRestMapper {
 
     return new ProductionBatchDetailsResponse(
         batch.batchId().value(),
-        batch.ciderMakerId().value(),
+        batch.workspaceId().value(),
         batch.name().value(),
         batch.kind(),
         batch.status(),

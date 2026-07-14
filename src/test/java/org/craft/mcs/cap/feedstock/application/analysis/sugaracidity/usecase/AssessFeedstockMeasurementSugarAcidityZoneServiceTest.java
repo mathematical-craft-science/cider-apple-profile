@@ -25,7 +25,7 @@ import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.Rectangle
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
-import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.craft.mcs.cap.shared.kernel.measurement.ExactMeasurement;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
@@ -63,7 +63,7 @@ class AssessFeedstockMeasurementSugarAcidityZoneServiceTest {
     );
     when(repository.findById(sample.measurementId())).thenReturn(Optional.of(sample));
     when(batchRepository.findById(sample.batchId()))
-        .thenReturn(Optional.of(batch(sample.batchId(), CiderMakerId.of(randomUUID()))));
+        .thenReturn(Optional.of(batch(sample.batchId(), WorkspaceId.of(randomUUID()))));
 
     final var result = service.assess(sample.measurementId());
 
@@ -125,11 +125,11 @@ class AssessFeedstockMeasurementSugarAcidityZoneServiceTest {
 
   private static @NonNull FeedstockBatch batch(
       @NonNull FeedstockBatchId batchId,
-      @NonNull CiderMakerId ciderMakerId
+      @NonNull WorkspaceId workspaceId
   ) {
     return FeedstockBatch.create(
         batchId,
-        ciderMakerId,
+        workspaceId,
         FeedstockBatchName.of("Test batch"),
         FeedstockVessel.of("Tank A-01"),
         FeedstockType.JUICE,

@@ -7,7 +7,7 @@ import org.craft.mcs.cap.core.account.application.port.in.GetCurrentAccountUseCa
 import org.craft.mcs.cap.core.account.application.port.in.WorkspaceMembershipView;
 import org.craft.mcs.cap.core.account.application.port.in.WorkspaceView;
 import org.craft.mcs.cap.core.account.domain.model.AccountRole;
-import org.craft.mcs.cap.core.account.domain.model.value.WorkspaceId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.access.intercept.RequestAuthorizationContext;

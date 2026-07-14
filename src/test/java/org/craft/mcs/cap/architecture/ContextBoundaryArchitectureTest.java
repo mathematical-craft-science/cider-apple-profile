@@ -10,6 +10,7 @@ import com.tngtech.archunit.lang.ArchRule;
 import com.tngtech.archunit.lang.ConditionEvents;
 import com.tngtech.archunit.lang.SimpleConditionEvent;
 import java.util.Locale;
+import java.util.UUID;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.jspecify.annotations.NonNull;
 
@@ -76,6 +77,12 @@ class ContextBoundaryArchitectureTest {
           .resideInAPackage("org.springframework.security..");
 
   @ArchTest
+  static final ArchRule main_source_code_does_not_generate_uuid_version_4 =
+      noClasses()
+          .should()
+          .callMethod(UUID.class, "randomUUID");
+
+  @ArchTest
   static final ArchRule feedstock_application_does_not_depend_on_account_context =
       noClasses()
           .that()
@@ -106,13 +113,27 @@ class ContextBoundaryArchitectureTest {
           );
 
   @ArchTest
-  static final ArchRule production_domain_does_not_depend_on_feedstock_domain =
+  static final ArchRule production_context_does_not_depend_on_feedstock_context =
       noClasses()
           .that()
-          .resideInAPackage("org.craft.mcs.cap.core.production.domain..")
+          .resideInAPackage("org.craft.mcs.cap.core.production..")
           .should()
           .dependOnClassesThat()
-          .resideInAPackage("org.craft.mcs.cap.core.feedstock.domain..");
+          .resideInAPackage("org.craft.mcs.cap.core.feedstock..");
+
+  @ArchTest
+  static final ArchRule production_source_acl_uses_feedstock_inbound_boundary_only =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.infrastructure.adapter.out.production.source..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAnyPackage(
+              "org.craft.mcs.cap.core.feedstock.application..port.out..",
+              "org.craft.mcs.cap.core.feedstock.application..query..",
+              "org.craft.mcs.cap.core.feedstock.domain.model.batch..",
+              "org.craft.mcs.cap.core.feedstock.domain.model.measurement.."
+          );
 
   @ArchTest
   static final ArchRule production_domain_does_not_use_feedstock_batch_id_directly =

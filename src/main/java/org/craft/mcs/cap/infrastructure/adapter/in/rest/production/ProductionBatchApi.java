@@ -27,26 +27,34 @@ public interface ProductionBatchApi {
 
   @Operation(
       summary = "List production batches",
-      description = "Returns production batches owned by a cider maker. The response intentionally does not include traceability graph data."
+      description = "Returns production batches owned by a workspace. The response intentionally does not include "
+          + "traceability graph data."
   )
   @ApiResponse(
       responseCode = "200",
       description = "Production batch list.",
-      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProductionBatchListResponse.class))
+      content = @Content(
+          mediaType = APPLICATION_JSON_VALUE,
+          schema = @Schema(implementation = ProductionBatchListResponse.class)
+      )
   )
   @NonNull ProductionBatchListResponse list(
-      @Parameter(description = "Cider maker identifier.", required = true, schema = @Schema(format = "uuid"))
-      @NonNull UUID ciderMakerId
+      @Parameter(description = "Workspace identifier.", required = true, schema = @Schema(format = "uuid"))
+      @NonNull UUID workspaceId
   );
 
   @Operation(
       summary = "Get production batch",
-      description = "Returns production batch details without source traceability graph. Use the traceability endpoint to inspect material origin."
+      description = "Returns production batch details without source traceability graph. Use the traceability endpoint "
+          + "to inspect material origin."
   )
   @ApiResponse(
       responseCode = "200",
       description = "Production batch details.",
-      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProductionBatchDetailsResponse.class))
+      content = @Content(
+          mediaType = APPLICATION_JSON_VALUE,
+          schema = @Schema(implementation = ProductionBatchDetailsResponse.class)
+      )
   )
   @ApiResponse(
       responseCode = "404",
@@ -60,12 +68,16 @@ public interface ProductionBatchApi {
 
   @Operation(
       summary = "Get production batch traceability graph",
-      description = "Returns a source traceability graph for the production batch. The graph is a separate read model and is not embedded into batch details."
+      description = "Returns a source traceability graph for the production batch. The graph is a separate read model "
+          + "and is not embedded into batch details."
   )
   @ApiResponse(
       responseCode = "200",
       description = "Production batch traceability graph.",
-      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = BatchTraceabilityGraphResponse.class))
+      content = @Content(
+          mediaType = APPLICATION_JSON_VALUE,
+          schema = @Schema(implementation = BatchTraceabilityGraphResponse.class)
+      )
   )
   @ApiResponse(
       responseCode = "404",
@@ -79,12 +91,16 @@ public interface ProductionBatchApi {
 
   @Operation(
       summary = "Create production batch",
-      description = "Creates a production batch from one or more feedstock batch sources and reserves/consumes source volume atomically."
+      description = "Creates a production batch from one or more feedstock batch sources and consumes source volume "
+          + "atomically."
   )
   @ApiResponse(
       responseCode = "201",
       description = "Production batch created.",
-      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProductionBatchResponse.class))
+      content = @Content(
+          mediaType = APPLICATION_JSON_VALUE,
+          schema = @Schema(implementation = ProductionBatchResponse.class)
+      )
   )
   @ApiResponse(
       responseCode = "400",
@@ -93,7 +109,7 @@ public interface ProductionBatchApi {
   )
   @ApiResponse(
       responseCode = "403",
-      description = "At least one feedstock source belongs to another cider maker.",
+      description = "At least one feedstock source belongs to another workspace.",
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
   )
   @ApiResponse(
@@ -108,14 +124,17 @@ public interface ProductionBatchApi {
   )
   @ApiResponse(
       responseCode = "422",
-      description = "Requested source volume exceeds available feedstock volume.",
+      description = "Requested source volume exceeds available feedstock volume or its current profile is unavailable.",
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
   )
   @NonNull ProductionBatchResponse create(
       @RequestBody(
           description = "Production batch creation request.",
           required = true,
-          content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = CreateProductionBatchRequest.class))
+          content = @Content(
+              mediaType = APPLICATION_JSON_VALUE,
+              schema = @Schema(implementation = CreateProductionBatchRequest.class)
+          )
       )
       @NonNull CreateProductionBatchRequest request
   );

@@ -59,15 +59,15 @@ public final class GetFeedstockBatchDetailService implements GetFeedstockBatchDe
   @Override
   public @NonNull FeedstockBatchDetailView get(@NonNull GetFeedstockBatchDetailQuery query) {
     requireNonNull(query, "feedstock batch detail query cannot be null");
-    feedstockAccessControl.requireReadAccess(query.ciderMakerId());
+    feedstockAccessControl.requireReadAccess(query.workspaceId());
 
     final var batch = feedstockBatchRepository.findById(query.batchId())
         .orElseThrow(() -> new FeedstockBatchNotFoundException(query.batchId()));
-    if (!batch.ciderMakerId().equals(query.ciderMakerId())) {
+    if (!batch.workspaceId().equals(query.workspaceId())) {
       throw new FeedstockBatchOwnershipMismatchException(
           batch.batchId(),
-          query.ciderMakerId(),
-          batch.ciderMakerId()
+          query.workspaceId(),
+          batch.workspaceId()
       );
     }
 
@@ -75,7 +75,7 @@ public final class GetFeedstockBatchDetailService implements GetFeedstockBatchDe
     final var measurements = listFeedstockMeasurementsUseCase.listByBatchId(batch.batchId());
     final var currentMeasurement = currentMeasurementQueryService.findCurrentMeasurement(batch.batchId())
         .orElse(null); // NOSONAR
-    final var currentProfileSettings = currentProfileSettingsProvider.get(batch.ciderMakerId());
+    final var currentProfileSettings = currentProfileSettingsProvider.get(batch.workspaceId());
 
     return new FeedstockBatchDetailView(
         batchSummary,
@@ -131,7 +131,7 @@ public final class GetFeedstockBatchDetailService implements GetFeedstockBatchDe
     requireNonNull(measurement, "feedstock measurement cannot be null");
     return new FeedstockMeasurementSummary(
         measurement.measurementId(),
-        batch.ciderMakerId(),
+        batch.workspaceId(),
         measurement.batchId(),
         measurement.name(),
         measurement.measuredAt(),
@@ -151,8 +151,7 @@ public final class GetFeedstockBatchDetailService implements GetFeedstockBatchDe
       return null;
     }
 
-    final var sugar = evaluation.axes().valueOf(ChemicalAxis.SUGAR)
-        .orElseThrow(() -> new IllegalStateException("ABV-capable profile must have sugar axis"));
+    final var sugar = evaluation.axes().requireValueOf(ChemicalAxis.SUGAR);
     return new FeedstockCurrentProfilePotentialAbvView(
         sugar.valueKind(),
         potentialAbvPredictor.predict(SpecificGravityValue.of(sugar.value()))

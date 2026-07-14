@@ -3,7 +3,7 @@ package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.production
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchRepository;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatch;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatchId;
@@ -43,10 +43,10 @@ class JdbcProductionBatchRepository
   }
 
   @Override
-  public @NonNull List<@NonNull ProductionBatch> findAllByCiderMakerId(@NonNull CiderMakerId ciderMakerId) {
-    requireNonNull(ciderMakerId, "cider maker id cannot be null");
+  public @NonNull List<@NonNull ProductionBatch> findAllByWorkspaceId(@NonNull WorkspaceId workspaceId) {
+    requireNonNull(workspaceId, "workspace id cannot be null");
 
-    return repository.findAllByCiderMakerIdOrderByCreatedAtDescBatchIdDesc(ciderMakerId.value())
+    return repository.findAllByWorkspaceIdOrderByCreatedAtDescBatchIdDesc(workspaceId.value())
         .stream()
         .map(ProductionBatchJdbcMapper::toDomain)
         .toList();

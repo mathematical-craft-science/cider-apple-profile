@@ -1,6 +1,6 @@
 package org.craft.mcs.cap.core.account.application.port.in;
 
-import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;
 
 
@@ -9,5 +9,5 @@ public interface WorkspaceSettingsReader {
 
   @NonNull WorkspaceSettingsView readCurrent();
 
-  @NonNull WorkspaceSettingsView readByCiderMakerId(@NonNull CiderMakerId ciderMakerId);
+  @NonNull WorkspaceSettingsView readByWorkspaceId(@NonNull WorkspaceId workspaceId);
 }

@@ -1,7 +1,7 @@
 package org.craft.mcs.cap.core.account.domain.model;
 
 import java.time.Duration;
-import org.craft.mcs.cap.core.account.domain.model.value.WorkspaceId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
 import org.craft.mcs.cap.shared.kernel.measurement.unit.TitratableAcidityBasis;
 import org.jmolecules.ddd.annotation.AggregateRoot;

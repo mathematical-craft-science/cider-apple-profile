@@ -43,7 +43,7 @@ public final class QueryFeedstockBatchProfileTargetCandidatesService
       @NonNull FeedstockBatchProfileTargetCandidateQuery query
   ) {
     requireNonNull(query, "feedstock batch profile target candidate query cannot be null");
-    feedstockAccessControl.requireReadAccess(query.ciderMakerId());
+    feedstockAccessControl.requireReadAccess(query.workspaceId());
 
     final var command = toScoreCommand(query);
     final var candidates = candidateProvider.findCandidates(command);
@@ -95,7 +95,7 @@ public final class QueryFeedstockBatchProfileTargetCandidatesService
       @NonNull FeedstockBatchProfileTargetCandidateQuery query
   ) {
     return new ScoreFeedstockBatchProfileTargetCommand(
-        query.ciderMakerId(),
+        query.workspaceId(),
         query.filters(),
         query.purpose(),
         query.target(),

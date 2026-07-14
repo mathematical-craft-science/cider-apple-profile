@@ -40,14 +40,14 @@ public final class AssessFeedstockBatchCurrentSugarAcidityZoneService
 
     final var batch = feedstockBatchRepository.findById(batchId)
         .orElseThrow(() -> new FeedstockBatchNotFoundException(batchId));
-    feedstockAccessControl.requireReadAccess(batch.ciderMakerId());
+    feedstockAccessControl.requireReadAccess(batch.workspaceId());
     final var currentMeasurement = currentMeasurementQueryService.requireCurrentMeasurement(batchId);
     final var evaluation = sugarAcidityProfileProjector.project(currentMeasurement.chemicalProfile());
 
     return new FeedstockBatchCurrentSugarAcidityZoneResult(
         currentMeasurement.batchId(),
         batch.name(),
-        batch.ciderMakerId(),
+        batch.workspaceId(),
         currentMeasurement.measurementId(),
         currentMeasurement.measuredAt(),
         evaluation

@@ -1,7 +1,7 @@
 package org.craft.mcs.cap.core.account.domain.model;
 
 import org.craft.mcs.cap.core.account.domain.model.value.AccountUserId;
-import org.craft.mcs.cap.core.account.domain.model.value.WorkspaceId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.core.account.domain.model.value.WorkspaceMembershipId;
 import org.jmolecules.ddd.annotation.AggregateRoot;
 import org.jspecify.annotations.NonNull;

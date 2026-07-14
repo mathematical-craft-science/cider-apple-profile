@@ -16,7 +16,7 @@ import static java.util.Objects.requireNonNull;
  */
 public record ProductionBatchCompositionTraceSource(
     @NonNull String compositionResultId,
-    @Nullable String displayName,
+    @Nullable ProductionSourceDisplayName displayName,
     @NonNull VolumeValue volume,
     @Nullable ChemicalProfileAxes profile,
     @Nullable ConfidenceLevel confidence
@@ -24,7 +24,7 @@ public record ProductionBatchCompositionTraceSource(
 
   public ProductionBatchCompositionTraceSource(
       @NonNull String compositionResultId,
-      @Nullable String displayName,
+      @Nullable ProductionSourceDisplayName displayName,
       @NonNull VolumeValue volume
   ) {
     this(compositionResultId, displayName, volume, null, null);
@@ -32,7 +32,6 @@ public record ProductionBatchCompositionTraceSource(
 
   public ProductionBatchCompositionTraceSource {
     compositionResultId = requireNonNull(compositionResultId, "composition result id cannot be null").strip();
-    displayName = normalize(displayName);
     requireNonNull(volume, "production trace source volume cannot be null");
 
     if (compositionResultId.isEmpty()) {
@@ -46,14 +45,5 @@ public record ProductionBatchCompositionTraceSource(
   @Override
   public @NonNull String id() {
     return compositionResultId;
-  }
-
-  private static @Nullable String normalize(@Nullable String value) {
-    if (value == null) {
-      return null;
-    }
-
-    final var normalized = value.strip();
-    return normalized.isEmpty() ? null : normalized;
   }
 }

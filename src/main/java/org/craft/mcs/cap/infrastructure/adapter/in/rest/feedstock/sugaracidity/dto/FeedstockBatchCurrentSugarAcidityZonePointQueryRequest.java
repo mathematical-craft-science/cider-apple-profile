@@ -11,8 +11,13 @@ import org.jspecify.annotations.Nullable;
 
 @Schema(description = "Request for current feedstock batch sugar-acidity graph points.")
 public record FeedstockBatchCurrentSugarAcidityZonePointQueryRequest(
-    @Schema(description = "Cider maker identifier.", format = "uuid", example = "4d96759c-86ff-4d39-8b19-241bc60f82ff", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NonNull UUID ciderMakerId,
+    @Schema(
+        description = "Workspace identifier.",
+        format = "uuid",
+        example = "4d96759c-86ff-4d39-8b19-241bc60f82ff",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
+    @NonNull UUID workspaceId,
     @Schema(description = "Optional feedstock batch identifier filter.", format = "uuid", example = "b2a49b8a-3a19-4f8f-989d-9278f4e00d2f", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @Nullable UUID batchId,
     @Schema(description = "Optional season overlap filter.", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)

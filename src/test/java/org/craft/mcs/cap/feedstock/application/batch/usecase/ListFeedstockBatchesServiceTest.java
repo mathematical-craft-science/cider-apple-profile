@@ -13,7 +13,7 @@ import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockBatchN
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockVessel;
-import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.junit.jupiter.api.Test;
 
@@ -29,13 +29,13 @@ class ListFeedstockBatchesServiceTest {
   void filtersBatchesByOverlappingSeason() {
     final var repository = mock(FeedstockBatchRepository.class);
     final var service = new ListFeedstockBatchesService(repository, mock(FeedstockAccessControl.class));
-    final var ciderMakerId = CiderMakerId.of(randomUUID());
-    final var matching = batch(ciderMakerId, "Late", "2026-10-01", "2026-12-15");
-    final var outside = batch(ciderMakerId, "Early", "2026-08-01", "2026-08-31");
-    when(repository.findAllByCiderMakerId(ciderMakerId)).thenReturn(List.of(matching, outside));
+    final var workspaceId = WorkspaceId.of(randomUUID());
+    final var matching = batch(workspaceId, "Late", "2026-10-01", "2026-12-15");
+    final var outside = batch(workspaceId, "Early", "2026-08-01", "2026-08-31");
+    when(repository.findAllByWorkspaceId(workspaceId)).thenReturn(List.of(matching, outside));
 
     final var result = service.list(new ListFeedstockBatchesQuery(
-        ciderMakerId,
+        workspaceId,
         FeedstockSeason.of(LocalDate.parse("2026-11-01"), LocalDate.parse("2026-11-30"))
     ));
 
@@ -45,14 +45,14 @@ class ListFeedstockBatchesServiceTest {
   }
 
   private static FeedstockBatch batch(
-      CiderMakerId ciderMakerId,
+      WorkspaceId workspaceId,
       String name,
       String startsOn,
       String endsOn
   ) {
     return FeedstockBatch.create(
         FeedstockBatchId.newId(),
-        ciderMakerId,
+        workspaceId,
         FeedstockBatchName.of(name),
         FeedstockVessel.of("Tank A-01"),
         FeedstockType.JUICE,

@@ -11,7 +11,7 @@ import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockBatchN
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
 import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
-import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.craft.mcs.cap.shared.platform.TransactionHelper;
 import org.jspecify.annotations.NonNull;
@@ -37,11 +37,11 @@ class CreateFeedstockBatchServiceTest {
         mock(FeedstockAccessControl.class),
         transactionHelper()
     );
-    final var ciderMakerId = CiderMakerId.of(randomUUID());
+    final var workspaceId = WorkspaceId.of(randomUUID());
     when(repository.save(any(FeedstockBatch.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
     final var created = service.create(new CreateFeedstockBatchCommand(
-        ciderMakerId,
+        workspaceId,
         FeedstockBatchName.of("Late season fruit"),
         null,
         FeedstockType.JUICE,
@@ -52,7 +52,7 @@ class CreateFeedstockBatchServiceTest {
     ));
 
     assertThat(created.batchId()).isNotNull();
-    assertThat(created.ciderMakerId()).isEqualTo(ciderMakerId);
+    assertThat(created.workspaceId()).isEqualTo(workspaceId);
     assertThat(created.vessel()).isNull();
     assertThat(created.source()).isNull();
     assertThat(created.availableVolume().liters()).isEqualByComparingTo("250.000");
@@ -68,7 +68,7 @@ class CreateFeedstockBatchServiceTest {
         transactionHelper()
     );
     final var command = new CreateFeedstockBatchCommand(
-        CiderMakerId.of(randomUUID()),
+        WorkspaceId.of(randomUUID()),
         FeedstockBatchName.of("Late season fruit"),
         null,
         FeedstockType.JUICE,

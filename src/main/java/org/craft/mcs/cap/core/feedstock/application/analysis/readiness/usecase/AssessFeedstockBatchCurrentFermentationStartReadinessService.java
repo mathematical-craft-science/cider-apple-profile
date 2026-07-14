@@ -41,12 +41,12 @@ public final class AssessFeedstockBatchCurrentFermentationStartReadinessService
 
     final var batch = feedstockBatchRepository.findById(batchId)
         .orElseThrow(() -> new FeedstockBatchNotFoundException(batchId));
-    feedstockAccessControl.requireReadAccess(batch.ciderMakerId());
+    feedstockAccessControl.requireReadAccess(batch.workspaceId());
     final var measurement = currentMeasurementQueryService.requireCurrentMeasurement(batchId);
 
     return new FeedstockBatchCurrentFermentationStartReadinessResult(
         batch.batchId(),
-        batch.ciderMakerId(),
+        batch.workspaceId(),
         measurement.measurementId(),
         measurement.name(),
         readinessAssessor.assess(measurement.chemicalProfile())

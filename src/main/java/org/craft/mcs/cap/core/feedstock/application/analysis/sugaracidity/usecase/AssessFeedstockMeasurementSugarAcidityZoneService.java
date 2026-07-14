@@ -44,12 +44,12 @@ public final class AssessFeedstockMeasurementSugarAcidityZoneService
         .orElseThrow(() -> new FeedstockMeasurementNotFoundException(measurementId));
     final var batch = feedstockBatchRepository.findById(sample.batchId())
         .orElseThrow(() -> new FeedstockBatchNotFoundException(sample.batchId()));
-    feedstockAccessControl.requireReadAccess(batch.ciderMakerId());
+    feedstockAccessControl.requireReadAccess(batch.workspaceId());
     final var evaluation = sugarAcidityProfileProjector.project(sample.chemicalProfile());
 
     return new FeedstockMeasurementSugarAcidityZoneResult(
         sample.measurementId(),
-        batch.ciderMakerId(),
+        batch.workspaceId(),
         sample.batchId(),
         sample.name(),
         evaluation

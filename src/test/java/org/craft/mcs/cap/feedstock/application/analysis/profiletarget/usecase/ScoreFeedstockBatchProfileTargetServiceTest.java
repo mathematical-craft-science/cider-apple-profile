@@ -27,7 +27,7 @@ import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurement;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurementId;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.value.FeedstockMeasurementName;
-import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
 import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityAssessor;
@@ -54,7 +54,7 @@ class ScoreFeedstockBatchProfileTargetServiceTest {
   void scoresLatestMeasurementCandidatesPerBatchAndSortsByDistance() {
     final var repository = mock(FeedstockMeasurementQueryRepository.class);
     final var service = service(repository);
-    final var ciderMakerId = CiderMakerId.of(randomUUID());
+    final var workspaceId = WorkspaceId.of(randomUUID());
     final var near = sample("Near", profile("1.070", "6.0"));
     final var far = sample("Far", profile("1.040", "9.0"));
 
@@ -62,7 +62,7 @@ class ScoreFeedstockBatchProfileTargetServiceTest {
         .thenReturn(List.of(far, near));
 
     final var result = service.score(new ScoreFeedstockBatchProfileTargetCommand(
-        ciderMakerId,
+        workspaceId,
         new FeedstockMeasurementPointFilters(null, null, null, null),
         ProfileTargetScoringPurpose.BLENDING_PLANNING,
         new PredefinedFeedstockProfileTargetSelection(SugarAcidityZone.PERFECT_APPLES),
@@ -82,7 +82,7 @@ class ScoreFeedstockBatchProfileTargetServiceTest {
     final var query = ArgumentCaptor.forClass(LatestFeedstockMeasurementSugarAcidityPointCandidateQuery.class);
     verify(repository).findLatestSugarAcidityPointCandidates(query.capture());
     verify(repository, never()).findSugarAcidityPointCandidates(any());
-    assertThat(query.getValue().ciderMakerId()).isEqualTo(ciderMakerId);
+    assertThat(query.getValue().workspaceId()).isEqualTo(workspaceId);
     assertThat(query.getValue().limit()).isEqualTo(50);
   }
 

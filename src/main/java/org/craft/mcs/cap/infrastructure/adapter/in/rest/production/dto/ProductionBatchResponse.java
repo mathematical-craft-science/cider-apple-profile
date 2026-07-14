@@ -12,8 +12,13 @@ import org.jspecify.annotations.Nullable;
 public record ProductionBatchResponse(
     @Schema(description = "Production batch identifier.", format = "uuid", example = "8a9813cf-bc41-4d3f-82a9-51c5f00d4f87", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull UUID batchId,
-    @Schema(description = "Cider maker identifier.", format = "uuid", example = "4d96759c-86ff-4d39-8b19-241bc60f82ff", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NonNull UUID ciderMakerId,
+    @Schema(
+        description = "Workspace identifier.",
+        format = "uuid",
+        example = "4d96759c-86ff-4d39-8b19-241bc60f82ff",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
+    @NonNull UUID workspaceId,
     @Schema(description = "Production batch name.", example = "October cider base", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull String name,
     @Schema(description = "Production batch kind.", implementation = ProductionBatchKind.class, example = "CIDER", requiredMode = Schema.RequiredMode.REQUIRED)

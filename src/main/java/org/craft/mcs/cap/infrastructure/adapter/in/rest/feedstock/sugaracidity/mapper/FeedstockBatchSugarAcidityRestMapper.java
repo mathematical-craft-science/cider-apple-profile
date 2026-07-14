@@ -14,7 +14,7 @@ import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.i
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockMeasurementPointFilters;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
-import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.mapper.ChemicalProfileCapabilityRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.common.dto.FeedstockSeasonRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.sugaracidity.dto.FeedstockBatchCurrentSugarAcidityZonePointBatchResponse;
@@ -44,7 +44,7 @@ public final class FeedstockBatchSugarAcidityRestMapper {
     requireNonNull(request, "feedstock batch current sugar-acidity zone point query request cannot be null");
 
     return new FeedstockBatchCurrentSugarAcidityZonePointQuery(
-        CiderMakerId.of(request.ciderMakerId()),
+        WorkspaceId.of(request.workspaceId()),
         new FeedstockMeasurementPointFilters(
             toBatchCriteria(request.batchId()),
             toSeason(request.season()),
@@ -68,7 +68,7 @@ public final class FeedstockBatchSugarAcidityRestMapper {
     return new FeedstockBatchGraphPointResponse(
         result.batchId().value(),
         result.batchName().value(),
-        result.ciderMakerId().value(),
+        result.workspaceId().value(),
         result.currentMeasurementId().value(),
         result.measuredAt(),
         evaluation.plottable(),

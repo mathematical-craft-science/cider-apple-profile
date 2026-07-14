@@ -108,7 +108,7 @@ class JdbcAccountRepositoriesDataJdbcTest {
         IdentityProviderCode.CLERK,
         ExternalUserSubject.of("user_123")
     )).contains(user);
-    assertThat(workspaceRepository.findByCiderMakerId(workspace.ciderMakerId())).contains(workspace);
+    assertThat(workspaceRepository.findById(workspace.workspaceId())).contains(workspace);
     assertThat(membershipRepository.findByWorkspaceIdAndUserId(workspace.workspaceId(), user.userId()))
         .contains(membership);
     assertThat(membershipRepository.findAllByUserId(user.userId())).containsExactly(membership);

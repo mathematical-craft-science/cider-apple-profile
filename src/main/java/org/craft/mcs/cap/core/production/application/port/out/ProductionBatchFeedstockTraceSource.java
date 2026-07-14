@@ -17,7 +17,7 @@ import static java.util.Objects.requireNonNull;
  */
 public record ProductionBatchFeedstockTraceSource(
     @NonNull FeedstockBatchId feedstockBatchId,
-    @Nullable String displayName,
+    @Nullable ProductionSourceDisplayName displayName,
     @NonNull VolumeValue volume,
     @Nullable ChemicalProfileAxes profile,
     @Nullable ConfidenceLevel confidence
@@ -25,7 +25,7 @@ public record ProductionBatchFeedstockTraceSource(
 
   public ProductionBatchFeedstockTraceSource(
       @NonNull FeedstockBatchId feedstockBatchId,
-      @Nullable String displayName,
+      @Nullable ProductionSourceDisplayName displayName,
       @NonNull VolumeValue volume
   ) {
     this(feedstockBatchId, displayName, volume, null, null);
@@ -33,7 +33,6 @@ public record ProductionBatchFeedstockTraceSource(
 
   public ProductionBatchFeedstockTraceSource {
     requireNonNull(feedstockBatchId, "feedstock batch id cannot be null");
-    displayName = normalize(displayName);
     requireNonNull(volume, "production trace source volume cannot be null");
 
     if (volume.isZero()) {
@@ -44,14 +43,5 @@ public record ProductionBatchFeedstockTraceSource(
   @Override
   public @NonNull String id() {
     return feedstockBatchId.value().toString();
-  }
-
-  private static @Nullable String normalize(@Nullable String value) {
-    if (value == null) {
-      return null;
-    }
-
-    final var normalized = value.strip();
-    return normalized.isEmpty() ? null : normalized;
   }
 }

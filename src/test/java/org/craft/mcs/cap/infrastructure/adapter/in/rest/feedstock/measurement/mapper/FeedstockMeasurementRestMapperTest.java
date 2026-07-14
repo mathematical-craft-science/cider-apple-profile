@@ -17,7 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class FeedstockMeasurementRestMapperTest {
 
   @Test
-  void mapsCreateRequestToCommandWithoutCiderMakerId() {
+  void mapsCreateRequestToCommandWithoutWorkspaceId() {
     final var batchId = FeedstockBatchId.newId();
 
     final var command = FeedstockMeasurementRestMapper.toCommand(

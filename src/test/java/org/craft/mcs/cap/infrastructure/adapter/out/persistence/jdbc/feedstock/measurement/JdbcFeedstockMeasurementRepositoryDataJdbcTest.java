@@ -11,7 +11,7 @@ import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockVessel
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurement;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurementId;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.value.FeedstockMeasurementName;
-import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.feedstock.batch.entity.FeedstockBatchJdbcMapper;
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
@@ -26,6 +26,7 @@ import org.springframework.boot.data.jdbc.test.autoconfigure.DataJdbcTest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.jdbc.core.JdbcAggregateTemplate;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -48,6 +49,9 @@ class JdbcFeedstockMeasurementRepositoryDataJdbcTest {
 
   @Autowired
   private JdbcFeedstockMeasurementRepository repository;
+
+  @Autowired
+  private JdbcTemplate jdbcTemplate;
 
   @Test
   void savesExistingMeasurementAsUpdate() {
@@ -78,19 +82,32 @@ class JdbcFeedstockMeasurementRepositoryDataJdbcTest {
   }
 
   private UUID saveBatchAndReturnId() {
-    final var saved = aggregateTemplate.insert(FeedstockBatchJdbcMapper.fromDomain(feedstockBatch()));
+    final var workspaceId = persistWorkspace();
+    final var saved = aggregateTemplate.insert(FeedstockBatchJdbcMapper.fromDomain(feedstockBatch(workspaceId)));
     return (UUID) ReflectionTestUtils.getField(saved, "batchId");
   }
 
-  private static FeedstockBatch feedstockBatch() {
+  private static FeedstockBatch feedstockBatch(WorkspaceId workspaceId) {
     return FeedstockBatch.create(
         FeedstockBatchId.newId(),
-        CiderMakerId.of(UUID.randomUUID()),
+        workspaceId,
         FeedstockBatchName.of("Late juice"),
         FeedstockVessel.of("Tank A-01"),
         FeedstockType.JUICE,
         FeedstockSeason.of(LocalDate.parse("2026-10-01"), LocalDate.parse("2026-12-15")),
         VolumeValue.ofLiters("250")
     );
+  }
+
+  private WorkspaceId persistWorkspace() {
+    final var workspaceId = WorkspaceId.of(UUID.randomUUID());
+    jdbcTemplate.update(
+        """
+            INSERT INTO workspaces (workspace_id, name, type, version, created_at, updated_at)
+            VALUES (?, 'Measurement workspace', 'CIDERY', 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+            """,
+        workspaceId.value()
+    );
+    return workspaceId;
   }
 }

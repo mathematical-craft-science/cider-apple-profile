@@ -5,7 +5,7 @@ import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.Sug
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockBatchName;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurementId;
-import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
@@ -17,7 +17,7 @@ import static java.util.Objects.requireNonNull;
 public record FeedstockBatchCurrentSugarAcidityZoneResult(
     @NonNull FeedstockBatchId batchId,
     @NonNull FeedstockBatchName batchName,
-    @NonNull CiderMakerId ciderMakerId,
+    @NonNull WorkspaceId workspaceId,
     @NonNull FeedstockMeasurementId currentMeasurementId,
     @NonNull Instant measuredAt,
     @NonNull SugarAcidityProfileEvaluation evaluation
@@ -26,7 +26,7 @@ public record FeedstockBatchCurrentSugarAcidityZoneResult(
   public FeedstockBatchCurrentSugarAcidityZoneResult {
     requireNonNull(batchId, "feedstock batch id cannot be null");
     requireNonNull(batchName, "feedstock batch name cannot be null");
-    requireNonNull(ciderMakerId, "cider maker id cannot be null");
+    requireNonNull(workspaceId, "workspace id cannot be null");
     requireNonNull(currentMeasurementId, "current feedstock measurement id cannot be null");
     requireNonNull(measuredAt, "feedstock measurement time cannot be null");
     requireNonNull(evaluation, "sugar-acidity profile evaluation cannot be null");

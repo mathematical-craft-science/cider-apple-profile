@@ -6,7 +6,7 @@ import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockBatchN
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSource;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockVessel;
-import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -24,7 +24,7 @@ public final class FeedstockBatchJdbcMapper {
 
     return new FeedstockBatchJdbcEntity(
         batch.batchId().value(),
-        batch.ciderMakerId().value(),
+        batch.workspaceId().value(),
         batch.name().value(),
         toJdbc(batch.vessel()),
         batch.type(),
@@ -64,7 +64,7 @@ public final class FeedstockBatchJdbcMapper {
 
     return FeedstockBatch.restore(
         FeedstockBatchId.of(requireNonNull(entity.batchId, "feedstock batch id cannot be null")),
-        CiderMakerId.of(requireNonNull(entity.ciderMakerId, "cider maker id cannot be null")),
+        WorkspaceId.of(requireNonNull(entity.workspaceId, "workspace id cannot be null")),
         FeedstockBatchName.of(requireNonNull(entity.name, "feedstock batch name cannot be null")),
         entity.vessel == null ? null : FeedstockVessel.of(entity.vessel),
         requireNonNull(entity.type, "feedstock type cannot be null"),

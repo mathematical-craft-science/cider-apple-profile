@@ -19,7 +19,7 @@ public final class FeedstockBatchSummaryMapper {
     requireNonNull(batch, "feedstock batch cannot be null");
     return new FeedstockBatchSummary(
         batch.batchId(),
-        batch.ciderMakerId(),
+        batch.workspaceId(),
         batch.name(),
         batch.vessel(),
         batch.type(),

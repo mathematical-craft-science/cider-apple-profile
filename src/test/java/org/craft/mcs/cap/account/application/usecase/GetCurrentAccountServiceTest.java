@@ -2,7 +2,6 @@ package org.craft.mcs.cap.account.application.usecase;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import org.craft.mcs.cap.core.account.application.AccountAccessDeniedException;
 import org.craft.mcs.cap.core.account.application.model.AuthenticatedActor;
 import org.craft.mcs.cap.core.account.application.port.in.AccountUserView;
@@ -33,9 +32,8 @@ import org.craft.mcs.cap.core.account.domain.model.value.EmailAddress;
 import org.craft.mcs.cap.core.account.domain.model.value.ExternalOrganizationSubject;
 import org.craft.mcs.cap.core.account.domain.model.value.ExternalUserSubject;
 import org.craft.mcs.cap.core.account.domain.model.value.IdentityProviderCode;
-import org.craft.mcs.cap.core.account.domain.model.value.WorkspaceId;
 import org.craft.mcs.cap.core.account.domain.model.value.WorkspaceMembershipId;
-import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
@@ -221,7 +219,6 @@ class GetCurrentAccountServiceTest {
   private static @NonNull Workspace workspace(@NonNull String name) {
     return new Workspace(
         WorkspaceId.newId(),
-        CiderMakerId.of(UUID.randomUUID()),
         DisplayName.of(name),
         WorkspaceType.CIDERY,
         null,

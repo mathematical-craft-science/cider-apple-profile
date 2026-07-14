@@ -12,10 +12,7 @@ import org.craft.mcs.cap.core.feedstock.application.batch.port.in.ListFeedstockB
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.UpdateFeedstockBatchUseCase;
 import org.craft.mcs.cap.core.feedstock.application.detail.port.in.GetFeedstockBatchDetailQuery;
 import org.craft.mcs.cap.core.feedstock.application.detail.port.in.GetFeedstockBatchDetailUseCase;
-import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
-import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
-import org.craft.mcs.cap.shared.application.ApplicationValidationException;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.batch.dto.CreateFeedstockBatchRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.batch.dto.FeedstockBatchListResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.batch.dto.FeedstockBatchResponse;
@@ -24,6 +21,9 @@ import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.batch.dto.Upda
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.batch.mapper.FeedstockBatchRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.detail.dto.FeedstockBatchDetailResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.detail.mapper.FeedstockBatchDetailRestMapper;
+import org.craft.mcs.cap.shared.application.ApplicationValidationException;
+import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.http.ResponseEntity;
@@ -67,12 +67,12 @@ public final class FeedstockBatchController implements FeedstockBatchApi {
   @Override
   @GetMapping(value = "/feedstock-batches", produces = APPLICATION_JSON_VALUE)
   public @NonNull ResponseEntity<@NonNull FeedstockBatchListResponse> list(
-      @RequestParam @NonNull UUID ciderMakerId,
+      @RequestParam @NonNull UUID workspaceId,
       @RequestParam(required = false) @Nullable LocalDate seasonStartsOn,
       @RequestParam(required = false) @Nullable LocalDate seasonEndsOn
   ) {
     final var batches = listFeedstockBatchesUseCase.list(new ListFeedstockBatchesQuery(
-        CiderMakerId.of(ciderMakerId),
+        WorkspaceId.of(workspaceId),
         seasonOf(seasonStartsOn, seasonEndsOn)
     ));
 
@@ -87,11 +87,11 @@ public final class FeedstockBatchController implements FeedstockBatchApi {
   @GetMapping(value = "/feedstock-batches/{batchId}", produces = APPLICATION_JSON_VALUE)
   public @NonNull ResponseEntity<@NonNull FeedstockBatchDetailResponse> get(
       @PathVariable @NonNull UUID batchId,
-      @RequestParam @NonNull UUID ciderMakerId
+      @RequestParam @NonNull UUID workspaceId
   ) {
     final var detail = getFeedstockBatchDetailUseCase.get(new GetFeedstockBatchDetailQuery(
         FeedstockBatchId.of(batchId),
-        CiderMakerId.of(ciderMakerId)
+        WorkspaceId.of(workspaceId)
     ));
 
     return ResponseEntity.ok(FeedstockBatchDetailRestMapper.toResponse(detail));
@@ -135,11 +135,11 @@ public final class FeedstockBatchController implements FeedstockBatchApi {
   @Override
   public @NonNull ResponseEntity<Void> delete(
       @PathVariable @NonNull UUID batchId,
-      @RequestParam @NonNull UUID ciderMakerId
+      @RequestParam @NonNull UUID workspaceId
   ) {
     deleteFeedstockBatchUseCase.delete(new DeleteFeedstockBatchCommand(
         FeedstockBatchId.of(batchId),
-        CiderMakerId.of(ciderMakerId)
+        WorkspaceId.of(workspaceId)
     ));
 
     return ResponseEntity.noContent().build();

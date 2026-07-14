@@ -11,5 +11,7 @@ interface SpringDataProductionBatchJdbcRepository
     extends ListCrudRepository<ProductionBatchJdbcEntity, @NonNull UUID> {
 
   @NonNull
-  List<@NonNull ProductionBatchJdbcEntity> findAllByCiderMakerIdOrderByCreatedAtDescBatchIdDesc(@NonNull UUID ciderMakerId);
+  List<@NonNull ProductionBatchJdbcEntity> findAllByWorkspaceIdOrderByCreatedAtDescBatchIdDesc(
+      @NonNull UUID workspaceId
+  );
 }

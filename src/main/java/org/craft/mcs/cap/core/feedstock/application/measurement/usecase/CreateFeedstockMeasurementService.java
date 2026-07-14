@@ -21,9 +21,8 @@ import static java.util.Objects.requireNonNull;
  * Application service for adding a chemical measurement to an existing feedstock batch.
  *
  * <p>The service validates that the parent batch exists, creates a measurement aggregate and
- * returns a result enriched with the owning cider maker id from the batch. Ownership checks for
- * user-facing endpoints are handled at the REST/application boundary before or around this use
- * case.
+ * verifies write access to its owning workspace and returns a result enriched with that workspace
+ * id. The use case therefore remains safe when invoked through adapters other than REST.
  */
 @Component
 @RequiredArgsConstructor
@@ -42,7 +41,7 @@ public final class CreateFeedstockMeasurementService
     return transactionHelper.callInTransactionNonNull(() -> {
       final var batch = feedstockBatchRepository.findById(command.batchId())
           .orElseThrow(() -> new FeedstockBatchNotFoundException(command.batchId()));
-      feedstockAccessControl.requireWriteAccess(batch.ciderMakerId());
+      feedstockAccessControl.requireWriteAccess(batch.workspaceId());
 
       final var sample = FeedstockMeasurement.create(
           FeedstockMeasurementId.newId(),
@@ -56,7 +55,7 @@ public final class CreateFeedstockMeasurementService
 
       return new FeedstockMeasurementCreated(
           saved.measurementId(),
-          batch.ciderMakerId(),
+          batch.workspaceId(),
           saved.batchId(),
           saved.name(),
           saved.measuredAt(),

@@ -41,7 +41,7 @@ import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockVessel
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurement;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurementId;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.value.FeedstockMeasurementName;
-import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
@@ -73,26 +73,26 @@ class OptimizeFeedstockBatchCompositionServiceTest {
     final var batchRepository = mock(FeedstockBatchRepository.class);
     final var optimizer = mockOptimizer();
     final var service = service(measurementRepository, batchRepository, optimizer);
-    final var ciderMakerId = CiderMakerId.of(randomUUID());
-    final var usableBatch = batch(ciderMakerId, "20");
-    final var secondUsableBatch = batch(ciderMakerId, "30");
-    final var incompleteBatch = batch(ciderMakerId, "10");
+    final var workspaceId = WorkspaceId.of(randomUUID());
+    final var usableBatch = batch(workspaceId, "20");
+    final var secondUsableBatch = batch(workspaceId, "30");
+    final var incompleteBatch = batch(workspaceId, "10");
     final var usableMeasurement = sample(usableBatch.batchId(), profile("1.065", "5.5"));
     final var secondUsableMeasurement = sample(secondUsableBatch.batchId(), profile("1.070", "6.0"));
     final var incompleteMeasurement = sample(incompleteBatch.batchId(), acidityOnlyProfile("6.0"));
 
-    when(batchRepository.findAllByCiderMakerId(ciderMakerId))
+    when(batchRepository.findAllByWorkspaceId(workspaceId))
         .thenReturn(List.of(usableBatch, secondUsableBatch, incompleteBatch));
     when(measurementRepository.findLatestSugarAcidityPointCandidates(any()))
         .thenReturn(List.of(incompleteMeasurement, usableMeasurement, secondUsableMeasurement));
 
-    final var result = service.optimize(command(ciderMakerId, null));
+    final var result = service.optimize(command(workspaceId, null));
 
     assertThat(result.sourceCount()).isEqualTo(2);
 
     final var query = ArgumentCaptor.forClass(LatestFeedstockMeasurementSugarAcidityPointCandidateQuery.class);
     verify(measurementRepository).findLatestSugarAcidityPointCandidates(query.capture());
-    assertThat(query.getValue().ciderMakerId()).isEqualTo(ciderMakerId);
+    assertThat(query.getValue().workspaceId()).isEqualTo(workspaceId);
     assertThat(query.getValue().limit()).isEqualTo(25);
 
     final var optimizationCommand = genericCommandCaptor();
@@ -122,11 +122,11 @@ class OptimizeFeedstockBatchCompositionServiceTest {
     final var batchRepository = mock(FeedstockBatchRepository.class);
     final var optimizer = mockOptimizer();
     final var service = service(measurementRepository, batchRepository, optimizer);
-    final var ciderMakerId = CiderMakerId.of(randomUUID());
-    final var firstBatch = batch(ciderMakerId, "20");
-    final var secondBatch = batch(ciderMakerId, "30");
+    final var workspaceId = WorkspaceId.of(randomUUID());
+    final var firstBatch = batch(workspaceId, "20");
+    final var secondBatch = batch(workspaceId, "30");
 
-    when(batchRepository.findAllByCiderMakerId(ciderMakerId))
+    when(batchRepository.findAllByWorkspaceId(workspaceId))
         .thenReturn(List.of(firstBatch, secondBatch));
     when(measurementRepository.findLatestSugarAcidityPointCandidates(any()))
         .thenReturn(List.of(
@@ -134,7 +134,7 @@ class OptimizeFeedstockBatchCompositionServiceTest {
             sample(secondBatch.batchId(), profile("1.070", "6.0"))
         ));
 
-    service.optimize(command(ciderMakerId, new TanninTargetRange(
+    service.optimize(command(workspaceId, new TanninTargetRange(
         new BigDecimal("1500"),
         new BigDecimal("2500")
     )));
@@ -153,15 +153,15 @@ class OptimizeFeedstockBatchCompositionServiceTest {
     final var batchRepository = mock(FeedstockBatchRepository.class);
     final var optimizer = mockOptimizer();
     final var service = service(measurementRepository, batchRepository, optimizer);
-    final var ciderMakerId = CiderMakerId.of(randomUUID());
-    final var batch = batch(ciderMakerId, "20");
+    final var workspaceId = WorkspaceId.of(randomUUID());
+    final var batch = batch(workspaceId, "20");
 
-    when(batchRepository.findAllByCiderMakerId(ciderMakerId))
+    when(batchRepository.findAllByWorkspaceId(workspaceId))
         .thenReturn(List.of(batch));
     when(measurementRepository.findLatestSugarAcidityPointCandidates(any()))
         .thenReturn(List.of(sample(batch.batchId(), profile("1.065", "5.5"))));
 
-    assertThatThrownBy(() -> service.optimize(command(ciderMakerId, null)))
+    assertThatThrownBy(() -> service.optimize(command(workspaceId, null)))
         .isInstanceOf(InsufficientFeedstockCompositionSourcesException.class)
         .hasMessageContaining("requires at least 2 usable sources");
 
@@ -212,11 +212,11 @@ class OptimizeFeedstockBatchCompositionServiceTest {
   }
 
   private static OptimizeFeedstockBatchCompositionCommand command(
-      CiderMakerId ciderMakerId,
+      WorkspaceId workspaceId,
       TanninTargetRange tanninTarget
   ) {
     return new OptimizeFeedstockBatchCompositionCommand(
-        ciderMakerId,
+        workspaceId,
         new FeedstockMeasurementPointFilters(null, null, null, null),
         ProfileTargetScoringPurpose.BLENDING_PLANNING,
         new PredefinedFeedstockProfileTargetSelection(SugarAcidityZone.PERFECT_APPLES),
@@ -235,12 +235,12 @@ class OptimizeFeedstockBatchCompositionServiceTest {
   }
 
   private static FeedstockBatch batch(
-      CiderMakerId ciderMakerId,
+      WorkspaceId workspaceId,
       String availableVolumeLiters
   ) {
     return FeedstockBatch.create(
         FeedstockBatchId.newId(),
-        ciderMakerId,
+        workspaceId,
         FeedstockBatchName.of("Harvest batch"),
         FeedstockVessel.of("Tank A-01"),
         FeedstockType.JUICE,

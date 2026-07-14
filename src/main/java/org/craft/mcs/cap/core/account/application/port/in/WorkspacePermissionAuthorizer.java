@@ -1,7 +1,7 @@
 package org.craft.mcs.cap.core.account.application.port.in;
 
 import org.craft.mcs.cap.core.account.domain.model.AccountPermission;
-import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;
 
 
@@ -9,7 +9,7 @@ import org.jspecify.annotations.NonNull;
 public interface WorkspacePermissionAuthorizer {
 
   void requirePermission(
-      @NonNull CiderMakerId ciderMakerId,
+      @NonNull WorkspaceId workspaceId,
       @NonNull AccountPermission permission
   );
 }

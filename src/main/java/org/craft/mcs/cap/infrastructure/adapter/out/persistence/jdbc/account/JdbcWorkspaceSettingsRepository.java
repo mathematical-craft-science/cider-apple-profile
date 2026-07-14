@@ -4,7 +4,7 @@ import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.account.application.port.out.WorkspaceSettingsRepository;
 import org.craft.mcs.cap.core.account.domain.model.WorkspaceSettings;
-import org.craft.mcs.cap.core.account.domain.model.value.WorkspaceId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.account.entity.AccountJdbcMapper;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.support.JdbcPersistenceExceptionTranslator;
 import org.jspecify.annotations.NonNull;

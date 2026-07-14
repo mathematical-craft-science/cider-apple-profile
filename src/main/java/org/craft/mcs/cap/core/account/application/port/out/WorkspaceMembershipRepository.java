@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import org.craft.mcs.cap.core.account.domain.model.WorkspaceMembership;
 import org.craft.mcs.cap.core.account.domain.model.value.AccountUserId;
-import org.craft.mcs.cap.core.account.domain.model.value.WorkspaceId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;
 
 

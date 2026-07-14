@@ -54,7 +54,6 @@ public final class AccountRestMapper {
   public static @NonNull AccountWorkspaceResponse toResponse(@NonNull WorkspaceView view) {
     return new AccountWorkspaceResponse(
         view.workspaceId().value(),
-        view.ciderMakerId().value(),
         view.name().value(),
         view.type()
     );

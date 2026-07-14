@@ -16,7 +16,7 @@ import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurement;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurementId;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.value.FeedstockMeasurementName;
-import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityCriteria;
 import org.craft.mcs.cap.shared.platform.query.CursorPageRequest;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.query.SugarAcidityZoneCriteria;
@@ -50,7 +50,7 @@ class QueryFeedstockMeasurementSugarAcidityZonePointsServiceTest {
   void filtersByBatchCapabilityZoneAndLimitInStableOrder() {
     final var repository = mock(FeedstockMeasurementQueryRepository.class);
     final var service = service(repository);
-    final var ciderMakerId = CiderMakerId.of(randomUUID());
+    final var workspaceId = WorkspaceId.of(randomUUID());
     final var matchingBatchId = FeedstockBatchId.newId();
     final var beta = sample("Beta", matchingBatchId, profile("1.064", "5.8", "1800"), feedstockMeasurementInstantPlusSeconds(120));
     final var alpha = sample("Alpha", matchingBatchId, profile("1.066", "5.7", "1700"), feedstockMeasurementInstantPlusSeconds(60));
@@ -61,7 +61,7 @@ class QueryFeedstockMeasurementSugarAcidityZonePointsServiceTest {
         .thenReturn(List.of(wrongZone, alpha), List.of(beta, missingTannin));
 
     final var result = service.query(new FeedstockMeasurementSugarAcidityZonePointQuery(
-        ciderMakerId,
+        workspaceId,
         new FeedstockMeasurementPointFilters(
             FeedstockBatchCriteria.of(matchingBatchId),
             null,
@@ -82,7 +82,7 @@ class QueryFeedstockMeasurementSugarAcidityZonePointsServiceTest {
   void returnsNextPageUsingCursorWithoutDuplicatingSamples() {
     final var repository = mock(FeedstockMeasurementQueryRepository.class);
     final var service = service(repository);
-    final var ciderMakerId = CiderMakerId.of(randomUUID());
+    final var workspaceId = WorkspaceId.of(randomUUID());
     final var batchId = FeedstockBatchId.newId();
     final var first = sample("First", batchId, profile("1.066", "5.7", null), feedstockMeasurementInstant());
     final var second = sample("Second", batchId, profile("1.066", "5.7", null), feedstockMeasurementInstantPlusSeconds(60));
@@ -92,12 +92,12 @@ class QueryFeedstockMeasurementSugarAcidityZonePointsServiceTest {
         .thenReturn(List.of(first, second, third), List.of(third));
 
     final var firstPage = service.query(new FeedstockMeasurementSugarAcidityZonePointQuery(
-        ciderMakerId,
+        workspaceId,
         new FeedstockMeasurementPointFilters(null, null, null, null),
         CursorPageRequest.firstPage(2)
     ));
     final var secondPage = service.query(new FeedstockMeasurementSugarAcidityZonePointQuery(
-        ciderMakerId,
+        workspaceId,
         new FeedstockMeasurementPointFilters(null, null, null, null),
         new CursorPageRequest(firstPage.nextCursor(), 2)
     ));
@@ -116,13 +116,13 @@ class QueryFeedstockMeasurementSugarAcidityZonePointsServiceTest {
   void canReturnSamplesNotCapableForSugarAcidityPlot() {
     final var repository = mock(FeedstockMeasurementQueryRepository.class);
     final var service = service(repository);
-    final var ciderMakerId = CiderMakerId.of(randomUUID());
+    final var workspaceId = WorkspaceId.of(randomUUID());
     final var partial = sample("Partial", FeedstockBatchId.newId(), partialProfile());
 
     when(repository.findSugarAcidityPointCandidates(any())).thenReturn(List.of(partial));
 
     final var result = service.query(new FeedstockMeasurementSugarAcidityZonePointQuery(
-        ciderMakerId,
+        workspaceId,
         new FeedstockMeasurementPointFilters(
             null,
             null,
@@ -142,10 +142,10 @@ class QueryFeedstockMeasurementSugarAcidityZonePointsServiceTest {
   @Test
   void rejectsMalformedCursorExplicitly() {
     final var service = service(mock(FeedstockMeasurementQueryRepository.class));
-    final var ciderMakerId = CiderMakerId.of(randomUUID());
+    final var workspaceId = WorkspaceId.of(randomUUID());
 
     assertThatThrownBy(() -> service.query(new FeedstockMeasurementSugarAcidityZonePointQuery(
-        ciderMakerId,
+        workspaceId,
         new FeedstockMeasurementPointFilters(null, null, null, null),
         new CursorPageRequest("cursor", 10)
     )))
@@ -157,14 +157,14 @@ class QueryFeedstockMeasurementSugarAcidityZonePointsServiceTest {
   void usesSeasonAwareRepositoryWhenSeasonFilterIsPresent() {
     final var repository = mock(FeedstockMeasurementQueryRepository.class);
     final var service = service(repository);
-    final var ciderMakerId = CiderMakerId.of(randomUUID());
+    final var workspaceId = WorkspaceId.of(randomUUID());
     final var season = FeedstockSeason.of(LocalDate.parse("2026-09-01"), LocalDate.parse("2026-12-01"));
     final var sample = sample("Season sample", FeedstockBatchId.newId(), profile("1.066", "5.7", null));
 
     when(repository.findSugarAcidityPointCandidates(any())).thenReturn(List.of(sample));
 
     final var result = service.query(new FeedstockMeasurementSugarAcidityZonePointQuery(
-        ciderMakerId,
+        workspaceId,
         new FeedstockMeasurementPointFilters(
             null,
             season,

@@ -1,12 +1,10 @@
 package org.craft.mcs.cap.core.account.domain.model;
 
-import java.util.UUID;
 import org.craft.mcs.cap.core.account.domain.model.value.DisplayName;
 import org.craft.mcs.cap.core.account.domain.model.value.ExternalOrganizationSubject;
 import org.craft.mcs.cap.core.account.domain.model.value.IdentityProviderCode;
-import org.craft.mcs.cap.core.account.domain.model.value.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
-import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jmolecules.ddd.annotation.AggregateRoot;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -18,7 +16,6 @@ import static java.util.Objects.requireNonNull;
 @AggregateRoot
 public record Workspace(
     @NonNull WorkspaceId workspaceId,
-    @NonNull CiderMakerId ciderMakerId,
     @NonNull DisplayName name,
     @NonNull WorkspaceType type,
     @Nullable IdentityProviderCode externalOrganizationProvider,
@@ -27,7 +24,6 @@ public record Workspace(
 
   public Workspace {
     requireNonNull(workspaceId, "workspace id cannot be null");
-    requireNonNull(ciderMakerId, "workspace cider maker scope cannot be null");
     requireNonNull(name, "workspace name cannot be null");
     requireNonNull(type, "workspace type cannot be null");
     if ((externalOrganizationProvider == null) != (externalOrganizationSubject == null)) {
@@ -45,7 +41,6 @@ public record Workspace(
   ) {
     return new Workspace(
         WorkspaceId.newId(),
-        CiderMakerId.of(UUID.randomUUID()),
         name,
         type,
         externalOrganizationProvider,

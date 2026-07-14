@@ -1,7 +1,7 @@
 package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.production;
 
 import java.util.UUID;
-import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatch;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatchId;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchKind;
@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jdbc.test.autoconfigure.DataJdbcTest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.context.annotation.Import;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -37,13 +38,16 @@ class JdbcProductionBatchRepositoryDataJdbcTest {
   @Autowired
   private JdbcProductionBatchRepository repository;
 
+  @Autowired
+  private JdbcTemplate jdbcTemplate;
+
   @Test
   void savesExistingProductionBatchAsUpdate() {
     final var productionBatch = productionBatch();
     final var saved = repository.save(productionBatch);
     final var updated = ProductionBatch.restore(
         saved.batchId(),
-        saved.ciderMakerId(),
+        saved.workspaceId(),
         ProductionBatchName.of("Updated production batch"),
         saved.kind(),
         ProductionBatchStatus.PLANNED,
@@ -56,8 +60,9 @@ class JdbcProductionBatchRepositoryDataJdbcTest {
     final var result = repository.save(updated);
 
     assertThat(springDataRepository.count()).isOne();
-    assertThat(result.name().value()).isEqualTo("Updated production batch");
-    assertThat(result.note()).isEqualTo("Updated note");
+    assertThat(result)
+        .returns(ProductionBatchName.of("Updated production batch"), ProductionBatch::name)
+        .returns("Updated note", ProductionBatch::note);
   }
 
   @Test
@@ -67,7 +72,7 @@ class JdbcProductionBatchRepositoryDataJdbcTest {
     final var found = repository.findById(saved.batchId());
 
     assertThat(found).get()
-        .extracting(batch -> batch.batchId())
+        .extracting(ProductionBatch::batchId)
         .isEqualTo(saved.batchId());
     assertThat(found.orElseThrow().profile().yeastAssimilableNitrogen())
         .isNotNull()
@@ -76,30 +81,30 @@ class JdbcProductionBatchRepositoryDataJdbcTest {
   }
 
   @Test
-  void listsProductionBatchesByCiderMaker() {
-    final var ciderMakerId = CiderMakerId.of(UUID.randomUUID());
-    final var first = repository.save(productionBatch(ciderMakerId, "First production batch"));
-    final var second = repository.save(productionBatch(ciderMakerId, "Second production batch"));
-    repository.save(productionBatch(CiderMakerId.of(UUID.randomUUID()), "Other production batch"));
+  void listsProductionBatchesByWorkspace() {
+    final var workspaceId = persistWorkspace("Primary workspace");
+    final var first = repository.save(productionBatch(workspaceId, "First production batch"));
+    final var second = repository.save(productionBatch(workspaceId, "Second production batch"));
+    repository.save(productionBatch(persistWorkspace("Other workspace"), "Other production batch"));
 
-    final var found = repository.findAllByCiderMakerId(ciderMakerId);
+    final var found = repository.findAllByWorkspaceId(workspaceId);
 
     assertThat(found)
-        .extracting(batch -> batch.batchId())
+        .extracting(ProductionBatch::batchId)
         .containsExactlyInAnyOrder(second.batchId(), first.batchId());
   }
 
-  private static ProductionBatch productionBatch() {
-    return productionBatch(CiderMakerId.of(UUID.randomUUID()), "Initial production batch");
+  private ProductionBatch productionBatch() {
+    return productionBatch(persistWorkspace("Initial workspace"), "Initial production batch");
   }
 
   private static ProductionBatch productionBatch(
-      CiderMakerId ciderMakerId,
+      WorkspaceId workspaceId,
       String name
   ) {
     return ProductionBatch.create(
         ProductionBatchId.newId(),
-        ciderMakerId,
+        workspaceId,
         ProductionBatchName.of(name),
         ProductionBatchKind.CIDER,
         VolumeValue.ofLiters("100"),
@@ -112,5 +117,18 @@ class JdbcProductionBatchRepositoryDataJdbcTest {
         null,
         null
     );
+  }
+
+  private WorkspaceId persistWorkspace(String name) {
+    final var workspaceId = WorkspaceId.of(UUID.randomUUID());
+    jdbcTemplate.update(
+        """
+            INSERT INTO workspaces (workspace_id, name, type, version, created_at, updated_at)
+            VALUES (?, ?, 'CIDERY', 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+            """,
+        workspaceId.value(),
+        name
+    );
+    return workspaceId;
   }
 }

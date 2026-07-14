@@ -13,7 +13,7 @@ import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.Profi
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.TanninTargetRange;
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.FeedstockProfileTargetSelection;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockMeasurementPointFilters;
-import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.application.ApplicationValidationException;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.craft.mcs.cap.shared.platform.query.CursorPageRequest;
@@ -24,7 +24,7 @@ import static java.util.Objects.requireNonNull;
 
 
 public record OptimizeFeedstockBatchCompositionCommand(
-    @NonNull CiderMakerId ciderMakerId,
+    @NonNull WorkspaceId workspaceId,
     @NonNull FeedstockMeasurementPointFilters filters,
     @NonNull ProfileTargetScoringPurpose purpose,
     @NonNull FeedstockProfileTargetSelection target,
@@ -42,7 +42,7 @@ public record OptimizeFeedstockBatchCompositionCommand(
 ) {
 
   public OptimizeFeedstockBatchCompositionCommand {
-    requireNonNull(ciderMakerId, "cider maker id cannot be null");
+    requireNonNull(workspaceId, "workspace id cannot be null");
     requireNonNull(filters, "feedstock measurement point filters cannot be null");
     requireNonNull(purpose, "profile target scoring purpose cannot be null");
     requireNonNull(target, "feedstock batch profile target cannot be null");

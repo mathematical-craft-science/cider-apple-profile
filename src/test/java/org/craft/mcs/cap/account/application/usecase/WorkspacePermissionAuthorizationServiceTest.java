@@ -25,7 +25,7 @@ import org.craft.mcs.cap.core.account.domain.model.value.DisplayName;
 import org.craft.mcs.cap.core.account.domain.model.value.EmailAddress;
 import org.craft.mcs.cap.core.account.domain.model.value.ExternalUserSubject;
 import org.craft.mcs.cap.core.account.domain.model.value.IdentityProviderCode;
-import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
@@ -45,7 +45,7 @@ class WorkspacePermissionAuthorizationServiceTest {
     final var fixture = fixture(AccountRole.LAB_CONTRIBUTOR);
 
     assertThatCode(() -> fixture.service().requirePermission(
-        fixture.workspace().ciderMakerId(),
+        fixture.workspace().workspaceId(),
         AccountPermission.FEEDSTOCK_READ
     )).doesNotThrowAnyException();
 
@@ -59,16 +59,16 @@ class WorkspacePermissionAuthorizationServiceTest {
     final var fixture = fixture(AccountRole.LAB_CONTRIBUTOR);
 
     assertThatThrownBy(() -> fixture.service().requirePermission(
-        fixture.workspace().ciderMakerId(),
+        fixture.workspace().workspaceId(),
         AccountPermission.PRODUCTION_WRITE
     )).isInstanceOf(AccountAccessDeniedException.class)
-        .hasMessageContaining(fixture.workspace().ciderMakerId().value().toString());
+        .hasMessageContaining(fixture.workspace().workspaceId().value().toString());
   }
 
   @Test
   void deniesAnotherWorkspaceScopeWithoutProvisioningIt() {
     final var fixture = fixture(AccountRole.OWNER);
-    final var requestedScope = CiderMakerId.of(UUID.randomUUID());
+    final var requestedScope = WorkspaceId.of(UUID.randomUUID());
 
     assertThatThrownBy(() -> fixture.service().requirePermission(
         requestedScope,

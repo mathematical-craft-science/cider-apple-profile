@@ -11,7 +11,7 @@ import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurementId;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.value.FeedstockMeasurementName;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
-import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.craft.mcs.cap.shared.kernel.measurement.ExactMeasurement;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
@@ -38,11 +38,11 @@ class ListFeedstockMeasurementsServiceTest {
     );
     final var batchId = FeedstockBatchId.newId();
     final var batch = mock(FeedstockBatch.class);
-    when(batch.ciderMakerId()).thenReturn(CiderMakerId.of(randomUUID()));
+    when(batch.workspaceId()).thenReturn(WorkspaceId.of(randomUUID()));
     when(batchRepository.findById(batchId)).thenReturn(Optional.of(batch));
     final var summary = new FeedstockMeasurementSummary(
         FeedstockMeasurementId.newId(),
-        CiderMakerId.of(randomUUID()),
+        WorkspaceId.of(randomUUID()),
         batchId,
         FeedstockMeasurementName.of("Late press sample"),
         feedstockMeasurementInstant(),

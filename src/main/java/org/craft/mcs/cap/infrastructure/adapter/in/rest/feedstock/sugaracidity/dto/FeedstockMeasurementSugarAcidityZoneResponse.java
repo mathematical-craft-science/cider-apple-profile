@@ -11,7 +11,13 @@ import org.jspecify.annotations.Nullable;
 @Schema(description = "Feedstock measurement sugar-acidity graph point and assessment response.")
 public record FeedstockMeasurementSugarAcidityZoneResponse(
     @Schema(description = "Feedstock measurement identifier.", format = "uuid", example = "ed7c0818-aad9-47dd-97c0-d1d37561ca18", requiredMode = Schema.RequiredMode.REQUIRED) @NonNull UUID measurementId,
-    @Schema(description = "Cider maker identifier.", format = "uuid", example = "4d96759c-86ff-4d39-8b19-241bc60f82ff", requiredMode = Schema.RequiredMode.REQUIRED) @NonNull UUID ciderMakerId,
+    @Schema(
+        description = "Workspace identifier.",
+        format = "uuid",
+        example = "4d96759c-86ff-4d39-8b19-241bc60f82ff",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
+    @NonNull UUID workspaceId,
     @Schema(description = "Feedstock batch identifier.", format = "uuid", example = "b2a49b8a-3a19-4f8f-989d-9278f4e00d2f", requiredMode = Schema.RequiredMode.REQUIRED) @NonNull UUID batchId,
     @Schema(description = "Measurement name.", example = "Pressing measurement #1", requiredMode = Schema.RequiredMode.REQUIRED) @NonNull String measurementName,
     @Schema(description = "Whether the measurement has enough data to be plotted.", example = "true", requiredMode = Schema.RequiredMode.REQUIRED)
@@ -24,11 +30,11 @@ public record FeedstockMeasurementSugarAcidityZoneResponse(
 
   public FeedstockMeasurementSugarAcidityZoneResponse(
       @NonNull UUID measurementId,
-      @NonNull UUID ciderMakerId,
+      @NonNull UUID workspaceId,
       @NonNull UUID batchId,
       @NonNull String measurementName,
       @NonNull SugarAcidityZoneAssessmentResponse assessment
   ) {
-    this(measurementId, ciderMakerId, batchId, measurementName, true, assessment, null);
+    this(measurementId, workspaceId, batchId, measurementName, true, assessment, null);
   }
 }

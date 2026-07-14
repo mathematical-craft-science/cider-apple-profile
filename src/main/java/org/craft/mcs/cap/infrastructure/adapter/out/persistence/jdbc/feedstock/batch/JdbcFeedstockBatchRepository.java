@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchRepository;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
-import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.feedstock.batch.entity.FeedstockBatchJdbcMapper;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Repository;
@@ -43,10 +43,10 @@ class JdbcFeedstockBatchRepository
   }
 
   @Override
-  public @NonNull List<@NonNull FeedstockBatch> findAllByCiderMakerId(@NonNull CiderMakerId ciderMakerId) {
-    requireNonNull(ciderMakerId, "cider maker id cannot be null");
+  public @NonNull List<@NonNull FeedstockBatch> findAllByWorkspaceId(@NonNull WorkspaceId workspaceId) {
+    requireNonNull(workspaceId, "workspace id cannot be null");
 
-    return repository.findAllByCiderMakerIdAndDeletedAtIsNullOrderByCreatedAtAscBatchIdAsc(ciderMakerId.value())
+    return repository.findAllByWorkspaceIdAndDeletedAtIsNullOrderByCreatedAtAscBatchIdAsc(workspaceId.value())
         .stream()
         .map(FeedstockBatchJdbcMapper::toDomain)
         .toList();

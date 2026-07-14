@@ -48,7 +48,7 @@ import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockVessel
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurement;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurementId;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.value.FeedstockMeasurementName;
-import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
@@ -69,7 +69,7 @@ import static org.mockito.Mockito.when;
 
 class QueryFeedstockPlanningBatchesServiceTest {
 
-  private static final CiderMakerId CIDER_MAKER_ID = CiderMakerId.of(
+  private static final WorkspaceId WORKSPACE_ID = WorkspaceId.of(
       UUID.fromString("7c18963c-26d7-45c0-af2c-07998f4f6d6b")
   );
   private static final FeedstockSeason SEASON = FeedstockSeason.of(
@@ -226,7 +226,7 @@ class QueryFeedstockPlanningBatchesServiceTest {
 
   private static FeedstockPlanningBatchViewQuery queryWithoutTarget() {
     return new FeedstockPlanningBatchViewQuery(
-        CIDER_MAKER_ID,
+        WORKSPACE_ID,
         SEASON,
         null,
         null,
@@ -238,7 +238,7 @@ class QueryFeedstockPlanningBatchesServiceTest {
 
   private static FeedstockPlanningBatchViewQuery queryWithTarget() {
     return new FeedstockPlanningBatchViewQuery(
-        CIDER_MAKER_ID,
+        WORKSPACE_ID,
         SEASON,
         new PredefinedFeedstockProfileTargetSelection(SugarAcidityZone.PERFECT_APPLES),
         null,
@@ -251,7 +251,7 @@ class QueryFeedstockPlanningBatchesServiceTest {
   private static FeedstockBatchSummary batch(FeedstockBatchId batchId) {
     return new FeedstockBatchSummary(
         batchId,
-        CIDER_MAKER_ID,
+        WORKSPACE_ID,
         FeedstockBatchName.of("Late season juice"),
         FeedstockVessel.of("Tank A-01"),
         FeedstockType.JUICE,

@@ -9,7 +9,7 @@ import org.craft.mcs.cap.core.account.application.port.in.ListAccountWorkspacesU
 import org.craft.mcs.cap.core.account.application.port.in.ListWorkspaceMembersUseCase;
 import org.craft.mcs.cap.core.account.application.port.in.UpdateAccountProfileUseCase;
 import org.craft.mcs.cap.core.account.application.port.in.UpdateUserPreferencesUseCase;
-import org.craft.mcs.cap.core.account.domain.model.value.WorkspaceId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.dto.AccountMeResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.dto.AccountPreferencesResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.dto.AccountUserResponse;

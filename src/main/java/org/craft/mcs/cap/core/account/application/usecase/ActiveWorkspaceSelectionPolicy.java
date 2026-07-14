@@ -4,7 +4,7 @@ import java.util.List;
 import org.craft.mcs.cap.core.account.application.AccountAccessDeniedException;
 import org.craft.mcs.cap.core.account.application.ActiveWorkspaceRequiredException;
 import org.craft.mcs.cap.core.account.application.port.in.WorkspaceMembershipView;
-import org.craft.mcs.cap.core.account.domain.model.value.WorkspaceId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;

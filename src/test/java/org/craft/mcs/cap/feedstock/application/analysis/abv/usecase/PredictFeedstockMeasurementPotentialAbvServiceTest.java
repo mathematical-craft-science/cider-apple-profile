@@ -12,7 +12,7 @@ import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasur
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockBatchName;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
-import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.value.FeedstockMeasurementName;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockVessel;
@@ -55,7 +55,7 @@ class PredictFeedstockMeasurementPotentialAbvServiceTest {
         .build());
     when(repository.findById(sample.measurementId())).thenReturn(Optional.of(sample));
     when(batchRepository.findById(sample.batchId()))
-        .thenReturn(Optional.of(batch(sample.batchId(), CiderMakerId.of(randomUUID()))));
+        .thenReturn(Optional.of(batch(sample.batchId(), WorkspaceId.of(randomUUID()))));
 
     final var prediction = service.predict(sample.measurementId());
 
@@ -74,7 +74,7 @@ class PredictFeedstockMeasurementPotentialAbvServiceTest {
         .build());
     when(repository.findById(sample.measurementId())).thenReturn(Optional.of(sample));
     when(batchRepository.findById(sample.batchId()))
-        .thenReturn(Optional.of(batch(sample.batchId(), CiderMakerId.of(randomUUID()))));
+        .thenReturn(Optional.of(batch(sample.batchId(), WorkspaceId.of(randomUUID()))));
 
     assertThatThrownBy(() -> service.predict(sample.measurementId()))
         .isInstanceOfSatisfying(
@@ -116,11 +116,11 @@ class PredictFeedstockMeasurementPotentialAbvServiceTest {
 
   private static FeedstockBatch batch(
       FeedstockBatchId batchId,
-      CiderMakerId ciderMakerId
+      WorkspaceId workspaceId
   ) {
     return FeedstockBatch.create(
         batchId,
-        ciderMakerId,
+        workspaceId,
         FeedstockBatchName.of("Test batch"),
         FeedstockVessel.of("Tank A-01"),
         FeedstockType.JUICE,

@@ -18,7 +18,7 @@ import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockVessel
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurement;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurementId;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.value.FeedstockMeasurementName;
-import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.craft.mcs.cap.shared.kernel.chemical.value.PhValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
@@ -48,16 +48,16 @@ class AssessFeedstockBatchCurrentFermentationStartReadinessServiceTest {
         new FermentationStartReadinessAssessor()
     );
     final var batchId = FeedstockBatchId.newId();
-    final var ciderMakerId = CiderMakerId.of(randomUUID());
+    final var workspaceId = WorkspaceId.of(randomUUID());
     final var measurement = measurement(batchId);
 
-    when(batchRepository.findById(batchId)).thenReturn(Optional.of(batch(batchId, ciderMakerId)));
+    when(batchRepository.findById(batchId)).thenReturn(Optional.of(batch(batchId, workspaceId)));
     when(measurementQueryRepository.findLatestByBatchId(batchId)).thenReturn(Optional.of(measurement));
 
     final var result = service.assess(batchId);
 
     assertThat(result.batchId()).isEqualTo(batchId);
-    assertThat(result.ciderMakerId()).isEqualTo(ciderMakerId);
+    assertThat(result.workspaceId()).isEqualTo(workspaceId);
     assertThat(result.currentMeasurementId()).isEqualTo(measurement.measurementId());
     assertThat(result.assessment().status()).isEqualTo(FermentationStartReadinessStatus.READY);
   }
@@ -78,11 +78,11 @@ class AssessFeedstockBatchCurrentFermentationStartReadinessServiceTest {
 
   private static FeedstockBatch batch(
       FeedstockBatchId batchId,
-      CiderMakerId ciderMakerId
+      WorkspaceId workspaceId
   ) {
     return FeedstockBatch.create(
         batchId,
-        ciderMakerId,
+        workspaceId,
         FeedstockBatchName.of("Test batch"),
         FeedstockVessel.of("Tank A-01"),
         FeedstockType.JUICE,

@@ -36,15 +36,15 @@ public final class QueryProductionBatchesService
 
     final var batch = productionBatchRepository.findById(batchId)
         .orElseThrow(() -> new ProductionBatchNotFoundException(batchId));
-    productionAccessControl.requireReadAccess(batch.ciderMakerId());
+    productionAccessControl.requireReadAccess(batch.workspaceId());
     return batch;
   }
 
   @Override
   public @NonNull List<@NonNull ProductionBatch> list(@NonNull ListProductionBatchesQuery query) {
     requireNonNull(query, "list production batches query cannot be null");
-    productionAccessControl.requireReadAccess(query.ciderMakerId());
+    productionAccessControl.requireReadAccess(query.workspaceId());
 
-    return productionBatchRepository.findAllByCiderMakerId(query.ciderMakerId());
+    return productionBatchRepository.findAllByWorkspaceId(query.workspaceId());
   }
 }

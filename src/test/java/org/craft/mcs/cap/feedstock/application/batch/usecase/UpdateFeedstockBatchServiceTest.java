@@ -13,7 +13,7 @@ import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockVessel;
 import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
-import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.craft.mcs.cap.shared.platform.TransactionHelper;
@@ -39,13 +39,13 @@ class UpdateFeedstockBatchServiceTest {
         mock(FeedstockAccessControl.class),
         transactionHelper()
     );
-    final var ciderMakerId = CiderMakerId.of(randomUUID());
-    final var batch = batch(ciderMakerId, VolumeValue.ofLiters("250.000"));
+    final var workspaceId = WorkspaceId.of(randomUUID());
+    final var batch = batch(workspaceId, VolumeValue.ofLiters("250.000"));
     when(repository.findById(batch.batchId())).thenReturn(Optional.of(batch));
 
     assertThatThrownBy(() -> service.update(new UpdateFeedstockBatchCommand(
         batch.batchId(),
-        ciderMakerId,
+        workspaceId,
         null,
         null,
         false,
@@ -70,13 +70,13 @@ class UpdateFeedstockBatchServiceTest {
         mock(FeedstockAccessControl.class),
         transactionHelper()
     );
-    final var ciderMakerId = CiderMakerId.of(randomUUID());
-    final var batch = batch(ciderMakerId, VolumeValue.ofLiters("0"));
+    final var workspaceId = WorkspaceId.of(randomUUID());
+    final var batch = batch(workspaceId, VolumeValue.ofLiters("0"));
     when(repository.findById(batch.batchId())).thenReturn(Optional.of(batch));
 
     assertThatThrownBy(() -> service.update(new UpdateFeedstockBatchCommand(
         batch.batchId(),
-        ciderMakerId,
+        workspaceId,
         FeedstockBatchName.of("Renamed batch"),
         null,
         false,
@@ -94,12 +94,12 @@ class UpdateFeedstockBatchServiceTest {
   }
 
   private static @NonNull FeedstockBatch batch(
-      @NonNull CiderMakerId ciderMakerId,
+      @NonNull WorkspaceId workspaceId,
       @NonNull VolumeValue availableVolume
   ) {
     return FeedstockBatch.restore(
         FeedstockBatchId.newId(),
-        ciderMakerId,
+        workspaceId,
         FeedstockBatchName.of("Late season fruit"),
         FeedstockVessel.of("Tank A-01"),
         FeedstockType.JUICE,

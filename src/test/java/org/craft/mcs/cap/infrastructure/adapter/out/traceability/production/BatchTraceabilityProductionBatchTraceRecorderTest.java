@@ -10,9 +10,10 @@ import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStep;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStepId;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceSubjectType;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
-import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchCompositionTraceSource;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchFeedstockTraceSource;
+import org.craft.mcs.cap.core.production.application.port.out.ProductionSourceDisplayName;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatch;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatchId;
 import org.craft.mcs.cap.core.production.domain.model.ProductionInput;
@@ -60,16 +61,16 @@ class BatchTraceabilityProductionBatchTraceRecorderTest {
   void mapsCompositionResultInputToTraceSubject() {
     final var appendUseCase = new CapturingAppendUseCase();
     final var recorder = new BatchTraceabilityProductionBatchTraceRecorder(appendUseCase);
-    final var ciderMakerId = CiderMakerId.of(UUID.randomUUID());
+    final var workspaceId = WorkspaceId.of(UUID.randomUUID());
     final var sourceId = UUID.randomUUID().toString();
     final var input = productionInput(UUID.randomUUID());
-    final var productionBatch = productionBatch(ciderMakerId, input);
+    final var productionBatch = productionBatch(workspaceId, input);
 
     recorder.recordCreated(
         productionBatch,
         List.of(new ProductionBatchCompositionTraceSource(
             sourceId,
-            "Accepted composition",
+            ProductionSourceDisplayName.of("Accepted composition"),
             VolumeValue.ofLiters("100")
         )),
         Instant.parse("2026-05-18T10:15:30Z"),
@@ -97,17 +98,17 @@ class BatchTraceabilityProductionBatchTraceRecorderTest {
   void mapsProductionCreatedFactToBatchTraceStep() {
     final var appendUseCase = new CapturingAppendUseCase();
     final var recorder = new BatchTraceabilityProductionBatchTraceRecorder(appendUseCase);
-    final var ciderMakerId = CiderMakerId.of(UUID.randomUUID());
+    final var workspaceId = WorkspaceId.of(UUID.randomUUID());
     final var sourceId = UUID.randomUUID();
     final var input = productionInput(sourceId);
-    final var productionBatch = productionBatch(ciderMakerId, input);
+    final var productionBatch = productionBatch(workspaceId, input);
     final var occurredAt = Instant.parse("2026-05-18T10:15:30Z");
 
     recorder.recordCreated(
         productionBatch,
         List.of(new ProductionBatchFeedstockTraceSource(
             FeedstockBatchId.of(sourceId),
-            "Late juice",
+            ProductionSourceDisplayName.of("Late juice"),
             VolumeValue.ofLiters("100"),
             sourceAxes(),
             ConfidenceLevel.LAB_VERIFIED
@@ -167,12 +168,12 @@ class BatchTraceabilityProductionBatchTraceRecorderTest {
   }
 
   private static ProductionBatch productionBatch(
-      CiderMakerId ciderMakerId,
+      WorkspaceId workspaceId,
       ProductionInput input
   ) {
     return ProductionBatch.create(
         ProductionBatchId.newId(),
-        ciderMakerId,
+        workspaceId,
         ProductionBatchName.of("Classic cider"),
         ProductionBatchKind.CIDER,
         input.sourceComposition().totalVolume(),

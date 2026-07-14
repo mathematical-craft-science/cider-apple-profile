@@ -2,7 +2,7 @@ package org.craft.mcs.cap.core.production.application.port.out;
 
 import java.util.List;
 import java.util.Optional;
-import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatch;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatchId;
 import org.jspecify.annotations.NonNull;
@@ -17,5 +17,5 @@ public interface ProductionBatchRepository {
   Optional<@NonNull ProductionBatch> findById(@NonNull ProductionBatchId batchId);
 
   @NonNull
-  List<@NonNull ProductionBatch> findAllByCiderMakerId(@NonNull CiderMakerId ciderMakerId);
+  List<@NonNull ProductionBatch> findAllByWorkspaceId(@NonNull WorkspaceId workspaceId);
 }

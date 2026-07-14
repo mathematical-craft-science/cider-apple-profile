@@ -44,7 +44,7 @@ public final class FeedstockBatchProfileTargetScorableCandidateProvider {
 
     return currentMeasurementQueryService.findCurrentSugarAcidityPointCandidates(
             new LatestFeedstockMeasurementSugarAcidityPointCandidateQuery(
-                command.ciderMakerId(),
+                command.workspaceId(),
                 command.filters().batch(),
                 command.filters().season(),
                 null,

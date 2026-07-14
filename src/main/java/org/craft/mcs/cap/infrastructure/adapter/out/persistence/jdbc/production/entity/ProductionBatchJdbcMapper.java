@@ -1,7 +1,7 @@
 package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.production.entity;
 
 import java.math.BigDecimal;
-import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatch;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatchId;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchName;
@@ -29,7 +29,7 @@ public final class ProductionBatchJdbcMapper {
     final var profile = batch.profile();
     return new ProductionBatchJdbcEntity(
         batch.batchId().value(),
-        batch.ciderMakerId().value(),
+        batch.workspaceId().value(),
         batch.name().value(),
         batch.kind(),
         batch.status(),
@@ -52,7 +52,7 @@ public final class ProductionBatchJdbcMapper {
 
     final var updated = fromDomain(batch);
 
-    entity.ciderMakerId = updated.ciderMakerId;
+    entity.workspaceId = updated.workspaceId;
     entity.name = updated.name;
     entity.kind = updated.kind;
     entity.status = updated.status;
@@ -71,7 +71,7 @@ public final class ProductionBatchJdbcMapper {
 
     return ProductionBatch.restore(
         ProductionBatchId.of(requireNonNull(entity.batchId, "production batch id cannot be null")),
-        CiderMakerId.of(requireNonNull(entity.ciderMakerId, "cider maker id cannot be null")),
+        WorkspaceId.of(requireNonNull(entity.workspaceId, "workspace id cannot be null")),
         ProductionBatchName.of(requireNonNull(entity.name, "production batch name cannot be null")),
         requireNonNull(entity.kind, "production batch kind cannot be null"),
         requireNonNull(entity.status, "production batch status cannot be null"),

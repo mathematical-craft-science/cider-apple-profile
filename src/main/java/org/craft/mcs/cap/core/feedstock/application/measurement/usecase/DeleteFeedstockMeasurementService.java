@@ -39,7 +39,7 @@ public final class DeleteFeedstockMeasurementService
     transactionHelper.executeInTransaction(() -> {
       final var batch = feedstockBatchRepository.findById(command.batchId())
           .orElseThrow(() -> new FeedstockBatchNotFoundException(command.batchId()));
-      feedstockAccessControl.requireWriteAccess(batch.ciderMakerId());
+      feedstockAccessControl.requireWriteAccess(batch.workspaceId());
       final var measurement = feedstockMeasurementRepository.findById(command.measurementId())
           .orElseThrow(() -> new FeedstockMeasurementNotFoundException(command.measurementId()));
 

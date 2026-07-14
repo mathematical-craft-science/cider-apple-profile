@@ -1,13 +1,14 @@
-package org.craft.mcs.cap.core.account.domain.model.value;
+package org.craft.mcs.cap.shared.kernel.identity;
 
 import java.util.UUID;
 import org.jmolecules.ddd.annotation.ValueObject;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
+import static org.craft.mcs.cap.shared.kernel.identity.UuidV7Generator.newUuid;
 
 
-/** Stable CAP identifier of a product workspace. */
+/** Stable identifier of the CAP workspace that owns business data. */
 @ValueObject
 public record WorkspaceId(@NonNull UUID value) {
 
@@ -16,10 +17,15 @@ public record WorkspaceId(@NonNull UUID value) {
   }
 
   public static @NonNull WorkspaceId newId() {
-    return new WorkspaceId(UUID.randomUUID());
+    return new WorkspaceId(newUuid());
   }
 
   public static @NonNull WorkspaceId of(@NonNull UUID value) {
     return new WorkspaceId(value);
+  }
+
+  public static @NonNull WorkspaceId of(@NonNull String value) {
+    requireNonNull(value, "workspace id value cannot be null");
+    return of(UUID.fromString(value));
   }
 }

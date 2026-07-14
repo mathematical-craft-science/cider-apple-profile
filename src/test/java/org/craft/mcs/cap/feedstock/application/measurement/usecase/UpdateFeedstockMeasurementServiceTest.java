@@ -17,7 +17,7 @@ import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockVessel
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurement;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurementId;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.value.FeedstockMeasurementName;
-import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.measurement.ExactMeasurement;
@@ -87,7 +87,7 @@ class UpdateFeedstockMeasurementServiceTest {
   private static @NonNull FeedstockBatch batch() {
     return FeedstockBatch.create(
         FeedstockBatchId.newId(),
-        CiderMakerId.of(randomUUID()),
+        WorkspaceId.of(randomUUID()),
         FeedstockBatchName.of("Late season fruit"),
         FeedstockVessel.of("Tank A-01"),
         FeedstockType.JUICE,

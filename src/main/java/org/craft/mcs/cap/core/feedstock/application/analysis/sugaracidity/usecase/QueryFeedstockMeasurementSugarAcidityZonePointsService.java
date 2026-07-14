@@ -52,7 +52,7 @@ public final class QueryFeedstockMeasurementSugarAcidityZonePointsService
       @NonNull FeedstockMeasurementSugarAcidityZonePointQuery query
   ) {
     requireNonNull(query, "feedstock measurement sugar-acidity zone point query cannot be null");
-    feedstockAccessControl.requireReadAccess(query.ciderMakerId());
+    feedstockAccessControl.requireReadAccess(query.workspaceId());
 
     return ChunkedCursorPageCollector.collect(
         decodeCursor(query.page().after()),
@@ -60,7 +60,7 @@ public final class QueryFeedstockMeasurementSugarAcidityZonePointsService
         PAGE_LOOKAHEAD,
         (afterCursor, limit) -> feedstockMeasurementQueryRepository.findSugarAcidityPointCandidates(
             new FeedstockMeasurementSugarAcidityPointCandidateQuery(
-                query.ciderMakerId(),
+                query.workspaceId(),
                 query.filters().batch(),
                 query.filters().season(),
                 afterCursor,
@@ -80,7 +80,7 @@ public final class QueryFeedstockMeasurementSugarAcidityZonePointsService
   ) {
     return new FeedstockMeasurementSugarAcidityZoneResult(
         sample.measurementId(),
-        query.ciderMakerId(),
+        query.workspaceId(),
         sample.batchId(),
         sample.name(),
         evaluation

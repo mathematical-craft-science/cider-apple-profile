@@ -9,7 +9,7 @@ import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPredictor;
 import org.craft.mcs.cap.core.profileanalysis.abv.domain.PredictionConfidence;
 import org.craft.mcs.cap.core.profileanalysis.abv.domain.StandardGravityDropAbvPredictionStrategy;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
-import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.core.production.application.port.in.ProductionBatchCreated;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatch;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatchId;
@@ -101,7 +101,7 @@ class ProductionBatchRestMapperTest {
   private static ProductionBatch productionBatch() {
     return ProductionBatch.create(
         ProductionBatchId.newId(),
-        CiderMakerId.of(UUID.randomUUID()),
+        WorkspaceId.of(UUID.randomUUID()),
         ProductionBatchName.of("Late season cuvee"),
         ProductionBatchKind.CIDER,
         VolumeValue.ofLiters("120"),

@@ -14,7 +14,7 @@ import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockBatchName;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
-import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.value.FeedstockMeasurementName;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockVessel;
@@ -39,7 +39,7 @@ import static org.mockito.Mockito.when;
 class CreateFeedstockMeasurementServiceTest {
 
   @Test
-  void createsSampleInsideExistingBatchOwnedBySameCiderMaker() {
+  void createsSampleInsideExistingBatchOwnedBySameWorkspace() {
     final var batchRepository = mock(FeedstockBatchRepository.class);
     final var sampleRepository = mock(FeedstockMeasurementRepository.class);
     final var service = new CreateFeedstockMeasurementService(
@@ -48,8 +48,8 @@ class CreateFeedstockMeasurementServiceTest {
         mock(FeedstockAccessControl.class),
         transactionHelper()
     );
-    final var ciderMakerId = CiderMakerId.of(randomUUID());
-    final var batch = batch(ciderMakerId);
+    final var workspaceId = WorkspaceId.of(randomUUID());
+    final var batch = batch(workspaceId);
     when(batchRepository.findById(batch.batchId())).thenReturn(Optional.of(batch));
     when(sampleRepository.save(any(FeedstockMeasurement.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -62,7 +62,7 @@ class CreateFeedstockMeasurementServiceTest {
     ));
 
     assertThat(created.batchId()).isEqualTo(batch.batchId());
-    assertThat(created.ciderMakerId()).isEqualTo(ciderMakerId);
+    assertThat(created.workspaceId()).isEqualTo(workspaceId);
   }
 
   @Test
@@ -86,10 +86,10 @@ class CreateFeedstockMeasurementServiceTest {
     ))).isInstanceOf(FeedstockBatchNotFoundException.class);
   }
 
-  private static FeedstockBatch batch(CiderMakerId ciderMakerId) {
+  private static FeedstockBatch batch(WorkspaceId workspaceId) {
     return FeedstockBatch.create(
         FeedstockBatchId.newId(),
-        ciderMakerId,
+        workspaceId,
         FeedstockBatchName.of("Late season fruit"),
         FeedstockVessel.of("Tank A-01"),
         FeedstockType.JUICE,

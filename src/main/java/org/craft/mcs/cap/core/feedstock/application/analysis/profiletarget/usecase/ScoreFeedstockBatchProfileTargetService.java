@@ -40,7 +40,7 @@ public final class ScoreFeedstockBatchProfileTargetService
       @NonNull ScoreFeedstockBatchProfileTargetCommand command
   ) {
     requireNonNull(command, "score feedstock batch profile target command cannot be null");
-    feedstockAccessControl.requireReadAccess(command.ciderMakerId());
+    feedstockAccessControl.requireReadAccess(command.workspaceId());
 
     final var candidates = candidateProvider.findCandidates(command);
     final var candidatesByReference = candidates.stream()
@@ -71,7 +71,7 @@ public final class ScoreFeedstockBatchProfileTargetService
               final var measurement = candidate.measurement();
               return new FeedstockBatchProfileTargetScore(
                   measurement.batchId(),
-                  command.ciderMakerId(),
+                  command.workspaceId(),
                   measurement.measurementId(),
                   measurement.name(),
                   candidate.candidate().point(),

@@ -20,7 +20,7 @@ import static java.util.Objects.requireNonNull;
  * Application service for editing feedstock batch metadata and available stock volume.
  *
  * <p>The service is the ownership boundary for feedstock batch changes: it verifies that the requested
- * cider maker owns the batch before applying partial changes to the aggregate. It does not edit
+ * workspace owns the batch before applying partial changes to the aggregate. It does not edit
  * chemical profile values because those belong to measurement history.
  */
 @Component
@@ -35,7 +35,7 @@ public final class UpdateFeedstockBatchService
   @Override
   public @NonNull FeedstockBatchSummary update(@NonNull UpdateFeedstockBatchCommand command) {
     requireNonNull(command, "update feedstock batch command cannot be null");
-    feedstockAccessControl.requireWriteAccess(command.ciderMakerId());
+    feedstockAccessControl.requireWriteAccess(command.workspaceId());
     return transactionHelper.callInTransactionNonNull(() -> updateInTransaction(command));
   }
 
@@ -49,19 +49,19 @@ public final class UpdateFeedstockBatchService
   private @NonNull FeedstockBatch findOwnedBatch(@NonNull UpdateFeedstockBatchCommand command) {
     final var batch = feedstockBatchRepository.findById(command.batchId())
         .orElseThrow(() -> new FeedstockBatchNotFoundException(command.batchId()));
-    assertOwnedByCiderMaker(batch, command);
+    assertOwnedByWorkspace(batch, command);
     return batch;
   }
 
-  private static void assertOwnedByCiderMaker(
+  private static void assertOwnedByWorkspace(
       @NonNull FeedstockBatch batch,
       @NonNull UpdateFeedstockBatchCommand command
   ) {
-    if (!batch.ciderMakerId().equals(command.ciderMakerId())) {
+    if (!batch.workspaceId().equals(command.workspaceId())) {
       throw new FeedstockBatchOwnershipMismatchException(
           batch.batchId(),
-          command.ciderMakerId(),
-          batch.ciderMakerId()
+          command.workspaceId(),
+          batch.workspaceId()
       );
     }
   }
@@ -136,7 +136,7 @@ public final class UpdateFeedstockBatchService
   private static @NonNull FeedstockBatchSummary toSummary(@NonNull FeedstockBatch batch) {
     return new FeedstockBatchSummary(
         batch.batchId(),
-        batch.ciderMakerId(),
+        batch.workspaceId(),
         batch.name(),
         batch.vessel(),
         batch.type(),

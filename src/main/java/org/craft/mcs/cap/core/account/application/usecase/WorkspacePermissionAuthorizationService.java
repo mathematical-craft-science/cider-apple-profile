@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.account.application.AccountAccessDeniedException;
 import org.craft.mcs.cap.core.account.application.port.in.WorkspacePermissionAuthorizer;
 import org.craft.mcs.cap.core.account.domain.model.AccountPermission;
-import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 
@@ -20,24 +20,24 @@ public final class WorkspacePermissionAuthorizationService implements WorkspaceP
 
   @Override
   public void requirePermission(
-      @NonNull CiderMakerId ciderMakerId,
+      @NonNull WorkspaceId workspaceId,
       @NonNull AccountPermission permission
   ) {
-    requireNonNull(ciderMakerId, "cider maker id cannot be null");
+    requireNonNull(workspaceId, "workspace id cannot be null");
     requireNonNull(permission, "account permission cannot be null");
 
     final var activeMembership = currentWorkspaceContextResolver.resolve().activeMembership();
-    if (!activeMembership.workspace().ciderMakerId().equals(ciderMakerId)
+    if (!activeMembership.workspace().workspaceId().equals(workspaceId)
         || !activeMembership.role().permissions().contains(permission)) {
-      throw accessDenied(ciderMakerId);
+      throw accessDenied(workspaceId);
     }
   }
 
   private static @NonNull AccountAccessDeniedException accessDenied(
-      @NonNull CiderMakerId ciderMakerId
+      @NonNull WorkspaceId workspaceId
   ) {
     return new AccountAccessDeniedException(
-        "current actor cannot access cider maker scope " + ciderMakerId.value()
+        "current actor cannot access workspace " + workspaceId.value()
     );
   }
 }

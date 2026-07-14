@@ -7,7 +7,7 @@ import org.jspecify.annotations.NonNull;
 
 
 /** Transport representation of a CAP-owned product workspace. */
-@Schema(description = "CAP product workspace and its current cider-maker compatibility scope.")
+@Schema(description = "CAP product workspace and business-data ownership scope.")
 public record AccountWorkspaceResponse(
     @Schema(
         description = "Stable CAP identifier of the collaboration and future data-ownership scope.",
@@ -15,12 +15,6 @@ public record AccountWorkspaceResponse(
         requiredMode = Schema.RequiredMode.REQUIRED
     )
     @NonNull UUID workspaceId,
-    @Schema(
-        description = "Legacy cider-maker compatibility scope used by current business APIs.",
-        format = "uuid",
-        requiredMode = Schema.RequiredMode.REQUIRED
-    )
-    @NonNull UUID ciderMakerId,
     @Schema(
         description = "Human-readable workspace name.",
         example = "North Orchard Cidery",

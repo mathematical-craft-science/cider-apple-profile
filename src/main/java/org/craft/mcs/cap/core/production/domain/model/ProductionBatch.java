@@ -1,11 +1,11 @@
 package org.craft.mcs.cap.core.production.domain.model;
 
-import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchKind;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchName;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchStatus;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionTargetDistance;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.jmolecules.ddd.annotation.AggregateRoot;
 import org.jmolecules.ddd.annotation.Identity;
@@ -28,7 +28,7 @@ public final class ProductionBatch {
   @Identity
   private final @NonNull ProductionBatchId batchId;
 
-  private final @NonNull CiderMakerId ciderMakerId;
+  private final @NonNull WorkspaceId workspaceId;
 
   private @NonNull ProductionBatchName name;
 
@@ -47,7 +47,7 @@ public final class ProductionBatch {
   @SuppressWarnings("java:S107")
   private ProductionBatch(
       @NonNull ProductionBatchId batchId,
-      @NonNull CiderMakerId ciderMakerId,
+      @NonNull WorkspaceId workspaceId,
       @NonNull ProductionBatchName name,
       @NonNull ProductionBatchKind kind,
       @NonNull ProductionBatchStatus status,
@@ -57,7 +57,7 @@ public final class ProductionBatch {
       @Nullable String note
   ) {
     this.batchId = requireNonNull(batchId, "production batch id cannot be null");
-    this.ciderMakerId = requireNonNull(ciderMakerId, "cider maker id cannot be null");
+    this.workspaceId = requireNonNull(workspaceId, "workspace id cannot be null");
     this.name = requireNonNull(name, "production batch name cannot be null");
     this.kind = requireNonNull(kind, "production batch kind cannot be null");
     this.status = requireNonNull(status, "production batch status cannot be null");
@@ -70,7 +70,7 @@ public final class ProductionBatch {
   @SuppressWarnings("java:S107")
   public static @NonNull ProductionBatch create(
       @NonNull ProductionBatchId batchId,
-      @NonNull CiderMakerId ciderMakerId,
+      @NonNull WorkspaceId workspaceId,
       @NonNull ProductionBatchName name,
       @NonNull ProductionBatchKind kind,
       @NonNull VolumeValue volume,
@@ -80,7 +80,7 @@ public final class ProductionBatch {
   ) {
     return new ProductionBatch(
         batchId,
-        ciderMakerId,
+        workspaceId,
         name,
         kind,
         ProductionBatchStatus.PLANNED,
@@ -94,7 +94,7 @@ public final class ProductionBatch {
   @SuppressWarnings("java:S107")
   public static @NonNull ProductionBatch restore(
       @NonNull ProductionBatchId batchId,
-      @NonNull CiderMakerId ciderMakerId,
+      @NonNull WorkspaceId workspaceId,
       @NonNull ProductionBatchName name,
       @NonNull ProductionBatchKind kind,
       @NonNull ProductionBatchStatus status,
@@ -105,7 +105,7 @@ public final class ProductionBatch {
   ) {
     return new ProductionBatch(
         batchId,
-        ciderMakerId,
+        workspaceId,
         name,
         kind,
         status,
@@ -120,8 +120,8 @@ public final class ProductionBatch {
     return batchId;
   }
 
-  public @NonNull CiderMakerId ciderMakerId() {
-    return ciderMakerId;
+  public @NonNull WorkspaceId workspaceId() {
+    return workspaceId;
   }
 
   public @NonNull ProductionBatchName name() {

@@ -14,8 +14,8 @@ interface SpringDataFeedstockBatchJdbcRepository
     extends ListCrudRepository<FeedstockBatchJdbcEntity, @NonNull UUID> {
 
   @NonNull
-  List<@NonNull FeedstockBatchJdbcEntity> findAllByCiderMakerIdAndDeletedAtIsNullOrderByCreatedAtAscBatchIdAsc(
-      @NonNull UUID ciderMakerId
+  List<@NonNull FeedstockBatchJdbcEntity> findAllByWorkspaceIdAndDeletedAtIsNullOrderByCreatedAtAscBatchIdAsc(
+      @NonNull UUID workspaceId
   );
 
   @Modifying

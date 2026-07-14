@@ -13,12 +13,12 @@ import org.jspecify.annotations.Nullable;
 @Schema(description = "Request to replace editable feedstock batch fields.")
 public record UpdateFeedstockBatchRequest(
     @Schema(
-        description = "Cider maker identifier used for ownership validation.",
+        description = "Workspace identifier used for ownership validation.",
         format = "uuid",
         example = "4d96759c-86ff-4d39-8b19-241bc60f82ff",
         requiredMode = Schema.RequiredMode.REQUIRED
     )
-    @NonNull UUID ciderMakerId,
+    @NonNull UUID workspaceId,
     @Schema(
         description = "Batch name.",
         example = "October Kingston Black harvest",
