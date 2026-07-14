@@ -20,7 +20,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import static java.util.Objects.requireNonNull;
 
 
-/** Lazily provisions the CAP account context after successful resource-server authentication. */
+/** Lazily provisions the CAP user account after successful resource-server authentication. */
 @Component
 public final class AccountProvisioningFilter extends OncePerRequestFilter {
 

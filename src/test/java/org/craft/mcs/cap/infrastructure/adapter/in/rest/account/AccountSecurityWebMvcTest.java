@@ -180,6 +180,25 @@ class AccountSecurityWebMvcTest {
   }
 
   @Test
+  void returnsPersonalProfileWithoutActiveWorkspaceSelection() throws Exception {
+    final var account = account(AccountRole.OWNER);
+    when(getCurrentAccountProfileUseCase.get()).thenReturn(account.user());
+
+    mockMvc.perform(get("/account/profile").with(jwt()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.displayName").value("CAP Technologist"));
+  }
+
+  @Test
+  void returnsEmptyWorkspaceListAfterLastActiveMembershipWasLost() throws Exception {
+    when(listAccountWorkspacesUseCase.list()).thenReturn(List.of());
+
+    mockMvc.perform(get("/account/workspaces").with(jwt()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.memberships").isEmpty());
+  }
+
+  @Test
   void returnsForbiddenWhenActorCannotReadWorkspaceMembers() throws Exception {
     final var account = account(AccountRole.VIEWER);
     when(getCurrentAccountUseCase.get()).thenReturn(account);

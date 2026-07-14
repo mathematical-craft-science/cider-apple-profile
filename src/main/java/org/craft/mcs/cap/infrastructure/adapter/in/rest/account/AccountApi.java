@@ -138,7 +138,7 @@ public interface AccountApi {
   @Operation(summary = "List current account workspaces")
   @ApiResponse(
       responseCode = "200",
-      description = "Accessible workspace memberships.",
+      description = "Active workspace memberships accessible to the current account.",
       content = @Content(
           mediaType = APPLICATION_JSON_VALUE,
           schema = @Schema(implementation = AccountWorkspaceListResponse.class)

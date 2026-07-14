@@ -21,8 +21,15 @@ import org.craft.mcs.cap.shared.platform.TransactionHelper;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 
+import static java.util.Objects.requireNonNull;
 
-/** Atomically provisions the CAP account and synchronizes its provider-owned email. */
+
+/**
+ * Atomically provisions a new CAP account or synchronizes an existing provider identity.
+ *
+ * <p>Default workspace creation belongs only to initial account onboarding. Existing accounts
+ * remain valid without active memberships so personal account and recovery flows stay available.
+ */
 @Component
 @RequiredArgsConstructor
 public final class EnsureCurrentAccountProvisionedService
@@ -50,32 +57,35 @@ public final class EnsureCurrentAccountProvisionedService
   }
 
   private void provision(@NonNull AuthenticatedActor actor) {
-    final var user = resolveUser(actor);
+    final var provisioningAccount = resolveAccount(actor);
+    final var user = provisioningAccount.user();
     if (!user.isActive()) {
       throw new AccountAccessDeniedException("CAP account is disabled");
     }
 
-    final var memberships = membershipRepository.findAllByUserId(user.userId());
-    if (memberships.isEmpty()) {
-      createDefaultMembership(user, actor);
-    } else if (memberships.stream().noneMatch(WorkspaceMembership::isActive)) {
-      throw new AccountAccessDeniedException("account has no active workspace membership");
+    if (provisioningAccount.newlyCreated()) {
+      provisionDefaultWorkspace(user, actor);
     }
 
     userPreferencesRepository.findByUserId(user.userId())
         .orElseGet(() -> userPreferencesRepository.save(UserPreferences.defaults(user.userId()))); // NOSONAR
   }
 
-  private @NonNull AccountUser resolveUser(@NonNull AuthenticatedActor actor) {
+  private @NonNull ProvisioningAccount resolveAccount(@NonNull AuthenticatedActor actor) {
     return accountUserRepository.findByExternalIdentity(actor.identityProvider(), actor.externalSubject())
-        .map(existing -> synchronizeProviderEmail(existing, actor))
-        .orElseGet(() -> accountUserRepository.save(AccountUser.create(
-            actor.identityProvider(),
-            actor.externalSubject(),
-            actor.email(),
-            actor.displayName(),
-            actor.avatarUrl()
-        )));
+        .map(existing -> new ProvisioningAccount(synchronizeProviderEmail(existing, actor), false))
+        .orElseGet(() -> createAccount(actor));
+  }
+
+  private @NonNull ProvisioningAccount createAccount(@NonNull AuthenticatedActor actor) {
+    final var account = accountUserRepository.save(AccountUser.create(
+        actor.identityProvider(),
+        actor.externalSubject(),
+        actor.email(),
+        actor.displayName(),
+        actor.avatarUrl()
+    ));
+    return new ProvisioningAccount(account, true);
   }
 
   private @NonNull AccountUser synchronizeProviderEmail(
@@ -86,7 +96,7 @@ public final class EnsureCurrentAccountProvisionedService
     return synchronizedUser.equals(existing) ? existing : accountUserRepository.save(synchronizedUser);
   }
 
-  private @NonNull WorkspaceMembership createDefaultMembership( // NOSONAR
+  private void provisionDefaultWorkspace(
       @NonNull AccountUser user,
       @NonNull AuthenticatedActor actor
   ) {
@@ -102,6 +112,17 @@ public final class EnsureCurrentAccountProvisionedService
         settingsDefaults.measurementStaleAfter(),
         settingsDefaults.defaultAcidityBasis()
     ));
-    return membershipRepository.save(WorkspaceMembership.createOwner(workspace.workspaceId(), user.userId()));
+    membershipRepository.save(WorkspaceMembership.createOwner(workspace.workspaceId(), user.userId()));
+  }
+
+  /** Distinguishes initial onboarding from a later account state without workspace membership. */
+  private record ProvisioningAccount(
+      @NonNull AccountUser user,
+      boolean newlyCreated
+  ) {
+
+    private ProvisioningAccount {
+      requireNonNull(user, "account user cannot be null");
+    }
   }
 }

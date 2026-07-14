@@ -1,7 +1,6 @@
 package org.craft.mcs.cap.account.application.usecase;
 
 import java.time.Duration;
-import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
@@ -29,7 +28,6 @@ import org.craft.mcs.cap.core.account.domain.model.value.ExternalOrganizationSub
 import org.craft.mcs.cap.core.account.domain.model.value.ExternalUserSubject;
 import org.craft.mcs.cap.core.account.domain.model.value.HttpUrl;
 import org.craft.mcs.cap.core.account.domain.model.value.IdentityProviderCode;
-import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.measurement.unit.TitratableAcidityBasis;
 import org.craft.mcs.cap.shared.platform.TransactionHelper;
 import org.jspecify.annotations.NonNull;
@@ -40,7 +38,9 @@ import static java.util.Objects.requireNonNull;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 
@@ -62,7 +62,6 @@ class EnsureCurrentAccountProvisionedServiceTest {
     when(userRepository.findByExternalIdentity(actor.identityProvider(), actor.externalSubject()))
         .thenReturn(Optional.empty());
     when(userRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0, AccountUser.class));
-    when(membershipRepository.findAllByUserId(any())).thenReturn(List.of());
     when(workspaceRepository.save(any())).thenAnswer(invocation -> {
       final Workspace workspace = invocation.getArgument(0);
       persistedWorkspace.set(workspace);
@@ -131,13 +130,10 @@ class EnsureCurrentAccountProvisionedServiceTest {
         HttpUrl.of("https://provider.example.com/changed-avatar.png"),
         null
     );
-    final var membership = WorkspaceMembership.createOwner(WorkspaceId.newId(), existingUser.userId());
-
     when(currentActorProvider.currentActor()).thenReturn(Optional.of(actor));
     when(userRepository.findByExternalIdentity(actor.identityProvider(), actor.externalSubject()))
         .thenReturn(Optional.of(existingUser));
     when(userRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0, AccountUser.class));
-    when(membershipRepository.findAllByUserId(existingUser.userId())).thenReturn(List.of(membership));
     when(preferencesRepository.findByUserId(existingUser.userId()))
         .thenReturn(Optional.of(UserPreferences.defaults(existingUser.userId())));
 
@@ -161,6 +157,49 @@ class EnsureCurrentAccountProvisionedServiceTest {
         .returns(actor.email(), AccountUser::email)
         .returns(DisplayName.of("CAP profile"), AccountUser::displayName)
         .returns(HttpUrl.of("https://cap.example.com/avatar.png"), AccountUser::avatarUrl);
+  }
+
+  @Test
+  void doesNotRecreateDefaultWorkspaceForExistingAccountWithoutMemberships() {
+    final var currentActorProvider = mock(CurrentActorProvider.class);
+    final var provisioningLock = mock(AccountProvisioningLock.class);
+    final var userRepository = mock(AccountUserRepository.class);
+    final var workspaceRepository = mock(WorkspaceRepository.class);
+    final var membershipRepository = mock(WorkspaceMembershipRepository.class);
+    final var settingsRepository = mock(WorkspaceSettingsRepository.class);
+    final var preferencesRepository = mock(UserPreferencesRepository.class);
+    final var actor = actor();
+    final var existingUser = AccountUser.create(
+        actor.identityProvider(),
+        actor.externalSubject(),
+        actor.email(),
+        actor.displayName(),
+        actor.avatarUrl()
+    );
+
+    when(currentActorProvider.currentActor()).thenReturn(Optional.of(actor));
+    when(userRepository.findByExternalIdentity(actor.identityProvider(), actor.externalSubject()))
+        .thenReturn(Optional.of(existingUser));
+    when(preferencesRepository.findByUserId(existingUser.userId()))
+        .thenReturn(Optional.of(UserPreferences.defaults(existingUser.userId())));
+
+    final var service = new EnsureCurrentAccountProvisionedService(
+        currentActorProvider,
+        provisioningLock,
+        userRepository,
+        workspaceRepository,
+        membershipRepository,
+        settingsRepository,
+        preferencesRepository,
+        workspaceProvisioningDefaults(),
+        directTransactionHelper()
+    );
+
+    service.ensureProvisioned();
+
+    verify(userRepository, never()).save(any());
+    verifyNoInteractions(workspaceRepository, membershipRepository, settingsRepository);
+    verify(preferencesRepository, never()).save(any());
   }
 
   private static @NonNull AuthenticatedActor actor() {

@@ -21,6 +21,7 @@ import org.craft.mcs.cap.core.account.domain.model.AccountRole;
 import org.craft.mcs.cap.core.account.domain.model.AccountUser;
 import org.craft.mcs.cap.core.account.domain.model.Workspace;
 import org.craft.mcs.cap.core.account.domain.model.WorkspaceMembership;
+import org.craft.mcs.cap.core.account.domain.model.WorkspaceMembershipStatus;
 import org.craft.mcs.cap.core.account.domain.model.WorkspaceType;
 import org.craft.mcs.cap.core.account.domain.model.value.DisplayName;
 import org.craft.mcs.cap.core.account.domain.model.value.EmailAddress;
@@ -82,7 +83,29 @@ class WorkspacePermissionAuthorizationServiceTest {
     verify(fixture.membershipRepository(), never()).save(any());
   }
 
+  @Test
+  void deniesBusinessAccessAfterMembershipWasSuspended() {
+    final var fixture = fixture(AccountRole.OWNER, WorkspaceMembershipStatus.SUSPENDED);
+
+    assertThatThrownBy(() -> fixture.service().requirePermission(
+        fixture.workspace().workspaceId(),
+        WorkspacePermission.FEEDSTOCK_READ
+    )).isInstanceOf(AccountAccessDeniedException.class)
+        .hasMessage("account has no active workspace membership");
+
+    verify(fixture.userRepository(), never()).save(any());
+    verify(fixture.workspaceRepository(), never()).save(any());
+    verify(fixture.membershipRepository(), never()).save(any());
+  }
+
   private static @NonNull Fixture fixture(@NonNull AccountRole role) {
+    return fixture(role, WorkspaceMembershipStatus.ACTIVE);
+  }
+
+  private static @NonNull Fixture fixture(
+      @NonNull AccountRole role,
+      @NonNull WorkspaceMembershipStatus status
+  ) {
     final var actorProvider = mock(CurrentActorProvider.class);
     final var userRepository = mock(AccountUserRepository.class);
     final var workspaceRepository = mock(WorkspaceRepository.class);
@@ -115,7 +138,7 @@ class WorkspacePermissionAuthorizationServiceTest {
         membership.workspaceId(),
         membership.userId(),
         role,
-        membership.status()
+        status
     );
 
     when(actorProvider.currentActor()).thenReturn(Optional.of(actor));
