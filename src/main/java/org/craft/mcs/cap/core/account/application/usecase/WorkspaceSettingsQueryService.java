@@ -32,8 +32,8 @@ public final class WorkspaceSettingsQueryService implements WorkspaceSettingsRea
   @Override
   public @NonNull WorkspaceSettingsView readByWorkspaceId(@NonNull WorkspaceId workspaceId) {
     requireNonNull(workspaceId, "workspace id cannot be null");
-    final var settings = workspaceSettingsRepository.findByWorkspaceId(workspaceId)
+    final var state = workspaceSettingsRepository.findByWorkspaceId(workspaceId)
         .orElseThrow(() -> new WorkspaceSettingsNotFoundException(workspaceId));
-    return AccountViewMapper.toView(settings);
+    return AccountViewMapper.toView(state);
   }
 }

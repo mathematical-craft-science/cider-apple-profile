@@ -27,4 +27,11 @@ public record WorkspaceSettings(
     requireNonNull(defaultAcidityBasis, "default acidity basis cannot be null");
   }
 
+  /** Replaces configurable workspace defaults while preserving aggregate identity. */
+  public @NonNull WorkspaceSettings update(
+      @NonNull Duration measurementStaleAfter,
+      @NonNull TitratableAcidityBasis defaultAcidityBasis
+  ) {
+    return new WorkspaceSettings(workspaceId, measurementStaleAfter, defaultAcidityBasis);
+  }
 }

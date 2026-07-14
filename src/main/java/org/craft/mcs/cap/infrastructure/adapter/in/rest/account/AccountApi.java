@@ -16,6 +16,8 @@ import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.dto.AccountWorks
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.dto.AccountWorkspaceListResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.dto.UpdateAccountPreferencesRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.dto.UpdateAccountProfileRequest;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.dto.UpdateWorkspaceSettingsRequest;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.dto.WorkspaceSettingsResponse;
 import org.jspecify.annotations.NonNull;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
@@ -145,7 +147,114 @@ public interface AccountApi {
   @ApiResponse(responseCode = "401", description = "Authentication is required.", content = @Content)
   @NonNull ResponseEntity<@NonNull AccountWorkspaceListResponse> workspaces();
 
-  @Operation(summary = "List workspace members")
+  @Operation(
+      summary = "Get workspace settings",
+      parameters = @Parameter(
+          name = ACTIVE_WORKSPACE_ID,
+          description = "Active CAP workspace identifier; it must match workspaceId.",
+          in = ParameterIn.HEADER,
+          schema = @Schema(type = "string", format = "uuid")
+      )
+  )
+  @ApiResponse(
+      responseCode = "200",
+      description = "Workspace settings with revision and audit timestamps.",
+      content = @Content(
+          mediaType = APPLICATION_JSON_VALUE,
+          schema = @Schema(implementation = WorkspaceSettingsResponse.class)
+      )
+  )
+  @ApiResponse(responseCode = "401", description = "Authentication is required.", content = @Content)
+  @ApiResponse(
+      responseCode = "400",
+      description = "The active workspace header is not a valid UUID.",
+      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
+  )
+  @ApiResponse(
+      responseCode = "403",
+      description = "Current actor cannot read settings for this workspace.",
+      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
+  )
+  @ApiResponse(
+      responseCode = "404",
+      description = "Workspace settings were not found.",
+      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
+  )
+  @ApiResponse(
+      responseCode = "422",
+      description = "An explicit workspace selection is required for a multi-workspace account.",
+      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
+  )
+  @NonNull ResponseEntity<@NonNull WorkspaceSettingsResponse> workspaceSettings(
+      @Parameter(description = "CAP workspace identifier.", required = true, schema = @Schema(format = "uuid"))
+      @NonNull UUID workspaceId
+  );
+
+  @Operation(
+      summary = "Update workspace settings",
+      parameters = @Parameter(
+          name = ACTIVE_WORKSPACE_ID,
+          description = "Active CAP workspace identifier; it must match workspaceId.",
+          in = ParameterIn.HEADER,
+          schema = @Schema(type = "string", format = "uuid")
+      )
+  )
+  @RequestBody(
+      required = true,
+      content = @Content(
+          mediaType = APPLICATION_JSON_VALUE,
+          schema = @Schema(implementation = UpdateWorkspaceSettingsRequest.class)
+      )
+  )
+  @ApiResponse(
+      responseCode = "200",
+      description = "Updated workspace settings with the next revision.",
+      content = @Content(
+          mediaType = APPLICATION_JSON_VALUE,
+          schema = @Schema(implementation = WorkspaceSettingsResponse.class)
+      )
+  )
+  @ApiResponse(
+      responseCode = "400",
+      description = "Invalid active-workspace header or settings update.",
+      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
+  )
+  @ApiResponse(responseCode = "401", description = "Authentication is required.", content = @Content)
+  @ApiResponse(
+      responseCode = "403",
+      description = "Current actor cannot update settings for this workspace.",
+      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
+  )
+  @ApiResponse(
+      responseCode = "404",
+      description = "Workspace settings were not found.",
+      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
+  )
+  @ApiResponse(
+      responseCode = "409",
+      description = "Settings changed after expectedRevision was read.",
+      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
+  )
+  @ApiResponse(
+      responseCode = "422",
+      description = "Settings violate a workspace business rule.",
+      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
+  )
+  @NonNull ResponseEntity<@NonNull WorkspaceSettingsResponse> updateWorkspaceSettings(
+      @Parameter(description = "CAP workspace identifier.", required = true, schema = @Schema(format = "uuid"))
+      @NonNull UUID workspaceId,
+      @NonNull UpdateWorkspaceSettingsRequest request
+  );
+
+  @Operation(
+      summary = "List workspace members",
+      parameters = @Parameter(
+          name = ACTIVE_WORKSPACE_ID,
+          description = "Active CAP workspace identifier; it must match workspaceId.",
+          in = ParameterIn.HEADER,
+          schema = @Schema(type = "string", format = "uuid")
+      )
+  )
   @ApiResponse(
       responseCode = "200",
       description = "Workspace members visible to the current actor.",
@@ -156,8 +265,18 @@ public interface AccountApi {
   )
   @ApiResponse(responseCode = "401", description = "Authentication is required.", content = @Content)
   @ApiResponse(
+      responseCode = "400",
+      description = "The active workspace header is not a valid UUID.",
+      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
+  )
+  @ApiResponse(
       responseCode = "403",
       description = "Current actor cannot access the workspace member list.",
+      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
+  )
+  @ApiResponse(
+      responseCode = "422",
+      description = "An explicit workspace selection is required for a multi-workspace account.",
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
   )
   @NonNull ResponseEntity<@NonNull AccountWorkspaceMemberListResponse> workspaceMembers(

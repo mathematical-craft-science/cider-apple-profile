@@ -7,8 +7,8 @@ import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 
-import static org.craft.mcs.cap.core.account.domain.model.AccountPermission.PRODUCTION_READ;
-import static org.craft.mcs.cap.core.account.domain.model.AccountPermission.PRODUCTION_WRITE;
+import static org.craft.mcs.cap.core.account.domain.model.WorkspacePermission.PRODUCTION_READ;
+import static org.craft.mcs.cap.core.account.domain.model.WorkspacePermission.PRODUCTION_WRITE;
 
 
 /** Translates production-owned access operations into CAP account permissions. */

@@ -1,9 +1,11 @@
 package org.craft.mcs.cap.infrastructure.adapter.out.settings.account;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.UUID;
 import org.craft.mcs.cap.core.account.application.port.in.WorkspaceSettingsReader;
 import org.craft.mcs.cap.core.account.application.port.in.WorkspaceSettingsView;
+import org.craft.mcs.cap.core.account.application.model.WorkspaceSettingsRevision;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentProfileSettings;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.junit.jupiter.api.Test;
@@ -23,7 +25,10 @@ class AccountFeedstockCurrentProfileSettingsProviderTest {
     when(workspaceSettingsReader.readByWorkspaceId(workspaceId)).thenReturn(new WorkspaceSettingsView(
         workspaceId,
         Duration.ofDays(21),
-        MALIC_ACID
+        MALIC_ACID,
+        WorkspaceSettingsRevision.of(0),
+        Instant.EPOCH,
+        Instant.EPOCH
     ));
     final var provider = new AccountFeedstockCurrentProfileSettingsProvider(workspaceSettingsReader);
 

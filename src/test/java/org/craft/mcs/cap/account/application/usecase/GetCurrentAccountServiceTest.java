@@ -39,6 +39,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.craft.mcs.cap.core.account.domain.model.PersonalAccountCapability.forActiveAccount;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -91,7 +92,9 @@ class GetCurrentAccountServiceTest {
     assertThat(account.memberships())
         .singleElement()
         .returns(AccountRole.OWNER, WorkspaceMembershipView::role);
-    assertThat(account.permissions()).containsExactlyInAnyOrderElementsOf(AccountRole.OWNER.permissions());
+    assertThat(account.personalCapabilities()).containsExactlyInAnyOrderElementsOf(forActiveAccount());
+    assertThat(account.workspacePermissions())
+        .containsExactlyInAnyOrderElementsOf(AccountRole.OWNER.workspacePermissions());
     verify(userRepository, never()).save(any());
     verify(workspaceRepository, never()).save(any());
     verify(membershipRepository, never()).save(any());
@@ -147,8 +150,8 @@ class GetCurrentAccountServiceTest {
         .extracting(WorkspaceMembershipView::workspace)
         .extracting(WorkspaceView::name)
         .containsExactly(DisplayName.of("Alpha cidery"), DisplayName.of("Zulu cidery"));
-    assertThat(account.permissions())
-        .containsExactlyInAnyOrderElementsOf(AccountRole.OWNER.permissions());
+    assertThat(account.workspacePermissions())
+        .containsExactlyInAnyOrderElementsOf(AccountRole.OWNER.workspacePermissions());
   }
 
   @Test

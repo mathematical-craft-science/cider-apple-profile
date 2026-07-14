@@ -9,6 +9,8 @@ import org.craft.mcs.cap.core.account.domain.model.UserPreferences;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 
+import static org.craft.mcs.cap.core.account.domain.model.PersonalAccountCapability.forActiveAccount;
+
 
 /**
  * Reads the current CAP account after authentication-boundary provisioning.
@@ -37,7 +39,8 @@ public final class GetCurrentAccountService implements GetCurrentAccountUseCase 
         activeMembership.workspace(),
         context.memberships(),
         AccountViewMapper.toView(preferences),
-        activeMembership.role().permissions()
+        forActiveAccount(),
+        activeMembership.role().workspacePermissions()
     );
   }
 }

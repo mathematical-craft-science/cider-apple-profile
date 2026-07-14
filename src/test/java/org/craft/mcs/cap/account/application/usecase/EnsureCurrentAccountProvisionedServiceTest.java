@@ -68,7 +68,6 @@ class EnsureCurrentAccountProvisionedServiceTest {
       persistedWorkspace.set(workspace);
       return workspace;
     });
-    when(settingsRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0, WorkspaceSettings.class));
     when(membershipRepository.save(any()))
         .thenAnswer(invocation -> invocation.getArgument(0, WorkspaceMembership.class));
     when(preferencesRepository.findByUserId(any())).thenReturn(Optional.empty());
@@ -96,7 +95,7 @@ class EnsureCurrentAccountProvisionedServiceTest {
         .returns(workspace.workspaceId(), WorkspaceMembership::workspaceId)
         .returns(AccountRole.OWNER, WorkspaceMembership::role)
         .matches(WorkspaceMembership::isActive);
-    verify(settingsRepository).save(new WorkspaceSettings(
+    verify(settingsRepository).create(new WorkspaceSettings(
         workspace.workspaceId(),
         Duration.ofDays(14),
         TitratableAcidityBasis.MALIC_ACID

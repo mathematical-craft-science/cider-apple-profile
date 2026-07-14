@@ -11,10 +11,12 @@ import org.craft.mcs.cap.core.account.application.port.in.EnsureCurrentAccountPr
 import org.craft.mcs.cap.core.account.application.port.in.GetCurrentAccountProfileUseCase;
 import org.craft.mcs.cap.core.account.application.port.in.GetCurrentAccountUseCase;
 import org.craft.mcs.cap.core.account.application.port.in.GetCurrentUserPreferencesUseCase;
+import org.craft.mcs.cap.core.account.application.port.in.GetWorkspaceSettingsUseCase;
 import org.craft.mcs.cap.core.account.application.port.in.ListAccountWorkspacesUseCase;
 import org.craft.mcs.cap.core.account.application.port.in.ListWorkspaceMembersUseCase;
 import org.craft.mcs.cap.core.account.application.port.in.UpdateAccountProfileUseCase;
 import org.craft.mcs.cap.core.account.application.port.in.UpdateUserPreferencesUseCase;
+import org.craft.mcs.cap.core.account.application.port.in.UpdateWorkspaceSettingsUseCase;
 import org.craft.mcs.cap.core.account.application.port.in.WorkspaceSettingsReader;
 import org.craft.mcs.cap.core.appleprofile.application.abv.port.in.PredictAppleVarietyPotentialAbvUseCase;
 import org.craft.mcs.cap.core.appleprofile.application.classification.port.in.ClassifyAppleVarietyNorthAmericanUseCase;
@@ -98,10 +100,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
     GetCurrentAccountProfileUseCase.class,
     GetCurrentAccountUseCase.class,
     GetCurrentUserPreferencesUseCase.class,
+    GetWorkspaceSettingsUseCase.class,
     ListAccountWorkspacesUseCase.class,
     ListWorkspaceMembersUseCase.class,
     UpdateAccountProfileUseCase.class,
     UpdateUserPreferencesUseCase.class,
+    UpdateWorkspaceSettingsUseCase.class,
     WorkspaceSettingsReader.class,
     PredictAppleVarietyPotentialAbvUseCase.class,
     ClassifyAppleVarietyNorthAmericanUseCase.class,
@@ -274,6 +278,8 @@ class OpenApiContractTest {
     assertJsonResponse(openApi, "/account/preferences", "get");
     assertJsonResponse(openApi, "/account/preferences", "patch");
     assertJsonResponse(openApi, "/account/workspaces", "get");
+    assertJsonResponse(openApi, "/account/workspaces/{workspaceId}/settings", "get");
+    assertJsonResponse(openApi, "/account/workspaces/{workspaceId}/settings", "patch");
     assertJsonResponse(openApi, "/account/workspaces/{workspaceId}/members", "get");
 
     assertJsonRequest(openApi, "/feedstock-batches", "post");
@@ -282,6 +288,7 @@ class OpenApiContractTest {
     assertJsonRequest(openApi, "/feedstock-batches/{batchId}/measurements", "post");
     assertJsonRequest(openApi, "/feedstock-batches/{batchId}/measurements/{measurementId}", "put");
     assertJsonRequest(openApi, "/feedstock-batches/{batchId}/measurements/{measurementId}", "patch");
+    assertJsonRequest(openApi, "/account/workspaces/{workspaceId}/settings", "patch");
     assertJsonRequest(openApi, "/apple-varieties/sugar-acidity-zone-points", "post");
     assertJsonRequest(openApi, "/analysis/apple-varieties/profile-target-candidates", "post");
     assertJsonRequest(openApi, "/analysis/feedstock-batches/profile-target-candidates", "post");
@@ -341,7 +348,8 @@ class OpenApiContractTest {
         "activeWorkspace",
         "memberships",
         "preferences",
-        "permissions"
+        "personalCapabilities",
+        "workspacePermissions"
     );
     assertRequiredProperties(
         openApi,
@@ -355,6 +363,28 @@ class OpenApiContractTest {
     assertNotRequiredProperties(openApi, "UpdateAccountProfileRequest", "avatarUrl");
     assertNullable(schemaProperty(openApi, "UpdateAccountProfileRequest", "avatarUrl"));
     assertRequiredProperties(openApi, "UpdateAccountPreferencesRequest", "locale", "timeZone");
+    assertRequiredProperties(
+        openApi,
+        "WorkspaceSettingsResponse",
+        "workspaceId",
+        "measurementStaleAfter",
+        "defaultAcidityBasis",
+        "revision",
+        "createdAt",
+        "updatedAt"
+    );
+    assertStringFormat(schemaProperty(openApi, "WorkspaceSettingsResponse", "workspaceId"), "uuid");
+    assertStringFormat(schemaProperty(openApi, "WorkspaceSettingsResponse", "createdAt"), "date-time");
+    assertStringFormat(schemaProperty(openApi, "WorkspaceSettingsResponse", "updatedAt"), "date-time");
+    assertRequiredProperties(openApi, "UpdateWorkspaceSettingsRequest", "expectedRevision");
+    assertNotRequiredProperties(
+        openApi,
+        "UpdateWorkspaceSettingsRequest",
+        "measurementStaleAfter",
+        "defaultAcidityBasis"
+    );
+    assertNullable(schemaProperty(openApi, "UpdateWorkspaceSettingsRequest", "measurementStaleAfter"));
+    assertNullable(schemaProperty(openApi, "UpdateWorkspaceSettingsRequest", "defaultAcidityBasis"));
 
     assertRequiredProperties(
         openApi,

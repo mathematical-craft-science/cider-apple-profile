@@ -2,7 +2,8 @@ package org.craft.mcs.cap.core.account.application.port.in;
 
 import java.util.List;
 import java.util.Set;
-import org.craft.mcs.cap.core.account.domain.model.AccountPermission;
+import org.craft.mcs.cap.core.account.domain.model.PersonalAccountCapability;
+import org.craft.mcs.cap.core.account.domain.model.WorkspacePermission;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
@@ -14,7 +15,8 @@ public record AccountMeView(
     @NonNull WorkspaceView activeWorkspace,
     @NonNull List<@NonNull WorkspaceMembershipView> memberships,
     @NonNull UserPreferencesView preferences,
-    @NonNull Set<@NonNull AccountPermission> permissions
+    @NonNull Set<@NonNull PersonalAccountCapability> personalCapabilities,
+    @NonNull Set<@NonNull WorkspacePermission> workspacePermissions
 ) {
 
   public AccountMeView {
@@ -22,6 +24,7 @@ public record AccountMeView(
     requireNonNull(activeWorkspace, "active workspace cannot be null");
     memberships = List.copyOf(memberships);
     requireNonNull(preferences, "user preferences cannot be null");
-    permissions = Set.copyOf(permissions);
+    personalCapabilities = Set.copyOf(personalCapabilities);
+    workspacePermissions = Set.copyOf(workspacePermissions);
   }
 }

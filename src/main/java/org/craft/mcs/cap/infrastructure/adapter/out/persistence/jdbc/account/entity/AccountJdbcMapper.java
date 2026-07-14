@@ -3,6 +3,7 @@ package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.account.en
 import java.time.Duration;
 import java.time.ZoneId;
 import java.util.Locale;
+import org.craft.mcs.cap.core.account.application.port.out.WorkspaceSettingsState;
 import org.craft.mcs.cap.core.account.domain.model.AccountUser;
 import org.craft.mcs.cap.core.account.domain.model.ContributorProfile;
 import org.craft.mcs.cap.core.account.domain.model.UserPreferences;
@@ -18,9 +19,12 @@ import org.craft.mcs.cap.core.account.domain.model.value.HttpUrl;
 import org.craft.mcs.cap.core.account.domain.model.value.IdentityProviderCode;
 import org.craft.mcs.cap.core.account.domain.model.value.PhoneNumber;
 import org.craft.mcs.cap.core.account.domain.model.value.WorkspaceMembershipId;
+import org.craft.mcs.cap.core.account.application.model.WorkspaceSettingsRevision;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;
 import org.springframework.data.jdbc.core.mapping.AggregateReference;
+
+import static java.util.Objects.requireNonNull;
 
 
 /** Maps account aggregates to Spring Data JDBC entities while preserving persistence state on updates. */
@@ -164,6 +168,15 @@ public final class AccountJdbcMapper {
         WorkspaceId.of(entity.workspaceId),
         Duration.ofSeconds(entity.measurementStaleAfterSeconds),
         entity.defaultAcidityBasis
+    );
+  }
+
+  public static @NonNull WorkspaceSettingsState toState(@NonNull WorkspaceSettingsJdbcEntity entity) {
+    return new WorkspaceSettingsState(
+        toDomain(entity),
+        WorkspaceSettingsRevision.of(entity.version),
+        requireNonNull(entity.createdAt, "workspace settings creation time cannot be null"),
+        requireNonNull(entity.updatedAt, "workspace settings update time cannot be null")
     );
   }
 

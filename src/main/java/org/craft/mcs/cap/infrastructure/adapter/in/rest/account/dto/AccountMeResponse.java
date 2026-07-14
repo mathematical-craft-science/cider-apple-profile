@@ -4,12 +4,15 @@ import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 import java.util.Set;
-import org.craft.mcs.cap.core.account.domain.model.AccountPermission;
+import org.craft.mcs.cap.core.account.domain.model.PersonalAccountCapability;
+import org.craft.mcs.cap.core.account.domain.model.WorkspacePermission;
 import org.jspecify.annotations.NonNull;
 
 
 /** Complete current-account context required by authenticated CAP clients. */
-@Schema(description = "Current CAP account, active workspace, memberships, preferences, and permissions.")
+@Schema(
+    description = "Current CAP account with personal capabilities and active-workspace permissions."
+)
 public record AccountMeResponse(
     @Schema(
         description = "CAP-owned profile of the current authenticated user.",
@@ -36,16 +39,25 @@ public record AccountMeResponse(
     @NonNull AccountPreferencesResponse preferences,
     @ArraySchema(
         arraySchema = @Schema(
-            description = "Permissions derived from the user's role in the active workspace.",
+            description = "Capabilities over the current user's own CAP profile and preferences.",
             requiredMode = Schema.RequiredMode.REQUIRED
         ),
-        schema = @Schema(implementation = AccountPermission.class)
+        schema = @Schema(implementation = PersonalAccountCapability.class)
     )
-    @NonNull Set<@NonNull AccountPermission> permissions
+    @NonNull Set<@NonNull PersonalAccountCapability> personalCapabilities,
+    @ArraySchema(
+        arraySchema = @Schema(
+            description = "Permissions derived from membership role in the active workspace.",
+            requiredMode = Schema.RequiredMode.REQUIRED
+        ),
+        schema = @Schema(implementation = WorkspacePermission.class)
+    )
+    @NonNull Set<@NonNull WorkspacePermission> workspacePermissions
 ) {
 
   public AccountMeResponse {
     memberships = List.copyOf(memberships);
-    permissions = Set.copyOf(permissions);
+    personalCapabilities = Set.copyOf(personalCapabilities);
+    workspacePermissions = Set.copyOf(workspacePermissions);
   }
 }

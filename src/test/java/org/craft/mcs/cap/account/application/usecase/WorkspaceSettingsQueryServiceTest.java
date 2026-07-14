@@ -1,16 +1,20 @@
 package org.craft.mcs.cap.account.application.usecase;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.Optional;
 import org.craft.mcs.cap.core.account.application.model.ResolvedWorkspaceContext;
 import org.craft.mcs.cap.core.account.application.port.in.WorkspaceMembershipView;
 import org.craft.mcs.cap.core.account.application.port.in.WorkspaceSettingsView;
 import org.craft.mcs.cap.core.account.application.port.in.WorkspaceView;
 import org.craft.mcs.cap.core.account.application.port.out.WorkspaceSettingsRepository;
+import org.craft.mcs.cap.core.account.application.port.out.WorkspaceSettingsState;
 import org.craft.mcs.cap.core.account.application.usecase.CurrentWorkspaceContextResolver;
 import org.craft.mcs.cap.core.account.application.usecase.WorkspaceSettingsQueryService;
 import org.craft.mcs.cap.core.account.domain.model.WorkspaceSettings;
+import org.craft.mcs.cap.core.account.application.model.WorkspaceSettingsRevision;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -35,7 +39,7 @@ class WorkspaceSettingsQueryServiceTest {
     when(context.activeMembership()).thenReturn(membership);
     when(membership.workspace()).thenReturn(workspace);
     when(workspace.workspaceId()).thenReturn(workspaceId);
-    when(settingsRepository.findByWorkspaceId(workspaceId)).thenReturn(Optional.of(settings));
+    when(settingsRepository.findByWorkspaceId(workspaceId)).thenReturn(Optional.of(state(settings)));
     final var service = new WorkspaceSettingsQueryService(
         contextResolver,
         settingsRepository
@@ -53,7 +57,7 @@ class WorkspaceSettingsQueryServiceTest {
     final var settingsRepository = mock(WorkspaceSettingsRepository.class);
     final var workspaceId = WorkspaceId.newId();
     final var settings = new WorkspaceSettings(workspaceId, Duration.ofDays(10), MALIC_ACID);
-    when(settingsRepository.findByWorkspaceId(workspaceId)).thenReturn(Optional.of(settings));
+    when(settingsRepository.findByWorkspaceId(workspaceId)).thenReturn(Optional.of(state(settings)));
     final var service = new WorkspaceSettingsQueryService(
         contextResolver,
         settingsRepository
@@ -63,5 +67,14 @@ class WorkspaceSettingsQueryServiceTest {
         .returns(workspaceId, WorkspaceSettingsView::workspaceId)
         .returns(Duration.ofDays(10), WorkspaceSettingsView::measurementStaleAfter);
     verifyNoInteractions(contextResolver);
+  }
+
+  private static @NonNull WorkspaceSettingsState state(@NonNull WorkspaceSettings settings) {
+    return new WorkspaceSettingsState(
+        settings,
+        WorkspaceSettingsRevision.of(0),
+        Instant.EPOCH,
+        Instant.EPOCH
+    );
   }
 }

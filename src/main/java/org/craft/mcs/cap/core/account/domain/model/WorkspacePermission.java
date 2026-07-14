@@ -1,22 +1,16 @@
 package org.craft.mcs.cap.core.account.domain.model;
 
 
-/** Product permissions derived from CAP workspace membership roles. */
-public enum AccountPermission {
-  /** Read the current CAP-owned account profile. */
-  ACCOUNT_READ,
-
-  /** Update CAP-owned account profile fields. */
-  ACCOUNT_UPDATE,
-
-  /** Read personal CAP preferences. */
-  PREFERENCES_READ,
-
-  /** Update personal CAP preferences. */
-  PREFERENCES_UPDATE,
-
+/** Product permission granted by a role within one CAP workspace. */
+public enum WorkspacePermission {
   /** Read workspace metadata. */
   WORKSPACE_READ,
+
+  /** Read workspace product settings. */
+  WORKSPACE_SETTINGS_READ,
+
+  /** Update workspace product settings. */
+  WORKSPACE_SETTINGS_UPDATE,
 
   /** Read workspace membership information. */
   WORKSPACE_MEMBERS_READ,

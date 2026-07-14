@@ -15,7 +15,8 @@ import org.craft.mcs.cap.core.account.application.usecase.CurrentAccountMembersh
 import org.craft.mcs.cap.core.account.application.usecase.CurrentAccountUserResolver;
 import org.craft.mcs.cap.core.account.application.usecase.CurrentWorkspaceContextResolver;
 import org.craft.mcs.cap.core.account.application.usecase.WorkspacePermissionAuthorizationService;
-import org.craft.mcs.cap.core.account.domain.model.AccountPermission;
+import org.craft.mcs.cap.core.account.application.usecase.WorkspacePermissionChecker;
+import org.craft.mcs.cap.core.account.domain.model.WorkspacePermission;
 import org.craft.mcs.cap.core.account.domain.model.AccountRole;
 import org.craft.mcs.cap.core.account.domain.model.AccountUser;
 import org.craft.mcs.cap.core.account.domain.model.Workspace;
@@ -46,7 +47,7 @@ class WorkspacePermissionAuthorizationServiceTest {
 
     assertThatCode(() -> fixture.service().requirePermission(
         fixture.workspace().workspaceId(),
-        AccountPermission.FEEDSTOCK_READ
+        WorkspacePermission.FEEDSTOCK_READ
     )).doesNotThrowAnyException();
 
     verify(fixture.userRepository(), never()).save(any());
@@ -60,7 +61,7 @@ class WorkspacePermissionAuthorizationServiceTest {
 
     assertThatThrownBy(() -> fixture.service().requirePermission(
         fixture.workspace().workspaceId(),
-        AccountPermission.PRODUCTION_WRITE
+        WorkspacePermission.PRODUCTION_WRITE
     )).isInstanceOf(AccountAccessDeniedException.class)
         .hasMessageContaining(fixture.workspace().workspaceId().value().toString());
   }
@@ -72,7 +73,7 @@ class WorkspacePermissionAuthorizationServiceTest {
 
     assertThatThrownBy(() -> fixture.service().requirePermission(
         requestedScope,
-        AccountPermission.PRODUCTION_WRITE
+        WorkspacePermission.PRODUCTION_WRITE
     )).isInstanceOf(AccountAccessDeniedException.class)
         .hasMessageContaining(requestedScope.value().toString());
 
@@ -127,12 +128,12 @@ class WorkspacePermissionAuthorizationServiceTest {
 
     return new Fixture(
         new WorkspacePermissionAuthorizationService(
-            new CurrentWorkspaceContextResolver(
+            new WorkspacePermissionChecker(new CurrentWorkspaceContextResolver(
                 new CurrentAccountUserResolver(actorProvider, userRepository),
                 new CurrentAccountMembershipReader(membershipRepository, workspaceRepository),
                 activeWorkspaceProvider,
                 new ActiveWorkspaceSelectionPolicy()
-            )
+            ))
         ),
         userRepository,
         workspaceRepository,

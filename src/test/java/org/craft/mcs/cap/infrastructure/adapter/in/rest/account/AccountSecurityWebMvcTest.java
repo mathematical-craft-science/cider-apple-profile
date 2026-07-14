@@ -1,9 +1,10 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.account;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Locale;
-import java.util.UUID;
 import org.craft.mcs.cap.core.account.application.AccountAccessDeniedException;
 import org.craft.mcs.cap.core.account.application.ActiveWorkspaceRequiredException;
 import org.craft.mcs.cap.core.account.application.port.in.AccountMeView;
@@ -12,12 +13,15 @@ import org.craft.mcs.cap.core.account.application.port.in.EnsureCurrentAccountPr
 import org.craft.mcs.cap.core.account.application.port.in.GetCurrentAccountProfileUseCase;
 import org.craft.mcs.cap.core.account.application.port.in.GetCurrentAccountUseCase;
 import org.craft.mcs.cap.core.account.application.port.in.GetCurrentUserPreferencesUseCase;
+import org.craft.mcs.cap.core.account.application.port.in.GetWorkspaceSettingsUseCase;
 import org.craft.mcs.cap.core.account.application.port.in.ListAccountWorkspacesUseCase;
 import org.craft.mcs.cap.core.account.application.port.in.ListWorkspaceMembersUseCase;
 import org.craft.mcs.cap.core.account.application.port.in.UpdateAccountProfileUseCase;
 import org.craft.mcs.cap.core.account.application.port.in.UpdateUserPreferencesUseCase;
+import org.craft.mcs.cap.core.account.application.port.in.UpdateWorkspaceSettingsUseCase;
 import org.craft.mcs.cap.core.account.application.port.in.UserPreferencesView;
 import org.craft.mcs.cap.core.account.application.port.in.WorkspaceMembershipView;
+import org.craft.mcs.cap.core.account.application.port.in.WorkspaceSettingsView;
 import org.craft.mcs.cap.core.account.application.port.in.WorkspaceView;
 import org.craft.mcs.cap.core.account.domain.model.AccountRole;
 import org.craft.mcs.cap.core.account.domain.model.AccountUserStatus;
@@ -27,6 +31,7 @@ import org.craft.mcs.cap.core.account.domain.model.value.AccountUserId;
 import org.craft.mcs.cap.core.account.domain.model.value.DisplayName;
 import org.craft.mcs.cap.core.account.domain.model.value.EmailAddress;
 import org.craft.mcs.cap.core.account.domain.model.value.WorkspaceMembershipId;
+import org.craft.mcs.cap.core.account.application.model.WorkspaceSettingsRevision;
 import org.craft.mcs.cap.infrastructure.adapter.in.importer.appleprofile.AppleVarietyJsonSeedImporter;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.application.ApplicationExceptionHandler;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.seed.SeedDebugController;
@@ -34,6 +39,7 @@ import org.craft.mcs.cap.infrastructure.adapter.in.security.AccountProvisioningF
 import org.craft.mcs.cap.infrastructure.adapter.in.security.DebugAccessAuthorizationManager;
 import org.craft.mcs.cap.infrastructure.configuration.SecurityConfiguration;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
@@ -48,10 +54,14 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.craft.mcs.cap.core.account.domain.model.PersonalAccountCapability.forActiveAccount;
+import static org.craft.mcs.cap.shared.kernel.measurement.unit.TitratableAcidityBasis.MALIC_ACID;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -109,6 +119,12 @@ class AccountSecurityWebMvcTest {
   private ListWorkspaceMembersUseCase listWorkspaceMembersUseCase;
 
   @MockitoBean
+  private GetWorkspaceSettingsUseCase getWorkspaceSettingsUseCase;
+
+  @MockitoBean
+  private UpdateWorkspaceSettingsUseCase updateWorkspaceSettingsUseCase;
+
+  @MockitoBean
   private AppleVarietyJsonSeedImporter appleVarietyJsonSeedImporter;
 
   @Test
@@ -128,7 +144,10 @@ class AccountSecurityWebMvcTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.user.email").value("technologist@example.com"))
         .andExpect(jsonPath("$.activeWorkspace.name").value("My cidery"))
-        .andExpect(jsonPath("$.memberships[0].role").value("OWNER"));
+        .andExpect(jsonPath("$.memberships[0].role").value("OWNER"))
+        .andExpect(jsonPath("$.personalCapabilities").isArray())
+        .andExpect(jsonPath("$.workspacePermissions").isArray())
+        .andExpect(jsonPath("$.permissions").doesNotExist());
   }
 
   @Test
@@ -167,7 +186,7 @@ class AccountSecurityWebMvcTest {
     when(listWorkspaceMembersUseCase.list(any()))
         .thenThrow(new AccountAccessDeniedException("workspace member list is not accessible"));
 
-    mockMvc.perform(get("/account/workspaces/{workspaceId}/members", UUID.randomUUID())
+    mockMvc.perform(get("/account/workspaces/{workspaceId}/members", WorkspaceId.newId().value())
             .with(jwt().jwt(token -> token.subject("user_123"))))
         .andExpect(status().isForbidden())
         .andExpect(jsonPath("$.detail").value("workspace member list is not accessible"));
@@ -189,7 +208,40 @@ class AccountSecurityWebMvcTest {
         .andExpect(status().isForbidden());
   }
 
-  private static AccountMeView account(AccountRole role) {
+  @Test
+  void returnsAuditableWorkspaceSettings() throws Exception {
+    final var workspaceId = WorkspaceId.newId();
+    when(getWorkspaceSettingsUseCase.get(workspaceId)).thenReturn(settings(workspaceId, 3));
+
+    mockMvc.perform(get("/account/workspaces/{workspaceId}/settings", workspaceId.value()).with(jwt()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.workspaceId").value(workspaceId.value().toString()))
+        .andExpect(jsonPath("$.measurementStaleAfter").value("PT336H"))
+        .andExpect(jsonPath("$.defaultAcidityBasis").value("MALIC_ACID"))
+        .andExpect(jsonPath("$.revision").value(3))
+        .andExpect(jsonPath("$.createdAt").value("2026-07-01T00:00:00Z"))
+        .andExpect(jsonPath("$.updatedAt").value("2026-07-14T00:00:00Z"));
+  }
+
+  @Test
+  void patchesWorkspaceSettingsUsingExpectedRevision() throws Exception {
+    final var workspaceId = WorkspaceId.newId();
+    when(updateWorkspaceSettingsUseCase.update(any())).thenReturn(settings(workspaceId, 4));
+
+    mockMvc.perform(patch("/account/workspaces/{workspaceId}/settings", workspaceId.value())
+            .with(jwt())
+            .contentType(APPLICATION_JSON)
+            .content("""
+                {
+                  "expectedRevision": 3,
+                  "measurementStaleAfter": "PT504H"
+                }
+                """))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.revision").value(4));
+  }
+
+  private static @NonNull AccountMeView account(@NonNull AccountRole role) {
     final var userId = AccountUserId.newId();
     final var workspace = new WorkspaceView(
         WorkspaceId.newId(),
@@ -213,7 +265,22 @@ class AccountSecurityWebMvcTest {
         workspace,
         List.of(membership),
         new UserPreferencesView(Locale.ENGLISH, ZoneId.of("UTC")),
-        role.permissions()
+        forActiveAccount(),
+        role.workspacePermissions()
+    );
+  }
+
+  private static @NonNull WorkspaceSettingsView settings(
+      @NonNull WorkspaceId workspaceId,
+      long revision
+  ) {
+    return new WorkspaceSettingsView(
+        workspaceId,
+        Duration.ofDays(14),
+        MALIC_ACID,
+        WorkspaceSettingsRevision.of(revision),
+        Instant.parse("2026-07-01T00:00:00Z"),
+        Instant.parse("2026-07-14T00:00:00Z")
     );
   }
 }

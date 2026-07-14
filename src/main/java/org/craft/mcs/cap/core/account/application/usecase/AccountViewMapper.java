@@ -5,11 +5,11 @@ import org.craft.mcs.cap.core.account.application.port.in.UserPreferencesView;
 import org.craft.mcs.cap.core.account.application.port.in.WorkspaceMembershipView;
 import org.craft.mcs.cap.core.account.application.port.in.WorkspaceSettingsView;
 import org.craft.mcs.cap.core.account.application.port.in.WorkspaceView;
+import org.craft.mcs.cap.core.account.application.port.out.WorkspaceSettingsState;
 import org.craft.mcs.cap.core.account.domain.model.AccountUser;
 import org.craft.mcs.cap.core.account.domain.model.UserPreferences;
 import org.craft.mcs.cap.core.account.domain.model.Workspace;
 import org.craft.mcs.cap.core.account.domain.model.WorkspaceMembership;
-import org.craft.mcs.cap.core.account.domain.model.WorkspaceSettings;
 import org.jspecify.annotations.NonNull;
 
 
@@ -53,11 +53,15 @@ final class AccountViewMapper {
     return new UserPreferencesView(preferences.locale(), preferences.timeZone());
   }
 
-  static @NonNull WorkspaceSettingsView toView(@NonNull WorkspaceSettings settings) {
+  static @NonNull WorkspaceSettingsView toView(@NonNull WorkspaceSettingsState state) {
+    final var settings = state.settings();
     return new WorkspaceSettingsView(
         settings.workspaceId(),
         settings.measurementStaleAfter(),
-        settings.defaultAcidityBasis()
+        settings.defaultAcidityBasis(),
+        state.revision(),
+        state.createdAt(),
+        state.updatedAt()
     );
   }
 }

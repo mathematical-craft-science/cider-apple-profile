@@ -1,6 +1,6 @@
 package org.craft.mcs.cap.core.account.application.port.in;
 
-import org.craft.mcs.cap.core.account.domain.model.AccountPermission;
+import org.craft.mcs.cap.core.account.domain.model.WorkspacePermission;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;
 
@@ -10,6 +10,6 @@ public interface WorkspacePermissionAuthorizer {
 
   void requirePermission(
       @NonNull WorkspaceId workspaceId,
-      @NonNull AccountPermission permission
+      @NonNull WorkspacePermission permission
   );
 }

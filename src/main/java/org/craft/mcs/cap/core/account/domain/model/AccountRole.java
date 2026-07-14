@@ -4,19 +4,16 @@ import java.util.HashSet;
 import java.util.Set;
 import org.jspecify.annotations.NonNull;
 
-import static org.craft.mcs.cap.core.account.domain.model.AccountPermission.ACCOUNT_READ;
-import static org.craft.mcs.cap.core.account.domain.model.AccountPermission.ACCOUNT_UPDATE;
-import static org.craft.mcs.cap.core.account.domain.model.AccountPermission.CATALOG_CONTRIBUTE;
-import static org.craft.mcs.cap.core.account.domain.model.AccountPermission.CATALOG_CURATE;
-import static org.craft.mcs.cap.core.account.domain.model.AccountPermission.FEEDSTOCK_READ;
-import static org.craft.mcs.cap.core.account.domain.model.AccountPermission.FEEDSTOCK_WRITE;
-import static org.craft.mcs.cap.core.account.domain.model.AccountPermission.LAB_CONTRIBUTE;
-import static org.craft.mcs.cap.core.account.domain.model.AccountPermission.PREFERENCES_READ;
-import static org.craft.mcs.cap.core.account.domain.model.AccountPermission.PREFERENCES_UPDATE;
-import static org.craft.mcs.cap.core.account.domain.model.AccountPermission.PRODUCTION_READ;
-import static org.craft.mcs.cap.core.account.domain.model.AccountPermission.PRODUCTION_WRITE;
-import static org.craft.mcs.cap.core.account.domain.model.AccountPermission.WORKSPACE_MEMBERS_READ;
-import static org.craft.mcs.cap.core.account.domain.model.AccountPermission.WORKSPACE_READ;
+import static org.craft.mcs.cap.core.account.domain.model.WorkspacePermission.CATALOG_CONTRIBUTE;
+import static org.craft.mcs.cap.core.account.domain.model.WorkspacePermission.CATALOG_CURATE;
+import static org.craft.mcs.cap.core.account.domain.model.WorkspacePermission.FEEDSTOCK_READ;
+import static org.craft.mcs.cap.core.account.domain.model.WorkspacePermission.FEEDSTOCK_WRITE;
+import static org.craft.mcs.cap.core.account.domain.model.WorkspacePermission.LAB_CONTRIBUTE;
+import static org.craft.mcs.cap.core.account.domain.model.WorkspacePermission.PRODUCTION_READ;
+import static org.craft.mcs.cap.core.account.domain.model.WorkspacePermission.PRODUCTION_WRITE;
+import static org.craft.mcs.cap.core.account.domain.model.WorkspacePermission.WORKSPACE_MEMBERS_READ;
+import static org.craft.mcs.cap.core.account.domain.model.WorkspacePermission.WORKSPACE_READ;
+import static org.craft.mcs.cap.core.account.domain.model.WorkspacePermission.WORKSPACE_SETTINGS_READ;
 
 
 /** CAP workspace role. External-provider roles are mapped to this model only at the ACL boundary. */
@@ -45,25 +42,21 @@ public enum AccountRole {
   /** Reads workspace feedstock and production data without modifying it. */
   VIEWER;
 
-  private static final @NonNull Set<@NonNull AccountPermission> ACCOUNT_PERMISSIONS = Set.of(
-      ACCOUNT_READ,
-      PREFERENCES_READ,
+  private static final @NonNull Set<@NonNull WorkspacePermission> WORKSPACE_BASE_PERMISSIONS = Set.of(
       WORKSPACE_READ,
+      WORKSPACE_SETTINGS_READ,
       WORKSPACE_MEMBERS_READ
   );
 
-  private static final @NonNull Set<@NonNull AccountPermission> BUSINESS_READ_PERMISSIONS = with(
-      ACCOUNT_PERMISSIONS,
+  private static final @NonNull Set<@NonNull WorkspacePermission> BUSINESS_READ_PERMISSIONS = with(
+      WORKSPACE_BASE_PERMISSIONS,
       FEEDSTOCK_READ,
       PRODUCTION_READ
   );
 
-  private static final @NonNull Set<@NonNull AccountPermission> PRODUCTION_PERMISSIONS = Set.of(
-      ACCOUNT_READ,
-      ACCOUNT_UPDATE,
-      PREFERENCES_READ,
-      PREFERENCES_UPDATE,
+  private static final @NonNull Set<@NonNull WorkspacePermission> PRODUCTION_PERMISSIONS = Set.of(
       WORKSPACE_READ,
+      WORKSPACE_SETTINGS_READ,
       WORKSPACE_MEMBERS_READ,
       FEEDSTOCK_READ,
       FEEDSTOCK_WRITE,
@@ -71,21 +64,21 @@ public enum AccountRole {
       PRODUCTION_WRITE
   );
 
-  /** Returns stable CAP permissions granted by this membership role. */
-  public @NonNull Set<@NonNull AccountPermission> permissions() {
+  /** Returns stable permissions granted by this role within its workspace membership. */
+  public @NonNull Set<@NonNull WorkspacePermission> workspacePermissions() {
     return switch (this) {
-      case OWNER, ADMIN -> Set.of(AccountPermission.values());
+      case OWNER, ADMIN -> Set.of(WorkspacePermission.values());
       case TECHNOLOGIST, CIDERMAKER -> PRODUCTION_PERMISSIONS;
-      case CATALOG_CONTRIBUTOR -> with(ACCOUNT_PERMISSIONS, CATALOG_CONTRIBUTE);
-      case LAB_CONTRIBUTOR -> with(ACCOUNT_PERMISSIONS, FEEDSTOCK_READ, LAB_CONTRIBUTE);
-      case CURATOR -> with(ACCOUNT_PERMISSIONS, CATALOG_CONTRIBUTE, CATALOG_CURATE);
+      case CATALOG_CONTRIBUTOR -> with(WORKSPACE_BASE_PERMISSIONS, CATALOG_CONTRIBUTE);
+      case LAB_CONTRIBUTOR -> with(WORKSPACE_BASE_PERMISSIONS, FEEDSTOCK_READ, LAB_CONTRIBUTE);
+      case CURATOR -> with(WORKSPACE_BASE_PERMISSIONS, CATALOG_CONTRIBUTE, CATALOG_CURATE);
       case VIEWER -> BUSINESS_READ_PERMISSIONS;
     };
   }
 
-  private static @NonNull Set<@NonNull AccountPermission> with(
-      @NonNull Set<@NonNull AccountPermission> base,
-      @NonNull AccountPermission... additions
+  private static @NonNull Set<@NonNull WorkspacePermission> with(
+      @NonNull Set<@NonNull WorkspacePermission> base,
+      @NonNull WorkspacePermission... additions
   ) {
     final var permissions = new HashSet<>(base);
     permissions.addAll(Set.of(additions));

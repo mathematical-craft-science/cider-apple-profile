@@ -19,6 +19,7 @@ import org.craft.mcs.cap.core.account.domain.model.value.ExternalUserSubject;
 import org.craft.mcs.cap.core.account.domain.model.value.HttpUrl;
 import org.craft.mcs.cap.core.account.domain.model.value.IdentityProviderCode;
 import org.craft.mcs.cap.core.account.domain.model.value.PhoneNumber;
+import org.craft.mcs.cap.shared.application.ConcurrentResourceModificationException;
 import org.craft.mcs.cap.shared.kernel.measurement.unit.TitratableAcidityBasis;
 import org.craft.mcs.cap.shared.testing.jdbc.PostgresDataJdbcTestConfiguration;
 import org.junit.jupiter.api.Test;
@@ -28,6 +29,7 @@ import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabas
 import org.springframework.context.annotation.Import;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 
 @DataJdbcTest
@@ -88,7 +90,7 @@ class JdbcAccountRepositoriesDataJdbcTest {
         workspace.workspaceId(),
         user.userId()
     ));
-    final var settings = settingsRepository.save(new WorkspaceSettings(
+    final var settings = settingsRepository.create(new WorkspaceSettings(
         workspace.workspaceId(),
         Duration.ofHours(36),
         TitratableAcidityBasis.MALIC_ACID
@@ -152,5 +154,37 @@ class JdbcAccountRepositoriesDataJdbcTest {
     preferencesRepository.save(updated);
 
     assertThat(preferencesRepository.findByUserId(user.userId())).contains(updated);
+  }
+
+  @Test
+  void updatesWorkspaceSettingsWithAuditAndRejectsStaleRevision() {
+    final var workspace = workspaceRepository.save(Workspace.createDefault(
+        DisplayName.of("Settings workspace"),
+        WorkspaceType.CIDERY,
+        null,
+        null
+    ));
+    final var created = settingsRepository.create(new WorkspaceSettings(
+        workspace.workspaceId(),
+        Duration.ofDays(14),
+        TitratableAcidityBasis.MALIC_ACID
+    ));
+    final var changedSettings = created.settings().update(
+        Duration.ofDays(21),
+        TitratableAcidityBasis.CITRIC_ACID
+    );
+
+    final var updated = settingsRepository.update(changedSettings, created.revision()).orElseThrow();
+
+    assertThat(updated)
+        .returns(Duration.ofDays(21), state -> state.settings().measurementStaleAfter())
+        .returns(TitratableAcidityBasis.CITRIC_ACID, state -> state.settings().defaultAcidityBasis())
+        .matches(state -> state.revision().value() == created.revision().value() + 1)
+        .matches(state -> !state.updatedAt().isBefore(created.updatedAt()));
+
+    final var staleUpdate = changedSettings.update(Duration.ofDays(28), TitratableAcidityBasis.MALIC_ACID);
+    assertThatThrownBy(() -> settingsRepository.update(staleUpdate, created.revision()))
+        .isInstanceOf(ConcurrentResourceModificationException.class)
+        .hasMessage("resource was modified concurrently: workspace settings");
   }
 }

@@ -5,11 +5,12 @@ import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.account.application.port.in.GetCurrentAccountProfileUseCase;
 import org.craft.mcs.cap.core.account.application.port.in.GetCurrentAccountUseCase;
 import org.craft.mcs.cap.core.account.application.port.in.GetCurrentUserPreferencesUseCase;
+import org.craft.mcs.cap.core.account.application.port.in.GetWorkspaceSettingsUseCase;
 import org.craft.mcs.cap.core.account.application.port.in.ListAccountWorkspacesUseCase;
 import org.craft.mcs.cap.core.account.application.port.in.ListWorkspaceMembersUseCase;
 import org.craft.mcs.cap.core.account.application.port.in.UpdateAccountProfileUseCase;
 import org.craft.mcs.cap.core.account.application.port.in.UpdateUserPreferencesUseCase;
-import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
+import org.craft.mcs.cap.core.account.application.port.in.UpdateWorkspaceSettingsUseCase;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.dto.AccountMeResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.dto.AccountPreferencesResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.dto.AccountUserResponse;
@@ -17,7 +18,10 @@ import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.dto.AccountWorks
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.dto.AccountWorkspaceListResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.dto.UpdateAccountPreferencesRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.dto.UpdateAccountProfileRequest;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.dto.UpdateWorkspaceSettingsRequest;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.dto.WorkspaceSettingsResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.mapper.AccountRestMapper;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -41,6 +45,8 @@ public final class AccountController implements AccountApi {
   private final @NonNull UpdateUserPreferencesUseCase updateUserPreferencesUseCase;
   private final @NonNull ListAccountWorkspacesUseCase listAccountWorkspacesUseCase;
   private final @NonNull ListWorkspaceMembersUseCase listWorkspaceMembersUseCase;
+  private final @NonNull GetWorkspaceSettingsUseCase getWorkspaceSettingsUseCase;
+  private final @NonNull UpdateWorkspaceSettingsUseCase updateWorkspaceSettingsUseCase;
 
   @Override
   @GetMapping(value = "/account/me", produces = APPLICATION_JSON_VALUE)
@@ -93,6 +99,37 @@ public final class AccountController implements AccountApi {
   public @NonNull ResponseEntity<@NonNull AccountWorkspaceListResponse> workspaces() {
     return ResponseEntity.ok(new AccountWorkspaceListResponse(
         listAccountWorkspacesUseCase.list().stream().map(AccountRestMapper::toResponse).toList()
+    ));
+  }
+
+  @Override
+  @GetMapping(
+      value = "/account/workspaces/{workspaceId}/settings",
+      produces = APPLICATION_JSON_VALUE
+  )
+  public @NonNull ResponseEntity<@NonNull WorkspaceSettingsResponse> workspaceSettings(
+      @PathVariable @NonNull UUID workspaceId
+  ) {
+    return ResponseEntity.ok(AccountRestMapper.toResponse(
+        getWorkspaceSettingsUseCase.get(WorkspaceId.of(workspaceId))
+    ));
+  }
+
+  @Override
+  @PatchMapping(
+      value = "/account/workspaces/{workspaceId}/settings",
+      consumes = APPLICATION_JSON_VALUE,
+      produces = APPLICATION_JSON_VALUE
+  )
+  public @NonNull ResponseEntity<@NonNull WorkspaceSettingsResponse> updateWorkspaceSettings(
+      @PathVariable @NonNull UUID workspaceId,
+      @RequestBody @NonNull UpdateWorkspaceSettingsRequest request
+  ) {
+    return ResponseEntity.ok(AccountRestMapper.toResponse(
+        updateWorkspaceSettingsUseCase.update(AccountRestMapper.toCommand(
+            WorkspaceId.of(workspaceId),
+            request
+        ))
     ));
   }
 

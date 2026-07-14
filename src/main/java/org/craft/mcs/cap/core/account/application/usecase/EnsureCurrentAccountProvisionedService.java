@@ -97,7 +97,7 @@ public final class EnsureCurrentAccountProvisionedService
         actor.externalOrganizationSubject()
     ));
     final var settingsDefaults = workspaceProvisioningDefaults.settings();
-    workspaceSettingsRepository.save(new WorkspaceSettings(
+    workspaceSettingsRepository.create(new WorkspaceSettings(
         workspace.workspaceId(),
         settingsDefaults.measurementStaleAfter(),
         settingsDefaults.defaultAcidityBasis()

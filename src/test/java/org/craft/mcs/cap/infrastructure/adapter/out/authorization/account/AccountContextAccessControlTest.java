@@ -5,10 +5,10 @@ import org.craft.mcs.cap.core.account.application.port.in.WorkspacePermissionAut
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.junit.jupiter.api.Test;
 
-import static org.craft.mcs.cap.core.account.domain.model.AccountPermission.FEEDSTOCK_READ;
-import static org.craft.mcs.cap.core.account.domain.model.AccountPermission.FEEDSTOCK_WRITE;
-import static org.craft.mcs.cap.core.account.domain.model.AccountPermission.PRODUCTION_READ;
-import static org.craft.mcs.cap.core.account.domain.model.AccountPermission.PRODUCTION_WRITE;
+import static org.craft.mcs.cap.core.account.domain.model.WorkspacePermission.FEEDSTOCK_READ;
+import static org.craft.mcs.cap.core.account.domain.model.WorkspacePermission.FEEDSTOCK_WRITE;
+import static org.craft.mcs.cap.core.account.domain.model.WorkspacePermission.PRODUCTION_READ;
+import static org.craft.mcs.cap.core.account.domain.model.WorkspacePermission.PRODUCTION_WRITE;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -16,7 +16,7 @@ import static org.mockito.Mockito.verify;
 class AccountContextAccessControlTest {
 
   @Test
-  void mapsFeedstockOperationsToAccountPermissions() {
+  void mapsFeedstockOperationsToWorkspacePermissions() {
     final var workspaceId = WorkspaceId.of(UUID.randomUUID());
     final var authorizer = mock(WorkspacePermissionAuthorizer.class);
     final var accessControl = new AccountFeedstockAccessControl(authorizer);
@@ -29,7 +29,7 @@ class AccountContextAccessControlTest {
   }
 
   @Test
-  void mapsProductionOperationsToAccountPermissions() {
+  void mapsProductionOperationsToWorkspacePermissions() {
     final var workspaceId = WorkspaceId.of(UUID.randomUUID());
     final var authorizer = mock(WorkspacePermissionAuthorizer.class);
     final var accessControl = new AccountProductionAccessControl(authorizer);

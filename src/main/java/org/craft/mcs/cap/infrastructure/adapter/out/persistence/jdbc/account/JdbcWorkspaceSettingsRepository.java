@@ -3,10 +3,13 @@ package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.account;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.account.application.port.out.WorkspaceSettingsRepository;
+import org.craft.mcs.cap.core.account.application.port.out.WorkspaceSettingsState;
 import org.craft.mcs.cap.core.account.domain.model.WorkspaceSettings;
-import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
+import org.craft.mcs.cap.core.account.application.model.WorkspaceSettingsRevision;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.account.entity.AccountJdbcMapper;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.support.JdbcPersistenceExceptionTranslator;
+import org.craft.mcs.cap.shared.application.ConcurrentResourceModificationException;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Repository;
 
@@ -21,21 +24,40 @@ class JdbcWorkspaceSettingsRepository implements WorkspaceSettingsRepository {
   private final @NonNull SpringDataWorkspaceSettingsJdbcRepository repository;
 
   @Override
-  public @NonNull WorkspaceSettings save(@NonNull WorkspaceSettings settings) {
+  public @NonNull WorkspaceSettingsState create(@NonNull WorkspaceSettings settings) {
     requireNonNull(settings, "workspace settings cannot be null");
-    final var entity = repository.findById(settings.workspaceId().value())
-        .map(existing -> AccountJdbcMapper.updateFromDomain(settings, existing))
-        .orElseGet(() -> AccountJdbcMapper.fromDomain(settings));
     final var saved = JdbcPersistenceExceptionTranslator.translateOptimisticLocking(
         "workspace settings",
-        () -> repository.save(entity)
+        () -> repository.save(AccountJdbcMapper.fromDomain(settings))
     );
-    return AccountJdbcMapper.toDomain(saved);
+    return AccountJdbcMapper.toState(saved);
   }
 
   @Override
-  public @NonNull Optional<@NonNull WorkspaceSettings> findByWorkspaceId(@NonNull WorkspaceId workspaceId) {
+  public @NonNull Optional<@NonNull WorkspaceSettingsState> update(
+      @NonNull WorkspaceSettings settings,
+      @NonNull WorkspaceSettingsRevision expectedRevision
+  ) {
+    requireNonNull(settings, "workspace settings cannot be null");
+    requireNonNull(expectedRevision, "expected workspace settings revision cannot be null");
+    return repository.findById(settings.workspaceId().value()).map(entity -> {
+      final var state = AccountJdbcMapper.toState(entity);
+      if (!state.revision().equals(expectedRevision)) {
+        throw new ConcurrentResourceModificationException("workspace settings", null);
+      }
+      final var saved = JdbcPersistenceExceptionTranslator.translateOptimisticLocking(
+          "workspace settings",
+          () -> repository.save(AccountJdbcMapper.updateFromDomain(settings, entity))
+      );
+      return AccountJdbcMapper.toState(saved);
+    });
+  }
+
+  @Override
+  public @NonNull Optional<@NonNull WorkspaceSettingsState> findByWorkspaceId(
+      @NonNull WorkspaceId workspaceId
+  ) {
     requireNonNull(workspaceId, "workspace id cannot be null");
-    return repository.findById(workspaceId.value()).map(AccountJdbcMapper::toDomain);
+    return repository.findById(workspaceId.value()).map(AccountJdbcMapper::toState);
   }
 }
