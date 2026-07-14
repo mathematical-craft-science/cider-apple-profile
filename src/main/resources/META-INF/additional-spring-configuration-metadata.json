@@ -17,6 +17,10 @@
       "description": "Default reference acid basis used by a newly provisioned workspace."
     },
     {
+      "name": "cap.account.invitation-time-to-live",
+      "description": "Validity period assigned to a new or resent workspace invitation."
+    },
+    {
       "name": "cap.security.clerk.issuer",
       "description": "Expected issuer URI of Clerk access tokens."
     },

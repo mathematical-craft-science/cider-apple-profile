@@ -37,6 +37,7 @@ sentry:
 
 cap:
   account:
+    invitation-time-to-live: 7d
     default-workspace:
       name: My cidery
       type: CIDERY

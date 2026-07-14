@@ -2,8 +2,8 @@ package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.account.en
 
 import java.time.Instant;
 import java.util.UUID;
-import org.craft.mcs.cap.core.account.domain.model.ContactVisibility;
-import org.craft.mcs.cap.core.account.domain.model.ContributorType;
+import org.craft.mcs.cap.core.account.contributor.domain.model.ContactVisibility;
+import org.craft.mcs.cap.core.account.contributor.domain.model.ContributorType;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.data.annotation.CreatedDate;
@@ -14,7 +14,6 @@ import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 import static java.util.Objects.requireNonNull;
-
 
 /** Spring Data JDBC aggregate entity for an optional public contributor profile. */
 @Table("contributor_profiles")
@@ -27,6 +26,7 @@ public class ContributorProfileJdbcEntity {
   @Nullable @Column("public_email") String publicEmail;
   @Nullable @Column("public_phone") String publicPhone;
   @NonNull @Column("contact_visibility") ContactVisibility contactVisibility;
+  @Nullable @Column("contact_publication_consented_at") Instant contactPublicationConsentedAt;
   @CreatedDate @Nullable @Column("created_at") Instant createdAt;
   @LastModifiedDate @Nullable @Column("updated_at") Instant updatedAt;
   @Version @Column("version") long version;
@@ -42,7 +42,8 @@ public class ContributorProfileJdbcEntity {
       @Nullable String website,
       @Nullable String publicEmail,
       @Nullable String publicPhone,
-      @NonNull ContactVisibility contactVisibility
+      @NonNull ContactVisibility contactVisibility,
+      @Nullable Instant contactPublicationConsentedAt
   ) {
     this.userId = requireNonNull(userId, "account user id cannot be null");
     this.contributorType = requireNonNull(contributorType, "contributor type cannot be null");
@@ -51,5 +52,6 @@ public class ContributorProfileJdbcEntity {
     this.publicEmail = publicEmail;
     this.publicPhone = publicPhone;
     this.contactVisibility = requireNonNull(contactVisibility, "contact visibility cannot be null");
+    this.contactPublicationConsentedAt = contactPublicationConsentedAt;
   }
 }

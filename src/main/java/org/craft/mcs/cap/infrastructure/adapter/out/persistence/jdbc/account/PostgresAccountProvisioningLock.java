@@ -1,15 +1,14 @@
 package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.account;
 
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.account.application.port.out.AccountProvisioningLock;
-import org.craft.mcs.cap.core.account.domain.model.value.ExternalUserSubject;
-import org.craft.mcs.cap.core.account.domain.model.value.IdentityProviderCode;
+import org.craft.mcs.cap.core.account.provisioning.application.port.out.AccountProvisioningLock;
+import org.craft.mcs.cap.core.account.user.domain.model.value.ExternalUserSubject;
+import org.craft.mcs.cap.core.account.shared.domain.value.IdentityProviderCode;
 import org.jspecify.annotations.NonNull;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 
 import static java.util.Objects.requireNonNull;
-
 
 /** PostgreSQL transaction lock preventing duplicate first-login account provisioning. */
 @Repository

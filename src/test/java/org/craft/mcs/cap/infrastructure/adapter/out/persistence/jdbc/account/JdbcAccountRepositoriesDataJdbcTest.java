@@ -1,24 +1,32 @@
 package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.account;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.time.ZoneId;
 import java.util.Locale;
-import org.craft.mcs.cap.core.account.domain.model.AccountUser;
-import org.craft.mcs.cap.core.account.domain.model.ContactVisibility;
-import org.craft.mcs.cap.core.account.domain.model.ContributorProfile;
-import org.craft.mcs.cap.core.account.domain.model.ContributorType;
-import org.craft.mcs.cap.core.account.domain.model.UserPreferences;
-import org.craft.mcs.cap.core.account.domain.model.Workspace;
-import org.craft.mcs.cap.core.account.domain.model.WorkspaceMembership;
-import org.craft.mcs.cap.core.account.domain.model.WorkspaceSettings;
-import org.craft.mcs.cap.core.account.domain.model.WorkspaceType;
-import org.craft.mcs.cap.core.account.domain.model.value.DisplayName;
-import org.craft.mcs.cap.core.account.domain.model.value.EmailAddress;
-import org.craft.mcs.cap.core.account.domain.model.value.ExternalOrganizationSubject;
-import org.craft.mcs.cap.core.account.domain.model.value.ExternalUserSubject;
-import org.craft.mcs.cap.core.account.domain.model.value.HttpUrl;
-import org.craft.mcs.cap.core.account.domain.model.value.IdentityProviderCode;
-import org.craft.mcs.cap.core.account.domain.model.value.PhoneNumber;
+import org.craft.mcs.cap.core.account.audit.domain.model.WorkspaceAdministrativeAction;
+import org.craft.mcs.cap.core.account.audit.domain.model.WorkspaceAdministrativeAuditEntry;
+import org.craft.mcs.cap.core.account.audit.domain.model.WorkspaceAdministrativeSubjectType;
+import org.craft.mcs.cap.core.account.audit.domain.model.value.WorkspaceAdministrativeAuditValue;
+import org.craft.mcs.cap.core.account.audit.domain.model.value.WorkspaceAdministrativeSubjectId;
+import org.craft.mcs.cap.core.account.contributor.domain.model.ContactVisibility;
+import org.craft.mcs.cap.core.account.contributor.domain.model.ContributorProfile;
+import org.craft.mcs.cap.core.account.contributor.domain.model.ContributorType;
+import org.craft.mcs.cap.core.account.invitation.domain.model.WorkspaceInvitation;
+import org.craft.mcs.cap.core.account.membership.domain.model.AccountRole;
+import org.craft.mcs.cap.core.account.membership.domain.model.WorkspaceMembership;
+import org.craft.mcs.cap.core.account.shared.domain.value.DisplayName;
+import org.craft.mcs.cap.core.account.shared.domain.value.EmailAddress;
+import org.craft.mcs.cap.core.account.shared.domain.value.HttpUrl;
+import org.craft.mcs.cap.core.account.shared.domain.value.PhoneNumber;
+import org.craft.mcs.cap.core.account.user.domain.model.AccountUser;
+import org.craft.mcs.cap.core.account.user.domain.model.UserPreferences;
+import org.craft.mcs.cap.core.account.user.domain.model.value.ExternalUserSubject;
+import org.craft.mcs.cap.core.account.shared.domain.value.IdentityProviderCode;
+import org.craft.mcs.cap.core.account.workspace.domain.model.Workspace;
+import org.craft.mcs.cap.core.account.workspace.domain.model.WorkspaceSettings;
+import org.craft.mcs.cap.core.account.workspace.domain.model.WorkspaceType;
+import org.craft.mcs.cap.core.account.workspace.domain.model.value.ExternalOrganizationSubject;
 import org.craft.mcs.cap.shared.application.ConcurrentResourceModificationException;
 import org.craft.mcs.cap.shared.kernel.measurement.unit.TitratableAcidityBasis;
 import org.craft.mcs.cap.shared.testing.jdbc.PostgresDataJdbcTestConfiguration;
@@ -31,7 +39,6 @@ import org.springframework.context.annotation.Import;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-
 @DataJdbcTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Import({
@@ -42,7 +49,10 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
     JdbcWorkspaceSettingsRepository.class,
     JdbcUserPreferencesRepository.class,
     JdbcContributorProfileRepository.class,
-    PostgresAccountProvisioningLock.class
+    JdbcWorkspaceInvitationRepository.class,
+    JdbcWorkspaceAdministrativeAuditRepository.class,
+    PostgresAccountProvisioningLock.class,
+    PostgresWorkspaceAdministrationLock.class
 })
 class JdbcAccountRepositoriesDataJdbcTest {
 
@@ -63,6 +73,12 @@ class JdbcAccountRepositoriesDataJdbcTest {
 
   @Autowired
   private JdbcContributorProfileRepository contributorProfileRepository;
+
+  @Autowired
+  private JdbcWorkspaceInvitationRepository invitationRepository;
+
+  @Autowired
+  private JdbcWorkspaceAdministrativeAuditRepository auditRepository;
 
   @Autowired
   private PostgresAccountProvisioningLock accountProvisioningLock;
@@ -103,7 +119,8 @@ class JdbcAccountRepositoriesDataJdbcTest {
         HttpUrl.of("https://example.com"),
         EmailAddress.of("orchard@example.com"),
         PhoneNumber.of("+1 555 0100"),
-        ContactVisibility.PUBLIC
+        ContactVisibility.PUBLIC,
+        Instant.parse("2026-01-10T12:00:00Z")
     ));
 
     assertThat(userRepository.findByExternalIdentity(
@@ -117,6 +134,44 @@ class JdbcAccountRepositoriesDataJdbcTest {
     assertThat(settingsRepository.findByWorkspaceId(workspace.workspaceId())).contains(settings);
     assertThat(preferencesRepository.findByUserId(user.userId())).contains(preferences);
     assertThat(contributorProfileRepository.findByUserId(user.userId())).contains(contributorProfile);
+  }
+
+  @Test
+  void persistsWorkspaceInvitationAndAdministrativeAudit() {
+    final var user = userRepository.save(AccountUser.create(
+        IdentityProviderCode.CLERK,
+        ExternalUserSubject.of("audit_user"),
+        EmailAddress.of("owner@example.com"),
+        DisplayName.of("Workspace Owner"),
+        null
+    ));
+    final var workspace = workspaceRepository.save(Workspace.create(
+        DisplayName.of("Audit workspace"),
+        WorkspaceType.INSTITUTE
+    ));
+    membershipRepository.save(WorkspaceMembership.createOwner(workspace.workspaceId(), user.userId()));
+    final var invitation = invitationRepository.save(WorkspaceInvitation.create(
+        workspace.workspaceId(),
+        EmailAddress.of("invitee@example.com"),
+        AccountRole.TECHNOLOGIST,
+        user.userId(),
+        Instant.parse("2026-07-14T08:00:00Z"),
+        Duration.ofDays(7)
+    ));
+    final var auditEntry = WorkspaceAdministrativeAuditEntry.create(
+        workspace.workspaceId(),
+        user.userId(),
+        WorkspaceAdministrativeAction.INVITATION_CREATED,
+        WorkspaceAdministrativeSubjectType.INVITATION,
+        WorkspaceAdministrativeSubjectId.forInvitation(invitation.invitationId()),
+        null,
+        WorkspaceAdministrativeAuditValue.of(invitation.role().name()),
+        Instant.parse("2026-07-14T08:00:00Z")
+    );
+    auditRepository.append(auditEntry);
+
+    assertThat(invitationRepository.findById(invitation.invitationId())).contains(invitation);
+    assertThat(auditRepository.findAllByWorkspaceId(workspace.workspaceId())).containsExactly(auditEntry);
   }
 
   @Test

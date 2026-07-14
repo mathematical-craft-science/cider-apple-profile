@@ -18,6 +18,10 @@ class PackageBoundaryTest {
   private static final @NonNull Path MAIN_RESOURCES = Path.of("src/main/resources");
   private static final @NonNull String DEPRECATED_SHARED_DOMAIN_PACKAGE =
       "org.craft.mcs.cap.shared." + "domain";
+  private static final @NonNull String DEPRECATED_ACCOUNT_APPLICATION_PACKAGE =
+      "org.craft.mcs.cap.core.account." + "application";
+  private static final @NonNull String DEPRECATED_ACCOUNT_DOMAIN_PACKAGE =
+      "org.craft.mcs.cap.core.account." + "domain";
 
   @Test
   void sharedDomainPackageIsNotUsedAnymore() throws IOException {
@@ -28,6 +32,18 @@ class PackageBoundaryTest {
     assertNoTextInMainResources(
         DEPRECATED_SHARED_DOMAIN_PACKAGE,
         "deprecated shared domain has been split into shared.kernel and shared.platform"
+    );
+  }
+
+  @Test
+  void accountContextUsesFeatureFirstPackages() throws IOException {
+    assertNoTextInMainSources(
+        DEPRECATED_ACCOUNT_APPLICATION_PACKAGE,
+        "account application code must belong to a feature slice"
+    );
+    assertNoTextInMainSources(
+        DEPRECATED_ACCOUNT_DOMAIN_PACKAGE,
+        "account domain code must belong to a feature slice"
     );
   }
 

@@ -4,19 +4,19 @@ import java.time.DateTimeException;
 import java.time.Duration;
 import java.time.ZoneId;
 import java.util.Locale;
-import org.craft.mcs.cap.core.account.application.port.in.AccountMeView;
-import org.craft.mcs.cap.core.account.application.port.in.AccountUserView;
-import org.craft.mcs.cap.core.account.application.port.in.UpdateAccountProfileCommand;
-import org.craft.mcs.cap.core.account.application.port.in.UpdateUserPreferencesCommand;
-import org.craft.mcs.cap.core.account.application.port.in.UpdateWorkspaceSettingsCommand;
-import org.craft.mcs.cap.core.account.application.port.in.UserPreferencesView;
-import org.craft.mcs.cap.core.account.application.port.in.WorkspaceMemberView;
-import org.craft.mcs.cap.core.account.application.port.in.WorkspaceMembershipView;
-import org.craft.mcs.cap.core.account.application.port.in.WorkspaceSettingsView;
-import org.craft.mcs.cap.core.account.application.port.in.WorkspaceView;
-import org.craft.mcs.cap.core.account.domain.model.value.DisplayName;
-import org.craft.mcs.cap.core.account.domain.model.value.HttpUrl;
-import org.craft.mcs.cap.core.account.application.model.WorkspaceSettingsRevision;
+import org.craft.mcs.cap.core.account.membership.application.port.in.WorkspaceMemberView;
+import org.craft.mcs.cap.core.account.membership.application.port.in.WorkspaceMembershipView;
+import org.craft.mcs.cap.core.account.shared.domain.value.DisplayName;
+import org.craft.mcs.cap.core.account.shared.domain.value.HttpUrl;
+import org.craft.mcs.cap.core.account.user.application.port.in.AccountMeView;
+import org.craft.mcs.cap.core.account.user.application.port.in.AccountUserView;
+import org.craft.mcs.cap.core.account.user.application.port.in.UpdateAccountProfileCommand;
+import org.craft.mcs.cap.core.account.user.application.port.in.UpdateUserPreferencesCommand;
+import org.craft.mcs.cap.core.account.user.application.port.in.UserPreferencesView;
+import org.craft.mcs.cap.core.account.workspace.application.model.WorkspaceSettingsRevision;
+import org.craft.mcs.cap.core.account.workspace.application.port.in.UpdateWorkspaceSettingsCommand;
+import org.craft.mcs.cap.core.account.workspace.application.port.in.WorkspaceSettingsView;
+import org.craft.mcs.cap.core.account.workspace.application.port.in.WorkspaceView;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.dto.AccountMeResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.dto.AccountMembershipResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.dto.AccountPreferencesResponse;
@@ -31,7 +31,6 @@ import org.craft.mcs.cap.shared.application.ApplicationValidationException;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
-
 
 /** Maps CAP account application views and commands to the provider-neutral REST contract. */
 public final class AccountRestMapper {
@@ -64,7 +63,8 @@ public final class AccountRestMapper {
     return new AccountWorkspaceResponse(
         view.workspaceId().value(),
         view.name().value(),
-        view.type()
+        view.type(),
+        view.status()
     );
   }
 

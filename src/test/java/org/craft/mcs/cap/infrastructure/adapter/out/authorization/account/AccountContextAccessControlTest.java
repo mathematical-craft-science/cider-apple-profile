@@ -1,14 +1,14 @@
 package org.craft.mcs.cap.infrastructure.adapter.out.authorization.account;
 
 import java.util.UUID;
-import org.craft.mcs.cap.core.account.application.port.in.WorkspacePermissionAuthorizer;
+import org.craft.mcs.cap.core.account.membership.application.port.in.WorkspacePermissionAuthorizer;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.junit.jupiter.api.Test;
 
-import static org.craft.mcs.cap.core.account.domain.model.WorkspacePermission.FEEDSTOCK_READ;
-import static org.craft.mcs.cap.core.account.domain.model.WorkspacePermission.FEEDSTOCK_WRITE;
-import static org.craft.mcs.cap.core.account.domain.model.WorkspacePermission.PRODUCTION_READ;
-import static org.craft.mcs.cap.core.account.domain.model.WorkspacePermission.PRODUCTION_WRITE;
+import static org.craft.mcs.cap.core.account.membership.domain.model.WorkspacePermission.FEEDSTOCK_READ;
+import static org.craft.mcs.cap.core.account.membership.domain.model.WorkspacePermission.FEEDSTOCK_WRITE;
+import static org.craft.mcs.cap.core.account.membership.domain.model.WorkspacePermission.PRODUCTION_READ;
+import static org.craft.mcs.cap.core.account.membership.domain.model.WorkspacePermission.PRODUCTION_WRITE;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 

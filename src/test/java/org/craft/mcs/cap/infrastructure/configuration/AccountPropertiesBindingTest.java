@@ -2,7 +2,7 @@ package org.craft.mcs.cap.infrastructure.configuration;
 
 import java.time.Duration;
 import java.util.Map;
-import org.craft.mcs.cap.core.account.domain.model.WorkspaceType;
+import org.craft.mcs.cap.core.account.workspace.domain.model.WorkspaceType;
 import org.craft.mcs.cap.shared.kernel.measurement.unit.TitratableAcidityBasis;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.context.properties.bind.Bindable;
@@ -10,7 +10,6 @@ import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.boot.context.properties.source.MapConfigurationPropertySource;
 
 import static org.assertj.core.api.Assertions.assertThat;
-
 
 class AccountPropertiesBindingTest {
 
@@ -27,7 +26,9 @@ class AccountPropertiesBindingTest {
         .bind("cap.account", Bindable.of(AccountProperties.class))
         .orElseThrow(AssertionError::new);
 
-    assertThat(properties.defaultWorkspace())
+    assertThat(properties)
+        .returns(Duration.ofDays(7), AccountProperties::invitationTimeToLive)
+        .extracting(AccountProperties::defaultWorkspace)
         .returns("Research cidery", AccountProperties.DefaultWorkspaceProperties::name)
         .returns(WorkspaceType.INSTITUTE, AccountProperties.DefaultWorkspaceProperties::type)
         .returns(

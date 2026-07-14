@@ -1,5 +1,6 @@
 package org.craft.mcs.cap.shared.application;
 
+import java.io.Serial;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -13,7 +14,7 @@ import static java.util.Objects.requireNonNull;
 @SuppressWarnings("java:S110")
 public final class ConcurrentResourceModificationException extends ApplicationConflictException {
 
-  @java.io.Serial
+  @Serial
   private static final long serialVersionUID = 1L;
 
   private final @NonNull String resourceName;

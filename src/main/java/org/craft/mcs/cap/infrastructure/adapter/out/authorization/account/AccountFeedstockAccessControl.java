@@ -1,14 +1,14 @@
 package org.craft.mcs.cap.infrastructure.adapter.out.authorization.account;
 
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.account.application.port.in.WorkspacePermissionAuthorizer;
+import org.craft.mcs.cap.core.account.membership.application.port.in.WorkspacePermissionAuthorizer;
 import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 
-import static org.craft.mcs.cap.core.account.domain.model.WorkspacePermission.FEEDSTOCK_READ;
-import static org.craft.mcs.cap.core.account.domain.model.WorkspacePermission.FEEDSTOCK_WRITE;
+import static org.craft.mcs.cap.core.account.membership.domain.model.WorkspacePermission.FEEDSTOCK_READ;
+import static org.craft.mcs.cap.core.account.membership.domain.model.WorkspacePermission.FEEDSTOCK_WRITE;
 
 
 /** Translates feedstock-owned access operations into CAP account permissions. */

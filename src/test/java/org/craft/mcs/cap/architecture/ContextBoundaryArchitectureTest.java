@@ -17,7 +17,6 @@ import org.jspecify.annotations.NonNull;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 
-
 @AnalyzeClasses(
     packages = "org.craft.mcs.cap",
     importOptions = ImportOption.DoNotIncludeTests.class
@@ -53,7 +52,7 @@ class ContextBoundaryArchitectureTest {
       noClasses()
           .that()
           .resideInAnyPackage(
-              "org.craft.mcs.cap.core.account.domain..",
+              "org.craft.mcs.cap.core.account..domain..",
               "org.craft.mcs.cap.core.appleprofile.domain..",
               "org.craft.mcs.cap.core.batchtraceability.domain..",
               "org.craft.mcs.cap.core.feedstock.domain..",
@@ -110,6 +109,41 @@ class ContextBoundaryArchitectureTest {
           .resideInAnyPackage(
               "org.craft.mcs.cap.core.feedstock..",
               "org.craft.mcs.cap.core.production.."
+          );
+
+  @ArchTest
+  static final ArchRule account_shared_slice_does_not_depend_on_account_feature_slices =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.core.account.shared..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAnyPackage(
+              "org.craft.mcs.cap.core.account.user..",
+              "org.craft.mcs.cap.core.account.workspace..",
+              "org.craft.mcs.cap.core.account.membership..",
+              "org.craft.mcs.cap.core.account.invitation..",
+              "org.craft.mcs.cap.core.account.audit..",
+              "org.craft.mcs.cap.core.account.contributor..",
+              "org.craft.mcs.cap.core.account.provisioning.."
+          );
+
+  @ArchTest
+  static final ArchRule foundational_account_domains_do_not_depend_on_process_slices =
+      noClasses()
+          .that()
+          .resideInAnyPackage(
+              "org.craft.mcs.cap.core.account.user..domain..",
+              "org.craft.mcs.cap.core.account.workspace..domain..",
+              "org.craft.mcs.cap.core.account.membership..domain..",
+              "org.craft.mcs.cap.core.account.contributor..domain.."
+          )
+          .should()
+          .dependOnClassesThat()
+          .resideInAnyPackage(
+              "org.craft.mcs.cap.core.account.invitation..",
+              "org.craft.mcs.cap.core.account.audit..",
+              "org.craft.mcs.cap.core.account.provisioning.."
           );
 
   @ArchTest

@@ -1,5 +1,6 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.application;
 
+import java.io.Serial;
 import org.craft.mcs.cap.shared.application.ApplicationConflictException;
 import org.craft.mcs.cap.shared.application.ApplicationForbiddenException;
 import org.craft.mcs.cap.shared.application.ApplicationNotFoundException;
@@ -82,7 +83,7 @@ class ApplicationExceptionHandlerTest {
 
   private static final class TestNotFoundException extends ApplicationNotFoundException {
 
-    @java.io.Serial
+    @Serial
     private static final long serialVersionUID = 1L;
 
     private TestNotFoundException(@NonNull String message) {
@@ -92,7 +93,7 @@ class ApplicationExceptionHandlerTest {
 
   private static final class TestForbiddenException extends ApplicationForbiddenException {
 
-    @java.io.Serial
+    @Serial
     private static final long serialVersionUID = 1L;
 
     private TestForbiddenException(@NonNull String message) {
@@ -102,7 +103,7 @@ class ApplicationExceptionHandlerTest {
 
   private static final class TestConflictException extends ApplicationConflictException {
 
-    @java.io.Serial
+    @Serial
     private static final long serialVersionUID = 1L;
 
     private TestConflictException(@NonNull String message) {
@@ -112,7 +113,7 @@ class ApplicationExceptionHandlerTest {
 
   private static final class TestUnprocessableException extends ApplicationUnprocessableException {
 
-    @java.io.Serial
+    @Serial
     private static final long serialVersionUID = 1L;
 
     private TestUnprocessableException(@NonNull String message) {

@@ -2,7 +2,7 @@ package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.account.en
 
 import java.time.Instant;
 import java.util.UUID;
-import org.craft.mcs.cap.core.account.domain.model.AccountUserStatus;
+import org.craft.mcs.cap.core.account.user.domain.model.AccountUserStatus;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.data.annotation.CreatedDate;
@@ -13,7 +13,6 @@ import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 import static java.util.Objects.requireNonNull;
-
 
 /** Spring Data JDBC aggregate entity for a CAP account user. */
 @Table("account_users")

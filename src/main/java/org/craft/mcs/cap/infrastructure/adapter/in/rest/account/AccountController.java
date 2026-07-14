@@ -2,20 +2,20 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.account;
 
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.account.application.port.in.GetCurrentAccountProfileUseCase;
-import org.craft.mcs.cap.core.account.application.port.in.GetCurrentAccountUseCase;
-import org.craft.mcs.cap.core.account.application.port.in.GetCurrentUserPreferencesUseCase;
-import org.craft.mcs.cap.core.account.application.port.in.GetWorkspaceSettingsUseCase;
-import org.craft.mcs.cap.core.account.application.port.in.ListAccountWorkspacesUseCase;
-import org.craft.mcs.cap.core.account.application.port.in.ListWorkspaceMembersUseCase;
-import org.craft.mcs.cap.core.account.application.port.in.UpdateAccountProfileUseCase;
-import org.craft.mcs.cap.core.account.application.port.in.UpdateUserPreferencesUseCase;
-import org.craft.mcs.cap.core.account.application.port.in.UpdateWorkspaceSettingsUseCase;
+import org.craft.mcs.cap.core.account.membership.application.port.in.ListWorkspaceMembersUseCase;
+import org.craft.mcs.cap.core.account.user.application.port.in.GetCurrentAccountProfileUseCase;
+import org.craft.mcs.cap.core.account.user.application.port.in.GetCurrentAccountUseCase;
+import org.craft.mcs.cap.core.account.user.application.port.in.GetCurrentUserPreferencesUseCase;
+import org.craft.mcs.cap.core.account.user.application.port.in.UpdateAccountProfileUseCase;
+import org.craft.mcs.cap.core.account.user.application.port.in.UpdateUserPreferencesUseCase;
+import org.craft.mcs.cap.core.account.workspace.application.port.in.GetWorkspaceSettingsUseCase;
+import org.craft.mcs.cap.core.account.workspace.application.port.in.ListAccountWorkspacesUseCase;
+import org.craft.mcs.cap.core.account.workspace.application.port.in.UpdateWorkspaceSettingsUseCase;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.dto.AccountMeResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.dto.AccountPreferencesResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.dto.AccountUserResponse;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.dto.AccountWorkspaceMemberListResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.dto.AccountWorkspaceListResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.dto.AccountWorkspaceMemberListResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.dto.UpdateAccountPreferencesRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.dto.UpdateAccountProfileRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.dto.UpdateWorkspaceSettingsRequest;
@@ -31,7 +31,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
-
 
 /** Thin REST adapter exposing provider-neutral account use cases. */
 @RestController

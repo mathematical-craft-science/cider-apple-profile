@@ -2,8 +2,8 @@ package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.account;
 
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.account.application.port.out.WorkspaceRepository;
-import org.craft.mcs.cap.core.account.domain.model.Workspace;
+import org.craft.mcs.cap.core.account.workspace.application.port.out.WorkspaceRepository;
+import org.craft.mcs.cap.core.account.workspace.domain.model.Workspace;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.account.entity.AccountJdbcMapper;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.support.JdbcPersistenceExceptionTranslator;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
@@ -11,7 +11,6 @@ import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Repository;
 
 import static java.util.Objects.requireNonNull;
-
 
 /** Persists CAP Workspace aggregates. */
 @Repository

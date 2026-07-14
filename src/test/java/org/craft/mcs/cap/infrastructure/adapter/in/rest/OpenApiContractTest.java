@@ -7,17 +7,22 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-import org.craft.mcs.cap.core.account.application.port.in.EnsureCurrentAccountProvisionedUseCase;
-import org.craft.mcs.cap.core.account.application.port.in.GetCurrentAccountProfileUseCase;
-import org.craft.mcs.cap.core.account.application.port.in.GetCurrentAccountUseCase;
-import org.craft.mcs.cap.core.account.application.port.in.GetCurrentUserPreferencesUseCase;
-import org.craft.mcs.cap.core.account.application.port.in.GetWorkspaceSettingsUseCase;
-import org.craft.mcs.cap.core.account.application.port.in.ListAccountWorkspacesUseCase;
-import org.craft.mcs.cap.core.account.application.port.in.ListWorkspaceMembersUseCase;
-import org.craft.mcs.cap.core.account.application.port.in.UpdateAccountProfileUseCase;
-import org.craft.mcs.cap.core.account.application.port.in.UpdateUserPreferencesUseCase;
-import org.craft.mcs.cap.core.account.application.port.in.UpdateWorkspaceSettingsUseCase;
-import org.craft.mcs.cap.core.account.application.port.in.WorkspaceSettingsReader;
+import org.craft.mcs.cap.core.account.audit.application.port.in.ListWorkspaceAdministrativeAuditUseCase;
+import org.craft.mcs.cap.core.account.contributor.application.port.in.ContributorProfileUseCase;
+import org.craft.mcs.cap.core.account.invitation.application.port.in.WorkspaceInvitationUseCase;
+import org.craft.mcs.cap.core.account.membership.application.port.in.ListWorkspaceMembersUseCase;
+import org.craft.mcs.cap.core.account.membership.application.port.in.WorkspaceMembershipManagementUseCase;
+import org.craft.mcs.cap.core.account.provisioning.application.port.in.EnsureCurrentAccountProvisionedUseCase;
+import org.craft.mcs.cap.core.account.user.application.port.in.GetCurrentAccountProfileUseCase;
+import org.craft.mcs.cap.core.account.user.application.port.in.GetCurrentAccountUseCase;
+import org.craft.mcs.cap.core.account.user.application.port.in.GetCurrentUserPreferencesUseCase;
+import org.craft.mcs.cap.core.account.user.application.port.in.UpdateAccountProfileUseCase;
+import org.craft.mcs.cap.core.account.user.application.port.in.UpdateUserPreferencesUseCase;
+import org.craft.mcs.cap.core.account.workspace.application.port.in.GetWorkspaceSettingsUseCase;
+import org.craft.mcs.cap.core.account.workspace.application.port.in.ListAccountWorkspacesUseCase;
+import org.craft.mcs.cap.core.account.workspace.application.port.in.UpdateWorkspaceSettingsUseCase;
+import org.craft.mcs.cap.core.account.workspace.application.port.in.WorkspaceLifecycleUseCase;
+import org.craft.mcs.cap.core.account.workspace.application.port.in.WorkspaceSettingsReader;
 import org.craft.mcs.cap.core.appleprofile.application.abv.port.in.PredictAppleVarietyPotentialAbvUseCase;
 import org.craft.mcs.cap.core.appleprofile.application.classification.port.in.ClassifyAppleVarietyNorthAmericanUseCase;
 import org.craft.mcs.cap.core.appleprofile.application.classification.port.in.ClassifyAppleVarietyUseCase;
@@ -80,7 +85,6 @@ import static org.craft.mcs.cap.infrastructure.adapter.in.http.ActiveWorkspaceHt
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-
 @WebMvcTest
 @AutoConfigureMockMvc(addFilters = false)
 @EnableConfigurationProperties(SpringDocConfigProperties.class)
@@ -96,6 +100,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
     RestDtoSchemaTypeScanner.class
 })
 @MockitoBean(types = {
+    ContributorProfileUseCase.class,
     EnsureCurrentAccountProvisionedUseCase.class,
     GetCurrentAccountProfileUseCase.class,
     GetCurrentAccountUseCase.class,
@@ -103,10 +108,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
     GetWorkspaceSettingsUseCase.class,
     ListAccountWorkspacesUseCase.class,
     ListWorkspaceMembersUseCase.class,
+    ListWorkspaceAdministrativeAuditUseCase.class,
     UpdateAccountProfileUseCase.class,
     UpdateUserPreferencesUseCase.class,
     UpdateWorkspaceSettingsUseCase.class,
     WorkspaceSettingsReader.class,
+    WorkspaceInvitationUseCase.class,
+    WorkspaceLifecycleUseCase.class,
+    WorkspaceMembershipManagementUseCase.class,
     PredictAppleVarietyPotentialAbvUseCase.class,
     ClassifyAppleVarietyNorthAmericanUseCase.class,
     ClassifyAppleVarietyUseCase.class,

@@ -103,8 +103,8 @@ class JdbcFeedstockMeasurementRepositoryDataJdbcTest {
     final var workspaceId = WorkspaceId.of(UUID.randomUUID());
     jdbcTemplate.update(
         """
-            INSERT INTO workspaces (workspace_id, name, type, version, created_at, updated_at)
-            VALUES (?, 'Measurement workspace', 'CIDERY', 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+            INSERT INTO workspaces (workspace_id, name, type, status, version, created_at, updated_at)
+            VALUES (?, 'Measurement workspace', 'CIDERY', 'ACTIVE', 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
             """,
         workspaceId.value()
     );

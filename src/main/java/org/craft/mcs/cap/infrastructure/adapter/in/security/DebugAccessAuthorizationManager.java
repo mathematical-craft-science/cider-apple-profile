@@ -2,9 +2,9 @@ package org.craft.mcs.cap.infrastructure.adapter.in.security;
 
 import java.util.function.Supplier;
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.account.application.port.in.GetCurrentAccountUseCase;
-import org.craft.mcs.cap.core.account.application.port.in.WorkspaceMembershipView;
-import org.craft.mcs.cap.core.account.domain.model.AccountRole;
+import org.craft.mcs.cap.core.account.membership.application.port.in.WorkspaceMembershipView;
+import org.craft.mcs.cap.core.account.membership.domain.model.AccountRole;
+import org.craft.mcs.cap.core.account.user.application.port.in.GetCurrentAccountUseCase;
 import org.craft.mcs.cap.shared.application.ApplicationException;
 import org.jspecify.annotations.NonNull;
 import org.springframework.security.authorization.AuthorizationDecision;
@@ -13,7 +13,6 @@ import org.springframework.security.authorization.AuthorizationResult;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
 import org.springframework.stereotype.Component;
-
 
 /** Grants non-public debug routes only to active CAP workspace owners and administrators. */
 @Component

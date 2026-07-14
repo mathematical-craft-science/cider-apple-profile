@@ -1,7 +1,7 @@
 package org.craft.mcs.cap.infrastructure.configuration;
 
 import java.time.Duration;
-import org.craft.mcs.cap.core.account.domain.model.WorkspaceType;
+import org.craft.mcs.cap.core.account.workspace.domain.model.WorkspaceType;
 import org.craft.mcs.cap.shared.kernel.measurement.unit.TitratableAcidityBasis;
 import org.jspecify.annotations.NonNull;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -9,16 +9,30 @@ import org.springframework.boot.context.properties.bind.DefaultValue;
 
 import static java.util.Objects.requireNonNull;
 
-
 /** External defaults used when CAP creates the first workspace for an account. */
 @ConfigurationProperties(prefix = "cap.account")
 public record AccountProperties(
     /* Defaults used when CAP lazily provisions the first workspace for an account. */
-    @NonNull DefaultWorkspaceProperties defaultWorkspace
+    @NonNull DefaultWorkspaceProperties defaultWorkspace,
+    /* Validity period assigned to a new or resent workspace invitation. */
+    @NonNull Duration invitationTimeToLive
 ) {
 
-  public AccountProperties {
-    requireNonNull(defaultWorkspace, "default workspace properties cannot be null");
+  public AccountProperties(
+      @NonNull DefaultWorkspaceProperties defaultWorkspace,
+      @DefaultValue("7d") @NonNull Duration invitationTimeToLive
+  ) {
+    this.defaultWorkspace = requireNonNull(
+        defaultWorkspace,
+        "default workspace properties cannot be null"
+    );
+    this.invitationTimeToLive = requireNonNull(
+        invitationTimeToLive,
+        "workspace invitation time to live cannot be null"
+    );
+    if (invitationTimeToLive.isZero() || invitationTimeToLive.isNegative()) {
+      throw new IllegalArgumentException("workspace invitation time to live must be positive");
+    }
   }
 
   /** Default identity of a lazily provisioned CAP workspace. */

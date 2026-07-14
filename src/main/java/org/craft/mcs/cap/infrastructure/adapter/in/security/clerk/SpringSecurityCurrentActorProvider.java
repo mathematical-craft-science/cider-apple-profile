@@ -2,13 +2,12 @@ package org.craft.mcs.cap.infrastructure.adapter.in.security.clerk;
 
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.account.application.model.AuthenticatedActor;
-import org.craft.mcs.cap.core.account.application.port.out.CurrentActorProvider;
+import org.craft.mcs.cap.core.account.user.application.model.AuthenticatedActor;
+import org.craft.mcs.cap.core.account.user.application.port.out.CurrentActorProvider;
 import org.jspecify.annotations.NonNull;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Component;
-
 
 /** Reads the current Spring Security JWT and translates it into the CAP authentication boundary. */
 @Component

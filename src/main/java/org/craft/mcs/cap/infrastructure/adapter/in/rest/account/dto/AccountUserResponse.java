@@ -2,10 +2,9 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.account.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.UUID;
-import org.craft.mcs.cap.core.account.domain.model.AccountUserStatus;
+import org.craft.mcs.cap.core.account.user.domain.model.AccountUserStatus;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
-
 
 /** CAP-owned public profile fields of the current authenticated user. */
 @Schema(description = "CAP-owned account profile. Authentication credentials remain provider-owned.")

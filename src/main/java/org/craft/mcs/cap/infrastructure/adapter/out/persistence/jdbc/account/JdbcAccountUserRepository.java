@@ -2,18 +2,18 @@ package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.account;
 
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.account.application.port.out.AccountUserRepository;
-import org.craft.mcs.cap.core.account.domain.model.AccountUser;
-import org.craft.mcs.cap.core.account.domain.model.value.AccountUserId;
-import org.craft.mcs.cap.core.account.domain.model.value.ExternalUserSubject;
-import org.craft.mcs.cap.core.account.domain.model.value.IdentityProviderCode;
+import org.craft.mcs.cap.core.account.shared.domain.value.AccountUserId;
+import org.craft.mcs.cap.core.account.shared.domain.value.EmailAddress;
+import org.craft.mcs.cap.core.account.user.application.port.out.AccountUserRepository;
+import org.craft.mcs.cap.core.account.user.domain.model.AccountUser;
+import org.craft.mcs.cap.core.account.user.domain.model.value.ExternalUserSubject;
+import org.craft.mcs.cap.core.account.shared.domain.value.IdentityProviderCode;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.account.entity.AccountJdbcMapper;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.support.JdbcPersistenceExceptionTranslator;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Repository;
 
 import static java.util.Objects.requireNonNull;
-
 
 /** Persists the AccountUser aggregate through Spring Data JDBC and restores its domain form. */
 @Repository
@@ -39,6 +39,12 @@ class JdbcAccountUserRepository implements AccountUserRepository {
   public @NonNull Optional<@NonNull AccountUser> findById(@NonNull AccountUserId userId) {
     requireNonNull(userId, "account user id cannot be null");
     return repository.findById(userId.value()).map(AccountJdbcMapper::toDomain);
+  }
+
+  @Override
+  public @NonNull Optional<@NonNull AccountUser> findByEmail(@NonNull EmailAddress email) {
+    requireNonNull(email, "email address cannot be null");
+    return repository.findByEmailIgnoreCase(email.value()).map(AccountJdbcMapper::toDomain);
   }
 
   @Override

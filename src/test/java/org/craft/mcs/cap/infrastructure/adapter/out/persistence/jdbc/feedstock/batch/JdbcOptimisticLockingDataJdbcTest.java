@@ -10,6 +10,7 @@ import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockVessel;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.feedstock.batch.entity.FeedstockBatchJdbcMapper;
+import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.support.JdbcPersistenceExceptionTranslator;
 import org.craft.mcs.cap.shared.application.ConcurrentResourceModificationException;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.craft.mcs.cap.shared.testing.jdbc.PostgresDataJdbcTestConfiguration;
@@ -23,7 +24,6 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.support.JdbcPersistenceExceptionTranslator.translateOptimisticLocking;
 
 
 @DataJdbcTest
@@ -50,7 +50,10 @@ class JdbcOptimisticLockingDataJdbcTest {
 
     ReflectionTestUtils.setField(staleCopy, "name", "Updated by stale transaction");
 
-    assertThatThrownBy(() -> translateOptimisticLocking("feedstock batch", () -> repository.save(staleCopy)))
+    assertThatThrownBy(() -> JdbcPersistenceExceptionTranslator.translateOptimisticLocking(
+        "feedstock batch",
+        () -> repository.save(staleCopy)
+    ))
         .isInstanceOf(ConcurrentResourceModificationException.class)
         .satisfies(exception -> assertThat((ConcurrentResourceModificationException) exception)
             .extracting(ConcurrentResourceModificationException::resourceName)
@@ -73,8 +76,8 @@ class JdbcOptimisticLockingDataJdbcTest {
     final var workspaceId = WorkspaceId.of(UUID.randomUUID());
     jdbcTemplate.update(
         """
-            INSERT INTO workspaces (workspace_id, name, type, version, created_at, updated_at)
-            VALUES (?, 'Optimistic locking workspace', 'CIDERY', 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+            INSERT INTO workspaces (workspace_id, name, type, status, version, created_at, updated_at)
+            VALUES (?, 'Optimistic locking workspace', 'CIDERY', 'ACTIVE', 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
             """,
         workspaceId.value()
     );

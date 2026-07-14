@@ -2,16 +2,15 @@ package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.account;
 
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.account.application.port.out.UserPreferencesRepository;
-import org.craft.mcs.cap.core.account.domain.model.UserPreferences;
-import org.craft.mcs.cap.core.account.domain.model.value.AccountUserId;
+import org.craft.mcs.cap.core.account.shared.domain.value.AccountUserId;
+import org.craft.mcs.cap.core.account.user.application.port.out.UserPreferencesRepository;
+import org.craft.mcs.cap.core.account.user.domain.model.UserPreferences;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.account.entity.AccountJdbcMapper;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.support.JdbcPersistenceExceptionTranslator;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Repository;
 
 import static java.util.Objects.requireNonNull;
-
 
 /** Persists provider-independent presentation preferences for one CAP user. */
 @Repository

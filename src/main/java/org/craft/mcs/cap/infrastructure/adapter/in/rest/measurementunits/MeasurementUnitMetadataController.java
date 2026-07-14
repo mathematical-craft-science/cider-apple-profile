@@ -1,7 +1,7 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.measurementunits;
 
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.account.application.port.in.WorkspaceSettingsReader;
+import org.craft.mcs.cap.core.account.workspace.application.port.in.WorkspaceSettingsReader;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurementunits.dto.MeasurementUnitsMetadataResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurementunits.mapper.MeasurementUnitMetadataRestMapper;
 import org.jspecify.annotations.NonNull;

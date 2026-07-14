@@ -1,5 +1,6 @@
 package org.craft.mcs.cap.shared.kernel;
 
+import java.io.Serial;
 import org.jspecify.annotations.NonNull;
 
 
@@ -11,7 +12,7 @@ import org.jspecify.annotations.NonNull;
  */
 public final class DomainConflictException extends DomainException {
 
-  @java.io.Serial
+  @Serial
   private static final long serialVersionUID = 1L;
 
   public DomainConflictException(@NonNull String message) {

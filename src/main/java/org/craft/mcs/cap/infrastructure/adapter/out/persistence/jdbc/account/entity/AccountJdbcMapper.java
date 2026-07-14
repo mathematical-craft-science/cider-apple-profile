@@ -3,29 +3,28 @@ package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.account.en
 import java.time.Duration;
 import java.time.ZoneId;
 import java.util.Locale;
-import org.craft.mcs.cap.core.account.application.port.out.WorkspaceSettingsState;
-import org.craft.mcs.cap.core.account.domain.model.AccountUser;
-import org.craft.mcs.cap.core.account.domain.model.ContributorProfile;
-import org.craft.mcs.cap.core.account.domain.model.UserPreferences;
-import org.craft.mcs.cap.core.account.domain.model.Workspace;
-import org.craft.mcs.cap.core.account.domain.model.WorkspaceMembership;
-import org.craft.mcs.cap.core.account.domain.model.WorkspaceSettings;
-import org.craft.mcs.cap.core.account.domain.model.value.AccountUserId;
-import org.craft.mcs.cap.core.account.domain.model.value.DisplayName;
-import org.craft.mcs.cap.core.account.domain.model.value.EmailAddress;
-import org.craft.mcs.cap.core.account.domain.model.value.ExternalOrganizationSubject;
-import org.craft.mcs.cap.core.account.domain.model.value.ExternalUserSubject;
-import org.craft.mcs.cap.core.account.domain.model.value.HttpUrl;
-import org.craft.mcs.cap.core.account.domain.model.value.IdentityProviderCode;
-import org.craft.mcs.cap.core.account.domain.model.value.PhoneNumber;
-import org.craft.mcs.cap.core.account.domain.model.value.WorkspaceMembershipId;
-import org.craft.mcs.cap.core.account.application.model.WorkspaceSettingsRevision;
+import org.craft.mcs.cap.core.account.contributor.domain.model.ContributorProfile;
+import org.craft.mcs.cap.core.account.membership.domain.model.WorkspaceMembership;
+import org.craft.mcs.cap.core.account.membership.domain.model.value.WorkspaceMembershipId;
+import org.craft.mcs.cap.core.account.shared.domain.value.AccountUserId;
+import org.craft.mcs.cap.core.account.shared.domain.value.DisplayName;
+import org.craft.mcs.cap.core.account.shared.domain.value.EmailAddress;
+import org.craft.mcs.cap.core.account.shared.domain.value.HttpUrl;
+import org.craft.mcs.cap.core.account.shared.domain.value.PhoneNumber;
+import org.craft.mcs.cap.core.account.user.domain.model.AccountUser;
+import org.craft.mcs.cap.core.account.user.domain.model.UserPreferences;
+import org.craft.mcs.cap.core.account.user.domain.model.value.ExternalUserSubject;
+import org.craft.mcs.cap.core.account.shared.domain.value.IdentityProviderCode;
+import org.craft.mcs.cap.core.account.workspace.application.model.WorkspaceSettingsRevision;
+import org.craft.mcs.cap.core.account.workspace.application.port.out.WorkspaceSettingsState;
+import org.craft.mcs.cap.core.account.workspace.domain.model.Workspace;
+import org.craft.mcs.cap.core.account.workspace.domain.model.WorkspaceSettings;
+import org.craft.mcs.cap.core.account.workspace.domain.model.value.ExternalOrganizationSubject;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;
 import org.springframework.data.jdbc.core.mapping.AggregateReference;
 
 import static java.util.Objects.requireNonNull;
-
 
 /** Maps account aggregates to Spring Data JDBC entities while preserving persistence state on updates. */
 public final class AccountJdbcMapper {
@@ -75,6 +74,7 @@ public final class AccountJdbcMapper {
         workspace.workspaceId().value(),
         workspace.name().value(),
         workspace.type(),
+        workspace.status(),
         workspace.externalOrganizationProvider() == null
             ? null
             : workspace.externalOrganizationProvider().value(),
@@ -90,6 +90,7 @@ public final class AccountJdbcMapper {
   ) {
     entity.name = workspace.name().value();
     entity.type = workspace.type();
+    entity.status = workspace.status();
     entity.externalOrganizationProvider = workspace.externalOrganizationProvider() == null
         ? null
         : workspace.externalOrganizationProvider().value();
@@ -104,6 +105,7 @@ public final class AccountJdbcMapper {
         WorkspaceId.of(entity.workspaceId),
         DisplayName.of(entity.name),
         entity.type,
+        entity.status,
         entity.externalOrganizationProvider == null
             ? null
             : IdentityProviderCode.of(entity.externalOrganizationProvider),
@@ -213,7 +215,8 @@ public final class AccountJdbcMapper {
         profile.website() == null ? null : profile.website().value().toString(),
         profile.publicEmail() == null ? null : profile.publicEmail().value(),
         profile.publicPhone() == null ? null : profile.publicPhone().value(),
-        profile.contactVisibility()
+        profile.contactVisibility(),
+        profile.contactPublicationConsentedAt()
     );
   }
 
@@ -227,6 +230,7 @@ public final class AccountJdbcMapper {
     entity.publicEmail = profile.publicEmail() == null ? null : profile.publicEmail().value();
     entity.publicPhone = profile.publicPhone() == null ? null : profile.publicPhone().value();
     entity.contactVisibility = profile.contactVisibility();
+    entity.contactPublicationConsentedAt = profile.contactPublicationConsentedAt();
     return entity;
   }
 
@@ -238,7 +242,8 @@ public final class AccountJdbcMapper {
         HttpUrl.fromNullable(entity.website),
         EmailAddress.fromNullable(entity.publicEmail),
         PhoneNumber.fromNullable(entity.publicPhone),
-        entity.contactVisibility
+        entity.contactVisibility,
+        entity.contactPublicationConsentedAt
     );
   }
 }

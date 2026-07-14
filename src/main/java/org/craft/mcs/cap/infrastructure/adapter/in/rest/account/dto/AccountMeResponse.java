@@ -4,8 +4,8 @@ import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 import java.util.Set;
-import org.craft.mcs.cap.core.account.domain.model.PersonalAccountCapability;
-import org.craft.mcs.cap.core.account.domain.model.WorkspacePermission;
+import org.craft.mcs.cap.core.account.membership.domain.model.WorkspacePermission;
+import org.craft.mcs.cap.core.account.user.domain.model.PersonalAccountCapability;
 import org.jspecify.annotations.NonNull;
 
 

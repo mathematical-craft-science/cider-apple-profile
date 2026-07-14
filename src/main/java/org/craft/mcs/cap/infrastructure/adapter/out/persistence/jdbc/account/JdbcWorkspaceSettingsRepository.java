@@ -2,10 +2,10 @@ package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.account;
 
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.account.application.port.out.WorkspaceSettingsRepository;
-import org.craft.mcs.cap.core.account.application.port.out.WorkspaceSettingsState;
-import org.craft.mcs.cap.core.account.domain.model.WorkspaceSettings;
-import org.craft.mcs.cap.core.account.application.model.WorkspaceSettingsRevision;
+import org.craft.mcs.cap.core.account.workspace.application.model.WorkspaceSettingsRevision;
+import org.craft.mcs.cap.core.account.workspace.application.port.out.WorkspaceSettingsRepository;
+import org.craft.mcs.cap.core.account.workspace.application.port.out.WorkspaceSettingsState;
+import org.craft.mcs.cap.core.account.workspace.domain.model.WorkspaceSettings;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.account.entity.AccountJdbcMapper;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.support.JdbcPersistenceExceptionTranslator;
 import org.craft.mcs.cap.shared.application.ConcurrentResourceModificationException;
@@ -14,7 +14,6 @@ import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Repository;
 
 import static java.util.Objects.requireNonNull;
-
 
 /** Persists independently versioned product settings for one CAP workspace. */
 @Repository

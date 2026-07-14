@@ -2,9 +2,9 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.measurementunits;
 
 import java.time.Duration;
 import java.time.Instant;
-import org.craft.mcs.cap.core.account.application.port.in.WorkspaceSettingsReader;
-import org.craft.mcs.cap.core.account.application.port.in.WorkspaceSettingsView;
-import org.craft.mcs.cap.core.account.application.model.WorkspaceSettingsRevision;
+import org.craft.mcs.cap.core.account.workspace.application.model.WorkspaceSettingsRevision;
+import org.craft.mcs.cap.core.account.workspace.application.port.in.WorkspaceSettingsReader;
+import org.craft.mcs.cap.core.account.workspace.application.port.in.WorkspaceSettingsView;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurementunits.dto.MeasurementFreshnessMetadataResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurementunits.dto.MeasurementUnitsMetadataResponse;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
@@ -14,7 +14,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.craft.mcs.cap.shared.kernel.measurement.unit.TitratableAcidityBasis.MALIC_ACID;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-
 
 class MeasurementUnitMetadataControllerTest {
 

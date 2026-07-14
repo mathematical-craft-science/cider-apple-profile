@@ -5,33 +5,34 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Locale;
-import org.craft.mcs.cap.core.account.application.AccountAccessDeniedException;
-import org.craft.mcs.cap.core.account.application.ActiveWorkspaceRequiredException;
-import org.craft.mcs.cap.core.account.application.port.in.AccountMeView;
-import org.craft.mcs.cap.core.account.application.port.in.AccountUserView;
-import org.craft.mcs.cap.core.account.application.port.in.EnsureCurrentAccountProvisionedUseCase;
-import org.craft.mcs.cap.core.account.application.port.in.GetCurrentAccountProfileUseCase;
-import org.craft.mcs.cap.core.account.application.port.in.GetCurrentAccountUseCase;
-import org.craft.mcs.cap.core.account.application.port.in.GetCurrentUserPreferencesUseCase;
-import org.craft.mcs.cap.core.account.application.port.in.GetWorkspaceSettingsUseCase;
-import org.craft.mcs.cap.core.account.application.port.in.ListAccountWorkspacesUseCase;
-import org.craft.mcs.cap.core.account.application.port.in.ListWorkspaceMembersUseCase;
-import org.craft.mcs.cap.core.account.application.port.in.UpdateAccountProfileUseCase;
-import org.craft.mcs.cap.core.account.application.port.in.UpdateUserPreferencesUseCase;
-import org.craft.mcs.cap.core.account.application.port.in.UpdateWorkspaceSettingsUseCase;
-import org.craft.mcs.cap.core.account.application.port.in.UserPreferencesView;
-import org.craft.mcs.cap.core.account.application.port.in.WorkspaceMembershipView;
-import org.craft.mcs.cap.core.account.application.port.in.WorkspaceSettingsView;
-import org.craft.mcs.cap.core.account.application.port.in.WorkspaceView;
-import org.craft.mcs.cap.core.account.domain.model.AccountRole;
-import org.craft.mcs.cap.core.account.domain.model.AccountUserStatus;
-import org.craft.mcs.cap.core.account.domain.model.WorkspaceMembershipStatus;
-import org.craft.mcs.cap.core.account.domain.model.WorkspaceType;
-import org.craft.mcs.cap.core.account.domain.model.value.AccountUserId;
-import org.craft.mcs.cap.core.account.domain.model.value.DisplayName;
-import org.craft.mcs.cap.core.account.domain.model.value.EmailAddress;
-import org.craft.mcs.cap.core.account.domain.model.value.WorkspaceMembershipId;
-import org.craft.mcs.cap.core.account.application.model.WorkspaceSettingsRevision;
+import org.craft.mcs.cap.core.account.membership.application.AccountAccessDeniedException;
+import org.craft.mcs.cap.core.account.membership.application.ActiveWorkspaceRequiredException;
+import org.craft.mcs.cap.core.account.membership.application.port.in.ListWorkspaceMembersUseCase;
+import org.craft.mcs.cap.core.account.membership.application.port.in.WorkspaceMembershipView;
+import org.craft.mcs.cap.core.account.membership.domain.model.AccountRole;
+import org.craft.mcs.cap.core.account.membership.domain.model.WorkspaceMembershipStatus;
+import org.craft.mcs.cap.core.account.membership.domain.model.value.WorkspaceMembershipId;
+import org.craft.mcs.cap.core.account.provisioning.application.port.in.EnsureCurrentAccountProvisionedUseCase;
+import org.craft.mcs.cap.core.account.shared.domain.value.AccountUserId;
+import org.craft.mcs.cap.core.account.shared.domain.value.DisplayName;
+import org.craft.mcs.cap.core.account.shared.domain.value.EmailAddress;
+import org.craft.mcs.cap.core.account.user.application.port.in.AccountMeView;
+import org.craft.mcs.cap.core.account.user.application.port.in.AccountUserView;
+import org.craft.mcs.cap.core.account.user.application.port.in.GetCurrentAccountProfileUseCase;
+import org.craft.mcs.cap.core.account.user.application.port.in.GetCurrentAccountUseCase;
+import org.craft.mcs.cap.core.account.user.application.port.in.GetCurrentUserPreferencesUseCase;
+import org.craft.mcs.cap.core.account.user.application.port.in.UpdateAccountProfileUseCase;
+import org.craft.mcs.cap.core.account.user.application.port.in.UpdateUserPreferencesUseCase;
+import org.craft.mcs.cap.core.account.user.application.port.in.UserPreferencesView;
+import org.craft.mcs.cap.core.account.user.domain.model.AccountUserStatus;
+import org.craft.mcs.cap.core.account.workspace.application.model.WorkspaceSettingsRevision;
+import org.craft.mcs.cap.core.account.workspace.application.port.in.GetWorkspaceSettingsUseCase;
+import org.craft.mcs.cap.core.account.workspace.application.port.in.ListAccountWorkspacesUseCase;
+import org.craft.mcs.cap.core.account.workspace.application.port.in.UpdateWorkspaceSettingsUseCase;
+import org.craft.mcs.cap.core.account.workspace.application.port.in.WorkspaceSettingsView;
+import org.craft.mcs.cap.core.account.workspace.application.port.in.WorkspaceView;
+import org.craft.mcs.cap.core.account.workspace.domain.model.WorkspaceStatus;
+import org.craft.mcs.cap.core.account.workspace.domain.model.WorkspaceType;
 import org.craft.mcs.cap.infrastructure.adapter.in.importer.appleprofile.AppleVarietyJsonSeedImporter;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.application.ApplicationExceptionHandler;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.seed.SeedDebugController;
@@ -54,7 +55,7 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.craft.mcs.cap.core.account.domain.model.PersonalAccountCapability.forActiveAccount;
+import static org.craft.mcs.cap.core.account.user.domain.model.PersonalAccountCapability.forActiveAccount;
 import static org.craft.mcs.cap.shared.kernel.measurement.unit.TitratableAcidityBasis.MALIC_ACID;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -265,7 +266,8 @@ class AccountSecurityWebMvcTest {
     final var workspace = new WorkspaceView(
         WorkspaceId.newId(),
         DisplayName.of("My cidery"),
-        WorkspaceType.CIDERY
+        WorkspaceType.CIDERY,
+        WorkspaceStatus.ACTIVE
     );
     final var membership = new WorkspaceMembershipView(
         WorkspaceMembershipId.newId(),

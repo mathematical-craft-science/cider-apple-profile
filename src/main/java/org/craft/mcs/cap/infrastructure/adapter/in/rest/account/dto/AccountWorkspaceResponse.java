@@ -2,9 +2,9 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.account.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.UUID;
-import org.craft.mcs.cap.core.account.domain.model.WorkspaceType;
+import org.craft.mcs.cap.core.account.workspace.domain.model.WorkspaceStatus;
+import org.craft.mcs.cap.core.account.workspace.domain.model.WorkspaceType;
 import org.jspecify.annotations.NonNull;
-
 
 /** Transport representation of a CAP-owned product workspace. */
 @Schema(description = "CAP product workspace and business-data ownership scope.")
@@ -26,6 +26,12 @@ public record AccountWorkspaceResponse(
         implementation = WorkspaceType.class,
         requiredMode = Schema.RequiredMode.REQUIRED
     )
-    @NonNull WorkspaceType type
+    @NonNull WorkspaceType type,
+    @Schema(
+        description = "Lifecycle state controlling whether the workspace is selectable.",
+        implementation = WorkspaceStatus.class,
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
+    @NonNull WorkspaceStatus status
 ) {
 }

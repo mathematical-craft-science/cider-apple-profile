@@ -15,4 +15,6 @@ interface SpringDataAccountUserJdbcRepository
       @NonNull String identityProvider,
       @NonNull String externalSubject
   );
+
+  @NonNull Optional<@NonNull AccountUserJdbcEntity> findByEmailIgnoreCase(@NonNull String email);
 }

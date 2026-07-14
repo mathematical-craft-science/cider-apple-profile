@@ -2,10 +2,9 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.account.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.UUID;
-import org.craft.mcs.cap.core.account.domain.model.AccountRole;
-import org.craft.mcs.cap.core.account.domain.model.WorkspaceMembershipStatus;
+import org.craft.mcs.cap.core.account.membership.domain.model.AccountRole;
+import org.craft.mcs.cap.core.account.membership.domain.model.WorkspaceMembershipStatus;
 import org.jspecify.annotations.NonNull;
-
 
 /** Transport representation of the current user's membership in one CAP workspace. */
 @Schema(description = "Current user's CAP-owned workspace membership.")

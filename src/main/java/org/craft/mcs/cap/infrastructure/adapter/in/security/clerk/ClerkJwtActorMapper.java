@@ -1,13 +1,13 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.security.clerk;
 
 import java.util.function.Supplier;
-import org.craft.mcs.cap.core.account.application.model.AuthenticatedActor;
-import org.craft.mcs.cap.core.account.domain.model.value.DisplayName;
-import org.craft.mcs.cap.core.account.domain.model.value.EmailAddress;
-import org.craft.mcs.cap.core.account.domain.model.value.ExternalOrganizationSubject;
-import org.craft.mcs.cap.core.account.domain.model.value.ExternalUserSubject;
-import org.craft.mcs.cap.core.account.domain.model.value.HttpUrl;
-import org.craft.mcs.cap.core.account.domain.model.value.IdentityProviderCode;
+import org.craft.mcs.cap.core.account.shared.domain.value.DisplayName;
+import org.craft.mcs.cap.core.account.shared.domain.value.EmailAddress;
+import org.craft.mcs.cap.core.account.shared.domain.value.HttpUrl;
+import org.craft.mcs.cap.core.account.user.application.model.AuthenticatedActor;
+import org.craft.mcs.cap.core.account.user.domain.model.value.ExternalUserSubject;
+import org.craft.mcs.cap.core.account.shared.domain.value.IdentityProviderCode;
+import org.craft.mcs.cap.core.account.workspace.domain.model.value.ExternalOrganizationSubject;
 import org.craft.mcs.cap.shared.kernel.DomainException;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -16,7 +16,6 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Component;
 
 import static java.util.Objects.requireNonNull;
-
 
 /**
  * Anti-corruption mapper from Clerk JWT claims to CAP's provider-neutral authenticated actor.
@@ -33,20 +32,30 @@ public final class ClerkJwtActorMapper {
     final var subject = required(jwt.getSubject(), "Clerk JWT subject is required");
     final var email = required(firstClaim(jwt, "primaryEmail", "email", "primary_email_address"),
         "Clerk JWT email claim is required");
-    final var emailAddress = identityValue(() -> EmailAddress.of(email));
+    final var externalSubject = requiredIdentityValue(() -> ExternalUserSubject.of(subject));
+    final var emailAddress = requiredIdentityValue(() -> EmailAddress.of(email));
     final var displayName = firstClaim(jwt, "fullName", "name", "full_name", "username");
+    final var actorDisplayName = requiredIdentityValue(() -> DisplayName.of(
+        displayName == null ? emailAddress.localPart() : displayName
+    ));
     final var organizationSubject = firstClaim(jwt, "org_id", "organization_id");
 
     return new AuthenticatedActor(
         IdentityProviderCode.CLERK,
-        ExternalUserSubject.of(subject),
+        externalSubject,
         emailAddress,
-        identityValue(() -> DisplayName.of(
-            displayName == null ? emailAddress.localPart() : displayName
-        )),
+        actorDisplayName,
         identityValue(() -> HttpUrl.fromNullable(firstClaim(jwt, "imageUrl", "image_url", "picture"))),
-        organizationSubject == null ? null : ExternalOrganizationSubject.of(organizationSubject)
+        identityValue(() -> organizationSubject == null
+            ? null
+            : ExternalOrganizationSubject.of(organizationSubject))
     );
+  }
+
+  private static <T extends @NonNull Object> T requiredIdentityValue(
+      @NonNull Supplier<T> supplier
+  ) {
+    return requireNonNull(identityValue(supplier), "required Clerk JWT identity value cannot be null");
   }
 
   private static <T extends @Nullable Object> T identityValue(@NonNull Supplier<T> supplier) {

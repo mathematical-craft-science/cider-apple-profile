@@ -2,8 +2,8 @@ package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.account.en
 
 import java.time.Instant;
 import java.util.UUID;
-import org.craft.mcs.cap.core.account.domain.model.AccountRole;
-import org.craft.mcs.cap.core.account.domain.model.WorkspaceMembershipStatus;
+import org.craft.mcs.cap.core.account.membership.domain.model.AccountRole;
+import org.craft.mcs.cap.core.account.membership.domain.model.WorkspaceMembershipStatus;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.data.annotation.CreatedDate;
@@ -15,7 +15,6 @@ import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 import static java.util.Objects.requireNonNull;
-
 
 /** Spring Data JDBC aggregate entity linking a CAP user to a workspace. */
 @Table("workspace_memberships")

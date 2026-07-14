@@ -1,18 +1,17 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.security.clerk;
 
 import java.time.Instant;
-import org.craft.mcs.cap.core.account.application.model.AuthenticatedActor;
-import org.craft.mcs.cap.core.account.domain.model.value.DisplayName;
-import org.craft.mcs.cap.core.account.domain.model.value.EmailAddress;
-import org.craft.mcs.cap.core.account.domain.model.value.HttpUrl;
-import org.craft.mcs.cap.core.account.domain.model.value.IdentityProviderCode;
+import org.craft.mcs.cap.core.account.shared.domain.value.DisplayName;
+import org.craft.mcs.cap.core.account.shared.domain.value.EmailAddress;
+import org.craft.mcs.cap.core.account.shared.domain.value.HttpUrl;
+import org.craft.mcs.cap.core.account.user.application.model.AuthenticatedActor;
+import org.craft.mcs.cap.core.account.shared.domain.value.IdentityProviderCode;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.oauth2.jwt.Jwt;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 
 class ClerkJwtActorMapperTest {
 

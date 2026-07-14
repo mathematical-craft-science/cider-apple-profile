@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS workspaces
     workspace_id                  UUID                     NOT NULL PRIMARY KEY,
     name                          VARCHAR(255)             NOT NULL,
     type                          VARCHAR(64)              NOT NULL,
+    status                        VARCHAR(32)              NOT NULL,
     external_organization_provider VARCHAR(64),
     external_organization_subject VARCHAR(255),
 
@@ -93,6 +94,7 @@ CREATE TABLE IF NOT EXISTS contributor_profiles
     public_email        VARCHAR(320),
     public_phone        VARCHAR(64),
     contact_visibility  VARCHAR(32)              NOT NULL,
+    contact_publication_consented_at TIMESTAMP WITH TIME ZONE,
 
     version             BIGINT                   NOT NULL DEFAULT 0,
     created_at          TIMESTAMP WITH TIME ZONE NOT NULL,
@@ -101,3 +103,62 @@ CREATE TABLE IF NOT EXISTS contributor_profiles
     CONSTRAINT fk_contributor_profiles_user
         FOREIGN KEY (user_id) REFERENCES account_users (user_id)
 );
+
+CREATE TABLE IF NOT EXISTS workspace_invitations
+(
+    invitation_id       UUID                     NOT NULL PRIMARY KEY,
+    workspace_id        UUID                     NOT NULL,
+    invited_email       VARCHAR(320)             NOT NULL,
+    role                VARCHAR(64)              NOT NULL,
+    status              VARCHAR(32)              NOT NULL,
+    invited_by_user_id  UUID                     NOT NULL,
+    accepted_by_user_id UUID,
+    expires_at          TIMESTAMP WITH TIME ZONE NOT NULL,
+    resend_count        INTEGER                  NOT NULL DEFAULT 0,
+
+    version             BIGINT                   NOT NULL DEFAULT 0,
+    created_at          TIMESTAMP WITH TIME ZONE NOT NULL,
+    updated_at          TIMESTAMP WITH TIME ZONE NOT NULL,
+
+    CONSTRAINT fk_workspace_invitations_workspace
+        FOREIGN KEY (workspace_id) REFERENCES workspaces (workspace_id),
+    CONSTRAINT fk_workspace_invitations_inviter
+        FOREIGN KEY (invited_by_user_id) REFERENCES account_users (user_id),
+    CONSTRAINT fk_workspace_invitations_acceptor
+        FOREIGN KEY (accepted_by_user_id) REFERENCES account_users (user_id),
+    CONSTRAINT chk_workspace_invitations_owner_role
+        CHECK (role <> 'OWNER'),
+    CONSTRAINT chk_workspace_invitations_resend_count
+        CHECK (resend_count >= 0)
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS uk_workspace_invitations_pending_email
+    ON workspace_invitations (workspace_id, lower(invited_email))
+    WHERE status = 'PENDING';
+
+CREATE INDEX IF NOT EXISTS idx_workspace_invitations_workspace_created
+    ON workspace_invitations (workspace_id, created_at DESC, invitation_id DESC);
+
+CREATE TABLE IF NOT EXISTS workspace_administrative_audit
+(
+    audit_entry_id UUID                     NOT NULL PRIMARY KEY,
+    workspace_id   UUID                     NOT NULL,
+    actor_user_id  UUID                     NOT NULL,
+    action         VARCHAR(64)              NOT NULL,
+    subject_type   VARCHAR(64)              NOT NULL,
+    subject_id     UUID                     NOT NULL,
+    previous_value VARCHAR(2000),
+    new_value      VARCHAR(2000),
+    occurred_at    TIMESTAMP WITH TIME ZONE NOT NULL,
+    created_at     TIMESTAMP WITH TIME ZONE NOT NULL,
+    updated_at     TIMESTAMP WITH TIME ZONE NOT NULL,
+    version        BIGINT                   NOT NULL DEFAULT 0,
+
+    CONSTRAINT fk_workspace_administrative_audit_workspace
+        FOREIGN KEY (workspace_id) REFERENCES workspaces (workspace_id),
+    CONSTRAINT fk_workspace_administrative_audit_actor
+        FOREIGN KEY (actor_user_id) REFERENCES account_users (user_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_workspace_administrative_audit_workspace_occurred
+    ON workspace_administrative_audit (workspace_id, occurred_at DESC, audit_entry_id DESC);
