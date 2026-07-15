@@ -4,6 +4,7 @@ import java.util.List;
 import org.craft.mcs.cap.core.account.audit.application.port.in.WorkspaceAdministrativeAuditView;
 import org.craft.mcs.cap.core.account.audit.domain.model.value.WorkspaceAdministrativeAuditValue;
 import org.craft.mcs.cap.core.account.invitation.application.port.in.InviteWorkspaceMemberCommand;
+import org.craft.mcs.cap.core.account.invitation.application.port.in.IncomingWorkspaceInvitationView;
 import org.craft.mcs.cap.core.account.invitation.application.port.in.WorkspaceInvitationView;
 import org.craft.mcs.cap.core.account.membership.application.port.in.ChangeWorkspaceMemberRoleCommand;
 import org.craft.mcs.cap.core.account.membership.application.port.in.TransferWorkspaceOwnershipCommand;
@@ -16,12 +17,15 @@ import org.craft.mcs.cap.core.account.workspace.application.port.in.UpdateWorksp
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.dto.ChangeWorkspaceMemberRoleRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.dto.CreateWorkspaceRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.dto.InviteWorkspaceMemberRequest;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.dto.IncomingWorkspaceInvitationListResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.dto.IncomingWorkspaceInvitationResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.dto.TransferWorkspaceOwnershipRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.dto.UpdateWorkspaceRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.dto.WorkspaceAdministrativeAuditListResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.dto.WorkspaceAdministrativeAuditResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.dto.WorkspaceAssignableRoleCode;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.dto.WorkspaceInvitationListResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.dto.WorkspaceInvitationInviterResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.dto.WorkspaceInvitationResponse;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;
@@ -111,6 +115,35 @@ public final class WorkspaceAdministrationRestMapper {
     return new WorkspaceInvitationListResponse(views.stream().map(
         WorkspaceAdministrationRestMapper::toResponse
     ).toList());
+  }
+
+  public static @NonNull IncomingWorkspaceInvitationResponse toResponse(
+      @NonNull IncomingWorkspaceInvitationView view
+  ) {
+    return new IncomingWorkspaceInvitationResponse(
+        view.invitationId().value(),
+        AccountRestMapper.toResponse(view.workspace()),
+        view.role(),
+        view.status(),
+        new WorkspaceInvitationInviterResponse(
+            view.invitedBy().userId().value(),
+            view.invitedBy().displayName().value(),
+            view.invitedBy().avatarUrl() == null
+                ? null
+                : view.invitedBy().avatarUrl().value().toString() // NOSONAR
+        ),
+        view.expiresAt()
+    );
+  }
+
+  public static @NonNull IncomingWorkspaceInvitationListResponse toIncomingInvitationListResponse(
+      @NonNull List<@NonNull IncomingWorkspaceInvitationView> views
+  ) {
+    return new IncomingWorkspaceInvitationListResponse(
+        views.stream()
+            .map(WorkspaceAdministrationRestMapper::toResponse)
+            .toList()
+    );
   }
 
   public static @NonNull WorkspaceAdministrativeAuditResponse toResponse(

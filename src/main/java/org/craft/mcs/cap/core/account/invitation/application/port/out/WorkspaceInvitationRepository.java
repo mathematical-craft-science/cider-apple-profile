@@ -27,4 +27,8 @@ public interface WorkspaceInvitationRepository {
   @NonNull List<@NonNull WorkspaceInvitation> findAllByWorkspaceId(
       @NonNull WorkspaceId workspaceId
   );
+
+  @NonNull List<@NonNull WorkspaceInvitation> findAllByInvitedEmail(
+      @NonNull EmailAddress invitedEmail
+  );
 }

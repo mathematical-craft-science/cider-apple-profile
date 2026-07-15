@@ -73,6 +73,16 @@ class JdbcWorkspaceInvitationRepository implements WorkspaceInvitationRepository
     ).stream().map(WorkspaceAdministrationJdbcMapper::toDomain).toList();
   }
 
+  @Override
+  public @NonNull List<@NonNull WorkspaceInvitation> findAllByInvitedEmail(
+      @NonNull EmailAddress invitedEmail
+  ) {
+    requireNonNull(invitedEmail, "invited email cannot be null");
+    return repository.findAllByInvitedEmailOrderByCreatedAtDescInvitationIdDesc(
+        invitedEmail.value()
+    ).stream().map(WorkspaceAdministrationJdbcMapper::toDomain).toList();
+  }
+
   private static @NonNull AggregateReference<WorkspaceJdbcEntity, @NonNull UUID> workspaceReference(
       @NonNull WorkspaceId workspaceId
   ) {

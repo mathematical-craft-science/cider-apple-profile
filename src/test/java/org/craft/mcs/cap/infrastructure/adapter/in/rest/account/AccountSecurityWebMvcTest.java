@@ -135,6 +135,14 @@ class AccountSecurityWebMvcTest {
   }
 
   @Test
+  void protectsOpenApiRoutesWhenPublicAccessIsDisabled() throws Exception {
+    mockMvc.perform(get("/v3/api-docs"))
+        .andExpect(status().isUnauthorized());
+    mockMvc.perform(get("/v3/api-docs/cap"))
+        .andExpect(status().isUnauthorized());
+  }
+
+  @Test
   void returnsCurrentCapAccountForAuthenticatedJwt() throws Exception {
     final var account = account(AccountRole.OWNER);
     when(getCurrentAccountUseCase.get()).thenReturn(account);

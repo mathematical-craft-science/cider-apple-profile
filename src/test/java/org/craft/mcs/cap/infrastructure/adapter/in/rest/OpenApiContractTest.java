@@ -9,6 +9,8 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import org.craft.mcs.cap.core.account.audit.application.port.in.ListWorkspaceAdministrativeAuditUseCase;
 import org.craft.mcs.cap.core.account.contributor.application.port.in.ContributorProfileUseCase;
+import org.craft.mcs.cap.core.account.invitation.application.port.in.GetIncomingWorkspaceInvitationUseCase;
+import org.craft.mcs.cap.core.account.invitation.application.port.in.ListIncomingWorkspaceInvitationsUseCase;
 import org.craft.mcs.cap.core.account.invitation.application.port.in.WorkspaceInvitationUseCase;
 import org.craft.mcs.cap.core.account.membership.application.port.in.ListWorkspaceMembersUseCase;
 import org.craft.mcs.cap.core.account.membership.application.port.in.WorkspaceMembershipManagementUseCase;
@@ -102,6 +104,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @MockitoBean(types = {
     ContributorProfileUseCase.class,
     EnsureCurrentAccountProvisionedUseCase.class,
+    GetIncomingWorkspaceInvitationUseCase.class,
+    ListIncomingWorkspaceInvitationsUseCase.class,
     GetCurrentAccountProfileUseCase.class,
     GetCurrentAccountUseCase.class,
     GetCurrentUserPreferencesUseCase.class,
@@ -290,6 +294,8 @@ class OpenApiContractTest {
     assertJsonResponse(openApi, "/account/workspaces/{workspaceId}/settings", "get");
     assertJsonResponse(openApi, "/account/workspaces/{workspaceId}/settings", "patch");
     assertJsonResponse(openApi, "/account/workspaces/{workspaceId}/members", "get");
+    assertJsonResponse(openApi, "/account/workspace-invitations", "get");
+    assertJsonResponse(openApi, "/account/workspace-invitations/{invitationId}", "get");
 
     assertJsonRequest(openApi, "/feedstock-batches", "post");
     assertJsonRequest(openApi, "/feedstock-batches/{batchId}", "put");

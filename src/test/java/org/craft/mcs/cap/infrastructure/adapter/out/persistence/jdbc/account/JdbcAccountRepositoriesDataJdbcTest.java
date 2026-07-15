@@ -150,9 +150,10 @@ class JdbcAccountRepositoriesDataJdbcTest {
         WorkspaceType.INSTITUTE
     ));
     membershipRepository.save(WorkspaceMembership.createOwner(workspace.workspaceId(), user.userId()));
+    final var invitedEmail = EmailAddress.of("invitee@example.com");
     final var invitation = invitationRepository.save(WorkspaceInvitation.create(
         workspace.workspaceId(),
-        EmailAddress.of("invitee@example.com"),
+        invitedEmail,
         AccountRole.TECHNOLOGIST,
         user.userId(),
         Instant.parse("2026-07-14T08:00:00Z"),
@@ -171,6 +172,7 @@ class JdbcAccountRepositoriesDataJdbcTest {
     auditRepository.append(auditEntry);
 
     assertThat(invitationRepository.findById(invitation.invitationId())).contains(invitation);
+    assertThat(invitationRepository.findAllByInvitedEmail(invitedEmail)).containsExactly(invitation);
     assertThat(auditRepository.findAllByWorkspaceId(workspace.workspaceId())).containsExactly(auditEntry);
   }
 

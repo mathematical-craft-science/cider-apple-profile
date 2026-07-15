@@ -3,11 +3,15 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.account;
 import jakarta.validation.Valid;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.craft.mcs.cap.core.account.invitation.application.port.in.GetIncomingWorkspaceInvitationUseCase;
+import org.craft.mcs.cap.core.account.invitation.application.port.in.ListIncomingWorkspaceInvitationsUseCase;
 import org.craft.mcs.cap.core.account.invitation.application.port.in.WorkspaceInvitationCommand;
 import org.craft.mcs.cap.core.account.invitation.application.port.in.WorkspaceInvitationUseCase;
 import org.craft.mcs.cap.core.account.invitation.domain.model.value.WorkspaceInvitationId;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.dto.AccountMembershipResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.dto.InviteWorkspaceMemberRequest;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.dto.IncomingWorkspaceInvitationListResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.dto.IncomingWorkspaceInvitationResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.dto.WorkspaceInvitationListResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.dto.WorkspaceInvitationResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.mapper.AccountRestMapper;
@@ -27,6 +31,26 @@ import org.springframework.web.bind.annotation.RestController;
 public final class WorkspaceInvitationController implements WorkspaceInvitationApi {
 
   private final @NonNull WorkspaceInvitationUseCase workspaceInvitationUseCase;
+  private final @NonNull GetIncomingWorkspaceInvitationUseCase getIncomingWorkspaceInvitationUseCase;
+  private final @NonNull ListIncomingWorkspaceInvitationsUseCase listIncomingWorkspaceInvitationsUseCase;
+
+  @Override
+  @GetMapping("/account/workspace-invitations")
+  public @NonNull ResponseEntity<@NonNull IncomingWorkspaceInvitationListResponse> incomingInvitations() {
+    return ResponseEntity.ok(WorkspaceAdministrationRestMapper.toIncomingInvitationListResponse(
+        listIncomingWorkspaceInvitationsUseCase.list()
+    ));
+  }
+
+  @Override
+  @GetMapping("/account/workspace-invitations/{invitationId}")
+  public @NonNull ResponseEntity<@NonNull IncomingWorkspaceInvitationResponse> incomingInvitation(
+      @PathVariable @NonNull UUID invitationId
+  ) {
+    return ResponseEntity.ok(WorkspaceAdministrationRestMapper.toResponse(
+        getIncomingWorkspaceInvitationUseCase.get(WorkspaceInvitationId.of(invitationId))
+    ));
+  }
 
   @Override
   @PostMapping("/account/workspaces/{workspaceId}/invitations")

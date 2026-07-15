@@ -8,6 +8,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.UUID;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.dto.AccountMembershipResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.dto.InviteWorkspaceMemberRequest;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.dto.IncomingWorkspaceInvitationListResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.dto.IncomingWorkspaceInvitationResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.dto.WorkspaceInvitationListResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.dto.WorkspaceInvitationResponse;
 import org.jspecify.annotations.NonNull;
@@ -22,6 +24,48 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
  */
 @Tag(name = "Workspace Invitations", description = "Invite, accept, reject, revoke, expire, and resend lifecycle.")
 public interface WorkspaceInvitationApi {
+
+  @Operation(summary = "List current account invitations")
+  @ApiResponse(
+      responseCode = "200",
+      description = "Incoming invitations ordered from newest to oldest.",
+      content = @Content(
+          mediaType = APPLICATION_JSON_VALUE,
+          schema = @Schema(implementation = IncomingWorkspaceInvitationListResponse.class)
+      )
+  )
+  @ApiResponse(responseCode = "401", description = "Authentication is required.", content = @Content)
+  @NonNull ResponseEntity<@NonNull IncomingWorkspaceInvitationListResponse> incomingInvitations();
+
+  @Operation(summary = "Preview current account invitation")
+  @ApiResponse(
+      responseCode = "200",
+      description = "Invitation preview with workspace, role, status, and inviter context.",
+      content = @Content(
+          mediaType = APPLICATION_JSON_VALUE,
+          schema = @Schema(implementation = IncomingWorkspaceInvitationResponse.class)
+      )
+  )
+  @ApiResponse(responseCode = "401", description = "Authentication is required.", content = @Content)
+  @ApiResponse(
+      responseCode = "403",
+      description = "Invitation belongs to another account.",
+      content = @Content(
+          mediaType = APPLICATION_JSON_VALUE,
+          schema = @Schema(implementation = ProblemDetail.class)
+      )
+  )
+  @ApiResponse(
+      responseCode = "404",
+      description = "Invitation, workspace, or inviter was not found.",
+      content = @Content(
+          mediaType = APPLICATION_JSON_VALUE,
+          schema = @Schema(implementation = ProblemDetail.class)
+      )
+  )
+  @NonNull ResponseEntity<@NonNull IncomingWorkspaceInvitationResponse> incomingInvitation(
+      @NonNull UUID invitationId
+  );
 
   @Operation(summary = "Invite a workspace member")
   @ApiResponse(

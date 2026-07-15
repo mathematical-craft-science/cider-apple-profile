@@ -26,4 +26,8 @@ interface SpringDataWorkspaceInvitationJdbcRepository
   @NonNull List<@NonNull WorkspaceInvitationJdbcEntity> findAllByWorkspaceIdOrderByCreatedAtDescInvitationIdDesc(
       @NonNull AggregateReference<WorkspaceJdbcEntity, @NonNull UUID> workspaceId
   );
+
+  @NonNull List<@NonNull WorkspaceInvitationJdbcEntity> findAllByInvitedEmailOrderByCreatedAtDescInvitationIdDesc(
+      @NonNull String invitedEmail
+  );
 }
