@@ -11,7 +11,7 @@ import org.craft.mcs.cap.core.account.invitation.application.port.in.WorkspaceIn
 import org.craft.mcs.cap.core.account.invitation.application.port.out.WorkspaceInvitationRepository;
 import org.craft.mcs.cap.core.account.invitation.domain.model.WorkspaceInvitation;
 import org.craft.mcs.cap.core.account.invitation.domain.model.value.WorkspaceInvitationId;
-import org.craft.mcs.cap.core.account.membership.application.AccountAccessDeniedException;
+import org.craft.mcs.cap.core.account.shared.application.AccountAccessDeniedException;
 import org.craft.mcs.cap.core.account.user.application.port.out.AccountUserRepository;
 import org.craft.mcs.cap.core.account.user.application.usecase.CurrentAccountUserResolver;
 import org.craft.mcs.cap.core.account.workspace.application.WorkspaceNotFoundException;

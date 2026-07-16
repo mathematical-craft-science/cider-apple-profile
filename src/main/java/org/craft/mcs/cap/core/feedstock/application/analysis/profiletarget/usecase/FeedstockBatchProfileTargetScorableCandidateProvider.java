@@ -13,7 +13,7 @@ import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.SugarAcid
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.ScoreFeedstockBatchProfileTargetCommand;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.out.LatestFeedstockMeasurementSugarAcidityPointCandidateQuery;
 import org.craft.mcs.cap.core.feedstock.application.measurement.query.FeedstockBatchCurrentMeasurementQueryService;
-import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurement;
+import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementView;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
@@ -58,7 +58,7 @@ public final class FeedstockBatchProfileTargetScorableCandidateProvider {
   }
 
   private @NonNull Optional<@NonNull FeedstockBatchProfileTargetScorableCandidate> toCandidateIfScorable(
-      @NonNull FeedstockMeasurement measurement,
+      @NonNull FeedstockMeasurementView measurement,
       @NonNull ScoreFeedstockBatchProfileTargetCommand command
   ) {
     requireNonNull(measurement, "feedstock measurement cannot be null");
@@ -105,7 +105,7 @@ public final class FeedstockBatchProfileTargetScorableCandidateProvider {
   }
 
   private static @NonNull ProfileTargetDistanceCandidateReference referenceId(
-      @NonNull FeedstockMeasurement measurement
+      @NonNull FeedstockMeasurementView measurement
   ) {
     requireNonNull(measurement, "feedstock measurement cannot be null");
     return new ProfileTargetDistanceCandidateReference(

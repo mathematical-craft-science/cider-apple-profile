@@ -27,16 +27,6 @@ CREATE TABLE IF NOT EXISTS feedstock_batches
 CREATE INDEX IF NOT EXISTS idx_feedstock_batches_workspace_id
     ON feedstock_batches (workspace_id);
 
-ALTER TABLE IF EXISTS feedstock_batches
-    ADD COLUMN IF NOT EXISTS vessel VARCHAR(160);
-
-ALTER TABLE IF EXISTS feedstock_batches
-    DROP CONSTRAINT IF EXISTS chk_feedstock_batches_available_volume;
-
-ALTER TABLE IF EXISTS feedstock_batches
-    ADD CONSTRAINT chk_feedstock_batches_available_volume
-        CHECK (available_volume_liters > 0) NOT VALID;
-
 CREATE INDEX IF NOT EXISTS idx_feedstock_batches_workspace_season
     ON feedstock_batches (workspace_id, season_starts_on, season_ends_on);
 

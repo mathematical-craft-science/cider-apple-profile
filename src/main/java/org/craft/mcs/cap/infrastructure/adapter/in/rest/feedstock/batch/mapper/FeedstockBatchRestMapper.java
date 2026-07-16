@@ -3,7 +3,7 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.batch.mapper;
 import java.math.BigDecimal;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.CreateFeedstockBatchCommand;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.FeedstockBatchCreated;
-import org.craft.mcs.cap.core.feedstock.application.batch.port.in.FeedstockBatchSummary;
+import org.craft.mcs.cap.core.feedstock.application.batch.model.FeedstockBatchSummary;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.UpdateFeedstockBatchCommand;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockBatchName;

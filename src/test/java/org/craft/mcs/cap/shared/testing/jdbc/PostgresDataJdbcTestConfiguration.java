@@ -1,5 +1,8 @@
 package org.craft.mcs.cap.shared.testing.jdbc;
 
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.annotation.Bean;
@@ -16,5 +19,10 @@ public class PostgresDataJdbcTestConfiguration {
   @ServiceConnection
   PostgreSQLContainer postgresContainer() {
     return new PostgreSQLContainer(TestContainerImages.POSTGRES);
+  }
+
+  @Bean
+  Clock testClock() {
+    return Clock.fixed(Instant.parse("2026-01-01T00:00:00Z"), ZoneOffset.UTC);
   }
 }

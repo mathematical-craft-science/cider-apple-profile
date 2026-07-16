@@ -26,12 +26,16 @@ public final class UpdateUserPreferencesService implements UpdateUserPreferences
     requireNonNull(command, "update user preferences command cannot be null");
     final var currentUser = currentAccountUserResolver.resolve();
 
-    return transactionHelper.callInTransactionNonNull(() -> UserPreferencesView.from(
-        userPreferencesRepository.save(new UserPreferences(
-            currentUser.userId(),
-            command.locale(),
-            command.timeZone()
-        ))
-    ));
+    return transactionHelper.callInTransactionNonNull(() -> {
+      final var preferences = new UserPreferences(
+          currentUser.userId(),
+          command.locale(),
+          command.timeZone()
+      );
+      final var saved = userPreferencesRepository.findVersionedById(currentUser.userId())
+          .map(state -> userPreferencesRepository.update(state.withAggregate(preferences)).aggregate())
+          .orElseGet(() -> userPreferencesRepository.create(preferences));
+      return UserPreferencesView.from(saved);
+    });
   }
 }

@@ -26,7 +26,7 @@ import org.craft.mcs.cap.core.account.shared.domain.value.IdentityProviderCode;
 import org.craft.mcs.cap.core.account.workspace.domain.model.Workspace;
 import org.craft.mcs.cap.core.account.workspace.domain.model.WorkspaceSettings;
 import org.craft.mcs.cap.core.account.workspace.domain.model.WorkspaceType;
-import org.craft.mcs.cap.core.account.workspace.domain.model.value.ExternalOrganizationSubject;
+import org.craft.mcs.cap.core.account.shared.domain.value.ExternalOrganizationSubject;
 import org.craft.mcs.cap.shared.application.ConcurrentResourceModificationException;
 import org.craft.mcs.cap.shared.kernel.measurement.unit.TitratableAcidityBasis;
 import org.craft.mcs.cap.shared.testing.jdbc.PostgresDataJdbcTestConfiguration;
@@ -89,20 +89,20 @@ class JdbcAccountRepositoriesDataJdbcTest {
         IdentityProviderCode.CLERK,
         ExternalUserSubject.of("user_123")
     );
-    final var user = userRepository.save(AccountUser.create(
+    final var user = userRepository.create(AccountUser.create(
         IdentityProviderCode.CLERK,
         ExternalUserSubject.of("user_123"),
         EmailAddress.of("technologist@example.com"),
         DisplayName.of("CAP Technologist"),
         null
     ));
-    final var workspace = workspaceRepository.save(Workspace.createDefault(
+    final var workspace = workspaceRepository.create(Workspace.createDefault(
         DisplayName.of("My cidery"),
         WorkspaceType.CIDERY,
         IdentityProviderCode.CLERK,
         ExternalOrganizationSubject.of("org_123")
     ));
-    final var membership = membershipRepository.save(WorkspaceMembership.createOwner(
+    final var membership = membershipRepository.create(WorkspaceMembership.createOwner(
         workspace.workspaceId(),
         user.userId()
     ));
@@ -111,8 +111,8 @@ class JdbcAccountRepositoriesDataJdbcTest {
         Duration.ofHours(36),
         TitratableAcidityBasis.MALIC_ACID
     ));
-    final var preferences = preferencesRepository.save(UserPreferences.defaults(user.userId()));
-    final var contributorProfile = contributorProfileRepository.save(new ContributorProfile(
+    final var preferences = preferencesRepository.create(UserPreferences.defaults(user.userId()));
+    final var contributorProfile = contributorProfileRepository.create(new ContributorProfile(
         user.userId(),
         ContributorType.PRODUCER,
         DisplayName.of("CAP Orchard"),
@@ -138,20 +138,20 @@ class JdbcAccountRepositoriesDataJdbcTest {
 
   @Test
   void persistsWorkspaceInvitationAndAdministrativeAudit() {
-    final var user = userRepository.save(AccountUser.create(
+    final var user = userRepository.create(AccountUser.create(
         IdentityProviderCode.CLERK,
         ExternalUserSubject.of("audit_user"),
         EmailAddress.of("owner@example.com"),
         DisplayName.of("Workspace Owner"),
         null
     ));
-    final var workspace = workspaceRepository.save(Workspace.create(
+    final var workspace = workspaceRepository.create(Workspace.create(
         DisplayName.of("Audit workspace"),
         WorkspaceType.INSTITUTE
     ));
-    membershipRepository.save(WorkspaceMembership.createOwner(workspace.workspaceId(), user.userId()));
+    membershipRepository.create(WorkspaceMembership.createOwner(workspace.workspaceId(), user.userId()));
     final var invitedEmail = EmailAddress.of("invitee@example.com");
-    final var invitation = invitationRepository.save(WorkspaceInvitation.create(
+    final var invitation = invitationRepository.create(WorkspaceInvitation.create(
         workspace.workspaceId(),
         invitedEmail,
         AccountRole.TECHNOLOGIST,
@@ -164,7 +164,7 @@ class JdbcAccountRepositoriesDataJdbcTest {
         user.userId(),
         WorkspaceAdministrativeAction.INVITATION_CREATED,
         WorkspaceAdministrativeSubjectType.INVITATION,
-        WorkspaceAdministrativeSubjectId.forInvitation(invitation.invitationId()),
+        WorkspaceAdministrativeSubjectId.of(invitation.invitationId().value()),
         null,
         WorkspaceAdministrativeAuditValue.of(invitation.role().name()),
         Instant.parse("2026-07-14T08:00:00Z")
@@ -178,44 +178,69 @@ class JdbcAccountRepositoriesDataJdbcTest {
 
   @Test
   void updatesExistingAccountUserWithoutReinsertingAssignedId() {
-    final var user = userRepository.save(AccountUser.create(
+    final var user = userRepository.create(AccountUser.create(
         IdentityProviderCode.CLERK,
         ExternalUserSubject.of("user_update"),
         EmailAddress.of("before@example.com"),
         DisplayName.of("Before"),
         null
     ));
+    final var state = userRepository.findVersionedById(user.userId()).orElseThrow();
     final var updated = user.synchronizeProviderEmail(EmailAddress.of("after@example.com"));
 
-    userRepository.save(updated);
+    userRepository.update(state.withAggregate(updated));
 
     assertThat(userRepository.findById(user.userId())).contains(updated);
   }
 
   @Test
+  void rejectsAccountUserStateLoadedBeforeAnotherUpdate() {
+    final var user = userRepository.create(AccountUser.create(
+        IdentityProviderCode.CLERK,
+        ExternalUserSubject.of("user_stale_update"),
+        EmailAddress.of("before@example.com"),
+        DisplayName.of("Before"),
+        null
+    ));
+    final var first = userRepository.findVersionedById(user.userId()).orElseThrow();
+    final var stale = userRepository.findVersionedById(user.userId()).orElseThrow();
+
+    userRepository.update(first.withAggregate(
+        first.aggregate().synchronizeProviderEmail(EmailAddress.of("first@example.com"))
+    ));
+
+    assertThatThrownBy(() -> userRepository.update(stale.withAggregate(
+        stale.aggregate().synchronizeProviderEmail(EmailAddress.of("stale@example.com"))
+    )))
+        .isInstanceOf(ConcurrentResourceModificationException.class)
+        .hasMessage("resource was modified concurrently: account user");
+  }
+
+  @Test
   void updatesExistingUserPreferencesWithoutReinsertingAssignedId() {
-    final var user = userRepository.save(AccountUser.create(
+    final var user = userRepository.create(AccountUser.create(
         IdentityProviderCode.CLERK,
         ExternalUserSubject.of("preferences_update"),
         EmailAddress.of("preferences@example.com"),
         DisplayName.of("Preferences"),
         null
     ));
-    preferencesRepository.save(UserPreferences.defaults(user.userId()));
+    preferencesRepository.create(UserPreferences.defaults(user.userId()));
     final var updated = new UserPreferences(
         user.userId(),
         Locale.forLanguageTag("ru-RU"),
         ZoneId.of("Europe/Moscow")
     );
 
-    preferencesRepository.save(updated);
+    final var state = preferencesRepository.findVersionedById(user.userId()).orElseThrow();
+    preferencesRepository.update(state.withAggregate(updated));
 
     assertThat(preferencesRepository.findByUserId(user.userId())).contains(updated);
   }
 
   @Test
   void updatesWorkspaceSettingsWithAuditAndRejectsStaleRevision() {
-    final var workspace = workspaceRepository.save(Workspace.createDefault(
+    final var workspace = workspaceRepository.create(Workspace.createDefault(
         DisplayName.of("Settings workspace"),
         WorkspaceType.CIDERY,
         null,

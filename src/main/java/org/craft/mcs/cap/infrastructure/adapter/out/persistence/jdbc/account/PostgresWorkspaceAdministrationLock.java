@@ -1,7 +1,7 @@
 package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.account;
 
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.account.workspace.application.port.out.WorkspaceAdministrationLock;
+import org.craft.mcs.cap.core.account.shared.application.port.out.WorkspaceAdministrationLock;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;
 import org.springframework.jdbc.core.simple.JdbcClient;

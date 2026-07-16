@@ -1,7 +1,7 @@
 package org.craft.mcs.cap.core.account.user.application.usecase;
 
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.account.membership.application.AccountAccessDeniedException;
+import org.craft.mcs.cap.core.account.shared.application.AccountAccessDeniedException;
 import org.craft.mcs.cap.core.account.user.application.AccountNotFoundException;
 import org.craft.mcs.cap.core.account.user.application.port.out.AccountUserRepository;
 import org.craft.mcs.cap.core.account.user.application.port.out.CurrentActorProvider;

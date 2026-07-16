@@ -2,7 +2,7 @@ package org.craft.mcs.cap.core.account.invitation.application.port.in;
 
 import java.util.List;
 import org.craft.mcs.cap.core.account.invitation.domain.model.value.WorkspaceInvitationId;
-import org.craft.mcs.cap.core.account.membership.application.port.in.WorkspaceMembershipView;
+import org.craft.mcs.cap.core.account.context.application.port.in.WorkspaceMembershipView;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;
 

@@ -1,5 +1,6 @@
 package org.craft.mcs.cap.core.account.workspace.application.port.in;
 
+import org.craft.mcs.cap.core.account.workspace.application.model.WorkspaceSettingsView;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;
 

@@ -92,6 +92,10 @@ tasks.named('test') {
     useJUnitPlatform()
 }
 
+tasks.withType(JavaCompile).configureEach {
+    options.compilerArgs.add('-Xlint:unchecked')
+}
+
 tasks.withType(Javadoc).configureEach {
     options.encoding = 'UTF-8'
     options.addStringOption('Xdoclint:all,-missing', '-quiet')

@@ -1,8 +1,8 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.security;
 
 import jakarta.servlet.http.HttpServletRequest;
-import java.util.UUID;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
+import org.craft.mcs.cap.shared.kernel.identity.UuidV7Generator;
 import org.craft.mcs.cap.shared.application.ApplicationValidationException;
 import org.junit.jupiter.api.Test;
 
@@ -18,7 +18,7 @@ class HttpRequestActiveWorkspaceProviderTest {
   @Test
   void returnsSelectedWorkspaceFromRequestHeader() {
     final var request = mock(HttpServletRequest.class);
-    final var workspaceId = UUID.randomUUID();
+    final var workspaceId = UuidV7Generator.newUuid();
     when(request.getHeader(ACTIVE_WORKSPACE_ID)).thenReturn(workspaceId.toString());
 
     assertThat(new HttpRequestActiveWorkspaceProvider(request).selectedWorkspaceId())

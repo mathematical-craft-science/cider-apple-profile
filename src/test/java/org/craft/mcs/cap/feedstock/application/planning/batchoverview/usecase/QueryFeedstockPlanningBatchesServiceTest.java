@@ -26,7 +26,7 @@ import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.BuiltInSu
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.RectangleSugarAcidityZoneAssessor;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.SugarAcidityZone;
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.FeedstockBatchProfileTargetCandidates;
-import org.craft.mcs.cap.core.feedstock.application.batch.port.in.FeedstockBatchSummary;
+import org.craft.mcs.cap.core.feedstock.application.batch.model.FeedstockBatchSummary;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.ListFeedstockBatchesUseCase;
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.PredefinedFeedstockProfileTargetSelection;
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.QueryFeedstockBatchProfileTargetCandidatesUseCase;
@@ -61,6 +61,8 @@ import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementRecordedAt;
+import static org.craft.mcs.cap.shared.testing.FeedstockMeasurementViews.view;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -88,7 +90,7 @@ class QueryFeedstockPlanningBatchesServiceTest {
     final var targetCandidates = mock(QueryFeedstockBatchProfileTargetCandidatesUseCase.class);
     final var service = service(listBatches, measurementRepository, targetCandidates);
     when(listBatches.list(any())).thenReturn(List.of(batch));
-    when(measurementRepository.findLatestByBatchIds(Set.of(batchId))).thenReturn(List.of(measurement));
+    when(measurementRepository.findLatestByBatchIds(Set.of(batchId))).thenReturn(List.of(view(measurement)));
 
     final var view = service.query(queryWithoutTarget());
 
@@ -129,7 +131,8 @@ class QueryFeedstockPlanningBatchesServiceTest {
     final var targetCandidates = mock(QueryFeedstockBatchProfileTargetCandidatesUseCase.class);
     final var service = service(listBatches, measurementRepository, targetCandidates);
     when(listBatches.list(any())).thenReturn(List.of(batch(batchId)));
-    when(measurementRepository.findLatestByBatchIds(Set.of(batchId))).thenReturn(List.of(measurement(batchId)));
+    when(measurementRepository.findLatestByBatchIds(Set.of(batchId)))
+        .thenReturn(List.of(view(measurement(batchId))));
     when(targetCandidates.query(any())).thenReturn(new FeedstockBatchProfileTargetCandidates(
         ProfileTargetScoringPurpose.BLENDING_PLANNING,
         ProfileAxisNormalizerCode.EFFECTIVE_RANGE,
@@ -158,7 +161,7 @@ class QueryFeedstockPlanningBatchesServiceTest {
         Duration.ofDays(3)
     );
     when(listBatches.list(any())).thenReturn(List.of(batch));
-    when(measurementRepository.findLatestByBatchIds(Set.of(batchId))).thenReturn(List.of(measurement));
+    when(measurementRepository.findLatestByBatchIds(Set.of(batchId))).thenReturn(List.of(view(measurement)));
 
     final var view = service.query(queryWithoutTarget());
 
@@ -272,7 +275,8 @@ class QueryFeedstockPlanningBatchesServiceTest {
             .titratableAcidity(ExactMeasurement.of(TitratableAcidityValue.of("5.0")))
             .yeastAssimilableNitrogen(ExactMeasurement.of(YeastAssimilableNitrogenValue.of("120")))
             .build(),
-        Instant.parse("2026-05-01T10:00:00Z")
+        Instant.parse("2026-05-01T10:00:00Z"),
+        feedstockMeasurementRecordedAt()
     );
   }
 }

@@ -4,13 +4,14 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import org.craft.mcs.cap.core.batchtraceability.domain.graph.BatchTraceabilityGraphProjector;
-import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceId;
+import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceActorReference;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceMaterialSnapshot;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceOperationType;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStep;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStepSubject;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceSubject;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceSubjectType;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
@@ -26,7 +27,7 @@ class BatchTraceabilityRestMapperTest {
   void mapsTraceStepOccurredAtToGraphEdgeResponse() {
     final var occurredAt = Instant.parse("2026-05-18T00:00:00Z");
     final var step = BatchTraceStep.create(
-        BatchTraceId.newId(),
+        WorkspaceId.newId(),
         null,
         BatchTraceOperationType.CREATE_PRODUCTION_BATCH,
         List.of(BatchTraceStepSubject.of(BatchTraceSubject.of(
@@ -38,7 +39,7 @@ class BatchTraceabilityRestMapperTest {
             "production-1"
         ))),
         occurredAt,
-        null,
+        BatchTraceActorReference.system("test"),
         null
     );
 
@@ -53,7 +54,7 @@ class BatchTraceabilityRestMapperTest {
   @Test
   void mapsYanAxisFromTraceSnapshot() {
     final var step = BatchTraceStep.create(
-        BatchTraceId.newId(),
+        WorkspaceId.newId(),
         null,
         BatchTraceOperationType.CREATE_PRODUCTION_BATCH,
         List.of(BatchTraceStepSubject.of(BatchTraceSubject.of(
@@ -78,7 +79,7 @@ class BatchTraceabilityRestMapperTest {
             ), null)
         )),
         Instant.parse("2026-05-18T00:00:00Z"),
-        null,
+        BatchTraceActorReference.system("test"),
         null
     );
 

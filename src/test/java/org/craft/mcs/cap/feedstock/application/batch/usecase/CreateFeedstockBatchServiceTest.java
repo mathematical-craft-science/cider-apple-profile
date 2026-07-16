@@ -17,7 +17,7 @@ import org.craft.mcs.cap.shared.platform.TransactionHelper;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
-import static java.util.UUID.randomUUID;
+import static org.craft.mcs.cap.shared.kernel.identity.UuidV7Generator.newUuid;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -37,8 +37,8 @@ class CreateFeedstockBatchServiceTest {
         mock(FeedstockAccessControl.class),
         transactionHelper()
     );
-    final var workspaceId = WorkspaceId.of(randomUUID());
-    when(repository.save(any(FeedstockBatch.class))).thenAnswer(invocation -> invocation.getArgument(0));
+    final var workspaceId = WorkspaceId.of(newUuid());
+    when(repository.create(any(FeedstockBatch.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
     final var created = service.create(new CreateFeedstockBatchCommand(
         workspaceId,
@@ -68,7 +68,7 @@ class CreateFeedstockBatchServiceTest {
         transactionHelper()
     );
     final var command = new CreateFeedstockBatchCommand(
-        WorkspaceId.of(randomUUID()),
+        WorkspaceId.of(newUuid()),
         FeedstockBatchName.of("Late season fruit"),
         null,
         FeedstockType.JUICE,
@@ -81,7 +81,7 @@ class CreateFeedstockBatchServiceTest {
     assertThatThrownBy(() -> service.create(command))
         .isInstanceOf(DomainRuleViolationException.class)
         .hasMessageContaining("available volume must be greater than zero");
-    verify(repository, never()).save(any(FeedstockBatch.class));
+    verify(repository, never()).create(any(FeedstockBatch.class));
   }
 
   private static @NonNull TransactionHelper transactionHelper() {

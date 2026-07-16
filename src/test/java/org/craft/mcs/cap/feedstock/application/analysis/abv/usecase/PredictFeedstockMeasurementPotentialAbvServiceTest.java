@@ -33,8 +33,9 @@ import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.junit.jupiter.api.Test;
 
-import static java.util.UUID.randomUUID;
+import static org.craft.mcs.cap.shared.kernel.identity.UuidV7Generator.newUuid;
 import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementInstant;
+import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementRecordedAt;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
@@ -55,7 +56,7 @@ class PredictFeedstockMeasurementPotentialAbvServiceTest {
         .build());
     when(repository.findById(sample.measurementId())).thenReturn(Optional.of(sample));
     when(batchRepository.findById(sample.batchId()))
-        .thenReturn(Optional.of(batch(sample.batchId(), WorkspaceId.of(randomUUID()))));
+        .thenReturn(Optional.of(batch(sample.batchId(), WorkspaceId.of(newUuid()))));
 
     final var prediction = service.predict(sample.measurementId());
 
@@ -74,7 +75,7 @@ class PredictFeedstockMeasurementPotentialAbvServiceTest {
         .build());
     when(repository.findById(sample.measurementId())).thenReturn(Optional.of(sample));
     when(batchRepository.findById(sample.batchId()))
-        .thenReturn(Optional.of(batch(sample.batchId(), WorkspaceId.of(randomUUID()))));
+        .thenReturn(Optional.of(batch(sample.batchId(), WorkspaceId.of(newUuid()))));
 
     assertThatThrownBy(() -> service.predict(sample.measurementId()))
         .isInstanceOfSatisfying(
@@ -110,7 +111,8 @@ class PredictFeedstockMeasurementPotentialAbvServiceTest {
         FeedstockBatchId.newId(),
         FeedstockMeasurementName.of("Batch A"),
         profile,
-        feedstockMeasurementInstant()
+        feedstockMeasurementInstant(),
+        feedstockMeasurementRecordedAt()
     );
   }
 

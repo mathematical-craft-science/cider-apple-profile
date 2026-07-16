@@ -9,10 +9,12 @@ import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatc
 import org.craft.mcs.cap.core.feedstock.application.inventory.port.in.ConsumeFeedstockBatchMaterialCommand;
 import org.craft.mcs.cap.core.feedstock.application.inventory.port.in.ConsumeFeedstockBatchMaterialUseCase;
 import org.craft.mcs.cap.core.feedstock.application.inventory.port.in.ConsumedFeedstockBatchMaterial;
+import org.craft.mcs.cap.core.feedstock.application.inventory.port.in.FeedstockBatchMaterialEvidenceReference;
 import org.craft.mcs.cap.core.feedstock.application.inventory.port.in.FeedstockBatchMaterialName;
 import org.craft.mcs.cap.core.feedstock.application.measurement.query.FeedstockBatchCurrentMeasurementQueryService;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
 import org.craft.mcs.cap.shared.platform.TransactionHelper;
+import org.craft.mcs.cap.shared.application.persistence.VersionedAggregate;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 
@@ -48,26 +50,32 @@ public final class ConsumeFeedstockBatchMaterialService
   private @NonNull ConsumedFeedstockBatchMaterial consumeInTransaction(
       @NonNull ConsumeFeedstockBatchMaterialCommand command
   ) {
-    final var batch = requireOwnedBatch(command);
+    final var state = requireOwnedBatch(command);
+    final var batch = state.aggregate();
     requireAvailableVolume(batch, command);
     final var measurement = currentMeasurementQueryService.requireCurrentMeasurement(batch.batchId());
 
     batch.consumeAvailableVolume(command.volume());
-    feedstockBatchRepository.save(batch);
+    feedstockBatchRepository.update(state.withAggregate(batch));
 
     return new ConsumedFeedstockBatchMaterial(
         batch.batchId(),
         FeedstockBatchMaterialName.of(batch.name().value()),
         command.volume(),
+        new FeedstockBatchMaterialEvidenceReference(
+            measurement.measurementId().value(),
+            measurement.evidenceVersion()
+        ),
         measurement.chemicalProfile()
     );
   }
 
-  private @NonNull FeedstockBatch requireOwnedBatch(
+  private @NonNull VersionedAggregate<FeedstockBatch> requireOwnedBatch(
       @NonNull ConsumeFeedstockBatchMaterialCommand command
   ) {
-    final var batch = feedstockBatchRepository.findById(command.batchId())
+    final var state = feedstockBatchRepository.findByIdForConsumption(command.batchId())
         .orElseThrow(() -> new FeedstockBatchNotFoundException(command.batchId()));
+    final var batch = state.aggregate();
 
     if (!batch.workspaceId().equals(command.workspaceId())) {
       throw new FeedstockBatchOwnershipMismatchException(
@@ -76,7 +84,7 @@ public final class ConsumeFeedstockBatchMaterialService
           batch.workspaceId()
       );
     }
-    return batch;
+    return state;
   }
 
   private static void requireAvailableVolume(

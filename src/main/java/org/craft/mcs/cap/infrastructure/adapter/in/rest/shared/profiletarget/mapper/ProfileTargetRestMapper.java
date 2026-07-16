@@ -82,10 +82,13 @@ public final class ProfileTargetRestMapper {
       @NonNull ProfileTargetDistance distance
   ) {
     requireNonNull(distance, "profile target distance cannot be null");
+    final var fit = distance.fitAssessment();
 
     return new ProfileTargetDistanceResponse(
         distance.status(),
         distance.value(),
+        fit.matchPercent(),
+        fit.status(),
         distance.insideSugarAcidityTarget(),
         distance.insideTarget(),
         toResponse(distance.nearestTargetPoint()),

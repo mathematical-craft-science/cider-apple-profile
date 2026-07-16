@@ -5,6 +5,7 @@ import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.in.Appl
 import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.in.AppleVarietySugarAcidityZonePointQuery;
 import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.in.AppleVarietySugarAcidityZoneResult;
 import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.out.AppleVarietySugarAcidityPointCandidateRepository;
+import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.out.AppleVarietySugarAcidityPointCandidateView;
 import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.usecase.QueryAppleVarietySugarAcidityZonePointsService;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVariety;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyId;
@@ -45,7 +46,11 @@ class QueryAppleVarietySugarAcidityZonePointsServiceTest {
     final var alpha = variety("Kingston Alpha", profile("1.066", "5.7", "1700"));
     final var wrongZone = variety("Kingston Sharp", profile("1.066", "8.2", "1700"));
 
-    when(repository.findCandidates(any())).thenReturn(List.of(alpha, beta, wrongZone));
+    when(repository.findCandidates(any())).thenReturn(List.of(
+        candidate(alpha),
+        candidate(beta),
+        candidate(wrongZone)
+    ));
 
     final var result = service.query(new AppleVarietySugarAcidityZonePointQuery(
         new AppleVarietyPointFilters(
@@ -72,8 +77,8 @@ class QueryAppleVarietySugarAcidityZonePointsServiceTest {
     final var third = variety("C Third", profile("1.066", "5.7", null));
 
     when(repository.findCandidates(any()))
-        .thenReturn(List.of(first, second, third))
-        .thenReturn(List.of(third));
+        .thenReturn(List.of(candidate(first), candidate(second), candidate(third)))
+        .thenReturn(List.of(candidate(third)));
 
     final var firstPage = service.query(new AppleVarietySugarAcidityZonePointQuery(
         new AppleVarietyPointFilters(null, null, null),
@@ -100,7 +105,7 @@ class QueryAppleVarietySugarAcidityZonePointsServiceTest {
     final var service = service(repository);
     final var partial = variety("Partial", partialProfile());
 
-    when(repository.findCandidates(any())).thenReturn(List.of(partial));
+    when(repository.findCandidates(any())).thenReturn(List.of(candidate(partial)));
 
     final var result = service.query(new AppleVarietySugarAcidityZonePointQuery(
         new AppleVarietyPointFilters(
@@ -156,6 +161,14 @@ class QueryAppleVarietySugarAcidityZonePointsServiceTest {
         AppleVarietyId.newId(),
         AppleVarietyName.of(name),
         profile
+    );
+  }
+
+  private static AppleVarietySugarAcidityPointCandidateView candidate(AppleVariety variety) {
+    return new AppleVarietySugarAcidityPointCandidateView(
+        variety.varietyId(),
+        variety.name(),
+        variety.chemicalProfile()
     );
   }
 

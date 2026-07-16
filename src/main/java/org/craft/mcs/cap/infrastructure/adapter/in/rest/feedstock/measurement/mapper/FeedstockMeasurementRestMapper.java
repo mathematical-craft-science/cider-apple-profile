@@ -2,7 +2,7 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.measurement.m
 
 import org.craft.mcs.cap.core.feedstock.application.measurement.port.in.CreateFeedstockMeasurementCommand;
 import org.craft.mcs.cap.core.feedstock.application.measurement.port.in.FeedstockMeasurementCreated;
-import org.craft.mcs.cap.core.feedstock.application.measurement.port.in.FeedstockMeasurementSummary;
+import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementSummary;
 import org.craft.mcs.cap.core.feedstock.application.measurement.port.in.UpdateFeedstockMeasurementCommand;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurementId;
@@ -36,7 +36,9 @@ public final class FeedstockMeasurementRestMapper {
     return new CreateFeedstockMeasurementCommand(
         batchId,
         FeedstockMeasurementName.of(request.name()),
-        ChemicalProfileRestMapper.toDomain(requireNonNull(request.chemicalProfile(), "chemical profile cannot be null")),
+        ChemicalProfileRestMapper.toDomain(
+            requireNonNull(request.chemicalProfile(), "chemical profile cannot be null")
+        ),
         requireNonNull(request.measuredAt(), "measured at cannot be null"),
         request.note()
     );
@@ -83,7 +85,9 @@ public final class FeedstockMeasurementRestMapper {
         batchId,
         measurementId,
         FeedstockMeasurementName.of(request.name()),
-        ChemicalProfileRestMapper.toDomain(requireNonNull(request.chemicalProfile(), "chemical profile cannot be null")),
+        ChemicalProfileRestMapper.toDomain(
+            requireNonNull(request.chemicalProfile(), "chemical profile cannot be null")
+        ),
         false,
         requireNonNull(request.measuredAt(), "measured at cannot be null"),
         request.note(),

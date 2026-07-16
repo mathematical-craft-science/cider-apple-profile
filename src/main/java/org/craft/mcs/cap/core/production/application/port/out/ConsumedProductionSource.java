@@ -1,5 +1,6 @@
 package org.craft.mcs.cap.core.production.application.port.out;
 
+import org.craft.mcs.cap.core.production.candidate.domain.model.ProductionSourceEvidenceReference;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceReference;
 import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
@@ -21,11 +22,13 @@ public record ConsumedProductionSource(
     @Nullable ProductionSourceDisplayName displayName,
     @NonNull VolumeValue volume,
     @Nullable ChemicalProfileAxes profile,
-    @Nullable ConfidenceLevel confidence
+    @Nullable ConfidenceLevel confidence,
+    @NonNull ProductionSourceEvidenceReference evidenceReference
 ) {
 
   public ConsumedProductionSource {
     requireNonNull(reference, "production source reference cannot be null");
     requireNonNull(volume, "consumed production source volume cannot be null");
+    requireNonNull(evidenceReference, "production source evidence reference cannot be null");
   }
 }

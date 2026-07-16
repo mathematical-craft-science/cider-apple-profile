@@ -47,7 +47,7 @@ public final class CreateFeedstockBatchService
           command.availableVolume()
       ).changeSource(command.source()).changeNote(command.note());
 
-      final var saved = feedstockBatchRepository.save(batch);
+      final var saved = feedstockBatchRepository.create(batch);
 
       return new FeedstockBatchCreated(
           saved.batchId(),

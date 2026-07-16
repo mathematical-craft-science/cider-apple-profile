@@ -5,7 +5,7 @@ import org.craft.mcs.cap.core.account.shared.domain.value.EmailAddress;
 import org.craft.mcs.cap.core.account.shared.domain.value.HttpUrl;
 import org.craft.mcs.cap.core.account.user.domain.model.value.ExternalUserSubject;
 import org.craft.mcs.cap.core.account.shared.domain.value.IdentityProviderCode;
-import org.craft.mcs.cap.core.account.workspace.domain.model.value.ExternalOrganizationSubject;
+import org.craft.mcs.cap.core.account.shared.domain.value.ExternalOrganizationSubject;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

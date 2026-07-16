@@ -5,7 +5,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
-import org.craft.mcs.cap.core.feedstock.application.batch.port.in.FeedstockBatchSummary;
+import org.craft.mcs.cap.core.feedstock.application.batch.model.FeedstockBatchSummary;
 import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.FeedstockPlanningBatchView;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in.FeedstockCurrentMeasurementView;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in.FeedstockCurrentProfileDataQualityStatus;

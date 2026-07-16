@@ -2,9 +2,9 @@ package org.craft.mcs.cap.infrastructure.adapter.in.security;
 
 import java.util.function.Supplier;
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.account.membership.application.port.in.WorkspaceMembershipView;
+import org.craft.mcs.cap.core.account.context.application.port.in.WorkspaceMembershipView;
 import org.craft.mcs.cap.core.account.membership.domain.model.AccountRole;
-import org.craft.mcs.cap.core.account.user.application.port.in.GetCurrentAccountUseCase;
+import org.craft.mcs.cap.core.account.context.application.port.in.GetCurrentAccountUseCase;
 import org.craft.mcs.cap.shared.application.ApplicationException;
 import org.jspecify.annotations.NonNull;
 import org.springframework.security.authorization.AuthorizationDecision;

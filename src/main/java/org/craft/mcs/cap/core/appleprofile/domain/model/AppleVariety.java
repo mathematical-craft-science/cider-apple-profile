@@ -30,7 +30,7 @@ public final class AppleVariety {
   private AppleVariety(
       @NonNull AppleVarietyId varietyId,
       @NonNull AppleVarietyName name,
-    @NonNull ChemicalProfile chemicalProfile
+      @NonNull ChemicalProfile chemicalProfile
   ) {
     this.varietyId = requireNonNull(varietyId, "apple variety id cannot be null");
     this.name = requireNonNull(name, "apple variety name cannot be null");

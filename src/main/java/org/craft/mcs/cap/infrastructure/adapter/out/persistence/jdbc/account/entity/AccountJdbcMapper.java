@@ -19,8 +19,10 @@ import org.craft.mcs.cap.core.account.workspace.application.model.WorkspaceSetti
 import org.craft.mcs.cap.core.account.workspace.application.port.out.WorkspaceSettingsState;
 import org.craft.mcs.cap.core.account.workspace.domain.model.Workspace;
 import org.craft.mcs.cap.core.account.workspace.domain.model.WorkspaceSettings;
-import org.craft.mcs.cap.core.account.workspace.domain.model.value.ExternalOrganizationSubject;
+import org.craft.mcs.cap.core.account.shared.domain.value.ExternalOrganizationSubject;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
+import org.craft.mcs.cap.shared.application.persistence.AggregateRevision;
+import org.craft.mcs.cap.shared.application.persistence.VersionedAggregate;
 import org.jspecify.annotations.NonNull;
 import org.springframework.data.jdbc.core.mapping.AggregateReference;
 
@@ -69,6 +71,12 @@ public final class AccountJdbcMapper {
     );
   }
 
+  public static @NonNull VersionedAggregate<AccountUser> toVersionedAggregate(
+      @NonNull AccountUserJdbcEntity entity
+  ) {
+    return new VersionedAggregate<>(toDomain(entity), AggregateRevision.of(entity.version));
+  }
+
   public static @NonNull WorkspaceJdbcEntity fromDomain(@NonNull Workspace workspace) {
     return new WorkspaceJdbcEntity(
         workspace.workspaceId().value(),
@@ -115,6 +123,12 @@ public final class AccountJdbcMapper {
     );
   }
 
+  public static @NonNull VersionedAggregate<Workspace> toVersionedAggregate(
+      @NonNull WorkspaceJdbcEntity entity
+  ) {
+    return new VersionedAggregate<>(toDomain(entity), AggregateRevision.of(entity.version));
+  }
+
   public static @NonNull WorkspaceMembershipJdbcEntity fromDomain(
       @NonNull WorkspaceMembership membership
   ) {
@@ -146,6 +160,12 @@ public final class AccountJdbcMapper {
         entity.role,
         entity.status
     );
+  }
+
+  public static @NonNull VersionedAggregate<WorkspaceMembership> toVersionedAggregate(
+      @NonNull WorkspaceMembershipJdbcEntity entity
+  ) {
+    return new VersionedAggregate<>(toDomain(entity), AggregateRevision.of(entity.version));
   }
 
   public static @NonNull WorkspaceSettingsJdbcEntity fromDomain(@NonNull WorkspaceSettings settings) {
@@ -207,6 +227,12 @@ public final class AccountJdbcMapper {
     );
   }
 
+  public static @NonNull VersionedAggregate<UserPreferences> toVersionedAggregate(
+      @NonNull UserPreferencesJdbcEntity entity
+  ) {
+    return new VersionedAggregate<>(toDomain(entity), AggregateRevision.of(entity.version));
+  }
+
   public static @NonNull ContributorProfileJdbcEntity fromDomain(@NonNull ContributorProfile profile) {
     return new ContributorProfileJdbcEntity(
         profile.userId().value(),
@@ -245,5 +271,31 @@ public final class AccountJdbcMapper {
         entity.contactVisibility,
         entity.contactPublicationConsentedAt
     );
+  }
+
+  public static @NonNull VersionedAggregate<ContributorProfile> toVersionedAggregate(
+      @NonNull ContributorProfileJdbcEntity entity
+  ) {
+    return new VersionedAggregate<>(toDomain(entity), AggregateRevision.of(entity.version));
+  }
+
+  public static long revision(@NonNull AccountUserJdbcEntity entity) {
+    return requireNonNull(entity, "account user row cannot be null").version;
+  }
+
+  public static long revision(@NonNull WorkspaceJdbcEntity entity) {
+    return requireNonNull(entity, "workspace row cannot be null").version;
+  }
+
+  public static long revision(@NonNull WorkspaceMembershipJdbcEntity entity) {
+    return requireNonNull(entity, "workspace membership row cannot be null").version;
+  }
+
+  public static long revision(@NonNull UserPreferencesJdbcEntity entity) {
+    return requireNonNull(entity, "user preferences row cannot be null").version;
+  }
+
+  public static long revision(@NonNull ContributorProfileJdbcEntity entity) {
+    return requireNonNull(entity, "contributor profile row cannot be null").version;
   }
 }

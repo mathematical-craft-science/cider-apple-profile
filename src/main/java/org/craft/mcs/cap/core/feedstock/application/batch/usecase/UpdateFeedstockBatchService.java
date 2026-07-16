@@ -4,12 +4,13 @@ import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
 import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchNotFoundException;
 import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchOwnershipMismatchException;
-import org.craft.mcs.cap.core.feedstock.application.batch.port.in.FeedstockBatchSummary;
+import org.craft.mcs.cap.core.feedstock.application.batch.model.FeedstockBatchSummary;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.UpdateFeedstockBatchCommand;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.UpdateFeedstockBatchUseCase;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchRepository;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
 import org.craft.mcs.cap.shared.platform.TransactionHelper;
+import org.craft.mcs.cap.shared.application.persistence.VersionedAggregate;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 
@@ -40,17 +41,21 @@ public final class UpdateFeedstockBatchService
   }
 
   private @NonNull FeedstockBatchSummary updateInTransaction(@NonNull UpdateFeedstockBatchCommand command) {
-    final var batch = findOwnedBatch(command);
+    final var state = findOwnedBatch(command);
+    final var batch = state.aggregate();
     applyChanges(batch, command);
     batch.ensureAvailableVolumeIsPositive();
-    return toSummary(feedstockBatchRepository.save(batch));
+    return toSummary(feedstockBatchRepository.update(state.withAggregate(batch)).aggregate());
   }
 
-  private @NonNull FeedstockBatch findOwnedBatch(@NonNull UpdateFeedstockBatchCommand command) {
-    final var batch = feedstockBatchRepository.findById(command.batchId())
+  private @NonNull VersionedAggregate<FeedstockBatch> findOwnedBatch(
+      @NonNull UpdateFeedstockBatchCommand command
+  ) {
+    final var state = feedstockBatchRepository.findVersionedById(command.batchId())
         .orElseThrow(() -> new FeedstockBatchNotFoundException(command.batchId()));
+    final var batch = state.aggregate();
     assertOwnedByWorkspace(batch, command);
-    return batch;
+    return state;
   }
 
   private static void assertOwnedByWorkspace(

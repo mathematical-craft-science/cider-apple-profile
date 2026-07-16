@@ -9,8 +9,8 @@ import static java.util.Objects.requireNonNull;
 /**
  * Typed explanation facts for a target-aware source role in feedstock planning.
  *
- * <p>This read model intentionally avoids user-facing text. It gives clients stable facts from
- * which UI copy, badges, tooltips, and localized explanations can be derived.
+ * <p>This read model intentionally avoids presentation text. It gives inbound adapters stable facts
+ * from which localized explanations can be derived.
  */
 public record FeedstockPlanningRoleExplanationView(
     @NonNull List<@NonNull FeedstockPlanningRoleEvidenceFact> evidence

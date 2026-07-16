@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceOperationType;
+import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceActorType;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -17,7 +18,7 @@ public class BatchTraceStepJdbcRow {
   public UUID stepId;
 
   @NonNull
-  public UUID traceId;
+  public UUID workspaceId;
 
   @Nullable
   public UUID parentStepId;
@@ -28,8 +29,11 @@ public class BatchTraceStepJdbcRow {
   @NonNull
   public Instant occurredAt;
 
-  @Nullable
-  public String performedBy;
+  @NonNull
+  public BatchTraceActorType performedByType;
+
+  @NonNull
+  public String performedById;
 
   @Nullable
   public String note;
@@ -46,19 +50,21 @@ public class BatchTraceStepJdbcRow {
 
   public BatchTraceStepJdbcRow(
       @NonNull UUID stepId,
-      @NonNull UUID traceId,
+      @NonNull UUID workspaceId,
       @Nullable UUID parentStepId,
       @NonNull BatchTraceOperationType operationType,
       @NonNull Instant occurredAt,
-      @Nullable String performedBy,
+      @NonNull BatchTraceActorType performedByType,
+      @NonNull String performedById,
       @Nullable String note
   ) {
     this.stepId = requireNonNull(stepId, "batch trace step id cannot be null");
-    this.traceId = requireNonNull(traceId, "batch trace id cannot be null");
+    this.workspaceId = requireNonNull(workspaceId, "batch trace workspace id cannot be null");
     this.parentStepId = parentStepId;
     this.operationType = requireNonNull(operationType, "batch trace operation type cannot be null");
     this.occurredAt = requireNonNull(occurredAt, "batch trace occurred at cannot be null");
-    this.performedBy = normalize(performedBy);
+    this.performedByType = requireNonNull(performedByType, "batch trace actor type cannot be null");
+    this.performedById = requireNonNull(performedById, "batch trace actor id cannot be null");
     this.note = normalize(note);
   }
 

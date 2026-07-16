@@ -13,11 +13,14 @@ import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.account.ent
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.account.entity.WorkspaceJdbcEntity;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.support.JdbcPersistenceExceptionTranslator;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
+import org.craft.mcs.cap.shared.application.ConcurrentResourceModificationException;
+import org.craft.mcs.cap.shared.application.persistence.VersionedAggregate;
 import org.jspecify.annotations.NonNull;
 import org.springframework.data.jdbc.core.mapping.AggregateReference;
 import org.springframework.stereotype.Repository;
 
 import static java.util.Objects.requireNonNull;
+import static org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.support.JdbcAggregateRevisionGuard.requireExpectedRevision;
 
 /** Persists workspace invitation aggregates independently from memberships. */
 @Repository
@@ -27,24 +30,42 @@ class JdbcWorkspaceInvitationRepository implements WorkspaceInvitationRepository
   private final @NonNull SpringDataWorkspaceInvitationJdbcRepository repository;
 
   @Override
-  public @NonNull WorkspaceInvitation save(@NonNull WorkspaceInvitation invitation) {
+  public @NonNull WorkspaceInvitation create(@NonNull WorkspaceInvitation invitation) {
     requireNonNull(invitation, "workspace invitation cannot be null");
-    final var entity = repository.findById(invitation.invitationId().value())
-        .map(existing -> WorkspaceAdministrationJdbcMapper.updateFromDomain(invitation, existing))
-        .orElseGet(() -> WorkspaceAdministrationJdbcMapper.fromDomain(invitation));
     final var saved = JdbcPersistenceExceptionTranslator.translateOptimisticLocking(
         "workspace invitation",
-        () -> repository.save(entity)
+        () -> repository.save(WorkspaceAdministrationJdbcMapper.fromDomain(invitation))
     );
     return WorkspaceAdministrationJdbcMapper.toDomain(saved);
   }
 
   @Override
-  public @NonNull Optional<@NonNull WorkspaceInvitation> findById(
+  public @NonNull VersionedAggregate<WorkspaceInvitation> update(
+      @NonNull VersionedAggregate<WorkspaceInvitation> invitation
+  ) {
+    requireNonNull(invitation, "versioned workspace invitation cannot be null");
+    final var aggregate = invitation.aggregate();
+    final var entity = repository.findById(aggregate.invitationId().value())
+        .orElseThrow(() -> new ConcurrentResourceModificationException("workspace invitation", null));
+    requireExpectedRevision(
+        "workspace invitation",
+        invitation.revision(),
+        WorkspaceAdministrationJdbcMapper.revision(entity)
+    );
+    final var saved = JdbcPersistenceExceptionTranslator.translateOptimisticLocking(
+        "workspace invitation",
+        () -> repository.save(WorkspaceAdministrationJdbcMapper.updateFromDomain(aggregate, entity))
+    );
+    return WorkspaceAdministrationJdbcMapper.toVersionedAggregate(saved);
+  }
+
+  @Override
+  public @NonNull Optional<@NonNull VersionedAggregate<WorkspaceInvitation>> findVersionedById(
       @NonNull WorkspaceInvitationId invitationId
   ) {
     requireNonNull(invitationId, "workspace invitation id cannot be null");
-    return repository.findById(invitationId.value()).map(WorkspaceAdministrationJdbcMapper::toDomain);
+    return repository.findById(invitationId.value())
+        .map(WorkspaceAdministrationJdbcMapper::toVersionedAggregate);
   }
 
   @Override

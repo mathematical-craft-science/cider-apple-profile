@@ -4,20 +4,10 @@ import java.time.Clock;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.feedstock.application.batch.port.in.FeedstockBatchSummary;
+import org.craft.mcs.cap.core.feedstock.application.batch.model.FeedstockBatchSummary;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentProfileSettings;
-import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in.FeedstockCurrentProfileDataQualityIndicator;
-import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in.FeedstockCurrentProfileDataQualityIndicatorCode;
-import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in.FeedstockCurrentProfileDataQualityStatus;
-import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in.FeedstockCurrentProfileDataQualityView;
-import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in.FeedstockCurrentProfileSignalSeverity;
-import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in.FeedstockCurrentMeasurementFreshnessStatus;
-import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in.FeedstockCurrentMeasurementFreshnessView;
-import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in.FeedstockPlanningReadinessCheck;
-import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in.FeedstockPlanningReadinessFactor;
-import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in.FeedstockPlanningReadinessStatus;
-import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in.FeedstockPlanningReadinessView;
-import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurement;
+import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in.*;
+import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementView;
 import org.craft.mcs.cap.core.profileanalysis.ph.domain.PhPlanningGuidance;
 import org.craft.mcs.cap.core.profileanalysis.ph.domain.PhPlanningGuidanceCode;
 import org.craft.mcs.cap.core.profileanalysis.ph.domain.PhPlanningGuidancePolicy;
@@ -52,7 +42,7 @@ public final class FeedstockCurrentProfileAssessmentService {
   private final @NonNull PhPlanningGuidancePolicy phPlanningGuidancePolicy;
 
   public @NonNull FeedstockCurrentMeasurementFreshnessView freshness(
-      @NonNull FeedstockMeasurement measurement,
+      @NonNull FeedstockMeasurementView measurement,
       @NonNull FeedstockCurrentProfileSettings settings
   ) {
     requireNonNull(measurement, "feedstock measurement cannot be null");
@@ -83,7 +73,7 @@ public final class FeedstockCurrentProfileAssessmentService {
     checks.add(planningCheck(
         FeedstockPlanningReadinessFactor.CURRENT_MEASUREMENT,
         FeedstockCurrentProfileSignalSeverity.BLOCKING,
-        "CURRENT_MEASUREMENT_MISSING",
+        FeedstockPlanningReadinessCheckCode.CURRENT_MEASUREMENT_MISSING,
         "Batch has no current measurement"
     ));
     checks.add(volumeCheck(batch));
@@ -102,23 +92,23 @@ public final class FeedstockCurrentProfileAssessmentService {
     checks.add(planningCheck(
         FeedstockPlanningReadinessFactor.CURRENT_MEASUREMENT,
         FeedstockCurrentProfileSignalSeverity.OK,
-        "CURRENT_MEASUREMENT_PRESENT",
+        FeedstockPlanningReadinessCheckCode.CURRENT_MEASUREMENT_PRESENT,
         "Current measurement is available"
     ));
     checks.add(volumeCheck(batch));
     checks.add(requiredProfileCheck(
         profile.sugar().isPresent(),
         FeedstockPlanningReadinessFactor.SUGAR,
-        "SUGAR_PRESENT",
-        "SUGAR_MISSING",
+        FeedstockPlanningReadinessCheckCode.SUGAR_PRESENT,
+        FeedstockPlanningReadinessCheckCode.SUGAR_MISSING,
         "Sugar is available",
         "Sugar is required for composition planning"
     ));
     checks.add(requiredProfileCheck(
         profile.titratableAcidity().isPresent(),
         FeedstockPlanningReadinessFactor.TITRATABLE_ACIDITY,
-        "TITRATABLE_ACIDITY_PRESENT",
-        "TITRATABLE_ACIDITY_MISSING",
+        FeedstockPlanningReadinessCheckCode.TITRATABLE_ACIDITY_PRESENT,
+        FeedstockPlanningReadinessCheckCode.TITRATABLE_ACIDITY_MISSING,
         "Titratable acidity is available",
         "Titratable acidity is required for composition planning"
     ));
@@ -127,7 +117,9 @@ public final class FeedstockCurrentProfileAssessmentService {
         profile.tanninity().isPresent()
             ? FeedstockCurrentProfileSignalSeverity.OK
             : FeedstockCurrentProfileSignalSeverity.WARNING,
-        profile.tanninity().isPresent() ? "TANNIN_PRESENT" : "TANNIN_MISSING",
+        profile.tanninity().isPresent()
+            ? FeedstockPlanningReadinessCheckCode.TANNIN_PRESENT
+            : FeedstockPlanningReadinessCheckCode.TANNIN_MISSING,
         profile.tanninity().isPresent()
             ? "Tannin is available"
             : "Tannin is missing; target-aware structure assessment will be incomplete"
@@ -304,7 +296,9 @@ public final class FeedstockCurrentProfileAssessmentService {
         batch.availableVolume().isZero()
             ? FeedstockCurrentProfileSignalSeverity.BLOCKING
             : FeedstockCurrentProfileSignalSeverity.OK,
-        batch.availableVolume().isZero() ? "AVAILABLE_VOLUME_EMPTY" : "AVAILABLE_VOLUME_PRESENT",
+        batch.availableVolume().isZero()
+            ? FeedstockPlanningReadinessCheckCode.AVAILABLE_VOLUME_EMPTY
+            : FeedstockPlanningReadinessCheckCode.AVAILABLE_VOLUME_PRESENT,
         batch.availableVolume().isZero()
             ? "Available volume is zero"
             : "Available volume is present"
@@ -314,8 +308,8 @@ public final class FeedstockCurrentProfileAssessmentService {
   private static @NonNull FeedstockPlanningReadinessCheck requiredProfileCheck(
       boolean present,
       @NonNull FeedstockPlanningReadinessFactor factor,
-      @NonNull String presentCode,
-      @NonNull String missingCode,
+      @NonNull FeedstockPlanningReadinessCheckCode presentCode,
+      @NonNull FeedstockPlanningReadinessCheckCode missingCode,
       @NonNull String presentMessage,
       @NonNull String missingMessage
   ) {
@@ -334,9 +328,20 @@ public final class FeedstockCurrentProfileAssessmentService {
     return planningCheck(
         FeedstockPlanningReadinessFactor.PH,
         phPlanningSeverity(guidance.code()),
-        guidance.code().name(),
+        planningReadinessCode(guidance.code()),
         guidance.message()
     );
+  }
+
+  private static @NonNull FeedstockPlanningReadinessCheckCode planningReadinessCode(
+      @NonNull PhPlanningGuidanceCode code
+  ) {
+    return switch (requireNonNull(code, "pH planning guidance code cannot be null")) {
+      case PH_PLANNING_IDEAL -> FeedstockPlanningReadinessCheckCode.PH_PLANNING_IDEAL;
+      case PH_PLANNING_LOW -> FeedstockPlanningReadinessCheckCode.PH_PLANNING_LOW;
+      case PH_PLANNING_HIGH -> FeedstockPlanningReadinessCheckCode.PH_PLANNING_HIGH;
+      case PH_MISSING -> FeedstockPlanningReadinessCheckCode.PH_MISSING;
+    };
   }
 
   private static @NonNull FeedstockCurrentProfileSignalSeverity phPlanningSeverity(
@@ -352,7 +357,7 @@ public final class FeedstockCurrentProfileAssessmentService {
   private static @NonNull FeedstockPlanningReadinessCheck planningCheck(
       @NonNull FeedstockPlanningReadinessFactor factor,
       @NonNull FeedstockCurrentProfileSignalSeverity severity,
-      @NonNull String code,
+      @NonNull FeedstockPlanningReadinessCheckCode code,
       @NonNull String message
   ) {
     return new FeedstockPlanningReadinessCheck(factor, severity, code, message);

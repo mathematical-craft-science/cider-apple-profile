@@ -12,9 +12,9 @@ import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.i
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockMeasurementSugarAcidityZoneResult;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.QueryFeedstockMeasurementSugarAcidityZonePointsUseCase;
 import org.craft.mcs.cap.core.feedstock.application.measurement.port.out.FeedstockMeasurementQueryRepository;
+import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementView;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.out.FeedstockMeasurementSugarAcidityPointCandidateCursor;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.out.FeedstockMeasurementSugarAcidityPointCandidateQuery;
-import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurement;
 import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityCriteria;
 import org.craft.mcs.cap.shared.platform.query.ChunkedCursorPageCollector;
 import org.craft.mcs.cap.shared.platform.query.CursorPage;
@@ -74,7 +74,7 @@ public final class QueryFeedstockMeasurementSugarAcidityZonePointsService
   }
 
   private @NonNull FeedstockMeasurementSugarAcidityZoneResult toResult(
-      @NonNull FeedstockMeasurement sample,
+      @NonNull FeedstockMeasurementView sample,
       @NonNull FeedstockMeasurementSugarAcidityZonePointQuery query,
       @NonNull SugarAcidityProfileEvaluation evaluation
   ) {
@@ -88,7 +88,7 @@ public final class QueryFeedstockMeasurementSugarAcidityZonePointsService
   }
 
   private @NonNull Optional<@NonNull FeedstockMeasurementSugarAcidityZoneResult> toResultIfMatches(
-      @NonNull FeedstockMeasurement sample,
+      @NonNull FeedstockMeasurementView sample,
       @NonNull FeedstockMeasurementSugarAcidityZonePointQuery query
   ) {
     final var evaluation = sugarAcidityProfileProjector.project(sample.chemicalProfile());
@@ -129,7 +129,7 @@ public final class QueryFeedstockMeasurementSugarAcidityZonePointsService
   }
 
   private static @NonNull FeedstockMeasurementSugarAcidityPointCandidateCursor toCandidateCursor(
-      @NonNull FeedstockMeasurement sample
+      @NonNull FeedstockMeasurementView sample
   ) {
     requireNonNull(sample, "feedstock measurement cannot be null");
     return new FeedstockMeasurementSugarAcidityPointCandidateCursor(

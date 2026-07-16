@@ -4,7 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.account.membership.application.port.out.ActiveWorkspaceProvider;
+import org.craft.mcs.cap.core.account.context.application.port.out.ActiveWorkspaceProvider;
 import org.craft.mcs.cap.shared.application.ApplicationValidationException;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;

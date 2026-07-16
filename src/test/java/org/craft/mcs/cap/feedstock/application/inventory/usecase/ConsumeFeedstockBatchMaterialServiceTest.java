@@ -33,6 +33,8 @@ import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
 import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementInstant;
+import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementRecordedAt;
+import static org.craft.mcs.cap.shared.testing.FeedstockMeasurementViews.view;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -41,6 +43,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import static org.craft.mcs.cap.support.VersionedAggregateFixtures.versioned;
 
 
 class ConsumeFeedstockBatchMaterialServiceTest {
@@ -54,8 +57,8 @@ class ConsumeFeedstockBatchMaterialServiceTest {
     final var batch = batch(workspaceId);
     final var measurement = measurement(batch.batchId());
     final var command = command(workspaceId, batch.batchId(), "100");
-    when(repository.findById(batch.batchId())).thenReturn(Optional.of(batch));
-    when(measurementQuery.requireCurrentMeasurement(batch.batchId())).thenReturn(measurement);
+    when(repository.findByIdForConsumption(batch.batchId())).thenReturn(Optional.of(versioned(batch)));
+    when(measurementQuery.requireCurrentMeasurement(batch.batchId())).thenReturn(view(measurement));
     final var service = service(repository, measurementQuery, accessControl);
 
     final var consumed = service.consume(command);
@@ -67,7 +70,7 @@ class ConsumeFeedstockBatchMaterialServiceTest {
         .returns(measurement.chemicalProfile(), ConsumedFeedstockBatchMaterial::chemicalProfile)
         .satisfies(result -> assertThat(batch.availableVolume()).isEqualTo(VolumeValue.ofLiters("150")));
     verify(accessControl).requireWriteAccess(workspaceId);
-    verify(repository).save(batch);
+    verify(repository).update(any());
   }
 
   @Test
@@ -79,12 +82,12 @@ class ConsumeFeedstockBatchMaterialServiceTest {
     final var requestedWorkspaceId = WorkspaceId.newId();
     final var batch = batch(actualWorkspaceId);
     final var command = command(requestedWorkspaceId, batch.batchId(), "100");
-    when(repository.findById(batch.batchId())).thenReturn(Optional.of(batch));
+    when(repository.findByIdForConsumption(batch.batchId())).thenReturn(Optional.of(versioned(batch)));
     final var service = service(repository, measurementQuery, accessControl);
 
     assertThatThrownBy(() -> service.consume(command))
         .isInstanceOf(FeedstockBatchOwnershipMismatchException.class);
-    verify(repository, never()).save(any());
+    verify(repository, never()).update(any());
     verifyNoInteractions(measurementQuery);
   }
 
@@ -96,7 +99,7 @@ class ConsumeFeedstockBatchMaterialServiceTest {
     final var workspaceId = WorkspaceId.newId();
     final var batch = batch(workspaceId);
     final var command = command(workspaceId, batch.batchId(), "251");
-    when(repository.findById(batch.batchId())).thenReturn(Optional.of(batch));
+    when(repository.findByIdForConsumption(batch.batchId())).thenReturn(Optional.of(versioned(batch)));
     final var service = service(repository, measurementQuery, accessControl);
 
     assertThatThrownBy(() -> service.consume(command))
@@ -104,7 +107,7 @@ class ConsumeFeedstockBatchMaterialServiceTest {
         .satisfies(exception -> assertThat((FeedstockBatchInsufficientAvailableVolumeException) exception)
             .returns(command.volume(), FeedstockBatchInsufficientAvailableVolumeException::requestedVolume)
             .returns(batch.availableVolume(), FeedstockBatchInsufficientAvailableVolumeException::availableVolume));
-    verify(repository, never()).save(any());
+    verify(repository, never()).update(any());
     verifyNoInteractions(measurementQuery);
   }
 
@@ -116,7 +119,7 @@ class ConsumeFeedstockBatchMaterialServiceTest {
     final var workspaceId = WorkspaceId.newId();
     final var batch = batch(workspaceId);
     final var command = command(workspaceId, batch.batchId(), "100");
-    when(repository.findById(batch.batchId())).thenReturn(Optional.of(batch));
+    when(repository.findByIdForConsumption(batch.batchId())).thenReturn(Optional.of(versioned(batch)));
     when(measurementQuery.requireCurrentMeasurement(batch.batchId()))
         .thenThrow(new FeedstockBatchHasNoMeasurementsException(batch.batchId()));
     final var service = service(repository, measurementQuery, accessControl);
@@ -125,7 +128,7 @@ class ConsumeFeedstockBatchMaterialServiceTest {
         .isInstanceOf(FeedstockBatchHasNoMeasurementsException.class)
         .satisfies(exception -> assertThat(batch.availableVolume())
             .isEqualTo(VolumeValue.ofLiters("250")));
-    verify(repository, never()).save(any());
+    verify(repository, never()).update(any());
   }
 
   private static @NonNull ConsumeFeedstockBatchMaterialService service(
@@ -164,7 +167,8 @@ class ConsumeFeedstockBatchMaterialServiceTest {
             )))
             .confidence(ConfidenceLevel.LAB_VERIFIED)
             .build(),
-        feedstockMeasurementInstant()
+        feedstockMeasurementInstant(),
+        feedstockMeasurementRecordedAt()
     );
   }
 

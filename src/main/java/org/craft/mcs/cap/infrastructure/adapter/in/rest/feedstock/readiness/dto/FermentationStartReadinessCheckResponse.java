@@ -1,6 +1,7 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.readiness.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.FermentationStartReadinessCheckCode;
 import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.FermentationStartReadinessFactor;
 import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.FermentationStartReadinessSeverity;
 import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
@@ -22,8 +23,12 @@ public record FermentationStartReadinessCheckResponse(
         requiredMode = Schema.RequiredMode.REQUIRED
     )
     @NonNull FermentationStartReadinessSeverity severity,
-    @Schema(description = "Machine-readable check code.", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NonNull String code,
+    @Schema(
+        description = "Stable machine-readable check code.",
+        implementation = FermentationStartReadinessCheckCode.class,
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
+    @NonNull FermentationStartReadinessCheckCode code,
     @Schema(description = "Human-readable check message.", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull String message,
     @Schema(

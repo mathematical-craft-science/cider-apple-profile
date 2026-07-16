@@ -45,7 +45,7 @@ Act as a senior Java architect and production-grade software engineer for the Ci
   which approach they implement.
 - If a method declaration has more than one parameter, place parameters on separate lines.
 - Keep project source-code lines at 120 characters or less; wrap long annotations, comments, Javadoc,
-  and argument lists.
+  and argument lists. Import declarations may exceed 120 characters.
 - The 120-character limit does not apply to Obsidian documents; format Markdown for readability.
 
 ## Nullness

@@ -1,7 +1,7 @@
 package org.craft.mcs.cap.core.account.provisioning.application.usecase;
 
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.account.membership.application.AccountAccessDeniedException;
+import org.craft.mcs.cap.core.account.shared.application.AccountAccessDeniedException;
 import org.craft.mcs.cap.core.account.membership.application.port.out.WorkspaceMembershipRepository;
 import org.craft.mcs.cap.core.account.membership.domain.model.WorkspaceMembership;
 import org.craft.mcs.cap.core.account.provisioning.application.model.WorkspaceProvisioningDefaults;
@@ -18,6 +18,7 @@ import org.craft.mcs.cap.core.account.workspace.application.port.out.WorkspaceSe
 import org.craft.mcs.cap.core.account.workspace.domain.model.Workspace;
 import org.craft.mcs.cap.core.account.workspace.domain.model.WorkspaceSettings;
 import org.craft.mcs.cap.shared.platform.TransactionHelper;
+import org.craft.mcs.cap.shared.application.persistence.VersionedAggregate;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 
@@ -67,17 +68,17 @@ public final class EnsureCurrentAccountProvisionedService
     }
 
     userPreferencesRepository.findByUserId(user.userId())
-        .orElseGet(() -> userPreferencesRepository.save(UserPreferences.defaults(user.userId()))); // NOSONAR
+        .orElseGet(() -> userPreferencesRepository.create(UserPreferences.defaults(user.userId()))); // NOSONAR
   }
 
   private @NonNull ProvisioningAccount resolveAccount(@NonNull AuthenticatedActor actor) {
-    return accountUserRepository.findByExternalIdentity(actor.identityProvider(), actor.externalSubject())
+    return accountUserRepository.findVersionedByExternalIdentity(actor.identityProvider(), actor.externalSubject())
         .map(existing -> new ProvisioningAccount(synchronizeProviderEmail(existing, actor), false))
         .orElseGet(() -> createAccount(actor));
   }
 
   private @NonNull ProvisioningAccount createAccount(@NonNull AuthenticatedActor actor) {
-    final var account = accountUserRepository.save(AccountUser.create(
+    final var account = accountUserRepository.create(AccountUser.create(
         actor.identityProvider(),
         actor.externalSubject(),
         actor.email(),
@@ -88,18 +89,20 @@ public final class EnsureCurrentAccountProvisionedService
   }
 
   private @NonNull AccountUser synchronizeProviderEmail(
-      @NonNull AccountUser existing,
+      @NonNull VersionedAggregate<AccountUser> existing,
       @NonNull AuthenticatedActor actor
   ) {
-    final var synchronizedUser = existing.synchronizeProviderEmail(actor.email());
-    return synchronizedUser.equals(existing) ? existing : accountUserRepository.save(synchronizedUser);
+    final var synchronizedUser = existing.aggregate().synchronizeProviderEmail(actor.email());
+    return synchronizedUser.equals(existing.aggregate())
+        ? existing.aggregate()
+        : accountUserRepository.update(existing.withAggregate(synchronizedUser)).aggregate();
   }
 
   private void provisionDefaultWorkspace(
       @NonNull AccountUser user,
       @NonNull AuthenticatedActor actor
   ) {
-    final var workspace = workspaceRepository.save(Workspace.createDefault(
+    final var workspace = workspaceRepository.create(Workspace.createDefault(
         workspaceProvisioningDefaults.name(),
         workspaceProvisioningDefaults.type(),
         actor.externalOrganizationSubject() == null ? null : actor.identityProvider(),
@@ -118,7 +121,7 @@ public final class EnsureCurrentAccountProvisionedService
       @NonNull AccountUser user,
       @NonNull Workspace workspace
   ) {
-    membershipRepository.save(WorkspaceMembership.createOwner(workspace.workspaceId(), user.userId()));
+    membershipRepository.create(WorkspaceMembership.createOwner(workspace.workspaceId(), user.userId()));
   }
 
   /** Distinguishes initial onboarding from a later account state without workspace membership. */

@@ -3,19 +3,22 @@ package org.craft.mcs.cap.core.batchtraceability.domain.graph;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
-import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceId;
+import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceActorReference;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceOperationType;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStep;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStepId;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStepSubject;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceSubject;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceSubjectType;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 
 class BatchTraceabilityGraphProjectorTest {
+
+  private static final WorkspaceId WORKSPACE_ID = WorkspaceId.newId();
 
   @Test
   void buildsSourceTreeFromSeveralImmutableStepsWithSameInputSubject() {
@@ -31,9 +34,8 @@ class BatchTraceabilityGraphProjectorTest {
         BatchTraceSubjectType.PRODUCTION_BATCH,
         "production-2"
     ));
-    final var traceId = BatchTraceId.newId();
-    final var firstStep = step(traceId, feedstock, firstProduction, "2026-05-18T00:00:00Z");
-    final var secondStep = step(traceId, feedstock, secondProduction, "2026-05-18T01:00:00Z");
+    final var firstStep = step(feedstock, firstProduction, "2026-05-18T00:00:00Z");
+    final var secondStep = step(feedstock, secondProduction, "2026-05-18T01:00:00Z");
 
     final var graph = BatchTraceabilityGraphProjector.sourceTreeFrom(List.of(firstStep, secondStep));
 
@@ -69,13 +71,13 @@ class BatchTraceabilityGraphProjectorTest {
         "production-1-b"
     ));
     final var splitStep = BatchTraceStep.create(
-        BatchTraceId.newId(),
+        WORKSPACE_ID,
         null,
         BatchTraceOperationType.SPLIT,
         List.of(sourceProduction),
         List.of(firstSplitPart, secondSplitPart),
         Instant.parse("2026-05-18T02:00:00Z"),
-        null,
+        BatchTraceActorReference.system("test"),
         null
     );
 
@@ -103,23 +105,19 @@ class BatchTraceabilityGraphProjectorTest {
         BatchTraceSubjectType.FEEDSTOCK_BATCH,
         "feedstock-1"
     ));
-    final var traceId = BatchTraceId.newId();
     final var laterStep = step(
-        traceId,
         BatchTraceStepId.of(UUID.fromString("00000000-0000-0000-0000-000000000001")),
         feedstock,
         BatchTraceStepSubject.of(subject(BatchTraceSubjectType.PRODUCTION_BATCH, "production-later")),
         "2026-05-18T02:00:00Z"
     );
     final var secondSameTimeStep = step(
-        traceId,
         BatchTraceStepId.of(UUID.fromString("00000000-0000-0000-0000-000000000003")),
         feedstock,
         BatchTraceStepSubject.of(subject(BatchTraceSubjectType.PRODUCTION_BATCH, "production-second")),
         "2026-05-18T01:00:00Z"
     );
     final var firstSameTimeStep = step(
-        traceId,
         BatchTraceStepId.of(UUID.fromString("00000000-0000-0000-0000-000000000002")),
         feedstock,
         BatchTraceStepSubject.of(subject(BatchTraceSubjectType.PRODUCTION_BATCH, "production-first")),
@@ -138,30 +136,28 @@ class BatchTraceabilityGraphProjectorTest {
   }
 
   private static BatchTraceStep step(
-      BatchTraceId traceId,
       BatchTraceStepSubject input,
       BatchTraceStepSubject output,
       String occurredAt
   ) {
-    return step(traceId, BatchTraceStepId.newId(), input, output, occurredAt);
+    return step(BatchTraceStepId.newId(), input, output, occurredAt);
   }
 
   private static BatchTraceStep step(
-      BatchTraceId traceId,
       BatchTraceStepId stepId,
       BatchTraceStepSubject input,
       BatchTraceStepSubject output,
       String occurredAt
   ) {
     return new BatchTraceStep(
-        traceId,
+        WORKSPACE_ID,
         stepId,
         null,
         BatchTraceOperationType.CREATE_PRODUCTION_BATCH,
         List.of(input),
         List.of(output),
         Instant.parse(occurredAt),
-        null,
+        BatchTraceActorReference.system("test"),
         null
     );
   }

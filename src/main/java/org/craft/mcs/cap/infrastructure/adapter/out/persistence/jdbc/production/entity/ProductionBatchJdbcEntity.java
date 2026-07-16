@@ -28,9 +28,8 @@ public class ProductionBatchJdbcEntity {
   @NonNull @Column("total_volume_liters") BigDecimal totalVolumeLiters;
   @NonNull @Column("sugar_specific_gravity") BigDecimal sugarSpecificGravity;
   @NonNull @Column("acidity_g_l_as_malic") BigDecimal acidityGLAsMalic;
-  @Nullable @Column("tannin_mg_l_tae") BigDecimal tanninMgLTea;
+  @Nullable @Column("tannin_mg_l_tae") BigDecimal tanninMgLTae;
   @Nullable @Column("yan_mg_n_l") BigDecimal yeastAssimilableNitrogenMgNL;
-  @Nullable @Column("target_distance") BigDecimal targetDistance;
   @Nullable @Column("note") String note;
   @CreatedDate @Nullable @Column("created_at") Instant createdAt;
   @LastModifiedDate @Nullable @Column("updated_at") Instant updatedAt;
@@ -49,9 +48,8 @@ public class ProductionBatchJdbcEntity {
       @NonNull BigDecimal totalVolumeLiters,
       @NonNull BigDecimal sugarSpecificGravity,
       @NonNull BigDecimal acidityGLAsMalic,
-      @Nullable BigDecimal tanninMgLTea,
+      @Nullable BigDecimal tanninMgLTae,
       @Nullable BigDecimal yeastAssimilableNitrogenMgNL,
-      @Nullable BigDecimal targetDistance,
       @Nullable String note
   ) {
     this.batchId = requireNonNull(batchId, "production batch id cannot be null");
@@ -60,11 +58,13 @@ public class ProductionBatchJdbcEntity {
     this.kind = requireNonNull(kind, "production batch kind cannot be null");
     this.status = requireNonNull(status, "production batch status cannot be null");
     this.totalVolumeLiters = requireNonNull(totalVolumeLiters, "production total volume cannot be null");
-    this.sugarSpecificGravity = requireNonNull(sugarSpecificGravity, "production sugar specific gravity cannot be null");
+    this.sugarSpecificGravity = requireNonNull(
+        sugarSpecificGravity,
+        "production sugar specific gravity cannot be null"
+    );
     this.acidityGLAsMalic = requireNonNull(acidityGLAsMalic, "production acidity cannot be null");
-    this.tanninMgLTea = tanninMgLTea;
+    this.tanninMgLTae = tanninMgLTae;
     this.yeastAssimilableNitrogenMgNL = yeastAssimilableNitrogenMgNL;
-    this.targetDistance = targetDistance;
     this.note = normalize(note);
   }
 

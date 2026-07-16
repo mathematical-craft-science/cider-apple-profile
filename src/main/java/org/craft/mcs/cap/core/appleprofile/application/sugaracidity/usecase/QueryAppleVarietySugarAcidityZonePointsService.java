@@ -9,7 +9,7 @@ import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.in.Quer
 import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.out.AppleVarietySugarAcidityPointCandidateCursor;
 import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.out.AppleVarietySugarAcidityPointCandidateQuery;
 import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.out.AppleVarietySugarAcidityPointCandidateRepository;
-import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVariety;
+import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.out.AppleVarietySugarAcidityPointCandidateView;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileEvaluation;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileProjector;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.SugarAcidityZoneAssessment;
@@ -81,7 +81,7 @@ public final class QueryAppleVarietySugarAcidityZonePointsService
   }
 
   private static @NonNull AppleVarietySugarAcidityZoneResult toResult(
-      @NonNull AppleVariety variety,
+      @NonNull AppleVarietySugarAcidityPointCandidateView variety,
       @NonNull SugarAcidityProfileEvaluation evaluation
   ) {
     return new AppleVarietySugarAcidityZoneResult(
@@ -92,7 +92,7 @@ public final class QueryAppleVarietySugarAcidityZonePointsService
   }
 
   private @NonNull Optional<@NonNull AppleVarietySugarAcidityZoneResult> toResultIfMatches(
-      @NonNull AppleVariety variety,
+      @NonNull AppleVarietySugarAcidityPointCandidateView variety,
       @NonNull AppleVarietySugarAcidityZonePointQuery query
   ) {
     final var evaluation = sugarAcidityProfileProjector.project(variety.chemicalProfile());
@@ -120,7 +120,7 @@ public final class QueryAppleVarietySugarAcidityZonePointsService
   }
 
   private static @NonNull AppleVarietySugarAcidityPointCandidateCursor toCandidateCursor(
-      @NonNull AppleVariety variety
+      @NonNull AppleVarietySugarAcidityPointCandidateView variety
   ) {
     requireNonNull(variety, "apple variety cannot be null");
     return new AppleVarietySugarAcidityPointCandidateCursor(

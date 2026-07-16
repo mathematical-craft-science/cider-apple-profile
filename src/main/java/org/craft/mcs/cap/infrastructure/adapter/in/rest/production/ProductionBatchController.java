@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.batchtraceability.application.port.in.QueryBatchTraceabilityUseCase;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceSubject;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceSubjectType;
-import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPredictor;
 import org.craft.mcs.cap.core.production.application.port.in.CreateProductionBatchUseCase;
 import org.craft.mcs.cap.core.production.application.port.in.GetProductionBatchUseCase;
 import org.craft.mcs.cap.core.production.application.port.in.ListProductionBatchesQuery;
@@ -42,14 +41,12 @@ public final class ProductionBatchController implements ProductionBatchApi {
   private final @NonNull GetProductionBatchUseCase getProductionBatchUseCase;
   private final @NonNull ListProductionBatchesUseCase listProductionBatchesUseCase;
   private final @NonNull QueryBatchTraceabilityUseCase queryBatchTraceabilityUseCase;
-  private final @NonNull PotentialAbvPredictor potentialAbvPredictor;
 
   @Override
   @GetMapping(produces = APPLICATION_JSON_VALUE)
   public @NonNull ProductionBatchListResponse list(@RequestParam @NonNull UUID workspaceId) {
     return ProductionBatchRestMapper.toListResponse(
-        listProductionBatchesUseCase.list(new ListProductionBatchesQuery(WorkspaceId.of(workspaceId))),
-        potentialAbvPredictor
+        listProductionBatchesUseCase.list(new ListProductionBatchesQuery(WorkspaceId.of(workspaceId)))
     );
   }
 
@@ -57,20 +54,20 @@ public final class ProductionBatchController implements ProductionBatchApi {
   @GetMapping(value = "/{batchId}", produces = APPLICATION_JSON_VALUE)
   public @NonNull ProductionBatchDetailsResponse get(@PathVariable @NonNull UUID batchId) {
     return ProductionBatchRestMapper.toDetailsResponse(
-        getProductionBatchUseCase.get(ProductionBatchId.of(batchId)),
-        potentialAbvPredictor
+        getProductionBatchUseCase.get(ProductionBatchId.of(batchId))
     );
   }
 
   @Override
   @GetMapping(value = "/{batchId}/traceability", produces = APPLICATION_JSON_VALUE)
   public @NonNull BatchTraceabilityGraphResponse traceability(@PathVariable @NonNull UUID batchId) {
-    getProductionBatchUseCase.get(ProductionBatchId.of(batchId));
     return BatchTraceabilityRestMapper.toResponse(
-        queryBatchTraceabilityUseCase.sourceGraphFor(BatchTraceSubject.of(
-            BatchTraceSubjectType.PRODUCTION_BATCH,
-            batchId.toString()
-        ))
+        queryBatchTraceabilityUseCase.sourceGraphFor(
+            BatchTraceSubject.of(
+                BatchTraceSubjectType.PRODUCTION_BATCH,
+                batchId.toString()
+            )
+        )
     );
   }
 

@@ -1,0 +1,16 @@
+package org.craft.mcs.cap.core.account.administration.application.port.in;
+
+import org.craft.mcs.cap.core.account.context.application.port.in.WorkspaceMembershipView;
+import org.craft.mcs.cap.core.account.workspace.application.port.in.WorkspaceView;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
+import org.jspecify.annotations.NonNull;
+
+/** Manages creation and editable lifecycle of CAP-owned workspaces. */
+public interface WorkspaceLifecycleUseCase {
+
+  @NonNull WorkspaceMembershipView create(@NonNull CreateWorkspaceCommand command);
+
+  @NonNull WorkspaceView update(@NonNull UpdateWorkspaceCommand command);
+
+  @NonNull WorkspaceView archive(@NonNull WorkspaceId workspaceId);
+}

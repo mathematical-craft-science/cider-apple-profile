@@ -5,19 +5,16 @@ import java.util.Optional;
 import org.craft.mcs.cap.core.account.membership.domain.model.WorkspaceMembership;
 import org.craft.mcs.cap.core.account.membership.domain.model.value.WorkspaceMembershipId;
 import org.craft.mcs.cap.core.account.shared.domain.value.AccountUserId;
+import org.craft.mcs.cap.shared.application.persistence.VersionedAggregate;
+import org.craft.mcs.cap.shared.application.persistence.VersionedAggregateRepository;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;
 
 /** Aggregate repository port for workspace memberships. */
-public interface WorkspaceMembershipRepository {
+public interface WorkspaceMembershipRepository
+    extends VersionedAggregateRepository<WorkspaceMembership, WorkspaceMembershipId> {
 
-  @NonNull WorkspaceMembership save(@NonNull WorkspaceMembership membership);
-
-  void deleteById(@NonNull WorkspaceMembershipId membershipId);
-
-  @NonNull Optional<@NonNull WorkspaceMembership> findById(
-      @NonNull WorkspaceMembershipId membershipId
-  );
+  void delete(@NonNull VersionedAggregate<WorkspaceMembership> membership);
 
   @NonNull List<@NonNull WorkspaceMembership> findAllByUserId(@NonNull AccountUserId userId);
 

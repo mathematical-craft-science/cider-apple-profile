@@ -4,7 +4,6 @@ import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchKind;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchName;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchStatus;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
-import org.craft.mcs.cap.core.production.domain.model.value.ProductionTargetDistance;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.jmolecules.ddd.annotation.AggregateRoot;
@@ -40,8 +39,6 @@ public final class ProductionBatch {
 
   private @NonNull ProductionProfileSnapshot profile;
 
-  private @Nullable ProductionTargetDistance targetDistance;
-
   private @Nullable String note;
 
   @SuppressWarnings("java:S107")
@@ -53,7 +50,6 @@ public final class ProductionBatch {
       @NonNull ProductionBatchStatus status,
       @NonNull VolumeValue volume,
       @NonNull ProductionProfileSnapshot profile,
-      @Nullable ProductionTargetDistance targetDistance,
       @Nullable String note
   ) {
     this.batchId = requireNonNull(batchId, "production batch id cannot be null");
@@ -63,7 +59,6 @@ public final class ProductionBatch {
     this.status = requireNonNull(status, "production batch status cannot be null");
     this.volume = requireNonNull(volume, "production volume cannot be null");
     this.profile = requireNonNull(profile, "production profile cannot be null");
-    this.targetDistance = targetDistance;
     this.note = normalize(note);
   }
 
@@ -75,7 +70,6 @@ public final class ProductionBatch {
       @NonNull ProductionBatchKind kind,
       @NonNull VolumeValue volume,
       @NonNull ProductionProfileSnapshot profile,
-      @Nullable ProductionTargetDistance targetDistance,
       @Nullable String note
   ) {
     return new ProductionBatch(
@@ -86,7 +80,6 @@ public final class ProductionBatch {
         ProductionBatchStatus.PLANNED,
         volume,
         profile,
-        targetDistance,
         note
     );
   }
@@ -100,7 +93,6 @@ public final class ProductionBatch {
       @NonNull ProductionBatchStatus status,
       @NonNull VolumeValue volume,
       @NonNull ProductionProfileSnapshot profile,
-      @Nullable ProductionTargetDistance targetDistance,
       @Nullable String note
   ) {
     return new ProductionBatch(
@@ -111,7 +103,6 @@ public final class ProductionBatch {
         status,
         volume,
         profile,
-        targetDistance,
         note
     );
   }
@@ -142,10 +133,6 @@ public final class ProductionBatch {
 
   public @NonNull ProductionProfileSnapshot profile() {
     return profile;
-  }
-
-  public @Nullable ProductionTargetDistance targetDistance() {
-    return targetDistance;
   }
 
   public @Nullable String note() {

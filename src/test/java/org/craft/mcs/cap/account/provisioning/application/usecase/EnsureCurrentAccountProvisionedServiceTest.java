@@ -26,8 +26,9 @@ import org.craft.mcs.cap.core.account.workspace.application.port.out.WorkspaceSe
 import org.craft.mcs.cap.core.account.workspace.domain.model.Workspace;
 import org.craft.mcs.cap.core.account.workspace.domain.model.WorkspaceSettings;
 import org.craft.mcs.cap.core.account.workspace.domain.model.WorkspaceType;
-import org.craft.mcs.cap.core.account.workspace.domain.model.value.ExternalOrganizationSubject;
+import org.craft.mcs.cap.core.account.shared.domain.value.ExternalOrganizationSubject;
 import org.craft.mcs.cap.shared.kernel.measurement.unit.TitratableAcidityBasis;
+import org.craft.mcs.cap.shared.application.persistence.VersionedAggregate;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -41,6 +42,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import static org.craft.mcs.cap.support.VersionedAggregateFixtures.versioned;
 
 class EnsureCurrentAccountProvisionedServiceTest {
 
@@ -57,18 +59,18 @@ class EnsureCurrentAccountProvisionedServiceTest {
     final var actor = actor();
 
     when(currentActorProvider.currentActor()).thenReturn(Optional.of(actor));
-    when(userRepository.findByExternalIdentity(actor.identityProvider(), actor.externalSubject()))
+    when(userRepository.findVersionedByExternalIdentity(actor.identityProvider(), actor.externalSubject()))
         .thenReturn(Optional.empty());
-    when(userRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0, AccountUser.class));
-    when(workspaceRepository.save(any())).thenAnswer(invocation -> {
+    when(userRepository.create(any())).thenAnswer(invocation -> invocation.getArgument(0, AccountUser.class));
+    when(workspaceRepository.create(any())).thenAnswer(invocation -> {
       final Workspace workspace = invocation.getArgument(0);
       persistedWorkspace.set(workspace);
       return workspace;
     });
-    when(membershipRepository.save(any()))
+    when(membershipRepository.create(any()))
         .thenAnswer(invocation -> invocation.getArgument(0, WorkspaceMembership.class));
     when(preferencesRepository.findByUserId(any())).thenReturn(Optional.empty());
-    when(preferencesRepository.save(any()))
+    when(preferencesRepository.create(any()))
         .thenAnswer(invocation -> invocation.getArgument(0, UserPreferences.class));
 
     final var service = new EnsureCurrentAccountProvisionedService(
@@ -87,7 +89,7 @@ class EnsureCurrentAccountProvisionedServiceTest {
 
     final var workspace = requireNonNull(persistedWorkspace.get());
     final var membershipCaptor = ArgumentCaptor.forClass(WorkspaceMembership.class);
-    verify(membershipRepository).save(membershipCaptor.capture());
+    verify(membershipRepository).create(membershipCaptor.capture());
     assertThat(membershipCaptor.getValue())
         .returns(workspace.workspaceId(), WorkspaceMembership::workspaceId)
         .returns(AccountRole.OWNER, WorkspaceMembership::role)
@@ -97,7 +99,7 @@ class EnsureCurrentAccountProvisionedServiceTest {
         Duration.ofDays(14),
         TitratableAcidityBasis.MALIC_ACID
     ));
-    verify(preferencesRepository).save(any(UserPreferences.class));
+    verify(preferencesRepository).create(any(UserPreferences.class));
     verify(provisioningLock).acquire(actor.identityProvider(), actor.externalSubject());
   }
 
@@ -129,9 +131,9 @@ class EnsureCurrentAccountProvisionedServiceTest {
         null
     );
     when(currentActorProvider.currentActor()).thenReturn(Optional.of(actor));
-    when(userRepository.findByExternalIdentity(actor.identityProvider(), actor.externalSubject()))
-        .thenReturn(Optional.of(existingUser));
-    when(userRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0, AccountUser.class));
+    when(userRepository.findVersionedByExternalIdentity(actor.identityProvider(), actor.externalSubject()))
+        .thenReturn(Optional.of(versioned(existingUser)));
+    when(userRepository.update(any())).thenAnswer(invocation -> invocation.getArgument(0));
     when(preferencesRepository.findByUserId(existingUser.userId()))
         .thenReturn(Optional.of(UserPreferences.defaults(existingUser.userId())));
 
@@ -149,9 +151,9 @@ class EnsureCurrentAccountProvisionedServiceTest {
 
     service.ensureProvisioned();
 
-    final var userCaptor = ArgumentCaptor.forClass(AccountUser.class);
-    verify(userRepository).save(userCaptor.capture());
-    assertThat(userCaptor.getValue())
+    final ArgumentCaptor<VersionedAggregate<AccountUser>> userCaptor = ArgumentCaptor.captor();
+    verify(userRepository).update(userCaptor.capture());
+    assertThat(userCaptor.getValue().aggregate())
         .returns(actor.email(), AccountUser::email)
         .returns(DisplayName.of("CAP profile"), AccountUser::displayName)
         .returns(HttpUrl.of("https://cap.example.com/avatar.png"), AccountUser::avatarUrl);
@@ -176,8 +178,8 @@ class EnsureCurrentAccountProvisionedServiceTest {
     );
 
     when(currentActorProvider.currentActor()).thenReturn(Optional.of(actor));
-    when(userRepository.findByExternalIdentity(actor.identityProvider(), actor.externalSubject()))
-        .thenReturn(Optional.of(existingUser));
+    when(userRepository.findVersionedByExternalIdentity(actor.identityProvider(), actor.externalSubject()))
+        .thenReturn(Optional.of(versioned(existingUser)));
     when(preferencesRepository.findByUserId(existingUser.userId()))
         .thenReturn(Optional.of(UserPreferences.defaults(existingUser.userId())));
 
@@ -195,9 +197,9 @@ class EnsureCurrentAccountProvisionedServiceTest {
 
     service.ensureProvisioned();
 
-    verify(userRepository, never()).save(any());
+    verify(userRepository, never()).update(any());
     verifyNoInteractions(workspaceRepository, membershipRepository, settingsRepository);
-    verify(preferencesRepository, never()).save(any());
+    verify(preferencesRepository, never()).create(any());
   }
 
   private static @NonNull AuthenticatedActor actor() {

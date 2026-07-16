@@ -12,7 +12,7 @@ import org.craft.mcs.cap.core.account.invitation.application.port.out.WorkspaceI
 import org.craft.mcs.cap.core.account.invitation.application.usecase.IncomingWorkspaceInvitationQueryService;
 import org.craft.mcs.cap.core.account.invitation.domain.model.WorkspaceInvitation;
 import org.craft.mcs.cap.core.account.invitation.domain.model.WorkspaceInvitationStatus;
-import org.craft.mcs.cap.core.account.membership.application.AccountAccessDeniedException;
+import org.craft.mcs.cap.core.account.shared.application.AccountAccessDeniedException;
 import org.craft.mcs.cap.core.account.membership.domain.model.AccountRole;
 import org.craft.mcs.cap.core.account.shared.domain.value.DisplayName;
 import org.craft.mcs.cap.core.account.shared.domain.value.EmailAddress;

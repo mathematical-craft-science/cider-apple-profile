@@ -1,16 +1,20 @@
 package org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain;
 
+import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionCalculatorCode;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileAxisNormalizerCode;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetObjectiveFunctionCode;
+
 
 /**
  * Stable codes for selecting the algorithm that proposes candidate source weights.
  *
  * <p>The algorithm is only one part of optimization. A complete optimization run also selects:
  * <ul>
- *   <li>a {@link org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionCalculatorCode}
+ *   <li>a {@link ChemicalProfileCompositionCalculatorCode}
  *       to calculate each candidate profile;</li>
- *   <li>a {@link org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileAxisNormalizerCode}
+ *   <li>a {@link ProfileAxisNormalizerCode}
  *       to normalize axes before distance calculation;</li>
- *   <li>a {@link org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetObjectiveFunctionCode}
+ *   <li>a {@link ProfileTargetObjectiveFunctionCode}
  *       to score candidate distance to the target.</li>
  * </ul>
  */

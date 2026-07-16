@@ -1,8 +1,7 @@
 package org.craft.mcs.cap.core.profileanalysis.classification.profile.northamerican;
 
-import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
-
 import java.math.BigDecimal;
+import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisRange;
@@ -54,7 +53,7 @@ public final class NorthAmericanProfileCalculator {
       return NorthAmericanLevel.VERY_HIGH;
     }
 
-    throw new IllegalStateException("value does not fit any range: " + value);
+    throw new DomainRuleViolationException("value does not fit any North American profile range: " + value);
   }
 
   private static @NonNull BigDecimal axisValue(

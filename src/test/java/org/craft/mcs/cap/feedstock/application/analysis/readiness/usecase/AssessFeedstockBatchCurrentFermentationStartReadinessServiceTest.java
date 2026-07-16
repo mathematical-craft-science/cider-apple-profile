@@ -3,12 +3,12 @@ package org.craft.mcs.cap.feedstock.application.analysis.readiness.usecase;
 import java.time.LocalDate;
 import java.util.Optional;
 import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
+import org.craft.mcs.cap.core.feedstock.application.analysis.readiness.usecase.*;
 import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.FermentationStartReadinessAssessor;
 import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.FermentationStartReadinessStatus;
 import org.craft.mcs.cap.core.feedstock.application.measurement.query.FeedstockBatchCurrentMeasurementQueryService;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchRepository;
 import org.craft.mcs.cap.core.feedstock.application.measurement.port.out.FeedstockMeasurementQueryRepository;
-import org.craft.mcs.cap.core.feedstock.application.analysis.readiness.usecase.AssessFeedstockBatchCurrentFermentationStartReadinessService;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockBatchName;
@@ -28,9 +28,11 @@ import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.junit.jupiter.api.Test;
 
-import static java.util.UUID.randomUUID;
+import static org.craft.mcs.cap.shared.kernel.identity.UuidV7Generator.newUuid;
 import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementInstant;
+import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementRecordedAt;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.craft.mcs.cap.shared.testing.FeedstockMeasurementViews.view;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -48,11 +50,11 @@ class AssessFeedstockBatchCurrentFermentationStartReadinessServiceTest {
         new FermentationStartReadinessAssessor()
     );
     final var batchId = FeedstockBatchId.newId();
-    final var workspaceId = WorkspaceId.of(randomUUID());
+    final var workspaceId = WorkspaceId.of(newUuid());
     final var measurement = measurement(batchId);
 
     when(batchRepository.findById(batchId)).thenReturn(Optional.of(batch(batchId, workspaceId)));
-    when(measurementQueryRepository.findLatestByBatchId(batchId)).thenReturn(Optional.of(measurement));
+    when(measurementQueryRepository.findLatestByBatchId(batchId)).thenReturn(Optional.of(view(measurement)));
 
     final var result = service.assess(batchId);
 
@@ -72,7 +74,8 @@ class AssessFeedstockBatchCurrentFermentationStartReadinessServiceTest {
             .ph(ExactMeasurement.of(PhValue.of("3.45")))
             .yeastAssimilableNitrogen(ExactMeasurement.of(YeastAssimilableNitrogenValue.of("180")))
             .build(),
-        feedstockMeasurementInstant()
+        feedstockMeasurementInstant(),
+        feedstockMeasurementRecordedAt()
     );
   }
 

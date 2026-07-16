@@ -14,6 +14,7 @@ import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.Che
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionSourceWeight;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionProportion;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetDistance;
+import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.jspecify.annotations.NonNull;
 
@@ -144,7 +145,7 @@ public final class DiscretizedBoundedChemicalProfileCompositionOptimizationStrat
   ) {
     final var optimizationSources = request.sources();
     if (shares.length != optimizationSources.size()) {
-      throw new IllegalStateException("share vector size does not match optimization source count");
+      throw new DomainRuleViolationException("share vector size does not match optimization source count");
     }
 
     final var sources = new ArrayList<ChemicalProfileCompositionSource>();
@@ -177,7 +178,9 @@ public final class DiscretizedBoundedChemicalProfileCompositionOptimizationStrat
         .multiply(BigDecimal.valueOf(request.settings().stepPercent()));
     return switch (request.mode()) {
       case PROPORTION -> new CompositionProportion(sharePercent);
-      case ABSOLUTE_VOLUME -> new AbsoluteCompositionVolume(VolumeValue.ofLiters(absoluteVolumeLiters(request, sharePercent)));
+      case ABSOLUTE_VOLUME -> new AbsoluteCompositionVolume(
+          VolumeValue.ofLiters(absoluteVolumeLiters(request, sharePercent))
+      );
     };
   }
 
@@ -187,7 +190,7 @@ public final class DiscretizedBoundedChemicalProfileCompositionOptimizationStrat
   ) {
     final var targetTotalVolume = request.targetTotalVolume();
     if (targetTotalVolume == null) {
-      throw new IllegalStateException("absolute volume optimization target total volume is missing");
+      throw new DomainRuleViolationException("absolute volume optimization target total volume is missing");
     }
 
     return targetTotalVolume.liters()

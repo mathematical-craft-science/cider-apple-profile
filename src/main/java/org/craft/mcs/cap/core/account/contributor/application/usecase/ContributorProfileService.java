@@ -13,6 +13,7 @@ import org.craft.mcs.cap.core.account.contributor.domain.model.ContributorProfil
 import org.craft.mcs.cap.core.account.shared.domain.value.AccountUserId;
 import org.craft.mcs.cap.core.account.user.application.usecase.CurrentAccountUserResolver;
 import org.craft.mcs.cap.shared.platform.TransactionHelper;
+import org.craft.mcs.cap.shared.application.persistence.VersionedAggregate;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
@@ -42,10 +43,13 @@ public final class ContributorProfileService implements ContributorProfileUseCas
     requireNonNull(command, "configure contributor profile command cannot be null");
     return transactionHelper.callInTransactionNonNull(() -> {
       final var user = currentAccountUserResolver.resolve();
-      final var existing = contributorProfileRepository.findByUserId(user.userId());
-      final var consentedAt = consentTime(existing.orElse(null), command.publishContacts()); // NOSONAR
+      final var existing = contributorProfileRepository.findVersionedById(user.userId());
+      final var consentedAt = consentTime(
+          existing.map(VersionedAggregate::aggregate).orElse(null),
+          command.publishContacts()
+      );
       final var profile = existing
-          .map(current -> current.update(
+          .map(current -> current.aggregate().update(
               command.contributorType(),
               command.publicName(),
               command.website(),
@@ -64,7 +68,10 @@ public final class ContributorProfileService implements ContributorProfileUseCas
               command.publishContacts(),
               consentedAt
           ));
-      return toView(contributorProfileRepository.save(profile));
+      final var saved = existing
+          .map(state -> contributorProfileRepository.update(state.withAggregate(profile)).aggregate())
+          .orElseGet(() -> contributorProfileRepository.create(profile));
+      return toView(saved);
     });
   }
 
@@ -72,8 +79,9 @@ public final class ContributorProfileService implements ContributorProfileUseCas
   public void delete() {
     transactionHelper.executeInTransaction(() -> {
       final var user = currentAccountUserResolver.resolve();
-      findProfile(user.userId());
-      contributorProfileRepository.deleteByUserId(user.userId());
+      final var profile = contributorProfileRepository.findVersionedById(user.userId())
+          .orElseThrow(ContributorProfileNotFoundException::new);
+      contributorProfileRepository.delete(profile);
     });
   }
 

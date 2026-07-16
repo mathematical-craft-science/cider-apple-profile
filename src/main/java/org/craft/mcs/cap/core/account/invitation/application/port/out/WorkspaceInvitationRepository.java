@@ -7,16 +7,12 @@ import org.craft.mcs.cap.core.account.invitation.domain.model.WorkspaceInvitatio
 import org.craft.mcs.cap.core.account.invitation.domain.model.value.WorkspaceInvitationId;
 import org.craft.mcs.cap.core.account.shared.domain.value.EmailAddress;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
+import org.craft.mcs.cap.shared.application.persistence.VersionedAggregateRepository;
 import org.jspecify.annotations.NonNull;
 
 /** Aggregate repository port for workspace invitations that precede membership creation. */
-public interface WorkspaceInvitationRepository {
-
-  @NonNull WorkspaceInvitation save(@NonNull WorkspaceInvitation invitation);
-
-  @NonNull Optional<@NonNull WorkspaceInvitation> findById(
-      @NonNull WorkspaceInvitationId invitationId
-  );
+public interface WorkspaceInvitationRepository
+    extends VersionedAggregateRepository<WorkspaceInvitation, WorkspaceInvitationId> {
 
   @NonNull Optional<@NonNull WorkspaceInvitation> findByWorkspaceIdAndInvitedEmailAndStatus(
       @NonNull WorkspaceId workspaceId,

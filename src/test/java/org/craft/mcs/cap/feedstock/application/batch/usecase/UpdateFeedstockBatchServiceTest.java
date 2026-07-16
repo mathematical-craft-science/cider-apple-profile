@@ -20,13 +20,14 @@ import org.craft.mcs.cap.shared.platform.TransactionHelper;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
-import static java.util.UUID.randomUUID;
+import static org.craft.mcs.cap.shared.kernel.identity.UuidV7Generator.newUuid;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.craft.mcs.cap.support.VersionedAggregateFixtures.versioned;
 
 
 class UpdateFeedstockBatchServiceTest {
@@ -39,9 +40,9 @@ class UpdateFeedstockBatchServiceTest {
         mock(FeedstockAccessControl.class),
         transactionHelper()
     );
-    final var workspaceId = WorkspaceId.of(randomUUID());
+    final var workspaceId = WorkspaceId.of(newUuid());
     final var batch = batch(workspaceId, VolumeValue.ofLiters("250.000"));
-    when(repository.findById(batch.batchId())).thenReturn(Optional.of(batch));
+    when(repository.findVersionedById(batch.batchId())).thenReturn(Optional.of(versioned(batch)));
 
     assertThatThrownBy(() -> service.update(new UpdateFeedstockBatchCommand(
         batch.batchId(),
@@ -59,7 +60,7 @@ class UpdateFeedstockBatchServiceTest {
     )))
         .isInstanceOf(DomainRuleViolationException.class)
         .hasMessageContaining("available volume must be greater than zero");
-    verify(repository, never()).save(any(FeedstockBatch.class));
+    verify(repository, never()).update(any());
   }
 
   @Test
@@ -70,9 +71,9 @@ class UpdateFeedstockBatchServiceTest {
         mock(FeedstockAccessControl.class),
         transactionHelper()
     );
-    final var workspaceId = WorkspaceId.of(randomUUID());
+    final var workspaceId = WorkspaceId.of(newUuid());
     final var batch = batch(workspaceId, VolumeValue.ofLiters("0"));
-    when(repository.findById(batch.batchId())).thenReturn(Optional.of(batch));
+    when(repository.findVersionedById(batch.batchId())).thenReturn(Optional.of(versioned(batch)));
 
     assertThatThrownBy(() -> service.update(new UpdateFeedstockBatchCommand(
         batch.batchId(),
@@ -90,7 +91,7 @@ class UpdateFeedstockBatchServiceTest {
     )))
         .isInstanceOf(DomainRuleViolationException.class)
         .hasMessageContaining("available volume must be greater than zero");
-    verify(repository, never()).save(any(FeedstockBatch.class));
+    verify(repository, never()).update(any());
   }
 
   private static @NonNull FeedstockBatch batch(

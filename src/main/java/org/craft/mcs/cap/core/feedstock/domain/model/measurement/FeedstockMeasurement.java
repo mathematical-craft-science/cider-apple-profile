@@ -52,7 +52,7 @@ public final class FeedstockMeasurement {
     this.batchId = requireNonNull(batchId, "feedstock batch id cannot be null");
     this.name = requireNonNull(name, "feedstock measurement name cannot be null");
     this.chemicalProfile = requireNonNull(chemicalProfile, "chemical profile cannot be null");
-    this.measuredAt = validMeasuredAt(measuredAt);
+    this.measuredAt = requireNonNull(measuredAt, "measured at cannot be null");
     this.note = normalize(note);
   }
 
@@ -61,7 +61,29 @@ public final class FeedstockMeasurement {
       @NonNull FeedstockBatchId batchId,
       @NonNull FeedstockMeasurementName name,
       @NonNull ChemicalProfile chemicalProfile,
-      @NonNull Instant measuredAt
+      @NonNull Instant measuredAt,
+      @NonNull Instant recordedAt
+  ) {
+    return new FeedstockMeasurement(
+        measurementId,
+        batchId,
+        name,
+        chemicalProfile,
+        validMeasuredAt(measuredAt, recordedAt),
+        null
+    );
+  }
+
+  /**
+   * Restores historical evidence without re-evaluating it against the current wall clock.
+   */
+  public static @NonNull FeedstockMeasurement restore(
+      @NonNull FeedstockMeasurementId measurementId,
+      @NonNull FeedstockBatchId batchId,
+      @NonNull FeedstockMeasurementName name,
+      @NonNull ChemicalProfile chemicalProfile,
+      @NonNull Instant measuredAt,
+      @Nullable String note
   ) {
     return new FeedstockMeasurement(
         measurementId,
@@ -69,7 +91,7 @@ public final class FeedstockMeasurement {
         name,
         chemicalProfile,
         measuredAt,
-        null
+        note
     );
   }
 
@@ -109,8 +131,11 @@ public final class FeedstockMeasurement {
     return this;
   }
 
-  public @NonNull FeedstockMeasurement changeMeasuredAt(@NonNull Instant measuredAt) {
-    this.measuredAt = validMeasuredAt(measuredAt);
+  public @NonNull FeedstockMeasurement changeMeasuredAt(
+      @NonNull Instant measuredAt,
+      @NonNull Instant recordedAt
+  ) {
+    this.measuredAt = validMeasuredAt(measuredAt, recordedAt);
     return this;
   }
 
@@ -133,9 +158,13 @@ public final class FeedstockMeasurement {
     return normalized.isEmpty() ? null : normalized;
   }
 
-  private static @NonNull Instant validMeasuredAt(@NonNull Instant measuredAt) {
+  private static @NonNull Instant validMeasuredAt(
+      @NonNull Instant measuredAt,
+      @NonNull Instant recordedAt
+  ) {
     requireNonNull(measuredAt, "measured at cannot be null");
-    if (measuredAt.isAfter(Instant.now())) {
+    requireNonNull(recordedAt, "recorded at cannot be null");
+    if (measuredAt.isAfter(recordedAt)) {
       throw new DomainRuleViolationException("feedstock measurement date cannot be in the future");
     }
     return measuredAt;

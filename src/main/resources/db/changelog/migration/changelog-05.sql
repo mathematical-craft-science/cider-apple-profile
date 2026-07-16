@@ -1,13 +1,16 @@
 CREATE TABLE IF NOT EXISTS batch_trace_steps
 (
     step_id        UUID                     NOT NULL PRIMARY KEY,
-    trace_id       UUID                     NOT NULL,
+    workspace_id   UUID                     NOT NULL,
     parent_step_id UUID,
     operation_type VARCHAR(64)              NOT NULL,
     occurred_at    TIMESTAMP WITH TIME ZONE NOT NULL,
-    performed_by   VARCHAR(160),
+    performed_by_type VARCHAR(32)            NOT NULL,
+    performed_by_id   VARCHAR(160)           NOT NULL,
     note           VARCHAR(2000),
-    created_at     TIMESTAMP WITH TIME ZONE NOT NULL
+    created_at     TIMESTAMP WITH TIME ZONE NOT NULL,
+    CONSTRAINT fk_batch_trace_steps_workspace
+        FOREIGN KEY (workspace_id) REFERENCES workspaces (workspace_id)
 );
 
 CREATE TABLE IF NOT EXISTS batch_trace_step_subjects
@@ -62,8 +65,8 @@ CREATE TABLE IF NOT EXISTS batch_trace_step_subjects
         CHECK (subject_order >= 0)
 );
 
-CREATE INDEX IF NOT EXISTS idx_batch_trace_steps_trace_id
-    ON batch_trace_steps (trace_id);
+CREATE INDEX IF NOT EXISTS idx_batch_trace_steps_workspace_id
+    ON batch_trace_steps (workspace_id);
 
 CREATE INDEX IF NOT EXISTS idx_batch_trace_steps_parent_step_id
     ON batch_trace_steps (parent_step_id);

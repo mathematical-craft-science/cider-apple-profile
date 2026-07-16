@@ -36,8 +36,9 @@ public final class DeleteFeedstockBatchService
     feedstockAccessControl.requireWriteAccess(command.workspaceId());
 
     transactionHelper.executeInTransaction(() -> {
-      final var batch = feedstockBatchRepository.findById(command.batchId())
+      final var state = feedstockBatchRepository.findVersionedById(command.batchId())
           .orElseThrow(() -> new FeedstockBatchNotFoundException(command.batchId()));
+      final var batch = state.aggregate();
 
       if (!batch.workspaceId().equals(command.workspaceId())) {
         throw new FeedstockBatchOwnershipMismatchException(
@@ -47,7 +48,7 @@ public final class DeleteFeedstockBatchService
         );
       }
 
-      feedstockBatchRepository.delete(batch);
+      feedstockBatchRepository.delete(state);
     });
   }
 }

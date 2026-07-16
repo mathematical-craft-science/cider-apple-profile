@@ -68,7 +68,7 @@ public final class FermentationStartReadinessAssessor {
       return check(
           FermentationStartReadinessFactor.SUGAR,
           FermentationStartReadinessSeverity.BLOCKER,
-          "SUGAR_MISSING",
+          FermentationStartReadinessCheckCode.SUGAR_MISSING,
           "Sugar measurement is required before fermentation start assessment.",
           null,
           SUGAR_UNIT
@@ -78,7 +78,7 @@ public final class FermentationStartReadinessAssessor {
     return check(
         FermentationStartReadinessFactor.SUGAR,
         FermentationStartReadinessSeverity.INFO,
-        "SUGAR_PRESENT",
+        FermentationStartReadinessCheckCode.SUGAR_PRESENT,
         "Sugar measurement is present and can support fermentation planning.",
         null,
         SUGAR_UNIT
@@ -100,7 +100,7 @@ public final class FermentationStartReadinessAssessor {
   private static @NonNull FermentationStartReadinessCheck check(
       @NonNull FermentationStartReadinessFactor factor,
       @NonNull FermentationStartReadinessSeverity severity,
-      @NonNull String code,
+      @NonNull FermentationStartReadinessCheckCode code,
       @NonNull String message,
       @Nullable BigDecimal value,
       @Nullable String unit

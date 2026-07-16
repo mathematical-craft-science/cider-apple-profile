@@ -12,35 +12,29 @@ import org.craft.mcs.cap.core.account.contributor.application.port.in.Contributo
 import org.craft.mcs.cap.core.account.invitation.application.port.in.GetIncomingWorkspaceInvitationUseCase;
 import org.craft.mcs.cap.core.account.invitation.application.port.in.ListIncomingWorkspaceInvitationsUseCase;
 import org.craft.mcs.cap.core.account.invitation.application.port.in.WorkspaceInvitationUseCase;
-import org.craft.mcs.cap.core.account.membership.application.port.in.ListWorkspaceMembersUseCase;
-import org.craft.mcs.cap.core.account.membership.application.port.in.WorkspaceMembershipManagementUseCase;
+import org.craft.mcs.cap.core.account.administration.application.port.in.ListWorkspaceMembersUseCase;
+import org.craft.mcs.cap.core.account.administration.application.port.in.WorkspaceMembershipManagementUseCase;
 import org.craft.mcs.cap.core.account.provisioning.application.port.in.EnsureCurrentAccountProvisionedUseCase;
 import org.craft.mcs.cap.core.account.user.application.port.in.GetCurrentAccountProfileUseCase;
-import org.craft.mcs.cap.core.account.user.application.port.in.GetCurrentAccountUseCase;
+import org.craft.mcs.cap.core.account.context.application.port.in.GetCurrentAccountUseCase;
 import org.craft.mcs.cap.core.account.user.application.port.in.GetCurrentUserPreferencesUseCase;
 import org.craft.mcs.cap.core.account.user.application.port.in.UpdateAccountProfileUseCase;
 import org.craft.mcs.cap.core.account.user.application.port.in.UpdateUserPreferencesUseCase;
 import org.craft.mcs.cap.core.account.workspace.application.port.in.GetWorkspaceSettingsUseCase;
-import org.craft.mcs.cap.core.account.workspace.application.port.in.ListAccountWorkspacesUseCase;
+import org.craft.mcs.cap.core.account.context.application.port.in.ListAccountWorkspacesUseCase;
 import org.craft.mcs.cap.core.account.workspace.application.port.in.UpdateWorkspaceSettingsUseCase;
-import org.craft.mcs.cap.core.account.workspace.application.port.in.WorkspaceLifecycleUseCase;
+import org.craft.mcs.cap.core.account.administration.application.port.in.WorkspaceLifecycleUseCase;
 import org.craft.mcs.cap.core.account.workspace.application.port.in.WorkspaceSettingsReader;
 import org.craft.mcs.cap.core.appleprofile.application.abv.port.in.PredictAppleVarietyPotentialAbvUseCase;
 import org.craft.mcs.cap.core.appleprofile.application.classification.port.in.ClassifyAppleVarietyNorthAmericanUseCase;
 import org.craft.mcs.cap.core.appleprofile.application.classification.port.in.ClassifyAppleVarietyUseCase;
-import org.craft.mcs.cap.core.appleprofile.application.profiletarget.port.in.QueryAppleVarietyProfileTargetCandidatesUseCase;
-import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.in.AssessAppleVarietySugarAcidityZoneUseCase;
-import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.in.QueryAppleVarietySugarAcidityZonePointsUseCase;
+import org.craft.mcs.cap.core.appleprofile.application.profiletarget.port.in.*;
+import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.in.*;
 import org.craft.mcs.cap.core.batchtraceability.application.port.in.QueryBatchTraceabilityUseCase;
-import org.craft.mcs.cap.core.feedstock.application.analysis.abv.port.in.PredictFeedstockBatchCurrentPotentialAbvUseCase;
-import org.craft.mcs.cap.core.feedstock.application.analysis.abv.port.in.PredictFeedstockMeasurementPotentialAbvUseCase;
-import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.QueryFeedstockBatchProfileTargetCandidatesUseCase;
-import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.ScoreFeedstockBatchProfileTargetUseCase;
-import org.craft.mcs.cap.core.feedstock.application.analysis.readiness.port.in.AssessFeedstockBatchCurrentFermentationStartReadinessUseCase;
-import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.AssessFeedstockBatchCurrentSugarAcidityZoneUseCase;
-import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.AssessFeedstockMeasurementSugarAcidityZoneUseCase;
-import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.QueryFeedstockBatchCurrentSugarAcidityZonePointsUseCase;
-import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.QueryFeedstockMeasurementSugarAcidityZonePointsUseCase;
+import org.craft.mcs.cap.core.feedstock.application.analysis.abv.port.in.*;
+import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.*;
+import org.craft.mcs.cap.core.feedstock.application.analysis.readiness.port.in.*;
+import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.*;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.CreateFeedstockBatchUseCase;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.DeleteFeedstockBatchUseCase;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.ListFeedstockBatchesUseCase;
@@ -51,16 +45,22 @@ import org.craft.mcs.cap.core.feedstock.application.measurement.port.in.DeleteFe
 import org.craft.mcs.cap.core.feedstock.application.measurement.port.in.ListFeedstockMeasurementsUseCase;
 import org.craft.mcs.cap.core.feedstock.application.measurement.port.in.UpdateFeedstockMeasurementUseCase;
 import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.QueryFeedstockPlanningBatchesUseCase;
-import org.craft.mcs.cap.core.feedstock.application.planning.composition.port.in.OptimizeFeedstockBatchCompositionUseCase;
+import org.craft.mcs.cap.core.feedstock.application.planning.composition.port.in.*;
 import org.craft.mcs.cap.core.production.application.port.in.CreateProductionBatchUseCase;
 import org.craft.mcs.cap.core.production.application.port.in.GetProductionBatchUseCase;
 import org.craft.mcs.cap.core.production.application.port.in.ListProductionBatchesUseCase;
+import org.craft.mcs.cap.core.production.candidate.application.port.in.CreateProductionBatchCandidateUseCase;
+import org.craft.mcs.cap.core.production.candidate.application.port.in.GetProductionBatchCandidateUseCase;
 import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPredictor;
-import org.craft.mcs.cap.core.profileanalysis.composition.calculation.application.port.in.CalculateChemicalProfileCompositionUseCase;
-import org.craft.mcs.cap.core.profileanalysis.composition.optimization.application.port.in.OptimizeChemicalProfileCompositionUseCase;
+import org.craft.mcs.cap.core.profileanalysis.composition.calculation.application.port.in.*;
+import org.craft.mcs.cap.core.profileanalysis.composition.optimization.application.port.in.*;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.graph.domain.SugarAcidityGraphMetadata;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.SugarAcidityTargetResolver;
 import org.craft.mcs.cap.infrastructure.adapter.in.importer.appleprofile.AppleVarietyJsonSeedImporter;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.ChemicalProfileCompositionRequestMapper;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.profiletarget.AppleVarietyProfileTargetCandidateRequestMapper;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.mapper.ProductionBatchCandidateRestMapper;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.sugaracidity.SugarAcidityGraphMetadataResponseProvider;
 import org.craft.mcs.cap.infrastructure.configuration.OpenApiConfiguration;
 import org.craft.mcs.cap.infrastructure.configuration.openapi.DecimalMinOpenApiCustomizer;
 import org.craft.mcs.cap.infrastructure.configuration.openapi.PolymorphicSchemaFlatteningCustomizer;
@@ -99,7 +99,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
     DecimalMinOpenApiCustomizer.class,
     PolymorphicSchemaFlatteningCustomizer.class,
     RequiredNullableOpenApiCustomizer.class,
-    RestDtoSchemaTypeScanner.class
+    RestDtoSchemaTypeScanner.class,
+    ChemicalProfileCompositionRequestMapper.class,
+    AppleVarietyProfileTargetCandidateRequestMapper.class,
+    ProductionBatchCandidateRestMapper.class,
+    SugarAcidityGraphMetadataResponseProvider.class
 })
 @MockitoBean(types = {
     ContributorProfileUseCase.class,
@@ -148,6 +152,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
     QueryFeedstockPlanningBatchesUseCase.class,
     OptimizeFeedstockBatchCompositionUseCase.class,
     CreateProductionBatchUseCase.class,
+    CreateProductionBatchCandidateUseCase.class,
+    GetProductionBatchCandidateUseCase.class,
     GetProductionBatchUseCase.class,
     ListProductionBatchesUseCase.class,
     PotentialAbvPredictor.class,
@@ -447,6 +453,7 @@ class OpenApiContractTest {
         openApi,
         "ProfileTargetDistanceResponse",
         "status",
+        "fitStatus",
         "insideSugarAcidityTarget",
         "insideTarget"
     );
@@ -455,10 +462,13 @@ class OpenApiContractTest {
         openApi,
         "ProfileTargetDistanceResponse",
         "value",
+        "matchPercent",
         "tannin",
         "nearestTargetTannin"
     );
     assertNullable(schemaProperty(openApi, "ProfileTargetDistanceResponse", "value"));
+    assertNullable(schemaProperty(openApi, "ProfileTargetDistanceResponse", "matchPercent"));
+    assertEnumProperty(openApi, "ProfileTargetDistanceResponse", "fitStatus", "EXCELLENT");
     assertNullable(schemaProperty(openApi, "ProfileTargetDistanceResponse", "tannin"));
     assertNullable(schemaProperty(openApi, "ProfileTargetDistanceResponse", "nearestTargetTannin"));
 
@@ -683,18 +693,33 @@ class OpenApiContractTest {
         "workspaceId",
         "name",
         "kind",
-        "sources",
-        "profile"
+        "candidateId"
     );
     assertStringFormat(schemaProperty(openApi, "CreateProductionBatchRequest", "workspaceId"), "uuid");
-    assertNotRequiredProperties(openApi, "CreateProductionBatchRequest", "targetDistance", "note");
-    assertNullable(schemaProperty(openApi, "CreateProductionBatchRequest", "targetDistance"));
+    assertStringFormat(schemaProperty(openApi, "CreateProductionBatchRequest", "candidateId"), "uuid");
+    assertNotRequiredProperties(openApi, "CreateProductionBatchRequest", "note");
     assertNullable(schemaProperty(openApi, "CreateProductionBatchRequest", "note"));
-    assertRequiredProperties(openApi, "CreateProductionBatchSourceRequest", "feedstockBatchId", "volumeLiters");
-    assertRequiredProperties(openApi, "ProductionProfileSnapshotRequest", "sugar", "acidity");
-    assertNotRequiredProperties(openApi, "ProductionProfileSnapshotRequest", "tannin", "yeastAssimilableNitrogen");
-    assertNullable(schemaProperty(openApi, "ProductionProfileSnapshotRequest", "tannin"));
-    assertNullable(schemaProperty(openApi, "ProductionProfileSnapshotRequest", "yeastAssimilableNitrogen"));
+
+    assertRequiredProperties(openApi, "CreateProductionBatchCandidateRequest", "workspaceId", "sources");
+    assertStringFormat(schemaProperty(openApi, "CreateProductionBatchCandidateRequest", "workspaceId"), "uuid");
+    assertNotRequiredProperties(
+        openApi,
+        "CreateProductionBatchCandidateRequest",
+        "tanninPolicy",
+        "target",
+        "tanninTarget",
+        "weights",
+        "scoringPurpose",
+        "calculator",
+        "normalizer",
+        "objectiveFunction"
+    );
+    assertRequiredProperties(
+        openApi,
+        "ProductionBatchCandidateSourceRequest",
+        "feedstockBatchId",
+        "volumeLiters"
+    );
 
     assertRequiredProperties(
         openApi,
@@ -713,11 +738,9 @@ class OpenApiContractTest {
         openApi,
         "ProductionBatchDetailsResponse",
         "yeastAssimilableNitrogen",
-        "targetDistance",
         "note"
     );
     assertNullable(schemaProperty(openApi, "ProductionBatchDetailsResponse", "yeastAssimilableNitrogen"));
-    assertNullable(schemaProperty(openApi, "ProductionBatchDetailsResponse", "targetDistance"));
     assertNullable(schemaProperty(openApi, "ProductionBatchDetailsResponse", "note"));
 
     assertRequiredProperties(
@@ -728,20 +751,43 @@ class OpenApiContractTest {
         "name",
         "kind",
         "status",
+        "candidateId",
         "composition"
     );
     assertStringFormat(schemaProperty(openApi, "ProductionBatchResponse", "workspaceId"), "uuid");
+    assertStringFormat(schemaProperty(openApi, "ProductionBatchResponse", "candidateId"), "uuid");
     assertNotRequiredProperties(openApi, "ProductionBatchResponse", "note");
     assertNullable(schemaProperty(openApi, "ProductionBatchResponse", "note"));
-    assertRequiredProperties(openApi, "ProductionBatchCompositionResponse", "sources", "profile", "totalVolume");
+    assertRequiredProperties(
+        openApi,
+        "ProductionBatchCompositionResponse",
+        "sources",
+        "profile",
+        "totalVolume",
+        "warnings"
+    );
     assertNotRequiredProperties(
         openApi,
         "ProductionBatchCompositionResponse",
         "yeastAssimilableNitrogen",
+        "normalizerCode",
         "targetDistance"
     );
     assertNullable(schemaProperty(openApi, "ProductionBatchCompositionResponse", "yeastAssimilableNitrogen"));
+    assertNullable(schemaProperty(openApi, "ProductionBatchCompositionResponse", "normalizerCode"));
     assertNullable(schemaProperty(openApi, "ProductionBatchCompositionResponse", "targetDistance"));
+    assertRequiredProperties(
+        openApi,
+        "ProductionBatchCandidateResponse",
+        "candidateId",
+        "workspaceId",
+        "status",
+        "composition"
+    );
+    assertStringFormat(schemaProperty(openApi, "ProductionBatchCandidateResponse", "candidateId"), "uuid");
+    assertStringFormat(schemaProperty(openApi, "ProductionBatchCandidateResponse", "workspaceId"), "uuid");
+    assertNotRequiredProperties(openApi, "ProductionBatchCandidateResponse", "confirmedProductionBatchId");
+    assertNullable(schemaProperty(openApi, "ProductionBatchCandidateResponse", "confirmedProductionBatchId"));
     assertRequiredProperties(openApi, "ProductionBatchSourceResponse", "feedstockBatchId", "volume");
 
     assertRequiredProperties(openApi, "BatchTraceabilityGraphResponse", "nodes", "edges");
@@ -853,6 +899,12 @@ class OpenApiContractTest {
     );
     assertNullable(schemaProperty(openApi, "FermentationStartReadinessCheckResponse", "value"));
     assertNullable(schemaProperty(openApi, "FermentationStartReadinessCheckResponse", "managedByAction"));
+    assertEnumProperty(
+        openApi,
+        "FermentationStartReadinessCheckResponse",
+        "code",
+        "PH_BELOW_GENERIC_YEAST_TOLERANCE"
+    );
     assertRequiredProperties(
         openApi,
         "FeedstockBatchCompositionOptimizationCandidateResponse",
@@ -1030,6 +1082,12 @@ class OpenApiContractTest {
         "code",
         "message"
     );
+    assertEnumProperty(
+        openApi,
+        "FeedstockWorkspacePlanningReadinessCheckResponse",
+        "code",
+        "CURRENT_MEASUREMENT_PRESENT"
+    );
     assertRequiredProperties(openApi, "FeedstockWorkspaceDataQualityResponse", "status", "indicators");
     assertArray(schemaProperty(openApi, "FeedstockWorkspaceDataQualityResponse", "indicators"));
     assertRequiredProperties(
@@ -1124,6 +1182,12 @@ class OpenApiContractTest {
         "severity",
         "code",
         "message"
+    );
+    assertEnumProperty(
+        openApi,
+        "FeedstockBatchDetailPlanningReadinessCheckResponse",
+        "code",
+        "TITRATABLE_ACIDITY_MISSING"
     );
     assertRequiredProperties(openApi, "FeedstockBatchDetailDataQualityResponse", "status", "indicators");
     assertArray(schemaProperty(openApi, "FeedstockBatchDetailDataQualityResponse", "indicators"));
@@ -1537,9 +1601,7 @@ class OpenApiContractTest {
         "CompositionOptimizationPenaltyResponse.value",
         "ProfileTargetDistanceResponse.value",
         "ChemicalProfileCompositionSourceResponse.proportion",
-        "FeedstockBatchCompositionOptimizationSourceResponse.proportion",
-        "ProductionBatchCompositionResponse.targetDistance",
-        "ProductionBatchDetailsResponse.targetDistance"
+        "FeedstockBatchCompositionOptimizationSourceResponse.proportion"
     );
 
     final var violations = openApi.path("components").path("schemas").properties().stream()

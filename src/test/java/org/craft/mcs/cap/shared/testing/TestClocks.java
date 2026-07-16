@@ -14,6 +14,9 @@ public final class TestClocks {
   public static final @NonNull Clock FUTURE_CLOCK =
       Clock.fixed(Instant.parse("2999-01-15T10:00:00Z"), ZoneOffset.UTC);
 
+  public static final @NonNull Clock FEEDSTOCK_MEASUREMENT_RECORDED_CLOCK =
+      Clock.fixed(Instant.parse("2030-01-15T10:00:00Z"), ZoneOffset.UTC);
+
   private TestClocks() {
   }
 
@@ -23,6 +26,10 @@ public final class TestClocks {
 
   public static @NonNull Instant feedstockMeasurementInstantPlusSeconds(long seconds) {
     return feedstockMeasurementInstant().plusSeconds(seconds);
+  }
+
+  public static @NonNull Instant feedstockMeasurementRecordedAt() {
+    return Instant.now(FEEDSTOCK_MEASUREMENT_RECORDED_CLOCK);
   }
 
   public static @NonNull Instant futureInstant() {

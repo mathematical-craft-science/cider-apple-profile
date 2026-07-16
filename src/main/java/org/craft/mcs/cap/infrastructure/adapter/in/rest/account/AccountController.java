@@ -2,14 +2,14 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.account;
 
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.account.membership.application.port.in.ListWorkspaceMembersUseCase;
+import org.craft.mcs.cap.core.account.administration.application.port.in.ListWorkspaceMembersUseCase;
 import org.craft.mcs.cap.core.account.user.application.port.in.GetCurrentAccountProfileUseCase;
-import org.craft.mcs.cap.core.account.user.application.port.in.GetCurrentAccountUseCase;
+import org.craft.mcs.cap.core.account.context.application.port.in.GetCurrentAccountUseCase;
 import org.craft.mcs.cap.core.account.user.application.port.in.GetCurrentUserPreferencesUseCase;
 import org.craft.mcs.cap.core.account.user.application.port.in.UpdateAccountProfileUseCase;
 import org.craft.mcs.cap.core.account.user.application.port.in.UpdateUserPreferencesUseCase;
 import org.craft.mcs.cap.core.account.workspace.application.port.in.GetWorkspaceSettingsUseCase;
-import org.craft.mcs.cap.core.account.workspace.application.port.in.ListAccountWorkspacesUseCase;
+import org.craft.mcs.cap.core.account.context.application.port.in.ListAccountWorkspacesUseCase;
 import org.craft.mcs.cap.core.account.workspace.application.port.in.UpdateWorkspaceSettingsUseCase;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.dto.AccountMeResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.dto.AccountPreferencesResponse;

@@ -27,10 +27,10 @@ public final class UpdateAccountProfileService implements UpdateAccountProfileUs
     final var currentUser = currentAccountUserResolver.resolve();
 
     return transactionHelper.callInTransactionNonNull(() -> {
-      final var user = accountUserRepository.findById(currentUser.userId())
-          .orElseThrow(AccountNotFoundException::new)
-          .updateProfile(command.displayName(), command.avatarUrl());
-      return AccountUserView.from(accountUserRepository.save(user));
+      final var state = accountUserRepository.findVersionedById(currentUser.userId())
+          .orElseThrow(AccountNotFoundException::new);
+      final var user = state.aggregate().updateProfile(command.displayName(), command.avatarUrl());
+      return AccountUserView.from(accountUserRepository.update(state.withAggregate(user)).aggregate());
     });
   }
 }

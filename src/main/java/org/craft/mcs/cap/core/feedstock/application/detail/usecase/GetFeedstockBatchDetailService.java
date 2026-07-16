@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchNotFoundException;
 import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchOwnershipMismatchException;
 import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
-import org.craft.mcs.cap.core.feedstock.application.batch.port.in.FeedstockBatchSummary;
+import org.craft.mcs.cap.core.feedstock.application.batch.model.FeedstockBatchSummary;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchRepository;
 import org.craft.mcs.cap.core.feedstock.application.batch.usecase.FeedstockBatchSummaryMapper;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentProfileSettings;
@@ -17,10 +17,10 @@ import org.craft.mcs.cap.core.feedstock.application.detail.port.in.FeedstockBatc
 import org.craft.mcs.cap.core.feedstock.application.detail.port.in.FeedstockBatchDetailView;
 import org.craft.mcs.cap.core.feedstock.application.detail.port.in.GetFeedstockBatchDetailQuery;
 import org.craft.mcs.cap.core.feedstock.application.detail.port.in.GetFeedstockBatchDetailUseCase;
-import org.craft.mcs.cap.core.feedstock.application.measurement.port.in.FeedstockMeasurementSummary;
+import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementSummary;
 import org.craft.mcs.cap.core.feedstock.application.measurement.port.in.ListFeedstockMeasurementsUseCase;
 import org.craft.mcs.cap.core.feedstock.application.measurement.query.FeedstockBatchCurrentMeasurementQueryService;
-import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurement;
+import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementView;
 import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPredictor;
 import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.FermentationStartReadinessAssessor;
 import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapability;
@@ -86,7 +86,7 @@ public final class GetFeedstockBatchDetailService implements GetFeedstockBatchDe
 
   private @NonNull FeedstockBatchCurrentProfileView toCurrentProfile(
       @NonNull FeedstockBatchSummary batch,
-      @Nullable FeedstockMeasurement measurement,
+      @Nullable FeedstockMeasurementView measurement,
       @NonNull FeedstockCurrentProfileSettings settings
   ) {
     requireNonNull(batch, "feedstock batch summary cannot be null");
@@ -125,7 +125,7 @@ public final class GetFeedstockBatchDetailService implements GetFeedstockBatchDe
 
   private static @NonNull FeedstockMeasurementSummary toSummary(
       @NonNull FeedstockBatchSummary batch,
-      @NonNull FeedstockMeasurement measurement
+      @NonNull FeedstockMeasurementView measurement
   ) {
     requireNonNull(batch, "feedstock batch summary cannot be null");
     requireNonNull(measurement, "feedstock measurement cannot be null");

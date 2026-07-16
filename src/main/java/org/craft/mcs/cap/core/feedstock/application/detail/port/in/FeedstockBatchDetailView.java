@@ -1,8 +1,8 @@
 package org.craft.mcs.cap.core.feedstock.application.detail.port.in;
 
 import java.util.List;
-import org.craft.mcs.cap.core.feedstock.application.batch.port.in.FeedstockBatchSummary;
-import org.craft.mcs.cap.core.feedstock.application.measurement.port.in.FeedstockMeasurementSummary;
+import org.craft.mcs.cap.core.feedstock.application.batch.model.FeedstockBatchSummary;
+import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementSummary;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;

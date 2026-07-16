@@ -16,6 +16,8 @@ import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabas
 import org.springframework.context.annotation.Import;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import org.craft.mcs.cap.shared.application.ConcurrentResourceModificationException;
 
 
 @DataJdbcTest
@@ -34,19 +36,35 @@ class JdbcAppleVarietyRepositoryDataJdbcTest {
 
   @Test
   void savesExistingAppleVarietyAsUpdate() {
-    final var saved = repository.save(appleVariety());
+    final var created = repository.create(appleVariety());
+    final var saved = repository.findVersionedById(created.varietyId()).orElseThrow();
 
-    saved.rename(AppleVarietyName.of("Updated variety"));
-    saved.changeChemicalProfile(ChemicalProfile.builder()
+    saved.aggregate().rename(AppleVarietyName.of("Updated variety"));
+    saved.aggregate().changeChemicalProfile(ChemicalProfile.builder()
         .sugar(ExactMeasurement.of(SugarConcentration.ofSpecificGravity(SpecificGravityValue.of("1.055"))))
         .titratableAcidity(ExactMeasurement.of(TitratableAcidityValue.of("6.1")))
         .build());
 
-    final var updated = repository.save(saved);
+    final var updated = repository.update(saved).aggregate();
 
     assertThat(springDataRepository.count()).isOne();
     assertThat(updated.name().value()).isEqualTo("Updated variety");
     assertThat(updated.chemicalProfile().titratableAcidity()).isPresent();
+  }
+
+  @Test
+  void rejectsAppleVarietyStateLoadedBeforeAnotherUpdate() {
+    final var created = repository.create(appleVariety());
+    final var first = repository.findVersionedById(created.varietyId()).orElseThrow();
+    final var stale = repository.findVersionedById(created.varietyId()).orElseThrow();
+
+    first.aggregate().rename(AppleVarietyName.of("First update"));
+    repository.update(first);
+    stale.aggregate().rename(AppleVarietyName.of("Stale update"));
+
+    assertThatThrownBy(() -> repository.update(stale))
+        .isInstanceOf(ConcurrentResourceModificationException.class)
+        .hasMessage("resource was modified concurrently: apple variety");
   }
 
   private static AppleVariety appleVariety() {

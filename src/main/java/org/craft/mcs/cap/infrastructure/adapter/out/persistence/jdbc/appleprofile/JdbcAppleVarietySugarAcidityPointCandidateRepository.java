@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.out.AppleVarietySugarAcidityPointCandidateRepository;
 import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.out.AppleVarietySugarAcidityPointCandidateCursor;
 import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.out.AppleVarietySugarAcidityPointCandidateQuery;
-import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVariety;
+import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.out.AppleVarietySugarAcidityPointCandidateView;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.appleprofile.entity.AppleVarietyJdbcMapper;
 import org.craft.mcs.cap.shared.platform.persistence.jdbc.SqlQueryBuilder;
 import org.craft.mcs.cap.shared.platform.persistence.jdbc.SqlQueryBuilder.SqlQueryOption;
@@ -27,7 +27,7 @@ class JdbcAppleVarietySugarAcidityPointCandidateRepository
   private final @NonNull NamedParameterJdbcTemplate jdbcTemplate;
 
   @Override
-  public @NonNull List<@NonNull AppleVariety> findCandidates(
+  public @NonNull List<@NonNull AppleVarietySugarAcidityPointCandidateView> findCandidates(
       @NonNull AppleVarietySugarAcidityPointCandidateQuery query
   ) {
     requireNonNull(query, "apple variety point candidate query cannot be null");
@@ -49,7 +49,7 @@ class JdbcAppleVarietySugarAcidityPointCandidateRepository
     return jdbcTemplate.query(
             sqlQuery.sql(),
             sqlQuery.parameters(),
-            (resultSet, rowNumber) -> AppleVarietyJdbcMapper.toDomain(
+            (resultSet, rowNumber) -> AppleVarietyJdbcMapper.toCandidateView(
                 AppleVarietyJdbcMapper.fromResultSet(resultSet)
             )
         );

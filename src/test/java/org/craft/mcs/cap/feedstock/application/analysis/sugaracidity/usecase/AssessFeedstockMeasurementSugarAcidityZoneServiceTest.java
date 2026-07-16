@@ -4,7 +4,7 @@ import java.time.LocalDate;
 import java.util.Optional;
 import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchNotFoundException;
 import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
-import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.usecase.AssessFeedstockMeasurementSugarAcidityZoneService;
+import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.usecase.*;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchRepository;
 import org.craft.mcs.cap.core.feedstock.application.measurement.port.out.FeedstockMeasurementRepository;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
@@ -34,8 +34,9 @@ import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
-import static java.util.UUID.randomUUID;
+import static org.craft.mcs.cap.shared.kernel.identity.UuidV7Generator.newUuid;
 import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementInstant;
+import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementRecordedAt;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
@@ -59,11 +60,12 @@ class AssessFeedstockMeasurementSugarAcidityZoneServiceTest {
         FeedstockBatchId.newId(),
         FeedstockMeasurementName.of("Partial batch"),
         sugarOnlyProfile(),
-        feedstockMeasurementInstant()
+        feedstockMeasurementInstant(),
+        feedstockMeasurementRecordedAt()
     );
     when(repository.findById(sample.measurementId())).thenReturn(Optional.of(sample));
     when(batchRepository.findById(sample.batchId()))
-        .thenReturn(Optional.of(batch(sample.batchId(), WorkspaceId.of(randomUUID()))));
+        .thenReturn(Optional.of(batch(sample.batchId(), WorkspaceId.of(newUuid()))));
 
     final var result = service.assess(sample.measurementId());
 
@@ -94,7 +96,8 @@ class AssessFeedstockMeasurementSugarAcidityZoneServiceTest {
         FeedstockBatchId.newId(),
         FeedstockMeasurementName.of("Orphan measurement"),
         sugarOnlyProfile(),
-        feedstockMeasurementInstant()
+        feedstockMeasurementInstant(),
+        feedstockMeasurementRecordedAt()
     );
     when(repository.findById(sample.measurementId())).thenReturn(Optional.of(sample));
     when(batchRepository.findById(sample.batchId())).thenReturn(Optional.empty());

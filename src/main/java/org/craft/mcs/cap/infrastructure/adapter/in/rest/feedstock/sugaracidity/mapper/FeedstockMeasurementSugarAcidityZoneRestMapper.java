@@ -6,7 +6,7 @@ import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfile
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.query.SugarAcidityZoneCriteria;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.SugarAcidityZone;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.SugarAcidityZoneAssessment;
-import org.craft.mcs.cap.core.feedstock.application.batch.port.in.FeedstockBatchCriteria;
+import org.craft.mcs.cap.core.feedstock.application.batch.model.FeedstockBatchCriteria;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockMeasurementPointFilters;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockMeasurementSugarAcidityZoneAssessment;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockMeasurementSugarAcidityZonePointQuery;

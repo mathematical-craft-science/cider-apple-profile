@@ -1,5 +1,6 @@
 package org.craft.mcs.cap.core.feedstock.application.measurement.usecase;
 
+import java.time.Clock;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
 import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchNotFoundException;
@@ -33,6 +34,7 @@ public final class CreateFeedstockMeasurementService
   private final @NonNull FeedstockMeasurementRepository feedstockMeasurementRepository;
   private final @NonNull FeedstockAccessControl feedstockAccessControl;
   private final @NonNull TransactionHelper transactionHelper;
+  private final @NonNull Clock clock;
 
   @Override
   public @NonNull FeedstockMeasurementCreated create(@NonNull CreateFeedstockMeasurementCommand command) {
@@ -48,10 +50,11 @@ public final class CreateFeedstockMeasurementService
           command.batchId(),
           command.name(),
           command.chemicalProfile(),
-          command.measuredAt()
+          command.measuredAt(),
+          clock.instant()
       ).changeNote(command.note());
 
-      final var saved = feedstockMeasurementRepository.save(sample);
+      final var saved = feedstockMeasurementRepository.create(sample);
 
       return new FeedstockMeasurementCreated(
           saved.measurementId(),

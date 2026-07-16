@@ -5,7 +5,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import org.craft.mcs.cap.core.account.membership.application.AccountAccessDeniedException;
+import org.craft.mcs.cap.core.account.shared.application.AccountAccessDeniedException;
 import org.craft.mcs.cap.core.account.provisioning.application.port.in.EnsureCurrentAccountProvisionedUseCase;
 import org.jspecify.annotations.NonNull;
 import org.springframework.security.access.AccessDeniedException;

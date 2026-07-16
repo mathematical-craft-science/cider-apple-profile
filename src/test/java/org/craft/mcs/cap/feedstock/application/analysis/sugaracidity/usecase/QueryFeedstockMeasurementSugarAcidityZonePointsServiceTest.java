@@ -5,12 +5,10 @@ import java.time.LocalDate;
 import java.util.List;
 import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileProjector;
-import org.craft.mcs.cap.core.feedstock.application.batch.port.in.FeedstockBatchCriteria;
-import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockMeasurementPointFilters;
-import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockMeasurementSugarAcidityZonePointQuery;
-import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockMeasurementSugarAcidityZoneResult;
+import org.craft.mcs.cap.core.feedstock.application.batch.model.FeedstockBatchCriteria;
+import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.*;
+import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.usecase.*;
 import org.craft.mcs.cap.core.feedstock.application.measurement.port.out.FeedstockMeasurementQueryRepository;
-import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.usecase.QueryFeedstockMeasurementSugarAcidityZonePointsService;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurement;
@@ -34,8 +32,10 @@ import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.Rectangle
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.SugarAcidityZone;
 import org.junit.jupiter.api.Test;
 
-import static java.util.UUID.randomUUID;
+import static org.craft.mcs.cap.shared.kernel.identity.UuidV7Generator.newUuid;
+import static org.craft.mcs.cap.shared.testing.FeedstockMeasurementViews.view;
 import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementInstant;
+import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementRecordedAt;
 import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementInstantPlusSeconds;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -50,15 +50,36 @@ class QueryFeedstockMeasurementSugarAcidityZonePointsServiceTest {
   void filtersByBatchCapabilityZoneAndLimitInStableOrder() {
     final var repository = mock(FeedstockMeasurementQueryRepository.class);
     final var service = service(repository);
-    final var workspaceId = WorkspaceId.of(randomUUID());
+    final var workspaceId = WorkspaceId.of(newUuid());
     final var matchingBatchId = FeedstockBatchId.newId();
-    final var beta = sample("Beta", matchingBatchId, profile("1.064", "5.8", "1800"), feedstockMeasurementInstantPlusSeconds(120));
-    final var alpha = sample("Alpha", matchingBatchId, profile("1.066", "5.7", "1700"), feedstockMeasurementInstantPlusSeconds(60));
-    final var wrongZone = sample("Wrong zone", matchingBatchId, profile("1.066", "8.2", "1700"), feedstockMeasurementInstant());
-    final var missingTannin = sample("Missing tannin", matchingBatchId, profile("1.066", "5.7", null), feedstockMeasurementInstantPlusSeconds(180));
+    final var beta = sample(
+        "Beta",
+        matchingBatchId,
+        profile("1.064", "5.8", "1800"),
+        feedstockMeasurementInstantPlusSeconds(120)
+    );
+    final var alpha = sample(
+        "Alpha",
+        matchingBatchId,
+        profile("1.066", "5.7", "1700"),
+        feedstockMeasurementInstantPlusSeconds(60)
+    );
+    final var wrongZone = sample(
+        "Wrong zone",
+        matchingBatchId,
+        profile("1.066", "8.2", "1700"),
+        feedstockMeasurementInstant()
+    );
+    final var missingTannin = sample(
+        "Missing tannin",
+        matchingBatchId,
+        profile("1.066", "5.7", null),
+        feedstockMeasurementInstantPlusSeconds(180)
+    );
 
     when(repository.findSugarAcidityPointCandidates(any()))
-        .thenReturn(List.of(wrongZone, alpha), List.of(beta, missingTannin));
+        .thenReturn(List.of(view(wrongZone), view(alpha)))
+        .thenReturn(List.of(view(beta), view(missingTannin)));
 
     final var result = service.query(new FeedstockMeasurementSugarAcidityZonePointQuery(
         workspaceId,
@@ -82,14 +103,25 @@ class QueryFeedstockMeasurementSugarAcidityZonePointsServiceTest {
   void returnsNextPageUsingCursorWithoutDuplicatingSamples() {
     final var repository = mock(FeedstockMeasurementQueryRepository.class);
     final var service = service(repository);
-    final var workspaceId = WorkspaceId.of(randomUUID());
+    final var workspaceId = WorkspaceId.of(newUuid());
     final var batchId = FeedstockBatchId.newId();
     final var first = sample("First", batchId, profile("1.066", "5.7", null), feedstockMeasurementInstant());
-    final var second = sample("Second", batchId, profile("1.066", "5.7", null), feedstockMeasurementInstantPlusSeconds(60));
-    final var third = sample("Third", batchId, profile("1.066", "5.7", null), feedstockMeasurementInstantPlusSeconds(120));
+    final var second = sample(
+        "Second",
+        batchId,
+        profile("1.066", "5.7", null),
+        feedstockMeasurementInstantPlusSeconds(60)
+    );
+    final var third = sample(
+        "Third",
+        batchId,
+        profile("1.066", "5.7", null),
+        feedstockMeasurementInstantPlusSeconds(120)
+    );
 
     when(repository.findSugarAcidityPointCandidates(any()))
-        .thenReturn(List.of(first, second, third), List.of(third));
+        .thenReturn(List.of(view(first), view(second), view(third)))
+        .thenReturn(List.of(view(third)));
 
     final var firstPage = service.query(new FeedstockMeasurementSugarAcidityZonePointQuery(
         workspaceId,
@@ -116,10 +148,10 @@ class QueryFeedstockMeasurementSugarAcidityZonePointsServiceTest {
   void canReturnSamplesNotCapableForSugarAcidityPlot() {
     final var repository = mock(FeedstockMeasurementQueryRepository.class);
     final var service = service(repository);
-    final var workspaceId = WorkspaceId.of(randomUUID());
+    final var workspaceId = WorkspaceId.of(newUuid());
     final var partial = sample("Partial", FeedstockBatchId.newId(), partialProfile());
 
-    when(repository.findSugarAcidityPointCandidates(any())).thenReturn(List.of(partial));
+    when(repository.findSugarAcidityPointCandidates(any())).thenReturn(List.of(view(partial)));
 
     final var result = service.query(new FeedstockMeasurementSugarAcidityZonePointQuery(
         workspaceId,
@@ -142,7 +174,7 @@ class QueryFeedstockMeasurementSugarAcidityZonePointsServiceTest {
   @Test
   void rejectsMalformedCursorExplicitly() {
     final var service = service(mock(FeedstockMeasurementQueryRepository.class));
-    final var workspaceId = WorkspaceId.of(randomUUID());
+    final var workspaceId = WorkspaceId.of(newUuid());
 
     assertThatThrownBy(() -> service.query(new FeedstockMeasurementSugarAcidityZonePointQuery(
         workspaceId,
@@ -157,11 +189,11 @@ class QueryFeedstockMeasurementSugarAcidityZonePointsServiceTest {
   void usesSeasonAwareRepositoryWhenSeasonFilterIsPresent() {
     final var repository = mock(FeedstockMeasurementQueryRepository.class);
     final var service = service(repository);
-    final var workspaceId = WorkspaceId.of(randomUUID());
+    final var workspaceId = WorkspaceId.of(newUuid());
     final var season = FeedstockSeason.of(LocalDate.parse("2026-09-01"), LocalDate.parse("2026-12-01"));
     final var sample = sample("Season sample", FeedstockBatchId.newId(), profile("1.066", "5.7", null));
 
-    when(repository.findSugarAcidityPointCandidates(any())).thenReturn(List.of(sample));
+    when(repository.findSugarAcidityPointCandidates(any())).thenReturn(List.of(view(sample)));
 
     final var result = service.query(new FeedstockMeasurementSugarAcidityZonePointQuery(
         workspaceId,
@@ -218,7 +250,8 @@ class QueryFeedstockMeasurementSugarAcidityZonePointsServiceTest {
         batchId,
         FeedstockMeasurementName.of(name),
         profile,
-        measuredAt
+        measuredAt,
+        feedstockMeasurementRecordedAt()
     );
   }
 

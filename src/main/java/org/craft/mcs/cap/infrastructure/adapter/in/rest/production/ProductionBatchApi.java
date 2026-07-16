@@ -91,8 +91,8 @@ public interface ProductionBatchApi {
 
   @Operation(
       summary = "Create production batch",
-      description = "Creates a production batch from one or more feedstock batch sources and consumes source volume "
-          + "atomically."
+      description = "Confirms a saved production candidate, consumes its source volumes, creates the production batch "
+          + "and appends traceability atomically. The candidate is rejected when source evidence has changed."
   )
   @ApiResponse(
       responseCode = "201",
@@ -114,12 +114,12 @@ public interface ProductionBatchApi {
   )
   @ApiResponse(
       responseCode = "404",
-      description = "Feedstock source not found.",
+      description = "Production candidate or one of its sources was not found.",
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
   )
   @ApiResponse(
       responseCode = "409",
-      description = "A source or production resource was modified concurrently.",
+      description = "The candidate was already confirmed, became stale or a resource was modified concurrently.",
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
   )
   @ApiResponse(

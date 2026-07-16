@@ -4,13 +4,16 @@ import java.util.LinkedHashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.craft.mcs.cap.core.batchtraceability.application.BatchTraceSubjectNotFoundException;
 import org.craft.mcs.cap.core.batchtraceability.application.port.in.QueryBatchTraceabilityUseCase;
 import org.craft.mcs.cap.core.batchtraceability.application.port.out.BatchTraceabilityQueryStore;
+import org.craft.mcs.cap.core.batchtraceability.application.port.out.BatchTraceabilityAccessControl;
 import org.craft.mcs.cap.core.batchtraceability.domain.graph.BatchTraceabilityGraph;
 import org.craft.mcs.cap.core.batchtraceability.domain.graph.BatchTraceabilityGraphProjector;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStep;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStepId;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceSubject;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
@@ -26,23 +29,32 @@ import static java.util.Objects.requireNonNull;
 public final class QueryBatchTraceabilityService implements QueryBatchTraceabilityUseCase {
 
   private final @NonNull BatchTraceabilityQueryStore queryStore;
+  private final @NonNull BatchTraceabilityAccessControl accessControl;
 
-  public QueryBatchTraceabilityService(@NonNull BatchTraceabilityQueryStore queryStore) {
+  public QueryBatchTraceabilityService(
+      @NonNull BatchTraceabilityQueryStore queryStore,
+      @NonNull BatchTraceabilityAccessControl accessControl
+  ) {
     this.queryStore = requireNonNull(queryStore, "batch traceability query store cannot be null");
+    this.accessControl = requireNonNull(accessControl, "batch traceability access control cannot be null");
   }
 
   @Override
   public @NonNull BatchTraceabilityGraph graphFor(@NonNull BatchTraceSubject subject) {
+    final var workspaceId = workspaceIdFor(subject);
     final var steps = queryStore.findByInputSubject(
-        requireNonNull(subject, "batch trace subject cannot be null")
+        workspaceId,
+        subject
     );
     return BatchTraceabilityGraphProjector.sourceTreeFrom(steps);
   }
 
   @Override
   public @NonNull BatchTraceabilityGraph sourceGraphFor(@NonNull BatchTraceSubject subject) {
+    final var workspaceId = workspaceIdFor(subject);
     final var stepsById = new LinkedHashMap<BatchTraceStepId, BatchTraceStep>();
     collectSourceSteps(
+        workspaceId,
         requireNonNull(subject, "batch trace subject cannot be null"),
         new HashSet<>(),
         stepsById
@@ -52,7 +64,16 @@ public final class QueryBatchTraceabilityService implements QueryBatchTraceabili
     return BatchTraceabilityGraphProjector.sourceTreeFrom(steps);
   }
 
+  private @NonNull WorkspaceId workspaceIdFor(@NonNull BatchTraceSubject subject) {
+    requireNonNull(subject, "batch trace subject cannot be null");
+    final var workspaceId = queryStore.findWorkspaceIdBySubject(subject)
+        .orElseThrow(() -> new BatchTraceSubjectNotFoundException(subject));
+    accessControl.requireReadAccess(workspaceId);
+    return workspaceId;
+  }
+
   private void collectSourceSteps(
+      @NonNull WorkspaceId workspaceId,
       @NonNull BatchTraceSubject subject,
       @NonNull Set<@NonNull String> visitedSubjects,
       @NonNull LinkedHashMap<@NonNull BatchTraceStepId, @NonNull BatchTraceStep> stepsById
@@ -61,10 +82,10 @@ public final class QueryBatchTraceabilityService implements QueryBatchTraceabili
       return;
     }
 
-    for (final var step : queryStore.findByOutputSubject(subject)) {
+    for (final var step : queryStore.findByOutputSubject(workspaceId, subject)) {
       stepsById.putIfAbsent(step.stepId(), step);
       for (final var input : step.inputs()) {
-        collectSourceSteps(input.subject(), visitedSubjects, stepsById);
+        collectSourceSteps(workspaceId, input.subject(), visitedSubjects, stepsById);
       }
     }
   }

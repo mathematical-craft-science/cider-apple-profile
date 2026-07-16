@@ -15,8 +15,10 @@ import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.junit.jupiter.api.Test;
 
 import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementInstant;
+import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementRecordedAt;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.craft.mcs.cap.shared.testing.FeedstockMeasurementViews.view;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -30,9 +32,10 @@ class FeedstockBatchCurrentMeasurementQueryServiceTest {
     final var batchId = FeedstockBatchId.newId();
     final var measurement = measurement(batchId);
 
-    when(repository.findLatestByBatchId(batchId)).thenReturn(Optional.of(measurement));
+    final var measurementView = view(measurement);
+    when(repository.findLatestByBatchId(batchId)).thenReturn(Optional.of(measurementView));
 
-    assertThat(service.requireCurrentMeasurement(batchId)).isSameAs(measurement);
+    assertThat(service.requireCurrentMeasurement(batchId)).isSameAs(measurementView);
   }
 
   @Test
@@ -57,7 +60,8 @@ class FeedstockBatchCurrentMeasurementQueryServiceTest {
                 SpecificGravityValue.of("1.050")
             )))
             .build(),
-        feedstockMeasurementInstant()
+        feedstockMeasurementInstant(),
+        feedstockMeasurementRecordedAt()
     );
   }
 }

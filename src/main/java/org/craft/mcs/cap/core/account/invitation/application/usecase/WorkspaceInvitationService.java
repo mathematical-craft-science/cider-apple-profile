@@ -3,10 +3,8 @@ package org.craft.mcs.cap.core.account.invitation.application.usecase;
 import java.time.Clock;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.account.audit.application.usecase.WorkspaceAdministrativeAuditAppender;
-import org.craft.mcs.cap.core.account.audit.domain.model.WorkspaceAdministrativeAction;
-import org.craft.mcs.cap.core.account.audit.domain.model.value.WorkspaceAdministrativeAuditValue;
-import org.craft.mcs.cap.core.account.audit.domain.model.value.WorkspaceAdministrativeSubjectId;
+import org.craft.mcs.cap.core.account.context.application.port.in.WorkspaceMembershipView;
+import org.craft.mcs.cap.core.account.context.application.usecase.WorkspacePermissionChecker;
 import org.craft.mcs.cap.core.account.invitation.application.WorkspaceInvitationConflictException;
 import org.craft.mcs.cap.core.account.invitation.application.WorkspaceInvitationNotFoundException;
 import org.craft.mcs.cap.core.account.invitation.application.model.WorkspaceInvitationDefaults;
@@ -14,35 +12,27 @@ import org.craft.mcs.cap.core.account.invitation.application.port.in.InviteWorks
 import org.craft.mcs.cap.core.account.invitation.application.port.in.WorkspaceInvitationCommand;
 import org.craft.mcs.cap.core.account.invitation.application.port.in.WorkspaceInvitationUseCase;
 import org.craft.mcs.cap.core.account.invitation.application.port.in.WorkspaceInvitationView;
+import org.craft.mcs.cap.core.account.invitation.application.port.out.WorkspaceInvitationAuditTrail;
 import org.craft.mcs.cap.core.account.invitation.application.port.out.WorkspaceInvitationRepository;
 import org.craft.mcs.cap.core.account.invitation.domain.model.WorkspaceInvitation;
 import org.craft.mcs.cap.core.account.invitation.domain.model.value.WorkspaceInvitationId;
-import org.craft.mcs.cap.core.account.membership.application.AccountAccessDeniedException;
-import org.craft.mcs.cap.core.account.membership.application.port.in.WorkspaceMembershipView;
 import org.craft.mcs.cap.core.account.membership.application.port.out.WorkspaceMembershipRepository;
-import org.craft.mcs.cap.core.account.membership.application.usecase.WorkspacePermissionChecker;
 import org.craft.mcs.cap.core.account.membership.domain.model.WorkspaceMembership;
-import org.craft.mcs.cap.core.account.shared.domain.value.AccountUserId;
+import org.craft.mcs.cap.core.account.shared.application.AccountAccessDeniedException;
+import org.craft.mcs.cap.core.account.shared.application.port.out.WorkspaceAdministrationLock;
 import org.craft.mcs.cap.core.account.shared.domain.value.EmailAddress;
 import org.craft.mcs.cap.core.account.user.application.port.out.AccountUserRepository;
 import org.craft.mcs.cap.core.account.user.application.usecase.CurrentAccountUserResolver;
 import org.craft.mcs.cap.core.account.workspace.application.WorkspaceNotFoundException;
-import org.craft.mcs.cap.core.account.workspace.application.port.out.WorkspaceAdministrationLock;
 import org.craft.mcs.cap.core.account.workspace.application.port.out.WorkspaceRepository;
 import org.craft.mcs.cap.core.account.workspace.domain.model.Workspace;
+import org.craft.mcs.cap.shared.application.persistence.VersionedAggregate;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.platform.TransactionHelper;
 import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
 
 import static java.util.Objects.requireNonNull;
-import static org.craft.mcs.cap.core.account.audit.domain.model.WorkspaceAdministrativeAction.INVITATION_ACCEPTED;
-import static org.craft.mcs.cap.core.account.audit.domain.model.WorkspaceAdministrativeAction.INVITATION_CREATED;
-import static org.craft.mcs.cap.core.account.audit.domain.model.WorkspaceAdministrativeAction.INVITATION_REJECTED;
-import static org.craft.mcs.cap.core.account.audit.domain.model.WorkspaceAdministrativeAction.INVITATION_RESENT;
-import static org.craft.mcs.cap.core.account.audit.domain.model.WorkspaceAdministrativeAction.INVITATION_REVOKED;
-import static org.craft.mcs.cap.core.account.audit.domain.model.WorkspaceAdministrativeSubjectType.INVITATION;
 import static org.craft.mcs.cap.core.account.invitation.domain.model.WorkspaceInvitationStatus.PENDING;
 import static org.craft.mcs.cap.core.account.membership.domain.model.WorkspacePermission.WORKSPACE_MEMBERS_MANAGE;
 import static org.craft.mcs.cap.core.account.membership.domain.model.WorkspacePermission.WORKSPACE_MEMBERS_READ;
@@ -63,7 +53,7 @@ public final class WorkspaceInvitationService
   private final @NonNull WorkspaceMembershipRepository membershipRepository;
   private final @NonNull WorkspaceInvitationRepository invitationRepository;
   private final @NonNull WorkspaceAdministrationLock workspaceAdministrationLock;
-  private final @NonNull WorkspaceAdministrativeAuditAppender auditAppender;
+  private final @NonNull WorkspaceInvitationAuditTrail auditTrail;
   private final @NonNull WorkspaceInvitationDefaults invitationDefaults;
   private final @NonNull TransactionHelper transactionHelper;
   private final @NonNull Clock clock;
@@ -88,7 +78,7 @@ public final class WorkspaceInvitationService
       );
       requireNoPendingInvitation(command);
       requireNotAlreadyMember(command);
-      final var invitation = invitationRepository.save(WorkspaceInvitation.create(
+      final var invitation = invitationRepository.create(WorkspaceInvitation.create(
           command.workspaceId(),
           command.invitedEmail(),
           command.role(),
@@ -96,13 +86,7 @@ public final class WorkspaceInvitationService
           clock.instant(),
           invitationDefaults.timeToLive()
       ));
-      appendAudit(
-          invitation,
-          context.user().userId(),
-          INVITATION_CREATED,
-          null,
-          WorkspaceAdministrativeAuditValue.of(invitation.role().name())
-      );
+      auditTrail.recordCreated(context.user().userId(), invitation);
       return toView(invitation);
     });
   }
@@ -121,25 +105,22 @@ public final class WorkspaceInvitationService
     requireNonNull(invitationId, "workspace invitation id cannot be null");
     return transactionHelper.callInTransactionNonNull(() -> {
       final var user = currentAccountUserResolver.resolve();
-      final var invitation = findLockedInvitation(invitationId);
+      final var invitationState = findLockedInvitation(invitationId);
+      final var invitation = invitationState.aggregate();
       requireRecipient(invitation, user.email());
       final var workspace = findActiveWorkspace(invitation.workspaceId());
       if (membershipRepository.findByWorkspaceIdAndUserId(invitation.workspaceId(), user.userId()).isPresent()) {
         throw new WorkspaceInvitationConflictException("account is already a workspace member");
       }
-      final var accepted = invitationRepository.save(invitation.accept(user.userId(), clock.instant()));
-      final var membership = membershipRepository.save(WorkspaceMembership.create(
+      final var accepted = invitationRepository.update(
+          invitationState.withAggregate(invitation.accept(user.userId(), clock.instant()))
+      ).aggregate();
+      final var membership = membershipRepository.create(WorkspaceMembership.create(
           invitation.workspaceId(),
           user.userId(),
           invitation.role()
       ));
-      appendAudit(
-          accepted,
-          user.userId(),
-          INVITATION_ACCEPTED,
-          WorkspaceAdministrativeAuditValue.of(PENDING.name()),
-          WorkspaceAdministrativeAuditValue.of(accepted.status().name())
-      );
+      auditTrail.recordAccepted(user.userId(), accepted);
       return WorkspaceMembershipView.from(membership, workspace);
     });
   }
@@ -149,16 +130,13 @@ public final class WorkspaceInvitationService
     requireNonNull(invitationId, "workspace invitation id cannot be null");
     return transactionHelper.callInTransactionNonNull(() -> {
       final var user = currentAccountUserResolver.resolve();
-      final var invitation = findLockedInvitation(invitationId);
+      final var invitationState = findLockedInvitation(invitationId);
+      final var invitation = invitationState.aggregate();
       requireRecipient(invitation, user.email());
-      final var rejected = invitationRepository.save(invitation.reject(clock.instant()));
-      appendAudit(
-          rejected,
-          user.userId(),
-          INVITATION_REJECTED,
-          WorkspaceAdministrativeAuditValue.of(PENDING.name()),
-          WorkspaceAdministrativeAuditValue.of(rejected.status().name())
-      );
+      final var rejected = invitationRepository.update(
+          invitationState.withAggregate(invitation.reject(clock.instant()))
+      ).aggregate();
+      auditTrail.recordRejected(user.userId(), rejected);
       return toView(rejected);
     });
   }
@@ -172,15 +150,12 @@ public final class WorkspaceInvitationService
           command.workspaceId(),
           WORKSPACE_MEMBERS_MANAGE
       );
-      final var invitation = findInvitation(command);
-      final var revoked = invitationRepository.save(invitation.revoke(clock.instant()));
-      appendAudit(
-          revoked,
-          context.user().userId(),
-          INVITATION_REVOKED,
-          WorkspaceAdministrativeAuditValue.of(PENDING.name()),
-          WorkspaceAdministrativeAuditValue.of(revoked.status().name())
-      );
+      final var invitationState = findInvitation(command);
+      final var invitation = invitationState.aggregate();
+      final var revoked = invitationRepository.update(
+          invitationState.withAggregate(invitation.revoke(clock.instant()))
+      ).aggregate();
+      auditTrail.recordRevoked(context.user().userId(), revoked);
       return toView(revoked);
     });
   }
@@ -194,19 +169,13 @@ public final class WorkspaceInvitationService
           command.workspaceId(),
           WORKSPACE_MEMBERS_MANAGE
       );
-      final var invitation = findInvitation(command);
+      final var invitationState = findInvitation(command);
+      final var invitation = invitationState.aggregate();
       final var previousStatus = invitation.effectiveStatus(clock.instant());
-      final var resent = invitationRepository.save(invitation.resend(
-          clock.instant(),
-          invitationDefaults.timeToLive()
-      ));
-      appendAudit(
-          resent,
-          context.user().userId(),
-          INVITATION_RESENT,
-          WorkspaceAdministrativeAuditValue.of(previousStatus.name()),
-          WorkspaceAdministrativeAuditValue.of(resent.status().name())
-      );
+      final var resent = invitationRepository.update(invitationState.withAggregate(
+          invitation.resend(clock.instant(), invitationDefaults.timeToLive())
+      )).aggregate();
+      auditTrail.recordResent(context.user().userId(), previousStatus, resent);
       return toView(resent);
     });
   }
@@ -229,15 +198,17 @@ public final class WorkspaceInvitationService
         });
   }
 
-  private @NonNull WorkspaceInvitation findInvitation(@NonNull WorkspaceInvitationId invitationId) {
-    return invitationRepository.findById(invitationId)
+  private @NonNull VersionedAggregate<WorkspaceInvitation> findInvitation(
+      @NonNull WorkspaceInvitationId invitationId
+  ) {
+    return invitationRepository.findVersionedById(invitationId)
         .orElseThrow(() -> new WorkspaceInvitationNotFoundException(invitationId));
   }
 
-  private @NonNull WorkspaceInvitation findLockedInvitation(
+  private @NonNull VersionedAggregate<WorkspaceInvitation> findLockedInvitation(
       @NonNull WorkspaceInvitationId invitationId
   ) {
-    final var workspaceId = findInvitation(invitationId).workspaceId();
+    final var workspaceId = findInvitation(invitationId).aggregate().workspaceId();
     workspaceAdministrationLock.acquire(workspaceId);
     return findInvitation(invitationId);
   }
@@ -253,12 +224,15 @@ public final class WorkspaceInvitationService
     return workspace;
   }
 
-  private @NonNull WorkspaceInvitation findInvitation(@NonNull WorkspaceInvitationCommand command) {
-    final var invitation = findInvitation(command.invitationId());
+  private @NonNull VersionedAggregate<WorkspaceInvitation> findInvitation(
+      @NonNull WorkspaceInvitationCommand command
+  ) {
+    final var state = findInvitation(command.invitationId());
+    final var invitation = state.aggregate();
     if (!invitation.workspaceId().equals(command.workspaceId())) {
       throw new WorkspaceInvitationNotFoundException(command.invitationId());
     }
-    return invitation;
+    return state;
   }
 
   private @NonNull WorkspaceInvitationView toView(@NonNull WorkspaceInvitation invitation) {
@@ -275,21 +249,4 @@ public final class WorkspaceInvitationService
     );
   }
 
-  private void appendAudit(
-      @NonNull WorkspaceInvitation invitation,
-      @NonNull AccountUserId actorUserId,
-      @NonNull WorkspaceAdministrativeAction action,
-      @Nullable WorkspaceAdministrativeAuditValue previousValue,
-      @Nullable WorkspaceAdministrativeAuditValue newValue
-  ) {
-    auditAppender.append(
-        invitation.workspaceId(),
-        actorUserId,
-        action,
-        INVITATION,
-        WorkspaceAdministrativeSubjectId.forInvitation(invitation.invitationId()),
-        previousValue,
-        newValue
-    );
-  }
 }

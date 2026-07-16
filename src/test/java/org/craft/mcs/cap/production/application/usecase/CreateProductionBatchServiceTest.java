@@ -6,23 +6,29 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.function.Supplier;
 import org.craft.mcs.cap.core.production.application.authorization.port.out.ProductionAccessControl;
-import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.core.production.application.port.in.CreateProductionBatchCommand;
 import org.craft.mcs.cap.core.production.application.port.out.ConsumedProductionSource;
-import org.craft.mcs.cap.core.production.application.port.out.ProductionSourceDisplayName;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchFeedstockTraceSource;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchRepository;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchTraceRecorder;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchTraceSource;
+import org.craft.mcs.cap.core.production.application.port.out.ProductionSourceDisplayName;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionSourceInventory;
 import org.craft.mcs.cap.core.production.application.usecase.CreateProductionBatchService;
+import org.craft.mcs.cap.core.production.candidate.application.ProductionBatchCandidateStaleException;
+import org.craft.mcs.cap.core.production.candidate.application.model.ProductionBatchCandidateSnapshot;
+import org.craft.mcs.cap.core.production.candidate.application.model.ProductionBatchCandidateView;
+import org.craft.mcs.cap.core.production.candidate.application.port.out.ProductionBatchCandidateStore;
+import org.craft.mcs.cap.core.production.candidate.domain.model.ProductionBatchCandidate;
+import org.craft.mcs.cap.core.production.candidate.domain.model.ProductionBatchCandidateId;
+import org.craft.mcs.cap.core.production.candidate.domain.model.ProductionBatchCandidateStatus;
+import org.craft.mcs.cap.core.production.candidate.domain.model.ProductionSourceEvidenceReference;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatch;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatchId;
-import org.craft.mcs.cap.core.production.domain.model.ProductionInput;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceComponent;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceComposition;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceReference;
@@ -30,12 +36,16 @@ import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchKind;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchName;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
 import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
+import org.craft.mcs.cap.shared.application.persistence.VersionedAggregate;
+import org.craft.mcs.cap.shared.application.persistence.AggregateRevision;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.MeasurementValueKind;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
+import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.craft.mcs.cap.shared.platform.TransactionHelper;
@@ -51,93 +61,181 @@ class CreateProductionBatchServiceTest {
 
   private static final Clock CLOCK =
       Clock.fixed(Instant.parse("2026-05-18T10:15:30Z"), ZoneOffset.UTC);
+  private static final ProductionSourceEvidenceReference EVIDENCE =
+      ProductionSourceEvidenceReference.of("measurement-2026-05-18");
 
   @Test
-  void createsProductionBatchAndRecordsTraceFactInSameTransaction() {
+  void confirmsCandidateCreatesProductionBatchAndRecordsTraceInSameTransaction() {
     final var transactionHelper = new StagingTransactionHelper();
-    final var workspaceId = WorkspaceId.of(UUID.randomUUID());
-    final var sourceReference = ProductionSourceReference.feedstockBatch(UUID.randomUUID());
+    final var workspaceId = WorkspaceId.newId();
+    final var sourceReference = ProductionSourceReference.feedstockBatch(FeedstockBatchId.newId().value());
+    final var candidate = candidate(workspaceId, sourceReference);
+    final var candidateStore = new StagingCandidateStore(transactionHelper, candidate);
     final var productionRepository = new StagingProductionBatchRepository(transactionHelper);
     final var traceability = new CapturingTraceRecorder();
-    final var service = new CreateProductionBatchService(
-        sourceInventory(),
+    final var service = service(
+        sourceInventory(EVIDENCE),
+        candidateStore,
         productionRepository,
         traceability,
-        mock(ProductionAccessControl.class),
-        transactionHelper,
-        CLOCK
+        transactionHelper
     );
 
-    final var created = service.create(command(workspaceId, sourceReference));
+    final var created = service.create(command(workspaceId, candidate.candidate().candidateId()));
 
-    assertThat(created.productionBatch()).isNotNull();
-    assertThat(productionRepository.committed).hasSize(1);
-    assertThat(traceability.recorded).isNotNull();
-    assertThat(traceability.recorded.productionBatch()).isEqualTo(created.productionBatch());
-    assertThat(traceability.recorded.sources()).singleElement()
-        .satisfies(source -> {
-          assertThat(source).isInstanceOf(ProductionBatchFeedstockTraceSource.class);
-          assertThat(source.id()).isEqualTo(sourceReference.id().toString());
-          assertThat(source.displayName()).isEqualTo(ProductionSourceDisplayName.of("Late juice"));
-          assertThat(source.volume().liters()).isEqualByComparingTo("100");
-          assertThat(source.profile().valueOf(ChemicalAxis.SUGAR))
-              .get()
-              .satisfies(value -> assertThat(value.value()).isEqualByComparingTo("1.050"));
-          assertThat(source.confidence()).isEqualTo(ConfidenceLevel.LAB_VERIFIED);
-        });
-    assertThat(traceability.recorded.occurredAt()).isEqualTo(Instant.now(CLOCK));
-    assertThat(traceability.recorded.note()).isEqualTo("accepted production input");
+    assertThat(productionRepository.committed)
+        .hasSize(1);
+    assertThat(created.productionBatch().profile())
+        .returns(SpecificGravityValue.of("1.050"), ProductionProfileSnapshot::sugar)
+        .returns(TitratableAcidityValue.of("6.1"), ProductionProfileSnapshot::acidity)
+        .returns(TanninityValue.of("1400"), ProductionProfileSnapshot::tannin);
+    assertThat(created.candidate())
+        .returns(ProductionBatchCandidateStatus.CONFIRMED, ProductionBatchCandidateView::status)
+        .returns(
+            created.productionBatch().batchId(),
+            ProductionBatchCandidateView::confirmedProductionBatchId
+        );
+    assertThat(candidateStore.committed.candidate())
+        .returns(ProductionBatchCandidateStatus.CONFIRMED, ProductionBatchCandidate::status)
+        .returns(
+            created.productionBatch().batchId(),
+            ProductionBatchCandidate::confirmedProductionBatchId
+        );
+    assertThat(traceability.recorded)
+        .isNotNull()
+        .satisfies(recorded -> assertThat(recorded.productionBatch().batchId())
+            .isEqualTo(created.productionBatch().batchId()))
+        .satisfies(recorded -> assertThat(recorded.sources()).singleElement()
+            .satisfies(source -> {
+              assertThat(source)
+                  .isInstanceOf(ProductionBatchFeedstockTraceSource.class)
+                  .returns(sourceReference.id().toString(), ProductionBatchTraceSource::id)
+                  .returns(ProductionSourceDisplayName.of("Late juice"), ProductionBatchTraceSource::displayName)
+                  .returns(VolumeValue.ofLiters("100"), ProductionBatchTraceSource::volume)
+                  .returns(ConfidenceLevel.LAB_VERIFIED, ProductionBatchTraceSource::confidence);
+              assertThat(source.profile().valueOf(ChemicalAxis.SUGAR))
+                  .get()
+                  .returns(new BigDecimal("1.050"), AxisValue::value);
+            }))
+        .returns(Instant.now(CLOCK), RecordedTrace::occurredAt)
+        .returns("accepted production input", RecordedTrace::note);
   }
 
   @Test
-  void doesNotCommitProductionBatchWhenTraceStepCannotBeAppended() {
+  void rollsBackProductionAndCandidateConfirmationWhenTraceAppendFails() {
     final var transactionHelper = new StagingTransactionHelper();
-    final var workspaceId = WorkspaceId.of(UUID.randomUUID());
-    final var sourceReference = ProductionSourceReference.feedstockBatch(UUID.randomUUID());
+    final var workspaceId = WorkspaceId.newId();
+    final var sourceReference = ProductionSourceReference.feedstockBatch(FeedstockBatchId.newId().value());
+    final var candidate = candidate(workspaceId, sourceReference);
+    final var candidateStore = new StagingCandidateStore(transactionHelper, candidate);
     final var productionRepository = new StagingProductionBatchRepository(transactionHelper);
-    final var service = new CreateProductionBatchService(
-        sourceInventory(),
+    final var service = service(
+        sourceInventory(EVIDENCE),
+        candidateStore,
         productionRepository,
         (productionBatch, sources, occurredAt, note) -> {
           throw new IllegalStateException("trace persistence failed");
         },
+        transactionHelper
+    );
+
+    assertThatThrownBy(() -> service.create(command(workspaceId, candidate.candidate().candidateId())))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessageContaining("trace persistence failed");
+    assertThat(productionRepository.committed)
+        .isEmpty();
+    assertThat(candidateStore.committed.candidate().status())
+        .isEqualTo(ProductionBatchCandidateStatus.AVAILABLE);
+  }
+
+  @Test
+  void rejectsCandidateWhenCurrentSourceEvidenceChanged() {
+    final var transactionHelper = new StagingTransactionHelper();
+    final var workspaceId = WorkspaceId.newId();
+    final var sourceReference = ProductionSourceReference.feedstockBatch(FeedstockBatchId.newId().value());
+    final var candidate = candidate(workspaceId, sourceReference);
+    final var candidateStore = new StagingCandidateStore(transactionHelper, candidate);
+    final var productionRepository = new StagingProductionBatchRepository(transactionHelper);
+    final var service = service(
+        sourceInventory(ProductionSourceEvidenceReference.of("new-measurement")),
+        candidateStore,
+        productionRepository,
+        new CapturingTraceRecorder(),
+        transactionHelper
+    );
+
+    assertThatThrownBy(() -> service.create(command(workspaceId, candidate.candidate().candidateId())))
+        .isInstanceOf(ProductionBatchCandidateStaleException.class);
+    assertThat(productionRepository.committed)
+        .isEmpty();
+    assertThat(candidateStore.committed.candidate().status())
+        .isEqualTo(ProductionBatchCandidateStatus.AVAILABLE);
+  }
+
+  private static @NonNull CreateProductionBatchService service(
+      @NonNull ProductionSourceInventory sourceInventory,
+      @NonNull ProductionBatchCandidateStore candidateStore,
+      @NonNull ProductionBatchRepository productionRepository,
+      @NonNull ProductionBatchTraceRecorder traceRecorder,
+      @NonNull TransactionHelper transactionHelper
+  ) {
+    return new CreateProductionBatchService(
+        sourceInventory,
+        candidateStore,
+        productionRepository,
+        traceRecorder,
         mock(ProductionAccessControl.class),
         transactionHelper,
         CLOCK
     );
-
-    assertThatThrownBy(() -> service.create(command(workspaceId, sourceReference)))
-        .isInstanceOf(IllegalStateException.class)
-        .hasMessageContaining("trace persistence failed");
-
-    assertThat(productionRepository.committed).isEmpty();
   }
 
-  private static CreateProductionBatchCommand command(
-      WorkspaceId workspaceId,
-      ProductionSourceReference sourceReference
+  private static @NonNull CreateProductionBatchCommand command(
+      @NonNull WorkspaceId workspaceId,
+      @NonNull ProductionBatchCandidateId candidateId
   ) {
     return new CreateProductionBatchCommand(
         workspaceId,
         ProductionBatchName.of("Classic cider path"),
         ProductionBatchKind.CIDER,
-        new ProductionInput(
-            ProductionSourceComposition.of(List.of(new ProductionSourceComponent(
-                sourceReference,
-                VolumeValue.ofLiters("100")
-            ))),
-            new ProductionProfileSnapshot(
-                SpecificGravityValue.of("1.052"),
-                TitratableAcidityValue.of("5.8"),
-                TanninityValue.of("1200")
-            ),
-            null
-        ),
+        candidateId,
         "accepted production input"
     );
   }
 
-  private static ProductionSourceInventory sourceInventory() {
+  private static @NonNull ProductionBatchCandidateSnapshot candidate(
+      @NonNull WorkspaceId workspaceId,
+      @NonNull ProductionSourceReference sourceReference
+  ) {
+    final var composition = ProductionSourceComposition.of(List.of(new ProductionSourceComponent(
+        sourceReference,
+        VolumeValue.ofLiters("100")
+    )));
+    return new ProductionBatchCandidateSnapshot(
+        ProductionBatchCandidate.create(
+            ProductionBatchCandidateId.newId(),
+            workspaceId,
+            composition,
+            Map.of(sourceReference, EVIDENCE),
+            productionProfile()
+        ),
+        null,
+        null,
+        List.of()
+    );
+  }
+
+  private static @NonNull ProductionProfileSnapshot productionProfile() {
+    return new ProductionProfileSnapshot(
+        SpecificGravityValue.of("1.050"),
+        TitratableAcidityValue.of("6.1"),
+        TanninityValue.of("1400")
+    );
+  }
+
+  private static @NonNull ProductionSourceInventory sourceInventory(
+      @NonNull ProductionSourceEvidenceReference evidenceReference
+  ) {
     return (workspaceId, source) -> new ConsumedProductionSource(
         source.reference(),
         ProductionSourceDisplayName.of("Late juice"),
@@ -147,13 +245,14 @@ class CreateProductionBatchServiceTest {
             axis(ChemicalAxis.ACIDITY, "6.1"),
             axis(ChemicalAxis.TANNINITY, "1400")
         ),
-        ConfidenceLevel.LAB_VERIFIED
+        ConfidenceLevel.LAB_VERIFIED,
+        evidenceReference
     );
   }
 
-  private static AxisValue axis(
-      ChemicalAxis axis,
-      String value
+  private static @NonNull AxisValue axis(
+      @NonNull ChemicalAxis axis,
+      @NonNull String value
   ) {
     return new AxisValue(
         axis,
@@ -167,9 +266,9 @@ class CreateProductionBatchServiceTest {
   }
 
   private record RecordedTrace(
-      ProductionBatch productionBatch,
-      List<ProductionBatchTraceSource> sources,
-      Instant occurredAt,
+      @NonNull ProductionBatch productionBatch,
+      @NonNull List<@NonNull ProductionBatchTraceSource> sources,
+      @NonNull Instant occurredAt,
       String note
   ) {
   }
@@ -185,12 +284,7 @@ class CreateProductionBatchServiceTest {
         @NonNull Instant occurredAt,
         String note
     ) {
-      recorded = new RecordedTrace(
-          productionBatch,
-          List.copyOf(sources),
-          occurredAt,
-          note
-      );
+      recorded = new RecordedTrace(productionBatch, List.copyOf(sources), occurredAt, note);
     }
   }
 
@@ -199,28 +293,89 @@ class CreateProductionBatchServiceTest {
     private final StagingTransactionHelper transactionHelper;
     private final List<ProductionBatch> committed = new ArrayList<>();
 
-    private StagingProductionBatchRepository(StagingTransactionHelper transactionHelper) {
+    private StagingProductionBatchRepository(@NonNull StagingTransactionHelper transactionHelper) {
       this.transactionHelper = transactionHelper;
     }
 
     @Override
-    public @NonNull ProductionBatch save(@NonNull ProductionBatch productionBatch) {
+    public @NonNull ProductionBatch create(@NonNull ProductionBatch productionBatch) {
       transactionHelper.stage(() -> committed.add(productionBatch));
       return productionBatch;
     }
 
     @Override
-    public @NonNull Optional<@NonNull ProductionBatch> findById(@NonNull ProductionBatchId batchId) {
-      return committed.stream()
-          .filter(batch -> batch.batchId().equals(batchId))
-          .findFirst();
+    public @NonNull VersionedAggregate<ProductionBatch> update(
+        @NonNull VersionedAggregate<ProductionBatch> productionBatch
+    ) {
+      transactionHelper.stage(() -> {
+        committed.removeIf(batch -> batch.batchId().equals(productionBatch.aggregate().batchId()));
+        committed.add(productionBatch.aggregate());
+      });
+      return new VersionedAggregate<>(
+          productionBatch.aggregate(),
+          AggregateRevision.of(productionBatch.revision().value() + 1)
+      );
     }
 
     @Override
-    public @NonNull List<@NonNull ProductionBatch> findAllByWorkspaceId(@NonNull WorkspaceId workspaceId) {
+    public @NonNull Optional<@NonNull VersionedAggregate<ProductionBatch>> findVersionedById(
+        @NonNull ProductionBatchId batchId
+    ) {
       return committed.stream()
-          .filter(batch -> batch.workspaceId().equals(workspaceId))
-          .toList();
+          .filter(batch -> batch.batchId().equals(batchId))
+          .findFirst()
+          .map(batch -> new VersionedAggregate<>(batch, AggregateRevision.of(1)));
+    }
+  }
+
+  private static final class StagingCandidateStore implements ProductionBatchCandidateStore {
+
+    private final StagingTransactionHelper transactionHelper;
+    private ProductionBatchCandidateSnapshot committed;
+
+    private StagingCandidateStore(
+        @NonNull StagingTransactionHelper transactionHelper,
+        @NonNull ProductionBatchCandidateSnapshot initial
+    ) {
+      this.transactionHelper = transactionHelper;
+      committed = copy(initial);
+    }
+
+    @Override
+    public @NonNull ProductionBatchCandidateSnapshot save(@NonNull ProductionBatchCandidateSnapshot snapshot) {
+      final var saved = copy(snapshot);
+      transactionHelper.stage(() -> committed = saved);
+      return saved;
+    }
+
+    @Override
+    public @NonNull Optional<@NonNull ProductionBatchCandidateSnapshot> findById(
+        @NonNull ProductionBatchCandidateId candidateId
+    ) {
+      return committed.candidate().candidateId().equals(candidateId)
+          ? Optional.of(copy(committed))
+          : Optional.empty();
+    }
+
+    private static @NonNull ProductionBatchCandidateSnapshot copy(
+        @NonNull ProductionBatchCandidateSnapshot snapshot
+    ) {
+      final var candidate = snapshot.candidate();
+      return new ProductionBatchCandidateSnapshot(
+          ProductionBatchCandidate.restore(
+              candidate.candidateId(),
+              candidate.workspaceId(),
+              candidate.sourceComposition(),
+              candidate.sourceEvidence(),
+              candidate.profile(),
+              candidate.status(),
+              candidate.confirmedProductionBatchId()
+          ),
+          snapshot.normalizerCode(),
+          snapshot.targetDistance(),
+          snapshot.warnings(),
+          snapshot.revision()
+      );
     }
   }
 
@@ -248,7 +403,7 @@ class CreateProductionBatchServiceTest {
       });
     }
 
-    private void stage(Runnable action) {
+    private void stage(@NonNull Runnable action) {
       stagedActions.add(action);
     }
   }

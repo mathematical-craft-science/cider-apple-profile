@@ -1,10 +1,11 @@
 package org.craft.mcs.cap.core.feedstock.application.measurement.usecase;
 
+import java.time.Clock;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
 import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchNotFoundException;
 import org.craft.mcs.cap.core.feedstock.application.FeedstockMeasurementNotFoundException;
-import org.craft.mcs.cap.core.feedstock.application.measurement.port.in.FeedstockMeasurementSummary;
+import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementSummary;
 import org.craft.mcs.cap.core.feedstock.application.measurement.port.in.UpdateFeedstockMeasurementCommand;
 import org.craft.mcs.cap.core.feedstock.application.measurement.port.in.UpdateFeedstockMeasurementUseCase;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchRepository;
@@ -13,6 +14,7 @@ import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurement;
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.craft.mcs.cap.shared.platform.TransactionHelper;
+import org.craft.mcs.cap.shared.application.persistence.VersionedAggregate;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 
@@ -35,6 +37,7 @@ public final class UpdateFeedstockMeasurementService
   private final @NonNull FeedstockMeasurementRepository feedstockMeasurementRepository;
   private final @NonNull FeedstockAccessControl feedstockAccessControl;
   private final @NonNull TransactionHelper transactionHelper;
+  private final @NonNull Clock clock;
 
   @Override
   public @NonNull FeedstockMeasurementSummary update(@NonNull UpdateFeedstockMeasurementCommand command) {
@@ -46,9 +49,13 @@ public final class UpdateFeedstockMeasurementService
       @NonNull UpdateFeedstockMeasurementCommand command
   ) {
     final var batch = requireBatch(command);
-    final var measurement = requireMeasurementFromBatch(command);
+    final var state = requireMeasurementFromBatch(command);
+    final var measurement = state.aggregate();
     applyChanges(measurement, command);
-    return toSummary(batch, feedstockMeasurementRepository.save(measurement));
+    return toSummary(
+        batch,
+        feedstockMeasurementRepository.update(state.withAggregate(measurement)).aggregate()
+    );
   }
 
   private @NonNull FeedstockBatch requireBatch(@NonNull UpdateFeedstockMeasurementCommand command) {
@@ -58,18 +65,19 @@ public final class UpdateFeedstockMeasurementService
     return batch;
   }
 
-  private @NonNull FeedstockMeasurement requireMeasurementFromBatch(
+  private @NonNull VersionedAggregate<FeedstockMeasurement> requireMeasurementFromBatch(
       @NonNull UpdateFeedstockMeasurementCommand command
   ) {
-    final var measurement = feedstockMeasurementRepository.findById(command.measurementId())
+    final var state = feedstockMeasurementRepository.findVersionedById(command.measurementId())
         .orElseThrow(() -> new FeedstockMeasurementNotFoundException(command.measurementId()));
+    final var measurement = state.aggregate();
     if (!measurement.batchId().equals(command.batchId())) {
       throw new FeedstockMeasurementNotFoundException(command.measurementId());
     }
-    return measurement;
+    return state;
   }
 
-  private static void applyChanges(
+  private void applyChanges(
       @NonNull FeedstockMeasurement measurement,
       @NonNull UpdateFeedstockMeasurementCommand command
   ) {
@@ -80,7 +88,7 @@ public final class UpdateFeedstockMeasurementService
     applyChemicalProfileChange(measurement, command);
     final var measuredAt = command.measuredAt();
     if (measuredAt != null) {
-      measurement.changeMeasuredAt(measuredAt);
+      measurement.changeMeasuredAt(measuredAt, clock.instant());
     }
     applyNoteChange(measurement, command);
   }

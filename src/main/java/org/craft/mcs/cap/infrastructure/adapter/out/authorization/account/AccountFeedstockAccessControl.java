@@ -1,7 +1,7 @@
 package org.craft.mcs.cap.infrastructure.adapter.out.authorization.account;
 
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.account.membership.application.port.in.WorkspacePermissionAuthorizer;
+import org.craft.mcs.cap.core.account.context.application.port.in.WorkspacePermissionAuthorizer;
 import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;

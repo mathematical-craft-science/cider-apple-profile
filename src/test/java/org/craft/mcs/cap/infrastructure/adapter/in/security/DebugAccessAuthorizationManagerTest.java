@@ -1,11 +1,11 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.security;
 
 import java.util.List;
-import org.craft.mcs.cap.core.account.membership.application.ActiveWorkspaceRequiredException;
-import org.craft.mcs.cap.core.account.membership.application.port.in.WorkspaceMembershipView;
+import org.craft.mcs.cap.core.account.context.application.ActiveWorkspaceRequiredException;
+import org.craft.mcs.cap.core.account.context.application.port.in.WorkspaceMembershipView;
 import org.craft.mcs.cap.core.account.membership.domain.model.AccountRole;
-import org.craft.mcs.cap.core.account.user.application.port.in.AccountMeView;
-import org.craft.mcs.cap.core.account.user.application.port.in.GetCurrentAccountUseCase;
+import org.craft.mcs.cap.core.account.context.application.port.in.AccountMeView;
+import org.craft.mcs.cap.core.account.context.application.port.in.GetCurrentAccountUseCase;
 import org.craft.mcs.cap.core.account.workspace.application.port.in.WorkspaceView;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.junit.jupiter.api.Test;

@@ -8,7 +8,7 @@ import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.FeedstockBatchProfileTargetCandidateQuery;
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.QueryFeedstockBatchProfileTargetCandidatesUseCase;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockMeasurementPointFilters;
-import org.craft.mcs.cap.core.feedstock.application.batch.port.in.FeedstockBatchSummary;
+import org.craft.mcs.cap.core.feedstock.application.batch.model.FeedstockBatchSummary;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.ListFeedstockBatchesQuery;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.ListFeedstockBatchesUseCase;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentProfileSettings;
@@ -17,13 +17,13 @@ import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in.Feeds
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.out.FeedstockCurrentProfileSettingsProvider;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.usecase.FeedstockCurrentProfileAssessmentService;
 import org.craft.mcs.cap.core.feedstock.application.measurement.query.FeedstockBatchCurrentMeasurementQueryService;
+import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementView;
 import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.FeedstockPlanningBatchView;
 import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.FeedstockPlanningBatchViewQuery;
 import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.FeedstockPlanningTargetAnalysisView;
 import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.FeedstockPlanningTargetCandidateView;
 import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.FeedstockPlanningView;
 import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.QueryFeedstockPlanningBatchesUseCase;
-import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurement;
 import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPredictor;
 import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.FermentationStartReadinessAssessor;
 import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapability;
@@ -76,7 +76,7 @@ public final class QueryFeedstockPlanningBatchesService implements QueryFeedstoc
     final var measurementsByBatchId = currentMeasurementQueryService.findCurrentMeasurementsByBatchIds(batchIds)
         .stream()
         .collect(Collectors.toMap(
-            FeedstockMeasurement::batchId,
+            FeedstockMeasurementView::batchId,
             Function.identity()
         ));
     final var targetCandidates = targetCandidates(query);
@@ -97,7 +97,7 @@ public final class QueryFeedstockPlanningBatchesService implements QueryFeedstoc
 
   private @NonNull FeedstockPlanningBatchView toBatchView(
       @NonNull FeedstockBatchSummary batch,
-      @Nullable FeedstockMeasurement measurement,
+      @Nullable FeedstockMeasurementView measurement,
       @Nullable FeedstockPlanningTargetCandidateView targetCandidate,
       @NonNull FeedstockCurrentProfileSettings settings
   ) {
@@ -159,7 +159,7 @@ public final class QueryFeedstockPlanningBatchesService implements QueryFeedstoc
   }
 
   private static @NonNull FeedstockCurrentMeasurementView toCurrentMeasurement(
-      @NonNull FeedstockMeasurement measurement
+      @NonNull FeedstockMeasurementView measurement
   ) {
     requireNonNull(measurement, "feedstock measurement cannot be null");
     return new FeedstockCurrentMeasurementView(

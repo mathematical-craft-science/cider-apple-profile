@@ -11,7 +11,7 @@ import static java.util.Objects.requireNonNull;
 public record FeedstockPlanningReadinessCheck(
     @NonNull FeedstockPlanningReadinessFactor factor,
     @NonNull FeedstockCurrentProfileSignalSeverity severity,
-    @NonNull String code,
+    @NonNull FeedstockPlanningReadinessCheckCode code,
     @NonNull String message
 ) {
 

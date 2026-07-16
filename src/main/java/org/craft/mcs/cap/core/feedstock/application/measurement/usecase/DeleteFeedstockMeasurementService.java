@@ -40,14 +40,15 @@ public final class DeleteFeedstockMeasurementService
       final var batch = feedstockBatchRepository.findById(command.batchId())
           .orElseThrow(() -> new FeedstockBatchNotFoundException(command.batchId()));
       feedstockAccessControl.requireWriteAccess(batch.workspaceId());
-      final var measurement = feedstockMeasurementRepository.findById(command.measurementId())
+      final var state = feedstockMeasurementRepository.findVersionedById(command.measurementId())
           .orElseThrow(() -> new FeedstockMeasurementNotFoundException(command.measurementId()));
+      final var measurement = state.aggregate();
 
       if (!measurement.batchId().equals(command.batchId())) {
         throw new FeedstockMeasurementNotFoundException(command.measurementId());
       }
 
-      feedstockMeasurementRepository.deleteById(command.measurementId());
+      feedstockMeasurementRepository.delete(state);
     });
   }
 }

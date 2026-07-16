@@ -61,7 +61,7 @@ public final class AppleVarietyJsonSeedImporter {
 
     varieties.stream()
         .map(this::toDomain)
-        .forEach(repository::save);
+        .forEach(repository::create);
   }
 
   private @NonNull AppleVariety toDomain(@NonNull AppleVarietySeedDto dto) {

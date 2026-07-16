@@ -5,6 +5,7 @@ import java.util.Comparator;
 import java.util.Set;
 import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.FermentationStartPreparationActionType;
 import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.FermentationStartReadinessCheck;
+import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.FermentationStartReadinessCheckCode;
 import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.FermentationStartReadinessFactor;
 import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.FermentationStartReadinessSeverity;
 import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
@@ -71,7 +72,7 @@ public record PhFermentationStartPolicy(
     if (value == null) {
       return check(
           FermentationStartReadinessSeverity.WARNING,
-          "PH_MISSING",
+          FermentationStartReadinessCheckCode.PH_MISSING,
           "pH is missing; microbial and yeast-stress risks cannot be assessed.",
           null
       );
@@ -79,7 +80,7 @@ public record PhFermentationStartPolicy(
     if (isLessThan(value, genericYeastToleranceMin)) {
       return check(
           FermentationStartReadinessSeverity.BLOCKER,
-          "PH_BELOW_GENERIC_YEAST_TOLERANCE",
+          FermentationStartReadinessCheckCode.PH_BELOW_GENERIC_YEAST_TOLERANCE,
           "pH is below the generic yeast-tolerance guidance; choose a compatible yeast or adjust pH before start.",
           value
       );
@@ -87,7 +88,7 @@ public record PhFermentationStartPolicy(
     if (isLessThan(value, ciderGuidanceMin)) {
       return check(
           FermentationStartReadinessSeverity.WARNING,
-          "PH_LOW",
+          FermentationStartReadinessCheckCode.PH_LOW,
           "pH is low and may increase yeast stress during fermentation start.",
           value
       );
@@ -96,7 +97,7 @@ public record PhFermentationStartPolicy(
       final var action = highPhRiskManagementAction(context.correctiveActions());
       if (action != null) {
         return managedHighPhCheck(
-            "PH_VERY_HIGH_MICROBIAL_RISK_MANAGED",
+            FermentationStartReadinessCheckCode.PH_VERY_HIGH_MICROBIAL_RISK_MANAGED,
             "pH is high; microbial risk is marked as managed by a planned or confirmed preparation action.",
             value,
             action
@@ -104,7 +105,7 @@ public record PhFermentationStartPolicy(
       }
       return check(
           FermentationStartReadinessSeverity.WARNING,
-          "PH_VERY_HIGH_MICROBIAL_RISK",
+          FermentationStartReadinessCheckCode.PH_VERY_HIGH_MICROBIAL_RISK,
           "pH is high; define SO2, acid adjustment, or another microbial-risk strategy before start.",
           value
       );
@@ -113,7 +114,7 @@ public record PhFermentationStartPolicy(
       final var action = highPhRiskManagementAction(context.correctiveActions());
       if (action != null) {
         return managedHighPhCheck(
-            "PH_HIGH_MICROBIAL_RISK_MANAGED",
+            FermentationStartReadinessCheckCode.PH_HIGH_MICROBIAL_RISK_MANAGED,
             "pH is above the curated cider guidance range; microbial risk is marked as managed.",
             value,
             action
@@ -121,7 +122,7 @@ public record PhFermentationStartPolicy(
       }
       return check(
           FermentationStartReadinessSeverity.WARNING,
-          "PH_HIGH_MICROBIAL_RISK",
+          FermentationStartReadinessCheckCode.PH_HIGH_MICROBIAL_RISK,
           "pH is above the curated cider guidance range; review microbial-risk management before start.",
           value
       );
@@ -129,7 +130,7 @@ public record PhFermentationStartPolicy(
 
     return check(
         FermentationStartReadinessSeverity.INFO,
-        "PH_ACCEPTABLE",
+        FermentationStartReadinessCheckCode.PH_ACCEPTABLE,
         "pH is present and within the curated cider fermentation-start guidance range.",
         value
     );
@@ -150,7 +151,7 @@ public record PhFermentationStartPolicy(
 
   private static @NonNull FermentationStartReadinessCheck check(
       @NonNull FermentationStartReadinessSeverity severity,
-      @NonNull String code,
+      @NonNull FermentationStartReadinessCheckCode code,
       @NonNull String message,
       @Nullable BigDecimal value
   ) {
@@ -165,7 +166,7 @@ public record PhFermentationStartPolicy(
   }
 
   private static @NonNull FermentationStartReadinessCheck managedHighPhCheck(
-      @NonNull String code,
+      @NonNull FermentationStartReadinessCheckCode code,
       @NonNull String message,
       @NonNull BigDecimal value,
       @NonNull FermentationStartPreparationActionType action

@@ -1,5 +1,6 @@
 package org.craft.mcs.cap.core.feedstock.application.measurement.port.in;
 
+import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementSummary;
 import org.jspecify.annotations.NonNull;
 
 

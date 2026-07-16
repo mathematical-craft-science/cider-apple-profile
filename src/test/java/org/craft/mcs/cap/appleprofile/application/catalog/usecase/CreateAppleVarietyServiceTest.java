@@ -5,6 +5,7 @@ import org.craft.mcs.cap.core.appleprofile.application.catalog.port.in.CreateApp
 import org.craft.mcs.cap.core.appleprofile.application.port.out.AppleVarietyRepository;
 import org.craft.mcs.cap.core.appleprofile.application.catalog.usecase.CreateAppleVarietyService;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVariety;
+import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyName;
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.craft.mcs.cap.shared.kernel.measurement.ExactMeasurement;
 import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
@@ -43,19 +44,19 @@ class CreateAppleVarietyServiceTest {
             SpecificGravityValue.of("1.052")
         )))
         .build();
-    when(appleVarietyRepository.save(any(AppleVariety.class)))
+    when(appleVarietyRepository.create(any(AppleVariety.class)))
         .thenAnswer(invocation -> invocation.getArgument(0));
     when(transactionHelper.callInTransactionNonNull(any()))
         .thenAnswer(invocation -> executeSupplier(invocation.getArgument(0)));
 
     final var created = service.create(new CreateAppleVarietyCommand(
-        "Yarlington Mill",
+        AppleVarietyName.of("Yarlington Mill"),
         chemicalProfile
     ));
 
     verify(transactionHelper).callInTransactionNonNull(any());
     final var savedCaptor = ArgumentCaptor.forClass(AppleVariety.class);
-    verify(appleVarietyRepository).save(savedCaptor.capture());
+    verify(appleVarietyRepository).create(savedCaptor.capture());
 
     assertThat(created.varietyId()).isNotNull();
     assertThat(created.name().value()).isEqualTo("Yarlington Mill");

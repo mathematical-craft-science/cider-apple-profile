@@ -45,8 +45,8 @@ class ContributorProfileServiceTest {
         true
     );
     when(userResolver.resolve()).thenReturn(user);
-    when(repository.findByUserId(user.userId())).thenReturn(Optional.empty());
-    when(repository.save(any()))
+    when(repository.findVersionedById(user.userId())).thenReturn(Optional.empty());
+    when(repository.create(any()))
         .thenAnswer(invocation -> invocation.getArgument(0, ContributorProfile.class));
     final var service = new ContributorProfileService(
         userResolver,
@@ -62,7 +62,7 @@ class ContributorProfileServiceTest {
         .returns(ContactVisibility.PUBLIC, ContributorProfileView::contactVisibility)
         .returns(NOW, ContributorProfileView::contactPublicationConsentedAt)
         .returns(command.publicEmail(), ContributorProfileView::publicEmail);
-    verify(repository).save(any(ContributorProfile.class));
+    verify(repository).create(any(ContributorProfile.class));
   }
 
   private static @NonNull AccountUser accountUser() {

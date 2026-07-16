@@ -9,10 +9,14 @@ import org.craft.mcs.cap.core.account.invitation.domain.model.WorkspaceInvitatio
 import org.craft.mcs.cap.core.account.invitation.domain.model.value.WorkspaceInvitationId;
 import org.craft.mcs.cap.core.account.shared.domain.value.AccountUserId;
 import org.craft.mcs.cap.core.account.shared.domain.value.EmailAddress;
+import org.craft.mcs.cap.shared.application.persistence.AggregateRevision;
+import org.craft.mcs.cap.shared.application.persistence.VersionedAggregate;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.data.jdbc.core.mapping.AggregateReference;
+
+import static java.util.Objects.requireNonNull;
 
 /** Maps workspace administration aggregates and append-only audit facts to JDBC records. */
 public final class WorkspaceAdministrationJdbcMapper {
@@ -67,6 +71,16 @@ public final class WorkspaceAdministrationJdbcMapper {
         entity.expiresAt,
         entity.resendCount
     );
+  }
+
+  public static @NonNull VersionedAggregate<WorkspaceInvitation> toVersionedAggregate(
+      @NonNull WorkspaceInvitationJdbcEntity entity
+  ) {
+    return new VersionedAggregate<>(toDomain(entity), AggregateRevision.of(entity.version));
+  }
+
+  public static long revision(@NonNull WorkspaceInvitationJdbcEntity entity) {
+    return requireNonNull(entity, "workspace invitation row cannot be null").version;
   }
 
   public static @NonNull WorkspaceAuditJdbcEntity fromDomain(

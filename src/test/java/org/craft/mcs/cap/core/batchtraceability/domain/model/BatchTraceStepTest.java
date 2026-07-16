@@ -6,6 +6,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -14,39 +15,44 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class BatchTraceStepTest {
 
+  private static final WorkspaceId WORKSPACE_ID = WorkspaceId.newId();
+  private static final BatchTraceActorReference ACTOR = BatchTraceActorReference.system("test");
+
   @Test
   void createsAppendOnlyTraceStepWithDefensiveCopies() {
     final var outputs = new ArrayList<BatchTraceStepSubject>();
     outputs.add(BatchTraceStepSubject.of(subject("production-1")));
 
     final var step = BatchTraceStep.create(
-        BatchTraceId.newId(),
+        WORKSPACE_ID,
         null,
         BatchTraceOperationType.CREATE_PRODUCTION_BATCH,
         List.of(BatchTraceStepSubject.of(subject("feedstock-1"))),
         outputs,
         Instant.parse("2026-05-18T00:00:00Z"),
-        " technologist ",
+        ACTOR,
         " accepted input "
     );
 
     outputs.clear();
 
+    assertThat(step)
+        .returns(WORKSPACE_ID, BatchTraceStep::workspaceId)
+        .returns(ACTOR, BatchTraceStep::performedBy)
+        .returns("accepted input", BatchTraceStep::note);
     assertThat(step.outputs()).hasSize(1);
-    assertThat(step.performedBy()).isEqualTo("technologist");
-    assertThat(step.note()).isEqualTo("accepted input");
   }
 
   @Test
   void exposesOutputsAsImmutableList() {
     final var step = BatchTraceStep.create(
-        BatchTraceId.newId(),
+        WORKSPACE_ID,
         null,
         BatchTraceOperationType.CREATE_PRODUCTION_BATCH,
         List.of(BatchTraceStepSubject.of(subject("feedstock-1"))),
         List.of(BatchTraceStepSubject.of(subject("production-1"))),
         Instant.parse("2026-05-18T00:00:00Z"),
-        null,
+        ACTOR,
         null
     );
 
@@ -57,13 +63,13 @@ class BatchTraceStepTest {
   @Test
   void rejectsStepWithoutOutputSubject() {
     assertThatThrownBy(() -> BatchTraceStep.create(
-        BatchTraceId.newId(),
+        WORKSPACE_ID,
         null,
         BatchTraceOperationType.CREATE_PRODUCTION_BATCH,
         List.of(BatchTraceStepSubject.of(subject("feedstock-1"))),
         List.of(),
         Instant.parse("2026-05-18T00:00:00Z"),
-        null,
+        ACTOR,
         null
     ))
         .isInstanceOf(DomainRuleViolationException.class)
@@ -75,7 +81,7 @@ class BatchTraceStepTest {
     final var feedstock = BatchTraceStepSubject.of(subject("feedstock-1"));
 
     final var firstProduction = BatchTraceStep.create(
-        BatchTraceId.newId(),
+        WORKSPACE_ID,
         null,
         BatchTraceOperationType.CREATE_PRODUCTION_BATCH,
         List.of(feedstock),
@@ -85,11 +91,11 @@ class BatchTraceStepTest {
             null
         ))),
         Instant.parse("2026-05-18T00:00:00Z"),
-        null,
+        ACTOR,
         null
     );
     final var secondProduction = BatchTraceStep.create(
-        BatchTraceId.newId(),
+        WORKSPACE_ID,
         null,
         BatchTraceOperationType.CREATE_PRODUCTION_BATCH,
         List.of(feedstock),
@@ -99,7 +105,7 @@ class BatchTraceStepTest {
             null
         ))),
         Instant.parse("2026-05-18T01:00:00Z"),
-        null,
+        ACTOR,
         null
     );
 

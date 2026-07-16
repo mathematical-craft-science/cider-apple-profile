@@ -7,6 +7,7 @@ import java.util.List;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileDistanceMetric;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileEvaluationAxis;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetDistanceStatus;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetFitStatus;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetObjectiveFunctionCode;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.SugarAcidityTargetGeometryShape;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.SugarAcidityTargetKind;
@@ -17,27 +18,86 @@ import org.jspecify.annotations.Nullable;
 
 @Schema(description = "Distance from a chemical profile point to a profile target.")
 public record ProfileTargetDistanceResponse(
-    @Schema(description = "Distance status.", implementation = ProfileTargetDistanceStatus.class, example = "CALCULATED", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(
+        description = "Distance status.",
+        implementation = ProfileTargetDistanceStatus.class,
+        example = "SCORED",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
     @NonNull ProfileTargetDistanceStatus status,
-    @Schema(description = "Normalized distance value. Zero means the point is inside the target.", example = "0.125", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @Schema(
+        description = "Technical non-negative distance metric. Lower is closer; its scale depends on the selected "
+            + "normalizer and metric.",
+        example = "0.125",
+        nullable = true,
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     @Nullable BigDecimal value,
-    @Schema(description = "Whether the point is inside the sugar-acidity target geometry.", example = "true", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(
+        description = "Authoritative target match from 0 to 100 within the selected scoring configuration; "
+            + "absent when fit is unscorable.",
+        minimum = "0",
+        maximum = "100",
+        example = "85",
+        nullable = true,
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
+    @Nullable Integer matchPercent,
+    @Schema(
+        description = "Authoritative target-fit interpretation within the selected scoring configuration.",
+        implementation = ProfileTargetFitStatus.class,
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
+    @NonNull ProfileTargetFitStatus fitStatus,
+    @Schema(
+        description = "Whether the point is inside the sugar-acidity target geometry.",
+        example = "true",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
     boolean insideSugarAcidityTarget,
-    @Schema(description = "Whether the point is inside the full target, including optional tannin target.", example = "true", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(
+        description = "Whether the point is inside the full target, including optional tannin target.",
+        example = "true",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
     boolean insideTarget,
     @Schema(description = "Nearest target point in sugar-acidity space.", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull SugarAcidityCoordinatesResponse nearestTargetPoint,
-    @Schema(description = "Measured tannin, when available.", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @Schema(
+        description = "Measured tannin, when available.",
+        nullable = true,
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     @Nullable DecimalQuantityResponse tannin,
-    @Schema(description = "Nearest target tannin, when tannin target is configured.", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @Schema(
+        description = "Nearest target tannin, when tannin target is configured.",
+        nullable = true,
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     @Nullable DecimalQuantityResponse nearestTargetTannin,
-    @Schema(description = "Objective function code.", implementation = ProfileTargetObjectiveFunctionCode.class, requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(
+        description = "Objective function code.",
+        implementation = ProfileTargetObjectiveFunctionCode.class,
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
     @NonNull ProfileTargetObjectiveFunctionCode objectiveFunction,
-    @Schema(description = "Distance metric used by objective function.", implementation = ProfileDistanceMetric.class, requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(
+        description = "Distance metric used by objective function.",
+        implementation = ProfileDistanceMetric.class,
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
     @NonNull ProfileDistanceMetric metric,
-    @Schema(description = "Target kind.", implementation = SugarAcidityTargetKind.class, requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(
+        description = "Target kind.",
+        implementation = SugarAcidityTargetKind.class,
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
     @NonNull SugarAcidityTargetKind targetKind,
-    @Schema(description = "Sugar-acidity target geometry shape.", implementation = SugarAcidityTargetGeometryShape.class, requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(
+        description = "Sugar-acidity target geometry shape.",
+        implementation = SugarAcidityTargetGeometryShape.class,
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
     @NonNull SugarAcidityTargetGeometryShape targetShape,
     @ArraySchema(
         arraySchema = @Schema(description = "Missing profile axes.", requiredMode = Schema.RequiredMode.REQUIRED),

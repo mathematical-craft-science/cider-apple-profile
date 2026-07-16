@@ -5,16 +5,22 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.List;
-import java.util.UUID;
+import java.util.Map;
+import java.util.Optional;
 import org.craft.mcs.cap.core.production.application.authorization.port.out.ProductionAccessControl;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
+import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.craft.mcs.cap.core.production.application.port.in.CreateProductionBatchCommand;
 import org.craft.mcs.cap.core.production.application.port.out.ConsumedProductionSource;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionSourceDisplayName;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchTraceRecorder;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionSourceInventory;
 import org.craft.mcs.cap.core.production.application.usecase.CreateProductionBatchService;
-import org.craft.mcs.cap.core.production.domain.model.ProductionInput;
+import org.craft.mcs.cap.core.production.candidate.application.model.ProductionBatchCandidateSnapshot;
+import org.craft.mcs.cap.core.production.candidate.application.port.out.ProductionBatchCandidateStore;
+import org.craft.mcs.cap.core.production.candidate.domain.model.ProductionBatchCandidate;
+import org.craft.mcs.cap.core.production.candidate.domain.model.ProductionBatchCandidateId;
+import org.craft.mcs.cap.core.production.candidate.domain.model.ProductionSourceEvidenceReference;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceComponent;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceComposition;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceReference;
@@ -67,9 +73,12 @@ class CreateProductionBatchRollbackDataJdbcTest {
   @Autowired
   private @NonNull JdbcTemplate jdbcTemplate;
 
+  @Autowired
+  private @NonNull TestProductionBatchCandidateStore candidateStore;
+
   @Test
   void rollsBackProductionBatchWhenTraceAppendFails() {
-    final var workspaceId = WorkspaceId.of(UUID.randomUUID());
+    final var workspaceId = WorkspaceId.newId();
     jdbcTemplate.update(
         """
             INSERT INTO workspaces (workspace_id, name, type, status, version, created_at, updated_at)
@@ -77,9 +86,11 @@ class CreateProductionBatchRollbackDataJdbcTest {
             """,
         workspaceId.value()
     );
-    final var sourceReference = ProductionSourceReference.feedstockBatch(UUID.randomUUID());
+    final var sourceReference = ProductionSourceReference.feedstockBatch(FeedstockBatchId.newId().value());
     insertFeedstockSource(workspaceId, sourceReference);
-    final var command = command(workspaceId, sourceReference);
+    final var candidate = candidate(workspaceId, sourceReference);
+    candidateStore.register(candidate);
+    final var command = command(workspaceId, candidate.candidate().candidateId());
 
     assertThatThrownBy(() -> service.create(command))
         .isInstanceOf(IllegalStateException.class)
@@ -124,26 +135,49 @@ class CreateProductionBatchRollbackDataJdbcTest {
 
   private static @NonNull CreateProductionBatchCommand command(
       @NonNull WorkspaceId workspaceId,
-      @NonNull ProductionSourceReference sourceReference
+      @NonNull ProductionBatchCandidateId candidateId
   ) {
     return new CreateProductionBatchCommand(
         workspaceId,
         ProductionBatchName.of("Rollback candidate"),
         ProductionBatchKind.CIDER,
-        new ProductionInput(
-            ProductionSourceComposition.of(List.of(new ProductionSourceComponent(
-                sourceReference,
-                VolumeValue.ofLiters("100")
-            ))),
-            new ProductionProfileSnapshot(
-                SpecificGravityValue.of("1.052"),
-                TitratableAcidityValue.of("5.8"),
-                TanninityValue.of("1200")
-            ),
-            null
-        ),
+        candidateId,
         null
     );
+  }
+
+  private static @NonNull ProductionBatchCandidateSnapshot candidate(
+      @NonNull WorkspaceId workspaceId,
+      @NonNull ProductionSourceReference sourceReference
+  ) {
+    final var composition = ProductionSourceComposition.of(List.of(new ProductionSourceComponent(
+        sourceReference,
+        VolumeValue.ofLiters("100")
+    )));
+    return new ProductionBatchCandidateSnapshot(
+        ProductionBatchCandidate.create(
+            ProductionBatchCandidateId.newId(),
+            workspaceId,
+            composition,
+            Map.of(sourceReference, evidenceReference()),
+            productionProfile()
+        ),
+        null,
+        null,
+        List.of()
+    );
+  }
+
+  private static @NonNull ProductionProfileSnapshot productionProfile() {
+    return new ProductionProfileSnapshot(
+        SpecificGravityValue.of("1.050"),
+        TitratableAcidityValue.of("6.1"),
+        TanninityValue.of("1400")
+    );
+  }
+
+  private static @NonNull ProductionSourceEvidenceReference evidenceReference() {
+    return ProductionSourceEvidenceReference.of("measurement-2026-05-18");
   }
 
   @TestConfiguration(proxyBeanMethods = false)
@@ -173,9 +207,15 @@ class CreateProductionBatchRollbackDataJdbcTest {
                 axis(ChemicalAxis.ACIDITY, "6.1"),
                 axis(ChemicalAxis.TANNINITY, "1400")
             ),
-            ConfidenceLevel.LAB_VERIFIED
+            ConfidenceLevel.LAB_VERIFIED,
+            evidenceReference()
         );
       };
+    }
+
+    @Bean
+    TestProductionBatchCandidateStore productionBatchCandidateStore() {
+      return new TestProductionBatchCandidateStore();
     }
 
     @Bean
@@ -209,6 +249,32 @@ class CreateProductionBatchRollbackDataJdbcTest {
           null,
           null
       );
+    }
+  }
+
+  static final class TestProductionBatchCandidateStore implements ProductionBatchCandidateStore {
+
+    private ProductionBatchCandidateSnapshot snapshot;
+
+    void register(@NonNull ProductionBatchCandidateSnapshot candidate) {
+      snapshot = candidate;
+    }
+
+    @Override
+    public @NonNull ProductionBatchCandidateSnapshot save(
+        @NonNull ProductionBatchCandidateSnapshot candidate
+    ) {
+      snapshot = candidate;
+      return candidate;
+    }
+
+    @Override
+    public @NonNull Optional<@NonNull ProductionBatchCandidateSnapshot> findById(
+        @NonNull ProductionBatchCandidateId candidateId
+    ) {
+      return snapshot != null && snapshot.candidate().candidateId().equals(candidateId)
+          ? Optional.of(snapshot)
+          : Optional.empty();
     }
   }
 

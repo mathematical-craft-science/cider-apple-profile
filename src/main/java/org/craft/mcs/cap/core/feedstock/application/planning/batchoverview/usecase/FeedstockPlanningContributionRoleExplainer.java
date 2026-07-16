@@ -17,7 +17,7 @@ import static java.util.Objects.requireNonNull;
  * Converts target-aware contribution-role assessment into typed planning facts.
  *
  * <p>The assessment itself stays in profile-analysis domain. This explainer only prepares a
- * read-side projection for feedstock planning rows, so clients can build localized user-facing
+ * read-side projection for feedstock planning consumers, so inbound adapters can present localized
  * explanations without reimplementing CAP role semantics.
  */
 @Component

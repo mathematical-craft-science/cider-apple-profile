@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.time.Instant;
 import java.util.UUID;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.common.MeasurementKind;
+import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.out.AppleVarietySugarAcidityPointCandidateView;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVariety;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyId;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyName;
@@ -17,6 +18,8 @@ import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.jspecify.annotations.NonNull;
+import org.craft.mcs.cap.shared.application.persistence.AggregateRevision;
+import org.craft.mcs.cap.shared.application.persistence.VersionedAggregate;
 import org.jspecify.annotations.Nullable;
 
 import static java.util.Objects.requireNonNull;
@@ -165,6 +168,38 @@ public final class AppleVarietyJdbcMapper {
   public static @NonNull AppleVariety toDomain(@NonNull AppleVarietyJdbcEntity entity) {
     requireNonNull(entity, "apple variety row cannot be null");
 
+    return AppleVariety.create(
+        AppleVarietyId.of(entity.varietyId),
+        AppleVarietyName.of(entity.name),
+        toChemicalProfile(entity)
+    );
+  }
+
+  public static @NonNull VersionedAggregate<AppleVariety> toVersionedAggregate(
+      @NonNull AppleVarietyJdbcEntity entity
+  ) {
+    return new VersionedAggregate<>(toDomain(entity), AggregateRevision.of(entity.version));
+  }
+
+  public static long revision(@NonNull AppleVarietyJdbcEntity entity) {
+    return requireNonNull(entity, "apple variety row cannot be null").version;
+  }
+
+  public static @NonNull AppleVarietySugarAcidityPointCandidateView toCandidateView(
+      @NonNull AppleVarietyJdbcEntity entity
+  ) {
+    requireNonNull(entity, "apple variety row cannot be null");
+
+    return new AppleVarietySugarAcidityPointCandidateView(
+        AppleVarietyId.of(entity.varietyId),
+        AppleVarietyName.of(entity.name),
+        toChemicalProfile(entity)
+    );
+  }
+
+  private static @NonNull ChemicalProfile toChemicalProfile(@NonNull AppleVarietyJdbcEntity entity) {
+    requireNonNull(entity, "apple variety row cannot be null");
+
     final var builder = ChemicalProfile.builder();
 
     toCharacteristic(
@@ -193,11 +228,7 @@ public final class AppleVarietyJdbcMapper {
 
     builder.confidence(entity.chemicalProfileConfidence);
 
-    return AppleVariety.create(
-        AppleVarietyId.of(entity.varietyId),
-        AppleVarietyName.of(entity.name),
-        builder.build()
-    );
+    return builder.build();
   }
 
   private static @Nullable MeasurementKind measurementKind(

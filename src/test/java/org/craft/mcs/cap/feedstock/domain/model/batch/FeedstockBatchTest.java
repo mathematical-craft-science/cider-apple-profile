@@ -14,7 +14,7 @@ import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.junit.jupiter.api.Test;
 
-import static java.util.UUID.randomUUID;
+import static org.craft.mcs.cap.shared.kernel.identity.UuidV7Generator.newUuid;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementInstant;
@@ -26,7 +26,7 @@ class FeedstockBatchTest {
   void createsBatchWithOptionalSourceAndAvailableVolume() {
     final var batch = FeedstockBatch.create(
         FeedstockBatchId.newId(),
-        WorkspaceId.of(randomUUID()),
+        WorkspaceId.of(newUuid()),
         FeedstockBatchName.of("Late season fruit"),
         FeedstockVessel.of("Tank A-01"),
         FeedstockType.JUICE,
@@ -48,7 +48,7 @@ class FeedstockBatchTest {
     final var deletedAt = feedstockMeasurementInstant();
     final var batch = FeedstockBatch.create(
         FeedstockBatchId.newId(),
-        WorkspaceId.of(randomUUID()),
+        WorkspaceId.of(newUuid()),
         FeedstockBatchName.of("Late season fruit"),
         FeedstockVessel.of("Tank A-01"),
         FeedstockType.JUICE,
@@ -67,7 +67,7 @@ class FeedstockBatchTest {
   void rejectsConsumingMoreThanAvailableVolumeAsDomainConflict() {
     final var batch = FeedstockBatch.create(
         FeedstockBatchId.newId(),
-        WorkspaceId.of(randomUUID()),
+        WorkspaceId.of(newUuid()),
         FeedstockBatchName.of("Late season fruit"),
         FeedstockVessel.of("Tank A-01"),
         FeedstockType.JUICE,
@@ -84,7 +84,7 @@ class FeedstockBatchTest {
   void rejectsCreatingBatchWithZeroAvailableVolume() {
     assertThatThrownBy(() -> FeedstockBatch.create(
         FeedstockBatchId.newId(),
-        WorkspaceId.of(randomUUID()),
+        WorkspaceId.of(newUuid()),
         FeedstockBatchName.of("Late season fruit"),
         FeedstockVessel.of("Tank A-01"),
         FeedstockType.JUICE,
@@ -99,7 +99,7 @@ class FeedstockBatchTest {
   void rejectsChangingBatchAvailableVolumeToZero() {
     final var batch = FeedstockBatch.create(
         FeedstockBatchId.newId(),
-        WorkspaceId.of(randomUUID()),
+        WorkspaceId.of(newUuid()),
         FeedstockBatchName.of("Late season fruit"),
         FeedstockVessel.of("Tank A-01"),
         FeedstockType.JUICE,

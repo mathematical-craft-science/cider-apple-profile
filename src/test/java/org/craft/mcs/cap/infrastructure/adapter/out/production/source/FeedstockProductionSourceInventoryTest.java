@@ -1,5 +1,6 @@
 package org.craft.mcs.cap.infrastructure.adapter.out.production.source;
 
+import java.util.UUID;
 import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchHasNoMeasurementsException;
 import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchInsufficientAvailableVolumeException;
 import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchNotFoundException;
@@ -7,12 +8,14 @@ import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchOwnershipMisma
 import org.craft.mcs.cap.core.feedstock.application.inventory.port.in.ConsumeFeedstockBatchMaterialUseCase;
 import org.craft.mcs.cap.core.feedstock.application.inventory.port.in.ConsumedFeedstockBatchMaterial;
 import org.craft.mcs.cap.core.feedstock.application.inventory.port.in.FeedstockBatchMaterialName;
+import org.craft.mcs.cap.core.feedstock.application.inventory.port.in.FeedstockBatchMaterialEvidenceReference;
 import org.craft.mcs.cap.core.production.application.ProductionSourceInsufficientAvailableVolumeException;
 import org.craft.mcs.cap.core.production.application.ProductionSourceNotFoundException;
 import org.craft.mcs.cap.core.production.application.ProductionSourceOwnershipMismatchException;
 import org.craft.mcs.cap.core.production.application.ProductionSourceProfileUnavailableException;
 import org.craft.mcs.cap.core.production.application.port.out.ConsumedProductionSource;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionSourceDisplayName;
+import org.craft.mcs.cap.core.production.candidate.domain.model.ProductionSourceEvidenceReference;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceComponent;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceReference;
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
@@ -49,6 +52,10 @@ class FeedstockProductionSourceInventoryTest {
         batchId,
         FeedstockBatchMaterialName.of("Late juice"),
         source.volume(),
+        new FeedstockBatchMaterialEvidenceReference(
+            UUID.fromString("019f0f03-4715-7cbd-a634-a178df719e28"),
+            3
+        ),
         profile
     ));
     final var inventory = inventory(useCase);
@@ -60,6 +67,10 @@ class FeedstockProductionSourceInventoryTest {
         .returns(ProductionSourceDisplayName.of("Late juice"), ConsumedProductionSource::displayName)
         .returns(VolumeValue.ofLiters("100"), ConsumedProductionSource::volume)
         .returns(ConfidenceLevel.LAB_VERIFIED, ConsumedProductionSource::confidence)
+        .returns(
+            ProductionSourceEvidenceReference.of("019f0f03-4715-7cbd-a634-a178df719e28:v3"),
+            ConsumedProductionSource::evidenceReference
+        )
         .satisfies(result -> assertThat(result.profile())
             .isNotNull()
             .satisfies(axes -> assertThat(axes.valueOf(ChemicalAxis.SUGAR)).isPresent()));

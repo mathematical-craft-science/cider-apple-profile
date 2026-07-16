@@ -20,7 +20,10 @@ import static org.craft.mcs.cap.infrastructure.adapter.in.rest.support.RestProbl
 import static org.craft.mcs.cap.infrastructure.adapter.in.rest.support.RestProblem.response;
 
 
-@RestControllerAdvice(assignableTypes = ProductionBatchController.class)
+@RestControllerAdvice(assignableTypes = {
+    ProductionBatchController.class,
+    ProductionBatchCandidateController.class
+})
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public final class ProductionExceptionHandler {
 

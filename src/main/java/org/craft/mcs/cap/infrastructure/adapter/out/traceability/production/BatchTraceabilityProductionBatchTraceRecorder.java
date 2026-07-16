@@ -3,8 +3,9 @@ package org.craft.mcs.cap.infrastructure.adapter.out.traceability.production;
 import java.time.Instant;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.craft.mcs.cap.core.account.user.application.port.in.GetCurrentAccountProfileUseCase;
 import org.craft.mcs.cap.core.batchtraceability.application.port.in.AppendBatchTraceStepUseCase;
-import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceId;
+import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceActorReference;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceMaterialSnapshot;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceOperationType;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStep;
@@ -41,6 +42,7 @@ import static java.util.Objects.requireNonNull;
 class BatchTraceabilityProductionBatchTraceRecorder implements ProductionBatchTraceRecorder {
 
   private final @NonNull AppendBatchTraceStepUseCase appendBatchTraceStepUseCase;
+  private final @NonNull GetCurrentAccountProfileUseCase getCurrentAccountProfileUseCase;
 
   @Override
   public void recordCreated(
@@ -53,13 +55,15 @@ class BatchTraceabilityProductionBatchTraceRecorder implements ProductionBatchTr
     sources = List.copyOf(requireNonNull(sources, "production trace sources cannot be null"));
 
     appendBatchTraceStepUseCase.append(BatchTraceStep.create(
-        BatchTraceId.newId(),
+        productionBatch.workspaceId(),
         null,
         BatchTraceOperationType.CREATE_PRODUCTION_BATCH,
         inputSubjects(sources),
         List.of(outputSubject(productionBatch)),
         requireNonNull(occurredAt, "trace occurred at cannot be null"),
-        null,
+        BatchTraceActorReference.accountUser(
+            getCurrentAccountProfileUseCase.get().userId().value().toString()
+        ),
         note
     ));
   }

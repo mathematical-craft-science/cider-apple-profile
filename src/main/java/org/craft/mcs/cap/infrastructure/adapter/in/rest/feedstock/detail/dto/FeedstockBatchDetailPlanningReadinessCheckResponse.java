@@ -1,6 +1,7 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.detail.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in.FeedstockPlanningReadinessCheckCode;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in.FeedstockPlanningReadinessFactor;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in.FeedstockCurrentProfileSignalSeverity;
 import org.jspecify.annotations.NonNull;
@@ -23,8 +24,12 @@ public record FeedstockBatchDetailPlanningReadinessCheckResponse(
         requiredMode = Schema.RequiredMode.REQUIRED
     )
     @NonNull FeedstockCurrentProfileSignalSeverity severity,
-    @Schema(description = "Stable machine-readable check code.", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NonNull String code,
+    @Schema(
+        description = "Stable machine-readable check code.",
+        implementation = FeedstockPlanningReadinessCheckCode.class,
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
+    @NonNull FeedstockPlanningReadinessCheckCode code,
     @Schema(description = "Short check explanation.", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull String message
 ) {

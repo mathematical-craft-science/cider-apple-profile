@@ -10,7 +10,7 @@ import static java.util.Objects.requireNonNull;
  * One typed semantic fact explaining target-aware contribution evidence.
  *
  * <p>Numerical evidence, primary role, and per-axis role remain in the contribution-role assessment.
- * This object only adds interpretation facts needed for frontend rendering.
+ * This object only adds interpretation facts needed by presentation adapters.
  */
 public record FeedstockPlanningRoleEvidenceFact(
     @NonNull ProfileEvaluationAxis axis,

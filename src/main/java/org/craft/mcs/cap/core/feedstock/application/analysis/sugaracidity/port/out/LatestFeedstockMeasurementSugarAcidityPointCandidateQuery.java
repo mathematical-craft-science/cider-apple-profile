@@ -2,7 +2,7 @@ package org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.
 
 import org.craft.mcs.cap.shared.application.ApplicationValidationException;
 
-import org.craft.mcs.cap.core.feedstock.application.batch.port.in.FeedstockBatchCriteria;
+import org.craft.mcs.cap.core.feedstock.application.batch.model.FeedstockBatchCriteria;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.platform.query.CursorPageRequest;
@@ -24,7 +24,9 @@ public record LatestFeedstockMeasurementSugarAcidityPointCandidateQuery(
     requireNonNull(workspaceId, "workspace id cannot be null");
 
     if (limit < 1 || limit > CursorPageRequest.MAX_LIMIT) {
-      throw new ApplicationValidationException("latest candidate query limit must be between 1 and " + CursorPageRequest.MAX_LIMIT);
+      throw new ApplicationValidationException(
+          "latest candidate query limit must be between 1 and " + CursorPageRequest.MAX_LIMIT
+      );
     }
   }
 }

@@ -4,7 +4,7 @@ import jakarta.validation.Valid;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.account.audit.application.port.in.ListWorkspaceAdministrativeAuditUseCase;
-import org.craft.mcs.cap.core.account.workspace.application.port.in.WorkspaceLifecycleUseCase;
+import org.craft.mcs.cap.core.account.administration.application.port.in.WorkspaceLifecycleUseCase;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.dto.AccountMembershipResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.dto.AccountWorkspaceResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.dto.CreateWorkspaceRequest;

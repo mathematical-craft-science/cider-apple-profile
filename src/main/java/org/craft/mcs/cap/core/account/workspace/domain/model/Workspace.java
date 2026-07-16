@@ -2,7 +2,7 @@ package org.craft.mcs.cap.core.account.workspace.domain.model;
 
 import org.craft.mcs.cap.core.account.shared.domain.value.DisplayName;
 import org.craft.mcs.cap.core.account.shared.domain.value.IdentityProviderCode;
-import org.craft.mcs.cap.core.account.workspace.domain.model.value.ExternalOrganizationSubject;
+import org.craft.mcs.cap.core.account.shared.domain.value.ExternalOrganizationSubject;
 import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jmolecules.ddd.annotation.AggregateRoot;

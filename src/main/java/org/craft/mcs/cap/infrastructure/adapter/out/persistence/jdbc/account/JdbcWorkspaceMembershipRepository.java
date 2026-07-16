@@ -12,12 +12,15 @@ import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.account.ent
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.account.entity.AccountUserJdbcEntity;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.account.entity.WorkspaceJdbcEntity;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.support.JdbcPersistenceExceptionTranslator;
+import org.craft.mcs.cap.shared.application.ConcurrentResourceModificationException;
+import org.craft.mcs.cap.shared.application.persistence.VersionedAggregate;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;
 import org.springframework.data.jdbc.core.mapping.AggregateReference;
 import org.springframework.stereotype.Repository;
 
 import static java.util.Objects.requireNonNull;
+import static org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.support.JdbcAggregateRevisionGuard.requireExpectedRevision;
 
 /** Persists workspace membership aggregates and membership ownership references. */
 @Repository
@@ -27,30 +30,53 @@ class JdbcWorkspaceMembershipRepository implements WorkspaceMembershipRepository
   private final @NonNull SpringDataWorkspaceMembershipJdbcRepository repository;
 
   @Override
-  public @NonNull WorkspaceMembership save(@NonNull WorkspaceMembership membership) {
+  public @NonNull WorkspaceMembership create(@NonNull WorkspaceMembership membership) {
     requireNonNull(membership, "workspace membership cannot be null");
-    final var entity = repository.findById(membership.membershipId().value())
-        .map(existing -> AccountJdbcMapper.updateFromDomain(membership, existing))
-        .orElseGet(() -> AccountJdbcMapper.fromDomain(membership));
     final var saved = JdbcPersistenceExceptionTranslator.translateOptimisticLocking(
         "workspace membership",
-        () -> repository.save(entity)
+        () -> repository.save(AccountJdbcMapper.fromDomain(membership))
     );
     return AccountJdbcMapper.toDomain(saved);
   }
 
   @Override
-  public void deleteById(@NonNull WorkspaceMembershipId membershipId) {
-    requireNonNull(membershipId, "workspace membership id cannot be null");
-    repository.deleteById(membershipId.value());
+  public @NonNull VersionedAggregate<WorkspaceMembership> update(
+      @NonNull VersionedAggregate<WorkspaceMembership> membership
+  ) {
+    requireNonNull(membership, "versioned workspace membership cannot be null");
+    final var aggregate = membership.aggregate();
+    final var entity = repository.findById(aggregate.membershipId().value())
+        .orElseThrow(() -> new ConcurrentResourceModificationException("workspace membership", null));
+    requireExpectedRevision(
+        "workspace membership",
+        membership.revision(),
+        AccountJdbcMapper.revision(entity)
+    );
+    final var saved = JdbcPersistenceExceptionTranslator.translateOptimisticLocking(
+        "workspace membership",
+        () -> repository.save(AccountJdbcMapper.updateFromDomain(aggregate, entity))
+    );
+    return AccountJdbcMapper.toVersionedAggregate(saved);
   }
 
   @Override
-  public @NonNull Optional<@NonNull WorkspaceMembership> findById(
+  public @NonNull Optional<@NonNull VersionedAggregate<WorkspaceMembership>> findVersionedById(
       @NonNull WorkspaceMembershipId membershipId
   ) {
     requireNonNull(membershipId, "workspace membership id cannot be null");
-    return repository.findById(membershipId.value()).map(AccountJdbcMapper::toDomain);
+    return repository.findById(membershipId.value()).map(AccountJdbcMapper::toVersionedAggregate);
+  }
+
+  @Override
+  public void delete(@NonNull VersionedAggregate<WorkspaceMembership> membership) {
+    requireNonNull(membership, "versioned workspace membership cannot be null");
+    final var affectedRows = repository.deleteByIdAndVersion(
+        membership.aggregate().membershipId().value(),
+        membership.revision().value()
+    );
+    if (affectedRows != 1) {
+      throw new ConcurrentResourceModificationException("workspace membership", null);
+    }
   }
 
   @Override

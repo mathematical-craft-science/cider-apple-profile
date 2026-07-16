@@ -22,7 +22,7 @@ import org.craft.mcs.cap.core.feedstock.application.detail.port.in.FeedstockBatc
 import org.craft.mcs.cap.core.feedstock.application.detail.port.in.FeedstockBatchCurrentProfileView;
 import org.craft.mcs.cap.core.feedstock.application.detail.port.in.GetFeedstockBatchDetailQuery;
 import org.craft.mcs.cap.core.feedstock.application.detail.usecase.GetFeedstockBatchDetailService;
-import org.craft.mcs.cap.core.feedstock.application.measurement.port.in.FeedstockMeasurementSummary;
+import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementSummary;
 import org.craft.mcs.cap.core.feedstock.application.measurement.port.in.ListFeedstockMeasurementsUseCase;
 import org.craft.mcs.cap.core.feedstock.application.measurement.port.out.FeedstockMeasurementQueryRepository;
 import org.craft.mcs.cap.core.feedstock.application.measurement.query.FeedstockBatchCurrentMeasurementQueryService;
@@ -60,6 +60,8 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.craft.mcs.cap.shared.testing.FeedstockMeasurementViews.view;
+import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementRecordedAt;
 import static java.util.Objects.requireNonNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -139,7 +141,8 @@ class GetFeedstockBatchDetailServiceTest {
             .tanninity(ExactMeasurement.of(TanninityValue.of("1400")))
             .yeastAssimilableNitrogen(ExactMeasurement.of(YeastAssimilableNitrogenValue.of("120")))
             .build(),
-        Instant.parse(measuredAt)
+        Instant.parse(measuredAt),
+        feedstockMeasurementRecordedAt()
     );
   }
 
@@ -169,7 +172,7 @@ class GetFeedstockBatchDetailServiceTest {
     final var measurementRepository = mock(FeedstockMeasurementQueryRepository.class);
     final var service = service(batchRepository, listMeasurements, measurementRepository);
     when(batchRepository.findById(batchId)).thenReturn(Optional.of(batch));
-    when(measurementRepository.findLatestByBatchId(batchId)).thenReturn(Optional.of(currentMeasurement));
+    when(measurementRepository.findLatestByBatchId(batchId)).thenReturn(Optional.of(view(currentMeasurement)));
     when(listMeasurements.listByBatchId(batchId)).thenReturn(List.of(
         measurementSummary(batch, currentMeasurement),
         measurementSummary(batch, olderMeasurement)

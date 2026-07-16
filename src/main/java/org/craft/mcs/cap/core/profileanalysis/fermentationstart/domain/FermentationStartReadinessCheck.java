@@ -10,7 +10,7 @@ import static java.util.Objects.requireNonNull;
 public record FermentationStartReadinessCheck(
     @NonNull FermentationStartReadinessFactor factor,
     @NonNull FermentationStartReadinessSeverity severity,
-    @NonNull String code,
+    @NonNull FermentationStartReadinessCheckCode code,
     @NonNull String message,
     @Nullable BigDecimal value,
     @Nullable String unit,
@@ -20,7 +20,7 @@ public record FermentationStartReadinessCheck(
   public FermentationStartReadinessCheck(
       @NonNull FermentationStartReadinessFactor factor,
       @NonNull FermentationStartReadinessSeverity severity,
-      @NonNull String code,
+      @NonNull FermentationStartReadinessCheckCode code,
       @NonNull String message,
       @Nullable BigDecimal value,
       @Nullable String unit

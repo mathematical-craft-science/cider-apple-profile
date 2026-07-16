@@ -4,16 +4,11 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
-import org.craft.mcs.cap.core.profileanalysis.composition.optimization.application.port.in.OptimizeChemicalProfileCompositionCommand;
-import org.craft.mcs.cap.core.profileanalysis.composition.optimization.application.port.in.OptimizeChemicalProfileCompositionResult;
-import org.craft.mcs.cap.core.profileanalysis.composition.optimization.application.port.in.OptimizeChemicalProfileCompositionUseCase;
+import org.craft.mcs.cap.core.profileanalysis.composition.optimization.application.port.in.*;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.port.in.ProfileTargetScoringPurpose;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionCalculatorCode;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionTanninPolicy;
-import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.CompositionOptimizationAlgorithm;
-import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.CompositionOptimizationMode;
-import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.ChemicalProfileCompositionOptimizationResult;
-import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.DiscretizedCompositionOptimizationSettings;
+import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.*;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileAxisNormalizerCode;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetObjectiveFunctionCode;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetObjectiveWeights;
@@ -25,13 +20,13 @@ import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.Rectangle
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.SugarAcidityZone;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockMeasurementPointFilters;
 import org.craft.mcs.cap.core.feedstock.application.measurement.query.FeedstockBatchCurrentMeasurementQueryService;
-import org.craft.mcs.cap.core.feedstock.application.planning.composition.port.in.OptimizeFeedstockBatchCompositionCommand;
-import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.PredefinedFeedstockProfileTargetSelection;
-import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchRepository;
+import org.craft.mcs.cap.core.feedstock.application.planning.composition.port.in.*;
+import org.craft.mcs.cap.core.feedstock.application.planning.composition.usecase.*;
+import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.*;
+import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchSummaryQueryRepository;
 import org.craft.mcs.cap.core.feedstock.application.measurement.port.out.FeedstockMeasurementQueryRepository;
-import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.out.LatestFeedstockMeasurementSugarAcidityPointCandidateQuery;
-import org.craft.mcs.cap.core.feedstock.application.planning.composition.usecase.OptimizeFeedstockBatchCompositionService;
-import org.craft.mcs.cap.core.feedstock.application.planning.composition.InsufficientFeedstockCompositionSourcesException;
+import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.out.*;
+import org.craft.mcs.cap.core.feedstock.application.planning.composition.*;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockBatchName;
@@ -54,10 +49,13 @@ import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
-import static java.util.UUID.randomUUID;
+import static org.craft.mcs.cap.shared.kernel.identity.UuidV7Generator.newUuid;
 import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementInstant;
+import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementRecordedAt;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.craft.mcs.cap.core.feedstock.application.batch.usecase.FeedstockBatchSummaryMapper.toSummary;
+import static org.craft.mcs.cap.shared.testing.FeedstockMeasurementViews.view;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -70,10 +68,10 @@ class OptimizeFeedstockBatchCompositionServiceTest {
   @Test
   void buildsOptimizationProblemFromCurrentFeedstockBatchMeasurements() {
     final var measurementRepository = mock(FeedstockMeasurementQueryRepository.class);
-    final var batchRepository = mock(FeedstockBatchRepository.class);
+    final var batchRepository = mock(FeedstockBatchSummaryQueryRepository.class);
     final var optimizer = mockOptimizer();
     final var service = service(measurementRepository, batchRepository, optimizer);
-    final var workspaceId = WorkspaceId.of(randomUUID());
+    final var workspaceId = WorkspaceId.of(newUuid());
     final var usableBatch = batch(workspaceId, "20");
     final var secondUsableBatch = batch(workspaceId, "30");
     final var incompleteBatch = batch(workspaceId, "10");
@@ -82,9 +80,17 @@ class OptimizeFeedstockBatchCompositionServiceTest {
     final var incompleteMeasurement = sample(incompleteBatch.batchId(), acidityOnlyProfile("6.0"));
 
     when(batchRepository.findAllByWorkspaceId(workspaceId))
-        .thenReturn(List.of(usableBatch, secondUsableBatch, incompleteBatch));
+        .thenReturn(List.of(
+            toSummary(usableBatch),
+            toSummary(secondUsableBatch),
+            toSummary(incompleteBatch)
+        ));
     when(measurementRepository.findLatestSugarAcidityPointCandidates(any()))
-        .thenReturn(List.of(incompleteMeasurement, usableMeasurement, secondUsableMeasurement));
+        .thenReturn(List.of(
+            view(incompleteMeasurement),
+            view(usableMeasurement),
+            view(secondUsableMeasurement)
+        ));
 
     final var result = service.optimize(command(workspaceId, null));
 
@@ -119,19 +125,19 @@ class OptimizeFeedstockBatchCompositionServiceTest {
   @Test
   void requiresTanninWhenTanninTargetIsProvided() {
     final var measurementRepository = mock(FeedstockMeasurementQueryRepository.class);
-    final var batchRepository = mock(FeedstockBatchRepository.class);
+    final var batchRepository = mock(FeedstockBatchSummaryQueryRepository.class);
     final var optimizer = mockOptimizer();
     final var service = service(measurementRepository, batchRepository, optimizer);
-    final var workspaceId = WorkspaceId.of(randomUUID());
+    final var workspaceId = WorkspaceId.of(newUuid());
     final var firstBatch = batch(workspaceId, "20");
     final var secondBatch = batch(workspaceId, "30");
 
     when(batchRepository.findAllByWorkspaceId(workspaceId))
-        .thenReturn(List.of(firstBatch, secondBatch));
+        .thenReturn(List.of(toSummary(firstBatch), toSummary(secondBatch)));
     when(measurementRepository.findLatestSugarAcidityPointCandidates(any()))
         .thenReturn(List.of(
-            sample(firstBatch.batchId(), profile("1.065", "5.5")),
-            sample(secondBatch.batchId(), profile("1.070", "6.0"))
+            view(sample(firstBatch.batchId(), profile("1.065", "5.5"))),
+            view(sample(secondBatch.batchId(), profile("1.070", "6.0")))
         ));
 
     service.optimize(command(workspaceId, new TanninTargetRange(
@@ -150,16 +156,16 @@ class OptimizeFeedstockBatchCompositionServiceTest {
   @Test
   void rejectsOptimizationWhenLessThanTwoUsableSourcesRemainAfterFiltering() {
     final var measurementRepository = mock(FeedstockMeasurementQueryRepository.class);
-    final var batchRepository = mock(FeedstockBatchRepository.class);
+    final var batchRepository = mock(FeedstockBatchSummaryQueryRepository.class);
     final var optimizer = mockOptimizer();
     final var service = service(measurementRepository, batchRepository, optimizer);
-    final var workspaceId = WorkspaceId.of(randomUUID());
+    final var workspaceId = WorkspaceId.of(newUuid());
     final var batch = batch(workspaceId, "20");
 
     when(batchRepository.findAllByWorkspaceId(workspaceId))
-        .thenReturn(List.of(batch));
+        .thenReturn(List.of(toSummary(batch)));
     when(measurementRepository.findLatestSugarAcidityPointCandidates(any()))
-        .thenReturn(List.of(sample(batch.batchId(), profile("1.065", "5.5"))));
+        .thenReturn(List.of(view(sample(batch.batchId(), profile("1.065", "5.5")))));
 
     assertThatThrownBy(() -> service.optimize(command(workspaceId, null)))
         .isInstanceOf(InsufficientFeedstockCompositionSourcesException.class)
@@ -170,7 +176,7 @@ class OptimizeFeedstockBatchCompositionServiceTest {
 
   private static OptimizeFeedstockBatchCompositionService service(
       FeedstockMeasurementQueryRepository measurementRepository,
-      FeedstockBatchRepository batchRepository,
+      FeedstockBatchSummaryQueryRepository batchRepository,
       OptimizeChemicalProfileCompositionUseCase optimizer
   ) {
     final var thresholds = BuiltInSugarAcidityZoneProfiles.thresholds();
@@ -258,7 +264,8 @@ class OptimizeFeedstockBatchCompositionServiceTest {
         batchId,
         FeedstockMeasurementName.of("Current lab sample"),
         profile,
-        feedstockMeasurementInstant()
+        feedstockMeasurementInstant(),
+        feedstockMeasurementRecordedAt()
     );
   }
 

@@ -22,17 +22,17 @@ import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.SugarAcid
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.SugarAcidityZone;
 import org.craft.mcs.cap.core.feedstock.application.planning.composition.InsufficientFeedstockCompositionSourcesException;
 import org.craft.mcs.cap.core.feedstock.application.measurement.query.FeedstockBatchCurrentMeasurementQueryService;
+import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementView;
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.CustomRectangleFeedstockProfileTargetSelection;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockMeasurementPointFilters;
 import org.craft.mcs.cap.core.feedstock.application.planning.composition.port.in.OptimizeFeedstockBatchCompositionCommand;
 import org.craft.mcs.cap.core.feedstock.application.planning.composition.port.in.OptimizeFeedstockBatchCompositionResult;
 import org.craft.mcs.cap.core.feedstock.application.planning.composition.port.in.OptimizeFeedstockBatchCompositionUseCase;
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.PredefinedFeedstockProfileTargetSelection;
-import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchRepository;
+import org.craft.mcs.cap.core.feedstock.application.batch.model.FeedstockBatchSummary;
+import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchSummaryQueryRepository;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.out.LatestFeedstockMeasurementSugarAcidityPointCandidateQuery;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
-import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurement;
 import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityCriteria;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.query.SugarAcidityZoneCriteria;
 import org.jspecify.annotations.NonNull;
@@ -57,7 +57,7 @@ public final class OptimizeFeedstockBatchCompositionService implements OptimizeF
   private static final @NonNull String SOURCE_TYPE = "FEEDSTOCK_BATCH";
 
   private final @NonNull FeedstockBatchCurrentMeasurementQueryService currentMeasurementQueryService;
-  private final @NonNull FeedstockBatchRepository feedstockBatchRepository;
+  private final @NonNull FeedstockBatchSummaryQueryRepository feedstockBatchQueryRepository;
   private final @NonNull SugarAcidityProfileProjector sugarAcidityProfileProjector;
   private final @NonNull SugarAcidityTargetResolver targetResolver;
   private final @NonNull OptimizeChemicalProfileCompositionUseCase optimizeChemicalProfileCompositionUseCase;
@@ -70,9 +70,9 @@ public final class OptimizeFeedstockBatchCompositionService implements OptimizeF
     requireNonNull(command, "optimize feedstock batch composition command cannot be null");
     feedstockAccessControl.requireReadAccess(command.workspaceId());
 
-    final var batchesById = feedstockBatchRepository.findAllByWorkspaceId(command.workspaceId())
+    final var batchesById = feedstockBatchQueryRepository.findAllByWorkspaceId(command.workspaceId())
         .stream()
-        .collect(Collectors.toMap(FeedstockBatch::batchId, Function.identity()));
+        .collect(Collectors.toMap(FeedstockBatchSummary::batchId, Function.identity()));
     final var sources = currentMeasurementQueryService.findCurrentSugarAcidityPointCandidates(
             new LatestFeedstockMeasurementSugarAcidityPointCandidateQuery(
                 command.workspaceId(),
@@ -114,9 +114,9 @@ public final class OptimizeFeedstockBatchCompositionService implements OptimizeF
   }
 
   private @NonNull Optional<@NonNull ChemicalProfileCompositionOptimizationSource> toOptimizationSourceIfUsable(
-      @NonNull FeedstockMeasurement measurement,
+      @NonNull FeedstockMeasurementView measurement,
       @NonNull FeedstockMeasurementPointFilters filters,
-      @NonNull Map<@NonNull FeedstockBatchId, @NonNull FeedstockBatch> batchesById
+      @NonNull Map<@NonNull FeedstockBatchId, @NonNull FeedstockBatchSummary> batchesById
   ) {
     requireNonNull(measurement, "feedstock measurement cannot be null");
     final var evaluation = sugarAcidityProfileProjector.project(measurement.chemicalProfile());

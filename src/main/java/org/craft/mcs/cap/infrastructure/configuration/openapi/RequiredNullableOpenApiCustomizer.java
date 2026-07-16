@@ -67,10 +67,11 @@ public final class RequiredNullableOpenApiCustomizer implements OpenApiCustomize
   }
 
   private static @Nullable Schema<?> property(
-      @NonNull Map<String, Schema> properties,
+      @NonNull Map<?, ?> properties,
       @NonNull RecordComponent component
   ) {
-    return properties.get(component.getName());
+    final var property = properties.get(component.getName());
+    return property instanceof Schema<?> schema ? schema : null;
   }
 
   private static boolean isRequired(@NonNull RecordComponent component) {

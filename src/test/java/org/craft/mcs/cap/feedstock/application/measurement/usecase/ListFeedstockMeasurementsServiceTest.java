@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchRepository;
-import org.craft.mcs.cap.core.feedstock.application.measurement.port.in.FeedstockMeasurementSummary;
+import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementSummary;
 import org.craft.mcs.cap.core.feedstock.application.measurement.port.out.FeedstockMeasurementQueryRepository;
 import org.craft.mcs.cap.core.feedstock.application.measurement.usecase.ListFeedstockMeasurementsService;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
@@ -18,7 +18,7 @@ import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.junit.jupiter.api.Test;
 
-import static java.util.UUID.randomUUID;
+import static org.craft.mcs.cap.shared.kernel.identity.UuidV7Generator.newUuid;
 import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementInstant;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -38,11 +38,11 @@ class ListFeedstockMeasurementsServiceTest {
     );
     final var batchId = FeedstockBatchId.newId();
     final var batch = mock(FeedstockBatch.class);
-    when(batch.workspaceId()).thenReturn(WorkspaceId.of(randomUUID()));
+    when(batch.workspaceId()).thenReturn(WorkspaceId.of(newUuid()));
     when(batchRepository.findById(batchId)).thenReturn(Optional.of(batch));
     final var summary = new FeedstockMeasurementSummary(
         FeedstockMeasurementId.newId(),
-        WorkspaceId.of(randomUUID()),
+        WorkspaceId.of(newUuid()),
         batchId,
         FeedstockMeasurementName.of("Late press sample"),
         feedstockMeasurementInstant(),

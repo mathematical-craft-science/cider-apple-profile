@@ -8,50 +8,33 @@ import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.Abs
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionCalculatorCode;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionSource;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionProportion;
-import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.ChemicalProfileCompositionOptimizationCandidate;
-import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.CompositionOptimizationAlgorithm;
-import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.DiscretizedCompositionOptimizationSettings;
+import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.*;
 import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapability;
 import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityCriteria;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.port.in.ProfileTargetScoringPurpose;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetDistance;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetObjectiveWeights;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.point.domain.SugarAcidityAxisPoint;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.query.SugarAcidityZoneCriteria;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.RectangleSugarAcidityTargetGeometry;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.SugarAcidityCoordinates;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.TanninTargetRange;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.SugarAcidityZone;
-import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.CustomRectangleFeedstockProfileTargetSelection;
-import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.FeedstockBatchProfileTargetScore;
-import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.FeedstockBatchProfileTargetScores;
-import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.FeedstockProfileTargetSelection;
-import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.PredefinedFeedstockProfileTargetSelection;
-import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.ScoreFeedstockBatchProfileTargetCommand;
+import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.*;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockMeasurementPointFilters;
-import org.craft.mcs.cap.core.feedstock.application.batch.port.in.FeedstockBatchCriteria;
-import org.craft.mcs.cap.core.feedstock.application.planning.composition.port.in.OptimizeFeedstockBatchCompositionCommand;
-import org.craft.mcs.cap.core.feedstock.application.planning.composition.port.in.OptimizeFeedstockBatchCompositionResult;
+import org.craft.mcs.cap.core.feedstock.application.batch.model.FeedstockBatchCriteria;
+import org.craft.mcs.cap.core.feedstock.application.planning.composition.port.in.*;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.common.dto.FeedstockSeasonRequest;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.composition.dto.FeedstockBatchCompositionOptimizationCandidateResponse;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.composition.dto.FeedstockBatchCompositionOptimizationSourceResponse;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.composition.dto.FeedstockBatchProfileTargetScoreBatchResponse;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.composition.dto.FeedstockBatchProfileTargetScoreResponse;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.composition.dto.OptimizeFeedstockBatchCompositionRequest;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.composition.dto.OptimizeFeedstockBatchCompositionResponse;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.composition.dto.ScoreFeedstockBatchProfileTargetRequest;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.composition.dto.*;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.composition.mapper.CompositionOptimizationRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.measurement.CanonicalUnitLabels;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.CustomRectangleProfileTargetRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.PredefinedZoneProfileTargetRequest;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.ProfileTargetDistanceResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.ProfileTargetObjectiveWeightsRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.ProfileTargetRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.ProfileTargetTanninRangeRequest;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.SugarAcidityCoordinatesResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.mapper.ProfileTargetRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.sugaracidity.dto.SugarAcidityAxisPointResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.sugaracidity.mapper.SugarAcidityZoneRestMapper;
 import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
@@ -191,28 +174,7 @@ public final class FeedstockBatchProfileTargetScoreRestMapper {
         score.currentMeasurementId().value(),
         score.currentMeasurementName().value(),
         SugarAcidityZoneRestMapper.toResponse(score.point()),
-        toResponse(score.distance())
-    );
-  }
-
-  private static @NonNull ProfileTargetDistanceResponse toResponse(
-      @NonNull ProfileTargetDistance distance
-  ) {
-    requireNonNull(distance, "profile target distance cannot be null");
-
-    return new ProfileTargetDistanceResponse(
-        distance.status(),
-        distance.value(),
-        distance.insideSugarAcidityTarget(),
-        distance.insideTarget(),
-        toResponse(distance.nearestTargetPoint()),
-        quantity(distance.tannin(), CanonicalUnitLabels.TANNINITY),
-        quantity(distance.nearestTargetTannin(), CanonicalUnitLabels.TANNINITY),
-        distance.objectiveFunction(),
-        distance.metric(),
-        distance.targetKind(),
-        distance.targetShape(),
-        distance.missingMeasurements()
+        ProfileTargetRestMapper.toResponse(score.distance())
     );
   }
 
@@ -230,7 +192,7 @@ public final class FeedstockBatchProfileTargetScoreRestMapper {
         toYeastAssimilableNitrogenResponse(composition.yeastAssimilableNitrogen()),
         toVolumeResponse(composition.totalVolume()),
         List.copyOf(composition.warnings()),
-        toResponse(candidate.distance()),
+        ProfileTargetRestMapper.toResponse(candidate.distance()),
         CompositionOptimizationRestMapper.toResponse(candidate.objectiveAssessment())
     );
   }
@@ -257,23 +219,6 @@ public final class FeedstockBatchProfileTargetScoreRestMapper {
 
   private static @Nullable BigDecimal proportion(@NonNull ChemicalProfileCompositionSource source) {
     return source.weight() instanceof CompositionProportion(BigDecimal value) ? value : null;
-  }
-
-  private static @NonNull SugarAcidityCoordinatesResponse toResponse(
-      @NonNull SugarAcidityCoordinates coordinates
-  ) {
-    requireNonNull(coordinates, "sugar-acidity coordinates cannot be null");
-    return new SugarAcidityCoordinatesResponse(
-        new DecimalQuantityResponse(coordinates.sugar(), CanonicalUnitLabels.SUGAR),
-        new DecimalQuantityResponse(coordinates.acidity(), CanonicalUnitLabels.TITRATABLE_ACIDITY)
-    );
-  }
-
-  private static @Nullable DecimalQuantityResponse quantity(
-      @Nullable BigDecimal value,
-      @NonNull String unit
-  ) {
-    return value == null ? null : new DecimalQuantityResponse(value, unit);
   }
 
   private static @Nullable SugarAcidityAxisPointResponse toYeastAssimilableNitrogenResponse(

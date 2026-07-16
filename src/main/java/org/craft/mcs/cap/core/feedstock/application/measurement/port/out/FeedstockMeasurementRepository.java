@@ -1,18 +1,13 @@
 package org.craft.mcs.cap.core.feedstock.application.measurement.port.out;
 
-import java.util.Optional;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurement;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurementId;
+import org.craft.mcs.cap.shared.application.persistence.VersionedAggregate;
+import org.craft.mcs.cap.shared.application.persistence.VersionedAggregateRepository;
 import org.jspecify.annotations.NonNull;
 
+public interface FeedstockMeasurementRepository
+    extends VersionedAggregateRepository<FeedstockMeasurement, FeedstockMeasurementId> {
 
-public interface FeedstockMeasurementRepository {
-
-  @NonNull
-  FeedstockMeasurement save(@NonNull FeedstockMeasurement feedstockMeasurement);
-
-  @NonNull
-  Optional<@NonNull FeedstockMeasurement> findById(@NonNull FeedstockMeasurementId measurementId);
-
-  void deleteById(@NonNull FeedstockMeasurementId measurementId);
+  void delete(@NonNull VersionedAggregate<FeedstockMeasurement> measurement);
 }

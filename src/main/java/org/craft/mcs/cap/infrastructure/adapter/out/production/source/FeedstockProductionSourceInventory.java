@@ -1,20 +1,13 @@
 package org.craft.mcs.cap.infrastructure.adapter.out.production.source;
 
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchHasNoMeasurementsException;
-import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchInsufficientAvailableVolumeException;
-import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchNotFoundException;
-import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchOwnershipMismatchException;
 import org.craft.mcs.cap.core.feedstock.application.inventory.port.in.ConsumeFeedstockBatchMaterialCommand;
 import org.craft.mcs.cap.core.feedstock.application.inventory.port.in.ConsumeFeedstockBatchMaterialUseCase;
 import org.craft.mcs.cap.core.feedstock.application.inventory.port.in.ConsumedFeedstockBatchMaterial;
-import org.craft.mcs.cap.core.production.application.ProductionSourceInsufficientAvailableVolumeException;
-import org.craft.mcs.cap.core.production.application.ProductionSourceNotFoundException;
-import org.craft.mcs.cap.core.production.application.ProductionSourceOwnershipMismatchException;
-import org.craft.mcs.cap.core.production.application.ProductionSourceProfileUnavailableException;
 import org.craft.mcs.cap.core.production.application.port.out.ConsumedProductionSource;
-import org.craft.mcs.cap.core.production.application.port.out.ProductionSourceInventory;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionSourceDisplayName;
+import org.craft.mcs.cap.core.production.application.port.out.ProductionSourceInventory;
+import org.craft.mcs.cap.core.production.candidate.domain.model.ProductionSourceEvidenceReference;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceComponent;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
@@ -23,6 +16,7 @@ import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 
 import static java.util.Objects.requireNonNull;
+import static org.craft.mcs.cap.infrastructure.adapter.out.production.source.FeedstockProductionSourceFailureTranslator.translate;
 
 
 /**
@@ -66,7 +60,8 @@ public final class FeedstockProductionSourceInventory implements ProductionSourc
         ProductionSourceDisplayName.of(consumed.batchName().value()),
         consumed.volume(),
         axisExtractor.extract(profile),
-        profile.confidence()
+        profile.confidence(),
+        ProductionSourceEvidenceReference.of(consumed.evidenceReference().externalValue())
     );
   }
 
@@ -75,28 +70,12 @@ public final class FeedstockProductionSourceInventory implements ProductionSourc
       @NonNull ProductionSourceComponent source,
       @NonNull FeedstockBatchId batchId
   ) {
-    try {
-      return consumeFeedstockBatchMaterialUseCase.consume(new ConsumeFeedstockBatchMaterialCommand(
-          workspaceId,
-          batchId,
-          source.volume()
-      ));
-    } catch (FeedstockBatchNotFoundException exception) {
-      throw new ProductionSourceNotFoundException(source.reference());
-    } catch (FeedstockBatchOwnershipMismatchException exception) {
-      throw new ProductionSourceOwnershipMismatchException(
-          source.reference(),
-          exception.expectedWorkspaceId(),
-          exception.actualWorkspaceId()
-      );
-    } catch (FeedstockBatchInsufficientAvailableVolumeException exception) {
-      throw new ProductionSourceInsufficientAvailableVolumeException(
-          source.reference(),
-          exception.requestedVolume(),
-          exception.availableVolume()
-      );
-    } catch (FeedstockBatchHasNoMeasurementsException exception) {
-      throw new ProductionSourceProfileUnavailableException(source.reference());
-    }
+    return translate(source.reference(), () -> consumeFeedstockBatchMaterialUseCase.consume(
+        new ConsumeFeedstockBatchMaterialCommand(
+            workspaceId,
+            batchId,
+            source.volume()
+        )
+    ));
   }
 }

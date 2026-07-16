@@ -27,7 +27,8 @@ import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
-import static java.util.UUID.randomUUID;
+import static org.craft.mcs.cap.shared.kernel.identity.UuidV7Generator.newUuid;
+import static org.craft.mcs.cap.shared.testing.TestClocks.FEEDSTOCK_MEASUREMENT_CLOCK;
 import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementInstant;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -46,12 +47,14 @@ class CreateFeedstockMeasurementServiceTest {
         batchRepository,
         sampleRepository,
         mock(FeedstockAccessControl.class),
-        transactionHelper()
+        transactionHelper(),
+        FEEDSTOCK_MEASUREMENT_CLOCK
     );
-    final var workspaceId = WorkspaceId.of(randomUUID());
+    final var workspaceId = WorkspaceId.of(newUuid());
     final var batch = batch(workspaceId);
     when(batchRepository.findById(batch.batchId())).thenReturn(Optional.of(batch));
-    when(sampleRepository.save(any(FeedstockMeasurement.class))).thenAnswer(invocation -> invocation.getArgument(0));
+    when(sampleRepository.create(any(FeedstockMeasurement.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
 
     final var created = service.create(new CreateFeedstockMeasurementCommand(
         batch.batchId(),
@@ -72,7 +75,8 @@ class CreateFeedstockMeasurementServiceTest {
         batchRepository,
         mock(FeedstockMeasurementRepository.class),
         mock(FeedstockAccessControl.class),
-        transactionHelper()
+        transactionHelper(),
+        FEEDSTOCK_MEASUREMENT_CLOCK
     );
     final var batchId = FeedstockBatchId.newId();
     when(batchRepository.findById(batchId)).thenReturn(Optional.empty());

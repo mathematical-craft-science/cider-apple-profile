@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
-import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceId;
+import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceActorReference;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceMaterialSnapshot;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStep;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStepId;
@@ -16,6 +16,7 @@ import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.MeasurementValueKind;
 import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -32,11 +33,12 @@ public final class BatchTraceStepJdbcRowMapper {
 
     final var row = new BatchTraceStepJdbcRow(
         step.stepId().value(),
-        step.batchTraceId().value(),
+        step.workspaceId().value(),
         stepIdValue(step.parentStepId()),
         step.operationType(),
         step.occurredAt(),
-        step.performedBy(),
+        step.performedBy().type(),
+        step.performedBy().id(),
         step.note()
     );
     addSubjects(row, BatchTraceStepSubjectRole.INPUT, step.inputs());
@@ -49,14 +51,17 @@ public final class BatchTraceStepJdbcRowMapper {
     requireNonNull(row, "batch trace step row cannot be null");
 
     return new BatchTraceStep(
-        BatchTraceId.of(requireNonNull(row.traceId, "batch trace id cannot be null")),
+        WorkspaceId.of(requireNonNull(row.workspaceId, "batch trace workspace id cannot be null")),
         BatchTraceStepId.of(requireNonNull(row.stepId, "batch trace step id cannot be null")),
         stepId(row.parentStepId),
         requireNonNull(row.operationType, "batch trace operation type cannot be null"),
         toSubjects(row, BatchTraceStepSubjectRole.INPUT),
         toSubjects(row, BatchTraceStepSubjectRole.OUTPUT),
         requireNonNull(row.occurredAt, "batch trace occurred at cannot be null"),
-        row.performedBy,
+        new BatchTraceActorReference(
+            requireNonNull(row.performedByType, "batch trace actor type cannot be null"),
+            requireNonNull(row.performedById, "batch trace actor id cannot be null")
+        ),
         row.note
     );
   }

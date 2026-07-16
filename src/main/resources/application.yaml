@@ -8,7 +8,6 @@ spring:
   liquibase:
     change-log: db/changelog/master-changelog.xml
     drop-first: off
-    clear-checksums: true
   datasource:
     url: jdbc:postgresql://localhost:5832/cap_db
     username: username
