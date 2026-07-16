@@ -18,10 +18,16 @@ import static java.util.Objects.requireNonNull;
 public final class BuiltInChemicalProfileCompositionCalculatorSelector
     implements ChemicalProfileCompositionCalculatorSelector {
 
-  private final @NonNull Map<@NonNull ChemicalProfileCompositionCalculatorCode, @NonNull ChemicalProfileCompositionCalculator> calculators;
+  private final @NonNull Map<
+      @NonNull ChemicalProfileCompositionCalculatorCode,
+      @NonNull ChemicalProfileCompositionCalculator
+      > calculators;
 
   public BuiltInChemicalProfileCompositionCalculatorSelector() {
-    final var builtInCalculators = new EnumMap<ChemicalProfileCompositionCalculatorCode, ChemicalProfileCompositionCalculator>(
+    final var builtInCalculators = new EnumMap<
+        ChemicalProfileCompositionCalculatorCode,
+        ChemicalProfileCompositionCalculator
+        >(
         ChemicalProfileCompositionCalculatorCode.class
     );
     builtInCalculators.put(

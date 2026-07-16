@@ -5,12 +5,12 @@ import org.craft.mcs.cap.shared.application.ApplicationValidationException;
 import java.util.Map;
 import java.util.Optional;
 import org.craft.mcs.cap.core.appleprofile.application.classification.port.in.AppleVarietyClassificationSystem;
-import org.craft.mcs.cap.core.profileanalysis.classification.engine.ClassificationStrategy;
-import org.craft.mcs.cap.core.profileanalysis.classification.profile.BuiltInCiderClassificationThresholds;
-import org.craft.mcs.cap.core.profileanalysis.classification.profile.french.FrenchClassificationStrategy;
-import org.craft.mcs.cap.core.profileanalysis.classification.profile.longashton.LongAshton4ClassificationStrategy;
-import org.craft.mcs.cap.core.profileanalysis.classification.profile.longashton.LongAshton7ClassificationStrategy;
-import org.craft.mcs.cap.core.profileanalysis.classification.profile.spanish.SpanishClassificationStrategy;
+import org.craft.mcs.cap.core.profileanalysis.classification.domain.engine.ClassificationStrategy;
+import org.craft.mcs.cap.core.profileanalysis.classification.domain.profile.BuiltInCiderClassificationThresholds;
+import org.craft.mcs.cap.core.profileanalysis.classification.domain.profile.french.FrenchClassificationStrategy;
+import org.craft.mcs.cap.core.profileanalysis.classification.domain.profile.longashton.LongAshton4ClassificationStrategy;
+import org.craft.mcs.cap.core.profileanalysis.classification.domain.profile.longashton.LongAshton7ClassificationStrategy;
+import org.craft.mcs.cap.core.profileanalysis.classification.domain.profile.spanish.SpanishClassificationStrategy;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 

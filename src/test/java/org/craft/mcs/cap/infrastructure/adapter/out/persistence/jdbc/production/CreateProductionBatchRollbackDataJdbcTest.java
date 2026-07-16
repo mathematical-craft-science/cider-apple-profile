@@ -261,7 +261,15 @@ class CreateProductionBatchRollbackDataJdbcTest {
     }
 
     @Override
-    public @NonNull ProductionBatchCandidateSnapshot save(
+    public @NonNull ProductionBatchCandidateSnapshot create(
+        @NonNull ProductionBatchCandidateSnapshot candidate
+    ) {
+      snapshot = candidate;
+      return candidate;
+    }
+
+    @Override
+    public @NonNull ProductionBatchCandidateSnapshot update(
         @NonNull ProductionBatchCandidateSnapshot candidate
     ) {
       snapshot = candidate;

@@ -1,6 +1,12 @@
 package org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain;
 
 import java.math.BigDecimal;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.normalization.BuiltInProfileAxisNormalizerSelector;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.normalization.EffectiveRangeProfileAxisNormalizer;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.normalization.MinMaxProfileAxisNormalizer;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.normalization.ProfileAxisNormalizerCode;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.normalization.SensitivityUnitProfileAxisNormalizer;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.normalization.ThresholdSegmentProfileAxisNormalizer;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.BuiltInSugarAcidityZoneProfiles;
 import org.junit.jupiter.api.Test;
 

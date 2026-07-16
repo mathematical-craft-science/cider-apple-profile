@@ -14,11 +14,11 @@ import org.craft.mcs.cap.core.production.domain.model.ProductionSourceCompositio
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceReference;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionWarning;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileAxisNormalizerCode;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileDistanceMetric;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetDistance;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetDistanceStatus;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetObjectiveFunctionCode;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.normalization.ProfileAxisNormalizerCode;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.objective.ProfileDistanceMetric;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.assessment.ProfileTargetDistance;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.assessment.ProfileTargetDistanceStatus;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.objective.ProfileTargetObjectiveFunctionCode;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetObjectiveWeights;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.SugarAcidityCoordinates;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.SugarAcidityTargetGeometryShape;
@@ -69,7 +69,7 @@ class ProductionBatchCandidatePersistenceDataJdbcTest {
   void roundTripsCandidateAnalysisAndUpdatesConfirmationState() {
     final var workspaceId = persistWorkspace();
     final var sourceReference = ProductionSourceReference.feedstockBatch(FeedstockBatchId.newId().value());
-    final var saved = store.save(candidate(workspaceId, sourceReference));
+    final var saved = store.create(candidate(workspaceId, sourceReference));
 
     final var restored = store.findById(saved.candidate().candidateId());
 
@@ -93,7 +93,7 @@ class ProductionBatchCandidatePersistenceDataJdbcTest {
     final var productionBatchId = persistProductionBatch(workspaceId);
     final var candidateToConfirm = restored.orElseThrow().candidate();
     candidateToConfirm.confirm(productionBatchId);
-    final var confirmed = store.save(restored.orElseThrow().withCandidate(candidateToConfirm));
+    final var confirmed = store.update(restored.orElseThrow().withCandidate(candidateToConfirm));
 
     assertThat(springDataRepository.count())
         .isOne();
@@ -108,16 +108,16 @@ class ProductionBatchCandidatePersistenceDataJdbcTest {
   void rejectsConfirmationFromStaleCandidateRevision() {
     final var workspaceId = persistWorkspace();
     final var sourceReference = ProductionSourceReference.feedstockBatch(FeedstockBatchId.newId().value());
-    final var saved = store.save(candidate(workspaceId, sourceReference));
+    final var saved = store.create(candidate(workspaceId, sourceReference));
     final var firstCopy = store.findById(saved.candidate().candidateId()).orElseThrow();
     final var staleCopy = store.findById(saved.candidate().candidateId()).orElseThrow();
     final var firstProductionBatchId = persistProductionBatch(workspaceId);
     firstCopy.candidate().confirm(firstProductionBatchId);
-    store.save(firstCopy.withCandidate(firstCopy.candidate()));
+    store.update(firstCopy.withCandidate(firstCopy.candidate()));
 
     staleCopy.candidate().confirm(persistProductionBatch(workspaceId));
 
-    assertThatThrownBy(() -> store.save(staleCopy.withCandidate(staleCopy.candidate())))
+    assertThatThrownBy(() -> store.update(staleCopy.withCandidate(staleCopy.candidate())))
         .isInstanceOf(ConcurrentResourceModificationException.class);
     assertThat(store.findById(saved.candidate().candidateId()))
         .get()

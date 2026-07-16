@@ -1,9 +1,9 @@
 package org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain;
 
+import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.objective.CompositionOptimizationObjectiveAssessment;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileComposition;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetDistance;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.assessment.ProfileTargetDistance;
 import org.jspecify.annotations.NonNull;
-
 import static java.util.Objects.requireNonNull;
 
 

@@ -342,7 +342,18 @@ class CreateProductionBatchServiceTest {
     }
 
     @Override
-    public @NonNull ProductionBatchCandidateSnapshot save(@NonNull ProductionBatchCandidateSnapshot snapshot) {
+    public @NonNull ProductionBatchCandidateSnapshot create(
+        @NonNull ProductionBatchCandidateSnapshot snapshot
+    ) {
+      final var saved = copy(snapshot);
+      transactionHelper.stage(() -> committed = saved);
+      return saved;
+    }
+
+    @Override
+    public @NonNull ProductionBatchCandidateSnapshot update(
+        @NonNull ProductionBatchCandidateSnapshot snapshot
+    ) {
       final var saved = copy(snapshot);
       transactionHelper.stage(() -> committed = saved);
       return saved;

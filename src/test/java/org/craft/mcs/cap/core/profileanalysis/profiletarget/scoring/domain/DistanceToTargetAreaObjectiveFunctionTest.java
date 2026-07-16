@@ -1,6 +1,12 @@
 package org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain;
 
 import java.math.BigDecimal;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.assessment.ProfileTargetDistanceStatus;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.normalization.MinMaxProfileAxisNormalizer;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.objective.DistanceToTargetAreaObjectiveFunction;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.objective.ManhattanDistanceToTargetAreaObjectiveFunction;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.objective.ProfileDistanceMetric;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.objective.ProfileTargetObjectiveFunctionCode;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.point.domain.SugarAcidityAxisPoint;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.point.domain.SugarAcidityProfilePoint;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.CustomRectangleSugarAcidityTarget;

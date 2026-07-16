@@ -8,7 +8,6 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.UUID;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.BatchTraceabilityGraphResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.CreateProductionBatchRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.ProductionBatchDetailsResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.ProductionBatchListResponse;
@@ -21,7 +20,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @Tag(
     name = "Production batches",
-    description = "Production batch workspace endpoints: list, details, traceability and creation."
+    description = "Production batch workspace endpoints: list, details and creation."
 )
 public interface ProductionBatchApi {
 
@@ -62,29 +61,6 @@ public interface ProductionBatchApi {
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
   )
   @NonNull ProductionBatchDetailsResponse get(
-      @Parameter(description = "Production batch identifier.", required = true, schema = @Schema(format = "uuid"))
-      @NonNull UUID batchId
-  );
-
-  @Operation(
-      summary = "Get production batch traceability graph",
-      description = "Returns a source traceability graph for the production batch. The graph is a separate read model "
-          + "and is not embedded into batch details."
-  )
-  @ApiResponse(
-      responseCode = "200",
-      description = "Production batch traceability graph.",
-      content = @Content(
-          mediaType = APPLICATION_JSON_VALUE,
-          schema = @Schema(implementation = BatchTraceabilityGraphResponse.class)
-      )
-  )
-  @ApiResponse(
-      responseCode = "404",
-      description = "Production batch not found.",
-      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
-  )
-  @NonNull BatchTraceabilityGraphResponse traceability(
       @Parameter(description = "Production batch identifier.", required = true, schema = @Schema(format = "uuid"))
       @NonNull UUID batchId
   );

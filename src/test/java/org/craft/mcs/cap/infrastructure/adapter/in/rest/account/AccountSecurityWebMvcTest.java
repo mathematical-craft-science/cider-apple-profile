@@ -8,6 +8,7 @@ import java.util.Locale;
 import org.craft.mcs.cap.core.account.shared.application.AccountAccessDeniedException;
 import org.craft.mcs.cap.core.account.context.application.ActiveWorkspaceRequiredException;
 import org.craft.mcs.cap.core.account.administration.application.port.in.ListWorkspaceMembersUseCase;
+import org.craft.mcs.cap.core.account.administration.application.port.in.WorkspaceMembershipManagementUseCase;
 import org.craft.mcs.cap.core.account.context.application.port.in.WorkspaceMembershipView;
 import org.craft.mcs.cap.core.account.membership.domain.model.AccountRole;
 import org.craft.mcs.cap.core.account.membership.domain.model.WorkspaceMembershipStatus;
@@ -34,6 +35,10 @@ import org.craft.mcs.cap.core.account.workspace.application.port.in.WorkspaceVie
 import org.craft.mcs.cap.core.account.workspace.domain.model.WorkspaceStatus;
 import org.craft.mcs.cap.core.account.workspace.domain.model.WorkspaceType;
 import org.craft.mcs.cap.infrastructure.adapter.in.importer.appleprofile.AppleVarietyJsonSeedImporter;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.context.AccountContextController;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.membership.WorkspaceMembershipController;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.user.AccountUserController;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.workspace.WorkspaceSettingsController;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.application.ApplicationExceptionHandler;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.seed.SeedDebugController;
 import org.craft.mcs.cap.infrastructure.adapter.in.security.AccountProvisioningFilter;
@@ -68,7 +73,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
-@WebMvcTest({AccountController.class, SeedDebugController.class})
+@WebMvcTest({
+    AccountContextController.class,
+    AccountUserController.class,
+    WorkspaceSettingsController.class,
+    WorkspaceMembershipController.class,
+    SeedDebugController.class
+})
 @ImportAutoConfiguration({
     SecurityAutoConfiguration.class,
     ServletWebSecurityAutoConfiguration.class,
@@ -118,6 +129,9 @@ class AccountSecurityWebMvcTest {
 
   @MockitoBean
   private ListWorkspaceMembersUseCase listWorkspaceMembersUseCase;
+
+  @MockitoBean
+  private WorkspaceMembershipManagementUseCase workspaceMembershipManagementUseCase;
 
   @MockitoBean
   private GetWorkspaceSettingsUseCase getWorkspaceSettingsUseCase;

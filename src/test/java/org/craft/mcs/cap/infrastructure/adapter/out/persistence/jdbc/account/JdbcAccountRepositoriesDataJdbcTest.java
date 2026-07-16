@@ -9,10 +9,14 @@ import org.craft.mcs.cap.core.account.audit.domain.model.WorkspaceAdministrative
 import org.craft.mcs.cap.core.account.audit.domain.model.WorkspaceAdministrativeSubjectType;
 import org.craft.mcs.cap.core.account.audit.domain.model.value.WorkspaceAdministrativeAuditValue;
 import org.craft.mcs.cap.core.account.audit.domain.model.value.WorkspaceAdministrativeSubjectId;
+import org.craft.mcs.cap.core.account.audit.application.port.out.WorkspaceAdministrativeAuditRepository;
+import org.craft.mcs.cap.core.account.contributor.application.port.out.ContributorProfileRepository;
 import org.craft.mcs.cap.core.account.contributor.domain.model.ContactVisibility;
 import org.craft.mcs.cap.core.account.contributor.domain.model.ContributorProfile;
 import org.craft.mcs.cap.core.account.contributor.domain.model.ContributorType;
 import org.craft.mcs.cap.core.account.invitation.domain.model.WorkspaceInvitation;
+import org.craft.mcs.cap.core.account.invitation.application.port.out.WorkspaceInvitationRepository;
+import org.craft.mcs.cap.core.account.membership.application.port.out.WorkspaceMembershipRepository;
 import org.craft.mcs.cap.core.account.membership.domain.model.AccountRole;
 import org.craft.mcs.cap.core.account.membership.domain.model.WorkspaceMembership;
 import org.craft.mcs.cap.core.account.shared.domain.value.DisplayName;
@@ -21,12 +25,17 @@ import org.craft.mcs.cap.core.account.shared.domain.value.HttpUrl;
 import org.craft.mcs.cap.core.account.shared.domain.value.PhoneNumber;
 import org.craft.mcs.cap.core.account.user.domain.model.AccountUser;
 import org.craft.mcs.cap.core.account.user.domain.model.UserPreferences;
+import org.craft.mcs.cap.core.account.user.application.port.out.AccountUserRepository;
+import org.craft.mcs.cap.core.account.user.application.port.out.UserPreferencesRepository;
 import org.craft.mcs.cap.core.account.user.domain.model.value.ExternalUserSubject;
 import org.craft.mcs.cap.core.account.shared.domain.value.IdentityProviderCode;
 import org.craft.mcs.cap.core.account.workspace.domain.model.Workspace;
 import org.craft.mcs.cap.core.account.workspace.domain.model.WorkspaceSettings;
 import org.craft.mcs.cap.core.account.workspace.domain.model.WorkspaceType;
+import org.craft.mcs.cap.core.account.workspace.application.port.out.WorkspaceRepository;
+import org.craft.mcs.cap.core.account.workspace.application.port.out.WorkspaceSettingsRepository;
 import org.craft.mcs.cap.core.account.shared.domain.value.ExternalOrganizationSubject;
+import org.craft.mcs.cap.core.account.provisioning.application.port.out.AccountProvisioningLock;
 import org.craft.mcs.cap.shared.application.ConcurrentResourceModificationException;
 import org.craft.mcs.cap.shared.kernel.measurement.unit.TitratableAcidityBasis;
 import org.craft.mcs.cap.shared.testing.jdbc.PostgresDataJdbcTestConfiguration;
@@ -34,6 +43,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jdbc.test.autoconfigure.DataJdbcTest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -43,45 +54,36 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Import({
     PostgresDataJdbcTestConfiguration.class,
-    JdbcAccountUserRepository.class,
-    JdbcWorkspaceRepository.class,
-    JdbcWorkspaceMembershipRepository.class,
-    JdbcWorkspaceSettingsRepository.class,
-    JdbcUserPreferencesRepository.class,
-    JdbcContributorProfileRepository.class,
-    JdbcWorkspaceInvitationRepository.class,
-    JdbcWorkspaceAdministrativeAuditRepository.class,
-    PostgresAccountProvisioningLock.class,
-    PostgresWorkspaceAdministrationLock.class
+    JdbcAccountRepositoriesDataJdbcTest.AccountJdbcAdaptersTestConfiguration.class
 })
 class JdbcAccountRepositoriesDataJdbcTest {
 
   @Autowired
-  private JdbcAccountUserRepository userRepository;
+  private AccountUserRepository userRepository;
 
   @Autowired
-  private JdbcWorkspaceRepository workspaceRepository;
+  private WorkspaceRepository workspaceRepository;
 
   @Autowired
-  private JdbcWorkspaceMembershipRepository membershipRepository;
+  private WorkspaceMembershipRepository membershipRepository;
 
   @Autowired
-  private JdbcWorkspaceSettingsRepository settingsRepository;
+  private WorkspaceSettingsRepository settingsRepository;
 
   @Autowired
-  private JdbcUserPreferencesRepository preferencesRepository;
+  private UserPreferencesRepository preferencesRepository;
 
   @Autowired
-  private JdbcContributorProfileRepository contributorProfileRepository;
+  private ContributorProfileRepository contributorProfileRepository;
 
   @Autowired
-  private JdbcWorkspaceInvitationRepository invitationRepository;
+  private WorkspaceInvitationRepository invitationRepository;
 
   @Autowired
-  private JdbcWorkspaceAdministrativeAuditRepository auditRepository;
+  private WorkspaceAdministrativeAuditRepository auditRepository;
 
   @Autowired
-  private PostgresAccountProvisioningLock accountProvisioningLock;
+  private AccountProvisioningLock accountProvisioningLock;
 
   @Test
   void persistsProviderNeutralAccountWorkspaceAndMembershipAggregates() {
@@ -268,5 +270,10 @@ class JdbcAccountRepositoriesDataJdbcTest {
     assertThatThrownBy(() -> settingsRepository.update(staleUpdate, created.revision()))
         .isInstanceOf(ConcurrentResourceModificationException.class)
         .hasMessage("resource was modified concurrently: workspace settings");
+  }
+
+  @TestConfiguration(proxyBeanMethods = false)
+  @ComponentScan("org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.account")
+  static class AccountJdbcAdaptersTestConfiguration {
   }
 }

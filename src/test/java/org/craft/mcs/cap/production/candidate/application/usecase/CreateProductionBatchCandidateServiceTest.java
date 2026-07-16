@@ -24,8 +24,8 @@ import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSna
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionCalculatorCode;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionTanninPolicy;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.port.in.ProfileTargetScoringPurpose;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileAxisNormalizerCode;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetObjectiveFunctionCode;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.normalization.ProfileAxisNormalizerCode;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.objective.ProfileTargetObjectiveFunctionCode;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetObjectiveWeights;
 import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
@@ -75,7 +75,7 @@ class CreateProductionBatchCandidateServiceTest {
             null,
             List.of()
         ));
-    when(candidateStore.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+    when(candidateStore.create(any())).thenAnswer(invocation -> invocation.getArgument(0));
     final var service = new CreateProductionBatchCandidateService(
         sourceInspector,
         calculator,
@@ -88,7 +88,7 @@ class CreateProductionBatchCandidateServiceTest {
 
     final var savedSnapshot = ArgumentCaptor.forClass(ProductionBatchCandidateSnapshot.class);
     verify(accessControl).requireWriteAccess(workspaceId);
-    verify(candidateStore).save(savedSnapshot.capture());
+    verify(candidateStore).create(savedSnapshot.capture());
     assertThat(result)
         .returns(workspaceId, ProductionBatchCandidateView::workspaceId)
         .returns(ProductionBatchCandidateStatus.AVAILABLE, ProductionBatchCandidateView::status)

@@ -93,7 +93,7 @@ public final class CreateProductionBatchService
           command.note()
       );
       candidate.confirm(savedProductionBatch.batchId());
-      final var confirmedCandidate = candidateStore.save(snapshot.withCandidate(candidate));
+      final var confirmedCandidate = candidateStore.update(snapshot.withCandidate(candidate));
 
       return new ProductionBatchCreated(
           ProductionBatchViewMapper.toView(savedProductionBatch),

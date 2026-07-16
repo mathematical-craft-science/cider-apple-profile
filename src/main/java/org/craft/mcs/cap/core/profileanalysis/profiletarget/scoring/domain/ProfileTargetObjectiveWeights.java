@@ -1,11 +1,9 @@
 package org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain;
 
 import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
-
 import java.math.BigDecimal;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
-
 import static java.util.Objects.requireNonNull;
 import static java.util.Objects.requireNonNullElse;
 import static org.craft.mcs.cap.shared.kernel.math.DecimalComparisons.isPositive;

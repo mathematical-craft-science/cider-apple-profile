@@ -57,7 +57,7 @@ public final class CreateProductionBatchCandidateService implements CreateProduc
         evidenceBySource(sources),
         calculation.profile()
     );
-    final var saved = candidateStore.save(new ProductionBatchCandidateSnapshot(
+    final var saved = candidateStore.create(new ProductionBatchCandidateSnapshot(
         candidate,
         calculation.normalizerCode(),
         calculation.targetDistance(),

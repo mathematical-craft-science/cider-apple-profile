@@ -1,16 +1,13 @@
 package org.craft.mcs.cap.architecture;
 
-
-import org.jspecify.annotations.NonNull;
-import org.junit.jupiter.api.Test;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import org.jspecify.annotations.NonNull;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
+import static org.assertj.core.api.Assertions.assertThat;
 
 class PackageBoundaryTest {
 
@@ -65,6 +62,19 @@ class PackageBoundaryTest {
         "org/craft/mcs/cap/core",
         List.of("org.craft.mcs.cap.infrastructure.")
     );
+  }
+
+  @Test
+  void coreClassesUseExplicitApplicationOrDomainLayers() throws IOException {
+    final var violations = sourceFilesUnder("org/craft/mcs/cap/core")
+        .stream()
+        .filter(source -> !usesExplicitCoreLayer(source.path()))
+        .map(source -> source.path().toString())
+        .toList();
+
+    assertThat(violations)
+        .as("core classes outside explicit application or domain layers")
+        .isEmpty();
   }
 
   @Test
@@ -132,7 +142,9 @@ class PackageBoundaryTest {
         ))
         .toList();
 
-    assertTrue(violations.isEmpty(), () -> String.join(System.lineSeparator(), violations));
+    assertThat(violations)
+        .withFailMessage(() -> String.join(System.lineSeparator(), violations))
+        .isEmpty();
   }
 
   private static void assertNoTextInMainResources(
@@ -156,7 +168,9 @@ class PackageBoundaryTest {
           ))
           .toList();
 
-      assertTrue(violations.isEmpty(), () -> String.join(System.lineSeparator(), violations));
+      assertThat(violations)
+          .withFailMessage(() -> String.join(System.lineSeparator(), violations))
+          .isEmpty();
     }
   }
 
@@ -175,7 +189,16 @@ class PackageBoundaryTest {
             )))
         .toList();
 
-    assertTrue(violations.isEmpty(), () -> String.join(System.lineSeparator(), violations));
+    assertThat(violations)
+        .withFailMessage(() -> String.join(System.lineSeparator(), violations))
+        .isEmpty();
+  }
+
+  private static boolean usesExplicitCoreLayer(@NonNull Path path) {
+    final var normalized = path.toString().replace('\\', '/');
+    return normalized.contains("/application/")
+        || normalized.contains("/domain/")
+        || normalized.endsWith("/package-info.java");
   }
 
   private static @NonNull List<@NonNull SourceFile> sourceFilesUnder(

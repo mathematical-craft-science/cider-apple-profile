@@ -6,7 +6,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.feedstock.application.batch.model.FeedstockBatchSummary;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentProfileSettings;
-import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in.*;
+import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.*;
 import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementView;
 import org.craft.mcs.cap.core.profileanalysis.ph.domain.PhPlanningGuidance;
 import org.craft.mcs.cap.core.profileanalysis.ph.domain.PhPlanningGuidanceCode;

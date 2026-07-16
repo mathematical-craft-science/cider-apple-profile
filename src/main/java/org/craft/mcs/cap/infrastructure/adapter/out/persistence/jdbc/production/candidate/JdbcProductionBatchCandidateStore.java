@@ -22,17 +22,28 @@ class JdbcProductionBatchCandidateStore implements ProductionBatchCandidateStore
   private final @NonNull ProductionBatchCandidateJsonCodec codec;
 
   @Override
-  public @NonNull ProductionBatchCandidateSnapshot save(
+  public @NonNull ProductionBatchCandidateSnapshot create(
       @NonNull ProductionBatchCandidateSnapshot snapshot
   ) {
     requireNonNull(snapshot, "production batch candidate snapshot cannot be null");
-    final var candidateId = snapshot.candidate().candidateId().value();
-    final var entity = repository.findById(candidateId)
-        .map(existing -> updateExisting(snapshot, existing))
-        .orElseGet(() -> ProductionBatchCandidateJdbcMapper.fromSnapshot(snapshot, codec));
     final var saved = translateOptimisticLocking(
         "production batch candidate",
-        () -> repository.save(entity)
+        () -> repository.save(ProductionBatchCandidateJdbcMapper.fromSnapshot(snapshot, codec))
+    );
+    return ProductionBatchCandidateJdbcMapper.toSnapshot(saved, codec);
+  }
+
+  @Override
+  public @NonNull ProductionBatchCandidateSnapshot update(
+      @NonNull ProductionBatchCandidateSnapshot snapshot
+  ) {
+    requireNonNull(snapshot, "production batch candidate snapshot cannot be null");
+    final var entity = repository.findById(snapshot.candidate().candidateId().value())
+        .orElseThrow(() -> new ConcurrentResourceModificationException("production batch candidate", null));
+    requireExpectedRevision(snapshot, entity);
+    final var saved = translateOptimisticLocking(
+        "production batch candidate",
+        () -> repository.save(ProductionBatchCandidateJdbcMapper.updateFromSnapshot(snapshot, entity, codec))
     );
     return ProductionBatchCandidateJdbcMapper.toSnapshot(saved, codec);
   }
@@ -46,13 +57,12 @@ class JdbcProductionBatchCandidateStore implements ProductionBatchCandidateStore
         .map(entity -> ProductionBatchCandidateJdbcMapper.toSnapshot(entity, codec));
   }
 
-  private @NonNull ProductionBatchCandidateJdbcEntity updateExisting(
+  private static void requireExpectedRevision(
       @NonNull ProductionBatchCandidateSnapshot snapshot,
       @NonNull ProductionBatchCandidateJdbcEntity entity
   ) {
     if (entity.version != snapshot.revision()) {
       throw new ConcurrentResourceModificationException("production batch candidate", null);
     }
-    return ProductionBatchCandidateJdbcMapper.updateFromSnapshot(snapshot, entity, codec);
   }
 }
