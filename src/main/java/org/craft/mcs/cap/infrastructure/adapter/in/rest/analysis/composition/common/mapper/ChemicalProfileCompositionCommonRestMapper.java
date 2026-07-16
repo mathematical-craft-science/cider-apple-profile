@@ -1,28 +1,25 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.common.mapper;
 
-import java.math.BigDecimal;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.AbsoluteCompositionVolume;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionSource;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionSourceReference;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionSourceWeight;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionProportion;
 import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.ChemicalProfileCompositionOptimizationSource;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetDistance;
+
+import java.math.BigDecimal;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.assessment.ProfileTargetDistance;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetObjective;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetObjectiveWeights;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.point.domain.SugarAcidityAxisPoint;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.CustomRectangleSugarAcidityTarget;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.RectangleSugarAcidityTargetGeometry;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.SugarAcidityCoordinates;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.SugarAcidityTarget;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.SugarAcidityTargetResolver;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.TanninTargetRange;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.calculation.dto.ChemicalProfileCompositionSourceRequest;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.calculation.dto.ChemicalProfileCompositionSourceWeightRequest;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.common.dto.ChemicalProfileCompositionAxesRequest;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.common.dto.ChemicalProfileCompositionSourceReferenceRequest;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.common.dto.ChemicalProfileCompositionSourceResponse;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.optimization.dto.ChemicalProfileCompositionOptimizationSourceRequest;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.calculation.dto.*;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.common.dto.*;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.optimization.dto.*;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.measurement.CanonicalUnitLabels;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.CustomRectangleProfileTargetRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.PredefinedZoneProfileTargetRequest;
@@ -30,7 +27,7 @@ import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.ProfileTargetObjectiveWeightsRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.ProfileTargetRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.ProfileTargetTanninRangeRequest;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.SugarAcidityCoordinatesResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.mapper.ProfileTargetRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.sugaracidity.dto.SugarAcidityAxisPointResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.sugaracidity.mapper.SugarAcidityZoneRestMapper;
 import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
@@ -127,22 +124,7 @@ public final class ChemicalProfileCompositionCommonRestMapper {
   }
 
   public static @NonNull ProfileTargetDistanceResponse toResponse(@NonNull ProfileTargetDistance distance) {
-    requireNonNull(distance, "profile target distance cannot be null");
-
-    return new ProfileTargetDistanceResponse(
-        distance.status(),
-        distance.value(),
-        distance.insideSugarAcidityTarget(),
-        distance.insideTarget(),
-        toResponse(distance.nearestTargetPoint()),
-        quantity(distance.tannin(), CanonicalUnitLabels.TANNINITY),
-        quantity(distance.nearestTargetTannin(), CanonicalUnitLabels.TANNINITY),
-        distance.objectiveFunction(),
-        distance.metric(),
-        distance.targetKind(),
-        distance.targetShape(),
-        distance.missingMeasurements()
-    );
+    return ProfileTargetRestMapper.toResponse(distance);
   }
 
   public static @Nullable VolumeValue toVolume(@Nullable BigDecimal liters) {
@@ -211,7 +193,10 @@ public final class ChemicalProfileCompositionCommonRestMapper {
   ) {
     requireNonNull(request, "chemical profile composition source weight request cannot be null");
     final var kind = requireNonNull(request.kind(), "chemical profile composition source weight kind cannot be null");
-    final var value = requireNonNull(request.value(), "chemical profile composition source weight value cannot be null");
+    final var value = requireNonNull(
+        request.value(),
+        "chemical profile composition source weight value cannot be null"
+    );
 
     return switch (kind) {
       case ABSOLUTE_VOLUME_LITERS -> new AbsoluteCompositionVolume(VolumeValue.ofLiters(value));
@@ -240,23 +225,6 @@ public final class ChemicalProfileCompositionCommonRestMapper {
   private static @NonNull TanninTargetRange toTanninTarget(@NonNull ProfileTargetTanninRangeRequest request) {
     requireNonNull(request, "profile target tannin range request cannot be null");
     return new TanninTargetRange(request.min(), request.max());
-  }
-
-  private static @NonNull SugarAcidityCoordinatesResponse toResponse(
-      @NonNull SugarAcidityCoordinates coordinates
-  ) {
-    requireNonNull(coordinates, "sugar-acidity coordinates cannot be null");
-    return new SugarAcidityCoordinatesResponse(
-        new DecimalQuantityResponse(coordinates.sugar(), CanonicalUnitLabels.SUGAR),
-        new DecimalQuantityResponse(coordinates.acidity(), CanonicalUnitLabels.TITRATABLE_ACIDITY)
-    );
-  }
-
-  private static @Nullable DecimalQuantityResponse quantity(
-      @Nullable BigDecimal value,
-      @NonNull String unit
-  ) {
-    return value == null ? null : new DecimalQuantityResponse(value, unit);
   }
 
   private static @NonNull BigDecimal weightOrDefault(@Nullable BigDecimal value) {

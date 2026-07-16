@@ -1,8 +1,9 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstockworkspace.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in.FeedstockPlanningReadinessFactor;
-import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in.FeedstockCurrentProfileSignalSeverity;
+import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockPlanningReadinessCheckCode;
+import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockPlanningReadinessFactor;
+import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentProfileSignalSeverity;
 import org.jspecify.annotations.NonNull;
 
 
@@ -21,8 +22,12 @@ public record FeedstockWorkspacePlanningReadinessCheckResponse(
         requiredMode = Schema.RequiredMode.REQUIRED
     )
     @NonNull FeedstockCurrentProfileSignalSeverity severity,
-    @Schema(description = "Machine-readable check code.", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NonNull String code,
+    @Schema(
+        description = "Stable machine-readable check code.",
+        implementation = FeedstockPlanningReadinessCheckCode.class,
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
+    @NonNull FeedstockPlanningReadinessCheckCode code,
     @Schema(description = "Human-readable check message.", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull String message
 ) {

@@ -1,5 +1,6 @@
 package org.craft.mcs.cap.core.feedstock.application.detail.port.in;
 
+import org.craft.mcs.cap.core.feedstock.application.detail.model.FeedstockBatchDetailView;
 import org.jspecify.annotations.NonNull;
 
 

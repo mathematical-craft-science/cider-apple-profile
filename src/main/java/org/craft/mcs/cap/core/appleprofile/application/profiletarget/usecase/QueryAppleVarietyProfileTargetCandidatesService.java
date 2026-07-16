@@ -11,7 +11,7 @@ import org.craft.mcs.cap.core.appleprofile.application.profiletarget.port.in.App
 import org.craft.mcs.cap.core.appleprofile.application.profiletarget.port.in.QueryAppleVarietyProfileTargetCandidatesUseCase;
 import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.out.AppleVarietySugarAcidityPointCandidateQuery;
 import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.out.AppleVarietySugarAcidityPointCandidateRepository;
-import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVariety;
+import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.out.AppleVarietySugarAcidityPointCandidateView;
 import org.craft.mcs.cap.core.profileanalysis.composition.contribution.domain.CompositionContributionRoleAssessmentRequest;
 import org.craft.mcs.cap.core.profileanalysis.composition.contribution.domain.CompositionContributionRoleAssessor;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.port.in.ProfileTargetDistanceCandidate;
@@ -23,7 +23,7 @@ import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.Sug
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.SugarAcidityZoneAssessment;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
 import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityCriteria;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.query.SugarAcidityZoneCriteria;
+import org.craft.mcs.cap.core.profileanalysis.sugaracidity.application.model.SugarAcidityZoneCriteria;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
@@ -112,7 +112,7 @@ public final class QueryAppleVarietyProfileTargetCandidatesService
   }
 
   private @NonNull Optional<@NonNull ScorableAppleVarietyCandidate> toCandidateIfScorable(
-      @NonNull AppleVariety variety,
+      @NonNull AppleVarietySugarAcidityPointCandidateView variety,
       @NonNull AppleVarietyProfileTargetCandidateQuery query
   ) {
     requireNonNull(variety, APPLE_VARIETY_REQUIRED);
@@ -159,7 +159,7 @@ public final class QueryAppleVarietyProfileTargetCandidatesService
   }
 
   private static @NonNull ProfileTargetDistanceCandidateReference referenceId(
-      @NonNull AppleVariety variety
+      @NonNull AppleVarietySugarAcidityPointCandidateView variety
   ) {
     requireNonNull(variety, APPLE_VARIETY_REQUIRED);
     return new ProfileTargetDistanceCandidateReference(
@@ -169,7 +169,7 @@ public final class QueryAppleVarietyProfileTargetCandidatesService
   }
 
   private record ScorableAppleVarietyCandidate(
-      @NonNull AppleVariety variety,
+      @NonNull AppleVarietySugarAcidityPointCandidateView variety,
       @NonNull ChemicalProfileAxes axes,
       @NonNull ProfileTargetDistanceCandidate candidate
   ) {

@@ -2,7 +2,6 @@ package org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain;
 
 import java.util.List;
 import org.jspecify.annotations.NonNull;
-
 import static java.util.Objects.requireNonNull;
 
 
@@ -20,8 +19,13 @@ public record ChemicalProfileCompositionOptimizationResult(
 
   public ChemicalProfileCompositionOptimizationResult {
     if (evaluatedCandidates < 0) {
-      throw new InvalidChemicalProfileCompositionOptimizationException("evaluated composition candidate count cannot be negative");
+      throw new InvalidChemicalProfileCompositionOptimizationException(
+          "evaluated composition candidate count cannot be negative"
+      );
     }
-    candidates = List.copyOf(requireNonNull(candidates, "chemical profile composition optimization candidates cannot be null"));
+    candidates = List.copyOf(requireNonNull(
+        candidates,
+        "chemical profile composition optimization candidates cannot be null"
+    ));
   }
 }

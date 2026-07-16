@@ -4,6 +4,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.UUID;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
+import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementView;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurement;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurementId;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.value.FeedstockMeasurementName;
@@ -17,6 +18,8 @@ import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
+import org.craft.mcs.cap.shared.application.persistence.AggregateRevision;
+import org.craft.mcs.cap.shared.application.persistence.VersionedAggregate;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.data.jdbc.core.mapping.AggregateReference;
@@ -201,6 +204,41 @@ public final class FeedstockMeasurementJdbcMapper {
   public static @NonNull FeedstockMeasurement toDomain(@NonNull FeedstockMeasurementJdbcEntity entity) {
     requireNonNull(entity, "feedstock measurement row cannot be null");
 
+    return FeedstockMeasurement.restore(
+        measurementId(entity),
+        batchId(entity),
+        measurementName(entity),
+        toChemicalProfile(entity),
+        requireNonNull(entity.measuredAt, "measured at cannot be null"),
+        entity.note
+    );
+  }
+
+  public static @NonNull VersionedAggregate<FeedstockMeasurement> toVersionedAggregate(
+      @NonNull FeedstockMeasurementJdbcEntity entity
+  ) {
+    requireNonNull(entity, "feedstock measurement row cannot be null");
+    return new VersionedAggregate<>(toDomain(entity), AggregateRevision.of(entity.version));
+  }
+
+  public static long revision(@NonNull FeedstockMeasurementJdbcEntity entity) {
+    return requireNonNull(entity, "feedstock measurement row cannot be null").version;
+  }
+
+  public static @NonNull FeedstockMeasurementView toView(@NonNull FeedstockMeasurementJdbcEntity entity) {
+    requireNonNull(entity, "feedstock measurement row cannot be null");
+    return new FeedstockMeasurementView(
+        measurementId(entity),
+        batchId(entity),
+        measurementName(entity),
+        toChemicalProfile(entity),
+        requireNonNull(entity.measuredAt, "measured at cannot be null"),
+        entity.version,
+        entity.note
+    );
+  }
+
+  private static @NonNull ChemicalProfile toChemicalProfile(@NonNull FeedstockMeasurementJdbcEntity entity) {
     final var builder = ChemicalProfile.builder();
 
     toCharacteristic(
@@ -234,13 +272,29 @@ public final class FeedstockMeasurementJdbcMapper {
 
     builder.confidence(entity.chemicalProfileConfidence);
 
-    return FeedstockMeasurement.create(
-        FeedstockMeasurementId.of(requireNonNull(entity.measurementId, "feedstock measurement id cannot be null")),
-        FeedstockBatchId.of(requireNonNull(entity.batch, "feedstock batch reference cannot be null").getId()),
-        FeedstockMeasurementName.of(requireNonNull(entity.name, "feedstock measurement name cannot be null")),
-        builder.build(),
-        requireNonNull(entity.measuredAt, "measured at cannot be null")
-    ).changeNote(entity.note);
+    return builder.build();
+  }
+
+  private static @NonNull FeedstockMeasurementId measurementId(
+      @NonNull FeedstockMeasurementJdbcEntity entity
+  ) {
+    return FeedstockMeasurementId.of(
+        requireNonNull(entity.measurementId, "feedstock measurement id cannot be null")
+    );
+  }
+
+  private static @NonNull FeedstockBatchId batchId(@NonNull FeedstockMeasurementJdbcEntity entity) {
+    return FeedstockBatchId.of(
+        requireNonNull(entity.batch, "feedstock batch reference cannot be null").getId()
+    );
+  }
+
+  private static @NonNull FeedstockMeasurementName measurementName(
+      @NonNull FeedstockMeasurementJdbcEntity entity
+  ) {
+    return FeedstockMeasurementName.of(
+        requireNonNull(entity.name, "feedstock measurement name cannot be null")
+    );
   }
 
   @Nullable

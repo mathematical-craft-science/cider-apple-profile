@@ -4,8 +4,8 @@ import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.Bui
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionCalculatorSelector;
 import org.craft.mcs.cap.core.profileanalysis.composition.contribution.domain.CompositionContributionRoleAssessor;
 import org.craft.mcs.cap.core.profileanalysis.composition.contribution.domain.TargetAwareCompositionContributionRoleAssessor;
-import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.BuiltInCompositionOptimizationStrategySelector;
-import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.CompositionOptimizationStrategySelector;
+import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.strategy.BuiltInCompositionOptimizationStrategySelector;
+import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.strategy.CompositionOptimizationStrategySelector;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

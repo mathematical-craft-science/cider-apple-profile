@@ -5,6 +5,7 @@ import org.jmolecules.ddd.annotation.ValueObject;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
+import static org.craft.mcs.cap.shared.kernel.identity.UuidV7Generator.newUuid;
 
 @ValueObject
 public record AppleVarietyId(@NonNull UUID value) {
@@ -15,7 +16,7 @@ public record AppleVarietyId(@NonNull UUID value) {
 
   @NonNull
   public static AppleVarietyId newId() {
-    return new AppleVarietyId(UUID.randomUUID());
+    return new AppleVarietyId(newUuid());
   }
 
   @NonNull

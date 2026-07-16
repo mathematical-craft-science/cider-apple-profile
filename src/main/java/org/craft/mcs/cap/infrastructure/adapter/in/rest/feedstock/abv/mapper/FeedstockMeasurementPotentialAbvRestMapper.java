@@ -20,7 +20,7 @@ public final class FeedstockMeasurementPotentialAbvRestMapper {
 
     return new FeedstockMeasurementPotentialAbvResponse(
         prediction.measurementId().value(),
-        prediction.ciderMakerId().value(),
+        prediction.workspaceId().value(),
         prediction.batchId().value(),
         prediction.measurementName().value(),
         prediction.originalGravityValueKind(),

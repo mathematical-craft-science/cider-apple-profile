@@ -9,8 +9,8 @@ import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in.FeedstockCurrentProfileDataQualityView;
-import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in.FeedstockPlanningReadinessView;
+import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentProfileDataQualityView;
+import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockPlanningReadinessView;
 import org.craft.mcs.cap.core.profileanalysis.abv.domain.FixedFinalGravityPredictionStrategy;
 import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPredictor;
 import org.craft.mcs.cap.core.profileanalysis.abv.domain.StandardGravityDropAbvPredictionStrategy;
@@ -19,26 +19,26 @@ import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.Fermentat
 import org.craft.mcs.cap.core.profileanalysis.ph.domain.PhPlanningGuidancePolicy;
 import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityAssessor;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.port.in.ProfileTargetScoringPurpose;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileAxisNormalizerCode;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.normalization.ProfileAxisNormalizerCode;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetObjectiveWeights;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileProjector;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.BuiltInSugarAcidityZoneProfiles;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.RectangleSugarAcidityZoneAssessor;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.SugarAcidityZone;
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.FeedstockBatchProfileTargetCandidates;
-import org.craft.mcs.cap.core.feedstock.application.batch.port.in.FeedstockBatchSummary;
+import org.craft.mcs.cap.core.feedstock.application.batch.model.FeedstockBatchSummary;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.ListFeedstockBatchesUseCase;
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.PredefinedFeedstockProfileTargetSelection;
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.QueryFeedstockBatchProfileTargetCandidatesUseCase;
 import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.FeedstockPlanningBatchViewQuery;
-import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in.FeedstockCurrentProfileDataQualityStatus;
-import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in.FeedstockCurrentMeasurementFreshnessStatus;
-import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in.FeedstockPlanningReadinessStatus;
+import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentProfileDataQualityStatus;
+import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentMeasurementFreshnessStatus;
+import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockPlanningReadinessStatus;
 import org.craft.mcs.cap.core.feedstock.application.measurement.query.FeedstockBatchCurrentMeasurementQueryService;
 import org.craft.mcs.cap.core.feedstock.application.measurement.port.out.FeedstockMeasurementQueryRepository;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.usecase.FeedstockCurrentProfileAssessmentService;
 import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.usecase.FeedstockPlanningContributionRoleExplainer;
-import org.craft.mcs.cap.core.feedstock.application.currentprofile.usecase.FeedstockCurrentMeasurementFreshnessPolicy;
+import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentProfileSettings;
 import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.usecase.QueryFeedstockPlanningBatchesService;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockBatchName;
@@ -48,7 +48,7 @@ import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockVessel
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurement;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurementId;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.value.FeedstockMeasurementName;
-import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
@@ -61,6 +61,8 @@ import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementRecordedAt;
+import static org.craft.mcs.cap.shared.testing.FeedstockMeasurementViews.view;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -69,7 +71,7 @@ import static org.mockito.Mockito.when;
 
 class QueryFeedstockPlanningBatchesServiceTest {
 
-  private static final CiderMakerId CIDER_MAKER_ID = CiderMakerId.of(
+  private static final WorkspaceId WORKSPACE_ID = WorkspaceId.of(
       UUID.fromString("7c18963c-26d7-45c0-af2c-07998f4f6d6b")
   );
   private static final FeedstockSeason SEASON = FeedstockSeason.of(
@@ -88,7 +90,7 @@ class QueryFeedstockPlanningBatchesServiceTest {
     final var targetCandidates = mock(QueryFeedstockBatchProfileTargetCandidatesUseCase.class);
     final var service = service(listBatches, measurementRepository, targetCandidates);
     when(listBatches.list(any())).thenReturn(List.of(batch));
-    when(measurementRepository.findLatestByBatchIds(Set.of(batchId))).thenReturn(List.of(measurement));
+    when(measurementRepository.findLatestByBatchIds(Set.of(batchId))).thenReturn(List.of(view(measurement)));
 
     final var view = service.query(queryWithoutTarget());
 
@@ -129,7 +131,8 @@ class QueryFeedstockPlanningBatchesServiceTest {
     final var targetCandidates = mock(QueryFeedstockBatchProfileTargetCandidatesUseCase.class);
     final var service = service(listBatches, measurementRepository, targetCandidates);
     when(listBatches.list(any())).thenReturn(List.of(batch(batchId)));
-    when(measurementRepository.findLatestByBatchIds(Set.of(batchId))).thenReturn(List.of(measurement(batchId)));
+    when(measurementRepository.findLatestByBatchIds(Set.of(batchId)))
+        .thenReturn(List.of(view(measurement(batchId))));
     when(targetCandidates.query(any())).thenReturn(new FeedstockBatchProfileTargetCandidates(
         ProfileTargetScoringPurpose.BLENDING_PLANNING,
         ProfileAxisNormalizerCode.EFFECTIVE_RANGE,
@@ -144,7 +147,7 @@ class QueryFeedstockPlanningBatchesServiceTest {
   }
 
   @Test
-  void appliesConfiguredMeasurementFreshnessPolicy() {
+  void appliesWorkspaceMeasurementFreshnessSetting() {
     final var batchId = FeedstockBatchId.newId();
     final var batch = batch(batchId);
     final var measurement = measurement(batchId);
@@ -155,10 +158,10 @@ class QueryFeedstockPlanningBatchesServiceTest {
         listBatches,
         measurementRepository,
         targetCandidates,
-        new FeedstockCurrentMeasurementFreshnessPolicy(Duration.ofDays(3))
+        Duration.ofDays(3)
     );
     when(listBatches.list(any())).thenReturn(List.of(batch));
-    when(measurementRepository.findLatestByBatchIds(Set.of(batchId))).thenReturn(List.of(measurement));
+    when(measurementRepository.findLatestByBatchIds(Set.of(batchId))).thenReturn(List.of(view(measurement)));
 
     final var view = service.query(queryWithoutTarget());
 
@@ -184,7 +187,7 @@ class QueryFeedstockPlanningBatchesServiceTest {
         listBatches,
         measurementRepository,
         targetCandidates,
-        new FeedstockCurrentMeasurementFreshnessPolicy(Duration.ofDays(14))
+        Duration.ofDays(14)
     );
   }
 
@@ -192,7 +195,7 @@ class QueryFeedstockPlanningBatchesServiceTest {
       ListFeedstockBatchesUseCase listBatches,
       FeedstockMeasurementQueryRepository measurementRepository,
       QueryFeedstockBatchProfileTargetCandidatesUseCase targetCandidates,
-      FeedstockCurrentMeasurementFreshnessPolicy measurementFreshnessPolicy
+      Duration measurementStaleAfter
   ) {
     return new QueryFeedstockPlanningBatchesService(
         listBatches,
@@ -206,9 +209,9 @@ class QueryFeedstockPlanningBatchesServiceTest {
         new FermentationStartReadinessAssessor(),
         new FeedstockCurrentProfileAssessmentService(
             CLOCK,
-            measurementFreshnessPolicy,
             PhPlanningGuidancePolicy.curatedCiderV1()
         ),
+        _ -> new FeedstockCurrentProfileSettings(measurementStaleAfter),
         new FeedstockPlanningContributionRoleExplainer()
     );
   }
@@ -226,7 +229,7 @@ class QueryFeedstockPlanningBatchesServiceTest {
 
   private static FeedstockPlanningBatchViewQuery queryWithoutTarget() {
     return new FeedstockPlanningBatchViewQuery(
-        CIDER_MAKER_ID,
+        WORKSPACE_ID,
         SEASON,
         null,
         null,
@@ -238,7 +241,7 @@ class QueryFeedstockPlanningBatchesServiceTest {
 
   private static FeedstockPlanningBatchViewQuery queryWithTarget() {
     return new FeedstockPlanningBatchViewQuery(
-        CIDER_MAKER_ID,
+        WORKSPACE_ID,
         SEASON,
         new PredefinedFeedstockProfileTargetSelection(SugarAcidityZone.PERFECT_APPLES),
         null,
@@ -251,7 +254,7 @@ class QueryFeedstockPlanningBatchesServiceTest {
   private static FeedstockBatchSummary batch(FeedstockBatchId batchId) {
     return new FeedstockBatchSummary(
         batchId,
-        CIDER_MAKER_ID,
+        WORKSPACE_ID,
         FeedstockBatchName.of("Late season juice"),
         FeedstockVessel.of("Tank A-01"),
         FeedstockType.JUICE,
@@ -272,7 +275,8 @@ class QueryFeedstockPlanningBatchesServiceTest {
             .titratableAcidity(ExactMeasurement.of(TitratableAcidityValue.of("5.0")))
             .yeastAssimilableNitrogen(ExactMeasurement.of(YeastAssimilableNitrogenValue.of("120")))
             .build(),
-        Instant.parse("2026-05-01T10:00:00Z")
+        Instant.parse("2026-05-01T10:00:00Z"),
+        feedstockMeasurementRecordedAt()
     );
   }
 }

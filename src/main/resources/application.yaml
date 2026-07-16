@@ -8,7 +8,6 @@ spring:
   liquibase:
     change-log: db/changelog/master-changelog.xml
     drop-first: off
-    clear-checksums: true
   datasource:
     url: jdbc:postgresql://localhost:5832/cap_db
     username: username
@@ -36,13 +35,24 @@ sentry:
   enabled: false
 
 cap:
-  feedstock:
-    current-profile:
-      measurement-freshness:
-        stale-after: 14d
+  account:
+    invitation-time-to-live: 7d
+    default-workspace:
+      name: My cidery
+      type: CIDERY
+      settings:
+        measurement-stale-after: 14d
+        default-acidity-basis: MALIC_ACID
+  security:
+    clerk:
+      issuer: ${CLERK_ISSUER:https://proud-mastiff-42.clerk.accounts.dev}
+      jwk-set-uri: ${CLERK_JWKS_URI:https://proud-mastiff-42.clerk.accounts.dev/.well-known/jwks.json}
+    public-access:
+      openapi: false
+      debug: false
   profile-analysis:
     sugar-acidity:
-      assessor: rectangle # или ellipse
+      assessor: RECTANGLE # или ellipse
     readiness:
       ph:
         generic-yeast-tolerance-min: 2.8

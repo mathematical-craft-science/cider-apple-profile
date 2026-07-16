@@ -1,6 +1,7 @@
 package org.craft.mcs.cap.core.feedstock.application.analysis.abv.usecase;
 
 import lombok.RequiredArgsConstructor;
+import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
 import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchNotFoundException;
 import org.craft.mcs.cap.core.feedstock.application.measurement.query.FeedstockBatchCurrentMeasurementQueryService;
 import org.craft.mcs.cap.core.feedstock.application.analysis.abv.port.in.FeedstockBatchCurrentPotentialAbvPrediction;
@@ -34,6 +35,7 @@ public final class PredictFeedstockBatchCurrentPotentialAbvService
     implements PredictFeedstockBatchCurrentPotentialAbvUseCase {
 
   private final @NonNull FeedstockBatchRepository feedstockBatchRepository;
+  private final @NonNull FeedstockAccessControl feedstockAccessControl;
   private final @NonNull FeedstockBatchCurrentMeasurementQueryService currentMeasurementQueryService;
   private final @NonNull ChemicalProfileAxisExtractor axisExtractor;
   private final @NonNull ChemicalProfileCapabilityAssessor capabilityAssessor;
@@ -45,6 +47,7 @@ public final class PredictFeedstockBatchCurrentPotentialAbvService
 
     final var batch = feedstockBatchRepository.findById(batchId)
         .orElseThrow(() -> new FeedstockBatchNotFoundException(batchId));
+    feedstockAccessControl.requireReadAccess(batch.workspaceId());
     final var currentMeasurement = currentMeasurementQueryService.requireCurrentMeasurement(batchId);
     final var axes = axisExtractor.extract(currentMeasurement.chemicalProfile());
     final var capability = capabilityAssessor.assess(axes, ChemicalProfileCapability.ABV_PREDICTION);
@@ -53,12 +56,11 @@ public final class PredictFeedstockBatchCurrentPotentialAbvService
       throw new ChemicalProfileCapabilityNotMetException(capability);
     }
 
-    final var sugar = axes.valueOf(ChemicalAxis.SUGAR)
-        .orElseThrow(() -> new IllegalStateException("ABV-capable profile must have sugar axis"));
+    final var sugar = axes.requireValueOf(ChemicalAxis.SUGAR);
 
     return new FeedstockBatchCurrentPotentialAbvPrediction(
         currentMeasurement.batchId(),
-        batch.ciderMakerId(),
+        batch.workspaceId(),
         currentMeasurement.measurementId(),
         currentMeasurement.name(),
         sugar.valueKind(),

@@ -2,13 +2,13 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.composition.d
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.UUID;
+import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapability;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.port.in.ProfileTargetScoringPurpose;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.SugarAcidityZone;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.common.dto.FeedstockSeasonRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.ProfileTargetObjectiveWeightsRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.ProfileTargetRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.ProfileTargetTanninRangeRequest;
-import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapability;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -17,8 +17,13 @@ import static java.util.Objects.requireNonNull;
 
 @Schema(description = "Request to score current feedstock batches against a profile target.")
 public record ScoreFeedstockBatchProfileTargetRequest(
-    @Schema(description = "Cider maker identifier.", format = "uuid", example = "4d96759c-86ff-4d39-8b19-241bc60f82ff", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NonNull UUID ciderMakerId,
+    @Schema(
+        description = "Workspace identifier.",
+        format = "uuid",
+        example = "4d96759c-86ff-4d39-8b19-241bc60f82ff",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
+    @NonNull UUID workspaceId,
     @Schema(description = "Optional single feedstock batch filter.", format = "uuid", example = "b2a49b8a-3a19-4f8f-989d-9278f4e00d2f", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @Nullable UUID batchId,
     @Schema(description = "Optional season overlap filter.", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
@@ -42,7 +47,7 @@ public record ScoreFeedstockBatchProfileTargetRequest(
 ) {
 
   public ScoreFeedstockBatchProfileTargetRequest {
-    requireNonNull(ciderMakerId, "cider maker id cannot be null");
+    requireNonNull(workspaceId, "workspace id cannot be null");
     requireNonNull(purpose, "profile target scoring purpose cannot be null");
     requireNonNull(target, "feedstock batch profile target cannot be null");
   }

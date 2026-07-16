@@ -77,12 +77,12 @@ public final class FeedstockExceptionHandler {
     final var problem = create(
         FORBIDDEN,
         FEEDSTOCK_BATCH_OWNERSHIP_MISMATCH,
-        "Feedstock batch belongs to another cider maker",
-        "Feedstock batch cannot be modified by this cider maker."
+        "Feedstock batch belongs to another workspace",
+        "Feedstock batch cannot be modified by this workspace."
     );
     problem.setProperty(BATCH_ID_PROPERTY, exception.batchId().value().toString());
-    problem.setProperty("expectedCiderMakerId", exception.expectedCiderMakerId().value().toString());
-    problem.setProperty("actualCiderMakerId", exception.actualCiderMakerId().value().toString());
+    problem.setProperty("expectedWorkspaceId", exception.expectedWorkspaceId().value().toString());
+    problem.setProperty("actualWorkspaceId", exception.actualWorkspaceId().value().toString());
 
     return response(FORBIDDEN, problem);
   }

@@ -24,7 +24,11 @@ class FermentationStartReadinessAssessorTest {
         .returns(FermentationStartReadinessStatus.READY, FermentationStartReadinessAssessment::status);
     assertThat(assessment.checks())
         .extracting(FermentationStartReadinessCheck::code)
-        .containsExactly("SUGAR_PRESENT", "PH_ACCEPTABLE", "YAN_ACCEPTABLE");
+        .containsExactly(
+            FermentationStartReadinessCheckCode.SUGAR_PRESENT,
+            FermentationStartReadinessCheckCode.PH_ACCEPTABLE,
+            FermentationStartReadinessCheckCode.YAN_ACCEPTABLE
+        );
   }
 
   @Test
@@ -34,12 +38,11 @@ class FermentationStartReadinessAssessorTest {
     assertThat(assessment)
         .returns(FermentationStartReadinessStatus.NOT_READY, FermentationStartReadinessAssessment::status);
     assertThat(assessment.checks())
-        .anySatisfy(check -> {
-          assertThat(check.code()).isEqualTo("YAN_SEVERELY_LOW");
-          assertThat(check.severity()).isEqualTo(FermentationStartReadinessSeverity.BLOCKER);
-          assertThat(check.value()).isEqualByComparingTo("60");
-          assertThat(check.unit()).isEqualTo("mg N/L");
-        });
+        .anySatisfy(check -> assertThat(check)
+            .returns(FermentationStartReadinessCheckCode.YAN_SEVERELY_LOW, FermentationStartReadinessCheck::code)
+            .returns(FermentationStartReadinessSeverity.BLOCKER, FermentationStartReadinessCheck::severity)
+            .returns("mg N/L", FermentationStartReadinessCheck::unit)
+            .satisfies(value -> assertThat(value.value()).isEqualByComparingTo("60")));
   }
 
   @Test
@@ -52,10 +55,9 @@ class FermentationStartReadinessAssessorTest {
     assertThat(assessment)
         .returns(FermentationStartReadinessStatus.NEEDS_ATTENTION, FermentationStartReadinessAssessment::status);
     assertThat(assessment.checks())
-        .anySatisfy(check -> {
-          assertThat(check.code()).isEqualTo("YAN_MISSING");
-          assertThat(check.severity()).isEqualTo(FermentationStartReadinessSeverity.WARNING);
-        });
+        .anySatisfy(check -> assertThat(check)
+            .returns(FermentationStartReadinessCheckCode.YAN_MISSING, FermentationStartReadinessCheck::code)
+            .returns(FermentationStartReadinessSeverity.WARNING, FermentationStartReadinessCheck::severity));
   }
 
   @Test
@@ -68,7 +70,8 @@ class FermentationStartReadinessAssessorTest {
     assertThat(assessment)
         .returns(FermentationStartReadinessStatus.NOT_READY, FermentationStartReadinessAssessment::status);
     assertThat(assessment.checks())
-        .anySatisfy(check -> assertThat(check.code()).isEqualTo("SUGAR_MISSING"));
+        .anySatisfy(check -> assertThat(check.code())
+            .isEqualTo(FermentationStartReadinessCheckCode.SUGAR_MISSING));
   }
 
   @Test
@@ -79,7 +82,10 @@ class FermentationStartReadinessAssessorTest {
         .returns(FermentationStartReadinessStatus.NEEDS_ATTENTION, FermentationStartReadinessAssessment::status);
     assertThat(assessment.checks())
         .anySatisfy(check -> assertThat(check)
-            .returns("PH_VERY_HIGH_MICROBIAL_RISK", FermentationStartReadinessCheck::code)
+            .returns(
+                FermentationStartReadinessCheckCode.PH_VERY_HIGH_MICROBIAL_RISK,
+                FermentationStartReadinessCheck::code
+            )
             .returns(FermentationStartReadinessSeverity.WARNING, FermentationStartReadinessCheck::severity)
             .returns("pH", FermentationStartReadinessCheck::unit)
             .returns(null, FermentationStartReadinessCheck::managedByAction));
@@ -93,7 +99,10 @@ class FermentationStartReadinessAssessorTest {
         .returns(FermentationStartReadinessStatus.NOT_READY, FermentationStartReadinessAssessment::status);
     assertThat(assessment.checks())
         .anySatisfy(check -> assertThat(check)
-            .returns("PH_BELOW_GENERIC_YEAST_TOLERANCE", FermentationStartReadinessCheck::code)
+            .returns(
+                FermentationStartReadinessCheckCode.PH_BELOW_GENERIC_YEAST_TOLERANCE,
+                FermentationStartReadinessCheck::code
+            )
             .returns(FermentationStartReadinessSeverity.BLOCKER, FermentationStartReadinessCheck::severity)
             .returns("pH", FermentationStartReadinessCheck::unit));
   }

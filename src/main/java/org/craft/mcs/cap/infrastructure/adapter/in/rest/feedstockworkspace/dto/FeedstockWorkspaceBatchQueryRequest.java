@@ -15,8 +15,8 @@ import static java.util.Objects.requireNonNull;
 
 @Schema(description = "Feedstock Workspace batch read-model query.")
 public record FeedstockWorkspaceBatchQueryRequest(
-    @Schema(description = "Cider maker identifier.", format = "uuid", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NonNull UUID ciderMakerId,
+    @Schema(description = "Workspace identifier.", format = "uuid", requiredMode = Schema.RequiredMode.REQUIRED)
+    @NonNull UUID workspaceId,
     @Schema(
         description = "Optional season overlap filter.",
         nullable = true,
@@ -58,6 +58,6 @@ public record FeedstockWorkspaceBatchQueryRequest(
 ) {
 
   public FeedstockWorkspaceBatchQueryRequest {
-    requireNonNull(ciderMakerId, "cider maker id cannot be null");
+    requireNonNull(workspaceId, "workspace id cannot be null");
   }
 }

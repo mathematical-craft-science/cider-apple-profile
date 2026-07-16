@@ -1,12 +1,18 @@
 package org.craft.mcs.cap.core.batchtraceability.application.port.out;
 
 import java.util.List;
+import java.util.Optional;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStep;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceSubject;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;
 
 
 public interface BatchTraceabilityQueryStore {
+
+  /** Resolves the workspace owning trace facts for a globally identified material subject. */
+  @NonNull
+  Optional<@NonNull WorkspaceId> findWorkspaceIdBySubject(@NonNull BatchTraceSubject subject);
 
   /**
    * Finds immutable trace steps where the requested subject participates as a material input.
@@ -16,7 +22,10 @@ public interface BatchTraceabilityQueryStore {
    * instead of a pre-mutated graph.
    */
   @NonNull
-  List<@NonNull BatchTraceStep> findByInputSubject(@NonNull BatchTraceSubject subject);
+  List<@NonNull BatchTraceStep> findByInputSubject(
+      @NonNull WorkspaceId workspaceId,
+      @NonNull BatchTraceSubject subject
+  );
 
   /**
    * Finds immutable trace steps where the requested subject participates as a material output.
@@ -25,5 +34,8 @@ public interface BatchTraceabilityQueryStore {
    * the output, while source feedstock batches or composition results are inputs.
    */
   @NonNull
-  List<@NonNull BatchTraceStep> findByOutputSubject(@NonNull BatchTraceSubject subject);
+  List<@NonNull BatchTraceStep> findByOutputSubject(
+      @NonNull WorkspaceId workspaceId,
+      @NonNull BatchTraceSubject subject
+  );
 }

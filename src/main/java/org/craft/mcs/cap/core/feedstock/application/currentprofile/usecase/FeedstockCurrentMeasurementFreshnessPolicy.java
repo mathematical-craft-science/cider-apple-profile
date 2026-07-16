@@ -2,6 +2,7 @@ package org.craft.mcs.cap.core.feedstock.application.currentprofile.usecase;
 
 import java.time.Duration;
 import java.time.Instant;
+import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
@@ -20,7 +21,7 @@ public record FeedstockCurrentMeasurementFreshnessPolicy(
   public FeedstockCurrentMeasurementFreshnessPolicy {
     requireNonNull(staleAfter, "feedstock current measurement stale duration cannot be null");
     if (staleAfter.isZero() || staleAfter.isNegative()) {
-      throw new IllegalArgumentException("feedstock current measurement stale duration must be positive");
+      throw new DomainRuleViolationException("feedstock current measurement stale duration must be positive");
     }
   }
 

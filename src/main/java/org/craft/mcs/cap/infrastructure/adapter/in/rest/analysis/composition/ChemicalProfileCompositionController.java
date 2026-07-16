@@ -3,8 +3,7 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.application.port.in.CalculateChemicalProfileCompositionUseCase;
 import org.craft.mcs.cap.core.profileanalysis.composition.optimization.application.port.in.OptimizeChemicalProfileCompositionUseCase;
-import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.DiscretizedCompositionOptimizationSettings;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.SugarAcidityTargetResolver;
+import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.strategy.DiscretizedCompositionOptimizationSettings;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.calculation.dto.CalculateChemicalProfileCompositionRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.calculation.dto.ChemicalProfileCompositionResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.calculation.mapper.ChemicalProfileCompositionCalculationRestMapper;
@@ -27,7 +26,7 @@ public final class ChemicalProfileCompositionController implements ChemicalProfi
 
   private final @NonNull CalculateChemicalProfileCompositionUseCase calculateChemicalProfileCompositionUseCase;
   private final @NonNull OptimizeChemicalProfileCompositionUseCase optimizeChemicalProfileCompositionUseCase;
-  private final @NonNull SugarAcidityTargetResolver targetResolver;
+  private final @NonNull ChemicalProfileCompositionRequestMapper requestMapper;
 
   @Override
   @PostMapping(
@@ -39,7 +38,7 @@ public final class ChemicalProfileCompositionController implements ChemicalProfi
       @RequestBody @NonNull CalculateChemicalProfileCompositionRequest request
   ) {
     final var result = calculateChemicalProfileCompositionUseCase.calculate(
-        ChemicalProfileCompositionCalculationRestMapper.toCommand(request, targetResolver)
+        requestMapper.toCalculationCommand(request)
     );
 
     return ResponseEntity.ok(
@@ -57,7 +56,7 @@ public final class ChemicalProfileCompositionController implements ChemicalProfi
       @RequestBody @NonNull OptimizeChemicalProfileCompositionRequest request
   ) {
     final var result = optimizeChemicalProfileCompositionUseCase.optimize(
-        ChemicalProfileCompositionOptimizationRestMapper.toCommand(request, targetResolver)
+        requestMapper.toOptimizationCommand(request)
     );
 
     return ResponseEntity.ok(

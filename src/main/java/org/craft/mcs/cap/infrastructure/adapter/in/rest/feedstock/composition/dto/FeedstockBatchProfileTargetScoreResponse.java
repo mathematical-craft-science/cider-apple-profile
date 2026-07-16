@@ -11,8 +11,8 @@ import org.jspecify.annotations.NonNull;
 public record FeedstockBatchProfileTargetScoreResponse(
     @Schema(description = "Feedstock batch identifier.", format = "uuid", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull UUID batchId,
-    @Schema(description = "Cider maker identifier.", format = "uuid", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NonNull UUID ciderMakerId,
+    @Schema(description = "Workspace identifier.", format = "uuid", requiredMode = Schema.RequiredMode.REQUIRED)
+    @NonNull UUID workspaceId,
     @Schema(description = "Current measurement identifier.", format = "uuid", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull UUID currentMeasurementId,
     @Schema(description = "Current measurement name.", example = "Pressing measurement #1", requiredMode = Schema.RequiredMode.REQUIRED)

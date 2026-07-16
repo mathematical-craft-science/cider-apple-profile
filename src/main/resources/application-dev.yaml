@@ -1,0 +1,5 @@
+cap:
+  security:
+    public-access:
+      openapi: true
+      debug: true

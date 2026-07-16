@@ -6,11 +6,14 @@ import org.craft.mcs.cap.core.feedstock.application.measurement.port.out.Feedsto
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurement;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurementId;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.feedstock.measurement.entity.FeedstockMeasurementJdbcMapper;
+import org.craft.mcs.cap.shared.application.ConcurrentResourceModificationException;
+import org.craft.mcs.cap.shared.application.persistence.VersionedAggregate;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Repository;
 
 import static java.util.Objects.requireNonNull;
 import static org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.support.JdbcPersistenceExceptionTranslator.translateOptimisticLocking;
+import static org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.support.JdbcAggregateRevisionGuard.requireExpectedRevision;
 
 
 @Repository
@@ -21,28 +24,56 @@ class JdbcFeedstockMeasurementRepository
   private final @NonNull SpringDataFeedstockMeasurementJdbcRepository repository;
 
   @Override
-  public @NonNull FeedstockMeasurement save(@NonNull FeedstockMeasurement feedstockMeasurement) {
+  public @NonNull FeedstockMeasurement create(@NonNull FeedstockMeasurement feedstockMeasurement) {
     requireNonNull(feedstockMeasurement, "feedstock measurement cannot be null");
 
-    final var entity = repository.findById(feedstockMeasurement.measurementId().value())
-        .map(existing -> FeedstockMeasurementJdbcMapper.updateFromDomain(feedstockMeasurement, existing))
-        .orElseGet(() -> FeedstockMeasurementJdbcMapper.fromDomain(feedstockMeasurement));
-    final var saved = translateOptimisticLocking("feedstock measurement", () -> repository.save(entity));
+    final var saved = translateOptimisticLocking(
+        "feedstock measurement",
+        () -> repository.save(FeedstockMeasurementJdbcMapper.fromDomain(feedstockMeasurement))
+    );
 
     return FeedstockMeasurementJdbcMapper.toDomain(saved);
   }
 
   @Override
-  public @NonNull Optional<@NonNull FeedstockMeasurement> findById(@NonNull FeedstockMeasurementId measurementId) {
-    requireNonNull(measurementId, "feedstock measurement id cannot be null");
-
-    return repository.findById(measurementId.value())
-        .map(FeedstockMeasurementJdbcMapper::toDomain);
+  public @NonNull VersionedAggregate<FeedstockMeasurement> update(
+      @NonNull VersionedAggregate<FeedstockMeasurement> measurement
+  ) {
+    requireNonNull(measurement, "versioned feedstock measurement cannot be null");
+    final var aggregate = measurement.aggregate();
+    final var entity = repository.findById(aggregate.measurementId().value())
+        .orElseThrow(() -> new ConcurrentResourceModificationException("feedstock measurement", null));
+    requireExpectedRevision(
+        "feedstock measurement",
+        measurement.revision(),
+        FeedstockMeasurementJdbcMapper.revision(entity)
+    );
+    final var saved = translateOptimisticLocking(
+        "feedstock measurement",
+        () -> repository.save(FeedstockMeasurementJdbcMapper.updateFromDomain(aggregate, entity))
+    );
+    return FeedstockMeasurementJdbcMapper.toVersionedAggregate(saved);
   }
 
   @Override
-  public void deleteById(@NonNull FeedstockMeasurementId measurementId) {
+  public @NonNull Optional<@NonNull VersionedAggregate<FeedstockMeasurement>> findVersionedById(
+      @NonNull FeedstockMeasurementId measurementId
+  ) {
     requireNonNull(measurementId, "feedstock measurement id cannot be null");
-    translateOptimisticLocking("feedstock measurement", () -> repository.deleteById(measurementId.value()));
+
+    return repository.findById(measurementId.value())
+        .map(FeedstockMeasurementJdbcMapper::toVersionedAggregate);
+  }
+
+  @Override
+  public void delete(@NonNull VersionedAggregate<FeedstockMeasurement> measurement) {
+    requireNonNull(measurement, "versioned feedstock measurement cannot be null");
+    final var affectedRows = repository.deleteByIdAndVersion(
+        measurement.aggregate().measurementId().value(),
+        measurement.revision().value()
+    );
+    if (affectedRows != 1) {
+      throw new ConcurrentResourceModificationException("feedstock measurement", null);
+    }
   }
 }

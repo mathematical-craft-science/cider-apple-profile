@@ -1,7 +1,7 @@
 package org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.usecase;
 
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.port.in.ProfileTargetScoringPurpose;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileAxisNormalizerCode;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.normalization.ProfileAxisNormalizerCode;
 import org.jspecify.annotations.NonNull;
 
 

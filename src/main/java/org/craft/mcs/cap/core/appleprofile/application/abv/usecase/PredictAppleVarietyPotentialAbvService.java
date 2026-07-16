@@ -50,7 +50,7 @@ public final class PredictAppleVarietyPotentialAbvService
     }
 
     final var sugar = axes.valueOf(ChemicalAxis.SUGAR)
-        .orElseThrow(() -> new IllegalStateException("ABV-capable profile must have sugar axis"));
+        .orElseThrow(() -> new ChemicalProfileCapabilityNotMetException(capability));
 
     return new AppleVarietyPotentialAbvPrediction(
         variety.varietyId(),

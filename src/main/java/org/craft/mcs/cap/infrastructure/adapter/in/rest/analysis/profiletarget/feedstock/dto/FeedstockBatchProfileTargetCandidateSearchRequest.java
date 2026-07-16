@@ -4,13 +4,13 @@ import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 import java.util.UUID;
+import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapability;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.port.in.ProfileTargetScoringPurpose;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.SugarAcidityZone;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.common.dto.FeedstockSeasonRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.ProfileTargetObjectiveWeightsRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.ProfileTargetRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.ProfileTargetTanninRangeRequest;
-import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapability;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -19,8 +19,8 @@ import static java.util.Objects.requireNonNull;
 
 @Schema(description = "Search request for target-aware feedstock batch candidates.")
 public record FeedstockBatchProfileTargetCandidateSearchRequest(
-    @Schema(description = "Cider maker identifier.", format = "uuid", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NonNull UUID ciderMakerId,
+    @Schema(description = "Workspace identifier.", format = "uuid", requiredMode = Schema.RequiredMode.REQUIRED)
+    @NonNull UUID workspaceId,
     @ArraySchema(
         arraySchema = @Schema(description = "Optional feedstock batch identifier filter.", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED),
         schema = @Schema(format = "uuid")
@@ -47,7 +47,7 @@ public record FeedstockBatchProfileTargetCandidateSearchRequest(
 ) {
 
   public FeedstockBatchProfileTargetCandidateSearchRequest {
-    requireNonNull(ciderMakerId, "cider maker id cannot be null");
+    requireNonNull(workspaceId, "workspace id cannot be null");
     requireNonNull(purpose, "profile target scoring purpose cannot be null");
     requireNonNull(target, "feedstock batch profile target cannot be null");
   }

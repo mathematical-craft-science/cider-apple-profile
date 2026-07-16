@@ -3,9 +3,10 @@ package org.craft.mcs.cap.feedstock.application.planning.batchoverview.usecase;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
-import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.FeedstockPlanningRoleEvidenceDirection;
-import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.FeedstockPlanningRoleEvidenceEffect;
-import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.FeedstockPlanningRoleEvidenceSeverity;
+import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.model.FeedstockPlanningRoleEvidenceDirection;
+import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.model.FeedstockPlanningRoleEvidenceEffect;
+import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.model.FeedstockPlanningRoleEvidenceFact;
+import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.model.FeedstockPlanningRoleEvidenceSeverity;
 import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.usecase.FeedstockPlanningContributionRoleExplainer;
 import org.craft.mcs.cap.core.profileanalysis.composition.contribution.domain.CompositionContributionEvidence;
 import org.craft.mcs.cap.core.profileanalysis.composition.contribution.domain.CompositionContributionRoleAssessment;
@@ -42,10 +43,12 @@ class FeedstockPlanningContributionRoleExplainerTest {
     assertThat(view.evidence())
         .singleElement()
         .satisfies(fact -> assertThat(fact)
-            .returns(ProfileEvaluationAxis.TANNIN, evidence -> evidence.axis())
-            .returns(FeedstockPlanningRoleEvidenceDirection.BELOW_TARGET_OR_BLEND, evidence -> evidence.direction())
-            .returns(FeedstockPlanningRoleEvidenceEffect.SOFTENS_TANNIN_HEAVY_BLEND, evidence -> evidence.effect())
-            .returns(FeedstockPlanningRoleEvidenceSeverity.SUPPORTING, evidence -> evidence.severity()));
+            .returns(ProfileEvaluationAxis.TANNIN, FeedstockPlanningRoleEvidenceFact::axis)
+            .returns(FeedstockPlanningRoleEvidenceDirection.BELOW_TARGET_OR_BLEND,
+                FeedstockPlanningRoleEvidenceFact::direction)
+            .returns(FeedstockPlanningRoleEvidenceEffect.SOFTENS_TANNIN_HEAVY_BLEND,
+                FeedstockPlanningRoleEvidenceFact::effect)
+            .returns(FeedstockPlanningRoleEvidenceSeverity.SUPPORTING, FeedstockPlanningRoleEvidenceFact::severity));
   }
 
   @Test

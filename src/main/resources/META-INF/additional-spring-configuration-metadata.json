@@ -1,0 +1,145 @@
+{
+  "properties": [
+    {
+      "name": "cap.account.default-workspace.name",
+      "description": "Human-readable name assigned to the first lazily provisioned CAP workspace."
+    },
+    {
+      "name": "cap.account.default-workspace.type",
+      "description": "Business type assigned to the first lazily provisioned CAP workspace."
+    },
+    {
+      "name": "cap.account.default-workspace.settings.measurement-stale-after",
+      "description": "Age after which a measurement is considered stale in a newly provisioned workspace."
+    },
+    {
+      "name": "cap.account.default-workspace.settings.default-acidity-basis",
+      "description": "Default reference acid basis used by a newly provisioned workspace."
+    },
+    {
+      "name": "cap.account.invitation-time-to-live",
+      "description": "Validity period assigned to a new or resent workspace invitation."
+    },
+    {
+      "name": "cap.security.clerk.issuer",
+      "description": "Expected issuer URI of Clerk access tokens."
+    },
+    {
+      "name": "cap.security.clerk.jwk-set-uri",
+      "description": "URI from which the resource server loads Clerk JSON Web Keys."
+    },
+    {
+      "name": "cap.security.public-access.openapi",
+      "description": "Whether OpenAPI and Swagger UI routes are accessible without authentication."
+    },
+    {
+      "name": "cap.security.public-access.debug",
+      "description": "Whether debug routes are public. Enable only in local or dev environments."
+    },
+    {
+      "name": "cap.profile-analysis.sugar-acidity.assessor",
+      "description": "Geometry used to classify profile points against built-in sugar-acidity zones."
+    },
+    {
+      "name": "cap.profile-analysis.readiness.ph.generic-yeast-tolerance-min",
+      "description": "Generic lower pH tolerance used when no yeast-specific tolerance is available."
+    },
+    {
+      "name": "cap.profile-analysis.readiness.ph.cider-guidance-min",
+      "description": "Lower bound of the curated cider pH guidance range."
+    },
+    {
+      "name": "cap.profile-analysis.readiness.ph.cider-guidance-max",
+      "description": "Upper bound of the curated cider pH guidance range."
+    },
+    {
+      "name": "cap.profile-analysis.readiness.ph.high-microbial-risk",
+      "description": "pH at or above which CAP reports elevated microbial risk."
+    },
+    {
+      "name": "cap.profile-analysis.readiness.ph.source-code",
+      "description": "Stable identifier of the curated pH business-rule source set."
+    },
+    {
+      "name": "cap.profile-analysis.readiness.ph.source-comment",
+      "description": "Human-readable provenance note for the configured pH business rules."
+    },
+    {
+      "name": "cap.profile-analysis.readiness.yan.severe-low",
+      "description": "YAN in mg N/L below which CAP reports a severe nitrogen deficiency."
+    },
+    {
+      "name": "cap.profile-analysis.readiness.yan.low",
+      "description": "YAN in mg N/L below which CAP reports a nitrogen deficiency."
+    },
+    {
+      "name": "cap.profile-analysis.readiness.yan.high",
+      "description": "YAN in mg N/L above which CAP reports an elevated nitrogen level."
+    },
+    {
+      "name": "cap.profile-analysis.readiness.yan.source-code",
+      "description": "Stable identifier of the curated YAN business-rule source set."
+    },
+    {
+      "name": "cap.profile-analysis.readiness.yan.source-comment",
+      "description": "Human-readable provenance note for the configured YAN business rules."
+    }
+  ],
+  "hints": [
+    {
+      "name": "cap.account.default-workspace.type",
+      "values": [
+        {
+          "value": "CIDERY",
+          "description": "A cidery or cidermaking production team."
+        },
+        {
+          "value": "LABORATORY",
+          "description": "A laboratory contributing or validating analytical measurements."
+        },
+        {
+          "value": "INSTITUTE",
+          "description": "A research or breeding institute."
+        },
+        {
+          "value": "CATALOG",
+          "description": "A catalog-curation organization."
+        },
+        {
+          "value": "CUSTOM",
+          "description": "A workspace whose business type does not match a predefined category."
+        }
+      ]
+    },
+    {
+      "name": "cap.account.default-workspace.settings.default-acidity-basis",
+      "values": [
+        {
+          "value": "MALIC_ACID",
+          "description": "Titratable acidity expressed as equivalent grams of malic acid per liter."
+        },
+        {
+          "value": "LACTIC_ACID",
+          "description": "Titratable acidity expressed as equivalent grams of lactic acid per liter."
+        },
+        {
+          "value": "CITRIC_ACID",
+          "description": "Titratable acidity expressed as equivalent grams of citric acid per liter."
+        }
+      ]
+    },
+    {
+      "name": "cap.profile-analysis.sugar-acidity.assessor",
+      "values": [
+        {
+          "value": "RECTANGLE",
+          "description": "Classify points by axis-aligned rectangular zone boundaries."
+        },
+        {
+          "value": "ELLIPSE",
+          "description": "Classify points by elliptical zone boundaries."
+        }
+      ]
+    }
+  ]
+}

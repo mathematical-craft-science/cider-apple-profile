@@ -3,18 +3,17 @@ package org.craft.mcs.cap.feedstock.application.analysis.sugaracidity.usecase;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.List;
+import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
 import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityAssessor;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileProjector;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.BuiltInSugarAcidityZoneProfiles;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.RectangleSugarAcidityZoneAssessor;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.SugarAcidityZone;
 import org.craft.mcs.cap.core.feedstock.application.measurement.query.FeedstockBatchCurrentMeasurementQueryService;
-import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockBatchCurrentSugarAcidityZonePointQuery;
-import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockBatchCurrentSugarAcidityZoneResult;
-import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockMeasurementPointFilters;
-import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchRepository;
+import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.*;
+import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.usecase.*;
+import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchSummaryQueryRepository;
 import org.craft.mcs.cap.core.feedstock.application.measurement.port.out.FeedstockMeasurementQueryRepository;
-import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.usecase.QueryFeedstockBatchCurrentSugarAcidityZonePointsService;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockBatchName;
@@ -24,7 +23,7 @@ import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockVessel
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurement;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurementId;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.value.FeedstockMeasurementName;
-import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
@@ -35,8 +34,11 @@ import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.craft.mcs.cap.shared.platform.query.CursorPageRequest;
 import org.junit.jupiter.api.Test;
 
-import static java.util.UUID.randomUUID;
+import static org.craft.mcs.cap.shared.kernel.identity.UuidV7Generator.newUuid;
+import static org.craft.mcs.cap.shared.testing.FeedstockMeasurementViews.view;
 import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementInstant;
+import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementRecordedAt;
+import static org.craft.mcs.cap.core.feedstock.application.batch.usecase.FeedstockBatchSummaryMapper.toSummary;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -48,18 +50,18 @@ class QueryFeedstockBatchCurrentSugarAcidityZonePointsServiceTest {
 
   @Test
   void queriesLatestMeasurementPerBatchForCurrentGraphPoints() {
-    final var batchRepository = mock(FeedstockBatchRepository.class);
+    final var batchRepository = mock(FeedstockBatchSummaryQueryRepository.class);
     final var repository = mock(FeedstockMeasurementQueryRepository.class);
     final var service = service(batchRepository, repository);
-    final var ciderMakerId = CiderMakerId.of(randomUUID());
-    final var batch = batch(ciderMakerId);
+    final var workspaceId = WorkspaceId.of(newUuid());
+    final var batch = batch(workspaceId);
     final var current = measurement("Current", batch.batchId());
 
-    when(batchRepository.findAllByCiderMakerId(ciderMakerId)).thenReturn(List.of(batch));
-    when(repository.findLatestSugarAcidityPointCandidates(any())).thenReturn(List.of(current));
+    when(batchRepository.findAllByWorkspaceId(workspaceId)).thenReturn(List.of(toSummary(batch)));
+    when(repository.findLatestSugarAcidityPointCandidates(any())).thenReturn(List.of(view(current)));
 
     final var result = service.query(new FeedstockBatchCurrentSugarAcidityZonePointQuery(
-        ciderMakerId,
+        workspaceId,
         new FeedstockMeasurementPointFilters(null, null, null, null),
         CursorPageRequest.firstPage()
     ));
@@ -74,11 +76,12 @@ class QueryFeedstockBatchCurrentSugarAcidityZonePointsServiceTest {
   }
 
   private static QueryFeedstockBatchCurrentSugarAcidityZonePointsService service(
-      FeedstockBatchRepository batchRepository,
+      FeedstockBatchSummaryQueryRepository batchRepository,
       FeedstockMeasurementQueryRepository repository
   ) {
     return new QueryFeedstockBatchCurrentSugarAcidityZonePointsService(
         batchRepository,
+        mock(FeedstockAccessControl.class),
         new FeedstockBatchCurrentMeasurementQueryService(repository),
         projector()
     );
@@ -109,14 +112,15 @@ class QueryFeedstockBatchCurrentSugarAcidityZonePointsServiceTest {
             )))
             .titratableAcidity(ExactMeasurement.of(TitratableAcidityValue.of("5.7")))
             .build(),
-        feedstockMeasurementInstant()
+        feedstockMeasurementInstant(),
+        feedstockMeasurementRecordedAt()
     );
   }
 
-  private static FeedstockBatch batch(CiderMakerId ciderMakerId) {
+  private static FeedstockBatch batch(WorkspaceId workspaceId) {
     return FeedstockBatch.create(
         FeedstockBatchId.newId(),
-        ciderMakerId,
+        workspaceId,
         FeedstockBatchName.of("Late season juice"),
         FeedstockVessel.of("Tank A-01"),
         FeedstockType.JUICE,

@@ -2,7 +2,6 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.profiletarget;
 
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.appleprofile.application.profiletarget.port.in.QueryAppleVarietyProfileTargetCandidatesUseCase;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.SugarAcidityTargetResolver;
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.QueryFeedstockBatchProfileTargetCandidatesUseCase;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.profiletarget.applevariety.dto.AppleVarietyProfileTargetCandidatesResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.profiletarget.applevariety.dto.AppleVarietyProfileTargetCandidateSearchRequest;
@@ -25,7 +24,7 @@ public final class ProfileTargetCandidateController implements ProfileTargetCand
 
   private final @NonNull QueryAppleVarietyProfileTargetCandidatesUseCase queryAppleVarietyCandidatesUseCase;
   private final @NonNull QueryFeedstockBatchProfileTargetCandidatesUseCase queryFeedstockBatchCandidatesUseCase;
-  private final @NonNull SugarAcidityTargetResolver targetResolver;
+  private final @NonNull AppleVarietyProfileTargetCandidateRequestMapper appleVarietyRequestMapper;
 
   @Override
   @PostMapping(
@@ -37,7 +36,7 @@ public final class ProfileTargetCandidateController implements ProfileTargetCand
       @RequestBody @NonNull AppleVarietyProfileTargetCandidateSearchRequest request
   ) {
     final var candidates = queryAppleVarietyCandidatesUseCase.query(
-        AppleVarietyProfileTargetCandidateRestMapper.toQuery(request, targetResolver)
+        appleVarietyRequestMapper.toQuery(request)
     );
 
     return ResponseEntity.ok(AppleVarietyProfileTargetCandidateRestMapper.toResponse(candidates));

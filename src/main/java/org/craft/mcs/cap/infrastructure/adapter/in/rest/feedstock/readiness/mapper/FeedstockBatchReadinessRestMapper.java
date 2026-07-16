@@ -26,7 +26,7 @@ public final class FeedstockBatchReadinessRestMapper {
 
     return new FeedstockBatchCurrentFermentationStartReadinessResponse(
         result.batchId().value(),
-        result.ciderMakerId().value(),
+        result.workspaceId().value(),
         result.currentMeasurementId().value(),
         result.currentMeasurementName().value(),
         toResponse(result.assessment())

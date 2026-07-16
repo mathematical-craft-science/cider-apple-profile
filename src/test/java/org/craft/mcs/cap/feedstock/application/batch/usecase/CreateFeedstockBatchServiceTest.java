@@ -2,6 +2,7 @@ package org.craft.mcs.cap.feedstock.application.batch.usecase;
 
 import java.time.LocalDate;
 import java.util.function.Supplier;
+import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.CreateFeedstockBatchCommand;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchRepository;
 import org.craft.mcs.cap.core.feedstock.application.batch.usecase.CreateFeedstockBatchService;
@@ -10,13 +11,13 @@ import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockBatchN
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
 import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
-import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.craft.mcs.cap.shared.platform.TransactionHelper;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
-import static java.util.UUID.randomUUID;
+import static org.craft.mcs.cap.shared.kernel.identity.UuidV7Generator.newUuid;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -31,12 +32,16 @@ class CreateFeedstockBatchServiceTest {
   @Test
   void createsFeedstockBatchWithOptionalSourceAndVessel() {
     final var repository = mock(FeedstockBatchRepository.class);
-    final var service = new CreateFeedstockBatchService(repository, transactionHelper());
-    final var ciderMakerId = CiderMakerId.of(randomUUID());
-    when(repository.save(any(FeedstockBatch.class))).thenAnswer(invocation -> invocation.getArgument(0));
+    final var service = new CreateFeedstockBatchService(
+        repository,
+        mock(FeedstockAccessControl.class),
+        transactionHelper()
+    );
+    final var workspaceId = WorkspaceId.of(newUuid());
+    when(repository.create(any(FeedstockBatch.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
     final var created = service.create(new CreateFeedstockBatchCommand(
-        ciderMakerId,
+        workspaceId,
         FeedstockBatchName.of("Late season fruit"),
         null,
         FeedstockType.JUICE,
@@ -47,7 +52,7 @@ class CreateFeedstockBatchServiceTest {
     ));
 
     assertThat(created.batchId()).isNotNull();
-    assertThat(created.ciderMakerId()).isEqualTo(ciderMakerId);
+    assertThat(created.workspaceId()).isEqualTo(workspaceId);
     assertThat(created.vessel()).isNull();
     assertThat(created.source()).isNull();
     assertThat(created.availableVolume().liters()).isEqualByComparingTo("250.000");
@@ -57,9 +62,13 @@ class CreateFeedstockBatchServiceTest {
   @Test
   void rejectsCreatingFeedstockBatchWithZeroAvailableVolume() {
     final var repository = mock(FeedstockBatchRepository.class);
-    final var service = new CreateFeedstockBatchService(repository, transactionHelper());
+    final var service = new CreateFeedstockBatchService(
+        repository,
+        mock(FeedstockAccessControl.class),
+        transactionHelper()
+    );
     final var command = new CreateFeedstockBatchCommand(
-        CiderMakerId.of(randomUUID()),
+        WorkspaceId.of(newUuid()),
         FeedstockBatchName.of("Late season fruit"),
         null,
         FeedstockType.JUICE,
@@ -72,7 +81,7 @@ class CreateFeedstockBatchServiceTest {
     assertThatThrownBy(() -> service.create(command))
         .isInstanceOf(DomainRuleViolationException.class)
         .hasMessageContaining("available volume must be greater than zero");
-    verify(repository, never()).save(any(FeedstockBatch.class));
+    verify(repository, never()).create(any(FeedstockBatch.class));
   }
 
   private static @NonNull TransactionHelper transactionHelper() {

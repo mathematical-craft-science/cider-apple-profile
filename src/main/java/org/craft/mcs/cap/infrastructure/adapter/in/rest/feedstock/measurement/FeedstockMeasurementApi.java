@@ -28,7 +28,8 @@ public interface FeedstockMeasurementApi {
 
   @Operation(
       summary = "Create feedstock measurement",
-      description = "Creates a feedstock measurement inside an existing batch. The cider maker is derived from the batch.",
+      description = "Creates a feedstock measurement inside an existing batch. The owning workspace is derived from "
+          + "the batch.",
       requestBody = @RequestBody(
           description = "Feedstock measurement creation payload.",
           required = true,

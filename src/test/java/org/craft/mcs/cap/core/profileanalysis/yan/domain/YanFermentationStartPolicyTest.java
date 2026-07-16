@@ -3,6 +3,7 @@ package org.craft.mcs.cap.core.profileanalysis.yan.domain;
 import java.util.Set;
 import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.FermentationStartPreparationActionType;
 import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.FermentationStartReadinessCheck;
+import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.FermentationStartReadinessCheckCode;
 import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.FermentationStartReadinessSeverity;
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.craft.mcs.cap.shared.kernel.chemical.value.PhValue;
@@ -22,7 +23,7 @@ class YanFermentationStartPolicyTest {
     final var check = policy.check(profileWithoutYan());
 
     assertThat(check)
-        .returns("YAN_MISSING", FermentationStartReadinessCheck::code)
+        .returns(FermentationStartReadinessCheckCode.YAN_MISSING, FermentationStartReadinessCheck::code)
         .returns(FermentationStartReadinessSeverity.WARNING, FermentationStartReadinessCheck::severity)
         .returns(null, FermentationStartReadinessCheck::value);
   }
@@ -32,7 +33,7 @@ class YanFermentationStartPolicyTest {
     final var check = policy.check(profile("60"));
 
     assertThat(check)
-        .returns("YAN_SEVERELY_LOW", FermentationStartReadinessCheck::code)
+        .returns(FermentationStartReadinessCheckCode.YAN_SEVERELY_LOW, FermentationStartReadinessCheck::code)
         .returns(FermentationStartReadinessSeverity.BLOCKER, FermentationStartReadinessCheck::severity)
         .returns("mg N/L", FermentationStartReadinessCheck::unit)
         .satisfies(result -> assertThat(result.value()).isEqualByComparingTo("60"));
@@ -46,7 +47,10 @@ class YanFermentationStartPolicyTest {
     ));
 
     assertThat(check)
-        .returns("YAN_SEVERELY_LOW_MANAGED", FermentationStartReadinessCheck::code)
+        .returns(
+            FermentationStartReadinessCheckCode.YAN_SEVERELY_LOW_MANAGED,
+            FermentationStartReadinessCheck::code
+        )
         .returns(FermentationStartReadinessSeverity.WARNING, FermentationStartReadinessCheck::severity)
         .returns(
             FermentationStartPreparationActionType.YEAST_NUTRIENT_ADDITION_PLANNED,
@@ -63,7 +67,7 @@ class YanFermentationStartPolicyTest {
     ));
 
     assertThat(check)
-        .returns("YAN_LOW_MANAGED", FermentationStartReadinessCheck::code)
+        .returns(FermentationStartReadinessCheckCode.YAN_LOW_MANAGED, FermentationStartReadinessCheck::code)
         .returns(FermentationStartReadinessSeverity.WARNING, FermentationStartReadinessCheck::severity)
         .returns(
             FermentationStartPreparationActionType.YEAST_NUTRIENT_ADDITION_CONFIRMED,
@@ -77,7 +81,7 @@ class YanFermentationStartPolicyTest {
     final var check = policy.check(profile("450"));
 
     assertThat(check)
-        .returns("YAN_HIGH", FermentationStartReadinessCheck::code)
+        .returns(FermentationStartReadinessCheckCode.YAN_HIGH, FermentationStartReadinessCheck::code)
         .returns(FermentationStartReadinessSeverity.WARNING, FermentationStartReadinessCheck::severity)
         .satisfies(result -> assertThat(result.value()).isEqualByComparingTo("450"));
   }
@@ -87,7 +91,7 @@ class YanFermentationStartPolicyTest {
     final var check = policy.check(profile("180"));
 
     assertThat(check)
-        .returns("YAN_ACCEPTABLE", FermentationStartReadinessCheck::code)
+        .returns(FermentationStartReadinessCheckCode.YAN_ACCEPTABLE, FermentationStartReadinessCheck::code)
         .returns(FermentationStartReadinessSeverity.INFO, FermentationStartReadinessCheck::severity)
         .satisfies(result -> assertThat(result.value()).isEqualByComparingTo("180"));
   }

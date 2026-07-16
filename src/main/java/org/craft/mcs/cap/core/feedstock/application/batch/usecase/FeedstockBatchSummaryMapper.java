@@ -1,6 +1,6 @@
 package org.craft.mcs.cap.core.feedstock.application.batch.usecase;
 
-import org.craft.mcs.cap.core.feedstock.application.batch.port.in.FeedstockBatchSummary;
+import org.craft.mcs.cap.core.feedstock.application.batch.model.FeedstockBatchSummary;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
 import org.jspecify.annotations.NonNull;
 
@@ -19,7 +19,7 @@ public final class FeedstockBatchSummaryMapper {
     requireNonNull(batch, "feedstock batch cannot be null");
     return new FeedstockBatchSummary(
         batch.batchId(),
-        batch.ciderMakerId(),
+        batch.workspaceId(),
         batch.name(),
         batch.vessel(),
         batch.type(),

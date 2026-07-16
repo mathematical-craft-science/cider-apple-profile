@@ -2,34 +2,256 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-import org.craft.mcs.cap.TestcontainersConfiguration;
+import org.craft.mcs.cap.core.account.audit.application.port.in.ListWorkspaceAdministrativeAuditUseCase;
+import org.craft.mcs.cap.core.account.contributor.application.port.in.ContributorProfileUseCase;
+import org.craft.mcs.cap.core.account.invitation.application.port.in.GetIncomingWorkspaceInvitationUseCase;
+import org.craft.mcs.cap.core.account.invitation.application.port.in.ListIncomingWorkspaceInvitationsUseCase;
+import org.craft.mcs.cap.core.account.invitation.application.port.in.WorkspaceInvitationUseCase;
+import org.craft.mcs.cap.core.account.administration.application.port.in.ListWorkspaceMembersUseCase;
+import org.craft.mcs.cap.core.account.administration.application.port.in.WorkspaceMembershipManagementUseCase;
+import org.craft.mcs.cap.core.account.provisioning.application.port.in.EnsureCurrentAccountProvisionedUseCase;
+import org.craft.mcs.cap.core.account.user.application.port.in.GetCurrentAccountProfileUseCase;
+import org.craft.mcs.cap.core.account.context.application.port.in.GetCurrentAccountUseCase;
+import org.craft.mcs.cap.core.account.user.application.port.in.GetCurrentUserPreferencesUseCase;
+import org.craft.mcs.cap.core.account.user.application.port.in.UpdateAccountProfileUseCase;
+import org.craft.mcs.cap.core.account.user.application.port.in.UpdateUserPreferencesUseCase;
+import org.craft.mcs.cap.core.account.workspace.application.port.in.GetWorkspaceSettingsUseCase;
+import org.craft.mcs.cap.core.account.context.application.port.in.ListAccountWorkspacesUseCase;
+import org.craft.mcs.cap.core.account.workspace.application.port.in.UpdateWorkspaceSettingsUseCase;
+import org.craft.mcs.cap.core.account.administration.application.port.in.WorkspaceLifecycleUseCase;
+import org.craft.mcs.cap.core.account.workspace.application.port.in.WorkspaceSettingsReader;
+import org.craft.mcs.cap.core.appleprofile.application.abv.port.in.PredictAppleVarietyPotentialAbvUseCase;
+import org.craft.mcs.cap.core.appleprofile.application.classification.port.in.ClassifyAppleVarietyNorthAmericanUseCase;
+import org.craft.mcs.cap.core.appleprofile.application.classification.port.in.ClassifyAppleVarietyUseCase;
+import org.craft.mcs.cap.core.appleprofile.application.profiletarget.port.in.*;
+import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.in.*;
+import org.craft.mcs.cap.core.batchtraceability.application.port.in.QueryBatchTraceabilityUseCase;
+import org.craft.mcs.cap.core.feedstock.application.analysis.abv.port.in.*;
+import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.*;
+import org.craft.mcs.cap.core.feedstock.application.analysis.readiness.port.in.*;
+import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.*;
+import org.craft.mcs.cap.core.feedstock.application.batch.port.in.CreateFeedstockBatchUseCase;
+import org.craft.mcs.cap.core.feedstock.application.batch.port.in.DeleteFeedstockBatchUseCase;
+import org.craft.mcs.cap.core.feedstock.application.batch.port.in.ListFeedstockBatchesUseCase;
+import org.craft.mcs.cap.core.feedstock.application.batch.port.in.UpdateFeedstockBatchUseCase;
+import org.craft.mcs.cap.core.feedstock.application.detail.port.in.GetFeedstockBatchDetailUseCase;
+import org.craft.mcs.cap.core.feedstock.application.measurement.port.in.CreateFeedstockMeasurementUseCase;
+import org.craft.mcs.cap.core.feedstock.application.measurement.port.in.DeleteFeedstockMeasurementUseCase;
+import org.craft.mcs.cap.core.feedstock.application.measurement.port.in.ListFeedstockMeasurementsUseCase;
+import org.craft.mcs.cap.core.feedstock.application.measurement.port.in.UpdateFeedstockMeasurementUseCase;
+import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.QueryFeedstockPlanningBatchesUseCase;
+import org.craft.mcs.cap.core.feedstock.application.planning.composition.port.in.*;
+import org.craft.mcs.cap.core.production.application.port.in.CreateProductionBatchUseCase;
+import org.craft.mcs.cap.core.production.application.port.in.GetProductionBatchUseCase;
+import org.craft.mcs.cap.core.production.application.port.in.ListProductionBatchesUseCase;
+import org.craft.mcs.cap.core.production.candidate.application.port.in.CreateProductionBatchCandidateUseCase;
+import org.craft.mcs.cap.core.production.candidate.application.port.in.GetProductionBatchCandidateUseCase;
+import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPredictor;
+import org.craft.mcs.cap.core.profileanalysis.composition.calculation.application.port.in.*;
+import org.craft.mcs.cap.core.profileanalysis.composition.optimization.application.port.in.*;
+import org.craft.mcs.cap.core.profileanalysis.sugaracidity.graph.domain.SugarAcidityGraphMetadata;
+import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.SugarAcidityTargetResolver;
+import org.craft.mcs.cap.infrastructure.adapter.in.importer.appleprofile.AppleVarietyJsonSeedImporter;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.ChemicalProfileCompositionRequestMapper;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.profiletarget.AppleVarietyProfileTargetCandidateRequestMapper;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.mapper.ProductionBatchCandidateRestMapper;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.sugaracidity.SugarAcidityGraphMetadataResponseProvider;
+import org.craft.mcs.cap.infrastructure.configuration.OpenApiConfiguration;
+import org.craft.mcs.cap.infrastructure.configuration.openapi.DecimalMinOpenApiCustomizer;
+import org.craft.mcs.cap.infrastructure.configuration.openapi.PolymorphicSchemaFlatteningCustomizer;
+import org.craft.mcs.cap.infrastructure.configuration.openapi.RequiredNullableOpenApiCustomizer;
+import org.craft.mcs.cap.infrastructure.configuration.openapi.RestDtoSchemaTypeScanner;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springdoc.core.configuration.SpringDocConfiguration;
+import org.springdoc.core.configuration.SpringDocJavadocConfiguration;
+import org.springdoc.core.configuration.SpringDocSecurityConfiguration;
+import org.springdoc.core.properties.SpringDocConfigProperties;
+import org.springdoc.webmvc.core.configuration.SpringDocWebMvcConfiguration;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.craft.mcs.cap.infrastructure.adapter.in.http.ActiveWorkspaceHttpHeaders.ACTIVE_WORKSPACE_ID;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-
-@Import(TestcontainersConfiguration.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@WebMvcTest
+@AutoConfigureMockMvc(addFilters = false)
+@EnableConfigurationProperties(SpringDocConfigProperties.class)
+@Import({
+    OpenApiConfiguration.class,
+    SpringDocConfiguration.class,
+    SpringDocJavadocConfiguration.class,
+    SpringDocSecurityConfiguration.class,
+    SpringDocWebMvcConfiguration.class,
+    DecimalMinOpenApiCustomizer.class,
+    PolymorphicSchemaFlatteningCustomizer.class,
+    RequiredNullableOpenApiCustomizer.class,
+    RestDtoSchemaTypeScanner.class,
+    ChemicalProfileCompositionRequestMapper.class,
+    AppleVarietyProfileTargetCandidateRequestMapper.class,
+    ProductionBatchCandidateRestMapper.class,
+    SugarAcidityGraphMetadataResponseProvider.class
+})
+@MockitoBean(types = {
+    ContributorProfileUseCase.class,
+    EnsureCurrentAccountProvisionedUseCase.class,
+    GetIncomingWorkspaceInvitationUseCase.class,
+    ListIncomingWorkspaceInvitationsUseCase.class,
+    GetCurrentAccountProfileUseCase.class,
+    GetCurrentAccountUseCase.class,
+    GetCurrentUserPreferencesUseCase.class,
+    GetWorkspaceSettingsUseCase.class,
+    ListAccountWorkspacesUseCase.class,
+    ListWorkspaceMembersUseCase.class,
+    ListWorkspaceAdministrativeAuditUseCase.class,
+    UpdateAccountProfileUseCase.class,
+    UpdateUserPreferencesUseCase.class,
+    UpdateWorkspaceSettingsUseCase.class,
+    WorkspaceSettingsReader.class,
+    WorkspaceInvitationUseCase.class,
+    WorkspaceLifecycleUseCase.class,
+    WorkspaceMembershipManagementUseCase.class,
+    PredictAppleVarietyPotentialAbvUseCase.class,
+    ClassifyAppleVarietyNorthAmericanUseCase.class,
+    ClassifyAppleVarietyUseCase.class,
+    QueryAppleVarietyProfileTargetCandidatesUseCase.class,
+    AssessAppleVarietySugarAcidityZoneUseCase.class,
+    QueryAppleVarietySugarAcidityZonePointsUseCase.class,
+    QueryBatchTraceabilityUseCase.class,
+    PredictFeedstockBatchCurrentPotentialAbvUseCase.class,
+    PredictFeedstockMeasurementPotentialAbvUseCase.class,
+    QueryFeedstockBatchProfileTargetCandidatesUseCase.class,
+    ScoreFeedstockBatchProfileTargetUseCase.class,
+    AssessFeedstockBatchCurrentFermentationStartReadinessUseCase.class,
+    AssessFeedstockBatchCurrentSugarAcidityZoneUseCase.class,
+    AssessFeedstockMeasurementSugarAcidityZoneUseCase.class,
+    QueryFeedstockBatchCurrentSugarAcidityZonePointsUseCase.class,
+    QueryFeedstockMeasurementSugarAcidityZonePointsUseCase.class,
+    CreateFeedstockBatchUseCase.class,
+    DeleteFeedstockBatchUseCase.class,
+    ListFeedstockBatchesUseCase.class,
+    UpdateFeedstockBatchUseCase.class,
+    GetFeedstockBatchDetailUseCase.class,
+    CreateFeedstockMeasurementUseCase.class,
+    DeleteFeedstockMeasurementUseCase.class,
+    ListFeedstockMeasurementsUseCase.class,
+    UpdateFeedstockMeasurementUseCase.class,
+    QueryFeedstockPlanningBatchesUseCase.class,
+    OptimizeFeedstockBatchCompositionUseCase.class,
+    CreateProductionBatchUseCase.class,
+    CreateProductionBatchCandidateUseCase.class,
+    GetProductionBatchCandidateUseCase.class,
+    GetProductionBatchUseCase.class,
+    ListProductionBatchesUseCase.class,
+    PotentialAbvPredictor.class,
+    CalculateChemicalProfileCompositionUseCase.class,
+    OptimizeChemicalProfileCompositionUseCase.class,
+    SugarAcidityGraphMetadata.class,
+    SugarAcidityTargetResolver.class,
+    AppleVarietyJsonSeedImporter.class
+})
 class OpenApiContractTest {
 
-  @LocalServerPort
-  private int port;
+  @Autowired
+  private MockMvc mockMvc;
 
   private final ObjectMapper objectMapper = new ObjectMapper();
+
+  @Test
+  void openApiDescribesBearerJwtAuthentication() throws Exception {
+    final var openApi = openApi();
+    final var bearerAuth = openApi.path("components").path("securitySchemes").path("bearerAuth");
+
+    assertThat(List.of(
+        bearerAuth.path("type").asText(),
+        bearerAuth.path("scheme").asText(),
+        bearerAuth.path("bearerFormat").asText(),
+        openApi.path("security").path(0).has("bearerAuth")
+    )).containsExactly("http", "bearer", "JWT", true);
+  }
+
+  @Test
+  void openApiDescribesEveryAccountDtoProperty() throws Exception {
+    final var openApi = openApi();
+    final var schemas = openApi.path("components").path("schemas");
+    final var accountSchemaNames = List.of(
+        "AccountMeResponse",
+        "AccountMembershipResponse",
+        "AccountPreferencesResponse",
+        "AccountUserResponse",
+        "AccountWorkspaceListResponse",
+        "AccountWorkspaceMemberListResponse",
+        "AccountWorkspaceMemberResponse",
+        "AccountWorkspaceResponse",
+        "UpdateAccountPreferencesRequest",
+        "UpdateAccountProfileRequest"
+    );
+    final var descriptionViolations = accountSchemaNames.stream()
+        .flatMap(schemaName -> accountDtoDescriptionViolations(schemas, schemaName))
+        .sorted()
+        .toList();
+
+    assertThat(descriptionViolations)
+        .as("account DTO schemas and properties must have semantic OpenAPI descriptions")
+        .isEmpty();
+  }
+
+  @Test
+  void openApiDescribesExplicitActiveWorkspaceContext() throws Exception {
+    final var openApi = openApi();
+    final var accountMeOperation = operation(openApi, "/account/me", "get");
+    final var activeWorkspaceParameter = StreamSupport.stream(
+            accountMeOperation.path("parameters").spliterator(),
+            false
+        )
+        .filter(parameter -> ACTIVE_WORKSPACE_ID.equals(parameter.path("name").asText()))
+        .findFirst()
+        .orElseThrow();
+
+    assertThat(List.of(
+        activeWorkspaceParameter.path("in").asText(),
+        activeWorkspaceParameter.path("required").asBoolean(false),
+        activeWorkspaceParameter.path("schema").path("format").asText(),
+        accountMeOperation.path("responses").has("400"),
+        accountMeOperation.path("responses").has("422")
+    )).containsExactly("header", false, "uuid", true, true);
+  }
+
+  @Test
+  void openApiDescribesWorkspaceSpecificMeasurementFreshnessMetadata() throws Exception {
+    final var openApi = openApi();
+    final var metadataOperation = operation(openApi, "/measurement-units/metadata", "get");
+    final var activeWorkspaceParameter = StreamSupport.stream(
+            metadataOperation.path("parameters").spliterator(),
+            false
+        )
+        .filter(parameter -> ACTIVE_WORKSPACE_ID.equals(parameter.path("name").asText()))
+        .findFirst()
+        .orElseThrow();
+
+    assertThat(List.of(
+        activeWorkspaceParameter.path("in").asText(),
+        activeWorkspaceParameter.path("required").asBoolean(false),
+        activeWorkspaceParameter.path("schema").path("format").asText(),
+        metadataOperation.path("responses").has("401"),
+        metadataOperation.path("responses").has("400"),
+        metadataOperation.path("responses").has("403"),
+        metadataOperation.path("responses").has("422")
+    )).containsExactly("header", false, "uuid", true, true, true, true);
+  }
 
   @Test
   void openApiDescribesJsonMediaTypesAndStrongDtoSchemas() throws Exception {
@@ -69,6 +291,17 @@ class OpenApiContractTest {
     assertJsonResponse(openApi, "/production-batches", "post", "201");
     assertJsonResponse(openApi, "/production-batches/{batchId}", "get");
     assertJsonResponse(openApi, "/production-batches/{batchId}/traceability", "get");
+    assertJsonResponse(openApi, "/account/me", "get");
+    assertJsonResponse(openApi, "/account/profile", "get");
+    assertJsonResponse(openApi, "/account/profile", "patch");
+    assertJsonResponse(openApi, "/account/preferences", "get");
+    assertJsonResponse(openApi, "/account/preferences", "patch");
+    assertJsonResponse(openApi, "/account/workspaces", "get");
+    assertJsonResponse(openApi, "/account/workspaces/{workspaceId}/settings", "get");
+    assertJsonResponse(openApi, "/account/workspaces/{workspaceId}/settings", "patch");
+    assertJsonResponse(openApi, "/account/workspaces/{workspaceId}/members", "get");
+    assertJsonResponse(openApi, "/account/workspace-invitations", "get");
+    assertJsonResponse(openApi, "/account/workspace-invitations/{invitationId}", "get");
 
     assertJsonRequest(openApi, "/feedstock-batches", "post");
     assertJsonRequest(openApi, "/feedstock-batches/{batchId}", "put");
@@ -76,6 +309,7 @@ class OpenApiContractTest {
     assertJsonRequest(openApi, "/feedstock-batches/{batchId}/measurements", "post");
     assertJsonRequest(openApi, "/feedstock-batches/{batchId}/measurements/{measurementId}", "put");
     assertJsonRequest(openApi, "/feedstock-batches/{batchId}/measurements/{measurementId}", "patch");
+    assertJsonRequest(openApi, "/account/workspaces/{workspaceId}/settings", "patch");
     assertJsonRequest(openApi, "/apple-varieties/sugar-acidity-zone-points", "post");
     assertJsonRequest(openApi, "/analysis/apple-varieties/profile-target-candidates", "post");
     assertJsonRequest(openApi, "/analysis/feedstock-batches/profile-target-candidates", "post");
@@ -87,6 +321,8 @@ class OpenApiContractTest {
     assertJsonRequest(openApi, "/feedstock-workspace/batches", "post");
     assertJsonRequest(openApi, "/feedstock-measurements/sugar-acidity-zone-points", "post");
     assertJsonRequest(openApi, "/production-batches", "post");
+    assertJsonRequest(openApi, "/account/profile", "patch");
+    assertJsonRequest(openApi, "/account/preferences", "patch");
 
     assertStringFormat(schemaProperty(openApi, "AppleVarietyClassificationResponse", "varietyId"), "uuid");
     assertStringFormat(schemaProperty(openApi, "FeedstockBatchResponse", "batchId"), "uuid");
@@ -96,12 +332,12 @@ class OpenApiContractTest {
     assertArray(schemaProperty(openApi, "FeedstockBatchCurrentSugarAcidityZonePointBatchResponse", "points"));
     assertArray(schemaProperty(openApi, "FeedstockMeasurementSugarAcidityZonePointBatchResponse", "unplottable"));
     assertStringFormat(schemaProperty(openApi, "FeedstockBatchGraphPointResponse", "batchId"), "uuid");
-    assertStringFormat(schemaProperty(openApi, "FeedstockBatchGraphPointResponse", "ciderMakerId"), "uuid");
+    assertStringFormat(schemaProperty(openApi, "FeedstockBatchGraphPointResponse", "workspaceId"), "uuid");
     assertStringFormat(schemaProperty(openApi, "FeedstockBatchGraphPointResponse", "currentMeasurementId"), "uuid");
     assertStringFormat(schemaProperty(openApi, "FeedstockBatchGraphPointResponse", "measuredAt"), "date-time");
     assertArray(schemaProperty(openApi, "FeedstockBatchGraphPointResponse", "missingAxes"));
     assertRequiredProperties(openApi, "FeedstockBatchGraphPointResponse",
-        "batchId", "batchName", "ciderMakerId", "currentMeasurementId", "measuredAt", "plottable", "missingAxes");
+        "batchId", "batchName", "workspaceId", "currentMeasurementId", "measuredAt", "plottable", "missingAxes");
     assertNotRequiredProperties(openApi, "FeedstockBatchGraphPointResponse",
         "point", "zone", "assessment", "capabilityAssessment");
     assertNullable(schemaProperty(openApi, "FeedstockBatchGraphPointResponse", "point"));
@@ -126,11 +362,55 @@ class OpenApiContractTest {
         "confidence"
     );
     assertRequiredProperties(openApi, "DecimalQuantityResponse", "value", "unit");
+    assertRequiredProperties(
+        openApi,
+        "AccountMeResponse",
+        "user",
+        "activeWorkspace",
+        "memberships",
+        "preferences",
+        "personalCapabilities",
+        "workspacePermissions"
+    );
+    assertRequiredProperties(
+        openApi,
+        "AccountWorkspaceResponse",
+        "workspaceId",
+        "name",
+        "type"
+    );
+    assertStringFormat(schemaProperty(openApi, "AccountWorkspaceResponse", "workspaceId"), "uuid");
+    assertRequiredProperties(openApi, "UpdateAccountProfileRequest", "displayName");
+    assertNotRequiredProperties(openApi, "UpdateAccountProfileRequest", "avatarUrl");
+    assertNullable(schemaProperty(openApi, "UpdateAccountProfileRequest", "avatarUrl"));
+    assertRequiredProperties(openApi, "UpdateAccountPreferencesRequest", "locale", "timeZone");
+    assertRequiredProperties(
+        openApi,
+        "WorkspaceSettingsResponse",
+        "workspaceId",
+        "measurementStaleAfter",
+        "defaultAcidityBasis",
+        "revision",
+        "createdAt",
+        "updatedAt"
+    );
+    assertStringFormat(schemaProperty(openApi, "WorkspaceSettingsResponse", "workspaceId"), "uuid");
+    assertStringFormat(schemaProperty(openApi, "WorkspaceSettingsResponse", "createdAt"), "date-time");
+    assertStringFormat(schemaProperty(openApi, "WorkspaceSettingsResponse", "updatedAt"), "date-time");
+    assertRequiredProperties(openApi, "UpdateWorkspaceSettingsRequest", "expectedRevision");
+    assertNotRequiredProperties(
+        openApi,
+        "UpdateWorkspaceSettingsRequest",
+        "measurementStaleAfter",
+        "defaultAcidityBasis"
+    );
+    assertNullable(schemaProperty(openApi, "UpdateWorkspaceSettingsRequest", "measurementStaleAfter"));
+    assertNullable(schemaProperty(openApi, "UpdateWorkspaceSettingsRequest", "defaultAcidityBasis"));
 
     assertRequiredProperties(
         openApi,
         "CreateFeedstockBatchRequest",
-        "ciderMakerId",
+        "workspaceId",
         "name",
         "type",
         "season",
@@ -156,7 +436,7 @@ class OpenApiContractTest {
         openApi,
         "FeedstockMeasurementResponse",
         "measurementId",
-        "ciderMakerId",
+        "workspaceId",
         "batchId",
         "name"
     );
@@ -173,6 +453,7 @@ class OpenApiContractTest {
         openApi,
         "ProfileTargetDistanceResponse",
         "status",
+        "fitStatus",
         "insideSugarAcidityTarget",
         "insideTarget"
     );
@@ -181,10 +462,13 @@ class OpenApiContractTest {
         openApi,
         "ProfileTargetDistanceResponse",
         "value",
+        "matchPercent",
         "tannin",
         "nearestTargetTannin"
     );
     assertNullable(schemaProperty(openApi, "ProfileTargetDistanceResponse", "value"));
+    assertNullable(schemaProperty(openApi, "ProfileTargetDistanceResponse", "matchPercent"));
+    assertEnumProperty(openApi, "ProfileTargetDistanceResponse", "fitStatus", "EXCELLENT");
     assertNullable(schemaProperty(openApi, "ProfileTargetDistanceResponse", "tannin"));
     assertNullable(schemaProperty(openApi, "ProfileTargetDistanceResponse", "nearestTargetTannin"));
 
@@ -226,7 +510,7 @@ class OpenApiContractTest {
     assertRequiredProperties(
         openApi,
         "FeedstockBatchCurrentSugarAcidityZonePointQueryRequest",
-        "ciderMakerId"
+        "workspaceId"
     );
     assertNotRequiredProperties(
         openApi,
@@ -239,7 +523,7 @@ class OpenApiContractTest {
     assertNullable(schemaProperty(openApi, "FeedstockBatchCurrentSugarAcidityZonePointQueryRequest", "batchId"));
     assertNullable(schemaProperty(openApi, "FeedstockBatchCurrentSugarAcidityZonePointQueryRequest", "season"));
 
-    assertParameterRequired(openApi, "/feedstock-batches", "get", "ciderMakerId", true);
+    assertParameterRequired(openApi, "/feedstock-batches", "get", "workspaceId", true);
     assertParameterRequired(openApi, "/feedstock-batches", "get", "seasonStartsOn", false);
     assertParameterRequired(openApi, "/feedstock-batches", "get", "seasonEndsOn", false);
 
@@ -328,7 +612,7 @@ class OpenApiContractTest {
     assertRequiredProperties(
         openApi,
         "FeedstockBatchProfileTargetCandidateSearchRequest",
-        "ciderMakerId",
+        "workspaceId",
         "purpose",
         "target"
     );
@@ -402,29 +686,46 @@ class OpenApiContractTest {
   void openApiDescribesProductionAndFeedstockRequiredNullableContracts() throws Exception {
     final var openApi = openApi();
 
+    assertParameterRequired(openApi, "/production-batches", "get", "workspaceId", true);
     assertRequiredProperties(
         openApi,
         "CreateProductionBatchRequest",
-        "ciderMakerId",
+        "workspaceId",
         "name",
         "kind",
-        "sources",
-        "profile"
+        "candidateId"
     );
-    assertNotRequiredProperties(openApi, "CreateProductionBatchRequest", "targetDistance", "note");
-    assertNullable(schemaProperty(openApi, "CreateProductionBatchRequest", "targetDistance"));
+    assertStringFormat(schemaProperty(openApi, "CreateProductionBatchRequest", "workspaceId"), "uuid");
+    assertStringFormat(schemaProperty(openApi, "CreateProductionBatchRequest", "candidateId"), "uuid");
+    assertNotRequiredProperties(openApi, "CreateProductionBatchRequest", "note");
     assertNullable(schemaProperty(openApi, "CreateProductionBatchRequest", "note"));
-    assertRequiredProperties(openApi, "CreateProductionBatchSourceRequest", "feedstockBatchId", "volumeLiters");
-    assertRequiredProperties(openApi, "ProductionProfileSnapshotRequest", "sugar", "acidity");
-    assertNotRequiredProperties(openApi, "ProductionProfileSnapshotRequest", "tannin", "yeastAssimilableNitrogen");
-    assertNullable(schemaProperty(openApi, "ProductionProfileSnapshotRequest", "tannin"));
-    assertNullable(schemaProperty(openApi, "ProductionProfileSnapshotRequest", "yeastAssimilableNitrogen"));
+
+    assertRequiredProperties(openApi, "CreateProductionBatchCandidateRequest", "workspaceId", "sources");
+    assertStringFormat(schemaProperty(openApi, "CreateProductionBatchCandidateRequest", "workspaceId"), "uuid");
+    assertNotRequiredProperties(
+        openApi,
+        "CreateProductionBatchCandidateRequest",
+        "tanninPolicy",
+        "target",
+        "tanninTarget",
+        "weights",
+        "scoringPurpose",
+        "calculator",
+        "normalizer",
+        "objectiveFunction"
+    );
+    assertRequiredProperties(
+        openApi,
+        "ProductionBatchCandidateSourceRequest",
+        "feedstockBatchId",
+        "volumeLiters"
+    );
 
     assertRequiredProperties(
         openApi,
         "ProductionBatchDetailsResponse",
         "batchId",
-        "ciderMakerId",
+        "workspaceId",
         "name",
         "kind",
         "status",
@@ -432,38 +733,61 @@ class OpenApiContractTest {
         "profile",
         "potentialAbv"
     );
+    assertStringFormat(schemaProperty(openApi, "ProductionBatchDetailsResponse", "workspaceId"), "uuid");
     assertNotRequiredProperties(
         openApi,
         "ProductionBatchDetailsResponse",
         "yeastAssimilableNitrogen",
-        "targetDistance",
         "note"
     );
     assertNullable(schemaProperty(openApi, "ProductionBatchDetailsResponse", "yeastAssimilableNitrogen"));
-    assertNullable(schemaProperty(openApi, "ProductionBatchDetailsResponse", "targetDistance"));
     assertNullable(schemaProperty(openApi, "ProductionBatchDetailsResponse", "note"));
 
     assertRequiredProperties(
         openApi,
         "ProductionBatchResponse",
         "batchId",
-        "ciderMakerId",
+        "workspaceId",
         "name",
         "kind",
         "status",
+        "candidateId",
         "composition"
     );
+    assertStringFormat(schemaProperty(openApi, "ProductionBatchResponse", "workspaceId"), "uuid");
+    assertStringFormat(schemaProperty(openApi, "ProductionBatchResponse", "candidateId"), "uuid");
     assertNotRequiredProperties(openApi, "ProductionBatchResponse", "note");
     assertNullable(schemaProperty(openApi, "ProductionBatchResponse", "note"));
-    assertRequiredProperties(openApi, "ProductionBatchCompositionResponse", "sources", "profile", "totalVolume");
+    assertRequiredProperties(
+        openApi,
+        "ProductionBatchCompositionResponse",
+        "sources",
+        "profile",
+        "totalVolume",
+        "warnings"
+    );
     assertNotRequiredProperties(
         openApi,
         "ProductionBatchCompositionResponse",
         "yeastAssimilableNitrogen",
+        "normalizerCode",
         "targetDistance"
     );
     assertNullable(schemaProperty(openApi, "ProductionBatchCompositionResponse", "yeastAssimilableNitrogen"));
+    assertNullable(schemaProperty(openApi, "ProductionBatchCompositionResponse", "normalizerCode"));
     assertNullable(schemaProperty(openApi, "ProductionBatchCompositionResponse", "targetDistance"));
+    assertRequiredProperties(
+        openApi,
+        "ProductionBatchCandidateResponse",
+        "candidateId",
+        "workspaceId",
+        "status",
+        "composition"
+    );
+    assertStringFormat(schemaProperty(openApi, "ProductionBatchCandidateResponse", "candidateId"), "uuid");
+    assertStringFormat(schemaProperty(openApi, "ProductionBatchCandidateResponse", "workspaceId"), "uuid");
+    assertNotRequiredProperties(openApi, "ProductionBatchCandidateResponse", "confirmedProductionBatchId");
+    assertNullable(schemaProperty(openApi, "ProductionBatchCandidateResponse", "confirmedProductionBatchId"));
     assertRequiredProperties(openApi, "ProductionBatchSourceResponse", "feedstockBatchId", "volume");
 
     assertRequiredProperties(openApi, "BatchTraceabilityGraphResponse", "nodes", "edges");
@@ -507,7 +831,7 @@ class OpenApiContractTest {
     assertRequiredProperties(
         openApi,
         "UpdateFeedstockBatchRequest",
-        "ciderMakerId",
+        "workspaceId",
         "name",
         "type",
         "season",
@@ -517,7 +841,7 @@ class OpenApiContractTest {
         openApi,
         "FeedstockBatchResponse",
         "batchId",
-        "ciderMakerId",
+        "workspaceId",
         "name",
         "type",
         "season",
@@ -530,7 +854,7 @@ class OpenApiContractTest {
     assertNullable(schemaProperty(openApi, "UpdateFeedstockBatchRequest", "note"));
     assertNullable(schemaProperty(openApi, "FeedstockBatchResponse", "vessel"));
     assertExclusiveMinimumZero(schemaProperty(openApi, "UpdateFeedstockBatchRequest", "availableVolumeLiters"));
-    assertRequiredProperties(openApi, "PatchFeedstockBatchRequest", "ciderMakerId");
+    assertRequiredProperties(openApi, "PatchFeedstockBatchRequest", "workspaceId");
     assertNotRequiredProperties(
         openApi,
         "PatchFeedstockBatchRequest",
@@ -565,7 +889,7 @@ class OpenApiContractTest {
     assertNullable(schemaProperty(openApi, "PatchFeedstockMeasurementRequest", "note"));
 
     assertRequiredProperties(openApi, "FeedstockBatchCurrentFermentationStartReadinessResponse",
-        "batchId", "ciderMakerId", "currentMeasurementId", "currentMeasurementName", "assessment");
+        "batchId", "workspaceId", "currentMeasurementId", "currentMeasurementName", "assessment");
     assertNotRequiredProperties(
         openApi,
         "FermentationStartReadinessCheckResponse",
@@ -575,6 +899,12 @@ class OpenApiContractTest {
     );
     assertNullable(schemaProperty(openApi, "FermentationStartReadinessCheckResponse", "value"));
     assertNullable(schemaProperty(openApi, "FermentationStartReadinessCheckResponse", "managedByAction"));
+    assertEnumProperty(
+        openApi,
+        "FermentationStartReadinessCheckResponse",
+        "code",
+        "PH_BELOW_GENERIC_YEAST_TOLERANCE"
+    );
     assertRequiredProperties(
         openApi,
         "FeedstockBatchCompositionOptimizationCandidateResponse",
@@ -604,7 +934,7 @@ class OpenApiContractTest {
   void openApiDescribesFeedstockWorkspaceRequiredNullableContracts() throws Exception {
     final var openApi = openApi();
 
-    assertRequiredProperties(openApi, "FeedstockWorkspaceBatchQueryRequest", "ciderMakerId");
+    assertRequiredProperties(openApi, "FeedstockWorkspaceBatchQueryRequest", "workspaceId");
     assertNotRequiredProperties(
         openApi,
         "FeedstockWorkspaceBatchQueryRequest",
@@ -752,6 +1082,12 @@ class OpenApiContractTest {
         "code",
         "message"
     );
+    assertEnumProperty(
+        openApi,
+        "FeedstockWorkspacePlanningReadinessCheckResponse",
+        "code",
+        "CURRENT_MEASUREMENT_PRESENT"
+    );
     assertRequiredProperties(openApi, "FeedstockWorkspaceDataQualityResponse", "status", "indicators");
     assertArray(schemaProperty(openApi, "FeedstockWorkspaceDataQualityResponse", "indicators"));
     assertRequiredProperties(
@@ -847,6 +1183,12 @@ class OpenApiContractTest {
         "code",
         "message"
     );
+    assertEnumProperty(
+        openApi,
+        "FeedstockBatchDetailPlanningReadinessCheckResponse",
+        "code",
+        "TITRATABLE_ACIDITY_MISSING"
+    );
     assertRequiredProperties(openApi, "FeedstockBatchDetailDataQualityResponse", "status", "indicators");
     assertArray(schemaProperty(openApi, "FeedstockBatchDetailDataQualityResponse", "indicators"));
     assertRequiredProperties(
@@ -877,20 +1219,18 @@ class OpenApiContractTest {
   }
 
   private JsonNode openApi() throws Exception {
-    final var response = HttpClient.newHttpClient().send(
-        HttpRequest.newBuilder(URI.create("http://localhost:" + port + "/v3/api-docs"))
-            .GET()
-            .build(),
-        HttpResponse.BodyHandlers.ofString()
-    );
+    final var response = mockMvc.perform(get("/v3/api-docs"))
+        .andExpect(status().isOk())
+        .andReturn()
+        .getResponse();
 
-    assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
-    assertThat(response.headers().firstValue("content-type"))
-        .hasValueSatisfying(contentType ->
-            assertThat(MediaType.parseMediaType(contentType).isCompatibleWith(MediaType.APPLICATION_JSON)).isTrue()
-        );
+    assertThat(response.getContentType())
+        .isNotNull()
+        .satisfies(contentType -> assertThat(
+            MediaType.parseMediaType(contentType).isCompatibleWith(MediaType.APPLICATION_JSON)
+        ).isTrue());
 
-    return objectMapper.readTree(response.body());
+    return objectMapper.readTree(response.getContentAsString());
   }
 
   private static void assertJsonResponse(
@@ -1148,6 +1488,25 @@ class OpenApiContractTest {
         .isEmpty();
   }
 
+  private static Stream<String> accountDtoDescriptionViolations(
+      JsonNode schemas,
+      String schemaName
+  ) {
+    final var schema = schemas.path(schemaName);
+    if (schema.isMissingNode()) {
+      return Stream.of(schemaName + " schema is missing");
+    }
+
+    final var properties = schema.path("properties");
+    if (!properties.isObject()) {
+      return Stream.of(schemaName + " properties are missing");
+    }
+
+    return properties.properties().stream()
+        .filter(property -> property.getValue().path("description").asText().isBlank())
+        .map(property -> schemaName + "." + property.getKey() + " description is missing");
+  }
+
   private static void assertStringFormat(
       JsonNode property,
       String format
@@ -1242,9 +1601,7 @@ class OpenApiContractTest {
         "CompositionOptimizationPenaltyResponse.value",
         "ProfileTargetDistanceResponse.value",
         "ChemicalProfileCompositionSourceResponse.proportion",
-        "FeedstockBatchCompositionOptimizationSourceResponse.proportion",
-        "ProductionBatchCompositionResponse.targetDistance",
-        "ProductionBatchDetailsResponse.targetDistance"
+        "FeedstockBatchCompositionOptimizationSourceResponse.proportion"
     );
 
     final var violations = openApi.path("components").path("schemas").properties().stream()

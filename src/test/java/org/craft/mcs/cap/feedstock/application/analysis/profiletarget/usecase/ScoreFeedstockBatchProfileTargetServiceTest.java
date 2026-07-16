@@ -1,32 +1,28 @@
 package org.craft.mcs.cap.feedstock.application.analysis.profiletarget.usecase;
 
 import java.util.List;
+import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.port.in.ProfileTargetScoringPurpose;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.usecase.BuiltInProfileTargetScoringPurposeNormalizerPolicy;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.usecase.ScoreProfileTargetDistanceCandidatesService;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.BuiltInProfileTargetObjectiveFunctionFactory;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.usecase.*;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.objective.BuiltInProfileTargetObjectiveFunctionFactory;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetObjectiveWeights;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.BuiltInProfileAxisNormalizerSelector;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.normalization.BuiltInProfileAxisNormalizerSelector;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileProjector;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.ZoneGeometrySugarAcidityTargetResolver;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.BuiltInSugarAcidityZoneProfiles;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.RectangleSugarAcidityZoneAssessor;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.SugarAcidityZone;
 import org.craft.mcs.cap.core.feedstock.application.measurement.query.FeedstockBatchCurrentMeasurementQueryService;
-import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.FeedstockBatchProfileTargetScore;
+import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.*;
+import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.usecase.*;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockMeasurementPointFilters;
-import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.PredefinedFeedstockProfileTargetSelection;
-import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.ScoreFeedstockBatchProfileTargetCommand;
 import org.craft.mcs.cap.core.feedstock.application.measurement.port.out.FeedstockMeasurementQueryRepository;
-import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.out.LatestFeedstockMeasurementSugarAcidityPointCandidateQuery;
-import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.usecase.FeedstockBatchProfileTargetScorableCandidateProvider;
-import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.usecase.FeedstockProfileTargetObjectiveResolver;
-import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.usecase.ScoreFeedstockBatchProfileTargetService;
+import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.out.*;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurement;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurementId;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.value.FeedstockMeasurementName;
-import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
 import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityAssessor;
@@ -37,8 +33,10 @@ import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
-import static java.util.UUID.randomUUID;
+import static org.craft.mcs.cap.shared.kernel.identity.UuidV7Generator.newUuid;
+import static org.craft.mcs.cap.shared.testing.FeedstockMeasurementViews.view;
 import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementInstant;
+import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementRecordedAt;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -53,15 +51,15 @@ class ScoreFeedstockBatchProfileTargetServiceTest {
   void scoresLatestMeasurementCandidatesPerBatchAndSortsByDistance() {
     final var repository = mock(FeedstockMeasurementQueryRepository.class);
     final var service = service(repository);
-    final var ciderMakerId = CiderMakerId.of(randomUUID());
+    final var workspaceId = WorkspaceId.of(newUuid());
     final var near = sample("Near", profile("1.070", "6.0"));
     final var far = sample("Far", profile("1.040", "9.0"));
 
     when(repository.findLatestSugarAcidityPointCandidates(any()))
-        .thenReturn(List.of(far, near));
+        .thenReturn(List.of(view(far), view(near)));
 
     final var result = service.score(new ScoreFeedstockBatchProfileTargetCommand(
-        ciderMakerId,
+        workspaceId,
         new FeedstockMeasurementPointFilters(null, null, null, null),
         ProfileTargetScoringPurpose.BLENDING_PLANNING,
         new PredefinedFeedstockProfileTargetSelection(SugarAcidityZone.PERFECT_APPLES),
@@ -81,7 +79,7 @@ class ScoreFeedstockBatchProfileTargetServiceTest {
     final var query = ArgumentCaptor.forClass(LatestFeedstockMeasurementSugarAcidityPointCandidateQuery.class);
     verify(repository).findLatestSugarAcidityPointCandidates(query.capture());
     verify(repository, never()).findSugarAcidityPointCandidates(any());
-    assertThat(query.getValue().ciderMakerId()).isEqualTo(ciderMakerId);
+    assertThat(query.getValue().workspaceId()).isEqualTo(workspaceId);
     assertThat(query.getValue().limit()).isEqualTo(50);
   }
 
@@ -105,7 +103,8 @@ class ScoreFeedstockBatchProfileTargetServiceTest {
             new BuiltInProfileAxisNormalizerSelector(thresholds),
             new BuiltInProfileTargetScoringPurposeNormalizerPolicy(),
             new BuiltInProfileTargetObjectiveFunctionFactory()
-        )
+        ),
+        mock(FeedstockAccessControl.class)
     );
   }
 
@@ -118,7 +117,8 @@ class ScoreFeedstockBatchProfileTargetServiceTest {
         FeedstockBatchId.newId(),
         FeedstockMeasurementName.of(name),
         profile,
-        feedstockMeasurementInstant()
+        feedstockMeasurementInstant(),
+        feedstockMeasurementRecordedAt()
     );
   }
 

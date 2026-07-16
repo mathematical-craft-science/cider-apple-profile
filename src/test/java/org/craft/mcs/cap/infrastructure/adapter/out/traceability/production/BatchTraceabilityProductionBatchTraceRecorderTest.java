@@ -3,22 +3,25 @@ package org.craft.mcs.cap.infrastructure.adapter.out.traceability.production;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
-import java.util.UUID;
+import org.craft.mcs.cap.core.account.shared.domain.value.AccountUserId;
+import org.craft.mcs.cap.core.account.shared.domain.value.DisplayName;
+import org.craft.mcs.cap.core.account.shared.domain.value.EmailAddress;
+import org.craft.mcs.cap.core.account.user.application.port.in.AccountUserView;
+import org.craft.mcs.cap.core.account.user.application.port.in.GetCurrentAccountProfileUseCase;
+import org.craft.mcs.cap.core.account.user.domain.model.AccountUserStatus;
 import org.craft.mcs.cap.core.batchtraceability.application.port.in.AppendBatchTraceStepUseCase;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceOperationType;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStep;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStepId;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceSubjectType;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
-import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.identity.UuidV7Generator;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchCompositionTraceSource;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchFeedstockTraceSource;
+import org.craft.mcs.cap.core.production.application.port.out.ProductionSourceDisplayName;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatch;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatchId;
-import org.craft.mcs.cap.core.production.domain.model.ProductionInput;
-import org.craft.mcs.cap.core.production.domain.model.ProductionSourceComponent;
-import org.craft.mcs.cap.core.production.domain.model.ProductionSourceComposition;
-import org.craft.mcs.cap.core.production.domain.model.ProductionSourceReference;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchKind;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchName;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
@@ -40,36 +43,24 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class BatchTraceabilityProductionBatchTraceRecorderTest {
 
-  private static ProductionInput productionInput(UUID sourceId) {
-    return new ProductionInput(
-        ProductionSourceComposition.of(List.of(new ProductionSourceComponent(
-            ProductionSourceReference.feedstockBatch(sourceId),
-            VolumeValue.ofLiters("100")
-        ))),
-        new ProductionProfileSnapshot(
-            SpecificGravityValue.of("1.052"),
-            TitratableAcidityValue.of("5.8"),
-            TanninityValue.of("1200"),
-            YeastAssimilableNitrogenValue.of("180")
-        ),
-        null
-    );
-  }
+  private static final AccountUserId ACTOR_USER_ID = AccountUserId.newId();
 
   @Test
   void mapsCompositionResultInputToTraceSubject() {
     final var appendUseCase = new CapturingAppendUseCase();
-    final var recorder = new BatchTraceabilityProductionBatchTraceRecorder(appendUseCase);
-    final var ciderMakerId = CiderMakerId.of(UUID.randomUUID());
-    final var sourceId = UUID.randomUUID().toString();
-    final var input = productionInput(UUID.randomUUID());
-    final var productionBatch = productionBatch(ciderMakerId, input);
+    final var recorder = new BatchTraceabilityProductionBatchTraceRecorder(
+        appendUseCase,
+        currentAccountProfile()
+    );
+    final var workspaceId = WorkspaceId.newId();
+    final var sourceId = UuidV7Generator.newUuid().toString();
+    final var productionBatch = productionBatch(workspaceId);
 
     recorder.recordCreated(
         productionBatch,
         List.of(new ProductionBatchCompositionTraceSource(
             sourceId,
-            "Accepted composition",
+            ProductionSourceDisplayName.of("Accepted composition"),
             VolumeValue.ofLiters("100")
         )),
         Instant.parse("2026-05-18T10:15:30Z"),
@@ -96,18 +87,20 @@ class BatchTraceabilityProductionBatchTraceRecorderTest {
   @Test
   void mapsProductionCreatedFactToBatchTraceStep() {
     final var appendUseCase = new CapturingAppendUseCase();
-    final var recorder = new BatchTraceabilityProductionBatchTraceRecorder(appendUseCase);
-    final var ciderMakerId = CiderMakerId.of(UUID.randomUUID());
-    final var sourceId = UUID.randomUUID();
-    final var input = productionInput(sourceId);
-    final var productionBatch = productionBatch(ciderMakerId, input);
+    final var recorder = new BatchTraceabilityProductionBatchTraceRecorder(
+        appendUseCase,
+        currentAccountProfile()
+    );
+    final var workspaceId = WorkspaceId.newId();
+    final var sourceId = FeedstockBatchId.newId().value();
+    final var productionBatch = productionBatch(workspaceId);
     final var occurredAt = Instant.parse("2026-05-18T10:15:30Z");
 
     recorder.recordCreated(
         productionBatch,
         List.of(new ProductionBatchFeedstockTraceSource(
             FeedstockBatchId.of(sourceId),
-            "Late juice",
+            ProductionSourceDisplayName.of("Late juice"),
             VolumeValue.ofLiters("100"),
             sourceAxes(),
             ConfidenceLevel.LAB_VERIFIED
@@ -116,10 +109,13 @@ class BatchTraceabilityProductionBatchTraceRecorderTest {
         "accepted input"
     );
 
-    assertThat(appendUseCase.step).isNotNull();
-    assertThat(appendUseCase.step.operationType()).isEqualTo(BatchTraceOperationType.CREATE_PRODUCTION_BATCH);
-    assertThat(appendUseCase.step.occurredAt()).isEqualTo(occurredAt);
-    assertThat(appendUseCase.step.note()).isEqualTo("accepted input");
+    assertThat(appendUseCase.step)
+        .isNotNull()
+        .returns(BatchTraceOperationType.CREATE_PRODUCTION_BATCH, BatchTraceStep::operationType)
+        .returns(occurredAt, BatchTraceStep::occurredAt)
+        .returns("accepted input", BatchTraceStep::note)
+        .satisfies(step -> assertThat(step.performedBy().id())
+            .isEqualTo(ACTOR_USER_ID.value().toString()));
     assertThat(appendUseCase.step.inputs()).singleElement()
         .satisfies(inputSubject -> {
           assertThat(inputSubject.subject().type()).isEqualTo(BatchTraceSubjectType.FEEDSTOCK_BATCH);
@@ -166,19 +162,30 @@ class BatchTraceabilityProductionBatchTraceRecorderTest {
     );
   }
 
-  private static ProductionBatch productionBatch(
-      CiderMakerId ciderMakerId,
-      ProductionInput input
-  ) {
+  private static ProductionBatch productionBatch(WorkspaceId workspaceId) {
     return ProductionBatch.create(
         ProductionBatchId.newId(),
-        ciderMakerId,
+        workspaceId,
         ProductionBatchName.of("Classic cider"),
         ProductionBatchKind.CIDER,
-        input.sourceComposition().totalVolume(),
-        input.profile(),
-        null,
+        VolumeValue.ofLiters("100"),
+        new ProductionProfileSnapshot(
+            SpecificGravityValue.of("1.052"),
+            TitratableAcidityValue.of("5.8"),
+            TanninityValue.of("1200"),
+            YeastAssimilableNitrogenValue.of("180")
+        ),
         null
+    );
+  }
+
+  private static GetCurrentAccountProfileUseCase currentAccountProfile() {
+    return () -> new AccountUserView(
+        ACTOR_USER_ID,
+        EmailAddress.of("technologist@example.com"),
+        DisplayName.of("Technologist"),
+        null,
+        AccountUserStatus.ACTIVE
     );
   }
 

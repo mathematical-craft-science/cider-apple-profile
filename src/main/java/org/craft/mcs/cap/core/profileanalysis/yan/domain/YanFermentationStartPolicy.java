@@ -5,6 +5,7 @@ import java.util.Comparator;
 import java.util.Set;
 import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.FermentationStartPreparationActionType;
 import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.FermentationStartReadinessCheck;
+import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.FermentationStartReadinessCheckCode;
 import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.FermentationStartReadinessFactor;
 import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.FermentationStartReadinessSeverity;
 import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
@@ -67,7 +68,7 @@ public record YanFermentationStartPolicy(
     if (value == null) {
       return check(
           FermentationStartReadinessSeverity.WARNING,
-          "YAN_MISSING",
+          FermentationStartReadinessCheckCode.YAN_MISSING,
           "YAN is missing; nutrient deficiency and stuck fermentation risk cannot be assessed.",
           null
       );
@@ -77,7 +78,7 @@ public record YanFermentationStartPolicy(
       final var action = nutrientManagementAction(context.preparationActions());
       if (action != null) {
         return managedYanCheck(
-            "YAN_SEVERELY_LOW_MANAGED",
+            FermentationStartReadinessCheckCode.YAN_SEVERELY_LOW_MANAGED,
             "YAN is severely low; nutrient risk is marked as managed by a preparation action.",
             value,
             action
@@ -85,7 +86,7 @@ public record YanFermentationStartPolicy(
       }
       return check(
           FermentationStartReadinessSeverity.BLOCKER,
-          "YAN_SEVERELY_LOW",
+          FermentationStartReadinessCheckCode.YAN_SEVERELY_LOW,
           "YAN is severely low; define a nutrient plan before starting fermentation.",
           value
       );
@@ -95,7 +96,7 @@ public record YanFermentationStartPolicy(
       final var action = nutrientManagementAction(context.preparationActions());
       if (action != null) {
         return managedYanCheck(
-            "YAN_LOW_MANAGED",
+            FermentationStartReadinessCheckCode.YAN_LOW_MANAGED,
             "YAN is low; nutrient risk is marked as managed by a preparation action.",
             value,
             action
@@ -103,7 +104,7 @@ public record YanFermentationStartPolicy(
       }
       return check(
           FermentationStartReadinessSeverity.WARNING,
-          "YAN_LOW",
+          FermentationStartReadinessCheckCode.YAN_LOW,
           "YAN is low; monitor fermentation kinetics and consider yeast nutrient planning.",
           value
       );
@@ -112,7 +113,7 @@ public record YanFermentationStartPolicy(
     if (isGreaterThan(value, high)) {
       return check(
           FermentationStartReadinessSeverity.WARNING,
-          "YAN_HIGH",
+          FermentationStartReadinessCheckCode.YAN_HIGH,
           "YAN is high; avoid unnecessary nutrient additions and manage microbial stability risk.",
           value
       );
@@ -120,7 +121,7 @@ public record YanFermentationStartPolicy(
 
     return check(
         FermentationStartReadinessSeverity.INFO,
-        "YAN_ACCEPTABLE",
+        FermentationStartReadinessCheckCode.YAN_ACCEPTABLE,
         "YAN is within the curated cider fermentation-start guidance range.",
         value
     );
@@ -138,7 +139,7 @@ public record YanFermentationStartPolicy(
 
   private static @NonNull FermentationStartReadinessCheck check(
       @NonNull FermentationStartReadinessSeverity severity,
-      @NonNull String code,
+      @NonNull FermentationStartReadinessCheckCode code,
       @NonNull String message,
       @Nullable BigDecimal value
   ) {
@@ -153,7 +154,7 @@ public record YanFermentationStartPolicy(
   }
 
   private static @NonNull FermentationStartReadinessCheck managedYanCheck(
-      @NonNull String code,
+      @NonNull FermentationStartReadinessCheckCode code,
       @NonNull String message,
       @NonNull BigDecimal value,
       @NonNull FermentationStartPreparationActionType action

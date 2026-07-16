@@ -1,16 +1,15 @@
 package org.craft.mcs.cap.core.feedstock.domain.model.batch;
 
-import org.craft.mcs.cap.shared.kernel.DomainConflictException;
-import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
-
 import java.time.Instant;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockBatchName;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSource;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockVessel;
-import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.DomainConflictException;
+import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.jmolecules.ddd.annotation.AggregateRoot;
 import org.jmolecules.ddd.annotation.Identity;
@@ -21,7 +20,7 @@ import static java.util.Objects.requireNonNull;
 
 
 /**
- * Aggregate root for a physical lot of available raw material owned by a cider maker.
+ * Aggregate root for a physical lot of available raw material owned by a workspace.
  *
  * <p>A batch is the operational entity a cider maker manages as source material: it has a season,
  * optional vessel, optional source/origin, available volume and lifecycle state. Chemical values are
@@ -39,7 +38,7 @@ public final class FeedstockBatch {
   @Identity
   private final @NonNull FeedstockBatchId batchId;
 
-  private final @NonNull CiderMakerId ciderMakerId;
+  private final @NonNull WorkspaceId workspaceId;
 
   private @NonNull FeedstockBatchName name;
 
@@ -60,7 +59,7 @@ public final class FeedstockBatch {
   @SuppressWarnings("java:S107")
   private FeedstockBatch(
       @NonNull FeedstockBatchId batchId,
-      @NonNull CiderMakerId ciderMakerId,
+      @NonNull WorkspaceId workspaceId,
       @NonNull FeedstockBatchName name,
       @Nullable FeedstockVessel vessel,
       @NonNull FeedstockType type,
@@ -71,7 +70,7 @@ public final class FeedstockBatch {
       @Nullable Instant deletedAt
   ) {
     this.batchId = requireNonNull(batchId, "feedstock batch id cannot be null");
-    this.ciderMakerId = requireNonNull(ciderMakerId, "cider maker id cannot be null");
+    this.workspaceId = requireNonNull(workspaceId, "workspace id cannot be null");
     this.name = requireNonNull(name, "feedstock batch name cannot be null");
     this.vessel = vessel;
     this.type = requireNonNull(type, "feedstock type cannot be null");
@@ -84,7 +83,7 @@ public final class FeedstockBatch {
 
   public static @NonNull FeedstockBatch create(
       @NonNull FeedstockBatchId batchId,
-      @NonNull CiderMakerId ciderMakerId,
+      @NonNull WorkspaceId workspaceId,
       @NonNull FeedstockBatchName name,
       @Nullable FeedstockVessel vessel,
       @NonNull FeedstockType type,
@@ -94,7 +93,7 @@ public final class FeedstockBatch {
     requirePositiveAvailableVolume(availableVolume);
     return new FeedstockBatch(
         batchId,
-        ciderMakerId,
+        workspaceId,
         name,
         vessel,
         type,
@@ -109,7 +108,7 @@ public final class FeedstockBatch {
   @SuppressWarnings("java:S107")
   public static @NonNull FeedstockBatch restore(
       @NonNull FeedstockBatchId batchId,
-      @NonNull CiderMakerId ciderMakerId,
+      @NonNull WorkspaceId workspaceId,
       @NonNull FeedstockBatchName name,
       @Nullable FeedstockVessel vessel,
       @NonNull FeedstockType type,
@@ -121,7 +120,7 @@ public final class FeedstockBatch {
   ) {
     return new FeedstockBatch(
         batchId,
-        ciderMakerId,
+        workspaceId,
         name,
         vessel,
         type,
@@ -137,8 +136,8 @@ public final class FeedstockBatch {
     return batchId;
   }
 
-  public @NonNull CiderMakerId ciderMakerId() {
-    return ciderMakerId;
+  public @NonNull WorkspaceId workspaceId() {
+    return workspaceId;
   }
 
   public @NonNull FeedstockBatchName name() {

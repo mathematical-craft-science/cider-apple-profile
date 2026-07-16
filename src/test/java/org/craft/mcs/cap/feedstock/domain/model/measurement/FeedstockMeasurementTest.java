@@ -26,7 +26,8 @@ class FeedstockMeasurementTest {
         FeedstockBatchId.newId(),
         FeedstockMeasurementName.of("Press sample"),
         chemicalProfile(),
-        futureInstant()
+        futureInstant(),
+        feedstockMeasurementInstant()
     ))
         .isInstanceOf(DomainRuleViolationException.class)
         .hasMessage("feedstock measurement date cannot be in the future");
@@ -39,10 +40,11 @@ class FeedstockMeasurementTest {
         FeedstockBatchId.newId(),
         FeedstockMeasurementName.of("Press sample"),
         chemicalProfile(),
+        feedstockMeasurementInstant(),
         feedstockMeasurementInstant()
     );
 
-    assertThatThrownBy(() -> measurement.changeMeasuredAt(futureInstant()))
+    assertThatThrownBy(() -> measurement.changeMeasuredAt(futureInstant(), feedstockMeasurementInstant()))
         .isInstanceOf(DomainRuleViolationException.class)
         .hasMessage("feedstock measurement date cannot be in the future");
   }

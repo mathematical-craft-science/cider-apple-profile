@@ -4,7 +4,6 @@ import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.SugarAc
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.TanninTargetRange;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
-
 import static java.util.Objects.requireNonNull;
 
 

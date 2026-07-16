@@ -12,22 +12,22 @@ import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.Rectangle
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.SugarAcidityZoneAssessor;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.SugarAcidityZoneGeometryProfile;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 
 @Configuration
+@EnableConfigurationProperties(ProfileAnalysisSugarAcidityProperties.class)
 class ProfileAnalysisSugarAcidityConfiguration {
 
   @Bean
   SugarAcidityZoneGeometryProfile sugarAcidityZoneGeometryProfile(
-      @Value("${cap.profile-analysis.sugar-acidity.assessor:rectangle}") String assessor
+      ProfileAnalysisSugarAcidityProperties properties
   ) {
-    return switch (assessor) {
-      case "ellipse" -> BuiltInSugarAcidityZoneProfiles.ellipticalZoneGeometryProfile();
-      case "rectangle" -> BuiltInSugarAcidityZoneProfiles.rectangularZoneGeometryProfile();
-      default -> throw new IllegalArgumentException("unsupported sugar-acidity assessor: " + assessor);
+    return switch (properties.assessor()) {
+      case ELLIPSE -> BuiltInSugarAcidityZoneProfiles.ellipticalZoneGeometryProfile();
+      case RECTANGLE -> BuiltInSugarAcidityZoneProfiles.rectangularZoneGeometryProfile();
     };
   }
 

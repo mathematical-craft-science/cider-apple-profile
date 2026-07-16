@@ -1,5 +1,6 @@
 package org.craft.mcs.cap.shared.application;
 
+import java.io.Serial;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -9,7 +10,7 @@ import org.jspecify.annotations.Nullable;
  */
 public abstract class ApplicationConflictException extends ApplicationException {
 
-  @java.io.Serial
+  @Serial
   private static final long serialVersionUID = 1L;
 
   protected ApplicationConflictException(@NonNull String message) {

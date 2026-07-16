@@ -2,8 +2,8 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.composition.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
-import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.CompositionOptimizationPenaltyCode;
-import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.CompositionOptimizationPenaltySeverity;
+import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.objective.CompositionOptimizationPenaltyCode;
+import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.objective.CompositionOptimizationPenaltySeverity;
 import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.jspecify.annotations.NonNull;

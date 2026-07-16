@@ -5,5 +5,7 @@
  * Regional observations, source mapping, provenance, contributor identity, contact visibility and
  * import ACLs should be introduced here when the regional catalog work starts.
  */
-@org.jmolecules.ddd.annotation.BoundedContext
+@BoundedContext
 package org.craft.mcs.cap.core.varietyprofile;
+
+import org.jmolecules.ddd.annotation.BoundedContext;

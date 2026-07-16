@@ -18,10 +18,14 @@ public record ChemicalProfileCompositionSourceReference(
     id = id.strip();
 
     if (type.isEmpty()) {
-      throw new InvalidChemicalProfileCompositionException("chemical profile composition source reference type cannot be blank");
+      throw new InvalidChemicalProfileCompositionException(
+          "chemical profile composition source reference type cannot be blank"
+      );
     }
     if (id.isEmpty()) {
-      throw new InvalidChemicalProfileCompositionException("chemical profile composition source reference id cannot be blank");
+      throw new InvalidChemicalProfileCompositionException(
+          "chemical profile composition source reference id cannot be blank"
+      );
     }
   }
 }

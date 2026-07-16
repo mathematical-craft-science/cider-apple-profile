@@ -3,6 +3,7 @@ package org.craft.mcs.cap.core.profileanalysis.ph.domain;
 import java.util.Set;
 import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.FermentationStartPreparationActionType;
 import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.FermentationStartReadinessCheck;
+import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.FermentationStartReadinessCheckCode;
 import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.FermentationStartReadinessSeverity;
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.craft.mcs.cap.shared.kernel.chemical.value.PhValue;
@@ -24,7 +25,10 @@ class PhFermentationStartPolicyTest {
     ));
 
     assertThat(check)
-        .returns("PH_VERY_HIGH_MICROBIAL_RISK_MANAGED", FermentationStartReadinessCheck::code)
+        .returns(
+            FermentationStartReadinessCheckCode.PH_VERY_HIGH_MICROBIAL_RISK_MANAGED,
+            FermentationStartReadinessCheck::code
+        )
         .returns(FermentationStartReadinessSeverity.WARNING, FermentationStartReadinessCheck::severity)
         .returns(
             FermentationStartPreparationActionType.SO2_ADDITION_PLANNED,

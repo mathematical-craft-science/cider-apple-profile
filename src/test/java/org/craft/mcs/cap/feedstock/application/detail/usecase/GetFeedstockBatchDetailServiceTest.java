@@ -8,20 +8,21 @@ import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
 import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchNotFoundException;
 import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchOwnershipMismatchException;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchRepository;
-import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in.FeedstockCurrentMeasurementFreshnessStatus;
-import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in.FeedstockCurrentMeasurementFreshnessView;
-import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.in.FeedstockPlanningReadinessStatus;
-import org.craft.mcs.cap.core.feedstock.application.currentprofile.usecase.FeedstockCurrentMeasurementFreshnessPolicy;
+import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentMeasurementFreshnessStatus;
+import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentMeasurementFreshnessView;
+import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockPlanningReadinessStatus;
+import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentProfileSettings;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.usecase.FeedstockCurrentProfileAssessmentService;
-import org.craft.mcs.cap.core.feedstock.application.detail.port.in.FeedstockBatchCurrentProfileOperationType;
-import org.craft.mcs.cap.core.feedstock.application.detail.port.in.FeedstockBatchCurrentProfileOperationView;
-import org.craft.mcs.cap.core.feedstock.application.detail.port.in.FeedstockBatchCurrentProfileView;
+import org.craft.mcs.cap.core.feedstock.application.detail.model.FeedstockBatchCurrentProfileOperationType;
+import org.craft.mcs.cap.core.feedstock.application.detail.model.FeedstockBatchCurrentProfileOperationView;
+import org.craft.mcs.cap.core.feedstock.application.detail.model.FeedstockBatchCurrentProfileView;
 import org.craft.mcs.cap.core.feedstock.application.detail.port.in.GetFeedstockBatchDetailQuery;
 import org.craft.mcs.cap.core.feedstock.application.detail.usecase.GetFeedstockBatchDetailService;
-import org.craft.mcs.cap.core.feedstock.application.measurement.port.in.FeedstockMeasurementSummary;
+import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementSummary;
 import org.craft.mcs.cap.core.feedstock.application.measurement.port.in.ListFeedstockMeasurementsUseCase;
 import org.craft.mcs.cap.core.feedstock.application.measurement.port.out.FeedstockMeasurementQueryRepository;
 import org.craft.mcs.cap.core.feedstock.application.measurement.query.FeedstockBatchCurrentMeasurementQueryService;
@@ -49,7 +50,7 @@ import org.craft.mcs.cap.shared.kernel.chemical.value.PhValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
-import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.craft.mcs.cap.shared.kernel.measurement.ExactMeasurement;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
@@ -59,6 +60,8 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.craft.mcs.cap.shared.testing.FeedstockMeasurementViews.view;
+import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementRecordedAt;
 import static java.util.Objects.requireNonNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -67,7 +70,7 @@ import static org.mockito.Mockito.when;
 
 class GetFeedstockBatchDetailServiceTest {
 
-  private static final CiderMakerId CIDER_MAKER_ID = CiderMakerId.of(
+  private static final WorkspaceId WORKSPACE_ID = WorkspaceId.of(
       UUID.fromString("7c18963c-26d7-45c0-af2c-07998f4f6d6b")
   );
   private static final Clock CLOCK = Clock.fixed(Instant.parse("2026-05-10T10:00:00Z"), ZoneOffset.UTC);
@@ -79,6 +82,7 @@ class GetFeedstockBatchDetailServiceTest {
   ) {
     return new GetFeedstockBatchDetailService(
         batchRepository,
+        mock(FeedstockAccessControl.class),
         listMeasurements,
         new FeedstockBatchCurrentMeasurementQueryService(measurementRepository),
         projector(),
@@ -89,9 +93,9 @@ class GetFeedstockBatchDetailServiceTest {
         new FermentationStartReadinessAssessor(),
         new FeedstockCurrentProfileAssessmentService(
             CLOCK,
-            new FeedstockCurrentMeasurementFreshnessPolicy(Duration.ofDays(3)),
             PhPlanningGuidancePolicy.curatedCiderV1()
-        )
+        ),
+        _ -> new FeedstockCurrentProfileSettings(Duration.ofDays(3))
     );
   }
 
@@ -108,11 +112,11 @@ class GetFeedstockBatchDetailServiceTest {
 
   private static FeedstockBatch batch(
       FeedstockBatchId batchId,
-      CiderMakerId ciderMakerId
+      WorkspaceId workspaceId
   ) {
     return FeedstockBatch.create(
         batchId,
-        ciderMakerId,
+        workspaceId,
         FeedstockBatchName.of("Late season juice"),
         FeedstockVessel.of("Tank A-01"),
         FeedstockType.JUICE,
@@ -137,7 +141,8 @@ class GetFeedstockBatchDetailServiceTest {
             .tanninity(ExactMeasurement.of(TanninityValue.of("1400")))
             .yeastAssimilableNitrogen(ExactMeasurement.of(YeastAssimilableNitrogenValue.of("120")))
             .build(),
-        Instant.parse(measuredAt)
+        Instant.parse(measuredAt),
+        feedstockMeasurementRecordedAt()
     );
   }
 
@@ -147,7 +152,7 @@ class GetFeedstockBatchDetailServiceTest {
   ) {
     return new FeedstockMeasurementSummary(
         measurement.measurementId(),
-        batch.ciderMakerId(),
+        batch.workspaceId(),
         measurement.batchId(),
         measurement.name(),
         measurement.measuredAt(),
@@ -159,7 +164,7 @@ class GetFeedstockBatchDetailServiceTest {
   @Test
   void returnsDetailReadModelWithCurrentProfileAndMeasurementHistory() {
     final var batchId = FeedstockBatchId.newId();
-    final var batch = batch(batchId, CIDER_MAKER_ID);
+    final var batch = batch(batchId, WORKSPACE_ID);
     final var currentMeasurement = measurement(batchId, "Current profile", "2026-05-01T10:00:00Z");
     final var olderMeasurement = measurement(batchId, "Older profile", "2026-04-20T10:00:00Z");
     final var batchRepository = mock(FeedstockBatchRepository.class);
@@ -167,13 +172,13 @@ class GetFeedstockBatchDetailServiceTest {
     final var measurementRepository = mock(FeedstockMeasurementQueryRepository.class);
     final var service = service(batchRepository, listMeasurements, measurementRepository);
     when(batchRepository.findById(batchId)).thenReturn(Optional.of(batch));
-    when(measurementRepository.findLatestByBatchId(batchId)).thenReturn(Optional.of(currentMeasurement));
+    when(measurementRepository.findLatestByBatchId(batchId)).thenReturn(Optional.of(view(currentMeasurement)));
     when(listMeasurements.listByBatchId(batchId)).thenReturn(List.of(
         measurementSummary(batch, currentMeasurement),
         measurementSummary(batch, olderMeasurement)
     ));
 
-    final var detail = service.get(new GetFeedstockBatchDetailQuery(batchId, CIDER_MAKER_ID));
+    final var detail = service.get(new GetFeedstockBatchDetailQuery(batchId, WORKSPACE_ID));
 
     assertThat(detail)
         .returns(batchId, view -> view.batch().batchId())
@@ -217,7 +222,7 @@ class GetFeedstockBatchDetailServiceTest {
   @Test
   void returnsBlockedCurrentProfileWhenBatchHasNoMeasurements() {
     final var batchId = FeedstockBatchId.newId();
-    final var batch = batch(batchId, CIDER_MAKER_ID);
+    final var batch = batch(batchId, WORKSPACE_ID);
     final var batchRepository = mock(FeedstockBatchRepository.class);
     final var listMeasurements = mock(ListFeedstockMeasurementsUseCase.class);
     final var measurementRepository = mock(FeedstockMeasurementQueryRepository.class);
@@ -226,7 +231,7 @@ class GetFeedstockBatchDetailServiceTest {
     when(measurementRepository.findLatestByBatchId(batchId)).thenReturn(Optional.empty());
     when(listMeasurements.listByBatchId(batchId)).thenReturn(List.of());
 
-    final var detail = service.get(new GetFeedstockBatchDetailQuery(batchId, CIDER_MAKER_ID));
+    final var detail = service.get(new GetFeedstockBatchDetailQuery(batchId, WORKSPACE_ID));
 
     assertThat(detail.currentProfile())
         .returns(null, FeedstockBatchCurrentProfileView::latestMeasurement)
@@ -239,16 +244,16 @@ class GetFeedstockBatchDetailServiceTest {
   }
 
   @Test
-  void rejectsBatchOwnedByAnotherCiderMaker() {
+  void rejectsBatchOwnedByAnotherWorkspace() {
     final var batchId = FeedstockBatchId.newId();
-    final var actualOwner = CiderMakerId.of(UUID.fromString("14795a85-df62-4515-8fb0-d79ff274b920"));
+    final var actualOwner = WorkspaceId.of(UUID.fromString("14795a85-df62-4515-8fb0-d79ff274b920"));
     final var batchRepository = mock(FeedstockBatchRepository.class);
     final var listMeasurements = mock(ListFeedstockMeasurementsUseCase.class);
     final var measurementRepository = mock(FeedstockMeasurementQueryRepository.class);
     final var service = service(batchRepository, listMeasurements, measurementRepository);
     when(batchRepository.findById(batchId)).thenReturn(Optional.of(batch(batchId, actualOwner)));
 
-    assertThatThrownBy(() -> service.get(new GetFeedstockBatchDetailQuery(batchId, CIDER_MAKER_ID)))
+    assertThatThrownBy(() -> service.get(new GetFeedstockBatchDetailQuery(batchId, WORKSPACE_ID)))
         .isInstanceOf(FeedstockBatchOwnershipMismatchException.class);
     verifyNoInteractions(listMeasurements, measurementRepository);
   }
@@ -262,7 +267,7 @@ class GetFeedstockBatchDetailServiceTest {
     final var service = service(batchRepository, listMeasurements, measurementRepository);
     when(batchRepository.findById(batchId)).thenReturn(Optional.empty());
 
-    assertThatThrownBy(() -> service.get(new GetFeedstockBatchDetailQuery(batchId, CIDER_MAKER_ID)))
+    assertThatThrownBy(() -> service.get(new GetFeedstockBatchDetailQuery(batchId, WORKSPACE_ID)))
         .isInstanceOf(FeedstockBatchNotFoundException.class);
     verifyNoInteractions(listMeasurements, measurementRepository);
   }

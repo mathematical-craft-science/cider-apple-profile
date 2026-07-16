@@ -1,10 +1,10 @@
 package org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.usecase;
 
-import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.FeedstockPlanningRoleEvidenceDirection;
-import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.FeedstockPlanningRoleEvidenceEffect;
-import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.FeedstockPlanningRoleEvidenceFact;
-import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.FeedstockPlanningRoleEvidenceSeverity;
-import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.FeedstockPlanningRoleExplanationView;
+import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.model.FeedstockPlanningRoleEvidenceDirection;
+import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.model.FeedstockPlanningRoleEvidenceEffect;
+import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.model.FeedstockPlanningRoleEvidenceFact;
+import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.model.FeedstockPlanningRoleEvidenceSeverity;
+import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.model.FeedstockPlanningRoleExplanationView;
 import org.craft.mcs.cap.core.profileanalysis.composition.contribution.domain.CompositionContributionEvidence;
 import org.craft.mcs.cap.core.profileanalysis.composition.contribution.domain.CompositionContributionRole;
 import org.craft.mcs.cap.core.profileanalysis.composition.contribution.domain.CompositionContributionRoleAssessment;
@@ -17,7 +17,7 @@ import static java.util.Objects.requireNonNull;
  * Converts target-aware contribution-role assessment into typed planning facts.
  *
  * <p>The assessment itself stays in profile-analysis domain. This explainer only prepares a
- * read-side projection for feedstock planning rows, so clients can build localized user-facing
+ * read-side projection for feedstock planning consumers, so inbound adapters can present localized
  * explanations without reimplementing CAP role semantics.
  */
 @Component

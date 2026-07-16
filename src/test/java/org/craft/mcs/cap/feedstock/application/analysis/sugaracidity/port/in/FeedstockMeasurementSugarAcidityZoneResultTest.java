@@ -1,9 +1,9 @@
 package org.craft.mcs.cap.feedstock.application.analysis.sugaracidity.port.in;
 
-import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockMeasurementSugarAcidityZoneResult;
+import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.*;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurementId;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
-import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.value.FeedstockMeasurementName;
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapability;
@@ -16,7 +16,7 @@ import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.junit.jupiter.api.Test;
 
-import static java.util.UUID.randomUUID;
+import static org.craft.mcs.cap.shared.kernel.identity.UuidV7Generator.newUuid;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -27,7 +27,7 @@ class FeedstockMeasurementSugarAcidityZoneResultTest {
   void rejectsMissingEvaluation() {
     assertThatThrownBy(() -> new FeedstockMeasurementSugarAcidityZoneResult(
             FeedstockMeasurementId.newId(),
-            CiderMakerId.of(randomUUID()),
+            WorkspaceId.of(newUuid()),
             FeedstockBatchId.newId(),
             FeedstockMeasurementName.of("Partial batch"),
             null
@@ -39,7 +39,7 @@ class FeedstockMeasurementSugarAcidityZoneResultTest {
   void allowsUnplottableResultWithoutAssessment() {
     final var result = new FeedstockMeasurementSugarAcidityZoneResult(
         FeedstockMeasurementId.newId(),
-        CiderMakerId.of(randomUUID()),
+        WorkspaceId.of(newUuid()),
         FeedstockBatchId.newId(),
         FeedstockMeasurementName.of("Partial batch"),
         evaluation()

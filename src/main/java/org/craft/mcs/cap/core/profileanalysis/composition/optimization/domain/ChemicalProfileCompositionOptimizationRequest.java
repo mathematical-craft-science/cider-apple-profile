@@ -1,13 +1,14 @@
 package org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain;
 
+import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.objective.CompositionOptimizationCriterion;
+import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.strategy.DiscretizedCompositionOptimizationSettings;
 import java.util.List;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionTanninPolicy;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetObjective;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetObjectiveFunction;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.objective.ProfileTargetObjectiveFunction;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
-
 import static java.util.Objects.requireNonNull;
 
 
@@ -43,7 +44,9 @@ public record ChemicalProfileCompositionOptimizationRequest(
     requireNonNull(mode, "composition optimization mode cannot be null");
 
     if (sources.size() < 2) {
-      throw new InvalidChemicalProfileCompositionOptimizationException("chemical profile composition optimization requires at least two sources");
+      throw new InvalidChemicalProfileCompositionOptimizationException(
+          "chemical profile composition optimization requires at least two sources"
+      );
     }
     if (sources.size() > DiscretizedCompositionOptimizationSettings.MAX_SOURCE_COUNT) {
       throw new InvalidChemicalProfileCompositionOptimizationException(
@@ -63,16 +66,22 @@ public record ChemicalProfileCompositionOptimizationRequest(
     if (mode == CompositionOptimizationMode.ABSOLUTE_VOLUME) {
       validateAbsoluteVolumeTarget(targetTotalVolume);
     } else if (targetTotalVolume != null) {
-      throw new InvalidChemicalProfileCompositionOptimizationException("proportion composition optimization must not define target total volume");
+      throw new InvalidChemicalProfileCompositionOptimizationException(
+          "proportion composition optimization must not define target total volume"
+      );
     }
   }
 
   private static void validateAbsoluteVolumeTarget(@Nullable VolumeValue targetTotalVolume) {
     if (targetTotalVolume == null) {
-      throw new InvalidChemicalProfileCompositionOptimizationException("absolute volume composition optimization requires target total volume");
+      throw new InvalidChemicalProfileCompositionOptimizationException(
+          "absolute volume composition optimization requires target total volume"
+      );
     }
     if (targetTotalVolume.isZero()) {
-      throw new InvalidChemicalProfileCompositionOptimizationException("absolute volume composition optimization requires target total volume greater than zero");
+      throw new InvalidChemicalProfileCompositionOptimizationException(
+          "absolute volume composition optimization requires target total volume greater than zero"
+      );
     }
   }
 

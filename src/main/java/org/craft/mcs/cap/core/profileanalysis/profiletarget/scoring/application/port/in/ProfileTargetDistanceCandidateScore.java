@@ -1,6 +1,6 @@
 package org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.port.in;
 
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetDistance;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.assessment.ProfileTargetDistance;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;

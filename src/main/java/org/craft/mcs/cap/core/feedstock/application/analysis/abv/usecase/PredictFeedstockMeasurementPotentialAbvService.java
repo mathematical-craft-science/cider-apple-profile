@@ -1,6 +1,8 @@
 package org.craft.mcs.cap.core.feedstock.application.analysis.abv.usecase;
 
 import lombok.RequiredArgsConstructor;
+import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
+import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchNotFoundException;
 import org.craft.mcs.cap.core.feedstock.application.FeedstockMeasurementNotFoundException;
 import org.craft.mcs.cap.core.feedstock.application.analysis.abv.port.in.FeedstockMeasurementPotentialAbvPrediction;
 import org.craft.mcs.cap.core.feedstock.application.analysis.abv.port.in.PredictFeedstockMeasurementPotentialAbvUseCase;
@@ -34,6 +36,7 @@ public final class PredictFeedstockMeasurementPotentialAbvService
 
   private final @NonNull FeedstockMeasurementRepository feedstockMeasurementRepository;
   private final @NonNull FeedstockBatchRepository feedstockBatchRepository;
+  private final @NonNull FeedstockAccessControl feedstockAccessControl;
   private final @NonNull ChemicalProfileAxisExtractor axisExtractor;
   private final @NonNull ChemicalProfileCapabilityAssessor capabilityAssessor;
   private final @NonNull PotentialAbvPredictor predictor;
@@ -47,9 +50,8 @@ public final class PredictFeedstockMeasurementPotentialAbvService
     final var sample = feedstockMeasurementRepository.findById(measurementId)
         .orElseThrow(() -> new FeedstockMeasurementNotFoundException(measurementId));
     final var batch = feedstockBatchRepository.findById(sample.batchId())
-        .orElseThrow(() -> new IllegalStateException(
-            "feedstock measurement batch not found: " + sample.batchId().value()
-        ));
+        .orElseThrow(() -> new FeedstockBatchNotFoundException(sample.batchId()));
+    feedstockAccessControl.requireReadAccess(batch.workspaceId());
     final var axes = axisExtractor.extract(sample.chemicalProfile());
     final var capability = capabilityAssessor.assess(axes, ChemicalProfileCapability.ABV_PREDICTION);
 
@@ -57,12 +59,11 @@ public final class PredictFeedstockMeasurementPotentialAbvService
       throw new ChemicalProfileCapabilityNotMetException(capability);
     }
 
-    final var sugar = axes.valueOf(ChemicalAxis.SUGAR)
-        .orElseThrow(() -> new IllegalStateException("ABV-capable profile must have sugar axis"));
+    final var sugar = axes.requireValueOf(ChemicalAxis.SUGAR);
 
     return new FeedstockMeasurementPotentialAbvPrediction(
         sample.measurementId(),
-        batch.ciderMakerId(),
+        batch.workspaceId(),
         sample.batchId(),
         sample.name(),
         sugar.valueKind(),

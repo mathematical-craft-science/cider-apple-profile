@@ -1,6 +1,7 @@
 package org.craft.mcs.cap.core.feedstock.application.batch.usecase;
 
 import lombok.RequiredArgsConstructor;
+import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.CreateFeedstockBatchCommand;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.CreateFeedstockBatchUseCase;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.FeedstockBatchCreated;
@@ -15,7 +16,7 @@ import static java.util.Objects.requireNonNull;
 
 
 /**
- * Application service for registering a new feedstock batch for a cider maker.
+ * Application service for registering a new feedstock batch in a workspace.
  *
  * <p>The service creates the operational batch aggregate with season/source/available-volume
  * metadata. Chemical data is intentionally not captured here; it is added through
@@ -27,16 +28,18 @@ public final class CreateFeedstockBatchService
     implements CreateFeedstockBatchUseCase {
 
   private final @NonNull FeedstockBatchRepository feedstockBatchRepository;
+  private final @NonNull FeedstockAccessControl feedstockAccessControl;
   private final @NonNull TransactionHelper transactionHelper;
 
   @Override
   public @NonNull FeedstockBatchCreated create(@NonNull CreateFeedstockBatchCommand command) {
     requireNonNull(command, "create feedstock batch command cannot be null");
+    feedstockAccessControl.requireWriteAccess(command.workspaceId());
 
     return transactionHelper.callInTransactionNonNull(() -> {
       final var batch = FeedstockBatch.create(
           FeedstockBatchId.newId(),
-          command.ciderMakerId(),
+          command.workspaceId(),
           command.name(),
           command.vessel(),
           command.type(),
@@ -44,11 +47,11 @@ public final class CreateFeedstockBatchService
           command.availableVolume()
       ).changeSource(command.source()).changeNote(command.note());
 
-      final var saved = feedstockBatchRepository.save(batch);
+      final var saved = feedstockBatchRepository.create(batch);
 
       return new FeedstockBatchCreated(
           saved.batchId(),
-          saved.ciderMakerId(),
+          saved.workspaceId(),
           saved.name(),
           saved.vessel(),
           saved.type(),

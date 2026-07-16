@@ -1,23 +1,25 @@
 package org.craft.mcs.cap.core.feedstock.application.batch.port.out;
 
-import java.util.List;
 import java.util.Optional;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
+import org.craft.mcs.cap.shared.application.persistence.VersionedAggregate;
+import org.craft.mcs.cap.shared.application.persistence.VersionedAggregateRepository;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
-import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
 import org.jspecify.annotations.NonNull;
 
+public interface FeedstockBatchRepository
+    extends VersionedAggregateRepository<FeedstockBatch, FeedstockBatchId> {
 
-public interface FeedstockBatchRepository {
-
+  /**
+   * Loads a batch while serializing concurrent material-consumption attempts.
+   *
+   * <p>The locking mechanism is an adapter concern; the application contract expresses the
+   * requirement that available volume must not be allocated concurrently from stale state.
+   */
   @NonNull
-  FeedstockBatch save(@NonNull FeedstockBatch feedstockBatch);
+  Optional<@NonNull VersionedAggregate<FeedstockBatch>> findByIdForConsumption(
+      @NonNull FeedstockBatchId batchId
+  );
 
-  @NonNull
-  Optional<@NonNull FeedstockBatch> findById(@NonNull FeedstockBatchId batchId);
-
-  @NonNull
-  List<@NonNull FeedstockBatch> findAllByCiderMakerId(@NonNull CiderMakerId ciderMakerId);
-
-  void delete(@NonNull FeedstockBatch feedstockBatch);
+  void delete(@NonNull VersionedAggregate<FeedstockBatch> feedstockBatch);
 }

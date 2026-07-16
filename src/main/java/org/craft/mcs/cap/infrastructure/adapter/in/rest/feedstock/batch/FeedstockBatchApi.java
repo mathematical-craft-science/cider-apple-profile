@@ -63,7 +63,7 @@ public interface FeedstockBatchApi {
 
   @Operation(
       summary = "List feedstock batches",
-      description = "Lists feedstock batches by cider maker, optionally filtered by an overlapping season date range."
+      description = "Lists feedstock batches by workspace, optionally filtered by an overlapping season date range."
   )
   @ApiResponse(
       responseCode = "200",
@@ -79,8 +79,8 @@ public interface FeedstockBatchApi {
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
   )
   @NonNull ResponseEntity<@NonNull FeedstockBatchListResponse> list(
-      @Parameter(description = "Cider maker identifier.", required = true, schema = @Schema(format = "uuid"))
-      @NonNull UUID ciderMakerId,
+      @Parameter(description = "Workspace identifier.", required = true, schema = @Schema(format = "uuid"))
+      @NonNull UUID workspaceId,
       @Parameter(
           description = "Optional season filter start date. Must be provided together with seasonEndsOn.",
           schema = @Schema(format = "date")
@@ -110,7 +110,7 @@ public interface FeedstockBatchApi {
   )
   @ApiResponse(
       responseCode = "403",
-      description = "Batch belongs to another cider maker.",
+      description = "Batch belongs to another workspace.",
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
   )
   @ApiResponse(
@@ -122,17 +122,17 @@ public interface FeedstockBatchApi {
       @Parameter(description = "Feedstock batch identifier.", required = true, schema = @Schema(format = "uuid"))
       @NonNull UUID batchId,
       @Parameter(
-          description = "Cider maker identifier used for ownership validation.",
+          description = "Workspace identifier used for ownership validation.",
           required = true,
           schema = @Schema(format = "uuid")
       )
-      @NonNull UUID ciderMakerId
+      @NonNull UUID workspaceId
   );
 
   @Operation(
       summary = "Replace feedstock batch",
       description = """
-          Replaces editable feedstock batch fields. The request must include the cider maker owner id
+          Replaces editable feedstock batch fields. The request must include the owning workspace id
           for ownership validation.
           """,
       requestBody = @RequestBody(
@@ -159,7 +159,7 @@ public interface FeedstockBatchApi {
   )
   @ApiResponse(
       responseCode = "403",
-      description = "Batch belongs to another cider maker.",
+      description = "Batch belongs to another workspace.",
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
   )
   @ApiResponse(
@@ -197,7 +197,7 @@ public interface FeedstockBatchApi {
   )
   @ApiResponse(
       responseCode = "403",
-      description = "Batch belongs to another cider maker.",
+      description = "Batch belongs to another workspace.",
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
   )
   @ApiResponse(
@@ -234,7 +234,7 @@ public interface FeedstockBatchApi {
   @ApiResponse(responseCode = "204", description = "Feedstock batch deleted.")
   @ApiResponse(
       responseCode = "403",
-      description = "Batch belongs to another cider maker.",
+      description = "Batch belongs to another workspace.",
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
   )
   @ApiResponse(
@@ -251,10 +251,10 @@ public interface FeedstockBatchApi {
       @Parameter(description = "Feedstock batch identifier.", required = true, schema = @Schema(format = "uuid"))
       @NonNull UUID batchId,
       @Parameter(
-          description = "Cider maker identifier used for ownership validation.",
+          description = "Workspace identifier used for ownership validation.",
           required = true,
           schema = @Schema(format = "uuid")
       )
-      @NonNull UUID ciderMakerId
+      @NonNull UUID workspaceId
   );
 }

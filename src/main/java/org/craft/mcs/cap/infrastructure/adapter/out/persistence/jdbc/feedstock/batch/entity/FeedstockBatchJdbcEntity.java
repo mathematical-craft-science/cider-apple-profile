@@ -21,7 +21,7 @@ import static java.util.Objects.requireNonNull;
 public class FeedstockBatchJdbcEntity {
 
   @Id @NonNull @Column("batch_id") UUID batchId;
-  @NonNull @Column("cider_maker_id") UUID ciderMakerId;
+  @NonNull @Column("workspace_id") UUID workspaceId;
   @NonNull @Column("name") String name;
   @Nullable @Column("vessel") String vessel;
   @NonNull @Column("type") FeedstockType type;
@@ -41,7 +41,7 @@ public class FeedstockBatchJdbcEntity {
 
   FeedstockBatchJdbcEntity(
       @NonNull UUID batchId,
-      @NonNull UUID ciderMakerId,
+      @NonNull UUID workspaceId,
       @NonNull String name,
       @Nullable String vessel,
       @NonNull FeedstockType type,
@@ -53,7 +53,7 @@ public class FeedstockBatchJdbcEntity {
       @Nullable Instant deletedAt
   ) {
     this.batchId = requireNonNull(batchId, "feedstock batch id cannot be null");
-    this.ciderMakerId = requireNonNull(ciderMakerId, "cider maker id cannot be null");
+    this.workspaceId = requireNonNull(workspaceId, "workspace id cannot be null");
     this.name = requireNonNull(name, "feedstock batch name cannot be null");
     this.vessel = normalize(vessel);
     this.type = requireNonNull(type, "feedstock type cannot be null");

@@ -7,7 +7,6 @@ import org.craft.mcs.cap.core.appleprofile.application.catalog.port.in.CreateApp
 import org.craft.mcs.cap.core.appleprofile.application.port.out.AppleVarietyRepository;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVariety;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyId;
-import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyName;
 import org.craft.mcs.cap.shared.platform.TransactionHelper;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
@@ -38,11 +37,11 @@ public final class CreateAppleVarietyService
     return transactionHelper.callInTransactionNonNull(() -> {
       final var appleVariety = AppleVariety.create(
           AppleVarietyId.newId(),
-          AppleVarietyName.of(command.name()),
+          command.name(),
           command.chemicalProfile()
       );
 
-      final var saved = appleVarietyRepository.save(appleVariety);
+      final var saved = appleVarietyRepository.create(appleVariety);
 
       return new AppleVarietyCreated(
           saved.varietyId(),

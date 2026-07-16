@@ -1,9 +1,9 @@
 package org.craft.mcs.cap.infrastructure.configuration;
 
-import org.craft.mcs.cap.core.profileanalysis.classification.engine.ChemicalProfileClassifier;
-import org.craft.mcs.cap.core.profileanalysis.classification.engine.ClassificationConfidencePolicy;
-import org.craft.mcs.cap.core.profileanalysis.classification.profile.BuiltInCiderClassificationThresholds;
-import org.craft.mcs.cap.core.profileanalysis.classification.profile.northamerican.NorthAmericanProfileCalculator;
+import org.craft.mcs.cap.core.profileanalysis.classification.domain.engine.ChemicalProfileClassifier;
+import org.craft.mcs.cap.core.profileanalysis.classification.domain.engine.ClassificationConfidencePolicy;
+import org.craft.mcs.cap.core.profileanalysis.classification.domain.profile.BuiltInCiderClassificationThresholds;
+import org.craft.mcs.cap.core.profileanalysis.classification.domain.profile.northamerican.NorthAmericanProfileCalculator;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

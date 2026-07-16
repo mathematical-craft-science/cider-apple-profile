@@ -1,6 +1,7 @@
 package org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.usecase;
 
 import lombok.RequiredArgsConstructor;
+import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileProjector;
 import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchNotFoundException;
 import org.craft.mcs.cap.core.feedstock.application.measurement.query.FeedstockBatchCurrentMeasurementQueryService;
@@ -29,6 +30,7 @@ public final class AssessFeedstockBatchCurrentSugarAcidityZoneService
     implements AssessFeedstockBatchCurrentSugarAcidityZoneUseCase {
 
   private final @NonNull FeedstockBatchRepository feedstockBatchRepository;
+  private final @NonNull FeedstockAccessControl feedstockAccessControl;
   private final @NonNull FeedstockBatchCurrentMeasurementQueryService currentMeasurementQueryService;
   private final @NonNull SugarAcidityProfileProjector sugarAcidityProfileProjector;
 
@@ -38,13 +40,14 @@ public final class AssessFeedstockBatchCurrentSugarAcidityZoneService
 
     final var batch = feedstockBatchRepository.findById(batchId)
         .orElseThrow(() -> new FeedstockBatchNotFoundException(batchId));
+    feedstockAccessControl.requireReadAccess(batch.workspaceId());
     final var currentMeasurement = currentMeasurementQueryService.requireCurrentMeasurement(batchId);
     final var evaluation = sugarAcidityProfileProjector.project(currentMeasurement.chemicalProfile());
 
     return new FeedstockBatchCurrentSugarAcidityZoneResult(
         currentMeasurement.batchId(),
         batch.name(),
-        batch.ciderMakerId(),
+        batch.workspaceId(),
         currentMeasurement.measurementId(),
         currentMeasurement.measuredAt(),
         evaluation

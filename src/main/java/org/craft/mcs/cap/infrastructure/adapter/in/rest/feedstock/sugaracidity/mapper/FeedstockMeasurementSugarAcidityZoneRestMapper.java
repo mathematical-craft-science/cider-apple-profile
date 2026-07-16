@@ -3,17 +3,17 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.sugaracidity.
 import java.util.UUID;
 import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapability;
 import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityCriteria;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.query.SugarAcidityZoneCriteria;
+import org.craft.mcs.cap.core.profileanalysis.sugaracidity.application.model.SugarAcidityZoneCriteria;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.SugarAcidityZone;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.SugarAcidityZoneAssessment;
-import org.craft.mcs.cap.core.feedstock.application.batch.port.in.FeedstockBatchCriteria;
+import org.craft.mcs.cap.core.feedstock.application.batch.model.FeedstockBatchCriteria;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockMeasurementPointFilters;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockMeasurementSugarAcidityZoneAssessment;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockMeasurementSugarAcidityZonePointQuery;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockMeasurementSugarAcidityZoneResult;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
-import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.mapper.ChemicalProfileCapabilityRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.sugaracidity.mapper.SugarAcidityZoneRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.sugaracidity.dto.FeedstockMeasurementSugarAcidityZonePointQueryRequest;
@@ -43,7 +43,7 @@ public final class FeedstockMeasurementSugarAcidityZoneRestMapper {
 
     return new FeedstockMeasurementSugarAcidityZoneResponse(
         assessment.measurementId().value(),
-        assessment.ciderMakerId().value(),
+        assessment.workspaceId().value(),
         assessment.batchId().value(),
         assessment.measurementName().value(),
         SugarAcidityZoneRestMapper.toResponse(assessment.assessment())
@@ -56,7 +56,7 @@ public final class FeedstockMeasurementSugarAcidityZoneRestMapper {
     requireNonNull(request, "feedstock measurement sugar-acidity zone point query request cannot be null");
 
     return new FeedstockMeasurementSugarAcidityZonePointQuery(
-        CiderMakerId.of(request.ciderMakerId()),
+        WorkspaceId.of(request.workspaceId()),
         new FeedstockMeasurementPointFilters(
             toBatchCriteria(request.batchId()),
             toSeason(request.season()),
@@ -78,7 +78,7 @@ public final class FeedstockMeasurementSugarAcidityZoneRestMapper {
 
     return new FeedstockMeasurementSugarAcidityZoneResponse(
         result.measurementId().value(),
-        result.ciderMakerId().value(),
+        result.workspaceId().value(),
         result.batchId().value(),
         result.measurementName().value(),
         evaluation.plottable(),
@@ -112,7 +112,7 @@ public final class FeedstockMeasurementSugarAcidityZoneRestMapper {
 
     return new UnplottableFeedstockMeasurementSugarAcidityZonePointResponse(
         result.measurementId().value(),
-        result.ciderMakerId().value(),
+        result.workspaceId().value(),
         result.batchId().value(),
         result.measurementName().value(),
         ChemicalProfileCapabilityRestMapper.toResponse(result.evaluation().capabilityAssessment())

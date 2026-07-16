@@ -6,6 +6,7 @@ import java.time.Instant;
 import java.util.List;
 import org.jmolecules.ddd.annotation.Entity;
 import org.jmolecules.ddd.annotation.Identity;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -21,25 +22,25 @@ import static java.util.Objects.requireNonNull;
  */
 @Entity
 public record BatchTraceStep(
-    @NonNull BatchTraceId batchTraceId,
+    @NonNull WorkspaceId workspaceId,
     @Identity @NonNull BatchTraceStepId stepId,
     @Nullable BatchTraceStepId parentStepId,
     @NonNull BatchTraceOperationType operationType,
     @NonNull List<@NonNull BatchTraceStepSubject> inputs,
     @NonNull List<@NonNull BatchTraceStepSubject> outputs,
     @NonNull Instant occurredAt,
-    @Nullable String performedBy,
+    @NonNull BatchTraceActorReference performedBy,
     @Nullable String note
 ) {
 
   public BatchTraceStep {
-    requireNonNull(batchTraceId, "batch trace id cannot be null");
+    requireNonNull(workspaceId, "batch trace workspace id cannot be null");
     requireNonNull(stepId, "batch trace step id cannot be null");
     requireNonNull(operationType, "batch trace operation type cannot be null");
     inputs = List.copyOf(requireNonNull(inputs, "batch trace step inputs cannot be null"));
     outputs = List.copyOf(requireNonNull(outputs, "batch trace step outputs cannot be null"));
     requireNonNull(occurredAt, "batch trace step occurred at cannot be null");
-    performedBy = normalize(performedBy);
+    requireNonNull(performedBy, "batch trace actor cannot be null");
     note = normalize(note);
 
     if (outputs.isEmpty()) {
@@ -48,17 +49,17 @@ public record BatchTraceStep(
   }
 
   public static @NonNull BatchTraceStep create(
-      @NonNull BatchTraceId batchTraceId,
+      @NonNull WorkspaceId workspaceId,
       @Nullable BatchTraceStepId parentStepId,
       @NonNull BatchTraceOperationType operationType,
       @NonNull List<@NonNull BatchTraceStepSubject> inputs,
       @NonNull List<@NonNull BatchTraceStepSubject> outputs,
       @NonNull Instant occurredAt,
-      @Nullable String performedBy,
+      @NonNull BatchTraceActorReference performedBy,
       @Nullable String note
   ) {
     return new BatchTraceStep(
-        batchTraceId,
+        workspaceId,
         BatchTraceStepId.newId(),
         parentStepId,
         operationType,

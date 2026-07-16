@@ -3,6 +3,7 @@ package org.craft.mcs.cap.feedstock.application.measurement.usecase;
 import java.time.LocalDate;
 import java.util.Optional;
 import java.util.function.Supplier;
+import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
 import org.craft.mcs.cap.core.feedstock.application.measurement.port.in.UpdateFeedstockMeasurementCommand;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchRepository;
 import org.craft.mcs.cap.core.feedstock.application.measurement.port.out.FeedstockMeasurementRepository;
@@ -16,7 +17,7 @@ import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockVessel
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurement;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurementId;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.value.FeedstockMeasurementName;
-import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.measurement.ExactMeasurement;
@@ -27,12 +28,14 @@ import org.craft.mcs.cap.shared.platform.TransactionHelper;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
-import static java.util.UUID.randomUUID;
+import static org.craft.mcs.cap.shared.kernel.identity.UuidV7Generator.newUuid;
+import static org.craft.mcs.cap.shared.testing.TestClocks.FEEDSTOCK_MEASUREMENT_CLOCK;
 import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementInstant;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.craft.mcs.cap.support.VersionedAggregateFixtures.versioned;
 
 
 class UpdateFeedstockMeasurementServiceTest {
@@ -44,7 +47,9 @@ class UpdateFeedstockMeasurementServiceTest {
     final var service = new UpdateFeedstockMeasurementService(
         batchRepository,
         measurementRepository,
-        transactionHelper()
+        mock(FeedstockAccessControl.class),
+        transactionHelper(),
+        FEEDSTOCK_MEASUREMENT_CLOCK
     );
     final var batch = batch();
     final var measurement = FeedstockMeasurement.create(
@@ -54,12 +59,14 @@ class UpdateFeedstockMeasurementServiceTest {
         ChemicalProfile.builder()
             .sugar(ExactMeasurement.of(SugarConcentration.ofSpecificGravity(SpecificGravityValue.of("1.052"))))
             .build(),
+        feedstockMeasurementInstant(),
         feedstockMeasurementInstant()
     );
 
     when(batchRepository.findById(batch.batchId())).thenReturn(Optional.of(batch));
-    when(measurementRepository.findById(measurement.measurementId())).thenReturn(Optional.of(measurement));
-    when(measurementRepository.save(any(FeedstockMeasurement.class))).thenAnswer(invocation -> invocation.getArgument(0));
+    when(measurementRepository.findVersionedById(measurement.measurementId()))
+        .thenReturn(Optional.of(versioned(measurement)));
+    when(measurementRepository.update(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
     service.update(new UpdateFeedstockMeasurementCommand(
         batch.batchId(),
@@ -85,7 +92,7 @@ class UpdateFeedstockMeasurementServiceTest {
   private static @NonNull FeedstockBatch batch() {
     return FeedstockBatch.create(
         FeedstockBatchId.newId(),
-        CiderMakerId.of(randomUUID()),
+        WorkspaceId.of(newUuid()),
         FeedstockBatchName.of("Late season fruit"),
         FeedstockVessel.of("Tank A-01"),
         FeedstockType.JUICE,

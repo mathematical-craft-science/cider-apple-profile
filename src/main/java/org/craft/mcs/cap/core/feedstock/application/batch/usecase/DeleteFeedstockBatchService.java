@@ -1,6 +1,7 @@
 package org.craft.mcs.cap.core.feedstock.application.batch.usecase;
 
 import lombok.RequiredArgsConstructor;
+import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
 import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchNotFoundException;
 import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchOwnershipMismatchException;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.DeleteFeedstockBatchCommand;
@@ -16,7 +17,7 @@ import static java.util.Objects.requireNonNull;
 /**
  * Application service for removing a feedstock batch from active source material.
  *
- * <p>The service checks cider-maker ownership before delegating deletion to the repository. The
+ * <p>The service checks workspace ownership before delegating deletion to the repository. The
  * persistence adapter may implement this as soft delete; the use case expresses the domain intent
  * that the batch should no longer participate in normal feedstock queries.
  */
@@ -26,25 +27,28 @@ public final class DeleteFeedstockBatchService
     implements DeleteFeedstockBatchUseCase {
 
   private final @NonNull FeedstockBatchRepository feedstockBatchRepository;
+  private final @NonNull FeedstockAccessControl feedstockAccessControl;
   private final @NonNull TransactionHelper transactionHelper;
 
   @Override
   public void delete(@NonNull DeleteFeedstockBatchCommand command) {
     requireNonNull(command, "delete feedstock batch command cannot be null");
+    feedstockAccessControl.requireWriteAccess(command.workspaceId());
 
     transactionHelper.executeInTransaction(() -> {
-      final var batch = feedstockBatchRepository.findById(command.batchId())
+      final var state = feedstockBatchRepository.findVersionedById(command.batchId())
           .orElseThrow(() -> new FeedstockBatchNotFoundException(command.batchId()));
+      final var batch = state.aggregate();
 
-      if (!batch.ciderMakerId().equals(command.ciderMakerId())) {
+      if (!batch.workspaceId().equals(command.workspaceId())) {
         throw new FeedstockBatchOwnershipMismatchException(
             batch.batchId(),
-            command.ciderMakerId(),
-            batch.ciderMakerId()
+            command.workspaceId(),
+            batch.workspaceId()
         );
       }
 
-      feedstockBatchRepository.delete(batch);
+      feedstockBatchRepository.delete(state);
     });
   }
 }

@@ -2,6 +2,7 @@ package org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain;
 
 import java.math.BigDecimal;
 import java.util.Optional;
+import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
@@ -94,7 +95,7 @@ abstract class AbstractSugarAcidityZoneAssessor
       return SugarAcidityLevel.HIGH;
     }
 
-    throw new IllegalStateException("value does not fit any sugar-acidity range: " + value);
+    throw new DomainRuleViolationException("value does not fit any sugar-acidity range: " + value);
   }
 
   protected final @NonNull SugarAcidityZoneThresholds thresholds() {

@@ -13,8 +13,13 @@ import static java.util.Objects.requireNonNull;
 
 @Schema(description = "Query request for historical feedstock measurement sugar-acidity graph points.")
 public record FeedstockMeasurementSugarAcidityZonePointQueryRequest(
-    @Schema(description = "Cider maker identifier.", format = "uuid", example = "4d96759c-86ff-4d39-8b19-241bc60f82ff", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NonNull UUID ciderMakerId,
+    @Schema(
+        description = "Workspace identifier.",
+        format = "uuid",
+        example = "4d96759c-86ff-4d39-8b19-241bc60f82ff",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
+    @NonNull UUID workspaceId,
     @Schema(description = "Optional feedstock batch filter.", format = "uuid", example = "b2a49b8a-3a19-4f8f-989d-9278f4e00d2f", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @Nullable UUID batchId,
     @Schema(description = "Optional season overlap filter.", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
@@ -32,6 +37,6 @@ public record FeedstockMeasurementSugarAcidityZonePointQueryRequest(
 ) {
 
   public FeedstockMeasurementSugarAcidityZonePointQueryRequest {
-    requireNonNull(ciderMakerId, "cider maker id cannot be null");
+    requireNonNull(workspaceId, "workspace id cannot be null");
   }
 }

@@ -2,6 +2,7 @@ package org.craft.mcs.cap.feedstock.application.analysis.abv.usecase;
 
 import java.time.LocalDate;
 import java.util.Optional;
+import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchRepository;
 import org.craft.mcs.cap.core.feedstock.application.measurement.port.out.FeedstockMeasurementRepository;
 import org.craft.mcs.cap.core.feedstock.application.analysis.abv.usecase.PredictFeedstockMeasurementPotentialAbvService;
@@ -11,7 +12,7 @@ import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasur
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockBatchName;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
-import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.value.FeedstockMeasurementName;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockVessel;
@@ -32,8 +33,9 @@ import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.junit.jupiter.api.Test;
 
-import static java.util.UUID.randomUUID;
+import static org.craft.mcs.cap.shared.kernel.identity.UuidV7Generator.newUuid;
 import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementInstant;
+import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementRecordedAt;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
@@ -54,7 +56,7 @@ class PredictFeedstockMeasurementPotentialAbvServiceTest {
         .build());
     when(repository.findById(sample.measurementId())).thenReturn(Optional.of(sample));
     when(batchRepository.findById(sample.batchId()))
-        .thenReturn(Optional.of(batch(sample.batchId(), CiderMakerId.of(randomUUID()))));
+        .thenReturn(Optional.of(batch(sample.batchId(), WorkspaceId.of(newUuid()))));
 
     final var prediction = service.predict(sample.measurementId());
 
@@ -73,7 +75,7 @@ class PredictFeedstockMeasurementPotentialAbvServiceTest {
         .build());
     when(repository.findById(sample.measurementId())).thenReturn(Optional.of(sample));
     when(batchRepository.findById(sample.batchId()))
-        .thenReturn(Optional.of(batch(sample.batchId(), CiderMakerId.of(randomUUID()))));
+        .thenReturn(Optional.of(batch(sample.batchId(), WorkspaceId.of(newUuid()))));
 
     assertThatThrownBy(() -> service.predict(sample.measurementId()))
         .isInstanceOfSatisfying(
@@ -93,6 +95,7 @@ class PredictFeedstockMeasurementPotentialAbvServiceTest {
     return new PredictFeedstockMeasurementPotentialAbvService(
         repository,
         batchRepository,
+        mock(FeedstockAccessControl.class),
         new ChemicalProfileAxisExtractor(),
         new ChemicalProfileCapabilityAssessor(),
         new PotentialAbvPredictor(
@@ -108,17 +111,18 @@ class PredictFeedstockMeasurementPotentialAbvServiceTest {
         FeedstockBatchId.newId(),
         FeedstockMeasurementName.of("Batch A"),
         profile,
-        feedstockMeasurementInstant()
+        feedstockMeasurementInstant(),
+        feedstockMeasurementRecordedAt()
     );
   }
 
   private static FeedstockBatch batch(
       FeedstockBatchId batchId,
-      CiderMakerId ciderMakerId
+      WorkspaceId workspaceId
   ) {
     return FeedstockBatch.create(
         batchId,
-        ciderMakerId,
+        workspaceId,
         FeedstockBatchName.of("Test batch"),
         FeedstockVessel.of("Tank A-01"),
         FeedstockType.JUICE,

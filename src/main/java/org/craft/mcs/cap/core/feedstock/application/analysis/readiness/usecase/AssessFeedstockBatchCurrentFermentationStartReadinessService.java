@@ -1,6 +1,7 @@
 package org.craft.mcs.cap.core.feedstock.application.analysis.readiness.usecase;
 
 import lombok.RequiredArgsConstructor;
+import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
 import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.FermentationStartReadinessAssessor;
 import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchNotFoundException;
 import org.craft.mcs.cap.core.feedstock.application.analysis.readiness.port.in.AssessFeedstockBatchCurrentFermentationStartReadinessUseCase;
@@ -28,6 +29,7 @@ public final class AssessFeedstockBatchCurrentFermentationStartReadinessService
     implements AssessFeedstockBatchCurrentFermentationStartReadinessUseCase {
 
   private final @NonNull FeedstockBatchRepository feedstockBatchRepository;
+  private final @NonNull FeedstockAccessControl feedstockAccessControl;
   private final @NonNull FeedstockBatchCurrentMeasurementQueryService currentMeasurementQueryService;
   private final @NonNull FermentationStartReadinessAssessor readinessAssessor;
 
@@ -39,11 +41,12 @@ public final class AssessFeedstockBatchCurrentFermentationStartReadinessService
 
     final var batch = feedstockBatchRepository.findById(batchId)
         .orElseThrow(() -> new FeedstockBatchNotFoundException(batchId));
+    feedstockAccessControl.requireReadAccess(batch.workspaceId());
     final var measurement = currentMeasurementQueryService.requireCurrentMeasurement(batchId);
 
     return new FeedstockBatchCurrentFermentationStartReadinessResult(
         batch.batchId(),
-        batch.ciderMakerId(),
+        batch.workspaceId(),
         measurement.measurementId(),
         measurement.name(),
         readinessAssessor.assess(measurement.chemicalProfile())

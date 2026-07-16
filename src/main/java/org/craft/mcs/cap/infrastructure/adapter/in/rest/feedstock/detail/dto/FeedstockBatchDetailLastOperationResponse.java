@@ -2,7 +2,7 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.detail.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Instant;
-import org.craft.mcs.cap.core.feedstock.application.detail.port.in.FeedstockBatchCurrentProfileOperationType;
+import org.craft.mcs.cap.core.feedstock.application.detail.model.FeedstockBatchCurrentProfileOperationType;
 import org.jspecify.annotations.NonNull;
 
 

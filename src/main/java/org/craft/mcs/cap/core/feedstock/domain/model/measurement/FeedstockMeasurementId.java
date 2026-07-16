@@ -5,6 +5,7 @@ import org.jmolecules.ddd.annotation.ValueObject;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
+import static org.craft.mcs.cap.shared.kernel.identity.UuidV7Generator.newUuid;
 
 
 @ValueObject
@@ -15,7 +16,7 @@ public record FeedstockMeasurementId(@NonNull UUID value) {
   }
 
   public static @NonNull FeedstockMeasurementId newId() {
-    return new FeedstockMeasurementId(UUID.randomUUID());
+    return new FeedstockMeasurementId(newUuid());
   }
 
   public static @NonNull FeedstockMeasurementId of(@NonNull UUID value) {

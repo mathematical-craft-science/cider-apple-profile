@@ -1,14 +1,14 @@
 package org.craft.mcs.cap.core.production.application.port.in;
 
-import org.craft.mcs.cap.shared.kernel.identity.CiderMakerId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
 
 
-public record ListProductionBatchesQuery(@NonNull CiderMakerId ciderMakerId) {
+public record ListProductionBatchesQuery(@NonNull WorkspaceId workspaceId) {
 
   public ListProductionBatchesQuery {
-    requireNonNull(ciderMakerId, "cider maker id cannot be null");
+    requireNonNull(workspaceId, "workspace id cannot be null");
   }
 }

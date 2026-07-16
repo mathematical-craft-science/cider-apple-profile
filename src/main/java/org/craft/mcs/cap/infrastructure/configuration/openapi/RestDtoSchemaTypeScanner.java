@@ -1,5 +1,6 @@
 package org.craft.mcs.cap.infrastructure.configuration.openapi;
 
+import java.io.IOException;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -14,6 +15,7 @@ import org.springframework.util.ClassUtils;
 import static java.util.Objects.requireNonNull;
 
 
+/** Discovers REST record DTOs that must be registered as reusable OpenAPI schemas. */
 @Component
 public final class RestDtoSchemaTypeScanner {
 
@@ -47,7 +49,7 @@ public final class RestDtoSchemaTypeScanner {
           }
         }
       }
-    } catch (ReflectiveOperationException | java.io.IOException exception) {
+    } catch (ReflectiveOperationException | IOException exception) {
       throw new IllegalStateException("cannot scan REST DTO classes for OpenAPI schema customizers", exception);
     }
 

@@ -5,10 +5,10 @@ import java.util.Optional;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchHasNoMeasurementsException;
+import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementView;
 import org.craft.mcs.cap.core.feedstock.application.measurement.port.out.FeedstockMeasurementQueryRepository;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.out.LatestFeedstockMeasurementSugarAcidityPointCandidateQuery;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
-import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurement;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 
@@ -29,21 +29,21 @@ public final class FeedstockBatchCurrentMeasurementQueryService {
 
   private final @NonNull FeedstockMeasurementQueryRepository feedstockMeasurementQueryRepository;
 
-  public @NonNull FeedstockMeasurement requireCurrentMeasurement(@NonNull FeedstockBatchId batchId) {
+  public @NonNull FeedstockMeasurementView requireCurrentMeasurement(@NonNull FeedstockBatchId batchId) {
     requireNonNull(batchId, "feedstock batch id cannot be null");
 
     return findCurrentMeasurement(batchId)
         .orElseThrow(() -> new FeedstockBatchHasNoMeasurementsException(batchId));
   }
 
-  public @NonNull Optional<@NonNull FeedstockMeasurement> findCurrentMeasurement(
+  public @NonNull Optional<@NonNull FeedstockMeasurementView> findCurrentMeasurement(
       @NonNull FeedstockBatchId batchId
   ) {
     requireNonNull(batchId, "feedstock batch id cannot be null");
     return feedstockMeasurementQueryRepository.findLatestByBatchId(batchId);
   }
 
-  public @NonNull List<@NonNull FeedstockMeasurement> findCurrentSugarAcidityPointCandidates(
+  public @NonNull List<@NonNull FeedstockMeasurementView> findCurrentSugarAcidityPointCandidates(
       @NonNull LatestFeedstockMeasurementSugarAcidityPointCandidateQuery query
   ) {
     requireNonNull(query, "current feedstock batch sugar-acidity point candidate query cannot be null");
@@ -51,7 +51,7 @@ public final class FeedstockBatchCurrentMeasurementQueryService {
     return feedstockMeasurementQueryRepository.findLatestSugarAcidityPointCandidates(query);
   }
 
-  public @NonNull List<@NonNull FeedstockMeasurement> findCurrentMeasurementsByBatchIds(
+  public @NonNull List<@NonNull FeedstockMeasurementView> findCurrentMeasurementsByBatchIds(
       @NonNull Set<@NonNull FeedstockBatchId> batchIds
   ) {
     requireNonNull(batchIds, "feedstock batch ids cannot be null");
