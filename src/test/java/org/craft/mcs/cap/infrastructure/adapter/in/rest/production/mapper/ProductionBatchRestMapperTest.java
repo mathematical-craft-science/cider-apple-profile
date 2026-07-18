@@ -33,6 +33,7 @@ import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.craft.mcs.cap.support.PotentialAbvPredictionFixtures.prediction;
 
 
 class ProductionBatchRestMapperTest {
@@ -81,7 +82,7 @@ class ProductionBatchRestMapperTest {
   }
 
   @Test
-  void mapsYanToCreateResponseComposition() {
+  void mapsYanAndAuthoritativePotentialAbvToCreateResponseComposition() {
     final var candidate = productionCandidateView();
     final var response = ProductionBatchRestMapper.toResponse(
         new ProductionBatchCreated(
@@ -97,6 +98,10 @@ class ProductionBatchRestMapperTest {
             .returns("mg N/L", DecimalQuantityResponse::unit)
             .satisfies(quantity -> assertThat(quantity.value()).isEqualByComparingTo("180")))
         .satisfies(result -> assertThat(result.composition().warnings()).isEmpty())
+        .satisfies(result -> assertThat(result.composition().potentialAbv())
+            .isNotNull()
+            .satisfies(potentialAbv -> assertThat(potentialAbv.potentialAbv().value())
+                .isEqualByComparingTo("6.825")))
         .satisfies(result -> assertThat(result.composition().targetDistance()).isNull());
   }
 
@@ -164,6 +169,7 @@ class ProductionBatchRestMapperTest {
             VolumeValue.ofLiters("120")
         ))),
         profileSnapshot(),
+        prediction(profileSnapshot().sugar()),
         null,
         null,
         List.of(),

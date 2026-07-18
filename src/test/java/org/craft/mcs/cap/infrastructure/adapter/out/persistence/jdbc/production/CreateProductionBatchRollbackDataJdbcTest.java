@@ -52,6 +52,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import static java.util.Objects.requireNonNull;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.craft.mcs.cap.support.PotentialAbvPredictionFixtures.prediction;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 
@@ -162,6 +163,7 @@ class CreateProductionBatchRollbackDataJdbcTest {
             Map.of(sourceReference, evidenceReference()),
             productionProfile()
         ),
+        prediction(productionProfile().sugar()),
         null,
         null,
         List.of()

@@ -10,6 +10,8 @@ import org.craft.mcs.cap.core.account.audit.domain.model.WorkspaceAdministrative
 import org.craft.mcs.cap.core.account.audit.domain.model.value.WorkspaceAdministrativeAuditValue;
 import org.craft.mcs.cap.core.account.audit.domain.model.value.WorkspaceAdministrativeSubjectId;
 import org.craft.mcs.cap.core.account.audit.application.port.out.WorkspaceAdministrativeAuditRepository;
+import org.craft.mcs.cap.core.account.context.application.model.WorkspaceMembershipSnapshot;
+import org.craft.mcs.cap.core.account.context.application.port.out.CurrentAccountWorkspaceQuery;
 import org.craft.mcs.cap.core.account.contributor.application.port.out.ContributorProfileRepository;
 import org.craft.mcs.cap.core.account.contributor.domain.model.ContactVisibility;
 import org.craft.mcs.cap.core.account.contributor.domain.model.ContributorProfile;
@@ -19,6 +21,7 @@ import org.craft.mcs.cap.core.account.invitation.application.port.out.WorkspaceI
 import org.craft.mcs.cap.core.account.membership.application.port.out.WorkspaceMembershipRepository;
 import org.craft.mcs.cap.core.account.membership.domain.model.AccountRole;
 import org.craft.mcs.cap.core.account.membership.domain.model.WorkspaceMembership;
+import org.craft.mcs.cap.core.account.membership.domain.model.WorkspaceMembershipStatus;
 import org.craft.mcs.cap.core.account.shared.domain.value.DisplayName;
 import org.craft.mcs.cap.core.account.shared.domain.value.EmailAddress;
 import org.craft.mcs.cap.core.account.shared.domain.value.HttpUrl;
@@ -85,6 +88,9 @@ class JdbcAccountRepositoriesDataJdbcTest {
   @Autowired
   private AccountProvisioningLock accountProvisioningLock;
 
+  @Autowired
+  private CurrentAccountWorkspaceQuery currentAccountWorkspaceQuery;
+
   @Test
   void persistsProviderNeutralAccountWorkspaceAndMembershipAggregates() {
     accountProvisioningLock.acquire(
@@ -133,9 +139,40 @@ class JdbcAccountRepositoriesDataJdbcTest {
     assertThat(membershipRepository.findByWorkspaceIdAndUserId(workspace.workspaceId(), user.userId()))
         .contains(membership);
     assertThat(membershipRepository.findAllByUserId(user.userId())).containsExactly(membership);
+    assertThat(currentAccountWorkspaceQuery.findActiveByUserId(user.userId()))
+        .singleElement()
+        .returns(membership.membershipId(), WorkspaceMembershipSnapshot::membershipId)
+        .returns(workspace.workspaceId(), WorkspaceMembershipSnapshot::workspaceId)
+        .returns(workspace.name(), WorkspaceMembershipSnapshot::workspaceName)
+        .returns(membership.role(), WorkspaceMembershipSnapshot::role);
     assertThat(settingsRepository.findByWorkspaceId(workspace.workspaceId())).contains(settings);
     assertThat(preferencesRepository.findByUserId(user.userId())).contains(preferences);
     assertThat(contributorProfileRepository.findByUserId(user.userId())).contains(contributorProfile);
+  }
+
+  @Test
+  void excludesSuspendedMembershipsFromCurrentAccountWorkspaceQuery() {
+    final var user = userRepository.create(AccountUser.create(
+        IdentityProviderCode.CLERK,
+        ExternalUserSubject.of("suspended_membership_user"),
+        EmailAddress.of("suspended@example.com"),
+        DisplayName.of("Suspended member"),
+        null
+    ));
+    final var workspace = workspaceRepository.create(Workspace.create(
+        DisplayName.of("Restricted workspace"),
+        WorkspaceType.CIDERY
+    ));
+    final var owner = WorkspaceMembership.createOwner(workspace.workspaceId(), user.userId());
+    membershipRepository.create(new WorkspaceMembership(
+        owner.membershipId(),
+        owner.workspaceId(),
+        owner.userId(),
+        owner.role(),
+        WorkspaceMembershipStatus.SUSPENDED
+    ));
+
+    assertThat(currentAccountWorkspaceQuery.findActiveByUserId(user.userId())).isEmpty();
   }
 
   @Test

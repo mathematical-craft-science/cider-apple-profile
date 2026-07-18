@@ -24,6 +24,7 @@ public final class ProductionBatchCandidateViewMapper {
         candidate.status(),
         candidate.sourceComposition(),
         candidate.profile(),
+        snapshot.potentialAbv(),
         snapshot.normalizerCode(),
         snapshot.targetDistance(),
         snapshot.warnings(),

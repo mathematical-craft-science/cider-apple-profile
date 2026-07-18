@@ -2,6 +2,7 @@ package org.craft.mcs.cap.core.production.candidate.application.model;
 
 import java.util.List;
 import org.craft.mcs.cap.core.production.candidate.domain.model.ProductionBatchCandidate;
+import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPrediction;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionWarning;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.normalization.ProfileAxisNormalizerCode;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.assessment.ProfileTargetDistance;
@@ -17,6 +18,7 @@ import static java.util.Objects.requireNonNull;
  */
 public record ProductionBatchCandidateSnapshot(
     @NonNull ProductionBatchCandidate candidate,
+    @NonNull PotentialAbvPrediction potentialAbv,
     @Nullable ProfileAxisNormalizerCode normalizerCode,
     @Nullable ProfileTargetDistance targetDistance,
     @NonNull List<@NonNull ChemicalProfileCompositionWarning> warnings,
@@ -25,15 +27,17 @@ public record ProductionBatchCandidateSnapshot(
 
   public ProductionBatchCandidateSnapshot(
       @NonNull ProductionBatchCandidate candidate,
+      @NonNull PotentialAbvPrediction potentialAbv,
       @Nullable ProfileAxisNormalizerCode normalizerCode,
       @Nullable ProfileTargetDistance targetDistance,
       @NonNull List<@NonNull ChemicalProfileCompositionWarning> warnings
   ) {
-    this(candidate, normalizerCode, targetDistance, warnings, 0L);
+    this(candidate, potentialAbv, normalizerCode, targetDistance, warnings, 0L);
   }
 
   public ProductionBatchCandidateSnapshot {
     requireNonNull(candidate, "production batch candidate cannot be null");
+    requireNonNull(potentialAbv, "production batch candidate potential ABV cannot be null");
     warnings = List.copyOf(requireNonNull(warnings, "production candidate warnings cannot be null"));
     if (revision < 0L) {
       throw new ApplicationValidationException("production candidate revision cannot be negative");
@@ -45,6 +49,7 @@ public record ProductionBatchCandidateSnapshot(
   ) {
     return new ProductionBatchCandidateSnapshot(
         requireNonNull(updatedCandidate, "updated production batch candidate cannot be null"),
+        potentialAbv,
         normalizerCode,
         targetDistance,
         warnings,

@@ -9,6 +9,7 @@ import org.craft.mcs.cap.core.account.provisioning.application.port.in.EnsureCur
 import org.craft.mcs.cap.core.account.provisioning.application.port.out.AccountProvisioningLock;
 import org.craft.mcs.cap.core.account.user.application.model.AuthenticatedActor;
 import org.craft.mcs.cap.core.account.user.application.port.out.AccountUserRepository;
+import org.craft.mcs.cap.core.account.user.application.port.out.CurrentAccountUserRequestCache;
 import org.craft.mcs.cap.core.account.user.application.port.out.CurrentActorProvider;
 import org.craft.mcs.cap.core.account.user.application.port.out.UserPreferencesRepository;
 import org.craft.mcs.cap.core.account.user.domain.model.AccountUser;
@@ -17,12 +18,11 @@ import org.craft.mcs.cap.core.account.workspace.application.port.out.WorkspaceRe
 import org.craft.mcs.cap.core.account.workspace.application.port.out.WorkspaceSettingsRepository;
 import org.craft.mcs.cap.core.account.workspace.domain.model.Workspace;
 import org.craft.mcs.cap.core.account.workspace.domain.model.WorkspaceSettings;
+import org.craft.mcs.cap.shared.application.ConcurrentResourceModificationException;
 import org.craft.mcs.cap.shared.platform.TransactionHelper;
 import org.craft.mcs.cap.shared.application.persistence.VersionedAggregate;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
-
-import static java.util.Objects.requireNonNull;
 
 /**
  * Atomically provisions a new CAP account or synchronizes an existing provider identity.
@@ -38,6 +38,7 @@ public final class EnsureCurrentAccountProvisionedService
   private final @NonNull CurrentActorProvider currentActorProvider;
   private final @NonNull AccountProvisioningLock accountProvisioningLock;
   private final @NonNull AccountUserRepository accountUserRepository;
+  private final @NonNull CurrentAccountUserRequestCache currentAccountUserRequestCache;
   private final @NonNull WorkspaceRepository workspaceRepository;
   private final @NonNull WorkspaceMembershipRepository membershipRepository;
   private final @NonNull WorkspaceSettingsRepository workspaceSettingsRepository;
@@ -50,42 +51,68 @@ public final class EnsureCurrentAccountProvisionedService
     final var actor = currentActorProvider.currentActor()
         .orElseThrow(() -> new AccountAccessDeniedException("authenticated actor is required"));
 
-    transactionHelper.executeInTransaction(() -> {
+    final var existing = accountUserRepository.findVersionedByExternalIdentity(
+        actor.identityProvider(),
+        actor.externalSubject()
+    );
+    if (existing.isPresent()) {
+      currentAccountUserRequestCache.remember(ensureExistingAccount(existing.orElseThrow(), actor));
+      return;
+    }
+
+    final var provisioned = transactionHelper.callInTransactionNonNull(() -> {
       accountProvisioningLock.acquire(actor.identityProvider(), actor.externalSubject());
-      provision(actor);
+      return accountUserRepository.findVersionedByExternalIdentity(
+          actor.identityProvider(),
+          actor.externalSubject()
+      ).map(account -> requireActiveAccount(synchronizeProviderEmail(account, actor)))
+          .orElseGet(() -> provisionNewAccount(actor));
     });
+    currentAccountUserRequestCache.remember(provisioned);
   }
 
-  private void provision(@NonNull AuthenticatedActor actor) {
-    final var provisioningAccount = resolveAccount(actor);
-    final var user = provisioningAccount.user();
-    if (!user.isActive()) {
-      throw new AccountAccessDeniedException("CAP account is disabled");
+  private @NonNull AccountUser ensureExistingAccount(
+      @NonNull VersionedAggregate<AccountUser> existing,
+      @NonNull AuthenticatedActor actor
+  ) {
+    requireActiveAccount(existing.aggregate());
+    if (existing.aggregate().email().equals(actor.email())) {
+      return existing.aggregate();
     }
 
-    if (provisioningAccount.newlyCreated()) {
-      provisionDefaultWorkspace(user, actor);
+    try {
+      return synchronizeExistingAccount(actor);
+    } catch (ConcurrentResourceModificationException exception) {
+      final var synchronizedByAnotherRequest = accountUserRepository.findVersionedByExternalIdentity(
+          actor.identityProvider(),
+          actor.externalSubject()
+      ).map(VersionedAggregate::aggregate)
+          .map(this::requireActiveAccount)
+          .filter(user -> user.email().equals(actor.email()));
+      return synchronizedByAnotherRequest.orElseThrow(() -> exception);
     }
-
-    userPreferencesRepository.findByUserId(user.userId())
-        .orElseGet(() -> userPreferencesRepository.create(UserPreferences.defaults(user.userId()))); // NOSONAR
   }
 
-  private @NonNull ProvisioningAccount resolveAccount(@NonNull AuthenticatedActor actor) {
-    return accountUserRepository.findVersionedByExternalIdentity(actor.identityProvider(), actor.externalSubject())
-        .map(existing -> new ProvisioningAccount(synchronizeProviderEmail(existing, actor), false))
-        .orElseGet(() -> createAccount(actor));
+  private @NonNull AccountUser synchronizeExistingAccount(@NonNull AuthenticatedActor actor) {
+    return transactionHelper.callInTransactionNonNull(() -> accountUserRepository.findVersionedByExternalIdentity(
+        actor.identityProvider(),
+        actor.externalSubject()
+    ).map(account -> synchronizeProviderEmail(account, actor))
+        .map(this::requireActiveAccount)
+        .orElseThrow(() -> new AccountAccessDeniedException("CAP account no longer exists")));
   }
 
-  private @NonNull ProvisioningAccount createAccount(@NonNull AuthenticatedActor actor) {
-    final var account = accountUserRepository.create(AccountUser.create(
+  private @NonNull AccountUser provisionNewAccount(@NonNull AuthenticatedActor actor) {
+    final var user = accountUserRepository.create(AccountUser.create(
         actor.identityProvider(),
         actor.externalSubject(),
         actor.email(),
         actor.displayName(),
         actor.avatarUrl()
     ));
-    return new ProvisioningAccount(account, true);
+    provisionDefaultWorkspace(user, actor);
+    userPreferencesRepository.create(UserPreferences.defaults(user.userId()));
+    return user;
   }
 
   private @NonNull AccountUser synchronizeProviderEmail(
@@ -96,6 +123,13 @@ public final class EnsureCurrentAccountProvisionedService
     return synchronizedUser.equals(existing.aggregate())
         ? existing.aggregate()
         : accountUserRepository.update(existing.withAggregate(synchronizedUser)).aggregate();
+  }
+
+  private @NonNull AccountUser requireActiveAccount(@NonNull AccountUser user) {
+    if (!user.isActive()) {
+      throw new AccountAccessDeniedException("CAP account is disabled");
+    }
+    return user;
   }
 
   private void provisionDefaultWorkspace(
@@ -124,14 +158,4 @@ public final class EnsureCurrentAccountProvisionedService
     membershipRepository.create(WorkspaceMembership.createOwner(workspace.workspaceId(), user.userId()));
   }
 
-  /** Distinguishes initial onboarding from a later account state without workspace membership. */
-  private record ProvisioningAccount(
-      @NonNull AccountUser user,
-      boolean newlyCreated
-  ) {
-
-    private ProvisioningAccount {
-      requireNonNull(user, "account user cannot be null");
-    }
-  }
 }

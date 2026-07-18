@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionWarning;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.normalization.ProfileAxisNormalizerCode;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.abv.dto.PotentialAbvPredictionResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.ProfileTargetDistanceResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.sugaracidity.dto.SugarAcidityProfilePointResponse;
 import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
@@ -24,6 +25,12 @@ public record ProductionBatchCompositionResponse(
     @NonNull List<@NonNull ProductionBatchSourceResponse> sources,
     @Schema(description = "Calculated production profile point.", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull SugarAcidityProfilePointResponse profile,
+    @Schema(
+        description = "Potential ABV prediction saved with the authoritative production candidate snapshot.",
+        nullable = true,
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
+    @Nullable PotentialAbvPredictionResponse potentialAbv,
     @Schema(
         description = "Yeast-assimilable nitrogen from the accepted production profile, when available.",
         nullable = true,

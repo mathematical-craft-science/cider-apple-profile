@@ -6,6 +6,7 @@ import org.craft.mcs.cap.core.production.candidate.domain.model.ProductionBatchC
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatchId;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceComposition;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
+import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPrediction;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionWarning;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.normalization.ProfileAxisNormalizerCode;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.assessment.ProfileTargetDistance;
@@ -23,6 +24,7 @@ public record ProductionBatchCandidateView(
     @NonNull ProductionBatchCandidateStatus status,
     @NonNull ProductionSourceComposition sourceComposition,
     @NonNull ProductionProfileSnapshot profile,
+    @NonNull PotentialAbvPrediction potentialAbv,
     @Nullable ProfileAxisNormalizerCode normalizerCode,
     @Nullable ProfileTargetDistance targetDistance,
     @NonNull List<@NonNull ChemicalProfileCompositionWarning> warnings,
@@ -35,6 +37,7 @@ public record ProductionBatchCandidateView(
     requireNonNull(status, "production batch candidate status cannot be null");
     requireNonNull(sourceComposition, "production candidate source composition cannot be null");
     requireNonNull(profile, "production candidate profile cannot be null");
+    requireNonNull(potentialAbv, "production candidate potential ABV cannot be null");
     warnings = List.copyOf(requireNonNull(warnings, "production candidate warnings cannot be null"));
   }
 }

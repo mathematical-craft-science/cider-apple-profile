@@ -10,14 +10,41 @@ import org.jspecify.annotations.NonNull;
 
 @Schema(description = "Potential alcohol by volume prediction.")
 public record PotentialAbvPredictionResponse(
-    @Schema(description = "Original gravity used for prediction.", requiredMode = Schema.RequiredMode.REQUIRED) @NonNull DecimalQuantityResponse originalGravity,
-    @Schema(description = "Predicted final gravity used for prediction.", requiredMode = Schema.RequiredMode.REQUIRED) @NonNull DecimalQuantityResponse predictedFinalGravity,
-    @Schema(description = "Source of predicted final gravity assumption.", implementation = FinalGravityPredictionSource.class, example = "FIXED_DRY_CIDER_DEFAULT", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(
+        description = "Original gravity used for prediction.",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
+    @NonNull DecimalQuantityResponse originalGravity,
+    @Schema(
+        description = "Predicted final gravity used for prediction.",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
+    @NonNull DecimalQuantityResponse predictedFinalGravity,
+    @Schema(
+        description = "Source of predicted final gravity assumption.",
+        implementation = FinalGravityPredictionSource.class,
+        example = "FIXED_DRY_CIDER_DEFAULT",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
     @NonNull FinalGravityPredictionSource predictedFinalGravitySource,
-    @Schema(description = "Potential ABV percentage.", requiredMode = Schema.RequiredMode.REQUIRED) @NonNull DecimalQuantityResponse potentialAbv,
-    @Schema(description = "Prediction method code.", implementation = AbvPredictionMethod.class, example = "STANDARD_GRAVITY_DROP", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(
+        description = "Potential ABV percentage.",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    ) @NonNull DecimalQuantityResponse potentialAbv,
+    @Schema(
+        description = "Prediction method code.",
+        implementation = AbvPredictionMethod.class,
+        example = "STANDARD_GRAVITY_DROP",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
     @NonNull AbvPredictionMethod method,
-    @Schema(description = "Prediction confidence code.", implementation = PredictionConfidence.class, example = "LOW", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(
+        description = "Prediction confidence code.",
+        implementation = PredictionConfidence.class,
+        example = "LOW",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
     @NonNull PredictionConfidence confidence
 ) {
+
 }

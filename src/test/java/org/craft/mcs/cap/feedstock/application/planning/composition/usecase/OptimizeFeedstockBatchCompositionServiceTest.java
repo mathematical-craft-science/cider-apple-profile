@@ -26,7 +26,6 @@ import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.Che
 import org.craft.mcs.cap.core.profileanalysis.composition.optimization.application.port.in.OptimizeChemicalProfileCompositionCommand;
 import org.craft.mcs.cap.core.profileanalysis.composition.optimization.application.port.in.OptimizeChemicalProfileCompositionResult;
 import org.craft.mcs.cap.core.profileanalysis.composition.optimization.application.port.in.OptimizeChemicalProfileCompositionUseCase;
-import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.ChemicalProfileCompositionOptimizationResult;
 import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.CompositionOptimizationMode;
 import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.strategy.CompositionOptimizationAlgorithm;
 import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.strategy.DiscretizedCompositionOptimizationSettings;
@@ -212,7 +211,8 @@ class OptimizeFeedstockBatchCompositionServiceTest {
               command.calculatorCode(),
               command.normalizerCode(),
               command.objectiveFunctionCode(),
-              new ChemicalProfileCompositionOptimizationResult(0, List.of())
+              0,
+              List.of()
           );
         });
     return optimizer;

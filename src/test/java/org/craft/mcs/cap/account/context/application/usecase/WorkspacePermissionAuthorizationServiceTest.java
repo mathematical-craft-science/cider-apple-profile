@@ -4,7 +4,8 @@ import java.util.List;
 import java.util.Optional;
 import org.craft.mcs.cap.core.account.shared.application.AccountAccessDeniedException;
 import org.craft.mcs.cap.core.account.context.application.port.out.ActiveWorkspaceProvider;
-import org.craft.mcs.cap.core.account.membership.application.port.out.WorkspaceMembershipRepository;
+import org.craft.mcs.cap.core.account.context.application.port.out.CurrentAccountWorkspaceQuery;
+import org.craft.mcs.cap.core.account.context.application.port.out.CurrentWorkspaceContextRequestCache;
 import org.craft.mcs.cap.core.account.context.application.usecase.ActiveWorkspaceSelectionPolicy;
 import org.craft.mcs.cap.core.account.context.application.usecase.CurrentAccountMembershipReader;
 import org.craft.mcs.cap.core.account.context.application.usecase.CurrentWorkspaceContextResolver;
@@ -18,12 +19,12 @@ import org.craft.mcs.cap.core.account.shared.domain.value.DisplayName;
 import org.craft.mcs.cap.core.account.shared.domain.value.EmailAddress;
 import org.craft.mcs.cap.core.account.user.application.model.AuthenticatedActor;
 import org.craft.mcs.cap.core.account.user.application.port.out.AccountUserRepository;
+import org.craft.mcs.cap.core.account.user.application.port.out.CurrentAccountUserRequestCache;
 import org.craft.mcs.cap.core.account.user.application.port.out.CurrentActorProvider;
 import org.craft.mcs.cap.core.account.user.application.usecase.CurrentAccountUserResolver;
 import org.craft.mcs.cap.core.account.user.domain.model.AccountUser;
 import org.craft.mcs.cap.core.account.user.domain.model.value.ExternalUserSubject;
 import org.craft.mcs.cap.core.account.shared.domain.value.IdentityProviderCode;
-import org.craft.mcs.cap.core.account.workspace.application.port.out.WorkspaceRepository;
 import org.craft.mcs.cap.core.account.workspace.domain.model.Workspace;
 import org.craft.mcs.cap.core.account.workspace.domain.model.WorkspaceType;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
@@ -32,6 +33,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.craft.mcs.cap.account.support.WorkspaceMembershipSnapshotFixtures.snapshot;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -51,10 +53,6 @@ class WorkspacePermissionAuthorizationServiceTest {
 
     verify(fixture.userRepository(), never()).create(any());
     verify(fixture.userRepository(), never()).update(any());
-    verify(fixture.workspaceRepository(), never()).create(any());
-    verify(fixture.workspaceRepository(), never()).update(any());
-    verify(fixture.membershipRepository(), never()).create(any());
-    verify(fixture.membershipRepository(), never()).update(any());
   }
 
   @Test
@@ -81,10 +79,6 @@ class WorkspacePermissionAuthorizationServiceTest {
 
     verify(fixture.userRepository(), never()).create(any());
     verify(fixture.userRepository(), never()).update(any());
-    verify(fixture.workspaceRepository(), never()).create(any());
-    verify(fixture.workspaceRepository(), never()).update(any());
-    verify(fixture.membershipRepository(), never()).create(any());
-    verify(fixture.membershipRepository(), never()).update(any());
   }
 
   @Test
@@ -99,10 +93,6 @@ class WorkspacePermissionAuthorizationServiceTest {
 
     verify(fixture.userRepository(), never()).create(any());
     verify(fixture.userRepository(), never()).update(any());
-    verify(fixture.workspaceRepository(), never()).create(any());
-    verify(fixture.workspaceRepository(), never()).update(any());
-    verify(fixture.membershipRepository(), never()).create(any());
-    verify(fixture.membershipRepository(), never()).update(any());
   }
 
   private static @NonNull Fixture fixture(@NonNull AccountRole role) {
@@ -115,8 +105,7 @@ class WorkspacePermissionAuthorizationServiceTest {
   ) {
     final var actorProvider = mock(CurrentActorProvider.class);
     final var userRepository = mock(AccountUserRepository.class);
-    final var workspaceRepository = mock(WorkspaceRepository.class);
-    final var membershipRepository = mock(WorkspaceMembershipRepository.class);
+    final var workspaceQuery = mock(CurrentAccountWorkspaceQuery.class);
     final var activeWorkspaceProvider = mock(ActiveWorkspaceProvider.class);
     final var actor = new AuthenticatedActor(
         IdentityProviderCode.CLERK,
@@ -151,23 +140,28 @@ class WorkspacePermissionAuthorizationServiceTest {
     when(actorProvider.currentActor()).thenReturn(Optional.of(actor));
     when(userRepository.findByExternalIdentity(actor.identityProvider(), actor.externalSubject()))
         .thenReturn(Optional.of(user));
-    when(membershipRepository.findAllByUserId(user.userId())).thenReturn(List.of(membershipWithRole));
-    when(workspaceRepository.findById(workspace.workspaceId()))
-        .thenReturn(Optional.of(workspace));
+    when(workspaceQuery.findActiveByUserId(user.userId())).thenReturn(
+        status == WorkspaceMembershipStatus.ACTIVE
+            ? List.of(snapshot(membershipWithRole, workspace))
+            : List.of()
+    );
     when(activeWorkspaceProvider.selectedWorkspaceId()).thenReturn(Optional.of(workspace.workspaceId()));
 
     return new Fixture(
         new WorkspacePermissionAuthorizationService(
             new WorkspacePermissionChecker(new CurrentWorkspaceContextResolver(
-                new CurrentAccountUserResolver(actorProvider, userRepository),
-                new CurrentAccountMembershipReader(membershipRepository, workspaceRepository),
+                new CurrentAccountUserResolver(
+                    actorProvider,
+                    userRepository,
+                    mock(CurrentAccountUserRequestCache.class)
+                ),
+                new CurrentAccountMembershipReader(workspaceQuery),
                 activeWorkspaceProvider,
-                new ActiveWorkspaceSelectionPolicy()
+                new ActiveWorkspaceSelectionPolicy(),
+                mock(CurrentWorkspaceContextRequestCache.class)
             ))
         ),
         userRepository,
-        workspaceRepository,
-        membershipRepository,
         workspace
     );
   }
@@ -175,8 +169,6 @@ class WorkspacePermissionAuthorizationServiceTest {
   private record Fixture(
       @NonNull WorkspacePermissionAuthorizationService service,
       @NonNull AccountUserRepository userRepository,
-      @NonNull WorkspaceRepository workspaceRepository,
-      @NonNull WorkspaceMembershipRepository membershipRepository,
       @NonNull Workspace workspace
   ) {
   }

@@ -17,17 +17,24 @@ import org.springframework.http.ResponseEntity;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 
-@Tag(name = "Chemical profile compositions", description = "Generic chemical profile composition calculation and optimization endpoints.")
+@Tag(
+    name = "Chemical profile compositions",
+    description = "Generic chemical profile composition calculation and optimization endpoints."
+)
 public interface ChemicalProfileCompositionApi {
 
   @Operation(
       summary = "Calculate chemical profile composition",
-      description = "Calculates the resulting chemical profile from explicitly provided sources and weights."
+      description = "Calculates the resulting chemical profile and potential ABV from explicitly provided sources "
+          + "and weights."
   )
   @ApiResponse(
       responseCode = "200",
       description = "Calculated chemical profile composition.",
-      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ChemicalProfileCompositionResponse.class))
+      content = @Content(
+          mediaType = APPLICATION_JSON_VALUE,
+          schema = @Schema(implementation = ChemicalProfileCompositionResponse.class)
+      )
   )
   @ApiResponse(
       responseCode = "400",
@@ -36,14 +43,18 @@ public interface ChemicalProfileCompositionApi {
   )
   @ApiResponse(
       responseCode = "422",
-      description = "Composition input is syntactically valid but cannot be processed, for example because required axes or target data are missing.",
+      description = "Composition input is syntactically valid but cannot be processed, for example because "
+          + "required axes or target data are missing.",
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
   )
   @NonNull ResponseEntity<@NonNull ChemicalProfileCompositionResponse> calculate(
       @RequestBody(
           description = "Composition calculation request.",
           required = true,
-          content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = CalculateChemicalProfileCompositionRequest.class))
+          content = @Content(
+              mediaType = APPLICATION_JSON_VALUE,
+              schema = @Schema(implementation = CalculateChemicalProfileCompositionRequest.class)
+          )
       )
       @NonNull CalculateChemicalProfileCompositionRequest request
   );
@@ -55,7 +66,10 @@ public interface ChemicalProfileCompositionApi {
   @ApiResponse(
       responseCode = "200",
       description = "Chemical profile composition optimization result.",
-      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = OptimizeChemicalProfileCompositionResponse.class))
+      content = @Content(
+          mediaType = APPLICATION_JSON_VALUE,
+          schema = @Schema(implementation = OptimizeChemicalProfileCompositionResponse.class)
+      )
   )
   @ApiResponse(
       responseCode = "400",
@@ -64,14 +78,18 @@ public interface ChemicalProfileCompositionApi {
   )
   @ApiResponse(
       responseCode = "422",
-      description = "Optimization input is syntactically valid but cannot be processed, for example because sources or target data are insufficient.",
+      description = "Optimization input is syntactically valid but cannot be processed, for example because "
+          + "sources or target data are insufficient.",
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
   )
   @NonNull ResponseEntity<@NonNull OptimizeChemicalProfileCompositionResponse> optimize(
       @RequestBody(
           description = "Composition optimization request.",
           required = true,
-          content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = OptimizeChemicalProfileCompositionRequest.class))
+          content = @Content(
+              mediaType = APPLICATION_JSON_VALUE,
+              schema = @Schema(implementation = OptimizeChemicalProfileCompositionRequest.class)
+          )
       )
       @NonNull OptimizeChemicalProfileCompositionRequest request
   );

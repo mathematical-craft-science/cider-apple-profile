@@ -53,6 +53,7 @@ import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.craft.mcs.cap.support.PotentialAbvPredictionFixtures.prediction;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 
@@ -219,6 +220,7 @@ class CreateProductionBatchServiceTest {
             Map.of(sourceReference, EVIDENCE),
             productionProfile()
         ),
+        prediction(productionProfile().sugar()),
         null,
         null,
         List.of()
@@ -382,6 +384,7 @@ class CreateProductionBatchServiceTest {
               candidate.status(),
               candidate.confirmedProductionBatchId()
           ),
+          snapshot.potentialAbv(),
           snapshot.normalizerCode(),
           snapshot.targetDistance(),
           snapshot.warnings(),

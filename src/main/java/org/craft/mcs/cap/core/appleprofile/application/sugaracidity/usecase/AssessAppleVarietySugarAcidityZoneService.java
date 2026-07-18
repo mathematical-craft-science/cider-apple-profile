@@ -6,6 +6,7 @@ import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.in.Appl
 import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.in.AssessAppleVarietySugarAcidityZoneUseCase;
 import org.craft.mcs.cap.core.appleprofile.application.port.out.AppleVarietyRepository;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyId;
+import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPredictor;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileProjector;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
@@ -28,6 +29,7 @@ public final class AssessAppleVarietySugarAcidityZoneService
 
   private final @NonNull AppleVarietyRepository appleVarietyRepository;
   private final @NonNull SugarAcidityProfileProjector sugarAcidityProfileProjector;
+  private final @NonNull PotentialAbvPredictor potentialAbvPredictor;
 
   @Override
   public @NonNull AppleVarietySugarAcidityZoneResult assess(
@@ -42,7 +44,8 @@ public final class AssessAppleVarietySugarAcidityZoneService
     return new AppleVarietySugarAcidityZoneResult(
         variety.varietyId(),
         variety.name(),
-        evaluation
+        evaluation,
+        potentialAbvPredictor.predictIfSugarPresent(evaluation.axes()).orElse(null) // NOSONAR
     );
   }
 }

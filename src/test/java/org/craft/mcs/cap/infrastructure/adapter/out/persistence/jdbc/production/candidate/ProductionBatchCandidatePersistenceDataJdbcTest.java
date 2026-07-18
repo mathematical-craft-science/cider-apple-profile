@@ -43,6 +43,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.craft.mcs.cap.support.PotentialAbvPredictionFixtures.prediction;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 
@@ -84,6 +85,8 @@ class ProductionBatchCandidatePersistenceDataJdbcTest {
                 .isEqualTo(ProductionSourceEvidenceReference.of("measurement-2026-07-16"))))
         .satisfies(snapshot -> assertThat(snapshot)
             .returns(ProfileAxisNormalizerCode.SENSITIVITY_UNIT, ProductionBatchCandidateSnapshot::normalizerCode)
+            .satisfies(candidateSnapshot -> assertThat(candidateSnapshot.potentialAbv().potentialAbv().percent())
+                .isEqualByComparingTo("6.825"))
             .returns(List.of(ChemicalProfileCompositionWarning.TANNIN_INCOMPLETE),
                 ProductionBatchCandidateSnapshot::warnings)
             .satisfies(candidateSnapshot -> assertThat(candidateSnapshot.targetDistance())
@@ -142,6 +145,7 @@ class ProductionBatchCandidatePersistenceDataJdbcTest {
             Map.of(sourceReference, ProductionSourceEvidenceReference.of("measurement-2026-07-16")),
             productionProfile()
         ),
+        prediction(productionProfile().sugar()),
         ProfileAxisNormalizerCode.SENSITIVITY_UNIT,
         targetDistance(),
         List.of(ChemicalProfileCompositionWarning.TANNIN_INCOMPLETE)

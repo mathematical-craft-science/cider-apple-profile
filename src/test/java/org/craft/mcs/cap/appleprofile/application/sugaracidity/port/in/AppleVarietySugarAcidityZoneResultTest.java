@@ -29,6 +29,7 @@ class AppleVarietySugarAcidityZoneResultTest {
     assertThatThrownBy(() -> new AppleVarietySugarAcidityZoneResult(
             AppleVarietyId.newId(),
             AppleVarietyName.of("Kingston Black"),
+            null,
             null
         ))
         .isInstanceOf(NullPointerException.class);
@@ -43,7 +44,8 @@ class AppleVarietySugarAcidityZoneResultTest {
         .sugar(ExactMeasurement.of(SugarConcentration.ofSpecificGravity(
             SpecificGravityValue.of("1.050")
         )))
-        .build())
+        .build()),
+        null
     );
 
     assertThat(result.evaluation().plottable()).isFalse();
@@ -56,7 +58,8 @@ class AppleVarietySugarAcidityZoneResultTest {
     final var result = new AppleVarietySugarAcidityZoneResult(
         AppleVarietyId.newId(),
         AppleVarietyName.of("Kingston Black"),
-        evaluation(profile)
+        evaluation(profile),
+        null
     );
 
     assertThat(result.evaluation().plottable()).isTrue();

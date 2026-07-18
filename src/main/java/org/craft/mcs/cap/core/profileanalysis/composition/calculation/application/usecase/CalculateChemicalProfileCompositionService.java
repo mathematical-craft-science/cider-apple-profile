@@ -1,6 +1,7 @@
 package org.craft.mcs.cap.core.profileanalysis.composition.calculation.application.usecase;
 
 import lombok.RequiredArgsConstructor;
+import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPredictor;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.application.port.in.CalculateChemicalProfileCompositionCommand;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.application.port.in.CalculateChemicalProfileCompositionResult;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.application.port.in.CalculateChemicalProfileCompositionUseCase;
@@ -14,6 +15,7 @@ import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.Profi
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.objective.ProfileTargetObjectiveFunctionCode;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.objective.ProfileTargetObjectiveFunctionFactory;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetObjectiveWeights;
+import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 
@@ -24,8 +26,9 @@ import static java.util.Objects.requireNonNull;
  * Application service for calculating one explicitly provided chemical profile composition.
  *
  * <p>This use case differs from optimization: source weights are already known. The service selects
- * the requested calculator and, when a target is provided, also builds the configured normalizer and
- * objective function to explain distance from the calculated composition to the target.
+ * the requested calculator, predicts potential ABV from the resulting sugar value and, when a target
+ * is provided, also builds the configured normalizer and objective function to explain distance from
+ * the calculated composition to the target.
  */
 @Component
 @RequiredArgsConstructor
@@ -34,6 +37,7 @@ public final class CalculateChemicalProfileCompositionService implements Calcula
   private final @NonNull ChemicalProfileCompositionCalculatorSelector calculatorSelector;
   private final @NonNull ProfileAxisNormalizerSelector normalizerSelector;
   private final @NonNull ProfileTargetObjectiveFunctionFactory objectiveFunctionFactory;
+  private final @NonNull PotentialAbvPredictor potentialAbvPredictor;
 
   @Override
   public @NonNull CalculateChemicalProfileCompositionResult calculate(
@@ -45,9 +49,12 @@ public final class CalculateChemicalProfileCompositionService implements Calcula
         command.sources(),
         command.tanninPolicy()
     ));
+    final var potentialAbv = potentialAbvPredictor.predict(
+        SpecificGravityValue.of(composition.profile().sugar().value())
+    );
     final var targetObjective = command.targetObjective();
     if (targetObjective == null) {
-      return CalculateChemicalProfileCompositionResult.withoutTargetDistance(composition);
+      return CalculateChemicalProfileCompositionResult.withoutTargetDistance(composition, potentialAbv);
     }
 
     final var targetDistance = distanceToTarget(
@@ -59,6 +66,7 @@ public final class CalculateChemicalProfileCompositionService implements Calcula
     );
     return new CalculateChemicalProfileCompositionResult(
         composition,
+        potentialAbv,
         command.normalizerCode(),
         targetDistance
     );

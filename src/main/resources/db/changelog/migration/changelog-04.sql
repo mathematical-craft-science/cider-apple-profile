@@ -40,6 +40,12 @@ CREATE TABLE IF NOT EXISTS production_batch_candidates
     tannin_mg_l_tae               NUMERIC(12, 4),
     yan_mg_n_l                    NUMERIC(12, 4),
 
+    predicted_final_gravity       NUMERIC(12, 9)           NOT NULL,
+    predicted_final_gravity_source VARCHAR(64)              NOT NULL,
+    potential_abv_percent         NUMERIC(6, 3)            NOT NULL,
+    abv_prediction_method         VARCHAR(64)              NOT NULL,
+    abv_prediction_confidence     VARCHAR(32)              NOT NULL,
+
     normalizer_code               VARCHAR(64),
     target_distance_json          TEXT,
     warnings_json                 TEXT                     NOT NULL,

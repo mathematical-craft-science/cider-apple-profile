@@ -1,13 +1,14 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.sugaracidity.mapper;
 
 import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.in.AppleVarietyPointFilters;
-import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.in.AppleVarietySugarAcidityZoneAssessment;
 import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.in.AppleVarietySugarAcidityZonePointQuery;
 import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.in.AppleVarietySugarAcidityZoneResult;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.sugaracidity.dto.AppleVarietySugarAcidityZonePointQueryRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.sugaracidity.dto.AppleVarietySugarAcidityZonePointBatchResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.sugaracidity.dto.AppleVarietySugarAcidityZoneResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.sugaracidity.dto.UnplottableAppleVarietySugarAcidityZonePointResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.abv.dto.PotentialAbvPredictionResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.abv.mapper.PotentialAbvPredictionRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.mapper.ChemicalProfileCapabilityRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.sugaracidity.mapper.SugarAcidityZoneRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.sugaracidity.dto.SugarAcidityZoneAssessmentResponse;
@@ -29,18 +30,6 @@ import static java.util.Objects.requireNonNullElse;
 public final class AppleVarietySugarAcidityZoneRestMapper {
 
   private AppleVarietySugarAcidityZoneRestMapper() {
-  }
-
-  public static @NonNull AppleVarietySugarAcidityZoneResponse toResponse(
-      @NonNull AppleVarietySugarAcidityZoneAssessment assessment
-  ) {
-    requireNonNull(assessment, "apple variety sugar-acidity zone assessment cannot be null");
-
-    return new AppleVarietySugarAcidityZoneResponse(
-        assessment.varietyId().value(),
-        assessment.varietyName().value(),
-        SugarAcidityZoneRestMapper.toResponse(assessment.assessment())
-    );
   }
 
   public static @NonNull AppleVarietySugarAcidityZonePointQuery toQuery(
@@ -72,6 +61,7 @@ public final class AppleVarietySugarAcidityZoneRestMapper {
         result.varietyName().value(),
         evaluation.plottable(),
         toAssessmentResponse(evaluation.assessment()),
+        toPotentialAbvResponse(result),
         ChemicalProfileCapabilityRestMapper.toResponse(evaluation.capabilityAssessment())
     );
   }
@@ -125,5 +115,12 @@ public final class AppleVarietySugarAcidityZoneRestMapper {
       @Nullable SugarAcidityZoneAssessment assessment
   ) {
     return assessment == null ? null : SugarAcidityZoneRestMapper.toResponse(assessment);
+  }
+
+  private static @Nullable PotentialAbvPredictionResponse toPotentialAbvResponse(
+      @NonNull AppleVarietySugarAcidityZoneResult result
+  ) {
+    final var prediction = result.potentialAbv();
+    return prediction == null ? null : PotentialAbvPredictionRestMapper.toResponse(prediction);
   }
 }

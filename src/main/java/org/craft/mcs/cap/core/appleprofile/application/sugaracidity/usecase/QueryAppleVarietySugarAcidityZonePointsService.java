@@ -10,6 +10,7 @@ import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.out.App
 import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.out.AppleVarietySugarAcidityPointCandidateQuery;
 import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.out.AppleVarietySugarAcidityPointCandidateRepository;
 import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.out.AppleVarietySugarAcidityPointCandidateView;
+import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPredictor;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileEvaluation;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileProjector;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.SugarAcidityZoneAssessment;
@@ -43,6 +44,7 @@ public final class QueryAppleVarietySugarAcidityZonePointsService
 
   private final @NonNull AppleVarietySugarAcidityPointCandidateRepository candidateRepository;
   private final @NonNull SugarAcidityProfileProjector sugarAcidityProfileProjector;
+  private final @NonNull PotentialAbvPredictor potentialAbvPredictor;
 
   @Override
   public @NonNull CursorPage<@NonNull AppleVarietySugarAcidityZoneResult> query(
@@ -80,14 +82,15 @@ public final class QueryAppleVarietySugarAcidityZonePointsService
     return assessment.capable() == Boolean.TRUE.equals(criteria.capable());
   }
 
-  private static @NonNull AppleVarietySugarAcidityZoneResult toResult(
+  private @NonNull AppleVarietySugarAcidityZoneResult toResult(
       @NonNull AppleVarietySugarAcidityPointCandidateView variety,
       @NonNull SugarAcidityProfileEvaluation evaluation
   ) {
     return new AppleVarietySugarAcidityZoneResult(
         variety.varietyId(),
         variety.name(),
-        evaluation
+        evaluation,
+        potentialAbvPredictor.predictIfSugarPresent(evaluation.axes()).orElse(null) // NOSONAR
     );
   }
 

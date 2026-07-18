@@ -4,6 +4,9 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 import org.craft.mcs.cap.core.production.candidate.domain.model.ProductionBatchCandidateStatus;
+import org.craft.mcs.cap.core.profileanalysis.abv.domain.AbvPredictionMethod;
+import org.craft.mcs.cap.core.profileanalysis.abv.domain.FinalGravityPredictionSource;
+import org.craft.mcs.cap.core.profileanalysis.abv.domain.PredictionConfidence;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.normalization.ProfileAxisNormalizerCode;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -30,6 +33,11 @@ class ProductionBatchCandidateJdbcEntity {
   @NonNull @Column("acidity_g_l_as_malic") BigDecimal acidityGLAsMalic;
   @Nullable @Column("tannin_mg_l_tae") BigDecimal tanninMgLTae;
   @Nullable @Column("yan_mg_n_l") BigDecimal yeastAssimilableNitrogenMgNL;
+  @NonNull @Column("predicted_final_gravity") BigDecimal predictedFinalGravity;
+  @NonNull @Column("predicted_final_gravity_source") FinalGravityPredictionSource predictedFinalGravitySource;
+  @NonNull @Column("potential_abv_percent") BigDecimal potentialAbvPercent;
+  @NonNull @Column("abv_prediction_method") AbvPredictionMethod abvPredictionMethod;
+  @NonNull @Column("abv_prediction_confidence") PredictionConfidence abvPredictionConfidence;
   @Nullable @Column("normalizer_code") ProfileAxisNormalizerCode normalizerCode;
   @Nullable @Column("target_distance_json") String targetDistanceJson;
   @NonNull @Column("warnings_json") String warningsJson;
@@ -53,6 +61,11 @@ class ProductionBatchCandidateJdbcEntity {
       @NonNull BigDecimal acidityGLAsMalic,
       @Nullable BigDecimal tanninMgLTae,
       @Nullable BigDecimal yeastAssimilableNitrogenMgNL,
+      @NonNull BigDecimal predictedFinalGravity,
+      @NonNull FinalGravityPredictionSource predictedFinalGravitySource,
+      @NonNull BigDecimal potentialAbvPercent,
+      @NonNull AbvPredictionMethod abvPredictionMethod,
+      @NonNull PredictionConfidence abvPredictionConfidence,
       @Nullable ProfileAxisNormalizerCode normalizerCode,
       @Nullable String targetDistanceJson,
       @NonNull String warningsJson,
@@ -71,6 +84,26 @@ class ProductionBatchCandidateJdbcEntity {
     this.acidityGLAsMalic = requireNonNull(acidityGLAsMalic, "production candidate acidity cannot be null");
     this.tanninMgLTae = tanninMgLTae;
     this.yeastAssimilableNitrogenMgNL = yeastAssimilableNitrogenMgNL;
+    this.predictedFinalGravity = requireNonNull(
+        predictedFinalGravity,
+        "production candidate predicted final gravity cannot be null"
+    );
+    this.predictedFinalGravitySource = requireNonNull(
+        predictedFinalGravitySource,
+        "production candidate predicted final gravity source cannot be null"
+    );
+    this.potentialAbvPercent = requireNonNull(
+        potentialAbvPercent,
+        "production candidate potential ABV cannot be null"
+    );
+    this.abvPredictionMethod = requireNonNull(
+        abvPredictionMethod,
+        "production candidate ABV prediction method cannot be null"
+    );
+    this.abvPredictionConfidence = requireNonNull(
+        abvPredictionConfidence,
+        "production candidate ABV prediction confidence cannot be null"
+    );
     this.normalizerCode = normalizerCode;
     this.targetDistanceJson = targetDistanceJson;
     this.warningsJson = requireNonNull(warningsJson, "production candidate warnings JSON cannot be null");

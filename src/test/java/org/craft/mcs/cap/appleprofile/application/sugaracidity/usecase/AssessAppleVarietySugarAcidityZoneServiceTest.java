@@ -20,6 +20,7 @@ import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.Rectangle
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.craft.mcs.cap.support.PotentialAbvPredictionFixtures.predictor;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -31,7 +32,8 @@ class AssessAppleVarietySugarAcidityZoneServiceTest {
     final var repository = mock(AppleVarietyRepository.class);
     final var service = new AssessAppleVarietySugarAcidityZoneService(
         repository,
-        projector()
+        projector(),
+        predictor()
     );
     final var variety = AppleVariety.create(
         AppleVarietyId.newId(),
@@ -52,6 +54,7 @@ class AssessAppleVarietySugarAcidityZoneServiceTest {
         .isEqualTo(ChemicalProfileCapability.SUGAR_ACIDITY_PLOT);
     assertThat(result.evaluation().capabilityAssessment().missingAxes())
         .containsExactly(ChemicalAxis.ACIDITY);
+    assertThat(result.potentialAbv()).isNotNull();
   }
 
   private static SugarAcidityProfileProjector projector() {

@@ -6,10 +6,12 @@ import org.craft.mcs.cap.core.production.candidate.domain.model.ProductionBatchC
 import org.craft.mcs.cap.core.production.candidate.domain.model.ProductionBatchCandidateId;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatchId;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
+import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPrediction;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
+import org.craft.mcs.cap.shared.kernel.measurement.value.AbvValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -41,6 +43,11 @@ final class ProductionBatchCandidateJdbcMapper {
         profile.acidity().asBigDecimal(),
         tannin(profile),
         yeastAssimilableNitrogen(profile),
+        snapshot.potentialAbv().predictedFinalGravity().asBigDecimal(),
+        snapshot.potentialAbv().predictedFinalGravitySource(),
+        snapshot.potentialAbv().potentialAbv().percent(),
+        snapshot.potentialAbv().method(),
+        snapshot.potentialAbv().confidence(),
         snapshot.normalizerCode(),
         codec.encodeTargetDistance(snapshot.targetDistance()),
         codec.encodeWarnings(snapshot.warnings()),
@@ -69,6 +76,11 @@ final class ProductionBatchCandidateJdbcMapper {
     entity.acidityGLAsMalic = profile.acidity().asBigDecimal();
     entity.tanninMgLTae = tannin(profile);
     entity.yeastAssimilableNitrogenMgNL = yeastAssimilableNitrogen(profile);
+    entity.predictedFinalGravity = snapshot.potentialAbv().predictedFinalGravity().asBigDecimal();
+    entity.predictedFinalGravitySource = snapshot.potentialAbv().predictedFinalGravitySource();
+    entity.potentialAbvPercent = snapshot.potentialAbv().potentialAbv().percent();
+    entity.abvPredictionMethod = snapshot.potentialAbv().method();
+    entity.abvPredictionConfidence = snapshot.potentialAbv().confidence();
     entity.normalizerCode = snapshot.normalizerCode();
     entity.targetDistanceJson = codec.encodeTargetDistance(snapshot.targetDistance());
     entity.warningsJson = codec.encodeWarnings(snapshot.warnings());
@@ -105,6 +117,14 @@ final class ProductionBatchCandidateJdbcMapper {
     );
     return new ProductionBatchCandidateSnapshot(
         candidate,
+        new PotentialAbvPrediction(
+            candidate.profile().sugar(),
+            SpecificGravityValue.of(entity.predictedFinalGravity),
+            entity.predictedFinalGravitySource,
+            AbvValue.of(entity.potentialAbvPercent),
+            entity.abvPredictionMethod,
+            entity.abvPredictionConfidence
+        ),
         entity.normalizerCode,
         codec.decodeTargetDistance(entity.targetDistanceJson),
         codec.decodeWarnings(entity.warningsJson),

@@ -1,14 +1,18 @@
 package org.craft.mcs.cap.core.profileanalysis.composition.optimization.application.usecase;
 
 import lombok.RequiredArgsConstructor;
+import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPredictor;
+import org.craft.mcs.cap.core.profileanalysis.composition.optimization.application.model.ChemicalProfileCompositionOptimizationCandidateView;
 import org.craft.mcs.cap.core.profileanalysis.composition.optimization.application.port.in.OptimizeChemicalProfileCompositionCommand;
 import org.craft.mcs.cap.core.profileanalysis.composition.optimization.application.port.in.OptimizeChemicalProfileCompositionResult;
 import org.craft.mcs.cap.core.profileanalysis.composition.optimization.application.port.in.OptimizeChemicalProfileCompositionUseCase;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionCalculatorSelector;
+import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.ChemicalProfileCompositionOptimizationCandidate;
 import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.ChemicalProfileCompositionOptimizationRequest;
 import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.strategy.CompositionOptimizationStrategySelector;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.normalization.ProfileAxisNormalizerSelector;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.objective.ProfileTargetObjectiveFunctionFactory;
+import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 
@@ -39,6 +43,7 @@ public final class OptimizeChemicalProfileCompositionService
   private final @NonNull ChemicalProfileCompositionCalculatorSelector calculatorSelector;
   private final @NonNull ProfileAxisNormalizerSelector normalizerSelector;
   private final @NonNull ProfileTargetObjectiveFunctionFactory objectiveFunctionFactory;
+  private final @NonNull PotentialAbvPredictor potentialAbvPredictor;
 
   @Override
   public @NonNull OptimizeChemicalProfileCompositionResult optimize(
@@ -73,7 +78,21 @@ public final class OptimizeChemicalProfileCompositionService
         command.calculatorCode(),
         command.normalizerCode(),
         command.objectiveFunctionCode(),
-        optimizationResult
+        optimizationResult.evaluatedCandidates(),
+        optimizationResult.candidates().stream()
+            .map(this::toCandidateView)
+            .toList()
+    );
+  }
+
+  private @NonNull ChemicalProfileCompositionOptimizationCandidateView toCandidateView(
+      @NonNull ChemicalProfileCompositionOptimizationCandidate candidate
+  ) {
+    return new ChemicalProfileCompositionOptimizationCandidateView(
+        candidate,
+        potentialAbvPredictor.predict(
+            SpecificGravityValue.of(candidate.composition().profile().sugar().value())
+        )
     );
   }
 }

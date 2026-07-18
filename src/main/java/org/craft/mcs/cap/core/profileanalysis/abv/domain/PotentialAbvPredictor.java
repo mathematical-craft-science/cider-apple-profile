@@ -1,7 +1,10 @@
 package org.craft.mcs.cap.core.profileanalysis.abv.domain;
 
+import java.util.Optional;
 import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
-
+import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.jmolecules.ddd.annotation.Service;
@@ -43,6 +46,15 @@ public final class PotentialAbvPredictor {
   ) {
     requireNonNull(sugar, "sugar concentration cannot be null");
     return predict(sugar.specificGravity());
+  }
+
+  /** Predicts potential ABV when the supplied profile axes contain sugar. */
+  public @NonNull Optional<@NonNull PotentialAbvPrediction> predictIfSugarPresent(
+      @NonNull ChemicalProfileAxes axes
+  ) {
+    requireNonNull(axes, "chemical profile axes cannot be null");
+    return axes.valueOf(ChemicalAxis.SUGAR)
+        .map(this::predictSugarAxis);
   }
 
   public @NonNull PotentialAbvPrediction predict(
@@ -93,5 +105,9 @@ public final class PotentialAbvPredictor {
         abvPredictionStrategy.method(),
         finalGravityPrediction.confidence()
     );
+  }
+
+  private @NonNull PotentialAbvPrediction predictSugarAxis(@NonNull AxisValue sugar) {
+    return predict(SpecificGravityValue.of(sugar.value()));
   }
 }

@@ -6,6 +6,7 @@ import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.Che
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionTanninPolicy;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.port.in.ProfileTargetScoringPurpose;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.SugarAcidityTargetResolver;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.abv.mapper.PotentialAbvPredictionRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.calculation.dto.CalculateChemicalProfileCompositionRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.calculation.dto.ChemicalProfileCompositionResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.common.mapper.ChemicalProfileCompositionCommonRestMapper;
@@ -88,6 +89,7 @@ public final class ChemicalProfileCompositionCalculationRestMapper {
             .map(ChemicalProfileCompositionCommonRestMapper::toResponse)
             .toList(),
         SugarAcidityZoneRestMapper.toResponse(composition.profile()),
+        PotentialAbvPredictionRestMapper.toResponse(result.potentialAbv()),
         toYeastAssimilableNitrogenResponse(composition.yeastAssimilableNitrogen()),
         toVolumeResponse(composition.totalVolume()),
         composition.warnings(),

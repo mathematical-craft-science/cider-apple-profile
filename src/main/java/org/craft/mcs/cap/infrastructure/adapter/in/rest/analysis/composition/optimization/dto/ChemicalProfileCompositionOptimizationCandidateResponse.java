@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionWarning;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.abv.dto.PotentialAbvPredictionResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.common.dto.ChemicalProfileCompositionSourceResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.composition.dto.CompositionOptimizationObjectiveAssessmentResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.ProfileTargetDistanceResponse;
@@ -23,9 +24,23 @@ public record ChemicalProfileCompositionOptimizationCandidateResponse(
     @NonNull List<@NonNull ChemicalProfileCompositionSourceResponse> sources,
     @Schema(description = "Calculated profile point.", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull SugarAcidityProfilePointResponse profile,
-    @Schema(description = "Calculated yeast-assimilable nitrogen in mg N/L, when every source contains YAN.", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @Schema(
+        description = "Potential ABV predicted from the candidate sugar value.",
+        nullable = true,
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
+    @Nullable PotentialAbvPredictionResponse potentialAbv,
+    @Schema(
+        description = "Calculated yeast-assimilable nitrogen in mg N/L, when every source contains YAN.",
+        nullable = true,
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     @Nullable SugarAcidityAxisPointResponse yeastAssimilableNitrogen,
-    @Schema(description = "Total candidate volume, when known.", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @Schema(
+        description = "Total candidate volume, when known.",
+        nullable = true,
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     @Nullable DecimalQuantityResponse totalVolume,
     @ArraySchema(
         arraySchema = @Schema(description = "Composition warnings.", requiredMode = Schema.RequiredMode.REQUIRED),
@@ -34,7 +49,10 @@ public record ChemicalProfileCompositionOptimizationCandidateResponse(
     @NonNull List<@NonNull ChemicalProfileCompositionWarning> warnings,
     @Schema(description = "Distance from candidate profile to target.", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull ProfileTargetDistanceResponse targetDistance,
-    @Schema(description = "Full objective assessment used to rank this candidate.", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(
+        description = "Full objective assessment used to rank this candidate.",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
     @NonNull CompositionOptimizationObjectiveAssessmentResponse objectiveAssessment
 ) {
 }

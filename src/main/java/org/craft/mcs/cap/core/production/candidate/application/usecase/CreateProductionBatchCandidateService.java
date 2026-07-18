@@ -59,6 +59,7 @@ public final class CreateProductionBatchCandidateService implements CreateProduc
     );
     final var saved = candidateStore.create(new ProductionBatchCandidateSnapshot(
         candidate,
+        calculation.potentialAbv(),
         calculation.normalizerCode(),
         calculation.targetDistance(),
         calculation.warnings()

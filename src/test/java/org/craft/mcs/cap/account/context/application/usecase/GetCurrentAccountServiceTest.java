@@ -5,7 +5,8 @@ import java.util.Optional;
 import org.craft.mcs.cap.core.account.shared.application.AccountAccessDeniedException;
 import org.craft.mcs.cap.core.account.context.application.port.in.WorkspaceMembershipView;
 import org.craft.mcs.cap.core.account.context.application.port.out.ActiveWorkspaceProvider;
-import org.craft.mcs.cap.core.account.membership.application.port.out.WorkspaceMembershipRepository;
+import org.craft.mcs.cap.core.account.context.application.port.out.CurrentAccountWorkspaceQuery;
+import org.craft.mcs.cap.core.account.context.application.port.out.CurrentWorkspaceContextRequestCache;
 import org.craft.mcs.cap.core.account.context.application.usecase.ActiveWorkspaceSelectionPolicy;
 import org.craft.mcs.cap.core.account.context.application.usecase.CurrentAccountMembershipReader;
 import org.craft.mcs.cap.core.account.context.application.usecase.CurrentWorkspaceContextResolver;
@@ -20,6 +21,7 @@ import org.craft.mcs.cap.core.account.shared.domain.value.IdentityProviderCode;
 import org.craft.mcs.cap.core.account.user.application.model.AuthenticatedActor;
 import org.craft.mcs.cap.core.account.user.application.port.in.AccountUserView;
 import org.craft.mcs.cap.core.account.user.application.port.out.AccountUserRepository;
+import org.craft.mcs.cap.core.account.user.application.port.out.CurrentAccountUserRequestCache;
 import org.craft.mcs.cap.core.account.user.application.port.out.CurrentActorProvider;
 import org.craft.mcs.cap.core.account.user.application.port.out.UserPreferencesRepository;
 import org.craft.mcs.cap.core.account.user.application.usecase.CurrentAccountUserResolver;
@@ -29,7 +31,6 @@ import org.craft.mcs.cap.core.account.user.domain.model.AccountUserStatus;
 import org.craft.mcs.cap.core.account.user.domain.model.UserPreferences;
 import org.craft.mcs.cap.core.account.user.domain.model.value.ExternalUserSubject;
 import org.craft.mcs.cap.core.account.workspace.application.port.in.WorkspaceView;
-import org.craft.mcs.cap.core.account.workspace.application.port.out.WorkspaceRepository;
 import org.craft.mcs.cap.core.account.workspace.domain.model.Workspace;
 import org.craft.mcs.cap.core.account.workspace.domain.model.WorkspaceStatus;
 import org.craft.mcs.cap.core.account.workspace.domain.model.WorkspaceType;
@@ -40,6 +41,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.craft.mcs.cap.account.support.WorkspaceMembershipSnapshotFixtures.snapshot;
 import static org.craft.mcs.cap.core.account.user.domain.model.PersonalAccountCapability.forActiveAccount;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -54,8 +56,7 @@ class GetCurrentAccountServiceTest {
   void returnsProvisionedAccountWithoutChangingPersistentState() {
     final var currentActorProvider = mock(CurrentActorProvider.class);
     final var userRepository = mock(AccountUserRepository.class);
-    final var workspaceRepository = mock(WorkspaceRepository.class);
-    final var membershipRepository = mock(WorkspaceMembershipRepository.class);
+    final var workspaceQuery = mock(CurrentAccountWorkspaceQuery.class);
     final var preferencesRepository = mock(UserPreferencesRepository.class);
     final var activeWorkspaceProvider = mock(ActiveWorkspaceProvider.class);
     final var actor = actor();
@@ -66,8 +67,8 @@ class GetCurrentAccountServiceTest {
     when(currentActorProvider.currentActor()).thenReturn(Optional.of(actor));
     when(userRepository.findByExternalIdentity(actor.identityProvider(), actor.externalSubject()))
         .thenReturn(Optional.of(user));
-    when(membershipRepository.findAllByUserId(user.userId())).thenReturn(List.of(membership));
-    when(workspaceRepository.findById(workspace.workspaceId())).thenReturn(Optional.of(workspace));
+    when(workspaceQuery.findActiveByUserId(user.userId()))
+        .thenReturn(List.of(snapshot(membership, workspace)));
     when(preferencesRepository.findByUserId(any())).thenReturn(Optional.empty());
     when(activeWorkspaceProvider.selectedWorkspaceId()).thenReturn(Optional.empty());
 
@@ -75,8 +76,7 @@ class GetCurrentAccountServiceTest {
         currentWorkspaceContextResolver(
             currentActorProvider,
             userRepository,
-            membershipRepository,
-            workspaceRepository,
+            workspaceQuery,
             activeWorkspaceProvider
         ),
         preferencesRepository
@@ -98,10 +98,6 @@ class GetCurrentAccountServiceTest {
         .containsExactlyInAnyOrderElementsOf(AccountRole.OWNER.workspacePermissions());
     verify(userRepository, never()).create(any());
     verify(userRepository, never()).update(any());
-    verify(workspaceRepository, never()).create(any());
-    verify(workspaceRepository, never()).update(any());
-    verify(membershipRepository, never()).create(any());
-    verify(membershipRepository, never()).update(any());
     verify(preferencesRepository, never()).create(any());
     verify(preferencesRepository, never()).update(any());
   }
@@ -110,8 +106,7 @@ class GetCurrentAccountServiceTest {
   void usesExplicitWorkspaceInsteadOfAlphabeticalMembershipOrder() {
     final var currentActorProvider = mock(CurrentActorProvider.class);
     final var userRepository = mock(AccountUserRepository.class);
-    final var workspaceRepository = mock(WorkspaceRepository.class);
-    final var membershipRepository = mock(WorkspaceMembershipRepository.class);
+    final var workspaceQuery = mock(CurrentAccountWorkspaceQuery.class);
     final var preferencesRepository = mock(UserPreferencesRepository.class);
     final var activeWorkspaceProvider = mock(ActiveWorkspaceProvider.class);
     final var actor = actor();
@@ -124,12 +119,10 @@ class GetCurrentAccountServiceTest {
     when(currentActorProvider.currentActor()).thenReturn(Optional.of(actor));
     when(userRepository.findByExternalIdentity(actor.identityProvider(), actor.externalSubject()))
         .thenReturn(Optional.of(user));
-    when(membershipRepository.findAllByUserId(user.userId()))
-        .thenReturn(List.of(selectedMembership, firstMembership));
-    when(workspaceRepository.findById(alphabeticallyFirst.workspaceId()))
-        .thenReturn(Optional.of(alphabeticallyFirst));
-    when(workspaceRepository.findById(selectedWorkspace.workspaceId()))
-        .thenReturn(Optional.of(selectedWorkspace));
+    when(workspaceQuery.findActiveByUserId(user.userId())).thenReturn(List.of(
+        snapshot(selectedMembership, selectedWorkspace),
+        snapshot(firstMembership, alphabeticallyFirst)
+    ));
     when(preferencesRepository.findByUserId(user.userId()))
         .thenReturn(Optional.of(UserPreferences.defaults(user.userId())));
     when(activeWorkspaceProvider.selectedWorkspaceId())
@@ -139,8 +132,7 @@ class GetCurrentAccountServiceTest {
         currentWorkspaceContextResolver(
             currentActorProvider,
             userRepository,
-            membershipRepository,
-            workspaceRepository,
+            workspaceQuery,
             activeWorkspaceProvider
         ),
         preferencesRepository
@@ -181,8 +173,7 @@ class GetCurrentAccountServiceTest {
         currentWorkspaceContextResolver(
             currentActorProvider,
             userRepository,
-            mock(WorkspaceMembershipRepository.class),
-            mock(WorkspaceRepository.class),
+            mock(CurrentAccountWorkspaceQuery.class),
             mock(ActiveWorkspaceProvider.class)
         ),
         mock(UserPreferencesRepository.class)
@@ -208,15 +199,19 @@ class GetCurrentAccountServiceTest {
   private static @NonNull CurrentWorkspaceContextResolver currentWorkspaceContextResolver(
       @NonNull CurrentActorProvider currentActorProvider,
       @NonNull AccountUserRepository userRepository,
-      @NonNull WorkspaceMembershipRepository membershipRepository,
-      @NonNull WorkspaceRepository workspaceRepository,
+      @NonNull CurrentAccountWorkspaceQuery workspaceQuery,
       @NonNull ActiveWorkspaceProvider activeWorkspaceProvider
   ) {
     return new CurrentWorkspaceContextResolver(
-        new CurrentAccountUserResolver(currentActorProvider, userRepository),
-        new CurrentAccountMembershipReader(membershipRepository, workspaceRepository),
+        new CurrentAccountUserResolver(
+            currentActorProvider,
+            userRepository,
+            mock(CurrentAccountUserRequestCache.class)
+        ),
+        new CurrentAccountMembershipReader(workspaceQuery),
         activeWorkspaceProvider,
-        new ActiveWorkspaceSelectionPolicy()
+        new ActiveWorkspaceSelectionPolicy(),
+        mock(CurrentWorkspaceContextRequestCache.class)
     );
   }
 

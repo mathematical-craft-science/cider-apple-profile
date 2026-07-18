@@ -2,6 +2,9 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.ca
 
 import java.math.BigDecimal;
 import java.util.List;
+import org.craft.mcs.cap.core.profileanalysis.abv.domain.FixedFinalGravityPredictionStrategy;
+import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPredictor;
+import org.craft.mcs.cap.core.profileanalysis.abv.domain.StandardGravityDropAbvPredictionStrategy;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.application.port.in.CalculateChemicalProfileCompositionResult;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionRequest;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.MassBalanceChemicalProfileCompositionStrategy;
@@ -13,6 +16,7 @@ import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.com
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.common.dto.ChemicalProfileCompositionSourceReferenceRequest;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
+import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
@@ -23,6 +27,10 @@ class ChemicalProfileCompositionCalculationRestMapperTest {
 
   private static final MassBalanceChemicalProfileCompositionStrategy CALCULATOR =
       new MassBalanceChemicalProfileCompositionStrategy();
+  private static final PotentialAbvPredictor POTENTIAL_ABV_PREDICTOR = new PotentialAbvPredictor(
+      FixedFinalGravityPredictionStrategy.dryCiderDefault(),
+      new StandardGravityDropAbvPredictionStrategy()
+  );
 
   @Test
   void mapsYanAxisForCalculationRequestAndResponse() {
@@ -57,7 +65,12 @@ class ChemicalProfileCompositionCalculationRestMapperTest {
         command.tanninPolicy()
     ));
     final var response = ChemicalProfileCompositionCalculationRestMapper.toResponse(
-        CalculateChemicalProfileCompositionResult.withoutTargetDistance(composition)
+        CalculateChemicalProfileCompositionResult.withoutTargetDistance(
+            composition,
+            POTENTIAL_ABV_PREDICTOR.predict(
+                SpecificGravityValue.of(composition.profile().sugar().value())
+            )
+        )
     );
 
     assertThat(response.yeastAssimilableNitrogen()).isNotNull();
@@ -69,6 +82,12 @@ class ChemicalProfileCompositionCalculationRestMapperTest {
     assertThat(response.profile().acidity().value().unit()).isEqualTo("g/L as malic acid");
     assertThat(response.profile().tannin()).isNotNull();
     assertThat(response.profile().tannin().value().unit()).isEqualTo("mg/L TAE");
+    assertThat(response.potentialAbv())
+        .satisfies(prediction -> assertThat(prediction.originalGravity().value())
+            .isEqualByComparingTo("1.045000000"))
+        .satisfies(prediction -> assertThat(prediction.potentialAbv().value())
+            .isEqualByComparingTo("5.906"))
+        .satisfies(prediction -> assertThat(prediction.potentialAbv().unit()).isEqualTo("% ABV"));
     assertThat(response.sources())
         .extracting(source -> source.requestedVolume().unit())
         .containsOnly("L");

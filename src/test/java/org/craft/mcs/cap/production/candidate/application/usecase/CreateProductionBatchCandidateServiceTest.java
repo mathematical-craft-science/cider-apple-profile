@@ -43,6 +43,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.craft.mcs.cap.support.PotentialAbvPredictionFixtures.prediction;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -71,6 +72,7 @@ class CreateProductionBatchCandidateServiceTest {
     when(calculator.calculate(List.of(availableSource), command.calculationRequest()))
         .thenReturn(new ProductionBatchCandidateCalculation(
             profile,
+            prediction(profile.sugar()),
             ProfileAxisNormalizerCode.SENSITIVITY_UNIT,
             null,
             List.of()
@@ -93,6 +95,7 @@ class CreateProductionBatchCandidateServiceTest {
         .returns(workspaceId, ProductionBatchCandidateView::workspaceId)
         .returns(ProductionBatchCandidateStatus.AVAILABLE, ProductionBatchCandidateView::status)
         .returns(profile, ProductionBatchCandidateView::profile)
+        .returns(prediction(profile.sugar()), ProductionBatchCandidateView::potentialAbv)
         .returns(ProfileAxisNormalizerCode.SENSITIVITY_UNIT, ProductionBatchCandidateView::normalizerCode);
     assertThat(savedSnapshot.getValue().candidate())
         .returns(command.sourceComposition(), ProductionBatchCandidate::sourceComposition)

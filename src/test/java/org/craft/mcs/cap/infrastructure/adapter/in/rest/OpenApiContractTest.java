@@ -438,11 +438,11 @@ class OpenApiContractTest {
         "measurementId",
         "workspaceId",
         "batchId",
-        "name"
+        "name",
+        "measuredAt",
+        "chemicalProfile"
     );
-    assertNotRequiredProperties(openApi, "FeedstockMeasurementResponse", "measuredAt", "chemicalProfile", "note");
-    assertNullable(schemaProperty(openApi, "FeedstockMeasurementResponse", "measuredAt"));
-    assertNullable(schemaProperty(openApi, "FeedstockMeasurementResponse", "chemicalProfile"));
+    assertNotRequiredProperties(openApi, "FeedstockMeasurementResponse", "note");
     assertNullable(schemaProperty(openApi, "FeedstockMeasurementResponse", "note"));
 
     assertRequiredProperties(openApi, "SugarAcidityProfilePointResponse", "sugar", "acidity");
@@ -553,10 +553,17 @@ class OpenApiContractTest {
     assertNoAllOfSchema(openApi, "RectangleSugarAcidityGraphZoneResponse");
     assertNoAllOfSchema(openApi, "EllipseSugarAcidityGraphZoneResponse");
 
-    assertRequiredProperties(openApi, "ChemicalProfileCompositionResponse", "sources", "profile", "warnings");
+    assertRequiredProperties(
+        openApi,
+        "ChemicalProfileCompositionResponse",
+        "sources",
+        "profile",
+        "warnings"
+    );
     assertNotRequiredProperties(
         openApi,
         "ChemicalProfileCompositionResponse",
+        "potentialAbv",
         "yeastAssimilableNitrogen",
         "totalVolume",
         "normalizerCode",
@@ -564,6 +571,7 @@ class OpenApiContractTest {
     );
     assertNullable(schemaProperty(openApi, "ChemicalProfileCompositionResponse", "yeastAssimilableNitrogen"));
     assertNullable(schemaProperty(openApi, "ChemicalProfileCompositionResponse", "totalVolume"));
+    assertNullable(schemaProperty(openApi, "ChemicalProfileCompositionResponse", "potentialAbv"));
     assertRequiredProperties(openApi, "ChemicalProfileCompositionSourceResponse", "reference");
     assertNotRequiredProperties(openApi, "ChemicalProfileCompositionSourceResponse", "requestedVolume", "proportion");
     assertNullable(schemaProperty(openApi, "ChemicalProfileCompositionSourceResponse", "requestedVolume"));
@@ -578,10 +586,14 @@ class OpenApiContractTest {
     assertNotRequiredProperties(
         openApi,
         "ChemicalProfileCompositionOptimizationCandidateResponse",
+        "potentialAbv",
         "yeastAssimilableNitrogen",
         "totalVolume"
     );
     assertNullable(schemaProperty(openApi, "ChemicalProfileCompositionOptimizationCandidateResponse", "totalVolume"));
+    assertNullable(schemaProperty(openApi, "ChemicalProfileCompositionOptimizationCandidateResponse", "potentialAbv"));
+    assertNotRequiredProperties(openApi, "AppleVarietySugarAcidityZoneResponse", "potentialAbv");
+    assertNullable(schemaProperty(openApi, "AppleVarietySugarAcidityZoneResponse", "potentialAbv"));
     assertNoSchemaComposesDiscriminatedUnionThroughAllOf(openApi);
   }
 
@@ -769,11 +781,13 @@ class OpenApiContractTest {
     assertNotRequiredProperties(
         openApi,
         "ProductionBatchCompositionResponse",
+        "potentialAbv",
         "yeastAssimilableNitrogen",
         "normalizerCode",
         "targetDistance"
     );
     assertNullable(schemaProperty(openApi, "ProductionBatchCompositionResponse", "yeastAssimilableNitrogen"));
+    assertNullable(schemaProperty(openApi, "ProductionBatchCompositionResponse", "potentialAbv"));
     assertNullable(schemaProperty(openApi, "ProductionBatchCompositionResponse", "normalizerCode"));
     assertNullable(schemaProperty(openApi, "ProductionBatchCompositionResponse", "targetDistance"));
     assertRequiredProperties(

@@ -54,6 +54,7 @@ public final class ProfileAnalysisProductionBatchCandidateCalculator
     ));
     return new ProductionBatchCandidateCalculation(
         toProductionProfile(result.composition()),
+        result.potentialAbv(),
         result.normalizerCode(),
         result.targetDistance(),
         result.composition().warnings()

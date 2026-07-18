@@ -19,7 +19,7 @@ import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.Abs
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionCalculatorCode;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionSource;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionProportion;
-import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.ChemicalProfileCompositionOptimizationCandidate;
+import org.craft.mcs.cap.core.profileanalysis.composition.optimization.application.model.ChemicalProfileCompositionOptimizationCandidateView;
 import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.strategy.CompositionOptimizationAlgorithm;
 import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.strategy.DiscretizedCompositionOptimizationSettings;
 import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapability;
@@ -170,8 +170,8 @@ public final class FeedstockBatchProfileTargetScoreRestMapper {
         optimization.normalizerCode(),
         optimization.objectiveFunctionCode(),
         stepPercent,
-        optimization.optimizationResult().evaluatedCandidates(),
-        optimization.optimizationResult().candidates().stream()
+        optimization.evaluatedCandidates(),
+        optimization.candidates().stream()
             .map(FeedstockBatchProfileTargetScoreRestMapper::toResponse)
             .toList()
     );
@@ -193,9 +193,10 @@ public final class FeedstockBatchProfileTargetScoreRestMapper {
   }
 
   private static @NonNull FeedstockBatchCompositionOptimizationCandidateResponse toResponse(
-      @NonNull ChemicalProfileCompositionOptimizationCandidate candidate
+      @NonNull ChemicalProfileCompositionOptimizationCandidateView view
   ) {
-    requireNonNull(candidate, "chemical profile composition optimization candidate cannot be null");
+    requireNonNull(view, "chemical profile composition optimization candidate view cannot be null");
+    final var candidate = view.candidate();
     final var composition = candidate.composition();
 
     return new FeedstockBatchCompositionOptimizationCandidateResponse(

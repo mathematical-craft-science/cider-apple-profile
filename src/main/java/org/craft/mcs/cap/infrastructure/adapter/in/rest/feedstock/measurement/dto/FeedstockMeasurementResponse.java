@@ -20,8 +20,18 @@ public record FeedstockMeasurementResponse(
     @NonNull UUID workspaceId,
     @Schema(description = "Feedstock batch identifier.", format = "uuid", example = "b2a49b8a-3a19-4f8f-989d-9278f4e00d2f", requiredMode = Schema.RequiredMode.REQUIRED) @NonNull UUID batchId,
     @Schema(description = "Measurement name.", example = "Pressing measurement #1", requiredMode = Schema.RequiredMode.REQUIRED) @NonNull String name,
-    @Schema(description = "Timestamp when the measurement was taken.", format = "date-time", example = "2026-10-18T10:15:30Z", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED) @Nullable Instant measuredAt,
-    @Schema(description = "Chemical profile in canonical service units.", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED) @Nullable ChemicalProfileResponse chemicalProfile,
+    @Schema(
+        description = "Timestamp when the measurement was taken.",
+        format = "date-time",
+        example = "2026-10-18T10:15:30Z",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
+    @NonNull Instant measuredAt,
+    @Schema(
+        description = "Measured chemical profile in canonical service units.",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
+    @NonNull ChemicalProfileResponse chemicalProfile,
     @Schema(description = "Optional measurement note.", example = "Measured immediately after pressing.", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED) @Nullable String note
 ) {
 }

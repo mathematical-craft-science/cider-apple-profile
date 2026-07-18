@@ -19,6 +19,7 @@ import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.craft.mcs.cap.support.PotentialAbvPredictionFixtures.prediction;
 
 
 class AppleVarietySugarAcidityZoneRestMapperTest {
@@ -47,7 +48,8 @@ class AppleVarietySugarAcidityZoneRestMapperTest {
         new AppleVarietySugarAcidityZoneResult(
             AppleVarietyId.of("00000000-0000-0000-0000-000000000001"),
             AppleVarietyName.of("Kingston Black"),
-            new SugarAcidityProfileEvaluation(axes, capabilityAssessment, true, assessment)
+            new SugarAcidityProfileEvaluation(axes, capabilityAssessment, true, assessment),
+            prediction(SpecificGravityValue.of("1.066"))
         )
     );
 
@@ -55,6 +57,7 @@ class AppleVarietySugarAcidityZoneRestMapperTest {
 
     assertThat(json.at("/assessment/point/sugar/valueKind").asText()).isEqualTo("EXACT");
     assertThat(json.at("/assessment/point/acidity/valueKind").asText()).isEqualTo("EXACT");
+    assertThat(json.at("/potentialAbv/potentialAbv/value").decimalValue()).isEqualByComparingTo("8.663");
   }
 
   @Test
@@ -74,7 +77,8 @@ class AppleVarietySugarAcidityZoneRestMapperTest {
         new AppleVarietySugarAcidityZoneResult(
             AppleVarietyId.of("00000000-0000-0000-0000-000000000001"),
             AppleVarietyName.of("Partial Profile"),
-            new SugarAcidityProfileEvaluation(axes, capabilityAssessment, false, null)
+            new SugarAcidityProfileEvaluation(axes, capabilityAssessment, false, null),
+            prediction(SpecificGravityValue.of("1.050"))
         )
     );
 
@@ -84,5 +88,6 @@ class AppleVarietySugarAcidityZoneRestMapperTest {
     assertThat(response.assessment()).isNull();
     assertThat(response.capabilityAssessment()).isNotNull();
     assertThat(response.capabilityAssessment().missingAxes()).containsExactly(ChemicalAxis.ACIDITY);
+    assertThat(response.potentialAbv()).isNotNull();
   }
 }

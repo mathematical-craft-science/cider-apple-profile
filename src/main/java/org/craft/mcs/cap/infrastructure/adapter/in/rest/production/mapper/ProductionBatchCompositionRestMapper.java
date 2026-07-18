@@ -3,6 +3,7 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.production.mapper;
 import org.craft.mcs.cap.core.production.candidate.application.model.ProductionBatchCandidateView;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceComponent;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.abv.mapper.PotentialAbvPredictionRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.ProductionBatchCompositionResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.ProductionBatchSourceResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.measurement.CanonicalUnitLabels;
@@ -33,6 +34,7 @@ public final class ProductionBatchCompositionRestMapper {
             .map(ProductionBatchCompositionRestMapper::toSourceResponse)
             .toList(),
         toProfilePointResponse(candidate.profile()),
+        PotentialAbvPredictionRestMapper.toResponse(candidate.potentialAbv()),
         toYeastAssimilableNitrogenResponse(candidate.profile()),
         new DecimalQuantityResponse(composition.totalVolume().liters(), CanonicalUnitLabels.VOLUME),
         candidate.warnings(),

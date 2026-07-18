@@ -31,6 +31,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.craft.mcs.cap.support.PotentialAbvPredictionFixtures.predictor;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -66,6 +67,10 @@ class QueryAppleVarietySugarAcidityZonePointsServiceTest {
     assertThat(result.items().getFirst().varietyId()).isEqualTo(alpha.varietyId());
     assertThat(result.items().getFirst().evaluation().plottable()).isTrue();
     assertThat(result.items().getFirst().evaluation().assessment().zone()).isEqualTo(SugarAcidityZone.PERFECT_APPLES);
+    assertThat(result.items().getFirst().potentialAbv())
+        .isNotNull()
+        .satisfies(prediction -> assertThat(prediction.potentialAbv().percent())
+            .isEqualByComparingTo("8.663"));
   }
 
   @Test
@@ -119,6 +124,7 @@ class QueryAppleVarietySugarAcidityZonePointsServiceTest {
     assertThat(result.items()).hasSize(1);
     assertThat(result.items().getFirst().evaluation().plottable()).isFalse();
     assertThat(result.items().getFirst().evaluation().assessment()).isNull();
+    assertThat(result.items().getFirst().potentialAbv()).isNotNull();
   }
 
   @Test
@@ -138,7 +144,8 @@ class QueryAppleVarietySugarAcidityZonePointsServiceTest {
   ) {
     return new QueryAppleVarietySugarAcidityZonePointsService(
         repository,
-        projector()
+        projector(),
+        predictor()
     );
   }
 

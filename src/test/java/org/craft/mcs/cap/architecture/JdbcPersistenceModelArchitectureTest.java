@@ -3,6 +3,7 @@ package org.craft.mcs.cap.architecture;
 import com.tngtech.archunit.core.domain.JavaClass;
 import com.tngtech.archunit.core.domain.JavaField;
 import com.tngtech.archunit.core.domain.JavaMethod;
+import com.tngtech.archunit.core.domain.JavaModifier;
 import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
@@ -20,6 +21,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.annotation.Version;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
+import org.springframework.stereotype.Repository;
 
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 
@@ -65,6 +67,14 @@ class JdbcPersistenceModelArchitectureTest {
           .and()
           .haveSimpleNameEndingWith("JdbcRepository")
           .should(notDeclareReadModelQueryMethods());
+
+  @ArchTest
+  static final ArchRule jdbc_repository_adapters_remain_proxyable =
+      classes()
+          .that()
+          .areAnnotatedWith(Repository.class)
+          .should()
+          .notHaveModifier(JavaModifier.FINAL);
 
   private static @NonNull ArchCondition<JavaClass> haveFieldAnnotatedWith(
       @NonNull Class<? extends Annotation> annotationType

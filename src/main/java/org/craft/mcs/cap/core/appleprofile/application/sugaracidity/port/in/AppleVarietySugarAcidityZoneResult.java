@@ -2,8 +2,10 @@ package org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.in;
 
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyId;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyName;
+import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPrediction;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileEvaluation;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import static java.util.Objects.requireNonNull;
 
@@ -14,7 +16,8 @@ import static java.util.Objects.requireNonNull;
 public record AppleVarietySugarAcidityZoneResult(
     @NonNull AppleVarietyId varietyId,
     @NonNull AppleVarietyName varietyName,
-    @NonNull SugarAcidityProfileEvaluation evaluation
+    @NonNull SugarAcidityProfileEvaluation evaluation,
+    @Nullable PotentialAbvPrediction potentialAbv
 ) {
 
   public AppleVarietySugarAcidityZoneResult {

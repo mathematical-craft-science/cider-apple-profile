@@ -2,6 +2,9 @@ package org.craft.mcs.cap.core.profileanalysis.composition.calculation.applicati
 
 import java.math.BigDecimal;
 import java.util.List;
+import org.craft.mcs.cap.core.profileanalysis.abv.domain.FixedFinalGravityPredictionStrategy;
+import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPredictor;
+import org.craft.mcs.cap.core.profileanalysis.abv.domain.StandardGravityDropAbvPredictionStrategy;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.application.port.in.CalculateChemicalProfileCompositionCommand;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.port.in.ProfileTargetScoringPurpose;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.AbsoluteCompositionVolume;
@@ -32,7 +35,11 @@ class CalculateChemicalProfileCompositionServiceTest {
   private final CalculateChemicalProfileCompositionService service = new CalculateChemicalProfileCompositionService(
       new BuiltInChemicalProfileCompositionCalculatorSelector(),
       new BuiltInProfileAxisNormalizerSelector(BuiltInSugarAcidityZoneProfiles.thresholds()),
-      new BuiltInProfileTargetObjectiveFunctionFactory()
+      new BuiltInProfileTargetObjectiveFunctionFactory(),
+      new PotentialAbvPredictor(
+          FixedFinalGravityPredictionStrategy.dryCiderDefault(),
+          new StandardGravityDropAbvPredictionStrategy()
+      )
   );
 
   @Test
@@ -56,6 +63,11 @@ class CalculateChemicalProfileCompositionServiceTest {
     assertThat(composition.warnings()).isEmpty();
     assertThat(result.targetDistance()).isNull();
     assertThat(result.normalizerCode()).isNull();
+    assertThat(result.potentialAbv())
+        .satisfies(prediction -> assertThat(prediction.originalGravity().asBigDecimal())
+            .isEqualByComparingTo("1.045000000"))
+        .satisfies(prediction -> assertThat(prediction.potentialAbv().percent())
+            .isEqualByComparingTo("5.906"));
   }
 
   @Test

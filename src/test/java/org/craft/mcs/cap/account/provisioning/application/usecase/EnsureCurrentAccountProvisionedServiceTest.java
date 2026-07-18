@@ -14,6 +14,7 @@ import org.craft.mcs.cap.core.account.shared.domain.value.EmailAddress;
 import org.craft.mcs.cap.core.account.shared.domain.value.HttpUrl;
 import org.craft.mcs.cap.core.account.user.application.model.AuthenticatedActor;
 import org.craft.mcs.cap.core.account.user.application.port.out.AccountUserRepository;
+import org.craft.mcs.cap.core.account.user.application.port.out.CurrentAccountUserRequestCache;
 import org.craft.mcs.cap.core.account.user.application.port.out.CurrentActorProvider;
 import org.craft.mcs.cap.core.account.user.application.port.out.UserPreferencesRepository;
 import org.craft.mcs.cap.core.account.user.domain.model.AccountUser;
@@ -27,6 +28,7 @@ import org.craft.mcs.cap.core.account.workspace.domain.model.Workspace;
 import org.craft.mcs.cap.core.account.workspace.domain.model.WorkspaceSettings;
 import org.craft.mcs.cap.core.account.workspace.domain.model.WorkspaceType;
 import org.craft.mcs.cap.core.account.shared.domain.value.ExternalOrganizationSubject;
+import org.craft.mcs.cap.shared.application.ConcurrentResourceModificationException;
 import org.craft.mcs.cap.shared.kernel.measurement.unit.TitratableAcidityBasis;
 import org.craft.mcs.cap.shared.application.persistence.VersionedAggregate;
 import org.jspecify.annotations.NonNull;
@@ -51,6 +53,7 @@ class EnsureCurrentAccountProvisionedServiceTest {
     final var currentActorProvider = mock(CurrentActorProvider.class);
     final var provisioningLock = mock(AccountProvisioningLock.class);
     final var userRepository = mock(AccountUserRepository.class);
+    final var accountRequestCache = mock(CurrentAccountUserRequestCache.class);
     final var workspaceRepository = mock(WorkspaceRepository.class);
     final var membershipRepository = mock(WorkspaceMembershipRepository.class);
     final var settingsRepository = mock(WorkspaceSettingsRepository.class);
@@ -69,7 +72,6 @@ class EnsureCurrentAccountProvisionedServiceTest {
     });
     when(membershipRepository.create(any()))
         .thenAnswer(invocation -> invocation.getArgument(0, WorkspaceMembership.class));
-    when(preferencesRepository.findByUserId(any())).thenReturn(Optional.empty());
     when(preferencesRepository.create(any()))
         .thenAnswer(invocation -> invocation.getArgument(0, UserPreferences.class));
 
@@ -77,6 +79,7 @@ class EnsureCurrentAccountProvisionedServiceTest {
         currentActorProvider,
         provisioningLock,
         userRepository,
+        accountRequestCache,
         workspaceRepository,
         membershipRepository,
         settingsRepository,
@@ -101,6 +104,7 @@ class EnsureCurrentAccountProvisionedServiceTest {
     ));
     verify(preferencesRepository).create(any(UserPreferences.class));
     verify(provisioningLock).acquire(actor.identityProvider(), actor.externalSubject());
+    verify(accountRequestCache).remember(any(AccountUser.class));
   }
 
   @Test
@@ -108,6 +112,7 @@ class EnsureCurrentAccountProvisionedServiceTest {
     final var currentActorProvider = mock(CurrentActorProvider.class);
     final var provisioningLock = mock(AccountProvisioningLock.class);
     final var userRepository = mock(AccountUserRepository.class);
+    final var accountRequestCache = mock(CurrentAccountUserRequestCache.class);
     final var workspaceRepository = mock(WorkspaceRepository.class);
     final var membershipRepository = mock(WorkspaceMembershipRepository.class);
     final var settingsRepository = mock(WorkspaceSettingsRepository.class);
@@ -134,13 +139,11 @@ class EnsureCurrentAccountProvisionedServiceTest {
     when(userRepository.findVersionedByExternalIdentity(actor.identityProvider(), actor.externalSubject()))
         .thenReturn(Optional.of(versioned(existingUser)));
     when(userRepository.update(any())).thenAnswer(invocation -> invocation.getArgument(0));
-    when(preferencesRepository.findByUserId(existingUser.userId()))
-        .thenReturn(Optional.of(UserPreferences.defaults(existingUser.userId())));
-
     final var service = new EnsureCurrentAccountProvisionedService(
         currentActorProvider,
         provisioningLock,
         userRepository,
+        accountRequestCache,
         workspaceRepository,
         membershipRepository,
         settingsRepository,
@@ -157,6 +160,52 @@ class EnsureCurrentAccountProvisionedServiceTest {
         .returns(actor.email(), AccountUser::email)
         .returns(DisplayName.of("CAP profile"), AccountUser::displayName)
         .returns(HttpUrl.of("https://cap.example.com/avatar.png"), AccountUser::avatarUrl);
+    verify(provisioningLock, never()).acquire(any(), any());
+    verifyNoInteractions(preferencesRepository);
+    verify(accountRequestCache).remember(userCaptor.getValue().aggregate());
+  }
+
+  @Test
+  void acceptsProviderEmailSynchronizedByConcurrentRequest() {
+    final var currentActorProvider = mock(CurrentActorProvider.class);
+    final var provisioningLock = mock(AccountProvisioningLock.class);
+    final var userRepository = mock(AccountUserRepository.class);
+    final var accountRequestCache = mock(CurrentAccountUserRequestCache.class);
+    final var actor = actor();
+    final var existingUser = AccountUser.create(
+        actor.identityProvider(),
+        actor.externalSubject(),
+        EmailAddress.of("old-provider-email@example.com"),
+        actor.displayName(),
+        actor.avatarUrl()
+    );
+    final var synchronizedUser = existingUser.synchronizeProviderEmail(actor.email());
+    when(currentActorProvider.currentActor()).thenReturn(Optional.of(actor));
+    when(userRepository.findVersionedByExternalIdentity(actor.identityProvider(), actor.externalSubject()))
+        .thenReturn(Optional.of(versioned(existingUser)))
+        .thenReturn(Optional.of(versioned(existingUser)))
+        .thenReturn(Optional.of(versioned(synchronizedUser)));
+    when(userRepository.update(any())).thenThrow(
+        new ConcurrentResourceModificationException("account user", null)
+    );
+
+    final var service = new EnsureCurrentAccountProvisionedService(
+        currentActorProvider,
+        provisioningLock,
+        userRepository,
+        accountRequestCache,
+        mock(WorkspaceRepository.class),
+        mock(WorkspaceMembershipRepository.class),
+        mock(WorkspaceSettingsRepository.class),
+        mock(UserPreferencesRepository.class),
+        workspaceProvisioningDefaults(),
+        INSTANCE
+    );
+
+    service.ensureProvisioned();
+
+    verify(accountRequestCache).remember(synchronizedUser);
+    verifyNoInteractions(provisioningLock);
   }
 
   @Test
@@ -164,6 +213,7 @@ class EnsureCurrentAccountProvisionedServiceTest {
     final var currentActorProvider = mock(CurrentActorProvider.class);
     final var provisioningLock = mock(AccountProvisioningLock.class);
     final var userRepository = mock(AccountUserRepository.class);
+    final var accountRequestCache = mock(CurrentAccountUserRequestCache.class);
     final var workspaceRepository = mock(WorkspaceRepository.class);
     final var membershipRepository = mock(WorkspaceMembershipRepository.class);
     final var settingsRepository = mock(WorkspaceSettingsRepository.class);
@@ -180,13 +230,11 @@ class EnsureCurrentAccountProvisionedServiceTest {
     when(currentActorProvider.currentActor()).thenReturn(Optional.of(actor));
     when(userRepository.findVersionedByExternalIdentity(actor.identityProvider(), actor.externalSubject()))
         .thenReturn(Optional.of(versioned(existingUser)));
-    when(preferencesRepository.findByUserId(existingUser.userId()))
-        .thenReturn(Optional.of(UserPreferences.defaults(existingUser.userId())));
-
     final var service = new EnsureCurrentAccountProvisionedService(
         currentActorProvider,
         provisioningLock,
         userRepository,
+        accountRequestCache,
         workspaceRepository,
         membershipRepository,
         settingsRepository,
@@ -199,7 +247,53 @@ class EnsureCurrentAccountProvisionedServiceTest {
 
     verify(userRepository, never()).update(any());
     verifyNoInteractions(workspaceRepository, membershipRepository, settingsRepository);
-    verify(preferencesRepository, never()).create(any());
+    verifyNoInteractions(provisioningLock, preferencesRepository);
+    verify(accountRequestCache).remember(existingUser);
+  }
+
+  @Test
+  void rechecksAccountAfterLockBeforeCreatingIt() {
+    final var currentActorProvider = mock(CurrentActorProvider.class);
+    final var provisioningLock = mock(AccountProvisioningLock.class);
+    final var userRepository = mock(AccountUserRepository.class);
+    final var accountRequestCache = mock(CurrentAccountUserRequestCache.class);
+    final var workspaceRepository = mock(WorkspaceRepository.class);
+    final var membershipRepository = mock(WorkspaceMembershipRepository.class);
+    final var settingsRepository = mock(WorkspaceSettingsRepository.class);
+    final var preferencesRepository = mock(UserPreferencesRepository.class);
+    final var actor = actor();
+    final var concurrentlyCreatedUser = AccountUser.create(
+        actor.identityProvider(),
+        actor.externalSubject(),
+        actor.email(),
+        actor.displayName(),
+        actor.avatarUrl()
+    );
+
+    when(currentActorProvider.currentActor()).thenReturn(Optional.of(actor));
+    when(userRepository.findVersionedByExternalIdentity(actor.identityProvider(), actor.externalSubject()))
+        .thenReturn(Optional.empty())
+        .thenReturn(Optional.of(versioned(concurrentlyCreatedUser)));
+
+    final var service = new EnsureCurrentAccountProvisionedService(
+        currentActorProvider,
+        provisioningLock,
+        userRepository,
+        accountRequestCache,
+        workspaceRepository,
+        membershipRepository,
+        settingsRepository,
+        preferencesRepository,
+        workspaceProvisioningDefaults(),
+        INSTANCE
+    );
+
+    service.ensureProvisioned();
+
+    verify(provisioningLock).acquire(actor.identityProvider(), actor.externalSubject());
+    verify(userRepository, never()).create(any());
+    verifyNoInteractions(workspaceRepository, membershipRepository, settingsRepository, preferencesRepository);
+    verify(accountRequestCache).remember(concurrentlyCreatedUser);
   }
 
   private static @NonNull AuthenticatedActor actor() {
