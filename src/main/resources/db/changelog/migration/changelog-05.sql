@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS batch_trace_step_subjects
     step_id                      UUID        NOT NULL,
     subject_role                 VARCHAR(16) NOT NULL,
     subject_order                INTEGER     NOT NULL,
+    trace_state_id               UUID        NOT NULL,
     subject_type                 VARCHAR(64) NOT NULL,
     subject_id                   VARCHAR(120) NOT NULL,
     display_name_snapshot        VARCHAR(255),
@@ -79,3 +80,6 @@ CREATE INDEX IF NOT EXISTS idx_batch_trace_step_subjects_step_id
 
 CREATE INDEX IF NOT EXISTS idx_batch_trace_step_subjects_lookup
     ON batch_trace_step_subjects (subject_role, subject_type, subject_id);
+
+CREATE INDEX IF NOT EXISTS idx_batch_trace_step_subjects_state_id
+    ON batch_trace_step_subjects (trace_state_id);

@@ -10,6 +10,7 @@ import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStep;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStepSubject;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceSubject;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceSubjectType;
+import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.batchtraceability.BatchTraceabilityPersistenceMappingException;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
@@ -19,7 +20,9 @@ import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.junit.jupiter.api.Test;
 
+import static org.craft.mcs.cap.shared.kernel.identity.UuidV7Generator.newUuid;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 
 class BatchTraceStepJdbcRowMapperTest {
@@ -90,7 +93,7 @@ class BatchTraceStepJdbcRowMapperTest {
             null
         )
     );
-    final var input = new BatchTraceStepSubject(
+    final var input = BatchTraceStepSubject.capture(
         subject(BatchTraceSubjectType.FEEDSTOCK_BATCH, "feedstock-1"),
         new BatchTraceMaterialSnapshot(
             VolumeValue.ofLiters("120.5"),
@@ -131,6 +134,20 @@ class BatchTraceStepJdbcRowMapperTest {
         .get()
         .extracting(AxisValue::value, AxisValue::valueKind)
         .containsExactly(new BigDecimal("180"), MeasurementValueKind.EXACT);
+  }
+
+  @Test
+  void rejectsBlankPersistedSubjectIdentifierWithMappingException() {
+    assertThatThrownBy(() -> new BatchTraceStepSubjectJdbcRow(
+        BatchTraceStepSubjectRole.INPUT,
+        0,
+        newUuid(),
+        BatchTraceSubjectType.FEEDSTOCK_BATCH,
+        " ",
+        null
+    ))
+        .isInstanceOf(BatchTraceabilityPersistenceMappingException.class)
+        .hasMessage("batch trace subject id cannot be blank");
   }
 
   private static BatchTraceSubject subject(

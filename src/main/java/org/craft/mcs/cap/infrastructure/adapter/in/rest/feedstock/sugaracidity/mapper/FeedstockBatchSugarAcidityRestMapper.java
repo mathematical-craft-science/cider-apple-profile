@@ -2,6 +2,8 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.sugaracidity.
 
 import java.util.List;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.model.FeedstockMeasurementSugarAcidityPagePosition;
 import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityAssessment;
 import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapability;
 import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityCriteria;
@@ -20,40 +22,46 @@ import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.common.dto.Fee
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.sugaracidity.dto.FeedstockBatchCurrentSugarAcidityZonePointBatchResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.sugaracidity.dto.FeedstockBatchCurrentSugarAcidityZonePointQueryRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.sugaracidity.dto.FeedstockBatchGraphPointResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.sugaracidity.cursor.FeedstockSugarAcidityCursorAdapter;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.sugaracidity.dto.SugarAcidityProfilePointResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.sugaracidity.dto.SugarAcidityZoneAssessmentResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.sugaracidity.mapper.SugarAcidityZoneRestMapper;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
-import org.craft.mcs.cap.shared.platform.query.CursorPage;
-import org.craft.mcs.cap.shared.platform.query.CursorPageRequest;
+import org.craft.mcs.cap.shared.application.query.pagination.CursorPage;
+import org.craft.mcs.cap.shared.application.query.pagination.CursorPageRequest;
+import org.craft.mcs.cap.shared.application.query.QueryLimits;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+import org.springframework.stereotype.Component;
 
 import static java.util.Objects.requireNonNull;
 import static java.util.Objects.requireNonNullElse;
 
 
+@Component
+@RequiredArgsConstructor
 public final class FeedstockBatchSugarAcidityRestMapper {
 
-  private FeedstockBatchSugarAcidityRestMapper() {
-  }
+  private final @NonNull FeedstockSugarAcidityCursorAdapter cursorAdapter;
 
-  public static @NonNull FeedstockBatchCurrentSugarAcidityZonePointQuery toQuery(
+  public @NonNull FeedstockBatchCurrentSugarAcidityZonePointQuery toQuery(
       @NonNull FeedstockBatchCurrentSugarAcidityZonePointQueryRequest request
   ) {
     requireNonNull(request, "feedstock batch current sugar-acidity zone point query request cannot be null");
+    final var workspaceId = WorkspaceId.of(request.workspaceId());
+    final var filters = new FeedstockMeasurementPointFilters(
+        toBatchCriteria(request.batchId()),
+        toSeason(request.season()),
+        toZoneCriteria(request.zone()),
+        toCapabilityCriteria(request.capability(), request.capable())
+    );
 
     return new FeedstockBatchCurrentSugarAcidityZonePointQuery(
-        WorkspaceId.of(request.workspaceId()),
-        new FeedstockMeasurementPointFilters(
-            toBatchCriteria(request.batchId()),
-            toSeason(request.season()),
-            toZoneCriteria(request.zone()),
-            toCapabilityCriteria(request.capability(), request.capable())
-        ),
-        new CursorPageRequest(
-            request.after(),
-            requireNonNullElse(request.limit(), CursorPageRequest.DEFAULT_LIMIT)
+        workspaceId,
+        filters,
+        new CursorPageRequest<>(
+            cursorAdapter.decodeCurrent(request.after(), workspaceId, filters),
+            requireNonNullElse(request.limit(), QueryLimits.DEFAULT)
         )
     );
   }
@@ -80,16 +88,21 @@ public final class FeedstockBatchSugarAcidityRestMapper {
     );
   }
 
-  public static @NonNull FeedstockBatchCurrentSugarAcidityZonePointBatchResponse toResponse(
-      @NonNull CursorPage<@NonNull FeedstockBatchCurrentSugarAcidityZoneResult> page
+  public @NonNull FeedstockBatchCurrentSugarAcidityZonePointBatchResponse toResponse(
+      @NonNull CursorPage<
+          @NonNull FeedstockBatchCurrentSugarAcidityZoneResult,
+          @NonNull FeedstockMeasurementSugarAcidityPagePosition
+      > page,
+      @NonNull FeedstockBatchCurrentSugarAcidityZonePointQuery query
   ) {
     requireNonNull(page, "feedstock batch current sugar-acidity zone point page cannot be null");
+    requireNonNull(query, "feedstock batch current sugar-acidity zone point query cannot be null");
 
     return new FeedstockBatchCurrentSugarAcidityZonePointBatchResponse(
         page.items().stream()
             .map(FeedstockBatchSugarAcidityRestMapper::toResponse)
             .toList(),
-        page.nextCursor()
+        cursorAdapter.encodeCurrent(page.nextPosition(), query.workspaceId(), query.filters())
     );
   }
 

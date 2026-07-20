@@ -26,6 +26,7 @@ public final class AppleVarietySugarAcidityController implements AppleVarietySug
 
   private final @NonNull AssessAppleVarietySugarAcidityZoneUseCase assessAppleVarietySugarAcidityZoneUseCase;
   private final @NonNull QueryAppleVarietySugarAcidityZonePointsUseCase queryAppleVarietySugarAcidityZonePointsUseCase;
+  private final @NonNull AppleVarietySugarAcidityZoneRestMapper restMapper;
 
   @Override
   @GetMapping(value = "/apple-varieties/{varietyId}/sugar-acidity-zone", produces = APPLICATION_JSON_VALUE)
@@ -50,12 +51,11 @@ public final class AppleVarietySugarAcidityController implements AppleVarietySug
   public @NonNull ResponseEntity<@NonNull AppleVarietySugarAcidityZonePointBatchResponse> listSugarAcidityZonePoints(
       @RequestBody @NonNull AppleVarietySugarAcidityZonePointQueryRequest request
   ) {
-    final var results = queryAppleVarietySugarAcidityZonePointsUseCase.query(
-        AppleVarietySugarAcidityZoneRestMapper.toQuery(request)
-    );
+    final var query = restMapper.toQuery(request);
+    final var results = queryAppleVarietySugarAcidityZonePointsUseCase.query(query);
 
     return ResponseEntity.ok(
-        AppleVarietySugarAcidityZoneRestMapper.toResponse(results)
+        restMapper.toResponse(results, query)
     );
   }
 }

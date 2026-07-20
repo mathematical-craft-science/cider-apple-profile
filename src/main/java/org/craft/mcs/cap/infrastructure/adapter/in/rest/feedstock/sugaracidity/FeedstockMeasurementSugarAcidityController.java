@@ -26,6 +26,7 @@ public final class FeedstockMeasurementSugarAcidityController implements Feedsto
 
   private final @NonNull AssessFeedstockMeasurementSugarAcidityZoneUseCase assessSugarAcidityZoneUseCase;
   private final @NonNull QueryFeedstockMeasurementSugarAcidityZonePointsUseCase querySugarAcidityZonePointsUseCase;
+  private final @NonNull FeedstockMeasurementSugarAcidityZoneRestMapper restMapper;
 
   @Override
   @GetMapping(value = "/feedstock-measurements/{measurementId}/sugar-acidity-zone", produces = APPLICATION_JSON_VALUE)
@@ -47,15 +48,16 @@ public final class FeedstockMeasurementSugarAcidityController implements Feedsto
       consumes = APPLICATION_JSON_VALUE,
       produces = APPLICATION_JSON_VALUE
   )
-  public @NonNull ResponseEntity<@NonNull FeedstockMeasurementSugarAcidityZonePointBatchResponse> listSugarAcidityZonePoints(
+  public @NonNull ResponseEntity<
+      @NonNull FeedstockMeasurementSugarAcidityZonePointBatchResponse
+  > listSugarAcidityZonePoints(
       @RequestBody @NonNull FeedstockMeasurementSugarAcidityZonePointQueryRequest request
   ) {
-    final var results = querySugarAcidityZonePointsUseCase.query(
-        FeedstockMeasurementSugarAcidityZoneRestMapper.toQuery(request)
-    );
+    final var query = restMapper.toQuery(request);
+    final var results = querySugarAcidityZonePointsUseCase.query(query);
 
     return ResponseEntity.ok(
-        FeedstockMeasurementSugarAcidityZoneRestMapper.toResponse(results)
+        restMapper.toResponse(results, query)
     );
   }
 }

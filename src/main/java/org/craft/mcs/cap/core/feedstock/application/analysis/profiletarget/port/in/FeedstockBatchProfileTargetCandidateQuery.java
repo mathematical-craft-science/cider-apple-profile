@@ -6,7 +6,7 @@ import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.TanninT
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockMeasurementPointFilters;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.application.ApplicationValidationException;
-import org.craft.mcs.cap.shared.platform.query.CursorPageRequest;
+import org.craft.mcs.cap.shared.application.query.QueryLimits;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -30,9 +30,9 @@ public record FeedstockBatchProfileTargetCandidateQuery(
     requireNonNull(target, "feedstock batch profile target cannot be null");
     requireNonNull(weights, "profile target objective weights cannot be null");
 
-    if (limit < 1 || limit > CursorPageRequest.MAX_LIMIT) {
+    if (limit < 1 || limit > QueryLimits.MAXIMUM) {
       throw new ApplicationValidationException(
-          "profile target candidate limit must be between 1 and " + CursorPageRequest.MAX_LIMIT
+          "profile target candidate limit must be between 1 and " + QueryLimits.MAXIMUM
       );
     }
   }

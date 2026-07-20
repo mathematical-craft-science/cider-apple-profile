@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Locale;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.out.AppleVarietySugarAcidityPointCandidateRepository;
-import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.out.AppleVarietySugarAcidityPointCandidateCursor;
+import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.model.AppleVarietySugarAcidityPagePosition;
 import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.out.AppleVarietySugarAcidityPointCandidateQuery;
 import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.out.AppleVarietySugarAcidityPointCandidateView;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.appleprofile.entity.AppleVarietyJdbcMapper;
@@ -77,7 +77,7 @@ class JdbcAppleVarietySugarAcidityPointCandidateRepository
   }
 
   private static @NonNull SqlQueryOption afterCursor(
-      @Nullable AppleVarietySugarAcidityPointCandidateCursor cursor
+      @Nullable AppleVarietySugarAcidityPagePosition cursor
   ) {
     return builder -> {
       if (cursor == null) {

@@ -59,6 +59,9 @@ import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.SugarAc
 import org.craft.mcs.cap.infrastructure.adapter.in.importer.appleprofile.AppleVarietyJsonSeedImporter;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.ChemicalProfileCompositionRequestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.profiletarget.AppleVarietyProfileTargetCandidateRequestMapper;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.sugaracidity.mapper.AppleVarietySugarAcidityZoneRestMapper;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.sugaracidity.mapper.FeedstockBatchSugarAcidityRestMapper;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.sugaracidity.mapper.FeedstockMeasurementSugarAcidityZoneRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.mapper.ProductionBatchCandidateRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.sugaracidity.SugarAcidityGraphMetadataResponseProvider;
 import org.craft.mcs.cap.infrastructure.configuration.OpenApiConfiguration;
@@ -107,6 +110,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 })
 @MockitoBean(types = {
     ContributorProfileUseCase.class,
+    AppleVarietySugarAcidityZoneRestMapper.class,
+    FeedstockBatchSugarAcidityRestMapper.class,
+    FeedstockMeasurementSugarAcidityZoneRestMapper.class,
     EnsureCurrentAccountProvisionedUseCase.class,
     GetIncomingWorkspaceInvitationUseCase.class,
     ListIncomingWorkspaceInvitationsUseCase.class,
@@ -805,7 +811,8 @@ class OpenApiContractTest {
     assertRequiredProperties(openApi, "ProductionBatchSourceResponse", "feedstockBatchId", "volume");
 
     assertRequiredProperties(openApi, "BatchTraceabilityGraphResponse", "nodes", "edges");
-    assertRequiredProperties(openApi, "BatchTraceNodeResponse", "subject");
+    assertRequiredProperties(openApi, "BatchTraceNodeResponse", "traceStateId", "subject");
+    assertStringFormat(schemaProperty(openApi, "BatchTraceNodeResponse", "traceStateId"), "uuid");
     assertNotRequiredProperties(openApi, "BatchTraceNodeResponse", "snapshot");
     assertNullable(schemaProperty(openApi, "BatchTraceNodeResponse", "snapshot"));
     assertRequiredProperties(
@@ -818,7 +825,8 @@ class OpenApiContractTest {
         "outputs"
     );
     assertStringFormat(schemaProperty(openApi, "BatchTraceEdgeResponse", "occurredAt"), "date-time");
-    assertRequiredProperties(openApi, "BatchTraceStepSubjectResponse", "subject");
+    assertRequiredProperties(openApi, "BatchTraceStepSubjectResponse", "traceStateId", "subject");
+    assertStringFormat(schemaProperty(openApi, "BatchTraceStepSubjectResponse", "traceStateId"), "uuid");
     assertNotRequiredProperties(openApi, "BatchTraceStepSubjectResponse", "snapshot");
     assertNullable(schemaProperty(openApi, "BatchTraceStepSubjectResponse", "snapshot"));
     assertRequiredProperties(openApi, "BatchTraceSubjectResponse", "type", "id");

@@ -12,7 +12,7 @@ import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyId;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyName;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileProjector;
 import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityCriteria;
-import org.craft.mcs.cap.shared.platform.query.CursorPageRequest;
+import org.craft.mcs.cap.shared.application.query.pagination.CursorPageRequest;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.application.model.SugarAcidityZoneCriteria;
 import org.craft.mcs.cap.shared.platform.query.TextSearchCriteria;
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
@@ -30,7 +30,6 @@ import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.SugarAcid
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.craft.mcs.cap.support.PotentialAbvPredictionFixtures.predictor;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -62,7 +61,7 @@ class QueryAppleVarietySugarAcidityZonePointsServiceTest {
         CursorPageRequest.firstPage(1)
     ));
 
-    assertThat(result.nextCursor()).isNotNull();
+    assertThat(result.nextPosition()).isNotNull();
     assertThat(result.items()).hasSize(1);
     assertThat(result.items().getFirst().varietyId()).isEqualTo(alpha.varietyId());
     assertThat(result.items().getFirst().evaluation().plottable()).isTrue();
@@ -91,17 +90,17 @@ class QueryAppleVarietySugarAcidityZonePointsServiceTest {
     ));
     final var secondPage = service.query(new AppleVarietySugarAcidityZonePointQuery(
         new AppleVarietyPointFilters(null, null, null),
-        new CursorPageRequest(firstPage.nextCursor(), 2)
+        new CursorPageRequest<>(firstPage.nextPosition(), 2)
     ));
 
     assertThat(firstPage.items())
         .extracting(AppleVarietySugarAcidityZoneResult::varietyId)
         .containsExactly(first.varietyId(), second.varietyId());
-    assertThat(firstPage.nextCursor()).isNotNull();
+    assertThat(firstPage.nextPosition()).isNotNull();
     assertThat(secondPage.items())
         .extracting(AppleVarietySugarAcidityZoneResult::varietyId)
         .containsExactly(third.varietyId());
-    assertThat(secondPage.nextCursor()).isNull();
+    assertThat(secondPage.nextPosition()).isNull();
   }
 
   @Test
@@ -125,18 +124,6 @@ class QueryAppleVarietySugarAcidityZonePointsServiceTest {
     assertThat(result.items().getFirst().evaluation().plottable()).isFalse();
     assertThat(result.items().getFirst().evaluation().assessment()).isNull();
     assertThat(result.items().getFirst().potentialAbv()).isNotNull();
-  }
-
-  @Test
-  void rejectsMalformedCursorExplicitly() {
-    final var service = service(mock(AppleVarietySugarAcidityPointCandidateRepository.class));
-
-    assertThatThrownBy(() -> service.query(new AppleVarietySugarAcidityZonePointQuery(
-        new AppleVarietyPointFilters(null, null, null),
-        new CursorPageRequest("cursor", 10)
-    )))
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining("cursor is malformed");
   }
 
   private static QueryAppleVarietySugarAcidityZonePointsService service(

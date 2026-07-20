@@ -10,7 +10,7 @@ import org.jspecify.annotations.NonNull;
 public record BatchTraceabilityGraphResponse(
     @ArraySchema(
         arraySchema = @Schema(
-            description = "Business subjects participating in the traceability graph.",
+            description = "Immutable historical material states participating in the traceability graph.",
             requiredMode = Schema.RequiredMode.REQUIRED
         ),
         schema = @Schema(implementation = BatchTraceNodeResponse.class)
@@ -18,7 +18,7 @@ public record BatchTraceabilityGraphResponse(
     @NonNull List<@NonNull BatchTraceNodeResponse> nodes,
     @ArraySchema(
         arraySchema = @Schema(
-            description = "Trace steps connecting input and output subjects.",
+            description = "Trace steps connecting input and output historical states.",
             requiredMode = Schema.RequiredMode.REQUIRED
         ),
         schema = @Schema(implementation = BatchTraceEdgeResponse.class)

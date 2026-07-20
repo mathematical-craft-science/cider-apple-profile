@@ -15,7 +15,7 @@ import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.profiletarget.a
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.profiletarget.common.mapper.CompositionContributionRoleRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.mapper.ProfileTargetRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.sugaracidity.mapper.SugarAcidityZoneRestMapper;
-import org.craft.mcs.cap.shared.platform.query.CursorPageRequest;
+import org.craft.mcs.cap.shared.application.query.QueryLimits;
 import org.craft.mcs.cap.shared.platform.query.TextSearchCriteria;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -49,7 +49,7 @@ public final class AppleVarietyProfileTargetCandidateRestMapper {
             "profile target objective cannot be null"
         ),
         toWeights(request.weights()),
-        requireNonNullElse(request.limit(), CursorPageRequest.DEFAULT_LIMIT)
+        requireNonNullElse(request.limit(), QueryLimits.DEFAULT)
     );
   }
 

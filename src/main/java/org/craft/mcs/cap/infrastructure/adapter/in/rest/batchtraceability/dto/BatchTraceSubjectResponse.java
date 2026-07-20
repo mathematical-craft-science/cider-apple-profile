@@ -15,8 +15,8 @@ public record BatchTraceSubjectResponse(
     )
     @NonNull BatchTraceSubjectType type,
     @Schema(
-        description = "Subject identifier. UUID values are represented as strings because subject id format depends on "
-            + "subject type.",
+        description = "Stable business subject identifier, shared by all historical states of that material. UUID "
+            + "values are represented as strings because subject id format depends on subject type.",
         requiredMode = Schema.RequiredMode.REQUIRED
     )
     @NonNull String id,

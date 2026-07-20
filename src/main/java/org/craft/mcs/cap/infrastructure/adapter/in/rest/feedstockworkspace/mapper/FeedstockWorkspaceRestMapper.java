@@ -59,7 +59,7 @@ import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.sugaracidity.dto.
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.sugaracidity.mapper.SugarAcidityZoneRestMapper;
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
-import org.craft.mcs.cap.shared.platform.query.CursorPageRequest;
+import org.craft.mcs.cap.shared.application.query.QueryLimits;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -84,7 +84,7 @@ public final class FeedstockWorkspaceRestMapper {
         toTanninTarget(request),
         ProfileTargetRestMapper.toWeights(request.weights()),
         purpose,
-        requireNonNullElse(request.targetCandidateLimit(), CursorPageRequest.MAX_LIMIT)
+        requireNonNullElse(request.targetCandidateLimit(), QueryLimits.MAXIMUM)
     );
   }
 

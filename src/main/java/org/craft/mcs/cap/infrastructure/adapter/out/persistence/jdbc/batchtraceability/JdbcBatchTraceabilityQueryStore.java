@@ -63,6 +63,7 @@ class JdbcBatchTraceabilityQueryStore implements BatchTraceabilityQueryStore {
     final var subject = new BatchTraceStepSubjectJdbcRow(
         BatchTraceStepSubjectRole.valueOf(resultSet.getString("subject_role")),
         resultSet.getInt("subject_order"),
+        resultSet.getObject("trace_state_id", UUID.class),
         BatchTraceSubjectType.valueOf(resultSet.getString("subject_type")),
         resultSet.getString("subject_id"),
         resultSet.getString("display_name_snapshot")
@@ -238,6 +239,7 @@ class JdbcBatchTraceabilityQueryStore implements BatchTraceabilityQueryStore {
               step_id,
               subject_role,
               subject_order,
+              trace_state_id,
               subject_type,
               subject_id,
               display_name_snapshot,

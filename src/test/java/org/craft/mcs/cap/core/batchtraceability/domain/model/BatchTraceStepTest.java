@@ -136,6 +136,13 @@ class BatchTraceStepTest {
     assertThat(snapshot.volume().liters()).isEqualByComparingTo("25");
   }
 
+  @Test
+  void createsTraceStateIdentityAsUuidV7() {
+    final var state = BatchTraceStepSubject.of(subject("feedstock-1"));
+
+    assertThat(state.traceStateId().value().version()).isEqualTo(7);
+  }
+
   private static BatchTraceSubject subject(String id) {
     return new BatchTraceSubject(BatchTraceSubjectType.FEEDSTOCK_BATCH, id, "Source " + id);
   }

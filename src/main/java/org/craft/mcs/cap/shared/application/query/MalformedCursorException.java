@@ -1,10 +1,12 @@
-package org.craft.mcs.cap.shared.platform.query;
+package org.craft.mcs.cap.shared.application.query;
 
 import java.io.Serial;
+import org.craft.mcs.cap.shared.application.ApplicationException;
 import org.jspecify.annotations.Nullable;
 
 
-public final class MalformedCursorException extends IllegalArgumentException {
+/** Application query failure raised when a pagination cursor cannot be trusted or decoded. */
+public final class MalformedCursorException extends ApplicationException {
 
   @Serial
   private static final long serialVersionUID = 1L;

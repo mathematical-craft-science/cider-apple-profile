@@ -7,7 +7,7 @@ import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.application.ApplicationValidationException;
-import org.craft.mcs.cap.shared.platform.query.CursorPageRequest;
+import org.craft.mcs.cap.shared.application.query.QueryLimits;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -28,9 +28,9 @@ public record FeedstockPlanningBatchViewQuery(
     requireNonNull(workspaceId, "workspace id cannot be null");
     requireNonNull(weights, "profile target objective weights cannot be null");
     requireNonNull(purpose, "profile target scoring purpose cannot be null");
-    if (targetCandidateLimit < 1 || targetCandidateLimit > CursorPageRequest.MAX_LIMIT) {
+    if (targetCandidateLimit < 1 || targetCandidateLimit > QueryLimits.MAXIMUM) {
       throw new ApplicationValidationException(
-          "feedstock planning target candidate limit must be between 1 and " + CursorPageRequest.MAX_LIMIT
+          "feedstock planning target candidate limit must be between 1 and " + QueryLimits.MAXIMUM
       );
     }
   }

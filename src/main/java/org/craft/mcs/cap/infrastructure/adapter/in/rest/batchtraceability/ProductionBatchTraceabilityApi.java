@@ -19,7 +19,8 @@ public interface ProductionBatchTraceabilityApi {
 
   @Operation(
       summary = "Get production batch traceability graph",
-      description = "Returns the independent traceability read model rooted at a production batch."
+      description = "Returns the traceability graph rooted at a production batch. Subject identifiers represent "
+          + "stable business materials, while trace state identifiers distinguish their immutable historical states."
   )
   @ApiResponse(
       responseCode = "200",

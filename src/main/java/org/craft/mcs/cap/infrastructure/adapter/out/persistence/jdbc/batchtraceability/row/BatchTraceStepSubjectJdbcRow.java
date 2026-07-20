@@ -1,7 +1,9 @@
 package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.batchtraceability.row;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceSubjectType;
+import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.batchtraceability.BatchTraceabilityPersistenceMappingException;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.MeasurementValueKind;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -15,6 +17,9 @@ public class BatchTraceStepSubjectJdbcRow {
   public BatchTraceStepSubjectRole role;
 
   public int subjectOrder;
+
+  @NonNull
+  public UUID traceStateId;
 
   @NonNull
   public BatchTraceSubjectType subjectType;
@@ -110,12 +115,14 @@ public class BatchTraceStepSubjectJdbcRow {
   public BatchTraceStepSubjectJdbcRow(
       @NonNull BatchTraceStepSubjectRole role,
       int subjectOrder,
+      @NonNull UUID traceStateId,
       @NonNull BatchTraceSubjectType subjectType,
       @NonNull String subjectId,
       @Nullable String displayNameSnapshot
   ) {
     this.role = requireNonNull(role, "batch trace subject role cannot be null");
     this.subjectOrder = subjectOrder;
+    this.traceStateId = requireNonNull(traceStateId, "batch trace state id cannot be null");
     this.subjectType = requireNonNull(subjectType, "batch trace subject type cannot be null");
     this.subjectId = normalizeRequired(subjectId, "batch trace subject id cannot be blank");
     this.displayNameSnapshot = normalize(displayNameSnapshot);
@@ -127,7 +134,7 @@ public class BatchTraceStepSubjectJdbcRow {
   ) {
     final var normalized = requireNonNull(value, message).strip();
     if (normalized.isEmpty()) {
-      throw new IllegalArgumentException(message);
+      throw new BatchTraceabilityPersistenceMappingException(message);
     }
     return normalized;
   }

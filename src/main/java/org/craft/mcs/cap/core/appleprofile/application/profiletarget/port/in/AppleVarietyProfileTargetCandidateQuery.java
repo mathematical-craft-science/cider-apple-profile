@@ -5,7 +5,7 @@ import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.Profi
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetObjectiveWeights;
 import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.in.AppleVarietyPointFilters;
 import org.craft.mcs.cap.shared.application.ApplicationValidationException;
-import org.craft.mcs.cap.shared.platform.query.CursorPageRequest;
+import org.craft.mcs.cap.shared.application.query.QueryLimits;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
@@ -25,9 +25,9 @@ public record AppleVarietyProfileTargetCandidateQuery(
     requireNonNull(target, "profile target objective cannot be null");
     requireNonNull(weights, "profile target objective weights cannot be null");
 
-    if (limit < 1 || limit > CursorPageRequest.MAX_LIMIT) {
+    if (limit < 1 || limit > QueryLimits.MAXIMUM) {
       throw new ApplicationValidationException(
-          "apple variety profile target candidate limit must be between 1 and " + CursorPageRequest.MAX_LIMIT
+          "apple variety profile target candidate limit must be between 1 and " + QueryLimits.MAXIMUM
       );
     }
   }

@@ -10,8 +10,11 @@ import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.BuiltInSu
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.RectangleSugarAcidityZoneAssessor;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.SugarAcidityZone;
 import org.craft.mcs.cap.core.feedstock.application.measurement.query.FeedstockBatchCurrentMeasurementQueryService;
-import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.*;
-import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.usecase.*;
+import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockBatchCurrentSugarAcidityZonePointQuery;
+import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockBatchCurrentSugarAcidityZoneResult;
+import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockMeasurementPointFilters;
+import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.out.LatestFeedstockMeasurementSugarAcidityPointCandidateQuery;
+import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.usecase.QueryFeedstockBatchCurrentSugarAcidityZonePointsService;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchSummaryQueryRepository;
 import org.craft.mcs.cap.core.feedstock.application.measurement.port.out.FeedstockMeasurementQueryRepository;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
@@ -31,8 +34,10 @@ import org.craft.mcs.cap.shared.kernel.measurement.ExactMeasurement;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
-import org.craft.mcs.cap.shared.platform.query.CursorPageRequest;
+import org.craft.mcs.cap.shared.application.query.pagination.CursorPageRequest;
+import org.craft.mcs.cap.shared.application.query.QueryLimits;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 import static org.craft.mcs.cap.shared.kernel.identity.UuidV7Generator.newUuid;
 import static org.craft.mcs.cap.shared.testing.FeedstockMeasurementViews.view;
@@ -49,7 +54,7 @@ import static org.mockito.Mockito.when;
 class QueryFeedstockBatchCurrentSugarAcidityZonePointsServiceTest {
 
   @Test
-  void queriesLatestMeasurementPerBatchForCurrentGraphPoints() {
+  void queriesLatestMeasurementPerBatchWithLookaheadAtMaximumPageLimit() {
     final var batchRepository = mock(FeedstockBatchSummaryQueryRepository.class);
     final var repository = mock(FeedstockMeasurementQueryRepository.class);
     final var service = service(batchRepository, repository);
@@ -63,16 +68,25 @@ class QueryFeedstockBatchCurrentSugarAcidityZonePointsServiceTest {
     final var result = service.query(new FeedstockBatchCurrentSugarAcidityZonePointQuery(
         workspaceId,
         new FeedstockMeasurementPointFilters(null, null, null, null),
-        CursorPageRequest.firstPage()
+        CursorPageRequest.firstPage(QueryLimits.MAXIMUM)
     ));
 
-    verify(repository).findLatestSugarAcidityPointCandidates(any());
+    final var candidateQuery = ArgumentCaptor.forClass(
+        LatestFeedstockMeasurementSugarAcidityPointCandidateQuery.class
+    );
+    verify(repository).findLatestSugarAcidityPointCandidates(candidateQuery.capture());
+
+    assertThat(candidateQuery.getValue())
+        .returns(QueryLimits.MAXIMUM_PAGE_FETCH, LatestFeedstockMeasurementSugarAcidityPointCandidateQuery::limit);
     assertThat(result.items())
-        .extracting(FeedstockBatchCurrentSugarAcidityZoneResult::currentMeasurementId)
-        .containsExactly(current.measurementId());
-    assertThat(result.items().getFirst().batchName()).isEqualTo(batch.name());
-    assertThat(result.items().getFirst().measuredAt()).isEqualTo(current.measuredAt());
-    assertThat(result.items().getFirst().evaluation().assessment().zone()).isEqualTo(SugarAcidityZone.PERFECT_APPLES);
+        .singleElement()
+        .returns(current.measurementId(), FeedstockBatchCurrentSugarAcidityZoneResult::currentMeasurementId)
+        .returns(batch.name(), FeedstockBatchCurrentSugarAcidityZoneResult::batchName)
+        .returns(current.measuredAt(), FeedstockBatchCurrentSugarAcidityZoneResult::measuredAt)
+        .returns(
+            SugarAcidityZone.PERFECT_APPLES,
+            item -> item.evaluation().assessment().zone()
+        );
   }
 
   private static QueryFeedstockBatchCurrentSugarAcidityZonePointsService service(

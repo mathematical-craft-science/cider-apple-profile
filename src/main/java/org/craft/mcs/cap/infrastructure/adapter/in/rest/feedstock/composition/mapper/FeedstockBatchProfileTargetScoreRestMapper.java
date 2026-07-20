@@ -53,7 +53,7 @@ import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuant
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
-import org.craft.mcs.cap.shared.platform.query.CursorPageRequest;
+import org.craft.mcs.cap.shared.application.query.QueryLimits;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -85,7 +85,7 @@ public final class FeedstockBatchProfileTargetScoreRestMapper {
         toTarget(target),
         toTanninTarget(request.tanninTarget()),
         toWeights(request.weights()),
-        requireNonNullElse(request.limit(), CursorPageRequest.DEFAULT_LIMIT)
+        requireNonNullElse(request.limit(), QueryLimits.DEFAULT)
     );
   }
 
@@ -151,7 +151,7 @@ public final class FeedstockBatchProfileTargetScoreRestMapper {
         normalizer,
         objectiveFunction,
         toVolume(request.targetTotalVolumeLiters()),
-        requireNonNullElse(request.sourceLimit(), CursorPageRequest.MAX_LIMIT)
+        requireNonNullElse(request.sourceLimit(), QueryLimits.MAXIMUM)
     );
   }
 

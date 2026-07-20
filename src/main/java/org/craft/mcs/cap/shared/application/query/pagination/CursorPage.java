@@ -1,4 +1,4 @@
-package org.craft.mcs.cap.shared.platform.query;
+package org.craft.mcs.cap.shared.application.query.pagination;
 
 import java.util.List;
 import org.jspecify.annotations.NonNull;
@@ -7,9 +7,13 @@ import org.jspecify.annotations.Nullable;
 import static java.util.Objects.requireNonNull;
 
 
-public record CursorPage<T extends @NonNull Object>(
+/** Application query result with a typed continuation position for the next page. */
+public record CursorPage<
+    T extends @NonNull Object,
+    C extends @NonNull Object
+>(
     @NonNull List<T> items,
-    @Nullable String nextCursor
+    @Nullable C nextPosition
 ) {
 
   public CursorPage {

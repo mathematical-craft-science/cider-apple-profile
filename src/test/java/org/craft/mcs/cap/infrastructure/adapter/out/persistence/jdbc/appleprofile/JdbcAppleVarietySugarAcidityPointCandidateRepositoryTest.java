@@ -2,7 +2,7 @@ package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.appleprofi
 
 import java.util.List;
 import java.util.UUID;
-import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.out.AppleVarietySugarAcidityPointCandidateCursor;
+import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.model.AppleVarietySugarAcidityPagePosition;
 import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.out.AppleVarietySugarAcidityPointCandidateQuery;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVariety;
 import org.craft.mcs.cap.shared.platform.query.TextSearchCriteria;
@@ -81,7 +81,7 @@ class JdbcAppleVarietySugarAcidityPointCandidateRepositoryTest {
 
     repository.findCandidates(new AppleVarietySugarAcidityPointCandidateQuery(
         null,
-        new AppleVarietySugarAcidityPointCandidateCursor("Kingston Black", cursorId),
+        new AppleVarietySugarAcidityPagePosition("Kingston Black", cursorId),
         25
     ));
 

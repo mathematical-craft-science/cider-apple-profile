@@ -9,7 +9,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.out.FeedstockMeasurementSugarAcidityPointCandidateCursor;
+import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.model.FeedstockMeasurementSugarAcidityPagePosition;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.out.FeedstockMeasurementSugarAcidityPointCandidateQuery;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.out.LatestFeedstockMeasurementSugarAcidityPointCandidateQuery;
 import org.craft.mcs.cap.core.feedstock.application.batch.model.FeedstockBatchCriteria;
@@ -77,7 +77,7 @@ class JdbcFeedstockMeasurementQueryRepository
   }
 
   private static @NonNull SqlQueryOption afterCursor(
-      @Nullable FeedstockMeasurementSugarAcidityPointCandidateCursor cursor,
+      @Nullable FeedstockMeasurementSugarAcidityPagePosition cursor,
       @NonNull CursorDirection direction
   ) {
     return builder -> {

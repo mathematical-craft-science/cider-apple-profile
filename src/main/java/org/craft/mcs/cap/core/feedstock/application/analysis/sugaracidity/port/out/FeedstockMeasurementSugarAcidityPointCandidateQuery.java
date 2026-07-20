@@ -1,11 +1,12 @@
 package org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.out;
 
+import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.model.FeedstockMeasurementSugarAcidityPagePosition;
 import org.craft.mcs.cap.shared.application.ApplicationValidationException;
 
 import org.craft.mcs.cap.core.feedstock.application.batch.model.FeedstockBatchCriteria;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
-import org.craft.mcs.cap.shared.platform.query.CursorPageRequest;
+import org.craft.mcs.cap.shared.application.query.QueryLimits;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -16,16 +17,16 @@ public record FeedstockMeasurementSugarAcidityPointCandidateQuery(
     @NonNull WorkspaceId workspaceId,
     @Nullable FeedstockBatchCriteria batch,
     @Nullable FeedstockSeason season,
-    @Nullable FeedstockMeasurementSugarAcidityPointCandidateCursor after,
+    @Nullable FeedstockMeasurementSugarAcidityPagePosition after,
     int limit
 ) {
 
   public FeedstockMeasurementSugarAcidityPointCandidateQuery {
     requireNonNull(workspaceId, "workspace id cannot be null");
 
-    if (limit < 1 || limit > CursorPageRequest.MAX_LIMIT + 1) {
+    if (limit < 1 || limit > QueryLimits.MAXIMUM_PAGE_FETCH) {
       throw new ApplicationValidationException(
-          "candidate query limit must be between 1 and " + (CursorPageRequest.MAX_LIMIT + 1)
+          "candidate query limit must be between 1 and " + QueryLimits.MAXIMUM_PAGE_FETCH
       );
     }
   }

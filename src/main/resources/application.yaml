@@ -35,6 +35,12 @@ sentry:
   enabled: false
 
 cap:
+  query:
+    cursor:
+      time-to-live: 1h
+      active-key:
+        id: local-development
+        secret: ${CAP_QUERY_CURSOR_HMAC_SECRET:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=}
   account:
     invitation-time-to-live: 7d
     default-workspace:

@@ -2,7 +2,7 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.query;
 
 
 import java.net.URI;
-import org.craft.mcs.cap.shared.platform.query.MalformedCursorException;
+import org.craft.mcs.cap.shared.application.query.MalformedCursorException;
 import org.jspecify.annotations.NonNull;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +22,7 @@ public final class QueryExceptionHandler {
 
   @ExceptionHandler(MalformedCursorException.class)
   public @NonNull ResponseEntity<@NonNull ProblemDetail> handleMalformedCursor(
-      @NonNull MalformedCursorException exception
+      @NonNull MalformedCursorException ignoredException
   ) {
     final var problem = create(
         BAD_REQUEST,

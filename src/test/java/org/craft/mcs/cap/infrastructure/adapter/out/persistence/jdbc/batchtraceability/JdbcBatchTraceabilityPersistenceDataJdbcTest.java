@@ -159,6 +159,55 @@ class JdbcBatchTraceabilityPersistenceDataJdbcTest {
         });
   }
 
+  @Test
+  void preservesStateIdentityAcrossConsecutiveOperations() {
+    final var production = BatchTraceSubject.of(BatchTraceSubjectType.PRODUCTION_BATCH, "production-stateful");
+    final var createdState = BatchTraceStepSubject.of(production);
+    final var rackedState = BatchTraceStepSubject.of(production);
+    final var creation = BatchTraceStep.create(
+        workspaceId,
+        null,
+        BatchTraceOperationType.CREATE_PRODUCTION_BATCH,
+        List.of(BatchTraceStepSubject.of(BatchTraceSubject.of(
+            BatchTraceSubjectType.FEEDSTOCK_BATCH,
+            "feedstock-stateful"
+        ))),
+        List.of(createdState),
+        Instant.parse("2026-05-18T00:00:00Z"),
+        BatchTraceActorReference.system("test"),
+        null
+    );
+    final var racking = BatchTraceStep.create(
+        workspaceId,
+        creation.stepId(),
+        BatchTraceOperationType.RACKING,
+        List.of(createdState),
+        List.of(rackedState),
+        Instant.parse("2026-05-18T01:00:00Z"),
+        BatchTraceActorReference.system("test"),
+        null
+    );
+
+    store.append(creation);
+    store.append(racking);
+
+    final var found = queryStore.findByOutputSubject(workspaceId, production);
+
+    assertThat(found)
+        .hasSize(2)
+        .satisfiesExactly(
+            creationStep -> assertThat(creationStep)
+                .extracting(step -> step.outputs().getFirst().traceStateId())
+                .isEqualTo(createdState.traceStateId()),
+            rackingStep -> assertThat(rackingStep)
+                .extracting(
+                    step -> step.inputs().getFirst().traceStateId(),
+                    step -> step.outputs().getFirst().traceStateId()
+                )
+                .containsExactly(createdState.traceStateId(), rackedState.traceStateId())
+        );
+  }
+
   private static BatchTraceStep splitStep(
       WorkspaceId workspaceId,
       BatchTraceSubject input,

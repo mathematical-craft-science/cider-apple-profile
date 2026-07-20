@@ -21,6 +21,26 @@
       "description": "Validity period assigned to a new or resent workspace invitation."
     },
     {
+      "name": "cap.query.cursor.time-to-live",
+      "description": "Validity period of an issued database pagination cursor."
+    },
+    {
+      "name": "cap.query.cursor.active-key.id",
+      "description": "Identifier of the HMAC key used to sign newly issued pagination cursors."
+    },
+    {
+      "name": "cap.query.cursor.active-key.secret",
+      "description": "Base64-encoded HMAC secret used to sign newly issued pagination cursors."
+    },
+    {
+      "name": "cap.query.cursor.previous-key.id",
+      "description": "Identifier of the previous HMAC key accepted during cursor-key rotation."
+    },
+    {
+      "name": "cap.query.cursor.previous-key.secret",
+      "description": "Base64-encoded previous HMAC secret accepted during cursor-key rotation."
+    },
+    {
       "name": "cap.security.clerk.issuer",
       "description": "Expected issuer URI of Clerk access tokens."
     },

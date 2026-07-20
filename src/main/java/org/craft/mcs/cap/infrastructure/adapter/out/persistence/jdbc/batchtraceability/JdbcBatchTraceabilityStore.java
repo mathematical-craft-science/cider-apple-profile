@@ -88,6 +88,7 @@ class JdbcBatchTraceabilityStore implements BatchTraceabilityStore {
               step_id,
               subject_role,
               subject_order,
+              trace_state_id,
               subject_type,
               subject_id,
               display_name_snapshot,
@@ -122,6 +123,7 @@ class JdbcBatchTraceabilityStore implements BatchTraceabilityStore {
               :stepId,
               :subjectRole,
               :subjectOrder,
+              :traceStateId,
               :subjectType,
               :subjectId,
               :displayNameSnapshot,
@@ -165,6 +167,7 @@ class JdbcBatchTraceabilityStore implements BatchTraceabilityStore {
         .addValue("stepId", stepId)
         .addValue("subjectRole", subject.role.name())
         .addValue("subjectOrder", subject.subjectOrder)
+        .addValue("traceStateId", subject.traceStateId)
         .addValue("subjectType", subject.subjectType.name())
         .addValue("subjectId", subject.subjectId)
         .addValue("displayNameSnapshot", subject.displayNameSnapshot)

@@ -54,18 +54,4 @@ class PointCriteriaTest {
         .isFalse();
   }
 
-  @Test
-  void opaqueCursorCodecRoundTripsParts() {
-    final var cursor = OpaqueCursorCodec.encode("Kingston Black", "0194d5df-1111-7000-8000-000000000001");
-
-    assertThat(OpaqueCursorCodec.decode(cursor, 2))
-        .containsExactly("Kingston Black", "0194d5df-1111-7000-8000-000000000001");
-  }
-
-  @Test
-  void opaqueCursorCodecRejectsMalformedCursor() {
-    assertThatThrownBy(() -> OpaqueCursorCodec.decode("not-a-valid-two-part-cursor", 2))
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining("cursor is malformed");
-  }
 }

@@ -48,6 +48,7 @@ public final class BatchTraceabilityRestMapper {
 
   private static @NonNull BatchTraceNodeResponse toResponse(@NonNull BatchTraceNode node) {
     return new BatchTraceNodeResponse(
+        node.traceStateId().value(),
         toResponse(node.subject()),
         toResponse(node.snapshot())
     );
@@ -69,6 +70,7 @@ public final class BatchTraceabilityRestMapper {
 
   private static @NonNull BatchTraceStepSubjectResponse toResponse(@NonNull BatchTraceStepSubject subject) {
     return new BatchTraceStepSubjectResponse(
+        subject.traceStateId().value(),
         toResponse(subject.subject()),
         toResponse(subject.snapshot())
     );

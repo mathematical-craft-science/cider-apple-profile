@@ -72,7 +72,7 @@ class BatchTraceabilityProductionBatchTraceRecorder implements ProductionBatchTr
       @NonNull List<@NonNull ProductionBatchTraceSource> sources
   ) {
     return sources.stream()
-        .map(source -> new BatchTraceStepSubject(
+        .map(source -> BatchTraceStepSubject.capture(
             new BatchTraceSubject(
                 toTraceSubjectType(source),
                 source.id(),
@@ -102,7 +102,7 @@ class BatchTraceabilityProductionBatchTraceRecorder implements ProductionBatchTr
   }
 
   private static @NonNull BatchTraceStepSubject outputSubject(@NonNull ProductionBatch productionBatch) {
-    return new BatchTraceStepSubject(
+    return BatchTraceStepSubject.capture(
         new BatchTraceSubject(
             BatchTraceSubjectType.PRODUCTION_BATCH,
             productionBatch.batchId().value().toString(),

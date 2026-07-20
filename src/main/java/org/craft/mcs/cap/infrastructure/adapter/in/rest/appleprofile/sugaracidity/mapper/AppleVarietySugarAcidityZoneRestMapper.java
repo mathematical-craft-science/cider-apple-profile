@@ -1,5 +1,7 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.sugaracidity.mapper;
 
+import lombok.RequiredArgsConstructor;
+import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.model.AppleVarietySugarAcidityPagePosition;
 import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.in.AppleVarietyPointFilters;
 import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.in.AppleVarietySugarAcidityZonePointQuery;
 import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.in.AppleVarietySugarAcidityZoneResult;
@@ -7,6 +9,7 @@ import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.sugaracidit
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.sugaracidity.dto.AppleVarietySugarAcidityZonePointBatchResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.sugaracidity.dto.AppleVarietySugarAcidityZoneResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.sugaracidity.dto.UnplottableAppleVarietySugarAcidityZonePointResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.sugaracidity.cursor.AppleVarietySugarAcidityCursorAdapter;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.abv.dto.PotentialAbvPredictionResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.abv.mapper.PotentialAbvPredictionRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.mapper.ChemicalProfileCapabilityRestMapper;
@@ -14,38 +17,42 @@ import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.sugaracidity.mapp
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.sugaracidity.dto.SugarAcidityZoneAssessmentResponse;
 import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapability;
 import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityCriteria;
-import org.craft.mcs.cap.shared.platform.query.CursorPage;
-import org.craft.mcs.cap.shared.platform.query.CursorPageRequest;
+import org.craft.mcs.cap.shared.application.query.pagination.CursorPage;
+import org.craft.mcs.cap.shared.application.query.pagination.CursorPageRequest;
+import org.craft.mcs.cap.shared.application.query.QueryLimits;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.application.model.SugarAcidityZoneCriteria;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.SugarAcidityZone;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.SugarAcidityZoneAssessment;
 import org.craft.mcs.cap.shared.platform.query.TextSearchCriteria;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+import org.springframework.stereotype.Component;
 
 import static java.util.Objects.requireNonNull;
 import static java.util.Objects.requireNonNullElse;
 
 
+@Component
+@RequiredArgsConstructor
 public final class AppleVarietySugarAcidityZoneRestMapper {
 
-  private AppleVarietySugarAcidityZoneRestMapper() {
-  }
+  private final @NonNull AppleVarietySugarAcidityCursorAdapter cursorAdapter;
 
-  public static @NonNull AppleVarietySugarAcidityZonePointQuery toQuery(
+  public @NonNull AppleVarietySugarAcidityZonePointQuery toQuery(
       @NonNull AppleVarietySugarAcidityZonePointQueryRequest request
   ) {
     requireNonNull(request, "apple variety sugar-acidity zone point query request cannot be null");
+    final var filters = new AppleVarietyPointFilters(
+        toTextCriteria(request.nameContains()),
+        toZoneCriteria(request.zone()),
+        toCapabilityCriteria(request.capability(), request.capable())
+    );
 
     return new AppleVarietySugarAcidityZonePointQuery(
-        new AppleVarietyPointFilters(
-            toTextCriteria(request.nameContains()),
-            toZoneCriteria(request.zone()),
-            toCapabilityCriteria(request.capability(), request.capable())
-        ),
-        new CursorPageRequest(
-            request.after(),
-            requireNonNullElse(request.limit(), CursorPageRequest.DEFAULT_LIMIT)
+        filters,
+        new CursorPageRequest<>(
+            cursorAdapter.decode(request.after(), filters),
+            requireNonNullElse(request.limit(), QueryLimits.DEFAULT)
         )
     );
   }
@@ -66,10 +73,15 @@ public final class AppleVarietySugarAcidityZoneRestMapper {
     );
   }
 
-  public static @NonNull AppleVarietySugarAcidityZonePointBatchResponse toResponse(
-      @NonNull CursorPage<@NonNull AppleVarietySugarAcidityZoneResult> page
+  public @NonNull AppleVarietySugarAcidityZonePointBatchResponse toResponse(
+      @NonNull CursorPage<
+          @NonNull AppleVarietySugarAcidityZoneResult,
+          @NonNull AppleVarietySugarAcidityPagePosition
+      > page,
+      @NonNull AppleVarietySugarAcidityZonePointQuery query
   ) {
     requireNonNull(page, "apple variety sugar-acidity zone point page cannot be null");
+    requireNonNull(query, "apple variety sugar-acidity zone point query cannot be null");
 
     return new AppleVarietySugarAcidityZonePointBatchResponse(
         page.items().stream()
@@ -80,7 +92,7 @@ public final class AppleVarietySugarAcidityZoneRestMapper {
             .filter(result -> !result.evaluation().plottable())
             .map(AppleVarietySugarAcidityZoneRestMapper::toUnplottableResponse)
             .toList(),
-        page.nextCursor()
+        cursorAdapter.encode(page.nextPosition(), query.filters())
     );
   }
 

@@ -55,6 +55,15 @@ class ContextBoundaryArchitectureTest {
           );
 
   @ArchTest
+  static final ArchRule core_does_not_depend_on_shared_infrastructure =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.core..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAPackage("org.craft.mcs.cap.shared.infrastructure..");
+
+  @ArchTest
   static final ArchRule core_domain_is_framework_independent =
       noClasses()
           .that()

@@ -16,7 +16,7 @@ import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasur
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.value.FeedstockMeasurementName;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityCriteria;
-import org.craft.mcs.cap.shared.platform.query.CursorPageRequest;
+import org.craft.mcs.cap.shared.application.query.pagination.CursorPageRequest;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.application.model.SugarAcidityZoneCriteria;
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapability;
@@ -38,7 +38,6 @@ import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementIn
 import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementRecordedAt;
 import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementInstantPlusSeconds;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -92,7 +91,7 @@ class QueryFeedstockMeasurementSugarAcidityZonePointsServiceTest {
         CursorPageRequest.firstPage(1)
     ));
 
-    assertThat(result.nextCursor()).isNotNull();
+    assertThat(result.nextPosition()).isNotNull();
     assertThat(result.items()).hasSize(1);
     assertThat(result.items().getFirst().measurementId()).isEqualTo(alpha.measurementId());
     assertThat(result.items().getFirst().evaluation().plottable()).isTrue();
@@ -131,17 +130,17 @@ class QueryFeedstockMeasurementSugarAcidityZonePointsServiceTest {
     final var secondPage = service.query(new FeedstockMeasurementSugarAcidityZonePointQuery(
         workspaceId,
         new FeedstockMeasurementPointFilters(null, null, null, null),
-        new CursorPageRequest(firstPage.nextCursor(), 2)
+        new CursorPageRequest<>(firstPage.nextPosition(), 2)
     ));
 
     assertThat(firstPage.items())
         .extracting(FeedstockMeasurementSugarAcidityZoneResult::measurementId)
         .containsExactly(first.measurementId(), second.measurementId());
-    assertThat(firstPage.nextCursor()).isNotNull();
+    assertThat(firstPage.nextPosition()).isNotNull();
     assertThat(secondPage.items())
         .extracting(FeedstockMeasurementSugarAcidityZoneResult::measurementId)
         .containsExactly(third.measurementId());
-    assertThat(secondPage.nextCursor()).isNull();
+    assertThat(secondPage.nextPosition()).isNull();
   }
 
   @Test
@@ -169,20 +168,6 @@ class QueryFeedstockMeasurementSugarAcidityZonePointsServiceTest {
     assertThat(result.items().getFirst().evaluation().assessment()).isNull();
     assertThat(result.items().getFirst().evaluation().capabilityAssessment().capability())
         .isEqualTo(ChemicalProfileCapability.SUGAR_ACIDITY_PLOT);
-  }
-
-  @Test
-  void rejectsMalformedCursorExplicitly() {
-    final var service = service(mock(FeedstockMeasurementQueryRepository.class));
-    final var workspaceId = WorkspaceId.of(newUuid());
-
-    assertThatThrownBy(() -> service.query(new FeedstockMeasurementSugarAcidityZonePointQuery(
-        workspaceId,
-        new FeedstockMeasurementPointFilters(null, null, null, null),
-        new CursorPageRequest("cursor", 10)
-    )))
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining("cursor is malformed");
   }
 
   @Test

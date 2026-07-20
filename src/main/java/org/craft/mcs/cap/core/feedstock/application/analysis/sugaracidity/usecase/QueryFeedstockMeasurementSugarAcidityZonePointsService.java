@@ -1,9 +1,8 @@
 package org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.usecase;
 
-import java.time.Instant;
 import java.util.Optional;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.model.FeedstockMeasurementSugarAcidityPagePosition;
 import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileEvaluation;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileProjector;
@@ -13,13 +12,10 @@ import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.i
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.QueryFeedstockMeasurementSugarAcidityZonePointsUseCase;
 import org.craft.mcs.cap.core.feedstock.application.measurement.port.out.FeedstockMeasurementQueryRepository;
 import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementView;
-import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.out.FeedstockMeasurementSugarAcidityPointCandidateCursor;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.out.FeedstockMeasurementSugarAcidityPointCandidateQuery;
 import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityCriteria;
-import org.craft.mcs.cap.shared.platform.query.ChunkedCursorPageCollector;
-import org.craft.mcs.cap.shared.platform.query.CursorPage;
-import org.craft.mcs.cap.shared.platform.query.MalformedCursorException;
-import org.craft.mcs.cap.shared.platform.query.OpaqueCursorCodec;
+import org.craft.mcs.cap.shared.application.query.pagination.ChunkedCursorPageCollector;
+import org.craft.mcs.cap.shared.application.query.pagination.CursorPage;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.application.model.SugarAcidityZoneCriteria;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -41,35 +37,33 @@ import static java.util.Objects.requireNonNull;
 public final class QueryFeedstockMeasurementSugarAcidityZonePointsService
     implements QueryFeedstockMeasurementSugarAcidityZonePointsUseCase {
 
-  private static final int PAGE_LOOKAHEAD = 1;
-
   private final @NonNull FeedstockMeasurementQueryRepository feedstockMeasurementQueryRepository;
   private final @NonNull FeedstockAccessControl feedstockAccessControl;
   private final @NonNull SugarAcidityProfileProjector sugarAcidityProfileProjector;
 
   @Override
-  public @NonNull CursorPage<@NonNull FeedstockMeasurementSugarAcidityZoneResult> query(
+  public @NonNull CursorPage<
+      @NonNull FeedstockMeasurementSugarAcidityZoneResult,
+      @NonNull FeedstockMeasurementSugarAcidityPagePosition
+  > query(
       @NonNull FeedstockMeasurementSugarAcidityZonePointQuery query
   ) {
     requireNonNull(query, "feedstock measurement sugar-acidity zone point query cannot be null");
     feedstockAccessControl.requireReadAccess(query.workspaceId());
 
     return ChunkedCursorPageCollector.collect(
-        decodeCursor(query.page().after()),
-        query.page().limit(),
-        PAGE_LOOKAHEAD,
-        (afterCursor, limit) -> feedstockMeasurementQueryRepository.findSugarAcidityPointCandidates(
+        query.page(),
+        (afterPosition, limit) -> feedstockMeasurementQueryRepository.findSugarAcidityPointCandidates(
             new FeedstockMeasurementSugarAcidityPointCandidateQuery(
                 query.workspaceId(),
                 query.filters().batch(),
                 query.filters().season(),
-                afterCursor,
+                afterPosition,
                 limit
             )
         ),
-        QueryFeedstockMeasurementSugarAcidityZonePointsService::toCandidateCursor,
-        sample -> toResultIfMatches(sample, query),
-        QueryFeedstockMeasurementSugarAcidityZonePointsService::encodeCursor
+        QueryFeedstockMeasurementSugarAcidityZonePointsService::toPagePosition,
+        sample -> toResultIfMatches(sample, query)
     );
   }
 
@@ -112,7 +106,7 @@ public final class QueryFeedstockMeasurementSugarAcidityZonePointsService
 
     final var assessment = sugarAcidityProfileProjector.assessCapability(evaluation, criteria.capability());
 
-    return assessment.capable() == Boolean.TRUE.equals(criteria.capable());
+    return assessment.capable() == criteria.capable(); // NOSONAR
   }
 
   private static boolean matchesSugarAcidityZone(
@@ -128,33 +122,13 @@ public final class QueryFeedstockMeasurementSugarAcidityZonePointsService
         && criteria.zones().contains(assessment.zone());
   }
 
-  private static @NonNull FeedstockMeasurementSugarAcidityPointCandidateCursor toCandidateCursor(
+  private static @NonNull FeedstockMeasurementSugarAcidityPagePosition toPagePosition(
       @NonNull FeedstockMeasurementView sample
   ) {
     requireNonNull(sample, "feedstock measurement cannot be null");
-    return new FeedstockMeasurementSugarAcidityPointCandidateCursor(
+    return new FeedstockMeasurementSugarAcidityPagePosition(
         sample.measuredAt(),
         sample.measurementId().value()
     );
-  }
-
-  private static @Nullable FeedstockMeasurementSugarAcidityPointCandidateCursor decodeCursor(@Nullable String cursor) {
-    if (cursor == null) {
-      return null;
-    }
-
-    try {
-      final var parts = OpaqueCursorCodec.decode(cursor, 2);
-      return new FeedstockMeasurementSugarAcidityPointCandidateCursor(
-          Instant.parse(parts.getFirst()),
-          UUID.fromString(parts.get(1))
-      );
-    } catch (IllegalArgumentException exception) {
-      throw new MalformedCursorException(exception);
-    }
-  }
-
-  private static @NonNull String encodeCursor(@NonNull FeedstockMeasurementSugarAcidityPointCandidateCursor cursor) {
-    return OpaqueCursorCodec.encode(cursor.measuredAt().toString(), cursor.measurementId().toString());
   }
 }

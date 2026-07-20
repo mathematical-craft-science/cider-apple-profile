@@ -9,6 +9,7 @@ import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceMaterialS
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStep;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStepId;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStepSubject;
+import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStateId;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceSubject;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
@@ -76,6 +77,7 @@ public final class BatchTraceStepJdbcRowMapper {
       final var subjectRow = new BatchTraceStepSubjectJdbcRow(
           role,
           index,
+          subject.traceStateId().value(),
           subject.subject().type(),
           subject.subject().id(),
           subject.subject().displayNameSnapshot()
@@ -100,6 +102,7 @@ public final class BatchTraceStepJdbcRowMapper {
       @NonNull BatchTraceStepSubjectJdbcRow row
   ) {
     return new BatchTraceStepSubject(
+        BatchTraceStateId.of(requireNonNull(row.traceStateId, "batch trace state id cannot be null")),
         new BatchTraceSubject(
             requireNonNull(row.subjectType, "batch trace subject type cannot be null"),
             requireNonNull(row.subjectId, "batch trace subject id cannot be null"),

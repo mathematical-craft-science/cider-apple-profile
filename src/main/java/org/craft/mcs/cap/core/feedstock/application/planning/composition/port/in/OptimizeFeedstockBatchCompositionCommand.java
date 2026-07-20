@@ -16,7 +16,7 @@ import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.i
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.application.ApplicationValidationException;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
-import org.craft.mcs.cap.shared.platform.query.CursorPageRequest;
+import org.craft.mcs.cap.shared.application.query.QueryLimits;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -55,9 +55,9 @@ public record OptimizeFeedstockBatchCompositionCommand(
     requireNonNull(normalizerCode, "profile axis normalizer code cannot be null");
     requireNonNull(objectiveFunctionCode, "profile target objective function code cannot be null");
 
-    if (sourceLimit < 2 || sourceLimit > CursorPageRequest.MAX_LIMIT) {
+    if (sourceLimit < 2 || sourceLimit > QueryLimits.MAXIMUM) {
       throw new ApplicationValidationException(
-          "composition optimization source limit must be between 2 and " + CursorPageRequest.MAX_LIMIT
+          "composition optimization source limit must be between 2 and " + QueryLimits.MAXIMUM
       );
     }
   }

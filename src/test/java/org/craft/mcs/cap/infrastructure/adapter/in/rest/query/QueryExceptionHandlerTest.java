@@ -1,7 +1,7 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.query;
 
 
-import org.craft.mcs.cap.shared.platform.query.MalformedCursorException;
+import org.craft.mcs.cap.shared.application.query.MalformedCursorException;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatusCode;
 

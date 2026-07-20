@@ -11,6 +11,7 @@ import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStep;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStepSubject;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceSubject;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceSubjectType;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.batchtraceability.dto.BatchTraceNodeResponse;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
@@ -48,7 +49,17 @@ class BatchTraceabilityRestMapperTest {
     );
 
     assertThat(response.edges()).singleElement()
-        .satisfies(edge -> assertThat(edge.occurredAt()).isEqualTo(occurredAt));
+        .satisfies(edge -> {
+          assertThat(edge.occurredAt()).isEqualTo(occurredAt);
+          assertThat(edge.inputs()).singleElement()
+              .satisfies(input -> assertThat(response.nodes())
+                  .extracting(BatchTraceNodeResponse::traceStateId)
+                  .contains(input.traceStateId()));
+          assertThat(edge.outputs()).singleElement()
+              .satisfies(output -> assertThat(response.nodes())
+                  .extracting(BatchTraceNodeResponse::traceStateId)
+                  .contains(output.traceStateId()));
+        });
   }
 
   @Test
@@ -61,7 +72,7 @@ class BatchTraceabilityRestMapperTest {
             BatchTraceSubjectType.FEEDSTOCK_BATCH,
             "feedstock-1"
         ))),
-        List.of(new BatchTraceStepSubject(
+        List.of(BatchTraceStepSubject.capture(
             BatchTraceSubject.of(BatchTraceSubjectType.PRODUCTION_BATCH, "production-1"),
             new BatchTraceMaterialSnapshot(null, ChemicalProfileAxes.of(
                 null,

@@ -1,4 +1,4 @@
-package org.craft.mcs.cap.shared.platform.query;
+package org.craft.mcs.cap.shared.application.query.pagination;
 
 import java.util.List;
 import java.util.Optional;
@@ -13,21 +13,19 @@ class ChunkedCursorPageCollectorTest {
   @Test
   void fillsPageAcrossChunksAfterFilteringCandidates() {
     final var page = ChunkedCursorPageCollector.collect(
-        null,
-        2,
-        1,
+        CursorPageRequest.firstPage(2),
         ChunkedCursorPageCollectorTest::candidatesAfter,
         Candidate::id,
-        candidate -> candidate.accepted() ? Optional.of(candidate.name()) : Optional.empty(),
-        String::valueOf
+        candidate -> candidate.accepted() ? Optional.of(candidate.name()) : Optional.empty()
     );
 
-    assertThat(page.items()).containsExactly("two", "four");
-    assertThat(page.nextCursor()).isEqualTo("4");
+    assertThat(page)
+        .returns(List.of("two", "four"), CursorPage::items)
+        .returns(4, CursorPage::nextPosition);
   }
 
   private static List<Candidate> candidatesAfter(
-      Integer afterCursor,
+      Integer afterPosition,
       int limit
   ) {
     return Stream.of(
@@ -37,7 +35,7 @@ class ChunkedCursorPageCollectorTest {
             new Candidate(4, "four", true),
             new Candidate(5, "five", true)
         )
-        .filter(candidate -> afterCursor == null || candidate.id() > afterCursor)
+        .filter(candidate -> afterPosition == null || candidate.id() > afterPosition)
         .limit(limit)
         .toList();
   }

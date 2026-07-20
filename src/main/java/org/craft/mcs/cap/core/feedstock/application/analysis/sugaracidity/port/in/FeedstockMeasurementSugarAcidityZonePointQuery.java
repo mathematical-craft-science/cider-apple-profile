@@ -1,7 +1,8 @@
 package org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in;
 
+import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.model.FeedstockMeasurementSugarAcidityPagePosition;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
-import org.craft.mcs.cap.shared.platform.query.CursorPageRequest;
+import org.craft.mcs.cap.shared.application.query.pagination.CursorPageRequest;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
@@ -10,7 +11,7 @@ import static java.util.Objects.requireNonNull;
 public record FeedstockMeasurementSugarAcidityZonePointQuery(
     @NonNull WorkspaceId workspaceId,
     @NonNull FeedstockMeasurementPointFilters filters,
-    @NonNull CursorPageRequest page
+    @NonNull CursorPageRequest<@NonNull FeedstockMeasurementSugarAcidityPagePosition> page
 ) {
 
   public FeedstockMeasurementSugarAcidityZonePointQuery {

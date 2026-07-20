@@ -16,7 +16,7 @@ import static java.util.Objects.requireNonNull;
 /**
  * Append-only business fact in batch traceability.
  *
- * <p>The step records what happened, which subjects were inputs and outputs, and optional material
+ * <p>The step records what happened, which material states were inputs and outputs, and optional
  * snapshots captured at that moment. It does not enforce feedstock or production invariants; those
  * stay in their owning aggregates.
  */
