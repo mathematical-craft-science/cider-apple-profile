@@ -1,0 +1,10 @@
+{{inviter_name}} invited you to join the CAP workspace "{{workspace_name}}" as {{role_name}}.
+
+Invited email: {{invited_email}}
+Invitation expires: {{expires_at}}
+
+Review invitation:
+{{invitation_url}}
+
+This link does not grant access by itself. Sign in to CAP using the invited email address.
+Do not forward this invitation. If you were not expecting it, you can safely ignore this email.

@@ -4,6 +4,7 @@ import java.time.Clock;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.account.invitation.application.WorkspaceInvitationNotFoundException;
+import org.craft.mcs.cap.core.account.invitation.application.WorkspaceInvitationRecipientMismatchException;
 import org.craft.mcs.cap.core.account.invitation.application.port.in.GetIncomingWorkspaceInvitationUseCase;
 import org.craft.mcs.cap.core.account.invitation.application.port.in.IncomingWorkspaceInvitationView;
 import org.craft.mcs.cap.core.account.invitation.application.port.in.ListIncomingWorkspaceInvitationsUseCase;
@@ -11,7 +12,6 @@ import org.craft.mcs.cap.core.account.invitation.application.port.in.WorkspaceIn
 import org.craft.mcs.cap.core.account.invitation.application.port.out.WorkspaceInvitationRepository;
 import org.craft.mcs.cap.core.account.invitation.domain.model.WorkspaceInvitation;
 import org.craft.mcs.cap.core.account.invitation.domain.model.value.WorkspaceInvitationId;
-import org.craft.mcs.cap.core.account.shared.application.AccountAccessDeniedException;
 import org.craft.mcs.cap.core.account.user.application.port.out.AccountUserRepository;
 import org.craft.mcs.cap.core.account.user.application.usecase.CurrentAccountUserResolver;
 import org.craft.mcs.cap.core.account.workspace.application.WorkspaceNotFoundException;
@@ -42,7 +42,7 @@ public final class IncomingWorkspaceInvitationQueryService
     final var currentUser = currentAccountUserResolver.resolve();
     final var invitation = findInvitation(invitationId);
     if (!invitation.isAddressedTo(currentUser.email())) {
-      throw new AccountAccessDeniedException("workspace invitation belongs to another account");
+      throw new WorkspaceInvitationRecipientMismatchException();
     }
 
     return toView(invitation);

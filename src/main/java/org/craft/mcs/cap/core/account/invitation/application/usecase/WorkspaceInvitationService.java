@@ -7,18 +7,20 @@ import org.craft.mcs.cap.core.account.context.application.port.in.WorkspaceMembe
 import org.craft.mcs.cap.core.account.context.application.usecase.WorkspacePermissionChecker;
 import org.craft.mcs.cap.core.account.invitation.application.WorkspaceInvitationConflictException;
 import org.craft.mcs.cap.core.account.invitation.application.WorkspaceInvitationNotFoundException;
+import org.craft.mcs.cap.core.account.invitation.application.WorkspaceInvitationRecipientMismatchException;
+import org.craft.mcs.cap.core.account.invitation.application.model.WorkspaceInvitationDeliveryRequest;
 import org.craft.mcs.cap.core.account.invitation.application.model.WorkspaceInvitationDefaults;
 import org.craft.mcs.cap.core.account.invitation.application.port.in.InviteWorkspaceMemberCommand;
 import org.craft.mcs.cap.core.account.invitation.application.port.in.WorkspaceInvitationCommand;
 import org.craft.mcs.cap.core.account.invitation.application.port.in.WorkspaceInvitationUseCase;
 import org.craft.mcs.cap.core.account.invitation.application.port.in.WorkspaceInvitationView;
 import org.craft.mcs.cap.core.account.invitation.application.port.out.WorkspaceInvitationAuditTrail;
+import org.craft.mcs.cap.core.account.invitation.application.port.out.WorkspaceInvitationDeliveryScheduler;
 import org.craft.mcs.cap.core.account.invitation.application.port.out.WorkspaceInvitationRepository;
 import org.craft.mcs.cap.core.account.invitation.domain.model.WorkspaceInvitation;
 import org.craft.mcs.cap.core.account.invitation.domain.model.value.WorkspaceInvitationId;
 import org.craft.mcs.cap.core.account.membership.application.port.out.WorkspaceMembershipRepository;
 import org.craft.mcs.cap.core.account.membership.domain.model.WorkspaceMembership;
-import org.craft.mcs.cap.core.account.shared.application.AccountAccessDeniedException;
 import org.craft.mcs.cap.core.account.shared.application.port.out.WorkspaceAdministrationLock;
 import org.craft.mcs.cap.core.account.shared.domain.value.EmailAddress;
 import org.craft.mcs.cap.core.account.user.application.port.out.AccountUserRepository;
@@ -37,7 +39,6 @@ import static org.craft.mcs.cap.core.account.invitation.domain.model.WorkspaceIn
 import static org.craft.mcs.cap.core.account.membership.domain.model.WorkspacePermission.WORKSPACE_MEMBERS_MANAGE;
 import static org.craft.mcs.cap.core.account.membership.domain.model.WorkspacePermission.WORKSPACE_MEMBERS_READ;
 
-
 /**
  * Coordinates invitation lifecycle and creates membership only after recipient acceptance.
  */
@@ -54,6 +55,7 @@ public final class WorkspaceInvitationService
   private final @NonNull WorkspaceInvitationRepository invitationRepository;
   private final @NonNull WorkspaceAdministrationLock workspaceAdministrationLock;
   private final @NonNull WorkspaceInvitationAuditTrail auditTrail;
+  private final @NonNull WorkspaceInvitationDeliveryScheduler deliveryScheduler;
   private final @NonNull WorkspaceInvitationDefaults invitationDefaults;
   private final @NonNull TransactionHelper transactionHelper;
   private final @NonNull Clock clock;
@@ -63,7 +65,7 @@ public final class WorkspaceInvitationService
       @NonNull EmailAddress email
   ) {
     if (!invitation.isAddressedTo(email)) {
-      throw new AccountAccessDeniedException("workspace invitation belongs to another account");
+      throw new WorkspaceInvitationRecipientMismatchException();
     }
   }
 
@@ -87,6 +89,7 @@ public final class WorkspaceInvitationService
           invitationDefaults.timeToLive()
       ));
       auditTrail.recordCreated(context.user().userId(), invitation);
+      deliveryScheduler.schedule(WorkspaceInvitationDeliveryRequest.from(invitation));
       return toView(invitation);
     });
   }
@@ -176,6 +179,7 @@ public final class WorkspaceInvitationService
           invitation.resend(clock.instant(), invitationDefaults.timeToLive())
       )).aggregate();
       auditTrail.recordResent(context.user().userId(), previousStatus, resent);
+      deliveryScheduler.schedule(WorkspaceInvitationDeliveryRequest.from(resent));
       return toView(resent);
     });
   }

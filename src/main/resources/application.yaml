@@ -12,6 +12,22 @@ spring:
     url: jdbc:postgresql://localhost:5832/cap_db
     username: username
     password: password
+  mail:
+    host: ${CAP_SMTP_HOST:localhost}
+    port: ${CAP_SMTP_PORT:1025}
+    username: ${CAP_SMTP_USERNAME:}
+    password: ${CAP_SMTP_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: ${CAP_SMTP_AUTH:false}
+          connectiontimeout: ${CAP_SMTP_CONNECTION_TIMEOUT_MILLIS:10000}
+          timeout: ${CAP_SMTP_READ_TIMEOUT_MILLIS:10000}
+          writetimeout: ${CAP_SMTP_WRITE_TIMEOUT_MILLIS:10000}
+          starttls:
+            enable: ${CAP_SMTP_STARTTLS:false}
+          ssl:
+            enable: ${CAP_SMTP_SSL:false}
 
 management:
   otlp:
@@ -43,6 +59,10 @@ cap:
         secret: ${CAP_QUERY_CURSOR_HMAC_SECRET:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=}
   account:
     invitation-time-to-live: 7d
+    invitation-email:
+      frontend-base-url: ${CAP_FRONTEND_BASE_URL:http://localhost:5173}
+      sender-address: ${CAP_SMTP_FROM:no-reply@cap.local}
+      sender-name: ${CAP_SMTP_SENDER_NAME:Cider Analytical Platform}
     default-workspace:
       name: My cidery
       type: CIDERY
@@ -79,3 +99,24 @@ cap:
           Curated defaults from cider nitrogen references, Bisson/Butzke
           stuck-fermentation guidance, AWRI/Lallemand YAN guidance,
           and UC Davis Brix-based nutrient recommendations.
+
+namastack:
+  outbox:
+    polling:
+      batch-size: 10
+      trigger: fixed
+      fixed:
+        interval: 2s
+    retry:
+      policy: exponential
+      max-retries: 5
+      exponential:
+        initial-delay: 2s
+        multiplier: 2.0
+        max-delay: 1m
+      jitter: 500ms
+    multicaster:
+      enabled: false
+    jdbc:
+      schema-initialization:
+        enabled: false

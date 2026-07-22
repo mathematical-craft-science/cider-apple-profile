@@ -16,5 +16,11 @@ services:
       timeout: 5s
       retries: 3
 
+  mailpit:
+    image: "axllent/mailpit:v1.30.3"
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
 volumes:
   cap-postgres-data:

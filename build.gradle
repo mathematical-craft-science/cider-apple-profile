@@ -24,6 +24,7 @@ ext {
     set('springCloudVersion', "2025.1.2")
     set('jMolecules', "2025.0.2")
     set('archUnitVersion', "1.4.2")
+    set('namastackOutboxVersion', "1.6.0")
 }
 
 dependencies {
@@ -31,6 +32,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.boot:spring-boot-starter-data-jdbc'
     implementation 'org.springframework.boot:spring-boot-starter-liquibase'
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
     implementation 'org.springframework.boot:spring-boot-starter-opentelemetry'
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
     implementation 'org.springframework.boot:spring-boot-starter-restclient'
@@ -40,6 +42,7 @@ dependencies {
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3'
     implementation 'org.springframework.cloud:spring-cloud-starter-circuitbreaker-resilience4j'
     implementation 'org.springframework.cloud:spring-cloud-stream'
+    implementation "io.namastack:namastack-outbox-starter-jdbc:${namastackOutboxVersion}"
 
     implementation 'tech.units:indriya:2.2.4'
     implementation 'javax.measure:unit-api:2.2'
@@ -70,6 +73,7 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-testcontainers'
     testImplementation 'org.springframework.security:spring-security-test'
     testImplementation 'org.springframework.cloud:spring-cloud-stream-test-binder'
+    testImplementation 'org.awaitility:awaitility'
     testImplementation 'org.testcontainers:testcontainers-grafana'
     testImplementation 'org.testcontainers:testcontainers-junit-jupiter'
     testImplementation 'org.testcontainers:testcontainers-postgresql'

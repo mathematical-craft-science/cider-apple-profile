@@ -67,10 +67,13 @@ public interface WorkspaceInvitationApi {
       @NonNull UUID invitationId
   );
 
-  @Operation(summary = "Invite a workspace member")
+  @Operation(
+      summary = "Invite a workspace member",
+      description = "Creates a pending invitation and atomically schedules asynchronous email delivery."
+  )
   @ApiResponse(
       responseCode = "201",
-      description = "Pending invitation created.",
+      description = "Pending invitation created and its email delivery scheduled.",
       content = @Content(
           mediaType = APPLICATION_JSON_VALUE,
           schema = @Schema(implementation = WorkspaceInvitationResponse.class)
@@ -236,10 +239,13 @@ public interface WorkspaceInvitationApi {
       @NonNull UUID invitationId
   );
 
-  @Operation(summary = "Resend a pending or expired workspace invitation")
+  @Operation(
+      summary = "Resend a pending or expired workspace invitation",
+      description = "Renews the invitation and atomically schedules another asynchronous email delivery."
+  )
   @ApiResponse(
       responseCode = "200",
-      description = "Invitation validity period renewed for another delivery attempt.",
+      description = "Invitation validity period renewed and another email delivery scheduled.",
       content = @Content(
           mediaType = APPLICATION_JSON_VALUE,
           schema = @Schema(implementation = WorkspaceInvitationResponse.class)

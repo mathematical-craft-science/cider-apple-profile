@@ -9,9 +9,12 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-/** Wires account provisioning defaults from external CAP configuration. */
+/** Wires account, workspace, and invitation delivery settings from external CAP configuration. */
 @Configuration
-@EnableConfigurationProperties(AccountProperties.class)
+@EnableConfigurationProperties({
+    AccountProperties.class,
+    WorkspaceInvitationEmailProperties.class
+})
 public class AccountConfiguration {
 
   @Bean

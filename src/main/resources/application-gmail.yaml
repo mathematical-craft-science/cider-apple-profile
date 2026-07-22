@@ -1,0 +1,21 @@
+spring:
+  mail:
+    host: ${CAP_SMTP_HOST:smtp.gmail.com}
+    port: ${CAP_SMTP_PORT:587}
+    username: ${CAP_SMTP_USERNAME}
+    password: ${CAP_SMTP_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          ssl:
+            enable: false
+
+cap:
+  account:
+    invitation-email:
+      sender-address: ${CAP_SMTP_FROM:${CAP_SMTP_USERNAME}}
+#jkln rjza aiuz wxkd

@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>CAP workspace invitation</title>
+  <style>
+    @media only screen and (max-width: 680px) {
+      .email-shell { width: 100% !important; }
+      .email-card { border-radius: 0 !important; }
+      .mobile-pad { padding-left: 22px !important; padding-right: 22px !important; }
+      .detail-label { width: 34% !important; }
+      .action-link { display: block !important; min-width: 0 !important; }
+      .footer-cell { display: block !important; text-align: left !important; }
+    }
+  </style>
+</head>
+<body style="margin:0; padding:0; background:#edf1ec; color:#20231f;">
+  <div style="display:none; max-height:0; overflow:hidden; opacity:0; color:transparent;">
+    {{inviter_name}} invited you to join {{workspace_name}} in Cider Analytical Platform.
+  </div>
+
+  <!-- Email layout tables are required for desktop Outlook compatibility. -->
+  <!-- //NOSONAR --><table role="presentation"
+         style="width:100%; border-collapse:collapse; border-spacing:0; background:#edf1ec;
+                font-family:Arial, Helvetica, sans-serif;">
+    <tr>
+      <td style="padding:32px 14px; text-align:center;">
+        <!-- //NOSONAR --><table role="presentation" class="email-shell email-card"
+               style="width:640px; max-width:640px; margin:0 auto; border-collapse:collapse; border-spacing:0;
+                      background:#ffffff; border:1px solid #d8ded7;
+                      border-radius:8px; overflow:hidden;">
+          <tr>
+            <td class="mobile-pad" style="padding:22px 34px; background:#f4f6f1; border-bottom:1px solid #d8ded7;">
+              <!-- //NOSONAR --><table role="presentation"
+                     style="width:100%; border-collapse:collapse; border-spacing:0;">
+                <tr>
+                  <td style="width:76px; vertical-align:middle;">
+                    <img src="cid:cap-logo" width="64" height="61" alt="Mathematical Craft Science"
+                         style="display:block; width:64px; height:61px; border:0;">
+                  </td>
+                  <td style="padding-left:14px; vertical-align:middle;">
+                    <div style="font-family:Georgia, 'Times New Roman', serif; font-size:23px;
+                                line-height:1.2; font-weight:700; color:#20231f;">
+                      Cider Analytical Platform
+                    </div>
+                    <div style="margin-top:5px; font-size:11px; line-height:1.4; letter-spacing:1.2px;
+                                text-transform:uppercase; color:#3f5d47;">
+                      Mathematical Craft Science
+                    </div>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <tr>
+            <td class="mobile-pad" style="padding:34px 34px 12px;">
+              <h1 style="margin:0; font-family:Georgia, 'Times New Roman', serif; font-size:29px;
+                         line-height:1.25; color:#20231f;">
+                You&rsquo;re invited to join a workspace
+              </h1>
+              <p style="margin:14px 0 0; font-size:16px; line-height:1.65; color:#4f5851;">
+                <strong style="color:#20231f;">{{inviter_name}}</strong> invited you to collaborate in
+                <strong style="color:#20231f;">{{workspace_name}}</strong> as
+                <strong style="color:#3f5d47;">{{role_name}}</strong>.
+              </p>
+            </td>
+          </tr>
+
+          <tr>
+            <td class="mobile-pad" style="padding:18px 34px;">
+              <table aria-label="Invitation details"
+                     style="width:100%; border-collapse:collapse; border-spacing:0; background:#fafbf9;
+                            border:1px solid #dce3db; border-radius:8px;">
+                <tr>
+                  <th scope="row" class="detail-label"
+                      style="width:180px; padding:16px 18px 8px; color:#69716b; font-size:13px;
+                             font-weight:700; text-align:left;">
+                    Workspace
+                  </th>
+                  <td style="padding:16px 18px 8px; color:#20231f; font-size:15px; font-weight:700;">
+                    {{workspace_name}}
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row" class="detail-label"
+                      style="width:180px; padding:8px 18px; color:#69716b; font-size:13px; font-weight:700;
+                             text-align:left;">
+                    Role
+                  </th>
+                  <td style="padding:8px 18px; color:#20231f; font-size:15px;">{{role_name}}</td>
+                </tr>
+                <tr>
+                  <th scope="row" class="detail-label"
+                      style="width:180px; padding:8px 18px; color:#69716b; font-size:13px; font-weight:700;
+                             text-align:left;">
+                    Invited email
+                  </th>
+                  <td style="padding:8px 18px; color:#20231f; font-size:15px; word-break:break-all;">
+                    {{invited_email}}
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row" class="detail-label"
+                      style="width:180px; padding:8px 18px 16px; color:#69716b; font-size:13px;
+                             font-weight:700; text-align:left;">
+                    Expires
+                  </th>
+                  <td style="padding:8px 18px 16px; color:#9a2f25; font-size:15px; font-weight:700;">
+                    {{expires_at}}
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <tr>
+            <td class="mobile-pad" style="padding:12px 34px 26px; text-align:center;">
+              <!-- //NOSONAR --><table role="presentation"
+                     style="margin:0 auto; border-collapse:collapse; border-spacing:0;">
+                <tr>
+                  <td style="border-radius:6px; background:#3f5d47; text-align:center;">
+                    <a href="{{invitation_url}}" class="action-link"
+                       style="display:inline-block; min-width:240px; padding:14px 24px; color:#ffffff;
+                              font-size:16px; line-height:1.2; font-weight:700; text-decoration:none;">
+                      Review invitation
+                    </a>
+                  </td>
+                </tr>
+              </table>
+              <div style="margin-top:13px; font-size:13px; line-height:1.5; color:#69716b;">
+                Sign in using <strong style="color:#20231f;">{{invited_email}}</strong>.
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td class="mobile-pad" style="padding:0 34px 28px;">
+              <div style="padding:15px 17px; background:#f7f8f6; border-left:4px solid #9a2f25;
+                          font-size:13px; line-height:1.55; color:#4f5851;">
+                <strong style="color:#20231f;">Security note:</strong>
+                this link does not grant access by itself. The invitation is bound to the invited email address.
+                Do not forward this message.
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td class="mobile-pad" style="padding:22px 34px 28px; border-top:1px solid #e1e5df;">
+              <div style="font-size:13px; line-height:1.6; color:#69716b;">
+                If the button does not work, copy and paste this address into your browser:
+              </div>
+              <div style="margin-top:7px; font-size:12px; line-height:1.55; word-break:break-all;">
+                <a href="{{invitation_url}}" style="color:#3f5d47; text-decoration:underline;">
+                  {{invitation_url}}
+                </a>
+              </div>
+              <div style="margin-top:18px; font-size:13px; line-height:1.6; color:#69716b;">
+                If you were not expecting this invitation, you can safely ignore this email.
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td class="mobile-pad" style="padding:18px 34px; background:#20231f; color:#d8ded7;">
+              <!-- //NOSONAR --><table role="presentation"
+                     style="width:100%; border-collapse:collapse; border-spacing:0;">
+                <tr>
+                  <td class="footer-cell" style="font-size:12px; line-height:1.5;">
+                    Cider Analytical Platform &middot; Rooted in nature. Refined by science.
+                  </td>
+                  <td class="footer-cell" style="font-size:12px; color:#aeb7ad; text-align:right;">
+                    Workspace invitation
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

@@ -10,9 +10,9 @@ import org.craft.mcs.cap.core.account.invitation.application.port.in.IncomingWor
 import org.craft.mcs.cap.core.account.invitation.application.port.in.WorkspaceInvitationInviterView;
 import org.craft.mcs.cap.core.account.invitation.application.port.out.WorkspaceInvitationRepository;
 import org.craft.mcs.cap.core.account.invitation.application.usecase.IncomingWorkspaceInvitationQueryService;
+import org.craft.mcs.cap.core.account.invitation.application.WorkspaceInvitationRecipientMismatchException;
 import org.craft.mcs.cap.core.account.invitation.domain.model.WorkspaceInvitation;
 import org.craft.mcs.cap.core.account.invitation.domain.model.WorkspaceInvitationStatus;
-import org.craft.mcs.cap.core.account.shared.application.AccountAccessDeniedException;
 import org.craft.mcs.cap.core.account.membership.domain.model.AccountRole;
 import org.craft.mcs.cap.core.account.shared.domain.value.DisplayName;
 import org.craft.mcs.cap.core.account.shared.domain.value.EmailAddress;
@@ -97,8 +97,8 @@ class IncomingWorkspaceInvitationQueryServiceTest {
     final var fixture = fixture(currentUser, inviter, workspace, invitation);
 
     assertThatThrownBy(() -> fixture.service().get(invitation.invitationId()))
-        .isInstanceOf(AccountAccessDeniedException.class)
-        .hasMessage("workspace invitation belongs to another account");
+        .isInstanceOf(WorkspaceInvitationRecipientMismatchException.class)
+        .hasMessage("workspace invitation was issued to a different account email");
     verifyNoInteractions(fixture.workspaceRepository());
     verify(fixture.accountUserRepository(), never()).findById(inviter.userId());
   }

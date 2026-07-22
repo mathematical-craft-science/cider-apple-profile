@@ -6,12 +6,18 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.Optional;
 import org.craft.mcs.cap.core.account.invitation.application.WorkspaceInvitationConflictException;
+import org.craft.mcs.cap.core.account.invitation.application.WorkspaceInvitationRecipientMismatchException;
+import org.craft.mcs.cap.core.account.invitation.application.model.WorkspaceInvitationDeliveryRequest;
 import org.craft.mcs.cap.core.account.invitation.application.model.WorkspaceInvitationDefaults;
+import org.craft.mcs.cap.core.account.invitation.application.port.in.InviteWorkspaceMemberCommand;
+import org.craft.mcs.cap.core.account.invitation.application.port.in.WorkspaceInvitationCommand;
+import org.craft.mcs.cap.core.account.invitation.application.port.out.WorkspaceInvitationDeliveryScheduler;
 import org.craft.mcs.cap.core.account.invitation.application.port.out.WorkspaceInvitationRepository;
 import org.craft.mcs.cap.core.account.invitation.application.port.out.WorkspaceInvitationAuditTrail;
 import org.craft.mcs.cap.core.account.invitation.application.usecase.WorkspaceInvitationService;
 import org.craft.mcs.cap.core.account.invitation.domain.model.WorkspaceInvitation;
 import org.craft.mcs.cap.core.account.context.application.port.in.WorkspaceMembershipView;
+import org.craft.mcs.cap.core.account.context.application.model.ResolvedWorkspaceContext;
 import org.craft.mcs.cap.core.account.membership.application.port.out.WorkspaceMembershipRepository;
 import org.craft.mcs.cap.core.account.context.application.usecase.WorkspacePermissionChecker;
 import org.craft.mcs.cap.core.account.membership.domain.model.AccountRole;
@@ -36,6 +42,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.craft.mcs.cap.account.support.DirectTransactionHelper.INSTANCE;
 import static org.craft.mcs.cap.core.account.membership.domain.model.WorkspaceMembershipStatus.ACTIVE;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -58,7 +65,9 @@ class WorkspaceInvitationServiceTest {
     final var invitationRepository = mock(WorkspaceInvitationRepository.class);
     final var administrationLock = mock(WorkspaceAdministrationLock.class);
     final var auditTrail = mock(WorkspaceInvitationAuditTrail.class);
+    final var deliveryScheduler = mock(WorkspaceInvitationDeliveryScheduler.class);
     final var user = accountUser();
+    final var workspaceContext = mock(ResolvedWorkspaceContext.class);
     final var invitation = WorkspaceInvitation.create(
         workspace.workspaceId(),
         user.email(),
@@ -69,12 +78,20 @@ class WorkspaceInvitationServiceTest {
     );
 
     when(userResolver.resolve()).thenReturn(user);
+    when(workspaceContext.user()).thenReturn(user);
+    when(permissionChecker.requirePermission(eq(workspace.workspaceId()), any()))
+        .thenReturn(workspaceContext);
+    when(invitationRepository.findByWorkspaceIdAndInvitedEmailAndStatus(any(), any(), any()))
+        .thenReturn(Optional.empty());
+    when(userRepository.findByEmail(any())).thenReturn(Optional.empty());
     when(invitationRepository.findVersionedById(invitation.invitationId()))
         .thenReturn(Optional.of(versioned(invitation)));
     when(workspaceRepository.findById(workspace.workspaceId())).thenReturn(Optional.of(workspace));
     when(membershipRepository.findByWorkspaceIdAndUserId(workspace.workspaceId(), user.userId()))
         .thenReturn(Optional.empty());
     when(invitationRepository.update(any())).thenAnswer(invocation -> invocation.getArgument(0));
+    when(invitationRepository.create(any()))
+        .thenAnswer(invocation -> invocation.getArgument(0, WorkspaceInvitation.class));
     when(membershipRepository.create(any()))
         .thenAnswer(invocation -> invocation.getArgument(0, WorkspaceMembership.class));
 
@@ -88,6 +105,7 @@ class WorkspaceInvitationServiceTest {
             invitationRepository,
             administrationLock,
             auditTrail,
+            deliveryScheduler,
             new WorkspaceInvitationDefaults(Duration.ofDays(7)),
             INSTANCE,
             CLOCK
@@ -96,6 +114,7 @@ class WorkspaceInvitationServiceTest {
         administrationLock,
         membershipRepository,
         auditTrail,
+        deliveryScheduler,
         user,
         invitation
     );
@@ -139,6 +158,43 @@ class WorkspaceInvitationServiceTest {
   }
 
   @Test
+  void schedulesInitialInvitationGenerationInsideInviteUseCase() {
+    final var workspace = Workspace.create(DisplayName.of("Cidery"), WorkspaceType.CIDERY);
+    final var fixture = fixture(workspace);
+    final var command = new InviteWorkspaceMemberCommand(
+        workspace.workspaceId(),
+        EmailAddress.of("invitee@example.com"),
+        AccountRole.TECHNOLOGIST
+    );
+
+    final var result = fixture.service().invite(command);
+    final var deliveryCaptor = ArgumentCaptor.forClass(WorkspaceInvitationDeliveryRequest.class);
+    verify(fixture.deliveryScheduler()).schedule(deliveryCaptor.capture());
+
+    assertThat(deliveryCaptor.getValue())
+        .returns(result.invitationId(), WorkspaceInvitationDeliveryRequest::invitationId)
+        .returns(0, WorkspaceInvitationDeliveryRequest::resendCount);
+  }
+
+  @Test
+  void schedulesRenewedInvitationGenerationInsideResendUseCase() {
+    final var workspace = Workspace.create(DisplayName.of("Cidery"), WorkspaceType.CIDERY);
+    final var fixture = fixture(workspace);
+    final var command = new WorkspaceInvitationCommand(
+        workspace.workspaceId(),
+        fixture.invitation().invitationId()
+    );
+
+    fixture.service().resend(command);
+    final var deliveryCaptor = ArgumentCaptor.forClass(WorkspaceInvitationDeliveryRequest.class);
+    verify(fixture.deliveryScheduler()).schedule(deliveryCaptor.capture());
+
+    assertThat(deliveryCaptor.getValue())
+        .returns(fixture.invitation().invitationId(), WorkspaceInvitationDeliveryRequest::invitationId)
+        .returns(1, WorkspaceInvitationDeliveryRequest::resendCount);
+  }
+
+  @Test
   void rejectsAcceptanceForArchivedWorkspaceBeforeCreatingMembership() {
     final var archivedWorkspace = Workspace.create(DisplayName.of("Archived"), WorkspaceType.CIDERY).archive();
     final var fixture = fixture(archivedWorkspace);
@@ -149,12 +205,35 @@ class WorkspaceInvitationServiceTest {
     verify(fixture.membershipRepository(), never()).create(any());
   }
 
+  @Test
+  void rejectsAcceptanceWhenAuthenticatedAccountIsNotTheInvitationRecipient() {
+    final var workspace = Workspace.create(DisplayName.of("Cidery"), WorkspaceType.CIDERY);
+    final var fixture = fixture(workspace);
+    final var invitationForAnotherAccount = WorkspaceInvitation.create(
+        workspace.workspaceId(),
+        EmailAddress.of("another@example.com"),
+        AccountRole.TECHNOLOGIST,
+        fixture.user().userId(),
+        NOW,
+        Duration.ofDays(7)
+    );
+    when(fixture.invitationRepository().findVersionedById(invitationForAnotherAccount.invitationId()))
+        .thenReturn(Optional.of(versioned(invitationForAnotherAccount)));
+
+    assertThatThrownBy(() -> fixture.service().accept(invitationForAnotherAccount.invitationId()))
+        .isInstanceOf(WorkspaceInvitationRecipientMismatchException.class)
+        .hasMessage("workspace invitation was issued to a different account email");
+    verify(fixture.invitationRepository(), never()).update(any());
+    verify(fixture.membershipRepository(), never()).create(any());
+  }
+
   private record InvitationFixture(
       @NonNull WorkspaceInvitationService service,
       @NonNull WorkspaceInvitationRepository invitationRepository,
       @NonNull WorkspaceAdministrationLock administrationLock,
       @NonNull WorkspaceMembershipRepository membershipRepository,
       @NonNull WorkspaceInvitationAuditTrail auditTrail,
+      @NonNull WorkspaceInvitationDeliveryScheduler deliveryScheduler,
       @NonNull AccountUser user,
       @NonNull WorkspaceInvitation invitation
   ) {

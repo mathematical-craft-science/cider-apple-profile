@@ -21,6 +21,18 @@
       "description": "Validity period assigned to a new or resent workspace invitation."
     },
     {
+      "name": "cap.account.invitation-email.frontend-base-url",
+      "description": "Public CAP frontend root used to construct workspace invitation links."
+    },
+    {
+      "name": "cap.account.invitation-email.sender-address",
+      "description": "Email address used as the sender of workspace invitation messages."
+    },
+    {
+      "name": "cap.account.invitation-email.sender-name",
+      "description": "Human-readable sender name shown for workspace invitation messages."
+    },
+    {
       "name": "cap.query.cursor.time-to-live",
       "description": "Validity period of an issued database pagination cursor."
     },
