@@ -1,11 +1,11 @@
 package org.craft.mcs.cap.core.feedstock.domain.model.batch;
 
 import java.time.Instant;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockBatchName;
+import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSource;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockVessel;
+import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
 import org.craft.mcs.cap.shared.kernel.DomainConflictException;
 import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
@@ -40,9 +40,9 @@ public final class FeedstockBatch {
 
   private final @NonNull WorkspaceId workspaceId;
 
-  private @NonNull FeedstockBatchName name;
+  private @NonNull BatchName name;
 
-  private @Nullable FeedstockVessel vessel;
+  private @Nullable Vessel vessel;
 
   private @NonNull FeedstockType type;
 
@@ -60,8 +60,8 @@ public final class FeedstockBatch {
   private FeedstockBatch(
       @NonNull FeedstockBatchId batchId,
       @NonNull WorkspaceId workspaceId,
-      @NonNull FeedstockBatchName name,
-      @Nullable FeedstockVessel vessel,
+      @NonNull BatchName name,
+      @Nullable Vessel vessel,
       @NonNull FeedstockType type,
       @NonNull FeedstockSeason season,
       @Nullable FeedstockSource source,
@@ -84,8 +84,8 @@ public final class FeedstockBatch {
   public static @NonNull FeedstockBatch create(
       @NonNull FeedstockBatchId batchId,
       @NonNull WorkspaceId workspaceId,
-      @NonNull FeedstockBatchName name,
-      @Nullable FeedstockVessel vessel,
+      @NonNull BatchName name,
+      @Nullable Vessel vessel,
       @NonNull FeedstockType type,
       @NonNull FeedstockSeason season,
       @NonNull VolumeValue availableVolume
@@ -109,8 +109,8 @@ public final class FeedstockBatch {
   public static @NonNull FeedstockBatch restore(
       @NonNull FeedstockBatchId batchId,
       @NonNull WorkspaceId workspaceId,
-      @NonNull FeedstockBatchName name,
-      @Nullable FeedstockVessel vessel,
+      @NonNull BatchName name,
+      @Nullable Vessel vessel,
       @NonNull FeedstockType type,
       @NonNull FeedstockSeason season,
       @Nullable FeedstockSource source,
@@ -140,11 +140,11 @@ public final class FeedstockBatch {
     return workspaceId;
   }
 
-  public @NonNull FeedstockBatchName name() {
+  public @NonNull BatchName name() {
     return name;
   }
 
-  public @Nullable FeedstockVessel vessel() {
+  public @Nullable Vessel vessel() {
     return vessel;
   }
 
@@ -176,12 +176,12 @@ public final class FeedstockBatch {
     return deletedAt != null;
   }
 
-  public @NonNull FeedstockBatch rename(@NonNull FeedstockBatchName name) {
+  public @NonNull FeedstockBatch rename(@NonNull BatchName name) {
     this.name = requireNonNull(name, "feedstock batch name cannot be null");
     return this;
   }
 
-  public @NonNull FeedstockBatch changeVessel(@NonNull FeedstockVessel vessel) {
+  public @NonNull FeedstockBatch changeVessel(@NonNull Vessel vessel) {
     this.vessel = requireNonNull(vessel, "feedstock vessel cannot be null");
     return this;
   }

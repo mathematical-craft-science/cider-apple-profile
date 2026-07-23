@@ -4,10 +4,10 @@ import java.time.LocalDate;
 import java.util.UUID;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockBatchName;
+import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockVessel;
+import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.feedstock.batch.entity.FeedstockBatchJdbcMapper;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.support.JdbcPersistenceExceptionTranslator;
@@ -91,9 +91,9 @@ class JdbcOptimisticLockingDataJdbcTest {
     final var first = aggregateRepository.findVersionedById(created.batchId()).orElseThrow();
     final var stale = aggregateRepository.findVersionedById(created.batchId()).orElseThrow();
 
-    first.aggregate().rename(FeedstockBatchName.of("First update"));
+    first.aggregate().rename(BatchName.of("First update"));
     aggregateRepository.update(first);
-    stale.aggregate().rename(FeedstockBatchName.of("Stale update"));
+    stale.aggregate().rename(BatchName.of("Stale update"));
 
     assertThatThrownBy(() -> aggregateRepository.update(stale))
         .isInstanceOf(ConcurrentResourceModificationException.class)
@@ -107,7 +107,7 @@ class JdbcOptimisticLockingDataJdbcTest {
     final var current = aggregateRepository.findVersionedById(created.batchId()).orElseThrow();
     final var stale = aggregateRepository.findVersionedById(created.batchId()).orElseThrow();
 
-    current.aggregate().rename(FeedstockBatchName.of("Updated before delete"));
+    current.aggregate().rename(BatchName.of("Updated before delete"));
     aggregateRepository.update(current);
 
     assertThatThrownBy(() -> aggregateRepository.delete(stale))
@@ -120,8 +120,8 @@ class JdbcOptimisticLockingDataJdbcTest {
     return FeedstockBatch.create(
         FeedstockBatchId.newId(),
         workspaceId,
-        FeedstockBatchName.of("Late juice"),
-        FeedstockVessel.of("Tank A-01"),
+        BatchName.of("Late juice"),
+        Vessel.named("Tank A-01"),
         FeedstockType.JUICE,
         FeedstockSeason.of(LocalDate.parse("2026-10-01"), LocalDate.parse("2026-12-15")),
         VolumeValue.ofLiters("250")

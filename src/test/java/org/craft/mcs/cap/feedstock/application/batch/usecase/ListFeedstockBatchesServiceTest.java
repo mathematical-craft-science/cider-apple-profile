@@ -8,10 +8,10 @@ import org.craft.mcs.cap.core.feedstock.application.batch.port.in.ListFeedstockB
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchSummaryQueryRepository;
 import org.craft.mcs.cap.core.feedstock.application.batch.usecase.ListFeedstockBatchesService;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockBatchName;
+import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockVessel;
+import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.junit.jupiter.api.Test;
@@ -52,8 +52,8 @@ class ListFeedstockBatchesServiceTest {
     return new FeedstockBatchSummary(
         FeedstockBatchId.newId(),
         workspaceId,
-        FeedstockBatchName.of(name),
-        FeedstockVessel.of("Tank A-01"),
+        BatchName.of(name),
+        Vessel.named("Tank A-01"),
         FeedstockType.JUICE,
         FeedstockSeason.of(LocalDate.parse(startsOn), LocalDate.parse(endsOn)),
         null,

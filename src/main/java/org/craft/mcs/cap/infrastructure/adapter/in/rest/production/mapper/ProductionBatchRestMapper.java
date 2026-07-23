@@ -5,7 +5,8 @@ import org.craft.mcs.cap.core.production.application.model.ProductionBatchDetail
 import org.craft.mcs.cap.core.production.application.port.in.CreateProductionBatchCommand;
 import org.craft.mcs.cap.core.production.application.port.in.ProductionBatchCreated;
 import org.craft.mcs.cap.core.production.candidate.domain.model.ProductionBatchCandidateId;
-import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchName;
+import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
+import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.abv.mapper.PotentialAbvPredictionRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.CreateProductionBatchRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.ProductionBatchDetailsResponse;
@@ -31,8 +32,8 @@ public final class ProductionBatchRestMapper {
 
     return new CreateProductionBatchCommand(
         WorkspaceId.of(requireNonNull(request.workspaceId(), "workspace id cannot be null")),
-        ProductionBatchName.of(request.name()),
-        requireNonNull(request.kind(), "production batch kind cannot be null"),
+        BatchName.of(request.name()),
+        Vessel.named(request.vessel()),
         ProductionBatchCandidateId.of(requireNonNull(request.candidateId(), "candidate id cannot be null")),
         request.note()
     );
@@ -46,8 +47,9 @@ public final class ProductionBatchRestMapper {
         batch.batchId().value(),
         batch.workspaceId().value(),
         batch.name().value(),
-        batch.kind(),
-        batch.status(),
+        batch.vessel().name(),
+        batch.lifecycle(),
+        batch.alcoholicFermentationState(),
         created.candidate().candidateId().value(),
         ProductionBatchCompositionRestMapper.toResponse(created.candidate()),
         batch.note()
@@ -64,11 +66,14 @@ public final class ProductionBatchRestMapper {
         batch.batchId().value(),
         batch.workspaceId().value(),
         batch.name().value(),
-        batch.kind(),
-        batch.status(),
-        new DecimalQuantityResponse(batch.volume().liters(), CanonicalUnitLabels.VOLUME),
-        ProductionBatchCompositionRestMapper.toProfilePointResponse(batch.profile()),
-        ProductionBatchCompositionRestMapper.toYeastAssimilableNitrogenResponse(batch.profile()),
+        batch.vessel().name(),
+        batch.lifecycle(),
+        batch.alcoholicFermentationState(),
+        new DecimalQuantityResponse(batch.currentVolume().liters(), CanonicalUnitLabels.VOLUME),
+        ProductionBatchCompositionRestMapper.toProfilePointResponse(batch.initialProfileSnapshot()),
+        ProductionBatchCompositionRestMapper.toYeastAssimilableNitrogenResponse(
+            batch.initialProfileSnapshot()
+        ),
         PotentialAbvPredictionRestMapper.toResponse(details.potentialAbv()),
         batch.note()
     );

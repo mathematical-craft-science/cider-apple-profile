@@ -5,8 +5,9 @@ import org.craft.mcs.cap.core.production.application.model.ProductionBatchView;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatch;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatchId;
-import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchName;
+import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
+import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
@@ -28,14 +29,15 @@ public final class ProductionBatchJdbcMapper {
   public static @NonNull ProductionBatchJdbcEntity fromDomain(@NonNull ProductionBatch batch) {
     requireNonNull(batch, "production batch cannot be null");
 
-    final var profile = batch.profile();
+    final var profile = batch.initialProfileSnapshot();
     return new ProductionBatchJdbcEntity(
         batch.batchId().value(),
         batch.workspaceId().value(),
         batch.name().value(),
-        batch.kind(),
-        batch.status(),
-        batch.volume().liters(),
+        batch.vessel().name(),
+        batch.lifecycle(),
+        batch.alcoholicFermentationState(),
+        batch.currentVolume().liters(),
         profile.sugar().asBigDecimal(),
         profile.acidity().asBigDecimal(),
         tanninValue(profile),
@@ -55,13 +57,14 @@ public final class ProductionBatchJdbcMapper {
 
     entity.workspaceId = updated.workspaceId;
     entity.name = updated.name;
-    entity.kind = updated.kind;
-    entity.status = updated.status;
-    entity.totalVolumeLiters = updated.totalVolumeLiters;
-    entity.sugarSpecificGravity = updated.sugarSpecificGravity;
-    entity.acidityGLAsMalic = updated.acidityGLAsMalic;
-    entity.tanninMgLTae = updated.tanninMgLTae;
-    entity.yeastAssimilableNitrogenMgNL = updated.yeastAssimilableNitrogenMgNL;
+    entity.vessel = updated.vessel;
+    entity.lifecycle = updated.lifecycle;
+    entity.alcoholicFermentationState = updated.alcoholicFermentationState;
+    entity.currentVolumeLiters = updated.currentVolumeLiters;
+    entity.initialSugarSpecificGravity = updated.initialSugarSpecificGravity;
+    entity.initialAcidityGLAsMalic = updated.initialAcidityGLAsMalic;
+    entity.initialTanninMgLTae = updated.initialTanninMgLTae;
+    entity.initialYeastAssimilableNitrogenMgNL = updated.initialYeastAssimilableNitrogenMgNL;
     entity.note = updated.note;
     return entity;
   }
@@ -72,10 +75,11 @@ public final class ProductionBatchJdbcMapper {
     return ProductionBatch.restore(
         ProductionBatchId.of(requireNonNull(entity.batchId, "production batch id cannot be null")),
         WorkspaceId.of(requireNonNull(entity.workspaceId, "workspace id cannot be null")),
-        ProductionBatchName.of(requireNonNull(entity.name, "production batch name cannot be null")),
-        requireNonNull(entity.kind, "production batch kind cannot be null"),
-        requireNonNull(entity.status, "production batch status cannot be null"),
-        VolumeValue.ofLiters(requireNonNull(entity.totalVolumeLiters, "production total volume cannot be null")),
+        BatchName.of(requireNonNull(entity.name, "production batch name cannot be null")),
+        Vessel.named(requireNonNull(entity.vessel, "production vessel cannot be null")),
+        requireNonNull(entity.lifecycle, "production batch lifecycle cannot be null"),
+        requireNonNull(entity.alcoholicFermentationState, "alcoholic fermentation state cannot be null"),
+        VolumeValue.ofLiters(requireNonNull(entity.currentVolumeLiters, "production current volume cannot be null")),
         toProfile(entity),
         entity.note
     );
@@ -96,10 +100,11 @@ public final class ProductionBatchJdbcMapper {
     return new ProductionBatchView(
         ProductionBatchId.of(requireNonNull(entity.batchId, "production batch id cannot be null")),
         WorkspaceId.of(requireNonNull(entity.workspaceId, "workspace id cannot be null")),
-        ProductionBatchName.of(requireNonNull(entity.name, "production batch name cannot be null")),
-        requireNonNull(entity.kind, "production batch kind cannot be null"),
-        requireNonNull(entity.status, "production batch status cannot be null"),
-        VolumeValue.ofLiters(requireNonNull(entity.totalVolumeLiters, "production total volume cannot be null")),
+        BatchName.of(requireNonNull(entity.name, "production batch name cannot be null")),
+        Vessel.named(requireNonNull(entity.vessel, "production vessel cannot be null")),
+        requireNonNull(entity.lifecycle, "production batch lifecycle cannot be null"),
+        requireNonNull(entity.alcoholicFermentationState, "alcoholic fermentation state cannot be null"),
+        VolumeValue.ofLiters(requireNonNull(entity.currentVolumeLiters, "production current volume cannot be null")),
         toProfile(entity),
         entity.note
     );
@@ -109,10 +114,14 @@ public final class ProductionBatchJdbcMapper {
       @NonNull ProductionBatchJdbcEntity entity
   ) {
     return new ProductionProfileSnapshot(
-        SpecificGravityValue.of(requireNonNull(entity.sugarSpecificGravity, "production sugar cannot be null")),
-        TitratableAcidityValue.of(requireNonNull(entity.acidityGLAsMalic, "production acidity cannot be null")),
-        toTanninValue(entity.tanninMgLTae),
-        toYeastAssimilableNitrogenValue(entity.yeastAssimilableNitrogenMgNL)
+        SpecificGravityValue.of(
+            requireNonNull(entity.initialSugarSpecificGravity, "production initial sugar cannot be null")
+        ),
+        TitratableAcidityValue.of(
+            requireNonNull(entity.initialAcidityGLAsMalic, "production initial acidity cannot be null")
+        ),
+        toTanninValue(entity.initialTanninMgLTae),
+        toYeastAssimilableNitrogenValue(entity.initialYeastAssimilableNitrogenMgNL)
     );
   }
 

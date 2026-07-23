@@ -11,10 +11,11 @@ import org.craft.mcs.cap.core.production.application.model.ProductionBatchView;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchQueryRepository;
 import org.craft.mcs.cap.core.production.application.usecase.QueryProductionBatchesService;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatchId;
-import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchKind;
-import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchName;
-import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchStatus;
+import org.craft.mcs.cap.core.production.domain.model.value.AlcoholicFermentationState;
+import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchLifecycle;
+import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
+import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
@@ -47,7 +48,7 @@ class QueryProductionBatchesServiceTest {
         .returns(batch.batchId(), ProductionBatchView::batchId)
         .returns(batch.workspaceId(), ProductionBatchView::workspaceId)
         .returns(batch.name(), ProductionBatchView::name)
-        .returns(batch.profile(), ProductionBatchView::profile);
+        .returns(batch.initialProfileSnapshot(), ProductionBatchView::initialProfileSnapshot);
     verify(accessControl).requireReadAccess(batch.workspaceId());
   }
 
@@ -73,9 +74,10 @@ class QueryProductionBatchesServiceTest {
     return new ProductionBatchView(
         ProductionBatchId.newId(),
         WorkspaceId.newId(),
-        ProductionBatchName.of("Late season cider"),
-        ProductionBatchKind.CIDER,
-        ProductionBatchStatus.PLANNED,
+        BatchName.of("Late season cider"),
+        Vessel.named("Tank F-03"),
+        ProductionBatchLifecycle.ACTIVE,
+        AlcoholicFermentationState.NOT_STARTED,
         VolumeValue.ofLiters("120"),
         new ProductionProfileSnapshot(
             SpecificGravityValue.of("1.052"),

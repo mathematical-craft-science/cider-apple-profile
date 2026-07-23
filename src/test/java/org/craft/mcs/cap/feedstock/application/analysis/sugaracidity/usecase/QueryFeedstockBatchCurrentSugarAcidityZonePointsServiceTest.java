@@ -19,10 +19,10 @@ import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatc
 import org.craft.mcs.cap.core.feedstock.application.measurement.port.out.FeedstockMeasurementQueryRepository;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockBatchName;
+import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockVessel;
+import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurement;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurementId;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.value.FeedstockMeasurementName;
@@ -135,8 +135,8 @@ class QueryFeedstockBatchCurrentSugarAcidityZonePointsServiceTest {
     return FeedstockBatch.create(
         FeedstockBatchId.newId(),
         workspaceId,
-        FeedstockBatchName.of("Late season juice"),
-        FeedstockVessel.of("Tank A-01"),
+        BatchName.of("Late season juice"),
+        Vessel.named("Tank A-01"),
         FeedstockType.JUICE,
         FeedstockSeason.of(LocalDate.of(2026, Month.SEPTEMBER, 1), LocalDate.of(2026, Month.DECEMBER, 31)),
         VolumeValue.ofLiters("100")

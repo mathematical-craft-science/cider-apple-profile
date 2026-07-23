@@ -13,10 +13,10 @@ import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.Feedsto
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockPlanningReadinessStatus;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockPlanningReadinessView;
 import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.model.FeedstockPlanningView;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockBatchName;
+import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockVessel;
+import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurementId;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.value.FeedstockMeasurementName;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstockworkspace.dto.FeedstockWorkspaceProfileValueResponse;
@@ -114,8 +114,8 @@ class FeedstockWorkspaceRestMapperTest {
     return new FeedstockBatchSummary(
         FeedstockBatchId.newId(),
         WorkspaceId.of(UUID.fromString("7c18963c-26d7-45c0-af2c-07998f4f6d6b")),
-        FeedstockBatchName.of("Late juice"),
-        FeedstockVessel.of("Tank A-01"),
+        BatchName.of("Late juice"),
+        Vessel.named("Tank A-01"),
         FeedstockType.JUICE,
         FeedstockSeason.of(LocalDate.parse("2026-09-01"), LocalDate.parse("2026-12-31")),
         null,

@@ -8,10 +8,10 @@ import org.craft.mcs.cap.core.feedstock.application.batch.port.in.UpdateFeedstoc
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchRepository;
 import org.craft.mcs.cap.core.feedstock.application.batch.usecase.UpdateFeedstockBatchService;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockBatchName;
+import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockVessel;
+import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
 import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
@@ -78,7 +78,7 @@ class UpdateFeedstockBatchServiceTest {
     assertThatThrownBy(() -> service.update(new UpdateFeedstockBatchCommand(
         batch.batchId(),
         workspaceId,
-        FeedstockBatchName.of("Renamed batch"),
+        BatchName.of("Renamed batch"),
         null,
         false,
         null,
@@ -101,8 +101,8 @@ class UpdateFeedstockBatchServiceTest {
     return FeedstockBatch.restore(
         FeedstockBatchId.newId(),
         workspaceId,
-        FeedstockBatchName.of("Late season fruit"),
-        FeedstockVessel.of("Tank A-01"),
+        BatchName.of("Late season fruit"),
+        Vessel.named("Tank A-01"),
         FeedstockType.JUICE,
         FeedstockSeason.of(LocalDate.parse("2026-10-01"), LocalDate.parse("2026-12-15")),
         null,

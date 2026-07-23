@@ -3,7 +3,7 @@ package org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.
 import java.time.Instant;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileEvaluation;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockBatchName;
+import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurementId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;
@@ -16,7 +16,7 @@ import static java.util.Objects.requireNonNull;
  */
 public record FeedstockBatchCurrentSugarAcidityZoneResult(
     @NonNull FeedstockBatchId batchId,
-    @NonNull FeedstockBatchName batchName,
+    @NonNull BatchName batchName,
     @NonNull WorkspaceId workspaceId,
     @NonNull FeedstockMeasurementId currentMeasurementId,
     @NonNull Instant measuredAt,

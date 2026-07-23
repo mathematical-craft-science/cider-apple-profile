@@ -20,9 +20,9 @@ import org.craft.mcs.cap.core.production.domain.model.ProductionBatchId;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceComponent;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceComposition;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceReference;
-import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchKind;
-import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchName;
+import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
+import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.ProductionBatchResponse;
 import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninityValue;
@@ -51,7 +51,7 @@ class ProductionBatchRestMapperTest {
     final var response = ProductionBatchRestMapper.toDetailsResponse(
         new ProductionBatchDetailsView(
             view,
-            potentialAbvPredictor.predict(view.profile().sugar())
+            potentialAbvPredictor.predict(view.initialProfileSnapshot().sugar())
         )
     );
 
@@ -60,11 +60,12 @@ class ProductionBatchRestMapperTest {
             .isNotNull()
             .returns("mg N/L", DecimalQuantityResponse::unit)
             .satisfies(quantity -> assertThat(quantity.value()).isEqualByComparingTo("180")))
-        .satisfies(details -> assertThat(details.volume().unit()).isEqualTo("L"))
-        .satisfies(details -> assertThat(details.profile().sugar().value().unit()).isEqualTo("SG"))
-        .satisfies(details -> assertThat(details.profile().acidity().value().unit())
+        .satisfies(details -> assertThat(details.currentVolume().unit()).isEqualTo("L"))
+        .satisfies(details -> assertThat(details.initialProfileSnapshot().sugar().value().unit())
+            .isEqualTo("SG"))
+        .satisfies(details -> assertThat(details.initialProfileSnapshot().acidity().value().unit())
             .isEqualTo("g/L as malic acid"))
-        .satisfies(details -> assertThat(details.profile().tannin())
+        .satisfies(details -> assertThat(details.initialProfileSnapshot().tannin())
             .isNotNull()
             .satisfies(tannin -> assertThat(tannin.value().unit()).isEqualTo("mg/L TAE")))
         .satisfies(details -> assertThat(details.potentialAbv().originalGravity().value())
@@ -111,13 +112,13 @@ class ProductionBatchRestMapperTest {
     final var response = ProductionBatchRestMapper.toListResponse(
         List.of(new ProductionBatchDetailsView(
             view,
-            potentialAbvPredictor.predict(view.profile().sugar())
+            potentialAbvPredictor.predict(view.initialProfileSnapshot().sugar())
         ))
     );
 
     assertThat(response.batches()).hasSize(1);
     final var item = response.batches().getFirst();
-    assertThat(item.volume().unit()).isEqualTo("L");
+    assertThat(item.currentVolume().unit()).isEqualTo("L");
     assertThat(item.yeastAssimilableNitrogen()).isNotNull();
     assertThat(item.yeastAssimilableNitrogen().value()).isEqualByComparingTo("180");
     assertThat(item.yeastAssimilableNitrogen().unit()).isEqualTo("mg N/L");
@@ -129,8 +130,8 @@ class ProductionBatchRestMapperTest {
     return ProductionBatch.create(
         ProductionBatchId.newId(),
         WorkspaceId.newId(),
-        ProductionBatchName.of("Late season cuvee"),
-        ProductionBatchKind.CIDER,
+        BatchName.of("Late season cuvee"),
+        Vessel.named("Tank F-03"),
         VolumeValue.ofLiters("120"),
         profileSnapshot(),
         null
@@ -142,10 +143,11 @@ class ProductionBatchRestMapperTest {
         batch.batchId(),
         batch.workspaceId(),
         batch.name(),
-        batch.kind(),
-        batch.status(),
-        batch.volume(),
-        batch.profile(),
+        batch.vessel(),
+        batch.lifecycle(),
+        batch.alcoholicFermentationState(),
+        batch.currentVolume(),
+        batch.initialProfileSnapshot(),
         batch.note()
     );
   }

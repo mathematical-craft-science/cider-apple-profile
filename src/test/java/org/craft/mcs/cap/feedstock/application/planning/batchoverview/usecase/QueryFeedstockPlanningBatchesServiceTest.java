@@ -41,10 +41,10 @@ import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.useca
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentProfileSettings;
 import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.usecase.QueryFeedstockPlanningBatchesService;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockBatchName;
+import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockVessel;
+import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurement;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurementId;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.value.FeedstockMeasurementName;
@@ -255,8 +255,8 @@ class QueryFeedstockPlanningBatchesServiceTest {
     return new FeedstockBatchSummary(
         batchId,
         WORKSPACE_ID,
-        FeedstockBatchName.of("Late season juice"),
-        FeedstockVessel.of("Tank A-01"),
+        BatchName.of("Late season juice"),
+        Vessel.named("Tank A-01"),
         FeedstockType.JUICE,
         SEASON,
         null,

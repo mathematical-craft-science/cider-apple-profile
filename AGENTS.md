@@ -95,6 +95,12 @@ Act as a senior Java architect and production-grade software engineer for the Ci
 ## Persistence
 
 - Use Spring Data JDBC for aggregate persistence.
+- Every DDL statement must be conditional:
+  - use `IF EXISTS` or `IF NOT EXISTS` for `CREATE`, `ALTER`, `DROP`, and related statements;
+  - do not use procedural `DO` blocks or database-side programming in migrations;
+  - when PostgreSQL does not support conditional syntax for an operation, update the consolidated
+    baseline DDL and apply the required change to existing local databases manually;
+  - never add unconditional DDL to project migrations.
 - Aggregate persistence and read-model query adapters must be separate.
 - Spring Data aggregate repositories must not become UI/read-model query repositories.
 - Dynamic read queries belong in dedicated query adapters.

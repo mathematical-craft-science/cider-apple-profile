@@ -3,10 +3,10 @@ package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.feedstock.
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
 import org.craft.mcs.cap.core.feedstock.application.batch.model.FeedstockBatchSummary;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockBatchName;
+import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSource;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockVessel;
+import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.craft.mcs.cap.shared.application.persistence.AggregateRevision;
@@ -68,8 +68,8 @@ public final class FeedstockBatchJdbcMapper {
     return FeedstockBatch.restore(
         FeedstockBatchId.of(requireNonNull(entity.batchId, "feedstock batch id cannot be null")),
         WorkspaceId.of(requireNonNull(entity.workspaceId, "workspace id cannot be null")),
-        FeedstockBatchName.of(requireNonNull(entity.name, "feedstock batch name cannot be null")),
-        entity.vessel == null ? null : FeedstockVessel.of(entity.vessel),
+        BatchName.of(requireNonNull(entity.name, "feedstock batch name cannot be null")),
+        entity.vessel == null ? null : Vessel.named(entity.vessel),
         requireNonNull(entity.type, "feedstock type cannot be null"),
         FeedstockSeason.of(
             requireNonNull(entity.seasonStartsOn, "feedstock season start date cannot be null"),
@@ -98,8 +98,8 @@ public final class FeedstockBatchJdbcMapper {
     return new FeedstockBatchSummary(
         FeedstockBatchId.of(requireNonNull(entity.batchId, "feedstock batch id cannot be null")),
         WorkspaceId.of(requireNonNull(entity.workspaceId, "workspace id cannot be null")),
-        FeedstockBatchName.of(requireNonNull(entity.name, "feedstock batch name cannot be null")),
-        entity.vessel == null ? null : FeedstockVessel.of(entity.vessel),
+        BatchName.of(requireNonNull(entity.name, "feedstock batch name cannot be null")),
+        entity.vessel == null ? null : Vessel.named(entity.vessel),
         requireNonNull(entity.type, "feedstock type cannot be null"),
         FeedstockSeason.of(
             requireNonNull(entity.seasonStartsOn, "feedstock season start date cannot be null"),
@@ -111,7 +111,7 @@ public final class FeedstockBatchJdbcMapper {
     );
   }
 
-  private static @Nullable String toJdbc(@Nullable FeedstockVessel vessel) {
-    return vessel == null ? null : vessel.value();
+  private static @Nullable String toJdbc(@Nullable Vessel vessel) {
+    return vessel == null ? null : vessel.name();
   }
 }

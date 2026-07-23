@@ -3,10 +3,10 @@ package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.feedstock.
 import java.time.LocalDate;
 import java.util.UUID;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockBatchName;
+import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockVessel;
+import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurement;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurementId;
 import org.craft.mcs.cap.core.feedstock.domain.model.measurement.value.FeedstockMeasurementName;
@@ -147,8 +147,8 @@ class JdbcFeedstockMeasurementRepositoryDataJdbcTest {
     return FeedstockBatch.create(
         FeedstockBatchId.newId(),
         workspaceId,
-        FeedstockBatchName.of("Late juice"),
-        FeedstockVessel.of("Tank A-01"),
+        BatchName.of("Late juice"),
+        Vessel.named("Tank A-01"),
         FeedstockType.JUICE,
         FeedstockSeason.of(LocalDate.parse("2026-10-01"), LocalDate.parse("2026-12-15")),
         VolumeValue.ofLiters("250")

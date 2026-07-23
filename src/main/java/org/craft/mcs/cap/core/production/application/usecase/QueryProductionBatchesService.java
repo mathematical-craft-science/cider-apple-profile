@@ -59,7 +59,9 @@ public final class QueryProductionBatchesService
   ) {
     return new ProductionBatchDetailsView(
         batch,
-        potentialAbvPredictor.predict(SugarConcentration.ofSpecificGravity(batch.profile().sugar()))
+        potentialAbvPredictor.predict(
+            SugarConcentration.ofSpecificGravity(batch.initialProfileSnapshot().sugar())
+        )
     );
   }
 }

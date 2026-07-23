@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 import org.craft.mcs.cap.core.production.application.authorization.port.out.ProductionAccessControl;
+import org.craft.mcs.cap.core.production.application.model.ProductionBatchView;
 import org.craft.mcs.cap.core.production.application.port.in.CreateProductionBatchCommand;
 import org.craft.mcs.cap.core.production.application.port.out.ConsumedProductionSource;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchFeedstockTraceSource;
@@ -32,9 +33,11 @@ import org.craft.mcs.cap.core.production.domain.model.ProductionBatchId;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceComponent;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceComposition;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceReference;
-import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchKind;
-import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchName;
+import org.craft.mcs.cap.core.production.domain.model.value.AlcoholicFermentationState;
+import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchLifecycle;
+import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
+import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
 import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
 import org.craft.mcs.cap.shared.application.persistence.VersionedAggregate;
 import org.craft.mcs.cap.shared.application.persistence.AggregateRevision;
@@ -86,7 +89,14 @@ class CreateProductionBatchServiceTest {
 
     assertThat(productionRepository.committed)
         .hasSize(1);
-    assertThat(created.productionBatch().profile())
+    assertThat(created.productionBatch())
+        .returns(Vessel.named("Tank F-03"), ProductionBatchView::vessel)
+        .returns(ProductionBatchLifecycle.ACTIVE, ProductionBatchView::lifecycle)
+        .returns(
+            AlcoholicFermentationState.NOT_STARTED,
+            ProductionBatchView::alcoholicFermentationState
+        );
+    assertThat(created.productionBatch().initialProfileSnapshot())
         .returns(SpecificGravityValue.of("1.050"), ProductionProfileSnapshot::sugar)
         .returns(TitratableAcidityValue.of("6.1"), ProductionProfileSnapshot::acidity)
         .returns(TanninityValue.of("1400"), ProductionProfileSnapshot::tannin);
@@ -197,8 +207,8 @@ class CreateProductionBatchServiceTest {
   ) {
     return new CreateProductionBatchCommand(
         workspaceId,
-        ProductionBatchName.of("Classic cider path"),
-        ProductionBatchKind.CIDER,
+        BatchName.of("Classic cider path"),
+        Vessel.named("Tank F-03"),
         candidateId,
         "accepted production input"
     );

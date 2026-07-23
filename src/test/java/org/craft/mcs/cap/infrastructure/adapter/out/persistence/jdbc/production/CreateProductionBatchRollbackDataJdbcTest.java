@@ -24,9 +24,9 @@ import org.craft.mcs.cap.core.production.candidate.domain.model.ProductionSource
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceComponent;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceComposition;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceReference;
-import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchKind;
-import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchName;
+import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
+import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
@@ -140,8 +140,8 @@ class CreateProductionBatchRollbackDataJdbcTest {
   ) {
     return new CreateProductionBatchCommand(
         workspaceId,
-        ProductionBatchName.of("Rollback candidate"),
-        ProductionBatchKind.CIDER,
+        BatchName.of("Rollback candidate"),
+        Vessel.named("Tank F-03"),
         candidateId,
         null
     );

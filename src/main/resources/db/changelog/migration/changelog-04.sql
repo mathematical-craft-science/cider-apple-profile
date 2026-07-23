@@ -1,25 +1,33 @@
 CREATE TABLE IF NOT EXISTS production_batches
 (
-    batch_id               UUID                     NOT NULL PRIMARY KEY,
-    workspace_id           UUID                     NOT NULL,
-    name                   VARCHAR(160)             NOT NULL,
-    kind                   VARCHAR(32)              NOT NULL,
-    status                 VARCHAR(32)              NOT NULL,
-    total_volume_liters    NUMERIC(15, 3)           NOT NULL,
+    batch_id                    UUID                     NOT NULL PRIMARY KEY,
+    workspace_id                UUID                     NOT NULL,
+    name                        VARCHAR(160)             NOT NULL,
+    vessel                      VARCHAR(160)             NOT NULL,
+    lifecycle                   VARCHAR(32)              NOT NULL,
+    alcoholic_fermentation_state VARCHAR(32)              NOT NULL,
+    current_volume_liters       NUMERIC(15, 3)           NOT NULL,
 
-    sugar_specific_gravity NUMERIC(12, 9)           NOT NULL,
-    acidity_g_l_as_malic   NUMERIC(12, 6)           NOT NULL,
-    tannin_mg_l_tae        NUMERIC(12, 4),
-    yan_mg_n_l             NUMERIC(12, 4),
+    initial_sugar_specific_gravity NUMERIC(12, 9)           NOT NULL,
+    initial_acidity_g_l_as_malic   NUMERIC(12, 6)           NOT NULL,
+    initial_tannin_mg_l_tae        NUMERIC(12, 4),
+    initial_yan_mg_n_l             NUMERIC(12, 4),
 
-    note                   VARCHAR(2000),
+    note                        VARCHAR(2000),
 
-    version                BIGINT                   NOT NULL DEFAULT 0,
-    created_at             TIMESTAMP WITH TIME ZONE NOT NULL,
-    updated_at             TIMESTAMP WITH TIME ZONE NOT NULL,
+    version                     BIGINT                   NOT NULL DEFAULT 0,
+    created_at                  TIMESTAMP WITH TIME ZONE NOT NULL,
+    updated_at                  TIMESTAMP WITH TIME ZONE NOT NULL,
 
-    CONSTRAINT chk_production_batches_total_volume
-        CHECK (total_volume_liters > 0),
+    CONSTRAINT chk_production_batches_lifecycle
+        CHECK (lifecycle IN ('ACTIVE', 'DEPLETED', 'DISCARDED')),
+    CONSTRAINT chk_production_batches_alcoholic_fermentation_state
+        CHECK (alcoholic_fermentation_state IN ('NOT_STARTED', 'ACTIVE', 'ARRESTED', 'COMPLETED')),
+    CONSTRAINT chk_production_batches_material_state
+        CHECK (
+            (lifecycle = 'ACTIVE' AND current_volume_liters > 0)
+                OR (lifecycle IN ('DEPLETED', 'DISCARDED') AND current_volume_liters = 0)
+        ),
     CONSTRAINT fk_production_batches_workspace
         FOREIGN KEY (workspace_id) REFERENCES workspaces (workspace_id)
 );

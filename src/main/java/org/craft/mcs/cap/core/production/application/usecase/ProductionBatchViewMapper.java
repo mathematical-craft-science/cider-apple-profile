@@ -18,10 +18,11 @@ final class ProductionBatchViewMapper {
         batch.batchId(),
         batch.workspaceId(),
         batch.name(),
-        batch.kind(),
-        batch.status(),
-        batch.volume(),
-        batch.profile(),
+        batch.vessel(),
+        batch.lifecycle(),
+        batch.alcoholicFermentationState(),
+        batch.currentVolume(),
+        batch.initialProfileSnapshot(),
         batch.note()
     );
   }

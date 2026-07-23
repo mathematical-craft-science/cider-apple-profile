@@ -109,8 +109,8 @@ class BatchTraceabilityProductionBatchTraceRecorder implements ProductionBatchTr
             productionBatch.name().value()
         ),
         new BatchTraceMaterialSnapshot(
-            productionBatch.volume(),
-            toAxes(productionBatch.profile()),
+            productionBatch.currentVolume(),
+            toAxes(productionBatch.initialProfileSnapshot()),
             null
         )
     );

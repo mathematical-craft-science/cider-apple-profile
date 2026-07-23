@@ -6,10 +6,10 @@ import org.craft.mcs.cap.core.feedstock.application.batch.port.in.FeedstockBatch
 import org.craft.mcs.cap.core.feedstock.application.batch.model.FeedstockBatchSummary;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.UpdateFeedstockBatchCommand;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockBatchName;
+import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSource;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockVessel;
+import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.batch.dto.CreateFeedstockBatchRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.batch.dto.FeedstockBatchResponse;
@@ -41,7 +41,7 @@ public final class FeedstockBatchRestMapper {
 
     return new CreateFeedstockBatchCommand(
         WorkspaceId.of(requireNonNull(request.workspaceId(), WORKSPACE_ID_REQUIRED)),
-        FeedstockBatchName.of(request.name()),
+        BatchName.of(request.name()),
         vesselOf(request.vessel()),
         requireNonNull(request.type(), "feedstock type cannot be null"),
         FeedstockSeason.of(request.season().startsOn(), request.season().endsOn()),
@@ -98,7 +98,7 @@ public final class FeedstockBatchRestMapper {
     return new UpdateFeedstockBatchCommand(
         batchId,
         WorkspaceId.of(requireNonNull(request.workspaceId(), WORKSPACE_ID_REQUIRED)),
-        FeedstockBatchName.of(request.name()),
+        BatchName.of(request.name()),
         vesselOf(request.vessel()),
         isBlank(request.vessel()),
         requireNonNull(request.type(), "feedstock type cannot be null"),
@@ -142,16 +142,16 @@ public final class FeedstockBatchRestMapper {
     return source == null ? null : source.value();
   }
 
-  private static @Nullable String toResponse(@Nullable FeedstockVessel vessel) {
-    return vessel == null ? null : vessel.value();
+  private static @Nullable String toResponse(@Nullable Vessel vessel) {
+    return vessel == null ? null : vessel.name();
   }
 
-  private static @Nullable FeedstockBatchName nameOf(@Nullable String name) {
-    return name == null ? null : FeedstockBatchName.of(name);
+  private static @Nullable BatchName nameOf(@Nullable String name) {
+    return name == null ? null : BatchName.of(name);
   }
 
-  private static @Nullable FeedstockVessel vesselOf(@Nullable String vessel) {
-    return isBlank(vessel) ? null : FeedstockVessel.of(vessel);
+  private static @Nullable Vessel vesselOf(@Nullable String vessel) {
+    return isBlank(vessel) ? null : Vessel.named(vessel);
   }
 
   private static @Nullable FeedstockSeason seasonOf(@Nullable FeedstockSeasonRequest request) {

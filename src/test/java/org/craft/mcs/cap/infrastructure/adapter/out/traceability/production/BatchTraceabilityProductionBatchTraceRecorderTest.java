@@ -22,9 +22,9 @@ import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchFee
 import org.craft.mcs.cap.core.production.application.port.out.ProductionSourceDisplayName;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatch;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatchId;
-import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchKind;
-import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchName;
+import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
+import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
 import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
@@ -166,8 +166,8 @@ class BatchTraceabilityProductionBatchTraceRecorderTest {
     return ProductionBatch.create(
         ProductionBatchId.newId(),
         workspaceId,
-        ProductionBatchName.of("Classic cider"),
-        ProductionBatchKind.CIDER,
+        BatchName.of("Classic cider"),
+        Vessel.named("Tank F-03"),
         VolumeValue.ofLiters("100"),
         new ProductionProfileSnapshot(
             SpecificGravityValue.of("1.052"),

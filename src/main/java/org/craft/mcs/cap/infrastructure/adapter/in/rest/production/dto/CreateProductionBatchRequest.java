@@ -2,7 +2,6 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.UUID;
-import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchKind;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -23,12 +22,11 @@ public record CreateProductionBatchRequest(
     )
     @NonNull String name,
     @Schema(
-        description = "Production batch kind.",
-        implementation = ProductionBatchKind.class,
-        example = "CIDER",
+        description = "Vessel, tank or container that will hold the production batch.",
+        example = "Fermentation tank F-03",
         requiredMode = Schema.RequiredMode.REQUIRED
     )
-    @NonNull ProductionBatchKind kind,
+    @NonNull String vessel,
     @Schema(
         description = "Saved production candidate identifier.",
         format = "uuid",

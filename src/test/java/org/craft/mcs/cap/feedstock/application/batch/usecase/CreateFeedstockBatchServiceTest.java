@@ -7,7 +7,7 @@ import org.craft.mcs.cap.core.feedstock.application.batch.port.in.CreateFeedstoc
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchRepository;
 import org.craft.mcs.cap.core.feedstock.application.batch.usecase.CreateFeedstockBatchService;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockBatchName;
+import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
 import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
@@ -42,7 +42,7 @@ class CreateFeedstockBatchServiceTest {
 
     final var created = service.create(new CreateFeedstockBatchCommand(
         workspaceId,
-        FeedstockBatchName.of("Late season fruit"),
+        BatchName.of("Late season fruit"),
         null,
         FeedstockType.JUICE,
         FeedstockSeason.of(LocalDate.parse("2026-10-01"), LocalDate.parse("2026-12-15")),
@@ -69,7 +69,7 @@ class CreateFeedstockBatchServiceTest {
     );
     final var command = new CreateFeedstockBatchCommand(
         WorkspaceId.of(newUuid()),
-        FeedstockBatchName.of("Late season fruit"),
+        BatchName.of("Late season fruit"),
         null,
         FeedstockType.JUICE,
         FeedstockSeason.of(LocalDate.parse("2026-10-01"), LocalDate.parse("2026-12-15")),

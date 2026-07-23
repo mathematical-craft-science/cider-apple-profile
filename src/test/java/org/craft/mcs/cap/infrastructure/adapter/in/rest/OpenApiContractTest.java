@@ -710,7 +710,7 @@ class OpenApiContractTest {
         "CreateProductionBatchRequest",
         "workspaceId",
         "name",
-        "kind",
+        "vessel",
         "candidateId"
     );
     assertStringFormat(schemaProperty(openApi, "CreateProductionBatchRequest", "workspaceId"), "uuid");
@@ -745,10 +745,11 @@ class OpenApiContractTest {
         "batchId",
         "workspaceId",
         "name",
-        "kind",
-        "status",
-        "volume",
-        "profile",
+        "vessel",
+        "lifecycle",
+        "alcoholicFermentationState",
+        "currentVolume",
+        "initialProfileSnapshot",
         "potentialAbv"
     );
     assertStringFormat(schemaProperty(openApi, "ProductionBatchDetailsResponse", "workspaceId"), "uuid");
@@ -767,8 +768,9 @@ class OpenApiContractTest {
         "batchId",
         "workspaceId",
         "name",
-        "kind",
-        "status",
+        "vessel",
+        "lifecycle",
+        "alcoholicFermentationState",
         "candidateId",
         "composition"
     );

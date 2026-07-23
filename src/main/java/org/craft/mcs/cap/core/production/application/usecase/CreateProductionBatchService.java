@@ -79,7 +79,7 @@ public final class CreateProductionBatchService
           ProductionBatchId.newId(),
           command.workspaceId(),
           command.name(),
-          command.kind(),
+          command.vessel(),
           candidate.sourceComposition().totalVolume(),
           candidate.profile(),
           command.note()
