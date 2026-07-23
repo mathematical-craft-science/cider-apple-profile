@@ -1,7 +1,11 @@
 package org.craft.mcs.cap.infrastructure.configuration;
 
+import java.net.URI;
 import org.craft.mcs.cap.infrastructure.adapter.in.security.AccountProvisioningFilter;
 import org.craft.mcs.cap.infrastructure.adapter.in.security.DebugAccessAuthorizationManager;
+import org.craft.mcs.cap.infrastructure.adapter.out.requestcontext.account.oauth2.JwtActorMapper;
+import org.craft.mcs.cap.infrastructure.adapter.out.requestcontext.account.oauth2.clerk.ClerkJwtActorMapper;
+import org.craft.mcs.cap.infrastructure.adapter.out.requestcontext.account.oauth2.keycloak.KeycloakJwtActorMapper;
 import org.jspecify.annotations.NonNull;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -11,6 +15,10 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
+import org.springframework.security.oauth2.core.OAuth2TokenValidator;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtAudienceValidator;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtValidators;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
@@ -27,12 +35,44 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfiguration {
 
   @Bean
-  public @NonNull JwtDecoder clerkJwtDecoder(@NonNull CapSecurityProperties properties) {
+  public @NonNull JwtActorMapper jwtActorMapper(@NonNull CapSecurityProperties properties) {
+    return switch (properties.provider()) {
+      case CLERK -> new ClerkJwtActorMapper();
+      case KEYCLOAK -> new KeycloakJwtActorMapper();
+    };
+  }
+
+  @Bean
+  public @NonNull JwtDecoder jwtDecoder(@NonNull CapSecurityProperties properties) {
+    final var endpoints = switch (properties.provider()) {
+      case CLERK -> new ProviderEndpoints(
+          properties.clerk().issuer(),
+          properties.clerk().jwkSetUri()
+      );
+      case KEYCLOAK -> new ProviderEndpoints(
+          properties.keycloak().issuer(),
+          properties.keycloak().jwkSetUri()
+      );
+    };
     final var decoder = NimbusJwtDecoder
-        .withJwkSetUri(properties.clerk().jwkSetUri().toString())
+        .withJwkSetUri(endpoints.jwkSetUri().toString())
         .build();
-    decoder.setJwtValidator(JwtValidators.createDefaultWithIssuer(properties.clerk().issuer().toString()));
+    decoder.setJwtValidator(jwtValidator(properties, endpoints));
     return decoder;
+  }
+
+  static @NonNull OAuth2TokenValidator<Jwt> jwtValidator(
+      @NonNull CapSecurityProperties properties,
+      @NonNull ProviderEndpoints endpoints
+  ) {
+    final var issuerValidator = JwtValidators.createDefaultWithIssuer(endpoints.issuer().toString());
+    return switch (properties.provider()) {
+      case CLERK -> issuerValidator;
+      case KEYCLOAK -> new DelegatingOAuth2TokenValidator<>(
+          issuerValidator,
+          new JwtAudienceValidator(properties.keycloak().audience())
+      );
+    };
   }
 
   @Bean
@@ -77,5 +117,11 @@ public class SecurityConfiguration {
         ).addFilterAfter(accountProvisioningFilter, BearerTokenAuthenticationFilter.class);
 
     return http.build();
+  }
+
+  record ProviderEndpoints(
+      @NonNull URI issuer,
+      @NonNull URI jwkSetUri
+  ) {
   }
 }

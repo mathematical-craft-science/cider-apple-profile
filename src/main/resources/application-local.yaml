@@ -1,5 +1,6 @@
 cap:
   security:
+    provider: KEYCLOAK
     public-access:
       openapi: true
       debug: true

@@ -11,14 +11,20 @@ import static java.util.Objects.requireNonNull;
 /** Provider and public-route settings for CAP resource-server security. */
 @ConfigurationProperties(prefix = "cap.security")
 public record CapSecurityProperties(
+    /* Identity provider used by this CAP application instance. */
+    @NonNull ConfiguredIdentityProvider provider,
     /* Clerk OIDC endpoints used to authenticate bearer tokens. */
     @NonNull ClerkProperties clerk,
+    /* Keycloak OIDC endpoints and backend audience used to authenticate bearer tokens. */
+    @NonNull KeycloakProperties keycloak,
     /* Explicit exceptions to the authenticated-by-default HTTP policy. */
     @NonNull PublicAccessProperties publicAccess
 ) {
 
   public CapSecurityProperties {
+    requireNonNull(provider, "configured identity provider cannot be null");
     requireNonNull(clerk, "Clerk security properties cannot be null");
+    requireNonNull(keycloak, "Keycloak security properties cannot be null");
     requireNonNull(publicAccess, "public access properties cannot be null");
   }
 
@@ -33,6 +39,27 @@ public record CapSecurityProperties(
     public ClerkProperties {
       requireNonNull(issuer, "Clerk issuer cannot be null");
       requireNonNull(jwkSetUri, "Clerk JWKS URI cannot be null");
+    }
+  }
+
+  /** Keycloak issuer, JWKS endpoint and required access-token audience. */
+  public record KeycloakProperties(
+      /* Expected issuer URI of Keycloak access tokens. */
+      @NonNull URI issuer,
+      /* URI from which the resource server loads Keycloak JSON Web Keys. */
+      @NonNull URI jwkSetUri,
+      /* Audience that identifies the CAP backend resource server. */
+      @NonNull String audience
+  ) {
+
+    public KeycloakProperties {
+      requireNonNull(issuer, "Keycloak issuer cannot be null");
+      requireNonNull(jwkSetUri, "Keycloak JWKS URI cannot be null");
+      requireNonNull(audience, "Keycloak audience cannot be null");
+      audience = audience.strip();
+      if (audience.isEmpty()) {
+        throw new IllegalArgumentException("Keycloak audience cannot be blank");
+      }
     }
   }
 

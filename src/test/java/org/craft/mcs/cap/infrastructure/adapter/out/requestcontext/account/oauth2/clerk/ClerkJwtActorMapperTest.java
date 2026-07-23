@@ -1,4 +1,4 @@
-package org.craft.mcs.cap.infrastructure.adapter.in.security.clerk;
+package org.craft.mcs.cap.infrastructure.adapter.out.requestcontext.account.oauth2.clerk;
 
 import java.time.Instant;
 import org.craft.mcs.cap.core.account.shared.domain.value.DisplayName;

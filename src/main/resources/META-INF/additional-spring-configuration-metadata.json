@@ -53,12 +53,28 @@
       "description": "Base64-encoded previous HMAC secret accepted during cursor-key rotation."
     },
     {
+      "name": "cap.security.provider",
+      "description": "Identity provider used to validate JWT access tokens and map authenticated actors."
+    },
+    {
       "name": "cap.security.clerk.issuer",
       "description": "Expected issuer URI of Clerk access tokens."
     },
     {
       "name": "cap.security.clerk.jwk-set-uri",
       "description": "URI from which the resource server loads Clerk JSON Web Keys."
+    },
+    {
+      "name": "cap.security.keycloak.issuer",
+      "description": "Expected issuer URI of Keycloak access tokens."
+    },
+    {
+      "name": "cap.security.keycloak.jwk-set-uri",
+      "description": "URI from which the resource server loads Keycloak JSON Web Keys."
+    },
+    {
+      "name": "cap.security.keycloak.audience",
+      "description": "Required Keycloak access-token audience identifying the CAP backend."
     },
     {
       "name": "cap.security.public-access.openapi",
@@ -118,6 +134,19 @@
     }
   ],
   "hints": [
+    {
+      "name": "cap.security.provider",
+      "values": [
+        {
+          "value": "CLERK",
+          "description": "Use Clerk-issued JWT access tokens."
+        },
+        {
+          "value": "KEYCLOAK",
+          "description": "Use JWT access tokens issued by the configured Keycloak realm."
+        }
+      ]
+    },
     {
       "name": "cap.account.default-workspace.type",
       "values": [

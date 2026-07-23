@@ -55,6 +55,15 @@ class ContextBoundaryArchitectureTest {
           );
 
   @ArchTest
+  static final ArchRule core_code_does_not_depend_on_infrastructure =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.core..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAPackage("org.craft.mcs.cap.infrastructure..");
+
+  @ArchTest
   static final ArchRule core_does_not_depend_on_shared_infrastructure =
       noClasses()
           .that()
@@ -128,6 +137,33 @@ class ContextBoundaryArchitectureTest {
           .should()
           .dependOnClassesThat()
           .resideInAPackage("org.springframework.security..");
+
+  @ArchTest
+  static final ArchRule inbound_adapters_do_not_depend_on_outbound_application_ports =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.infrastructure.adapter.in..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAPackage("org.craft.mcs.cap.core..application..port.out..");
+
+  @ArchTest
+  static final ArchRule inbound_adapters_do_not_depend_on_outbound_adapters =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.infrastructure.adapter.in..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAPackage("org.craft.mcs.cap.infrastructure.adapter.out..");
+
+  @ArchTest
+  static final ArchRule outbound_adapters_do_not_depend_on_inbound_adapters =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.infrastructure.adapter.out..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAPackage("org.craft.mcs.cap.infrastructure.adapter.in..");
 
   @ArchTest
   static final ArchRule main_source_code_does_not_generate_uuid_version_4 =
