@@ -1,6 +1,8 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.seed;
 
+import java.io.IOException;
 import org.craft.mcs.cap.infrastructure.adapter.in.importer.appleprofile.AppleVarietyJsonSeedImporter;
+import org.craft.mcs.cap.infrastructure.adapter.in.importer.appleprofile.AppleVarietySeedImportException;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.seed.dto.SeedImportResponse;
 import org.jspecify.annotations.NonNull;
 import org.springframework.context.annotation.Profile;
@@ -12,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import static java.util.Objects.requireNonNull;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
-
+/** Exposes the local/dev-only command that loads the bundled apple-variety seed resource. */
 @RestController
 @Profile({"dev", "local"})
 public final class SeedDebugController implements SeedDebugApi {
@@ -46,8 +48,8 @@ public final class SeedDebugController implements SeedDebugApi {
       return ResponseEntity.ok(
           new SeedImportResponse("Apple variety seed imported successfully")
       );
-    } catch (Exception exception) {
-      throw new IllegalStateException("Cannot import apple variety seed", exception);
+    } catch (IOException exception) {
+      throw new AppleVarietySeedImportException("Cannot open apple variety seed resource", exception);
     }
   }
 

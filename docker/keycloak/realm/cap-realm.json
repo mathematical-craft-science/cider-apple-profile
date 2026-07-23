@@ -1,0 +1,91 @@
+{
+  "realm": "${CAP_KEYCLOAK_REALM}",
+  "displayName": "Cider Analytical Platform",
+  "enabled": true,
+  "sslRequired": "external",
+  "registrationAllowed": true,
+  "registrationEmailAsUsername": true,
+  "rememberMe": true,
+  "verifyEmail": true,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": true,
+  "editUsernameAllowed": false,
+  "bruteForceProtected": true,
+  "accessTokenLifespan": 300,
+  "defaultSignatureAlgorithm": "RS256",
+  "smtpServer": {
+    "host": "${CAP_KEYCLOAK_SMTP_HOST}",
+    "port": "${CAP_KEYCLOAK_SMTP_PORT}",
+    "from": "${CAP_KEYCLOAK_SMTP_FROM}",
+    "fromDisplayName": "${CAP_KEYCLOAK_SMTP_FROM_DISPLAY_NAME}",
+    "auth": "${CAP_KEYCLOAK_SMTP_AUTH}",
+    "starttls": "${CAP_KEYCLOAK_SMTP_STARTTLS}",
+    "ssl": "${CAP_KEYCLOAK_SMTP_SSL}",
+    "user": "${CAP_KEYCLOAK_SMTP_USERNAME}",
+    "password": "${CAP_KEYCLOAK_SMTP_PASSWORD}"
+  },
+  "clients": [
+    {
+      "clientId": "cap-backend",
+      "name": "CAP Backend",
+      "description": "Audience representing the CAP OAuth2 resource server.",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "bearerOnly": true,
+      "publicClient": false,
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false
+    },
+    {
+      "clientId": "cap-frontend",
+      "name": "CAP Frontend",
+      "description": "Public browser client using Authorization Code with PKCE.",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "clientAuthenticatorType": "client-secret",
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "frontchannelLogout": true,
+      "rootUrl": "${CAP_FRONTEND_URL}",
+      "baseUrl": "${CAP_FRONTEND_URL}",
+      "redirectUris": [
+        "${CAP_FRONTEND_URL}/*"
+      ],
+      "webOrigins": [
+        "${CAP_FRONTEND_URL}"
+      ],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "${CAP_FRONTEND_URL}/*"
+      },
+      "defaultClientScopes": [
+        "web-origins",
+        "acr",
+        "profile",
+        "roles",
+        "basic",
+        "email"
+      ],
+      "protocolMappers": [
+        {
+          "name": "cap-backend-audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "consentRequired": false,
+          "config": {
+            "included.client.audience": "cap-backend",
+            "id.token.claim": "false",
+            "access.token.claim": "true",
+            "lightweight.claim": "false"
+          }
+        }
+      ]
+    }
+  ]
+}

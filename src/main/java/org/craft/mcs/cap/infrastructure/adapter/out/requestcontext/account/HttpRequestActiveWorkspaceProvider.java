@@ -1,4 +1,4 @@
-package org.craft.mcs.cap.infrastructure.adapter.in.security;
+package org.craft.mcs.cap.infrastructure.adapter.out.requestcontext.account;
 
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Optional;
@@ -10,7 +10,7 @@ import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 
-import static org.craft.mcs.cap.infrastructure.adapter.in.http.ActiveWorkspaceHttpHeaders.ACTIVE_WORKSPACE_ID;
+import static org.craft.mcs.cap.shared.infrastructure.http.ActiveWorkspaceHttpHeaders.ACTIVE_WORKSPACE_ID;
 
 /** Reads and validates the explicit active workspace from the current HTTP request. */
 @Component

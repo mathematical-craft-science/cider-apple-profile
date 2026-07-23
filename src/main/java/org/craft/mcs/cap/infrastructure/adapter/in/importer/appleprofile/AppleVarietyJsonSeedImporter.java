@@ -3,11 +3,9 @@ package org.craft.mcs.cap.infrastructure.adapter.in.importer.appleprofile;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.util.List;
-import org.craft.mcs.cap.core.appleprofile.application.port.out.AppleVarietyRepository;
-import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVariety;
-import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyId;
+import org.craft.mcs.cap.core.appleprofile.application.catalog.port.in.CreateAppleVarietyCommand;
+import org.craft.mcs.cap.core.appleprofile.application.catalog.port.in.CreateAppleVarietyUseCase;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyName;
-import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.craft.mcs.cap.infrastructure.adapter.in.importer.appleprofile.dto.AppleVarietySeedDto;
 import org.craft.mcs.cap.infrastructure.adapter.in.importer.appleprofile.dto.ExactMeasurementSeedDto;
 import org.craft.mcs.cap.infrastructure.adapter.in.importer.appleprofile.dto.MeasurementSeedDto;
@@ -20,10 +18,11 @@ import org.craft.mcs.cap.shared.kernel.measurement.ExactMeasurement;
 import org.craft.mcs.cap.shared.kernel.measurement.MeasuredCharacteristic;
 import org.craft.mcs.cap.shared.kernel.chemical.value.PhValue;
 import org.craft.mcs.cap.shared.kernel.measurement.RangeMeasurement;
-import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.measurement.StatisticalMeasurement;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
+import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
+import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
@@ -32,6 +31,12 @@ import tools.jackson.databind.ObjectMapper;
 
 import static java.util.Objects.requireNonNull;
 
+/**
+ * Translates the local apple-variety JSON seed format into catalog creation commands.
+ *
+ * <p>The importer is an inbound adapter: JSON details remain outside the application, while writes
+ * pass through {@link CreateAppleVarietyUseCase} instead of bypassing the use-case boundary.
+ */
 @Component
 public final class AppleVarietyJsonSeedImporter {
 
@@ -39,14 +44,17 @@ public final class AppleVarietyJsonSeedImporter {
   };
 
   private final @NonNull ObjectMapper objectMapper;
-  private final @NonNull AppleVarietyRepository repository;
+  private final @NonNull CreateAppleVarietyUseCase createAppleVarietyUseCase;
 
   public AppleVarietyJsonSeedImporter(
       @NonNull ObjectMapper objectMapper,
-      @NonNull AppleVarietyRepository repository
+      @NonNull CreateAppleVarietyUseCase createAppleVarietyUseCase
   ) {
     this.objectMapper = requireNonNull(objectMapper, "object mapper cannot be null");
-    this.repository = requireNonNull(repository, "apple variety repository cannot be null");
+    this.createAppleVarietyUseCase = requireNonNull(
+        createAppleVarietyUseCase,
+        "create apple variety use case cannot be null"
+    );
   }
 
   public void importFrom(@NonNull InputStream inputStream) {
@@ -56,19 +64,18 @@ public final class AppleVarietyJsonSeedImporter {
     try {
       varieties = objectMapper.readValue(inputStream, SEED_TYPE);
     } catch (Exception exception) {
-      throw new IllegalArgumentException("cannot read apple variety seed JSON", exception);
+      throw new AppleVarietySeedImportException("Cannot read apple variety seed JSON", exception);
     }
 
     varieties.stream()
-        .map(this::toDomain)
-        .forEach(repository::create);
+        .map(this::toCommand)
+        .forEach(createAppleVarietyUseCase::create);
   }
 
-  private @NonNull AppleVariety toDomain(@NonNull AppleVarietySeedDto dto) {
+  private @NonNull CreateAppleVarietyCommand toCommand(@NonNull AppleVarietySeedDto dto) {
     requireNonNull(dto, "apple variety seed dto cannot be null");
 
-    return AppleVariety.create(
-        AppleVarietyId.newId(),
+    return new CreateAppleVarietyCommand(
         AppleVarietyName.of(dto.name()),
         toChemicalProfile(dto)
     );

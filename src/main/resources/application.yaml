@@ -70,9 +70,14 @@ cap:
         measurement-stale-after: 14d
         default-acidity-basis: MALIC_ACID
   security:
+    provider: ${CAP_SECURITY_PROVIDER:CLERK}
     clerk:
       issuer: ${CLERK_ISSUER:https://proud-mastiff-42.clerk.accounts.dev}
       jwk-set-uri: ${CLERK_JWKS_URI:https://proud-mastiff-42.clerk.accounts.dev/.well-known/jwks.json}
+    keycloak:
+      issuer: ${KEYCLOAK_ISSUER:http://localhost:8180/realms/cap}
+      jwk-set-uri: ${KEYCLOAK_JWKS_URI:http://localhost:8180/realms/cap/protocol/openid-connect/certs}
+      audience: ${KEYCLOAK_AUDIENCE:cap-backend}
     public-access:
       openapi: false
       debug: false

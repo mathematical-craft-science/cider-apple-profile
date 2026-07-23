@@ -1,4 +1,4 @@
-package org.craft.mcs.cap.infrastructure.adapter.in.security;
+package org.craft.mcs.cap.infrastructure.adapter.out.requestcontext.account;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.craft.mcs.cap.infrastructure.adapter.in.http.ActiveWorkspaceHttpHeaders.ACTIVE_WORKSPACE_ID;
+import static org.craft.mcs.cap.shared.infrastructure.http.ActiveWorkspaceHttpHeaders.ACTIVE_WORKSPACE_ID;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 

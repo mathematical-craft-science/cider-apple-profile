@@ -13,7 +13,7 @@ import org.jspecify.annotations.NonNull;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 
-import static org.craft.mcs.cap.infrastructure.adapter.in.http.ActiveWorkspaceHttpHeaders.ACTIVE_WORKSPACE_ID;
+import static org.craft.mcs.cap.shared.infrastructure.http.ActiveWorkspaceHttpHeaders.ACTIVE_WORKSPACE_ID;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 /** OpenAPI contract for the authenticated account and active-workspace context. */

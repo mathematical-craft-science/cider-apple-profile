@@ -12,6 +12,7 @@ import static java.util.Objects.requireNonNull;
 public record IdentityProviderCode(@NonNull String value) {
 
   public static final @NonNull IdentityProviderCode CLERK = new IdentityProviderCode("CLERK");
+  public static final @NonNull IdentityProviderCode KEYCLOAK = new IdentityProviderCode("KEYCLOAK");
 
   public IdentityProviderCode {
     requireNonNull(value, "identity provider code cannot be null");

@@ -1,7 +1,6 @@
-package org.craft.mcs.cap.infrastructure.adapter.in.security.clerk;
+package org.craft.mcs.cap.infrastructure.adapter.out.requestcontext.account.oauth2;
 
 import java.util.Optional;
-import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.account.user.application.model.AuthenticatedActor;
 import org.craft.mcs.cap.core.account.user.application.port.out.CurrentActorProvider;
 import org.jspecify.annotations.NonNull;
@@ -9,12 +8,17 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Component;
 
-/** Reads the current Spring Security JWT and translates it into the CAP authentication boundary. */
+import static java.util.Objects.requireNonNull;
+
+/** Reads the current Spring Security JWT and translates it through the selected identity provider adapter. */
 @Component
-@RequiredArgsConstructor
 public final class SpringSecurityCurrentActorProvider implements CurrentActorProvider {
 
-  private final @NonNull ClerkJwtActorMapper actorMapper;
+  private final @NonNull JwtActorMapper actorMapper;
+
+  public SpringSecurityCurrentActorProvider(@NonNull JwtActorMapper actorMapper) {
+    this.actorMapper = requireNonNull(actorMapper, "JWT actor mapper cannot be null");
+  }
 
   @Override
   public @NonNull Optional<@NonNull AuthenticatedActor> currentActor() {

@@ -1,4 +1,4 @@
-package org.craft.mcs.cap.infrastructure.adapter.in.http;
+package org.craft.mcs.cap.shared.infrastructure.http;
 
 /** HTTP header names used to carry CAP's stateless workspace context. */
 public final class ActiveWorkspaceHttpHeaders {
