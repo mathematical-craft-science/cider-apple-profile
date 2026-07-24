@@ -1,5 +1,6 @@
 package org.craft.mcs.cap.core.feedstock.application.detail.usecase;
 
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchNotFoundException;
 import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchOwnershipMismatchException;
@@ -94,6 +95,7 @@ public final class GetFeedstockBatchDetailService implements GetFeedstockBatchDe
     if (measurement == null) {
       return new FeedstockBatchCurrentProfileView(
           null,
+          List.of(),
           null,
           null,
           null,
@@ -109,12 +111,18 @@ public final class GetFeedstockBatchDetailService implements GetFeedstockBatchDe
     final var freshness = batchAssessmentService.freshness(measurement, settings);
     return new FeedstockBatchCurrentProfileView(
         toSummary(batch, measurement),
+        batchAssessmentService.evidence(measurement, settings),
         freshness,
         evaluation,
         potentialAbv(evaluation),
         yeastAssimilableNitrogen(evaluation),
         batchAssessmentService.planningReadiness(batch, measurement.chemicalProfile()),
-        batchAssessmentService.dataQuality(measurement.chemicalProfile(), evaluation, freshness),
+        batchAssessmentService.dataQuality(
+            measurement.chemicalProfile(),
+            evaluation,
+            freshness,
+            measurement.axisEvidence()
+        ),
         fermentationStartReadinessAssessor.assess(measurement.chemicalProfile()),
         new FeedstockBatchCurrentProfileOperationView(
             FeedstockBatchCurrentProfileOperationType.MEASURED,

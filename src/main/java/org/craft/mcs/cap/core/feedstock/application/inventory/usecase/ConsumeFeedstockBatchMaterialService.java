@@ -66,7 +66,8 @@ public final class ConsumeFeedstockBatchMaterialService
             measurement.measurementId().value(),
             measurement.evidenceVersion()
         ),
-        measurement.chemicalProfile()
+        measurement.chemicalProfile(),
+        measurement.aggregateConfidence()
     );
   }
 

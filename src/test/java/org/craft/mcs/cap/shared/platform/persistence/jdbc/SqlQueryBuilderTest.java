@@ -11,7 +11,7 @@ class SqlQueryBuilderTest {
   void buildsQueryWithOptionalPredicatesAndParameters() {
     final var query = SqlQueryBuilder.from("""
         select *
-        from feedstock_measurements sample
+        from material_observations sample
         where sample.batch_id = :batchId
         """)
         .with(builder -> builder
@@ -24,7 +24,7 @@ class SqlQueryBuilderTest {
 
     assertThat(query.sql()).isEqualTo("""
         select *
-        from feedstock_measurements sample
+        from material_observations sample
         where sample.batch_id = :batchId
           and (sample.measured_at > :measuredAt)
         order by sample.measured_at asc

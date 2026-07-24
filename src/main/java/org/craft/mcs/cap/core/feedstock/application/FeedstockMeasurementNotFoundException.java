@@ -2,7 +2,7 @@ package org.craft.mcs.cap.core.feedstock.application;
 
 import java.io.Serial;
 import org.craft.mcs.cap.shared.application.ApplicationNotFoundException;
-import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurementId;
+import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementId;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;

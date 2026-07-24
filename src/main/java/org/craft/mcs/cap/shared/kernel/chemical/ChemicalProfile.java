@@ -1,42 +1,45 @@
 package org.craft.mcs.cap.shared.kernel.chemical;
 
-import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
-
 import java.util.Optional;
-import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
-import org.craft.mcs.cap.shared.kernel.measurement.MeasuredCharacteristic;
+import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
+import org.craft.mcs.cap.shared.kernel.characteristic.CharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.PhValue;
-import org.craft.mcs.cap.shared.kernel.chemical.value.TanninityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
+import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.jmolecules.ddd.annotation.ValueObject;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import static java.util.Objects.requireNonNull;
 
+
+/**
+ * Immutable chemical projection used by analysis, calculations, and historical snapshots.
+ *
+ * <p>Measurement evidence and current-value selection remain outside this value object.</p>
+ */
 @ValueObject
 public record ChemicalProfile(
-    @NonNull Optional<@NonNull MeasuredCharacteristic<SugarConcentration>> sugar,
-    @NonNull Optional<@NonNull MeasuredCharacteristic<PhValue>> ph,
-    @NonNull Optional<@NonNull MeasuredCharacteristic<TitratableAcidityValue>> titratableAcidity,
-    @NonNull Optional<@NonNull MeasuredCharacteristic<TanninityValue>> tanninity,
-    @NonNull Optional<@NonNull MeasuredCharacteristic<YeastAssimilableNitrogenValue>> yeastAssimilableNitrogen,
-
-    @Nullable ChemicalProfileSource source, @Nullable ConfidenceLevel confidence
+    @NonNull Optional<@NonNull CharacteristicValue<SugarConcentration>> sugar,
+    @NonNull Optional<@NonNull CharacteristicValue<PhValue>> ph,
+    @NonNull Optional<@NonNull CharacteristicValue<TitratableAcidityValue>> titratableAcidity,
+    @NonNull Optional<@NonNull CharacteristicValue<TanninValue>> tannin,
+    @NonNull Optional<@NonNull CharacteristicValue<YeastAssimilableNitrogenValue>> yeastAssimilableNitrogen
 ) {
 
   public ChemicalProfile {
     requireNonNull(sugar, "sugar characteristic cannot be null");
     requireNonNull(ph, "pH characteristic cannot be null");
     requireNonNull(titratableAcidity, "titratable acidity characteristic cannot be null");
-    requireNonNull(tanninity, "tanninity characteristic cannot be null");
+    requireNonNull(tannin, "tannin characteristic cannot be null");
     requireNonNull(yeastAssimilableNitrogen, "YAN characteristic cannot be null");
 
     if (sugar.isEmpty()
         && ph.isEmpty()
         && titratableAcidity.isEmpty()
-        && tanninity.isEmpty()
+        && tannin.isEmpty()
         && yeastAssimilableNitrogen.isEmpty()) {
       throw new DomainRuleViolationException("chemical profile must contain at least one characteristic");
     }
@@ -48,54 +51,41 @@ public record ChemicalProfile(
 
   public static final class Builder {
 
-    private @Nullable MeasuredCharacteristic<SugarConcentration> sugar;
-    private @Nullable MeasuredCharacteristic<PhValue> ph;
-    private @Nullable MeasuredCharacteristic<TitratableAcidityValue> titratableAcidity;
-    private @Nullable MeasuredCharacteristic<TanninityValue> tanninity;
-    private @Nullable MeasuredCharacteristic<YeastAssimilableNitrogenValue> yeastAssimilableNitrogen;
-
-    private @Nullable ChemicalProfileSource source;
-    private @Nullable ConfidenceLevel confidence;
+    private @Nullable CharacteristicValue<SugarConcentration> sugar;
+    private @Nullable CharacteristicValue<PhValue> ph;
+    private @Nullable CharacteristicValue<TitratableAcidityValue> titratableAcidity;
+    private @Nullable CharacteristicValue<TanninValue> tannin;
+    private @Nullable CharacteristicValue<YeastAssimilableNitrogenValue> yeastAssimilableNitrogen;
 
     private Builder() {
     }
 
-    public @NonNull Builder sugar(@NonNull MeasuredCharacteristic<SugarConcentration> sugar) {
+    public @NonNull Builder sugar(@NonNull CharacteristicValue<SugarConcentration> sugar) {
       this.sugar = requireNonNull(sugar);
       return this;
     }
 
-    public @NonNull Builder ph(@NonNull MeasuredCharacteristic<PhValue> ph) {
+    public @NonNull Builder ph(@NonNull CharacteristicValue<PhValue> ph) {
       this.ph = requireNonNull(ph);
       return this;
     }
 
     public @NonNull Builder titratableAcidity(
-        @NonNull MeasuredCharacteristic<TitratableAcidityValue> titratableAcidity
+        @NonNull CharacteristicValue<TitratableAcidityValue> titratableAcidity
     ) {
       this.titratableAcidity = requireNonNull(titratableAcidity);
       return this;
     }
 
-    public @NonNull Builder tanninity(@NonNull MeasuredCharacteristic<TanninityValue> tanninity) {
-      this.tanninity = requireNonNull(tanninity);
+    public @NonNull Builder tannin(@NonNull CharacteristicValue<TanninValue> tannin) {
+      this.tannin = requireNonNull(tannin);
       return this;
     }
 
     public @NonNull Builder yeastAssimilableNitrogen(
-        @NonNull MeasuredCharacteristic<YeastAssimilableNitrogenValue> yeastAssimilableNitrogen
+        @NonNull CharacteristicValue<YeastAssimilableNitrogenValue> yeastAssimilableNitrogen
     ) {
       this.yeastAssimilableNitrogen = requireNonNull(yeastAssimilableNitrogen);
-      return this;
-    }
-
-    public @NonNull Builder source(@Nullable ChemicalProfileSource source) {
-      this.source = source;
-      return this;
-    }
-
-    public @NonNull Builder confidence(@Nullable ConfidenceLevel confidence) {
-      this.confidence = confidence;
       return this;
     }
 
@@ -104,10 +94,8 @@ public record ChemicalProfile(
           Optional.ofNullable(sugar),
           Optional.ofNullable(ph),
           Optional.ofNullable(titratableAcidity),
-          Optional.ofNullable(tanninity),
-          Optional.ofNullable(yeastAssimilableNitrogen),
-          source,
-          confidence
+          Optional.ofNullable(tannin),
+          Optional.ofNullable(yeastAssimilableNitrogen)
       );
     }
   }

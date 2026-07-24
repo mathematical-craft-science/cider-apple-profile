@@ -20,8 +20,8 @@ class ChemicalMeasuredValuesTest {
     assertThat(BrixValue.of("32.0").asBigDecimal()).isEqualByComparingTo("32.0");
     assertThat(TitratableAcidityValue.of("0").asBigDecimal()).isEqualByComparingTo("0");
     assertThat(TitratableAcidityValue.of("30.0").asBigDecimal()).isEqualByComparingTo("30.0");
-    assertThat(TanninityValue.of("0").asBigDecimal()).isEqualByComparingTo("0");
-    assertThat(TanninityValue.of("12000").asBigDecimal()).isEqualByComparingTo("12000");
+    assertThat(TanninValue.of("0").asBigDecimal()).isEqualByComparingTo("0");
+    assertThat(TanninValue.of("12000").asBigDecimal()).isEqualByComparingTo("12000");
     assertThat(YeastAssimilableNitrogenValue.of("0").asBigDecimal()).isEqualByComparingTo("0");
     assertThat(YeastAssimilableNitrogenValue.of("2000.0").asBigDecimal()).isEqualByComparingTo("2000.0");
     assertThat(PhValue.of("0").asBigDecimal()).isEqualByComparingTo("0");
@@ -40,7 +40,7 @@ class ChemicalMeasuredValuesTest {
         .isInstanceOf(DomainRuleViolationException.class);
     assertThatThrownBy(() -> TitratableAcidityValue.of("-0.1"))
         .isInstanceOf(DomainRuleViolationException.class);
-    assertThatThrownBy(() -> TanninityValue.of("12000.1"))
+    assertThatThrownBy(() -> TanninValue.of("12000.1"))
         .isInstanceOf(DomainRuleViolationException.class);
     assertThatThrownBy(() -> YeastAssimilableNitrogenValue.of("2000.1"))
         .isInstanceOf(DomainRuleViolationException.class);

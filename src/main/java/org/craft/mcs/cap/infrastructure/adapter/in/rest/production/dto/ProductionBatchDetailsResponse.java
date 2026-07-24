@@ -1,10 +1,13 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.List;
 import java.util.UUID;
 import org.craft.mcs.cap.core.production.domain.model.value.AlcoholicFermentationState;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchLifecycle;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.abv.dto.PotentialAbvPredictionResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.dto.ChemicalProfileResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement.dto.MeasurementEvidenceResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.sugaracidity.dto.SugarAcidityProfilePointResponse;
 import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
 import org.jspecify.annotations.NonNull;
@@ -44,13 +47,23 @@ public record ProductionBatchDetailsResponse(
     )
     @NonNull SugarAcidityProfilePointResponse initialProfileSnapshot,
     @Schema(
-        description = "Yeast-assimilable nitrogen from the accepted production profile, when available.",
+        description = "Current profile with measured axes overlaid on the immutable initial snapshot.",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
+    @NonNull ChemicalProfileResponse currentChemicalProfile,
+    @Schema(
+        description = "Measurement records supplying axes of the current profile.",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
+    @NonNull List<@NonNull MeasurementEvidenceResponse> measurementEvidence,
+    @Schema(
+        description = "Current yeast-assimilable nitrogen after applying measurement evidence.",
         nullable = true,
         requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )
     @Nullable DecimalQuantityResponse yeastAssimilableNitrogen,
     @Schema(
-        description = "Potential ABV prediction calculated from production profile sugar.",
+        description = "Potential ABV prediction calculated from current production profile sugar.",
         requiredMode = Schema.RequiredMode.REQUIRED
     )
     @NonNull PotentialAbvPredictionResponse potentialAbv,

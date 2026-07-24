@@ -44,7 +44,7 @@ class ChemicalProfileCapabilityAssessmentTest {
         Set.of(ChemicalAxis.ACIDITY)
     );
 
-    assertThatThrownBy(() -> assessment.missingAxes().add(ChemicalAxis.TANNINITY))
+    assertThatThrownBy(() -> assessment.missingAxes().add(ChemicalAxis.TANNIN))
         .isInstanceOf(UnsupportedOperationException.class);
   }
 

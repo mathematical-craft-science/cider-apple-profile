@@ -18,9 +18,9 @@ import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
 import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
-import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurement;
-import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurementId;
-import org.craft.mcs.cap.core.feedstock.domain.model.measurement.value.FeedstockMeasurementName;
+import org.craft.mcs.cap.shared.testing.FeedstockMeasurementFixture;
+import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementId;
+import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementName;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionCalculatorCode;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionTanninPolicy;
 import org.craft.mcs.cap.core.profileanalysis.composition.optimization.application.port.in.OptimizeChemicalProfileCompositionCommand;
@@ -46,7 +46,7 @@ import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtracto
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
-import org.craft.mcs.cap.shared.kernel.measurement.ExactMeasurement;
+import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
@@ -260,11 +260,11 @@ class OptimizeFeedstockBatchCompositionServiceTest {
     );
   }
 
-  private static FeedstockMeasurement sample(
+  private static FeedstockMeasurementFixture sample(
       FeedstockBatchId batchId,
       ChemicalProfile profile
   ) {
-    return FeedstockMeasurement.create(
+    return FeedstockMeasurementFixture.create(
         FeedstockMeasurementId.newId(),
         batchId,
         FeedstockMeasurementName.of("Current lab sample"),
@@ -279,16 +279,16 @@ class OptimizeFeedstockBatchCompositionServiceTest {
       String acidity
   ) {
     return ChemicalProfile.builder()
-        .sugar(ExactMeasurement.of(SugarConcentration.ofSpecificGravity(
+        .sugar(PointCharacteristicValue.of(SugarConcentration.ofSpecificGravity(
             SpecificGravityValue.of(sg)
         )))
-        .titratableAcidity(ExactMeasurement.of(TitratableAcidityValue.of(acidity)))
+        .titratableAcidity(PointCharacteristicValue.of(TitratableAcidityValue.of(acidity)))
         .build();
   }
 
   private static ChemicalProfile acidityOnlyProfile(String acidity) {
     return ChemicalProfile.builder()
-        .titratableAcidity(ExactMeasurement.of(TitratableAcidityValue.of(acidity)))
+        .titratableAcidity(PointCharacteristicValue.of(TitratableAcidityValue.of(acidity)))
         .build();
   }
 }

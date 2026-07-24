@@ -23,7 +23,7 @@ import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.Profi
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.SugarAcidityCoordinates;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.SugarAcidityTargetGeometryShape;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.SugarAcidityTargetKind;
-import org.craft.mcs.cap.shared.kernel.chemical.value.TanninityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
@@ -156,7 +156,7 @@ class ProductionBatchCandidatePersistenceDataJdbcTest {
     return new ProductionProfileSnapshot(
         SpecificGravityValue.of("1.052"),
         TitratableAcidityValue.of("6.2"),
-        TanninityValue.of("1200"),
+        TanninValue.of("1200"),
         YeastAssimilableNitrogenValue.of("180")
     );
   }

@@ -98,26 +98,18 @@ class JdbcBatchTraceabilityStore implements BatchTraceabilityStore {
               sugar_value_kind,
               sugar_min,
               sugar_max,
-              sugar_standard_deviation,
-              sugar_sample_size,
               acidity_value,
               acidity_value_kind,
               acidity_min,
               acidity_max,
-              acidity_standard_deviation,
-              acidity_sample_size,
-              tanninity_value,
-              tanninity_value_kind,
-              tanninity_min,
-              tanninity_max,
-              tanninity_standard_deviation,
-              tanninity_sample_size,
+              tannin_value,
+              tannin_value_kind,
+              tannin_min,
+              tannin_max,
               yan_value,
               yan_value_kind,
               yan_min,
-              yan_max,
-              yan_standard_deviation,
-              yan_sample_size
+              yan_max
             )
             VALUES (
               :stepId,
@@ -133,26 +125,18 @@ class JdbcBatchTraceabilityStore implements BatchTraceabilityStore {
               :sugarValueKind,
               :sugarMin,
               :sugarMax,
-              :sugarStandardDeviation,
-              :sugarSampleSize,
               :acidityValue,
               :acidityValueKind,
               :acidityMin,
               :acidityMax,
-              :acidityStandardDeviation,
-              :aciditySampleSize,
-              :tanninityValue,
-              :tanninityValueKind,
-              :tanninityMin,
-              :tanninityMax,
-              :tanninityStandardDeviation,
-              :tanninitySampleSize,
+              :tanninValue,
+              :tanninValueKind,
+              :tanninMin,
+              :tanninMax,
               :yanValue,
               :yanValueKind,
               :yanMin,
-              :yanMax,
-              :yanStandardDeviation,
-              :yanSampleSize
+              :yanMax
             )
             """,
         batch
@@ -177,26 +161,18 @@ class JdbcBatchTraceabilityStore implements BatchTraceabilityStore {
         .addValue("sugarValueKind", enumName(subject.sugarValueKind))
         .addValue("sugarMin", subject.sugarMin)
         .addValue("sugarMax", subject.sugarMax)
-        .addValue("sugarStandardDeviation", subject.sugarStandardDeviation)
-        .addValue("sugarSampleSize", subject.sugarSampleSize)
         .addValue("acidityValue", subject.acidityValue)
         .addValue("acidityValueKind", enumName(subject.acidityValueKind))
         .addValue("acidityMin", subject.acidityMin)
         .addValue("acidityMax", subject.acidityMax)
-        .addValue("acidityStandardDeviation", subject.acidityStandardDeviation)
-        .addValue("aciditySampleSize", subject.aciditySampleSize)
-        .addValue("tanninityValue", subject.tanninityValue)
-        .addValue("tanninityValueKind", enumName(subject.tanninityValueKind))
-        .addValue("tanninityMin", subject.tanninityMin)
-        .addValue("tanninityMax", subject.tanninityMax)
-        .addValue("tanninityStandardDeviation", subject.tanninityStandardDeviation)
-        .addValue("tanninitySampleSize", subject.tanninitySampleSize)
+        .addValue("tanninValue", subject.tanninValue)
+        .addValue("tanninValueKind", enumName(subject.tanninValueKind))
+        .addValue("tanninMin", subject.tanninMin)
+        .addValue("tanninMax", subject.tanninMax)
         .addValue("yanValue", subject.yeastAssimilableNitrogenValue)
         .addValue("yanValueKind", enumName(subject.yeastAssimilableNitrogenValueKind))
         .addValue("yanMin", subject.yeastAssimilableNitrogenMin)
-        .addValue("yanMax", subject.yeastAssimilableNitrogenMax)
-        .addValue("yanStandardDeviation", subject.yeastAssimilableNitrogenStandardDeviation)
-        .addValue("yanSampleSize", subject.yeastAssimilableNitrogenSampleSize);
+        .addValue("yanMax", subject.yeastAssimilableNitrogenMax);
   }
 
   private static @Nullable String enumName(@Nullable Enum<?> value) {

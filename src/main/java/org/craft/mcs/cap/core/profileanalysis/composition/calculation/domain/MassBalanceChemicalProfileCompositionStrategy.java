@@ -8,7 +8,7 @@ import org.craft.mcs.cap.core.profileanalysis.sugaracidity.point.domain.SugarAci
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.point.domain.SugarAcidityProfilePoint;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.MeasurementValueKind;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValueKind;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -129,12 +129,12 @@ public final class MassBalanceChemicalProfileCompositionStrategy
   ) {
     return switch (request.tanninPolicy()) {
       case IGNORE_TANNIN -> {
-        if (request.sources().stream().anyMatch(source -> source.axes().has(ChemicalAxis.TANNINITY))) {
+        if (request.sources().stream().anyMatch(source -> source.axes().has(ChemicalAxis.TANNIN))) {
           warnings.add(ChemicalProfileCompositionWarning.TANNIN_IGNORED);
         }
         yield null;
       }
-      case REQUIRE_TANNIN -> calculateAxis(request.sources(), ChemicalAxis.TANNINITY);
+      case REQUIRE_TANNIN -> calculateAxis(request.sources(), ChemicalAxis.TANNIN);
       case CALCULATE_WHEN_COMPLETE -> calculateTanninWhenComplete(request.sources(), warnings);
     };
   }
@@ -144,11 +144,11 @@ public final class MassBalanceChemicalProfileCompositionStrategy
       @NonNull List<@NonNull ChemicalProfileCompositionWarning> warnings
   ) {
     final var tanninCount = sources.stream()
-        .filter(source -> source.axes().has(ChemicalAxis.TANNINITY))
+        .filter(source -> source.axes().has(ChemicalAxis.TANNIN))
         .count();
 
     if (tanninCount == sources.size()) {
-      return calculateAxis(sources, ChemicalAxis.TANNINITY);
+      return calculateAxis(sources, ChemicalAxis.TANNIN);
     }
     if (tanninCount > 0) {
       warnings.add(ChemicalProfileCompositionWarning.TANNIN_INCOMPLETE);
@@ -209,9 +209,7 @@ public final class MassBalanceChemicalProfileCompositionStrategy
   private static @NonNull SugarAcidityAxisPoint calculatedPoint(@NonNull BigDecimal value) {
     return new SugarAcidityAxisPoint(
         value,
-        MeasurementValueKind.CALCULATED,
-        null,
-        null,
+        AxisValueKind.CALCULATED,
         null,
         null
     );

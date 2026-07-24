@@ -7,11 +7,15 @@ import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockM
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.out.FeedstockMeasurementSugarAcidityPointCandidateQuery;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.out.LatestFeedstockMeasurementSugarAcidityPointCandidateQuery;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
+import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementId;
 import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementView;
 import org.jspecify.annotations.NonNull;
 
 
 public interface FeedstockMeasurementQueryRepository {
+
+  @NonNull
+  Optional<@NonNull FeedstockMeasurementView> findById(@NonNull FeedstockMeasurementId measurementId);
 
   @NonNull
   List<@NonNull FeedstockMeasurementView> findSugarAcidityPointCandidates(

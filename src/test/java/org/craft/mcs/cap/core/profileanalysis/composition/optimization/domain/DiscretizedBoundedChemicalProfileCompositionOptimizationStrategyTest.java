@@ -18,7 +18,7 @@ import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.Rectang
 import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.MeasurementValueKind;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValueKind;
 import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.jspecify.annotations.NonNull;
@@ -32,7 +32,8 @@ class DiscretizedBoundedChemicalProfileCompositionOptimizationStrategyTest {
 
   private final DiscretizedBoundedChemicalProfileCompositionOptimizationStrategy strategy =
       new DiscretizedBoundedChemicalProfileCompositionOptimizationStrategy();
-  private final MassBalanceChemicalProfileCompositionStrategy calculator = new MassBalanceChemicalProfileCompositionStrategy();
+  private final MassBalanceChemicalProfileCompositionStrategy calculator =
+      new MassBalanceChemicalProfileCompositionStrategy();
 
   @Test
   void ranksDiscreteCompositionsByDistanceToTarget() {
@@ -198,9 +199,7 @@ class DiscretizedBoundedChemicalProfileCompositionOptimizationStrategyTest {
     return new AxisValue(
         axis,
         new BigDecimal(value),
-        MeasurementValueKind.EXACT,
-        null,
-        null,
+        AxisValueKind.POINT,
         null,
         null
     );

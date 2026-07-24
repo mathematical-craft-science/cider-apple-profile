@@ -2,7 +2,7 @@ package org.craft.mcs.cap.core.profileanalysis.profileaxis.domain;
 
 import java.math.BigDecimal;
 import java.util.List;
-import org.craft.mcs.cap.shared.kernel.chemical.value.TanninityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.jspecify.annotations.NonNull;
 
 
@@ -21,8 +21,8 @@ public final class BuiltInCiderProfileAxisBoundaries {
   public static final BigDecimal ACIDITY_MEDIUM_HIGH_BOUNDARY = new BigDecimal("7.5");
   public static final BigDecimal ACIDITY_MAX = new BigDecimal("10");
 
-  public static final BigDecimal TANNIN_MIN = TanninityValue.minValue();
-  public static final BigDecimal TANNIN_MAX = TanninityValue.maxValue();
+  public static final BigDecimal TANNIN_MIN = TanninValue.minValue();
+  public static final BigDecimal TANNIN_MAX = TanninValue.maxValue();
 
   private BuiltInCiderProfileAxisBoundaries() {
   }

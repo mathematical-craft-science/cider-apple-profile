@@ -7,7 +7,7 @@ import org.craft.mcs.cap.core.appleprofile.application.catalog.usecase.CreateApp
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVariety;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyName;
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
-import org.craft.mcs.cap.shared.kernel.measurement.ExactMeasurement;
+import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.craft.mcs.cap.shared.platform.TransactionHelper;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
@@ -40,7 +40,7 @@ class CreateAppleVarietyServiceTest {
   @Test
   void createsAppleVarietyAndPassesItToRepository() {
     final var chemicalProfile = ChemicalProfile.builder()
-        .sugar(ExactMeasurement.of(SugarConcentration.ofSpecificGravity(
+        .sugar(PointCharacteristicValue.of(SugarConcentration.ofSpecificGravity(
             SpecificGravityValue.of("1.052")
         )))
         .build();

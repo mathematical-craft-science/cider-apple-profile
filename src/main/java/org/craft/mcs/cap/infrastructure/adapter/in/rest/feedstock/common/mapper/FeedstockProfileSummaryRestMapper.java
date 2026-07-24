@@ -6,15 +6,14 @@ import java.util.function.Function;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.measurement.CanonicalUnitLabels;
 import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.MeasurementValueKind;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValueKind;
 import org.craft.mcs.cap.shared.kernel.chemical.value.PhValue;
-import org.craft.mcs.cap.shared.kernel.chemical.value.TanninityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
-import org.craft.mcs.cap.shared.kernel.measurement.ExactMeasurement;
-import org.craft.mcs.cap.shared.kernel.measurement.MeasuredCharacteristic;
-import org.craft.mcs.cap.shared.kernel.measurement.RangeMeasurement;
-import org.craft.mcs.cap.shared.kernel.measurement.StatisticalMeasurement;
+import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
+import org.craft.mcs.cap.shared.kernel.characteristic.CharacteristicValue;
+import org.craft.mcs.cap.shared.kernel.characteristic.IntervalCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -26,8 +25,7 @@ import static java.util.Objects.requireNonNull;
  * Shared REST mapper for compact current-profile summary values.
  *
  * <p>It centralizes the transport flattening rule used by feedstock board and detail read models:
- * exact values stay exact, ranges expose midpoint plus bounds, and statistical values expose median
- * when present or mean otherwise.
+ * point values stay points and intervals expose a computed midpoint plus their original bounds.
  */
 public final class FeedstockProfileSummaryRestMapper {
 
@@ -66,11 +64,11 @@ public final class FeedstockProfileSummaryRestMapper {
                 factory
             ))
             .orElse(null), // NOSONAR
-        profile.tanninity()
+        profile.tannin()
             .map(measurement -> toProfileValue(
                 measurement,
-                TanninityValue::asBigDecimal,
-                CanonicalUnitLabels.TANNINITY,
+                TanninValue::asBigDecimal,
+                CanonicalUnitLabels.TANNIN,
                 factory
             ))
             .orElse(null), // NOSONAR
@@ -85,8 +83,8 @@ public final class FeedstockProfileSummaryRestMapper {
     );
   }
 
-  private static <T extends Comparable<T>, R> @NonNull R toProfileValue(
-      @NonNull MeasuredCharacteristic<T> measurement,
+  private static <T extends Comparable<? super T>, R> @NonNull R toProfileValue(
+      @NonNull CharacteristicValue<T> measurement,
       @NonNull Function<@NonNull T, @NonNull BigDecimal> extractor,
       @NonNull String unit,
       @NonNull ProfileValueFactory<R> factory
@@ -97,70 +95,42 @@ public final class FeedstockProfileSummaryRestMapper {
     requireNonNull(factory, "profile value factory cannot be null");
 
     return switch (measurement) {
-      case ExactMeasurement<T> exact -> exactProfileValue(exact, extractor, unit, factory);
-      case RangeMeasurement<T> range -> rangeProfileValue(range, extractor, unit, factory);
-      case StatisticalMeasurement<T> statistical -> statisticalProfileValue(statistical, extractor, unit, factory);
+      case PointCharacteristicValue<T>(var measuredValue) ->
+          pointProfileValue(measuredValue, extractor, unit, factory);
+      case IntervalCharacteristicValue<T>(var minimum, var maximum) ->
+          intervalProfileValue(minimum, maximum, extractor, unit, factory);
     };
   }
 
-  private static <T extends Comparable<T>, R> @NonNull R exactProfileValue(
-      @NonNull ExactMeasurement<T> measurement,
+  private static <T extends Comparable<? super T>, R> @NonNull R pointProfileValue(
+      @NonNull T measuredValue,
       @NonNull Function<@NonNull T, @NonNull BigDecimal> extractor,
       @NonNull String unit,
       @NonNull ProfileValueFactory<R> factory
   ) {
     return factory.create(
-        quantity(extractor.apply(measurement.value()), unit),
-        MeasurementValueKind.EXACT,
-        null,
-        null,
+        quantity(extractor.apply(measuredValue), unit),
+        AxisValueKind.POINT,
         null,
         null
     );
   }
 
-  private static <T extends Comparable<T>, R> @NonNull R rangeProfileValue(
-      @NonNull RangeMeasurement<T> measurement,
+  private static <T extends Comparable<? super T>, R> @NonNull R intervalProfileValue(
+      @NonNull T minimum,
+      @NonNull T maximum,
       @NonNull Function<@NonNull T, @NonNull BigDecimal> extractor,
       @NonNull String unit,
       @NonNull ProfileValueFactory<R> factory
   ) {
-    final var min = extractor.apply(measurement.min());
-    final var max = extractor.apply(measurement.max());
+    final var min = extractor.apply(minimum);
+    final var max = extractor.apply(maximum);
     return factory.create(
-        quantity(rangeMidpoint(min, max), unit),
-        MeasurementValueKind.RANGE_MIDPOINT,
+        quantity(intervalMidpoint(min, max), unit),
+        AxisValueKind.INTERVAL_MIDPOINT,
         quantity(min, unit),
-        quantity(max, unit),
-        null,
-        null
+        quantity(max, unit)
     );
-  }
-
-  private static <T extends Comparable<T>, R> @NonNull R statisticalProfileValue(
-      @NonNull StatisticalMeasurement<T> measurement,
-      @NonNull Function<@NonNull T, @NonNull BigDecimal> extractor,
-      @NonNull String unit,
-      @NonNull ProfileValueFactory<R> factory
-  ) {
-    final var hasMedian = measurement.median() != null;
-    return factory.create(
-        quantity(extractor.apply(statisticalValue(measurement, hasMedian)), unit),
-        hasMedian ? MeasurementValueKind.STATISTICAL_MEDIAN : MeasurementValueKind.STATISTICAL_MEAN,
-        null,
-        null,
-        nullableQuantity(measurement.standardDeviation(), unit),
-        measurement.sampleSize()
-    );
-  }
-
-  private static <T extends Comparable<T>> @NonNull T statisticalValue(
-      @NonNull StatisticalMeasurement<T> measurement,
-      boolean hasMedian
-  ) {
-    return hasMedian
-        ? requireNonNull(measurement.median(), "statistical profile value median cannot be null")
-        : measurement.mean();
   }
 
   private static @NonNull BigDecimal specificGravity(@NonNull SugarConcentration concentration) {
@@ -168,7 +138,7 @@ public final class FeedstockProfileSummaryRestMapper {
     return concentration.specificGravity().asBigDecimal();
   }
 
-  private static @NonNull BigDecimal rangeMidpoint(
+  private static @NonNull BigDecimal intervalMidpoint(
       @NonNull BigDecimal min,
       @NonNull BigDecimal max
   ) {
@@ -180,13 +150,6 @@ public final class FeedstockProfileSummaryRestMapper {
       @NonNull String unit
   ) {
     return new DecimalQuantityResponse(value, unit);
-  }
-
-  private static @Nullable DecimalQuantityResponse nullableQuantity(
-      @Nullable BigDecimal value,
-      @NonNull String unit
-  ) {
-    return value == null ? null : quantity(value, unit);
   }
 
   public record ProfileSummary<T>(
@@ -204,11 +167,9 @@ public final class FeedstockProfileSummaryRestMapper {
     @NonNull
     T create(
         @NonNull DecimalQuantityResponse value,
-        @NonNull MeasurementValueKind valueKind,
+        @NonNull AxisValueKind valueKind,
         @Nullable DecimalQuantityResponse min,
-        @Nullable DecimalQuantityResponse max,
-        @Nullable DecimalQuantityResponse standardDeviation,
-        @Nullable Integer sampleSize
+        @Nullable DecimalQuantityResponse max
     );
   }
 }

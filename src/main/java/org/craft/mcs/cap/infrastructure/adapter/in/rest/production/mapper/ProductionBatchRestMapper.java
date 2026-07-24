@@ -7,7 +7,11 @@ import org.craft.mcs.cap.core.production.application.port.in.ProductionBatchCrea
 import org.craft.mcs.cap.core.production.candidate.domain.model.ProductionBatchCandidateId;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
+import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.abv.mapper.PotentialAbvPredictionRestMapper;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.mapper.ChemicalProfileRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.CreateProductionBatchRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.ProductionBatchDetailsResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.ProductionBatchListResponse;
@@ -16,11 +20,15 @@ import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.measurement.Canon
 import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import static java.util.Objects.requireNonNull;
 
 
 public final class ProductionBatchRestMapper {
+
+  private static final @NonNull ChemicalProfileAxisExtractor AXIS_EXTRACTOR =
+      new ChemicalProfileAxisExtractor();
 
   private ProductionBatchRestMapper() {
   }
@@ -71,9 +79,11 @@ public final class ProductionBatchRestMapper {
         batch.alcoholicFermentationState(),
         new DecimalQuantityResponse(batch.currentVolume().liters(), CanonicalUnitLabels.VOLUME),
         ProductionBatchCompositionRestMapper.toProfilePointResponse(batch.initialProfileSnapshot()),
-        ProductionBatchCompositionRestMapper.toYeastAssimilableNitrogenResponse(
-            batch.initialProfileSnapshot()
-        ),
+        ChemicalProfileRestMapper.toResponse(details.currentProfile().chemicalProfile()),
+        details.currentProfile().evidence().stream()
+            .map(ProductionMeasurementEvidenceRestMapper::toResponse)
+            .toList(),
+        toYeastAssimilableNitrogenResponse(details.currentProfile().chemicalProfile()),
         PotentialAbvPredictionRestMapper.toResponse(details.potentialAbv()),
         batch.note()
     );
@@ -89,6 +99,18 @@ public final class ProductionBatchRestMapper {
             .map(ProductionBatchRestMapper::toDetailsResponse)
             .toList()
     );
+  }
+
+  private static @Nullable DecimalQuantityResponse toYeastAssimilableNitrogenResponse(
+      @NonNull ChemicalProfile profile
+  ) {
+    return AXIS_EXTRACTOR.extract(profile)
+        .valueOf(ChemicalAxis.YEAST_ASSIMILABLE_NITROGEN)
+        .map(axis -> new DecimalQuantityResponse(
+            axis.value(),
+            CanonicalUnitLabels.YEAST_ASSIMILABLE_NITROGEN
+        ))
+        .orElse(null); // NOSONAR
   }
 
 }

@@ -2,9 +2,12 @@ package org.craft.mcs.cap.core.appleprofile.domain.model;
 
 import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
+import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfileSource;
+import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
 import org.jmolecules.ddd.annotation.AggregateRoot;
 import org.jmolecules.ddd.annotation.Identity;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import static java.util.Objects.requireNonNull;
 
@@ -26,15 +29,37 @@ public final class AppleVariety {
   private @NonNull AppleVarietyName name;
 
   private @NonNull ChemicalProfile chemicalProfile;
+  private @Nullable ChemicalProfileSource chemicalProfileSource;
+  private @Nullable ConfidenceLevel chemicalProfileConfidence;
 
   private AppleVariety(
       @NonNull AppleVarietyId varietyId,
       @NonNull AppleVarietyName name,
-      @NonNull ChemicalProfile chemicalProfile
+      @NonNull ChemicalProfile chemicalProfile,
+      @Nullable ChemicalProfileSource chemicalProfileSource,
+      @Nullable ConfidenceLevel chemicalProfileConfidence
   ) {
     this.varietyId = requireNonNull(varietyId, "apple variety id cannot be null");
     this.name = requireNonNull(name, "apple variety name cannot be null");
     this.chemicalProfile = validateCatalogChemicalProfile(chemicalProfile);
+    this.chemicalProfileSource = chemicalProfileSource;
+    this.chemicalProfileConfidence = chemicalProfileConfidence;
+  }
+
+  public static @NonNull AppleVariety create(
+      @NonNull AppleVarietyId varietyId,
+      @NonNull AppleVarietyName name,
+      @NonNull ChemicalProfile chemicalProfile,
+      @Nullable ChemicalProfileSource chemicalProfileSource,
+      @Nullable ConfidenceLevel chemicalProfileConfidence
+  ) {
+    return new AppleVariety(
+        varietyId,
+        name,
+        chemicalProfile,
+        chemicalProfileSource,
+        chemicalProfileConfidence
+    );
   }
 
   public static @NonNull AppleVariety create(
@@ -42,7 +67,7 @@ public final class AppleVariety {
       @NonNull AppleVarietyName name,
       @NonNull ChemicalProfile chemicalProfile
   ) {
-    return new AppleVariety(varietyId, name, chemicalProfile);
+    return create(varietyId, name, chemicalProfile, null, null);
   }
 
   public @NonNull AppleVarietyId varietyId() {
@@ -57,6 +82,14 @@ public final class AppleVariety {
     return chemicalProfile;
   }
 
+  public @Nullable ChemicalProfileSource chemicalProfileSource() {
+    return chemicalProfileSource;
+  }
+
+  public @Nullable ConfidenceLevel chemicalProfileConfidence() {
+    return chemicalProfileConfidence;
+  }
+
   public @NonNull AppleVariety rename(@NonNull AppleVarietyName name) {
     this.name = requireNonNull(name, "apple variety name cannot be null");
     return this;
@@ -64,6 +97,15 @@ public final class AppleVariety {
 
   public @NonNull AppleVariety changeChemicalProfile(@NonNull ChemicalProfile chemicalProfile) {
     this.chemicalProfile = validateCatalogChemicalProfile(chemicalProfile);
+    return this;
+  }
+
+  public @NonNull AppleVariety changeChemicalProfileProvenance(
+      @Nullable ChemicalProfileSource source,
+      @Nullable ConfidenceLevel confidence
+  ) {
+    chemicalProfileSource = source;
+    chemicalProfileConfidence = confidence;
     return this;
   }
 

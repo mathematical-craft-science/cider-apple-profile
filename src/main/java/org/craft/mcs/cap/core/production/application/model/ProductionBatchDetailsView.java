@@ -9,11 +9,13 @@ import static java.util.Objects.requireNonNull;
 /** Production batch read model enriched with derived analysis required by read scenarios. */
 public record ProductionBatchDetailsView(
     @NonNull ProductionBatchView batch,
+    @NonNull ProductionCurrentProfileView currentProfile,
     @NonNull PotentialAbvPrediction potentialAbv
 ) {
 
   public ProductionBatchDetailsView {
     requireNonNull(batch, "production batch view cannot be null");
+    requireNonNull(currentProfile, "production current profile cannot be null");
     requireNonNull(potentialAbv, "production potential ABV prediction cannot be null");
   }
 }

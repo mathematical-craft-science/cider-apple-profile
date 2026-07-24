@@ -8,6 +8,8 @@ import org.craft.mcs.cap.core.feedstock.application.batch.model.FeedstockBatchSu
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentProfileSettings;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.*;
 import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementView;
+import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockProfileAxisEvidence;
+import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockProfileCharacteristic;
 import org.craft.mcs.cap.core.profileanalysis.ph.domain.PhPlanningGuidance;
 import org.craft.mcs.cap.core.profileanalysis.ph.domain.PhPlanningGuidanceCode;
 import org.craft.mcs.cap.core.profileanalysis.ph.domain.PhPlanningGuidancePolicy;
@@ -15,10 +17,9 @@ import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.Sug
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
-import org.craft.mcs.cap.shared.kernel.measurement.ExactMeasurement;
-import org.craft.mcs.cap.shared.kernel.measurement.MeasuredCharacteristic;
-import org.craft.mcs.cap.shared.kernel.measurement.RangeMeasurement;
-import org.craft.mcs.cap.shared.kernel.measurement.StatisticalMeasurement;
+import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
+import org.craft.mcs.cap.shared.kernel.characteristic.CharacteristicValue;
+import org.craft.mcs.cap.shared.kernel.characteristic.IntervalCharacteristicValue;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 
@@ -50,7 +51,12 @@ public final class FeedstockCurrentProfileAssessmentService {
     final var measurementFreshnessPolicy = new FeedstockCurrentMeasurementFreshnessPolicy(
         settings.measurementStaleAfter()
     );
-    final var stale = measurementFreshnessPolicy.isStale(measurement.measuredAt(), clock.instant());
+    final var oldestEvidenceAt = measurement.axisEvidence().stream()
+        .filter(FeedstockCurrentProfileAssessmentService::isPlanningFreshnessEvidence)
+        .map(FeedstockProfileAxisEvidence::measuredAt)
+        .min(java.time.Instant::compareTo)
+        .orElse(measurement.measuredAt());
+    final var stale = measurementFreshnessPolicy.isStale(oldestEvidenceAt, clock.instant());
     if (!stale) {
       return new FeedstockCurrentMeasurementFreshnessView(
           FeedstockCurrentMeasurementFreshnessStatus.CURRENT,
@@ -64,6 +70,42 @@ public final class FeedstockCurrentProfileAssessmentService {
         true,
         STALE_MEASUREMENT_REASON
     );
+  }
+
+  public @NonNull List<@NonNull FeedstockCurrentProfileEvidenceView> evidence(
+      @NonNull FeedstockMeasurementView measurement,
+      @NonNull FeedstockCurrentProfileSettings settings
+  ) {
+    requireNonNull(measurement, "feedstock measurement cannot be null");
+    requireNonNull(settings, "feedstock current profile settings cannot be null");
+    final var freshnessPolicy = new FeedstockCurrentMeasurementFreshnessPolicy(
+        settings.measurementStaleAfter()
+    );
+    final var assessedAt = clock.instant();
+    return measurement.axisEvidence().stream()
+        .map(axis -> {
+          final var stale = freshnessPolicy.isStale(axis.measuredAt(), assessedAt);
+          return new FeedstockCurrentProfileEvidenceView(
+              axis.characteristic(),
+              axis.measurementSetId(),
+              axis.recordId(),
+              axis.measuredAt(),
+              axis.source(),
+              axis.confidence(),
+              stale
+                  ? FeedstockCurrentMeasurementFreshnessStatus.STALE
+                  : FeedstockCurrentMeasurementFreshnessStatus.CURRENT,
+              stale
+          );
+        })
+        .toList();
+  }
+
+  private static boolean isPlanningFreshnessEvidence(
+      @NonNull FeedstockProfileAxisEvidence evidence
+  ) {
+    return evidence.characteristic() == FeedstockProfileCharacteristic.SUGAR
+        || evidence.characteristic() == FeedstockProfileCharacteristic.TITRATABLE_ACIDITY;
   }
 
   public @NonNull FeedstockPlanningReadinessView planningReadinessWithoutMeasurement(
@@ -114,13 +156,13 @@ public final class FeedstockCurrentProfileAssessmentService {
     ));
     checks.add(planningCheck(
         FeedstockPlanningReadinessFactor.TANNIN,
-        profile.tanninity().isPresent()
+        profile.tannin().isPresent()
             ? FeedstockCurrentProfileSignalSeverity.OK
             : FeedstockCurrentProfileSignalSeverity.WARNING,
-        profile.tanninity().isPresent()
+        profile.tannin().isPresent()
             ? FeedstockPlanningReadinessCheckCode.TANNIN_PRESENT
             : FeedstockPlanningReadinessCheckCode.TANNIN_MISSING,
-        profile.tanninity().isPresent()
+        profile.tannin().isPresent()
             ? "Tannin is available"
             : "Tannin is missing; target-aware structure assessment will be incomplete"
     ));
@@ -140,17 +182,19 @@ public final class FeedstockCurrentProfileAssessmentService {
   public @NonNull FeedstockCurrentProfileDataQualityView dataQuality(
       @NonNull ChemicalProfile profile,
       @NonNull SugarAcidityProfileEvaluation evaluation,
-      @NonNull FeedstockCurrentMeasurementFreshnessView freshness
+      @NonNull FeedstockCurrentMeasurementFreshnessView freshness,
+      @NonNull List<@NonNull FeedstockProfileAxisEvidence> evidence
   ) {
     requireNonNull(profile, "chemical profile cannot be null");
     requireNonNull(evaluation, "sugar-acidity profile evaluation cannot be null");
     requireNonNull(freshness, "feedstock measurement freshness cannot be null");
+    requireNonNull(evidence, "feedstock profile evidence cannot be null");
 
     final var indicators = new ArrayList<FeedstockCurrentProfileDataQualityIndicator>();
     addSugarAcidityQuality(indicators, evaluation);
     addOptionalAxisQuality(indicators, profile);
-    addSourceQuality(indicators, profile);
-    addConfidenceQuality(indicators, profile);
+    addSourceQuality(indicators, evidence);
+    addConfidenceQuality(indicators, evidence);
     addNonPointValueQuality(indicators, profile);
     if (freshness.stale()) {
       indicators.add(dataQualityIndicator(
@@ -196,7 +240,7 @@ public final class FeedstockCurrentProfileAssessmentService {
       @NonNull List<FeedstockCurrentProfileDataQualityIndicator> indicators,
       @NonNull ChemicalProfile profile
   ) {
-    if (profile.tanninity().isEmpty()) {
+    if (profile.tannin().isEmpty()) {
       indicators.add(dataQualityIndicator(
           FeedstockCurrentProfileDataQualityIndicatorCode.TANNIN_MISSING,
           FeedstockCurrentProfileSignalSeverity.WARNING,
@@ -221,9 +265,9 @@ public final class FeedstockCurrentProfileAssessmentService {
 
   private static void addSourceQuality(
       @NonNull List<FeedstockCurrentProfileDataQualityIndicator> indicators,
-      @NonNull ChemicalProfile profile
+      @NonNull List<@NonNull FeedstockProfileAxisEvidence> evidence
   ) {
-    if (profile.source() == null) {
+    if (evidence.stream().anyMatch(axis -> axis.source() == null)) {
       indicators.add(dataQualityIndicator(
           FeedstockCurrentProfileDataQualityIndicatorCode.SOURCE_MISSING,
           FeedstockCurrentProfileSignalSeverity.WARNING,
@@ -234,10 +278,9 @@ public final class FeedstockCurrentProfileAssessmentService {
 
   private static void addConfidenceQuality(
       @NonNull List<FeedstockCurrentProfileDataQualityIndicator> indicators,
-      @NonNull ChemicalProfile profile
+      @NonNull List<@NonNull FeedstockProfileAxisEvidence> evidence
   ) {
-    final var confidence = profile.confidence();
-    if (confidence == null) {
+    if (evidence.stream().anyMatch(axis -> axis.confidence() == null)) {
       indicators.add(dataQualityIndicator(
           FeedstockCurrentProfileDataQualityIndicatorCode.CONFIDENCE_MISSING,
           FeedstockCurrentProfileSignalSeverity.WARNING,
@@ -245,7 +288,7 @@ public final class FeedstockCurrentProfileAssessmentService {
       ));
       return;
     }
-    if (confidence == ConfidenceLevel.LOW) {
+    if (evidence.stream().anyMatch(axis -> axis.confidence() == ConfidenceLevel.LOW)) {
       indicators.add(dataQualityIndicator(
           FeedstockCurrentProfileDataQualityIndicatorCode.LOW_CONFIDENCE,
           FeedstockCurrentProfileSignalSeverity.WARNING,
@@ -262,7 +305,7 @@ public final class FeedstockCurrentProfileAssessmentService {
       indicators.add(dataQualityIndicator(
           FeedstockCurrentProfileDataQualityIndicatorCode.NON_POINT_VALUES,
           FeedstockCurrentProfileSignalSeverity.INFO,
-          "Current profile contains range or statistical values"
+          "Current profile contains interval values"
       ));
     }
   }
@@ -271,19 +314,18 @@ public final class FeedstockCurrentProfileAssessmentService {
     return profile.sugar().map(FeedstockCurrentProfileAssessmentService::isNonPoint).orElse(false)
         || profile.ph().map(FeedstockCurrentProfileAssessmentService::isNonPoint).orElse(false)
         || profile.titratableAcidity().map(FeedstockCurrentProfileAssessmentService::isNonPoint).orElse(false)
-        || profile.tanninity().map(FeedstockCurrentProfileAssessmentService::isNonPoint).orElse(false)
+        || profile.tannin().map(FeedstockCurrentProfileAssessmentService::isNonPoint).orElse(false)
         || profile.yeastAssimilableNitrogen()
             .map(FeedstockCurrentProfileAssessmentService::isNonPoint)
             .orElse(false);
   }
 
-  private static <T extends Comparable<T>> boolean isNonPoint(
-      @NonNull MeasuredCharacteristic<T> measurement
+  private static <T extends Comparable<? super T>> boolean isNonPoint(
+      @NonNull CharacteristicValue<T> measurement
   ) {
     return switch (measurement) {
-      case ExactMeasurement<T> _ -> false;
-      case RangeMeasurement<T> _ -> true;
-      case StatisticalMeasurement<T> _ -> true;
+      case PointCharacteristicValue<T> _ -> false;
+      case IntervalCharacteristicValue<T> _ -> true;
     };
   }
 

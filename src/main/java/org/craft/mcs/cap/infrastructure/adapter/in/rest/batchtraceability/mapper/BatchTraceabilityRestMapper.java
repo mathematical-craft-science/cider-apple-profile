@@ -124,9 +124,7 @@ public final class BatchTraceabilityRestMapper {
         new DecimalQuantityResponse(axisValue.value(), unit),
         axisValue.valueKind(),
         quantity(axisValue.min(), unit),
-        quantity(axisValue.max(), unit),
-        quantity(axisValue.standardDeviation(), unit),
-        axisValue.sampleSize()
+        quantity(axisValue.max(), unit)
     );
   }
 

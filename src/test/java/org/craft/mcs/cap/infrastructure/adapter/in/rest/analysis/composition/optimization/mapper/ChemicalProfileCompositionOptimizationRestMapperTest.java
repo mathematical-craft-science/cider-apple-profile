@@ -26,7 +26,7 @@ import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.BuiltInSu
 import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.MeasurementValueKind;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValueKind;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
@@ -112,9 +112,7 @@ class ChemicalProfileCompositionOptimizationRestMapperTest {
     return new AxisValue(
         axis,
         new BigDecimal(value),
-        MeasurementValueKind.EXACT,
-        null,
-        null,
+        AxisValueKind.POINT,
         null,
         null
     );

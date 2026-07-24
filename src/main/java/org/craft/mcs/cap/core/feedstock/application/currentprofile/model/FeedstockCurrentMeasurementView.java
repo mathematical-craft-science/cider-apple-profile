@@ -1,8 +1,8 @@
 package org.craft.mcs.cap.core.feedstock.application.currentprofile.model;
 
 import java.time.Instant;
-import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurementId;
-import org.craft.mcs.cap.core.feedstock.domain.model.measurement.value.FeedstockMeasurementName;
+import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementId;
+import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementName;
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;

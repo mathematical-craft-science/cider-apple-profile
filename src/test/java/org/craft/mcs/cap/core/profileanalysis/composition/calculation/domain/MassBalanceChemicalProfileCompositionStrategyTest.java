@@ -5,7 +5,7 @@ import java.util.List;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.MeasurementValueKind;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValueKind;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -17,7 +17,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class MassBalanceChemicalProfileCompositionStrategyTest {
 
-  private final MassBalanceChemicalProfileCompositionStrategy calculator = new MassBalanceChemicalProfileCompositionStrategy();
+  private final MassBalanceChemicalProfileCompositionStrategy calculator =
+      new MassBalanceChemicalProfileCompositionStrategy();
 
   @Test
   void calculatesCompositionFromAbsoluteVolumes() {
@@ -32,7 +33,7 @@ class MassBalanceChemicalProfileCompositionStrategyTest {
     assertThat(result.profile().tannin().value()).isEqualByComparingTo("2000.000000000");
     assertThat(result.yeastAssimilableNitrogen()).isNotNull();
     assertThat(result.yeastAssimilableNitrogen().value()).isEqualByComparingTo("180.000000000");
-    assertThat(result.profile().sugar().valueKind()).isEqualTo(MeasurementValueKind.CALCULATED);
+    assertThat(result.profile().sugar().valueKind()).isEqualTo(AxisValueKind.CALCULATED);
     assertThat(result.totalVolume()).isNotNull();
     assertThat(result.totalVolume().liters()).isEqualByComparingTo("30");
     assertThat(result.warnings()).isEmpty();
@@ -92,7 +93,11 @@ class MassBalanceChemicalProfileCompositionStrategyTest {
   @Test
   void rejectsMissingRequiredSugarOrAcidity() {
     assertThatThrownBy(() -> calculator.calculate(ChemicalProfileCompositionRequest.calculateTanninWhenComplete(List.of(
-        source("missing-sugar", ChemicalProfileAxes.of(null, axis(ChemicalAxis.ACIDITY, "5.0"), null), CompositionProportion.of("1")),
+        source(
+            "missing-sugar",
+            ChemicalProfileAxes.of(null, axis(ChemicalAxis.ACIDITY, "5.0"), null),
+            CompositionProportion.of("1")
+        ),
         source("complete", axes("1.040", "9.0", null), CompositionProportion.of("1"))
     ))))
         .isInstanceOf(InvalidChemicalProfileCompositionException.class)
@@ -100,7 +105,11 @@ class MassBalanceChemicalProfileCompositionStrategyTest {
         .hasMessageContaining("missing-sugar");
 
     assertThatThrownBy(() -> calculator.calculate(ChemicalProfileCompositionRequest.calculateTanninWhenComplete(List.of(
-        source("missing-acidity", ChemicalProfileAxes.of(axis(ChemicalAxis.SUGAR, "1.050"), null, null), CompositionProportion.of("1")),
+        source(
+            "missing-acidity",
+            ChemicalProfileAxes.of(axis(ChemicalAxis.SUGAR, "1.050"), null, null),
+            CompositionProportion.of("1")
+        ),
         source("complete", axes("1.040", "9.0", null), CompositionProportion.of("1"))
     ))))
         .isInstanceOf(InvalidChemicalProfileCompositionException.class)
@@ -118,7 +127,7 @@ class MassBalanceChemicalProfileCompositionStrategyTest {
         ChemicalProfileCompositionTanninPolicy.REQUIRE_TANNIN
     )))
         .isInstanceOf(InvalidChemicalProfileCompositionException.class)
-        .hasMessageContaining("missing required axis TANNINITY")
+        .hasMessageContaining("missing required axis TANNIN")
         .hasMessageContaining("b");
   }
 
@@ -149,7 +158,12 @@ class MassBalanceChemicalProfileCompositionStrategyTest {
       @NonNull VolumeValue volume,
       @Nullable VolumeValue availableVolume
   ) {
-    return new ChemicalProfileCompositionSource(reference(id), axes, new AbsoluteCompositionVolume(volume), availableVolume);
+    return new ChemicalProfileCompositionSource(
+        reference(id),
+        axes,
+        new AbsoluteCompositionVolume(volume),
+        availableVolume
+    );
   }
 
   private static @NonNull ChemicalProfileCompositionSource source(
@@ -181,7 +195,7 @@ class MassBalanceChemicalProfileCompositionStrategyTest {
     return ChemicalProfileAxes.of(
         axis(ChemicalAxis.SUGAR, sugar),
         axis(ChemicalAxis.ACIDITY, acidity),
-        tannin == null ? null : axis(ChemicalAxis.TANNINITY, tannin),
+        tannin == null ? null : axis(ChemicalAxis.TANNIN, tannin),
         yeastAssimilableNitrogen == null
             ? null
             : axis(ChemicalAxis.YEAST_ASSIMILABLE_NITROGEN, yeastAssimilableNitrogen)
@@ -195,9 +209,7 @@ class MassBalanceChemicalProfileCompositionStrategyTest {
     return new AxisValue(
         axis,
         new BigDecimal(value),
-        MeasurementValueKind.EXACT,
-        null,
-        null,
+        AxisValueKind.POINT,
         null,
         null
     );

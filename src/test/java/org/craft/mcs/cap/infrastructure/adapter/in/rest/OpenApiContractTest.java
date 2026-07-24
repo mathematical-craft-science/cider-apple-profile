@@ -40,10 +40,11 @@ import org.craft.mcs.cap.core.feedstock.application.batch.port.in.DeleteFeedstoc
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.ListFeedstockBatchesUseCase;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.UpdateFeedstockBatchUseCase;
 import org.craft.mcs.cap.core.feedstock.application.detail.port.in.GetFeedstockBatchDetailUseCase;
-import org.craft.mcs.cap.core.feedstock.application.measurement.port.in.CreateFeedstockMeasurementUseCase;
-import org.craft.mcs.cap.core.feedstock.application.measurement.port.in.DeleteFeedstockMeasurementUseCase;
 import org.craft.mcs.cap.core.feedstock.application.measurement.port.in.ListFeedstockMeasurementsUseCase;
-import org.craft.mcs.cap.core.feedstock.application.measurement.port.in.UpdateFeedstockMeasurementUseCase;
+import org.craft.mcs.cap.core.measurement.application.port.in.CorrectMeasurementSetUseCase;
+import org.craft.mcs.cap.core.measurement.application.port.in.CreateMeasurementSetUseCase;
+import org.craft.mcs.cap.core.measurement.application.port.in.QueryMeasurementSetsUseCase;
+import org.craft.mcs.cap.core.measurement.application.port.in.RetractMeasurementSetUseCase;
 import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.QueryFeedstockPlanningBatchesUseCase;
 import org.craft.mcs.cap.core.feedstock.application.planning.composition.port.in.*;
 import org.craft.mcs.cap.core.production.application.port.in.CreateProductionBatchUseCase;
@@ -57,11 +58,14 @@ import org.craft.mcs.cap.core.profileanalysis.composition.optimization.applicati
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.graph.domain.SugarAcidityGraphMetadata;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.SugarAcidityTargetResolver;
 import org.craft.mcs.cap.infrastructure.adapter.in.importer.appleprofile.AppleVarietyJsonSeedImporter;
+import org.craft.mcs.cap.infrastructure.adapter.in.measurement.MeasurementValueInputAcl;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.ChemicalProfileCompositionRequestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.profiletarget.AppleVarietyProfileTargetCandidateRequestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.sugaracidity.mapper.AppleVarietySugarAcidityZoneRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.sugaracidity.mapper.FeedstockBatchSugarAcidityRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.sugaracidity.mapper.FeedstockMeasurementSugarAcidityZoneRestMapper;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.measurement.FeedstockMeasurementCompatibilityFacade;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement.MeasurementSetRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.mapper.ProductionBatchCandidateRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.sugaracidity.SugarAcidityGraphMetadataResponseProvider;
 import org.craft.mcs.cap.infrastructure.configuration.OpenApiConfiguration;
@@ -106,7 +110,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
     ChemicalProfileCompositionRequestMapper.class,
     AppleVarietyProfileTargetCandidateRequestMapper.class,
     ProductionBatchCandidateRestMapper.class,
-    SugarAcidityGraphMetadataResponseProvider.class
+    SugarAcidityGraphMetadataResponseProvider.class,
+    MeasurementValueInputAcl.class,
+    MeasurementSetRestMapper.class
 })
 @MockitoBean(types = {
     ContributorProfileUseCase.class,
@@ -151,10 +157,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
     ListFeedstockBatchesUseCase.class,
     UpdateFeedstockBatchUseCase.class,
     GetFeedstockBatchDetailUseCase.class,
-    CreateFeedstockMeasurementUseCase.class,
-    DeleteFeedstockMeasurementUseCase.class,
+    CreateMeasurementSetUseCase.class,
+    CorrectMeasurementSetUseCase.class,
+    QueryMeasurementSetsUseCase.class,
+    RetractMeasurementSetUseCase.class,
+    FeedstockMeasurementCompatibilityFacade.class,
     ListFeedstockMeasurementsUseCase.class,
-    UpdateFeedstockMeasurementUseCase.class,
     QueryFeedstockPlanningBatchesUseCase.class,
     OptimizeFeedstockBatchCompositionUseCase.class,
     CreateProductionBatchUseCase.class,
@@ -260,6 +268,29 @@ class OpenApiContractTest {
   }
 
   @Test
+  void openApiMarksLegacyFeedstockMeasurementWritesAsDeprecated() throws Exception {
+    final var openApi = openApi();
+
+    assertThat(List.of(
+        operation(openApi, "/feedstock-batches/{batchId}/measurements", "post")
+            .path("deprecated")
+            .asBoolean(),
+        operation(openApi, "/feedstock-batches/{batchId}/measurements", "get")
+            .path("deprecated")
+            .asBoolean(),
+        operation(openApi, "/feedstock-batches/{batchId}/measurements/{measurementId}", "put")
+            .path("deprecated")
+            .asBoolean(),
+        operation(openApi, "/feedstock-batches/{batchId}/measurements/{measurementId}", "patch")
+            .path("deprecated")
+            .asBoolean(),
+        operation(openApi, "/feedstock-batches/{batchId}/measurements/{measurementId}", "delete")
+            .path("deprecated")
+            .asBoolean()
+    )).containsOnly(true);
+  }
+
+  @Test
   void openApiDescribesJsonMediaTypesAndStrongDtoSchemas() throws Exception {
     final var openApi = openApi();
 
@@ -272,6 +303,11 @@ class OpenApiContractTest {
     assertJsonResponse(openApi, "/analysis/feedstock-batches/profile-target-candidates", "post");
     assertJsonResponse(openApi, "/chemical-profiles/sugar-acidity-zone/plot-metadata", "get");
     assertJsonResponse(openApi, "/measurement-units/metadata", "get");
+    assertJsonResponse(openApi, "/measurement-sets", "post", "201");
+    assertJsonResponse(openApi, "/measurement-sets", "get");
+    assertJsonResponse(openApi, "/measurement-sets/{measurementSetId}", "get");
+    assertJsonResponse(openApi, "/measurement-sets/{measurementSetId}", "put");
+    assertJsonResponse(openApi, "/measurement-sets/{measurementSetId}", "patch");
     assertJsonResponse(openApi, "/chemical-profile-compositions/calculations", "post");
     assertJsonResponse(openApi, "/chemical-profile-compositions/optimizations", "post");
     assertJsonResponse(openApi, "/feedstock-batches", "get");
@@ -310,6 +346,9 @@ class OpenApiContractTest {
     assertJsonResponse(openApi, "/account/workspace-invitations/{invitationId}", "get");
 
     assertJsonRequest(openApi, "/feedstock-batches", "post");
+    assertJsonRequest(openApi, "/measurement-sets", "post");
+    assertJsonRequest(openApi, "/measurement-sets/{measurementSetId}", "put");
+    assertJsonRequest(openApi, "/measurement-sets/{measurementSetId}", "patch");
     assertJsonRequest(openApi, "/feedstock-batches/{batchId}", "put");
     assertJsonRequest(openApi, "/feedstock-batches/{batchId}", "patch");
     assertJsonRequest(openApi, "/feedstock-batches/{batchId}/measurements", "post");
@@ -536,24 +575,106 @@ class OpenApiContractTest {
     assertOneOfSchema(openApi, "ChemicalMeasurementRequest");
     assertNoAllOfSchema(openApi, "ExactChemicalMeasurementRequest");
     assertNoAllOfSchema(openApi, "RangeChemicalMeasurementRequest");
-    assertNoAllOfSchema(openApi, "StatisticalChemicalMeasurementRequest");
     assertOneOfSchema(openApi, "ChemicalMeasurementResponse");
     assertNoAllOfSchema(openApi, "ExactChemicalMeasurementResponse");
     assertNoAllOfSchema(openApi, "RangeChemicalMeasurementResponse");
-    assertNoAllOfSchema(openApi, "StatisticalChemicalMeasurementResponse");
+    assertOneOfSchema(openApi, "MeasurementCharacteristicRequest");
+    assertNoAllOfSchema(openApi, "DirectMeasurementCharacteristicRequest");
+    assertNoAllOfSchema(openApi, "RepeatedMeasurementCharacteristicRequest");
+    assertOneOfSchema(openApi, "MeasurementValueRequest");
+    assertNoAllOfSchema(openApi, "PointMeasurementValueRequest");
+    assertNoAllOfSchema(openApi, "IntervalMeasurementValueRequest");
+    assertOneOfSchema(openApi, "MeasurementValueResponse");
+    assertNoAllOfSchema(openApi, "PointMeasurementValueResponse");
+    assertNoAllOfSchema(openApi, "IntervalMeasurementValueResponse");
+    assertRequiredProperties(
+        openApi,
+        "DirectMeasurementCharacteristicRequest",
+        "inputKind",
+        "characteristic",
+        "value",
+        "measuredAt",
+        "provenance"
+    );
+    assertRequiredProperties(
+        openApi,
+        "RepeatedMeasurementCharacteristicRequest",
+        "inputKind",
+        "characteristic",
+        "observations",
+        "derivationMethod"
+    );
+    assertRequiredProperties(openApi, "PointMeasurementValueRequest", "kind", "value", "unit");
+    assertRequiredProperties(
+        openApi,
+        "IntervalMeasurementValueRequest",
+        "kind",
+        "lower",
+        "upper",
+        "unit"
+    );
+    assertRequiredProperties(
+        openApi,
+        "PointMeasurementValueResponse",
+        "kind",
+        "value"
+    );
+    assertRequiredProperties(
+        openApi,
+        "IntervalMeasurementValueResponse",
+        "kind",
+        "lower",
+        "upper"
+    );
+    assertRequiredProperties(
+        openApi,
+        "MeasurementSetResponse",
+        "measurementSetId",
+        "workspaceId",
+        "subject",
+        "lifecycle",
+        "version",
+        "revisionId",
+        "revisionNumber",
+        "name",
+        "revisionCreatedAt",
+        "actor",
+        "records",
+        "createdAt",
+        "updatedAt"
+    );
+    assertRequiredProperties(
+        openApi,
+        "MeasurementActorReferenceResponse",
+        "type",
+        "id"
+    );
+    assertNotRequiredProperties(
+        openApi,
+        "MeasurementSetResponse",
+        "note",
+        "correctionReason"
+    );
+    assertRequiredProperties(
+        openApi,
+        "MeasurementEvidenceResponse",
+        "characteristic",
+        "measurementSetId",
+        "recordId",
+        "measuredAt",
+        "freshnessStatus",
+        "provenance"
+    );
     assertRequiredProperties(openApi, "ExactChemicalMeasurementResponse", "kind", "value");
     assertRequiredProperties(openApi, "RangeChemicalMeasurementResponse", "kind", "min", "max");
-    assertRequiredProperties(openApi, "StatisticalChemicalMeasurementResponse", "kind", "mean");
     assertNotRequiredProperties(openApi, "ExactChemicalMeasurementResponse", "unit");
     assertNotRequiredProperties(openApi, "RangeChemicalMeasurementResponse", "unit");
-    assertNotRequiredProperties(openApi, "StatisticalChemicalMeasurementResponse", "unit");
     assertOneOfSchema(openApi, "ProfileTargetRequest");
     assertNoAllOfSchema(openApi, "PredefinedZoneProfileTargetRequest");
     assertNoAllOfSchema(openApi, "CustomRectangleProfileTargetRequest");
     assertOneOfSchema(openApi, "SugarAcidityAxisPointResponse");
-    assertNoAllOfSchema(openApi, "ExactSugarAcidityAxisPointResponse");
-    assertNoAllOfSchema(openApi, "RangeSugarAcidityAxisPointResponse");
-    assertNoAllOfSchema(openApi, "StatisticalSugarAcidityAxisPointResponse");
+    assertNoAllOfSchema(openApi, "PointSugarAcidityAxisPointResponse");
+    assertNoAllOfSchema(openApi, "IntervalSugarAcidityAxisPointResponse");
     assertNoAllOfSchema(openApi, "CalculatedSugarAcidityAxisPointResponse");
     assertOneOfSchema(openApi, "SugarAcidityGraphZoneResponse");
     assertNoAllOfSchema(openApi, "RectangleSugarAcidityGraphZoneResponse");
@@ -843,14 +964,10 @@ class OpenApiContractTest {
         openApi,
         "BatchTraceAxisValueResponse",
         "min",
-        "max",
-        "standardDeviation",
-        "sampleSize"
+        "max"
     );
     assertNullable(schemaProperty(openApi, "BatchTraceAxisValueResponse", "min"));
     assertNullable(schemaProperty(openApi, "BatchTraceAxisValueResponse", "max"));
-    assertNullable(schemaProperty(openApi, "BatchTraceAxisValueResponse", "standardDeviation"));
-    assertNullable(schemaProperty(openApi, "BatchTraceAxisValueResponse", "sampleSize"));
 
     assertRequiredProperties(
         openApi,
@@ -1048,14 +1165,10 @@ class OpenApiContractTest {
         openApi,
         "FeedstockWorkspaceProfileValueResponse",
         "min",
-        "max",
-        "standardDeviation",
-        "sampleSize"
+        "max"
     );
     assertNullable(schemaProperty(openApi, "FeedstockWorkspaceProfileValueResponse", "min"));
     assertNullable(schemaProperty(openApi, "FeedstockWorkspaceProfileValueResponse", "max"));
-    assertNullable(schemaProperty(openApi, "FeedstockWorkspaceProfileValueResponse", "standardDeviation"));
-    assertNullable(schemaProperty(openApi, "FeedstockWorkspaceProfileValueResponse", "sampleSize"));
 
     assertRequiredProperties(openApi, "FeedstockWorkspaceMeasurementFreshnessResponse", "status", "stale");
     assertNotRequiredProperties(openApi, "FeedstockWorkspaceMeasurementFreshnessResponse", "reason");
@@ -1170,14 +1283,10 @@ class OpenApiContractTest {
         openApi,
         "FeedstockBatchDetailProfileValueResponse",
         "min",
-        "max",
-        "standardDeviation",
-        "sampleSize"
+        "max"
     );
     assertNullable(schemaProperty(openApi, "FeedstockBatchDetailProfileValueResponse", "min"));
     assertNullable(schemaProperty(openApi, "FeedstockBatchDetailProfileValueResponse", "max"));
-    assertNullable(schemaProperty(openApi, "FeedstockBatchDetailProfileValueResponse", "standardDeviation"));
-    assertNullable(schemaProperty(openApi, "FeedstockBatchDetailProfileValueResponse", "sampleSize"));
 
     assertRequiredProperties(openApi, "FeedstockBatchDetailMeasurementFreshnessResponse", "status", "stale");
     assertNotRequiredProperties(openApi, "FeedstockBatchDetailMeasurementFreshnessResponse", "reason");
@@ -1420,7 +1529,8 @@ class OpenApiContractTest {
       String... propertyNames
   ) {
     final var required = requiredProperties(openApi, schemaName);
-    assertThat(required).doesNotContain(propertyNames);
+    assertThat(required).isNotEmpty()
+        .doesNotContain(propertyNames);
   }
 
   private static List<String> requiredProperties(

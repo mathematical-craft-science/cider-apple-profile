@@ -17,7 +17,7 @@ import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.MeasurementValueKind;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValueKind;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.junit.jupiter.api.Test;
@@ -380,9 +380,7 @@ class BatchTraceabilityGraphProjectorTest {
                 new AxisValue(
                     ChemicalAxis.SUGAR,
                     new BigDecimal(sugar),
-                    MeasurementValueKind.EXACT,
-                    null,
-                    null,
+                    AxisValueKind.POINT,
                     null,
                     null
                 ),

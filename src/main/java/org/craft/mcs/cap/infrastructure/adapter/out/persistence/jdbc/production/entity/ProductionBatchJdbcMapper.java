@@ -8,7 +8,7 @@ import org.craft.mcs.cap.core.production.domain.model.ProductionBatchId;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
 import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
-import org.craft.mcs.cap.shared.kernel.chemical.value.TanninityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
@@ -135,8 +135,8 @@ public final class ProductionBatchJdbcMapper {
     return yeastAssimilableNitrogen == null ? null : yeastAssimilableNitrogen.asBigDecimal();
   }
 
-  private static @Nullable TanninityValue toTanninValue(@Nullable BigDecimal value) {
-    return value == null ? null : TanninityValue.of(value);
+  private static @Nullable TanninValue toTanninValue(@Nullable BigDecimal value) {
+    return value == null ? null : TanninValue.of(value);
   }
 
   private static @Nullable YeastAssimilableNitrogenValue toYeastAssimilableNitrogenValue(@Nullable BigDecimal value) {

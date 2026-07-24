@@ -1,6 +1,8 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.detail.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.List;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.common.dto.FeedstockProfileEvidenceResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.measurement.dto.FeedstockMeasurementResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.readiness.dto.FermentationStartReadinessAssessmentResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.sugaracidity.dto.SugarAcidityAxisPointResponse;
@@ -17,25 +19,33 @@ import org.jspecify.annotations.Nullable;
 @Schema(description = "Current profile read model for a feedstock batch detail page.")
 public record FeedstockBatchCurrentProfileResponse(
     @Schema(
-        description = "Latest measurement used as the current profile source.",
+        description = """
+            Latest contributing MeasurementSet retained as a compatibility anchor. It is not the
+            source of every characteristic in the composite current profile.
+            """,
         nullable = true,
         requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )
     @Nullable FeedstockMeasurementResponse latestMeasurement,
     @Schema(
-        description = "Compact profile summary derived from the latest measurement.",
+        description = "Compact composite profile summary assembled independently per characteristic.",
         nullable = true,
         requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )
     @Nullable FeedstockBatchDetailProfileSummaryResponse profileSummary,
     @Schema(
-        description = "Sugar-acidity graph assessment for the latest measurement.",
+        description = "Per-characteristic evidence selected for the composite current profile.",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
+    @NonNull List<@NonNull FeedstockProfileEvidenceResponse> profileEvidence,
+    @Schema(
+        description = "Sugar-acidity graph assessment for the composite current profile.",
         nullable = true,
         requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )
     @Nullable FeedstockBatchDetailSugarAcidityResponse sugarAcidityAssessment,
     @Schema(
-        description = "Potential ABV prediction from latest sugar measurement.",
+        description = "Potential ABV prediction from the SG evidence selected for the current profile.",
         nullable = true,
         requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )
@@ -47,7 +57,7 @@ public record FeedstockBatchCurrentProfileResponse(
     )
     @Nullable SugarAcidityAxisPointResponse yeastAssimilableNitrogen,
     @Schema(
-        description = "Freshness assessment for latest measurement.",
+        description = "Worst freshness status among the planning-required SG and TA evidence.",
         nullable = true,
         requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )

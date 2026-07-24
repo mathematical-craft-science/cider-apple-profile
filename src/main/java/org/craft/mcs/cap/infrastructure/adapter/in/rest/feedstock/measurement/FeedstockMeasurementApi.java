@@ -22,24 +22,31 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @Tag(
     name = "Feedstock measurements",
-    description = "Feedstock measurement workspace endpoints: create, list, replace, patch and delete measurements."
+    description = "Deprecated Feedstock compatibility facade over generic MeasurementSet use cases."
 )
 public interface FeedstockMeasurementApi {
 
   @Operation(
       summary = "Create feedstock measurement",
+      deprecated = true,
       description = "Creates a feedstock measurement inside an existing batch. The owning workspace is derived from "
           + "the batch.",
       requestBody = @RequestBody(
           description = "Feedstock measurement creation payload.",
           required = true,
-          content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = CreateFeedstockMeasurementRequest.class))
+          content = @Content(
+              mediaType = APPLICATION_JSON_VALUE,
+              schema = @Schema(implementation = CreateFeedstockMeasurementRequest.class)
+          )
       )
   )
   @ApiResponse(
       responseCode = "201",
       description = "Feedstock measurement created.",
-      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = FeedstockMeasurementResponse.class))
+      content = @Content(
+          mediaType = APPLICATION_JSON_VALUE,
+          schema = @Schema(implementation = FeedstockMeasurementResponse.class)
+      )
   )
   @ApiResponse(
       responseCode = "400",
@@ -59,12 +66,16 @@ public interface FeedstockMeasurementApi {
 
   @Operation(
       summary = "List feedstock measurements by batch",
+      deprecated = true,
       description = "Returns feedstock measurement summaries for a single feedstock batch."
   )
   @ApiResponse(
       responseCode = "200",
       description = "Feedstock measurement list.",
-      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = FeedstockMeasurementListResponse.class))
+      content = @Content(
+          mediaType = APPLICATION_JSON_VALUE,
+          schema = @Schema(implementation = FeedstockMeasurementListResponse.class)
+      )
   )
   @NonNull ResponseEntity<@NonNull FeedstockMeasurementListResponse> listByBatchId(
       @Parameter(description = "Feedstock batch identifier.", required = true, schema = @Schema(format = "uuid"))
@@ -73,12 +84,16 @@ public interface FeedstockMeasurementApi {
 
   @Operation(
       summary = "Replace feedstock measurement",
+      deprecated = true,
       description = "Replaces editable feedstock measurement fields and the whole chemical profile."
   )
   @ApiResponse(
       responseCode = "200",
       description = "Feedstock measurement updated.",
-      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = FeedstockMeasurementResponse.class))
+      content = @Content(
+          mediaType = APPLICATION_JSON_VALUE,
+          schema = @Schema(implementation = FeedstockMeasurementResponse.class)
+      )
   )
   @ApiResponse(
       responseCode = "400",
@@ -103,19 +118,27 @@ public interface FeedstockMeasurementApi {
       @RequestBody(
           description = "Full feedstock measurement update payload.",
           required = true,
-          content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = UpdateFeedstockMeasurementRequest.class))
+          content = @Content(
+              mediaType = APPLICATION_JSON_VALUE,
+              schema = @Schema(implementation = UpdateFeedstockMeasurementRequest.class)
+          )
       )
       @NonNull UpdateFeedstockMeasurementRequest request
   );
 
   @Operation(
       summary = "Patch feedstock measurement",
-      description = "Partially updates measurement metadata and merges provided chemical profile axes into the existing profile."
+      deprecated = true,
+      description = "Partially updates measurement metadata and merges provided chemical profile axes "
+          + "into the existing profile."
   )
   @ApiResponse(
       responseCode = "200",
       description = "Feedstock measurement patched.",
-      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = FeedstockMeasurementResponse.class))
+      content = @Content(
+          mediaType = APPLICATION_JSON_VALUE,
+          schema = @Schema(implementation = FeedstockMeasurementResponse.class)
+      )
   )
   @ApiResponse(
       responseCode = "400",
@@ -140,14 +163,18 @@ public interface FeedstockMeasurementApi {
       @RequestBody(
           description = "Partial feedstock measurement update payload.",
           required = true,
-          content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = PatchFeedstockMeasurementRequest.class))
+          content = @Content(
+              mediaType = APPLICATION_JSON_VALUE,
+              schema = @Schema(implementation = PatchFeedstockMeasurementRequest.class)
+          )
       )
       @NonNull PatchFeedstockMeasurementRequest request
   );
 
   @Operation(
       summary = "Delete feedstock measurement",
-      description = "Deletes a feedstock measurement from a batch."
+      deprecated = true,
+      description = "Retracts a feedstock measurement while preserving its immutable evidence."
   )
   @ApiResponse(responseCode = "204", description = "Feedstock measurement deleted.")
   @ApiResponse(

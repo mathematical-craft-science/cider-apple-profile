@@ -9,6 +9,7 @@ import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentMeasurementFreshnessView;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentProfileDataQualityView;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockPlanningReadinessView;
 import org.craft.mcs.cap.core.profileanalysis.abv.domain.FixedFinalGravityPredictionStrategy;
@@ -45,16 +46,16 @@ import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
 import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
-import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurement;
-import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurementId;
-import org.craft.mcs.cap.core.feedstock.domain.model.measurement.value.FeedstockMeasurementName;
+import org.craft.mcs.cap.shared.testing.FeedstockMeasurementFixture;
+import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementId;
+import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementName;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
-import org.craft.mcs.cap.shared.kernel.measurement.ExactMeasurement;
+import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
@@ -101,7 +102,7 @@ class QueryFeedstockPlanningBatchesServiceTest {
     assertThat(row.currentMeasurement()).isNotNull();
     assertThat(row.measurementFreshness())
         .isNotNull()
-        .extracting(freshness -> freshness.status())
+        .extracting(FeedstockCurrentMeasurementFreshnessView::status)
         .isEqualTo(FeedstockCurrentMeasurementFreshnessStatus.CURRENT);
     assertThat(row.sugarAcidity()).isNotNull();
     assertThat(row.sugarAcidity().plottable()).isTrue();
@@ -265,15 +266,15 @@ class QueryFeedstockPlanningBatchesServiceTest {
     );
   }
 
-  private static FeedstockMeasurement measurement(FeedstockBatchId batchId) {
-    return FeedstockMeasurement.create(
+  private static FeedstockMeasurementFixture measurement(FeedstockBatchId batchId) {
+    return FeedstockMeasurementFixture.create(
         FeedstockMeasurementId.newId(),
         batchId,
         FeedstockMeasurementName.of("Current profile"),
         ChemicalProfile.builder()
-            .sugar(ExactMeasurement.of(SugarConcentration.ofSpecificGravity(SpecificGravityValue.of("1.060"))))
-            .titratableAcidity(ExactMeasurement.of(TitratableAcidityValue.of("5.0")))
-            .yeastAssimilableNitrogen(ExactMeasurement.of(YeastAssimilableNitrogenValue.of("120")))
+            .sugar(PointCharacteristicValue.of(SugarConcentration.ofSpecificGravity(SpecificGravityValue.of("1.060"))))
+            .titratableAcidity(PointCharacteristicValue.of(TitratableAcidityValue.of("5.0")))
+            .yeastAssimilableNitrogen(PointCharacteristicValue.of(YeastAssimilableNitrogenValue.of("120")))
             .build(),
         Instant.parse("2026-05-01T10:00:00Z"),
         feedstockMeasurementRecordedAt()

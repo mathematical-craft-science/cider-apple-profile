@@ -7,7 +7,7 @@ import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.Fermentat
 import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.FermentationStartReadinessSeverity;
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.craft.mcs.cap.shared.kernel.chemical.value.PhValue;
-import org.craft.mcs.cap.shared.kernel.measurement.ExactMeasurement;
+import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -39,7 +39,7 @@ class PhFermentationStartPolicyTest {
 
   private static ChemicalProfile profile(String ph) {
     return ChemicalProfile.builder()
-        .ph(ExactMeasurement.of(PhValue.of(ph)))
+        .ph(PointCharacteristicValue.of(PhValue.of(ph)))
         .build();
   }
 }

@@ -15,14 +15,14 @@ import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
 import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
-import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurement;
-import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurementId;
-import org.craft.mcs.cap.core.feedstock.domain.model.measurement.value.FeedstockMeasurementName;
+import org.craft.mcs.cap.shared.testing.FeedstockMeasurementFixture;
+import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementId;
+import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementName;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.craft.mcs.cap.shared.kernel.chemical.value.PhValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
-import org.craft.mcs.cap.shared.kernel.measurement.ExactMeasurement;
+import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
@@ -64,15 +64,15 @@ class AssessFeedstockBatchCurrentFermentationStartReadinessServiceTest {
     assertThat(result.assessment().status()).isEqualTo(FermentationStartReadinessStatus.READY);
   }
 
-  private static FeedstockMeasurement measurement(FeedstockBatchId batchId) {
-    return FeedstockMeasurement.create(
+  private static FeedstockMeasurementFixture measurement(FeedstockBatchId batchId) {
+    return FeedstockMeasurementFixture.create(
         FeedstockMeasurementId.newId(),
         batchId,
         FeedstockMeasurementName.of("Current lab result"),
         ChemicalProfile.builder()
-            .sugar(ExactMeasurement.of(SugarConcentration.ofSpecificGravity(SpecificGravityValue.of("1.052"))))
-            .ph(ExactMeasurement.of(PhValue.of("3.45")))
-            .yeastAssimilableNitrogen(ExactMeasurement.of(YeastAssimilableNitrogenValue.of("180")))
+            .sugar(PointCharacteristicValue.of(SugarConcentration.ofSpecificGravity(SpecificGravityValue.of("1.052"))))
+            .ph(PointCharacteristicValue.of(PhValue.of("3.45")))
+            .yeastAssimilableNitrogen(PointCharacteristicValue.of(YeastAssimilableNitrogenValue.of("180")))
             .build(),
         feedstockMeasurementInstant(),
         feedstockMeasurementRecordedAt()

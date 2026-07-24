@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import io.swagger.v3.oas.annotations.media.DiscriminatorMapping;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.MeasurementValueKind;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValueKind;
 import org.jspecify.annotations.NonNull;
 
 
@@ -17,10 +17,8 @@ import org.jspecify.annotations.NonNull;
 )
 @JsonSubTypes(
     {
-        @JsonSubTypes.Type(value = ExactSugarAcidityAxisPointResponse.class, name = "EXACT"),
-        @JsonSubTypes.Type(value = RangeSugarAcidityAxisPointResponse.class, name = "RANGE_MIDPOINT"),
-        @JsonSubTypes.Type(value = StatisticalSugarAcidityAxisPointResponse.class, name = "STATISTICAL_MEAN"),
-        @JsonSubTypes.Type(value = StatisticalSugarAcidityAxisPointResponse.class, name = "STATISTICAL_MEDIAN"),
+        @JsonSubTypes.Type(value = PointSugarAcidityAxisPointResponse.class, name = "POINT"),
+        @JsonSubTypes.Type(value = IntervalSugarAcidityAxisPointResponse.class, name = "INTERVAL_MIDPOINT"),
         @JsonSubTypes.Type(value = CalculatedSugarAcidityAxisPointResponse.class, name = "CALCULATED")
     }
 )
@@ -28,23 +26,22 @@ import org.jspecify.annotations.NonNull;
     description = "Graph-axis point value with source value kind.",
     discriminatorProperty = "valueKind",
     oneOf = {
-        ExactSugarAcidityAxisPointResponse.class,
-        RangeSugarAcidityAxisPointResponse.class,
-        StatisticalSugarAcidityAxisPointResponse.class,
+        PointSugarAcidityAxisPointResponse.class,
+        IntervalSugarAcidityAxisPointResponse.class,
         CalculatedSugarAcidityAxisPointResponse.class
     },
     discriminatorMapping = {
-        @DiscriminatorMapping(value = "EXACT", schema = ExactSugarAcidityAxisPointResponse.class),
-        @DiscriminatorMapping(value = "RANGE_MIDPOINT", schema = RangeSugarAcidityAxisPointResponse.class),
-        @DiscriminatorMapping(value = "STATISTICAL_MEAN", schema = StatisticalSugarAcidityAxisPointResponse.class),
-        @DiscriminatorMapping(value = "STATISTICAL_MEDIAN", schema = StatisticalSugarAcidityAxisPointResponse.class),
+        @DiscriminatorMapping(value = "POINT", schema = PointSugarAcidityAxisPointResponse.class),
+        @DiscriminatorMapping(
+            value = "INTERVAL_MIDPOINT",
+            schema = IntervalSugarAcidityAxisPointResponse.class
+        ),
         @DiscriminatorMapping(value = "CALCULATED", schema = CalculatedSugarAcidityAxisPointResponse.class)
     }
 )
 public sealed interface SugarAcidityAxisPointResponse
-    permits ExactSugarAcidityAxisPointResponse,
-    RangeSugarAcidityAxisPointResponse,
-    StatisticalSugarAcidityAxisPointResponse,
+    permits PointSugarAcidityAxisPointResponse,
+    IntervalSugarAcidityAxisPointResponse,
     CalculatedSugarAcidityAxisPointResponse {
 
   @NonNull
@@ -52,6 +49,11 @@ public sealed interface SugarAcidityAxisPointResponse
   DecimalQuantityResponse value();
 
   @NonNull
-  @Schema(description = "Axis point value discriminator.", implementation = MeasurementValueKind.class, example = "EXACT", requiredMode = Schema.RequiredMode.REQUIRED)
-  MeasurementValueKind valueKind();
+  @Schema(
+      description = "Axis point value discriminator.",
+      implementation = AxisValueKind.class,
+      example = "POINT",
+      requiredMode = Schema.RequiredMode.REQUIRED
+  )
+  AxisValueKind valueKind();
 }

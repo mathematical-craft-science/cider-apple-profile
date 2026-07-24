@@ -29,8 +29,8 @@ import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.MeasurementValueKind;
-import org.craft.mcs.cap.shared.kernel.chemical.value.TanninityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValueKind;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
@@ -79,7 +79,7 @@ class BatchTraceabilityProductionBatchTraceRecorderTest {
     return ChemicalProfileAxes.of(
         axis(ChemicalAxis.SUGAR, "1.050"),
         axis(ChemicalAxis.ACIDITY, "6.1"),
-        axis(ChemicalAxis.TANNINITY, "1400"),
+        axis(ChemicalAxis.TANNIN, "1400"),
         axis(ChemicalAxis.YEAST_ASSIMILABLE_NITROGEN, "180")
     );
   }
@@ -137,12 +137,12 @@ class BatchTraceabilityProductionBatchTraceRecorderTest {
           assertThat(outputSubject.snapshot().volume().liters()).isEqualByComparingTo("100");
           assertThat(outputSubject.snapshot().profile().valueOf(ChemicalAxis.SUGAR))
               .get()
-              .satisfies(value -> assertThat(value.valueKind()).isEqualTo(MeasurementValueKind.CALCULATED));
+              .satisfies(value -> assertThat(value.valueKind()).isEqualTo(AxisValueKind.CALCULATED));
           assertThat(outputSubject.snapshot().profile().valueOf(ChemicalAxis.YEAST_ASSIMILABLE_NITROGEN))
               .get()
               .satisfies(value -> {
                 assertThat(value.value()).isEqualByComparingTo("180");
-                assertThat(value.valueKind()).isEqualTo(MeasurementValueKind.CALCULATED);
+                assertThat(value.valueKind()).isEqualTo(AxisValueKind.CALCULATED);
               });
         });
   }
@@ -154,9 +154,7 @@ class BatchTraceabilityProductionBatchTraceRecorderTest {
     return new AxisValue(
         axis,
         new BigDecimal(value),
-        MeasurementValueKind.EXACT,
-        null,
-        null,
+        AxisValueKind.POINT,
         null,
         null
     );
@@ -172,7 +170,7 @@ class BatchTraceabilityProductionBatchTraceRecorderTest {
         new ProductionProfileSnapshot(
             SpecificGravityValue.of("1.052"),
             TitratableAcidityValue.of("5.8"),
-            TanninityValue.of("1200"),
+            TanninValue.of("1200"),
             YeastAssimilableNitrogenValue.of("180")
         ),
         null

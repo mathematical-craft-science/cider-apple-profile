@@ -66,8 +66,8 @@ public enum FeedstockCurrentProfileDataQualityIndicatorCode {
   LOW_CONFIDENCE,
 
   /**
-   * At least one profile value is represented as a range or statistical measurement instead of a point value.
-   * This is informational: aggregated evidence can be more reliable than a single exact value.
+   * At least one profile value is represented as a source-reported interval instead of a point value.
+   * This is informational: an interval expresses bounded uncertainty and is not a statistical sample.
    */
   NON_POINT_VALUES
 }

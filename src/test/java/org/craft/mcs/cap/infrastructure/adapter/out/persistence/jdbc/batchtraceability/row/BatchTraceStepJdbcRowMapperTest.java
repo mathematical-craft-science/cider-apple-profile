@@ -14,7 +14,7 @@ import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.batchtracea
 import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.MeasurementValueKind;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValueKind;
 import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
@@ -67,28 +67,22 @@ class BatchTraceStepJdbcRowMapperTest {
         new AxisValue(
             ChemicalAxis.SUGAR,
             new BigDecimal("1.052"),
-            MeasurementValueKind.EXACT,
-            null,
-            null,
+            AxisValueKind.POINT,
             null,
             null
         ),
         new AxisValue(
             ChemicalAxis.ACIDITY,
             new BigDecimal("5.7"),
-            MeasurementValueKind.RANGE_MIDPOINT,
+            AxisValueKind.INTERVAL_MIDPOINT,
             new BigDecimal("5.2"),
-            new BigDecimal("6.2"),
-            null,
-            null
+            new BigDecimal("6.2")
         ),
         null,
         new AxisValue(
             ChemicalAxis.YEAST_ASSIMILABLE_NITROGEN,
             new BigDecimal("180"),
-            MeasurementValueKind.EXACT,
-            null,
-            null,
+            AxisValueKind.POINT,
             null,
             null
         )
@@ -125,7 +119,7 @@ class BatchTraceStepJdbcRowMapperTest {
     assertThat(snapshot.profile().valueOf(ChemicalAxis.SUGAR))
         .get()
         .extracting(AxisValue::value, AxisValue::valueKind)
-        .containsExactly(new BigDecimal("1.052"), MeasurementValueKind.EXACT);
+        .containsExactly(new BigDecimal("1.052"), AxisValueKind.POINT);
     assertThat(snapshot.profile().valueOf(ChemicalAxis.ACIDITY))
         .get()
         .extracting(AxisValue::min, AxisValue::max)
@@ -133,7 +127,7 @@ class BatchTraceStepJdbcRowMapperTest {
     assertThat(snapshot.profile().valueOf(ChemicalAxis.YEAST_ASSIMILABLE_NITROGEN))
         .get()
         .extracting(AxisValue::value, AxisValue::valueKind)
-        .containsExactly(new BigDecimal("180"), MeasurementValueKind.EXACT);
+        .containsExactly(new BigDecimal("180"), AxisValueKind.POINT);
   }
 
   @Test

@@ -1,6 +1,5 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstockworkspace.mapper;
 
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
@@ -17,22 +16,21 @@ import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
 import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
-import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurementId;
-import org.craft.mcs.cap.core.feedstock.domain.model.measurement.value.FeedstockMeasurementName;
+import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementId;
+import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementName;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstockworkspace.dto.FeedstockWorkspaceProfileValueResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.measurement.CanonicalUnitLabels;
 import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.MeasurementValueKind;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValueKind;
 import org.craft.mcs.cap.shared.kernel.chemical.value.PhValue;
-import org.craft.mcs.cap.shared.kernel.chemical.value.TanninityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
-import org.craft.mcs.cap.shared.kernel.measurement.ExactMeasurement;
-import org.craft.mcs.cap.shared.kernel.measurement.RangeMeasurement;
-import org.craft.mcs.cap.shared.kernel.measurement.StatisticalMeasurement;
+import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
+import org.craft.mcs.cap.shared.kernel.characteristic.IntervalCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
@@ -60,31 +58,31 @@ class FeedstockWorkspaceRestMapperTest {
                   summary.sugar(),
                   "1.052",
                   CanonicalUnitLabels.SUGAR,
-                  MeasurementValueKind.EXACT
+                  AxisValueKind.POINT
               );
               assertProfileValue(
                   summary.titratableAcidity(),
                   "6.0",
                   CanonicalUnitLabels.TITRATABLE_ACIDITY,
-                  MeasurementValueKind.RANGE_MIDPOINT
+                  AxisValueKind.INTERVAL_MIDPOINT
               );
               assertProfileValue(
                   summary.ph(),
                   "3.45",
                   CanonicalUnitLabels.PH,
-                  MeasurementValueKind.EXACT
+                  AxisValueKind.POINT
               );
               assertProfileValue(
                   summary.tannin(),
                   "1500",
-                  CanonicalUnitLabels.TANNINITY,
-                  MeasurementValueKind.STATISTICAL_MEDIAN
+                  CanonicalUnitLabels.TANNIN,
+                  AxisValueKind.INTERVAL_MIDPOINT
               );
               assertProfileValue(
                   summary.yan(),
                   "110",
                   CanonicalUnitLabels.YEAST_ASSIMILABLE_NITROGEN,
-                  MeasurementValueKind.EXACT
+                  AxisValueKind.POINT
               );
             }));
   }
@@ -126,19 +124,17 @@ class FeedstockWorkspaceRestMapperTest {
 
   private static @NonNull ChemicalProfile profile() {
     return ChemicalProfile.builder()
-        .sugar(ExactMeasurement.of(SugarConcentration.ofSpecificGravity(SpecificGravityValue.of("1.052"))))
-        .titratableAcidity(RangeMeasurement.of(
+        .sugar(PointCharacteristicValue.of(SugarConcentration.ofSpecificGravity(SpecificGravityValue.of("1.052"))))
+        .titratableAcidity(IntervalCharacteristicValue.of(
             TitratableAcidityValue.of("5.0"),
             TitratableAcidityValue.of("7.0")
         ))
-        .ph(ExactMeasurement.of(PhValue.of("3.45")))
-        .tanninity(StatisticalMeasurement.of(
-            TanninityValue.of("1400"),
-            TanninityValue.of("1500"),
-            new BigDecimal("120"),
-            4
+        .ph(PointCharacteristicValue.of(PhValue.of("3.45")))
+        .tannin(IntervalCharacteristicValue.of(
+            TanninValue.of("1400"),
+            TanninValue.of("1600")
         ))
-        .yeastAssimilableNitrogen(ExactMeasurement.of(YeastAssimilableNitrogenValue.of("110")))
+        .yeastAssimilableNitrogen(PointCharacteristicValue.of(YeastAssimilableNitrogenValue.of("110")))
         .build();
   }
 
@@ -146,7 +142,7 @@ class FeedstockWorkspaceRestMapperTest {
       @Nullable FeedstockWorkspaceProfileValueResponse value,
       @NonNull String expectedValue,
       @NonNull String expectedUnit,
-      @NonNull MeasurementValueKind expectedValueKind
+      @NonNull AxisValueKind expectedValueKind
   ) {
     assertThat(value)
         .isNotNull()

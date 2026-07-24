@@ -3,14 +3,13 @@ package org.craft.mcs.cap.shared.kernel.chemical.axis;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.function.Function;
+import org.craft.mcs.cap.shared.kernel.characteristic.CharacteristicValue;
+import org.craft.mcs.cap.shared.kernel.characteristic.IntervalCharacteristicValue;
+import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
-import org.craft.mcs.cap.shared.kernel.chemical.value.TanninityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
-import org.craft.mcs.cap.shared.kernel.measurement.ExactMeasurement;
-import org.craft.mcs.cap.shared.kernel.measurement.MeasuredCharacteristic;
-import org.craft.mcs.cap.shared.kernel.measurement.RangeMeasurement;
-import org.craft.mcs.cap.shared.kernel.measurement.StatisticalMeasurement;
 import org.jmolecules.ddd.annotation.Service;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -23,9 +22,9 @@ public class ChemicalProfileAxisExtractor {
 
   private static final int MIDPOINT_SCALE = 6;
 
-  private static <T extends Comparable<T>> @Nullable AxisValue toAxisValue(
+  private static <T extends Comparable<? super T>> @Nullable AxisValue toAxisValue(
       @NonNull ChemicalAxis axis,
-      @Nullable MeasuredCharacteristic<T> characteristic,
+      @Nullable CharacteristicValue<T> characteristic,
       @NonNull Function<@NonNull T, @NonNull BigDecimal> extractor
   ) {
     requireNonNull(axis, "chemical axis cannot be null");
@@ -33,14 +32,8 @@ public class ChemicalProfileAxisExtractor {
 
     return switch (characteristic) {
       case null -> null;
-      case ExactMeasurement<T>(T value) -> exactAxisValue(axis, value, extractor);
-      case RangeMeasurement<T>(T min, T max) -> rangeAxisValue(axis, min, max, extractor);
-      case StatisticalMeasurement<T>(
-          T mean,
-          T median,
-          BigDecimal standardDeviation,
-          Integer sampleSize
-      ) -> statisticalAxisValue(axis, mean, median, standardDeviation, sampleSize, extractor);
+      case PointCharacteristicValue<T>(T value) -> pointAxisValue(axis, value, extractor);
+      case IntervalCharacteristicValue<T>(T min, T max) -> intervalAxisValue(axis, min, max, extractor);
     };
   }
 
@@ -56,10 +49,14 @@ public class ChemicalProfileAxisExtractor {
             ))
             .orElse(null),
         profile.titratableAcidity()
-            .map(characteristic -> toAxisValue(ChemicalAxis.ACIDITY, characteristic, TitratableAcidityValue::asBigDecimal))
+            .map(characteristic -> toAxisValue(
+                ChemicalAxis.ACIDITY,
+                characteristic,
+                TitratableAcidityValue::asBigDecimal
+            ))
             .orElse(null),
-        profile.tanninity()
-            .map(characteristic -> toAxisValue(ChemicalAxis.TANNINITY, characteristic, TanninityValue::asBigDecimal))
+        profile.tannin()
+            .map(characteristic -> toAxisValue(ChemicalAxis.TANNIN, characteristic, TanninValue::asBigDecimal))
             .orElse(null),
         profile.yeastAssimilableNitrogen()
             .map(characteristic -> toAxisValue(
@@ -71,7 +68,7 @@ public class ChemicalProfileAxisExtractor {
     );
   }
 
-  private static <T extends Comparable<T>> @NonNull AxisValue exactAxisValue(
+  private static <T extends Comparable<? super T>> @NonNull AxisValue pointAxisValue(
       @NonNull ChemicalAxis axis,
       @NonNull T value,
       @NonNull Function<@NonNull T, @NonNull BigDecimal> extractor
@@ -79,15 +76,13 @@ public class ChemicalProfileAxisExtractor {
     return new AxisValue(
         axis,
         extractor.apply(value),
-        MeasurementValueKind.EXACT,
-        null,
-        null,
+        AxisValueKind.POINT,
         null,
         null
     );
   }
 
-  private static <T extends Comparable<T>> @NonNull AxisValue rangeAxisValue(
+  private static <T extends Comparable<? super T>> @NonNull AxisValue intervalAxisValue(
       @NonNull ChemicalAxis axis,
       @NonNull T minValue,
       @NonNull T maxValue,
@@ -100,32 +95,9 @@ public class ChemicalProfileAxisExtractor {
     return new AxisValue(
         axis,
         midpoint,
-        MeasurementValueKind.RANGE_MIDPOINT,
+        AxisValueKind.INTERVAL_MIDPOINT,
         min,
-        max,
-        null,
-        null
-    );
-  }
-
-  private static <T extends Comparable<T>> @NonNull AxisValue statisticalAxisValue(
-      @NonNull ChemicalAxis axis,
-      @NonNull T mean,
-      @Nullable T median,
-      @Nullable BigDecimal standardDeviation,
-      @Nullable Integer sampleSize,
-      @NonNull Function<@NonNull T, @NonNull BigDecimal> extractor
-  ) {
-    final var hasMedian = median != null;
-
-    return new AxisValue(
-        axis,
-        extractor.apply(hasMedian ? median : mean),
-        hasMedian ? MeasurementValueKind.STATISTICAL_MEDIAN : MeasurementValueKind.STATISTICAL_MEAN,
-        null,
-        null,
-        standardDeviation,
-        sampleSize
+        max
     );
   }
 

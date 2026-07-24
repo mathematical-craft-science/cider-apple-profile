@@ -30,29 +30,21 @@ CREATE TABLE IF NOT EXISTS batch_trace_step_subjects
     sugar_value_kind             VARCHAR(32),
     sugar_min                    NUMERIC(12, 9),
     sugar_max                    NUMERIC(12, 9),
-    sugar_standard_deviation     NUMERIC(12, 9),
-    sugar_sample_size            INTEGER,
 
     acidity_value                NUMERIC(12, 6),
     acidity_value_kind           VARCHAR(32),
     acidity_min                  NUMERIC(12, 6),
     acidity_max                  NUMERIC(12, 6),
-    acidity_standard_deviation   NUMERIC(12, 6),
-    acidity_sample_size          INTEGER,
 
-    tanninity_value              NUMERIC(12, 4),
-    tanninity_value_kind         VARCHAR(32),
-    tanninity_min                NUMERIC(12, 4),
-    tanninity_max                NUMERIC(12, 4),
-    tanninity_standard_deviation NUMERIC(12, 4),
-    tanninity_sample_size        INTEGER,
+    tannin_value              NUMERIC(12, 4),
+    tannin_value_kind         VARCHAR(32),
+    tannin_min                NUMERIC(12, 4),
+    tannin_max                NUMERIC(12, 4),
 
     yan_value                    NUMERIC(12, 4),
     yan_value_kind               VARCHAR(32),
     yan_min                      NUMERIC(12, 4),
     yan_max                      NUMERIC(12, 4),
-    yan_standard_deviation       NUMERIC(12, 4),
-    yan_sample_size              INTEGER,
 
     CONSTRAINT fk_batch_trace_step_subjects_step
         FOREIGN KEY (step_id)

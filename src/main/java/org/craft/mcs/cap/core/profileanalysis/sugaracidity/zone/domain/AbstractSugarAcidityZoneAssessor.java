@@ -54,9 +54,7 @@ abstract class AbstractSugarAcidityZoneAssessor
         axisValue.value(),
         axisValue.valueKind(),
         axisValue.min(),
-        axisValue.max(),
-        axisValue.standardDeviation(),
-        axisValue.sampleSize()
+        axisValue.max()
     );
   }
 
@@ -68,7 +66,7 @@ abstract class AbstractSugarAcidityZoneAssessor
     return new SugarAcidityProfilePoint(
         axes.valueOf(ChemicalAxis.SUGAR).map(AbstractSugarAcidityZoneAssessor::pointOf).orElseThrow(),
         axes.valueOf(ChemicalAxis.ACIDITY).map(AbstractSugarAcidityZoneAssessor::pointOf).orElseThrow(),
-        axes.valueOf(ChemicalAxis.TANNINITY)
+        axes.valueOf(ChemicalAxis.TANNIN)
             .map(AbstractSugarAcidityZoneAssessor::pointOf)
             .orElse(null) // NOSONAR
     );
@@ -107,7 +105,7 @@ abstract class AbstractSugarAcidityZoneAssessor
   }
 
   protected final @Nullable SugarAcidityLevel tanninLevel(@NonNull ChemicalProfileAxes axes) {
-    final var value = axisValue(axes, ChemicalAxis.TANNINITY);
+    final var value = axisValue(axes, ChemicalAxis.TANNIN);
 
     if (value.isEmpty()) {
       return null;

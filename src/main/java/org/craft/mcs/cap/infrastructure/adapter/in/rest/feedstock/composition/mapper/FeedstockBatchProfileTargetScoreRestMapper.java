@@ -282,14 +282,14 @@ public final class FeedstockBatchProfileTargetScoreRestMapper {
   ) {
     requireNonNull(request, "feedstock batch profile target request cannot be null");
     return switch (request) {
-      case PredefinedZoneProfileTargetRequest predefined ->
-          new PredefinedFeedstockProfileTargetSelection(predefined.zone());
-      case CustomRectangleProfileTargetRequest custom ->
+      case PredefinedZoneProfileTargetRequest(_, var zone) ->
+          new PredefinedFeedstockProfileTargetSelection(zone);
+      case CustomRectangleProfileTargetRequest(_, var sugarMin, var sugarMax, var acidityMin, var acidityMax) ->
           new CustomRectangleFeedstockProfileTargetSelection(new RectangleSugarAcidityTargetGeometry(
-              custom.sugarMin(),
-              custom.sugarMax(),
-              custom.acidityMin(),
-              custom.acidityMax()
+              sugarMin,
+              sugarMax,
+              acidityMin,
+              acidityMax
           ));
     };
   }

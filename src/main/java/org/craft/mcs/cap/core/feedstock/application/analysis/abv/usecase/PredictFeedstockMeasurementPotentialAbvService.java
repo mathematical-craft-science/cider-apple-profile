@@ -7,8 +7,8 @@ import org.craft.mcs.cap.core.feedstock.application.FeedstockMeasurementNotFound
 import org.craft.mcs.cap.core.feedstock.application.analysis.abv.port.in.FeedstockMeasurementPotentialAbvPrediction;
 import org.craft.mcs.cap.core.feedstock.application.analysis.abv.port.in.PredictFeedstockMeasurementPotentialAbvUseCase;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchRepository;
-import org.craft.mcs.cap.core.feedstock.application.measurement.port.out.FeedstockMeasurementRepository;
-import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurementId;
+import org.craft.mcs.cap.core.feedstock.application.measurement.port.out.FeedstockMeasurementQueryRepository;
+import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementId;
 import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapability;
 import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityAssessor;
 import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityNotMetException;
@@ -34,7 +34,7 @@ import static java.util.Objects.requireNonNull;
 public final class PredictFeedstockMeasurementPotentialAbvService
     implements PredictFeedstockMeasurementPotentialAbvUseCase {
 
-  private final @NonNull FeedstockMeasurementRepository feedstockMeasurementRepository;
+  private final @NonNull FeedstockMeasurementQueryRepository feedstockMeasurementQueryRepository;
   private final @NonNull FeedstockBatchRepository feedstockBatchRepository;
   private final @NonNull FeedstockAccessControl feedstockAccessControl;
   private final @NonNull ChemicalProfileAxisExtractor axisExtractor;
@@ -47,7 +47,7 @@ public final class PredictFeedstockMeasurementPotentialAbvService
   ) {
     requireNonNull(measurementId, "feedstock measurement id cannot be null");
 
-    final var sample = feedstockMeasurementRepository.findById(measurementId)
+    final var sample = feedstockMeasurementQueryRepository.findById(measurementId)
         .orElseThrow(() -> new FeedstockMeasurementNotFoundException(measurementId));
     final var batch = feedstockBatchRepository.findById(sample.batchId())
         .orElseThrow(() -> new FeedstockBatchNotFoundException(sample.batchId()));

@@ -7,7 +7,7 @@ import org.craft.mcs.cap.core.production.candidate.domain.model.ProductionBatchC
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatchId;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
 import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPrediction;
-import org.craft.mcs.cap.shared.kernel.chemical.value.TanninityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
@@ -105,7 +105,7 @@ final class ProductionBatchCandidateJdbcMapper {
         new ProductionProfileSnapshot(
             SpecificGravityValue.of(entity.sugarSpecificGravity),
             TitratableAcidityValue.of(entity.acidityGLAsMalic),
-            entity.tanninMgLTae == null ? null : TanninityValue.of(entity.tanninMgLTae),
+            entity.tanninMgLTae == null ? null : TanninValue.of(entity.tanninMgLTae),
             entity.yeastAssimilableNitrogenMgNL == null
                 ? null
                 : YeastAssimilableNitrogenValue.of(entity.yeastAssimilableNitrogenMgNL)

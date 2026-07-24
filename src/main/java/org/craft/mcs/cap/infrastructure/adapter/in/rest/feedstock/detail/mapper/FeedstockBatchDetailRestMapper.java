@@ -14,6 +14,7 @@ import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.Sug
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.abv.mapper.PotentialAbvPredictionRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.mapper.ChemicalProfileCapabilityRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.batch.mapper.FeedstockBatchRestMapper;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.common.mapper.FeedstockProfileEvidenceRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.common.mapper.FeedstockProfileSummaryRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.detail.dto.FeedstockBatchCurrentProfileResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.detail.dto.FeedstockBatchDetailDataQualityIndicatorResponse;
@@ -70,6 +71,9 @@ public final class FeedstockBatchDetailRestMapper {
     return new FeedstockBatchCurrentProfileResponse(
         latestMeasurement == null ? null : FeedstockMeasurementRestMapper.toResponse(latestMeasurement),
         latestMeasurement == null ? null : toProfileSummaryResponse(latestMeasurement.chemicalProfile()),
+        view.profileEvidence().stream()
+            .map(FeedstockProfileEvidenceRestMapper::toResponse)
+            .toList(),
         toSugarAcidityResponse(view.sugarAcidity()),
         toPotentialAbvResponse(view.potentialAbv()),
         toYeastAssimilableNitrogenResponse(view.yeastAssimilableNitrogen()),
@@ -126,9 +130,7 @@ public final class FeedstockBatchDetailRestMapper {
             axisValue.value(),
             axisValue.valueKind(),
             axisValue.min(),
-            axisValue.max(),
-            axisValue.standardDeviation(),
-            axisValue.sampleSize()
+            axisValue.max()
         ),
         CanonicalUnitLabels.YEAST_ASSIMILABLE_NITROGEN
     );

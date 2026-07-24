@@ -67,7 +67,8 @@ public final class InspectFeedstockBatchMaterialService implements InspectFeedst
             measurement.measurementId().value(),
             measurement.evidenceVersion()
         ),
-        measurement.chemicalProfile()
+        measurement.chemicalProfile(),
+        measurement.aggregateConfidence()
     );
   }
 }

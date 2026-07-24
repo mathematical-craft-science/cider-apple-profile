@@ -5,11 +5,11 @@ import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchHasNoMeasureme
 import org.craft.mcs.cap.core.feedstock.application.measurement.query.FeedstockBatchCurrentMeasurementQueryService;
 import org.craft.mcs.cap.core.feedstock.application.measurement.port.out.FeedstockMeasurementQueryRepository;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
-import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurement;
-import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurementId;
-import org.craft.mcs.cap.core.feedstock.domain.model.measurement.value.FeedstockMeasurementName;
+import org.craft.mcs.cap.shared.testing.FeedstockMeasurementFixture;
+import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementId;
+import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementName;
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
-import org.craft.mcs.cap.shared.kernel.measurement.ExactMeasurement;
+import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.junit.jupiter.api.Test;
@@ -50,13 +50,13 @@ class FeedstockBatchCurrentMeasurementQueryServiceTest {
         .isInstanceOf(FeedstockBatchHasNoMeasurementsException.class);
   }
 
-  private static FeedstockMeasurement measurement(FeedstockBatchId batchId) {
-    return FeedstockMeasurement.create(
+  private static FeedstockMeasurementFixture measurement(FeedstockBatchId batchId) {
+    return FeedstockMeasurementFixture.create(
         FeedstockMeasurementId.newId(),
         batchId,
         FeedstockMeasurementName.of("Current measurement"),
         ChemicalProfile.builder()
-            .sugar(ExactMeasurement.of(SugarConcentration.ofSpecificGravity(
+            .sugar(PointCharacteristicValue.of(SugarConcentration.ofSpecificGravity(
                 SpecificGravityValue.of("1.050")
             )))
             .build(),

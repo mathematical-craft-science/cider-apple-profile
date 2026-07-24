@@ -84,7 +84,7 @@ public final class NorthAmericanProfileCalculator {
             thresholds.veryHighAcidity()
         ),
         levelOf(
-            axisValue(axes, ChemicalAxis.TANNINITY),
+            axisValue(axes, ChemicalAxis.TANNIN),
             thresholds.lowTannin(),
             thresholds.mediumTannin(),
             thresholds.highTannin(),

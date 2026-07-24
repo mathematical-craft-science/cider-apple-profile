@@ -60,7 +60,7 @@ public final class FeedstockProductionSourceInventory implements ProductionSourc
         ProductionSourceDisplayName.of(consumed.batchName().value()),
         consumed.volume(),
         axisExtractor.extract(profile),
-        profile.confidence(),
+        consumed.profileConfidence(),
         ProductionSourceEvidenceReference.of(consumed.evidenceReference().externalValue())
     );
   }

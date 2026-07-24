@@ -18,10 +18,10 @@ import org.craft.mcs.cap.shared.platform.query.TextSearchCriteria;
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapability;
 import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityAssessor;
-import org.craft.mcs.cap.shared.kernel.chemical.value.TanninityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
-import org.craft.mcs.cap.shared.kernel.measurement.ExactMeasurement;
+import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.BuiltInSugarAcidityZoneProfiles;
@@ -172,13 +172,13 @@ class QueryAppleVarietySugarAcidityZonePointsServiceTest {
       String tannin
   ) {
     final var builder = ChemicalProfile.builder()
-        .sugar(ExactMeasurement.of(SugarConcentration.ofSpecificGravity(
+        .sugar(PointCharacteristicValue.of(SugarConcentration.ofSpecificGravity(
             SpecificGravityValue.of(sg)
         )))
-        .titratableAcidity(ExactMeasurement.of(TitratableAcidityValue.of(acidity)));
+        .titratableAcidity(PointCharacteristicValue.of(TitratableAcidityValue.of(acidity)));
 
     if (tannin != null) {
-      builder.tanninity(ExactMeasurement.of(TanninityValue.of(tannin)));
+      builder.tannin(PointCharacteristicValue.of(TanninValue.of(tannin)));
     }
 
     return builder.build();
@@ -186,7 +186,7 @@ class QueryAppleVarietySugarAcidityZonePointsServiceTest {
 
   private static ChemicalProfile partialProfile() {
     return ChemicalProfile.builder()
-        .sugar(ExactMeasurement.of(SugarConcentration.ofSpecificGravity(
+        .sugar(PointCharacteristicValue.of(SugarConcentration.ofSpecificGravity(
             SpecificGravityValue.of("1.050")
         )))
         .build();

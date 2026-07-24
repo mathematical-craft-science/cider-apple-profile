@@ -28,7 +28,7 @@ public final class ClassificationRule<C extends Enum<C>> {
       @NonNull C appleClass,
       @Nullable AxisRange sugar,
       @Nullable AxisRange acidity,
-      @Nullable AxisRange tanninity
+      @Nullable AxisRange tannin
   ) {
     final var ranges = new EnumMap<ChemicalAxis, AxisRange>(ChemicalAxis.class);
 
@@ -38,8 +38,8 @@ public final class ClassificationRule<C extends Enum<C>> {
     if (acidity != null) {
       ranges.put(ChemicalAxis.ACIDITY, acidity);
     }
-    if (tanninity != null) {
-      ranges.put(ChemicalAxis.TANNINITY, tanninity);
+    if (tannin != null) {
+      ranges.put(ChemicalAxis.TANNIN, tannin);
     }
 
     return new ClassificationRule<>(appleClass, ranges);

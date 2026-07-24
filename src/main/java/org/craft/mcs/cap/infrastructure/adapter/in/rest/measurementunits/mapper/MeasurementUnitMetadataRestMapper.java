@@ -10,7 +10,7 @@ import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurementunits.dto.Mea
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.measurement.CanonicalUnitLabels;
 import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
 import org.craft.mcs.cap.shared.kernel.chemical.value.PhValue;
-import org.craft.mcs.cap.shared.kernel.chemical.value.TanninityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
 import org.craft.mcs.cap.shared.kernel.measurement.value.AbvValue;
@@ -55,12 +55,12 @@ public final class MeasurementUnitMetadataRestMapper {
                 TitratableAcidityValue.stepValue()
             ),
             unit(
-                MeasurementUnitCode.TANNINITY,
-                CanonicalUnitLabels.TANNINITY_SHORT,
-                CanonicalUnitLabels.TANNINITY,
-                TanninityValue.minValue(),
-                TanninityValue.maxValue(),
-                TanninityValue.stepValue()
+                MeasurementUnitCode.TANNIN,
+                CanonicalUnitLabels.TANNIN_SHORT,
+                CanonicalUnitLabels.TANNIN,
+                TanninValue.minValue(),
+                TanninValue.maxValue(),
+                TanninValue.stepValue()
             ),
             unit(
                 MeasurementUnitCode.YAN,

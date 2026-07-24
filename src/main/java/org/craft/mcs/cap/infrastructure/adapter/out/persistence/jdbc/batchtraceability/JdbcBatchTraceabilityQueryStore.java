@@ -21,7 +21,7 @@ import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.batchtracea
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.batchtraceability.row.BatchTraceStepJdbcRowMapper;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.batchtraceability.row.BatchTraceStepSubjectJdbcRow;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.batchtraceability.row.BatchTraceStepSubjectRole;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.MeasurementValueKind;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValueKind;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -71,32 +71,24 @@ class JdbcBatchTraceabilityQueryStore implements BatchTraceabilityQueryStore {
     subject.snapshotVolumeLiters = resultSet.getBigDecimal("snapshot_volume_liters");
     subject.snapshotConfidence = resultSet.getString("snapshot_confidence");
     subject.sugarValue = resultSet.getBigDecimal("sugar_value");
-    subject.sugarValueKind = enumValue(MeasurementValueKind.class, resultSet.getString("sugar_value_kind"));
+    subject.sugarValueKind = enumValue(AxisValueKind.class, resultSet.getString("sugar_value_kind"));
     subject.sugarMin = resultSet.getBigDecimal("sugar_min");
     subject.sugarMax = resultSet.getBigDecimal("sugar_max");
-    subject.sugarStandardDeviation = resultSet.getBigDecimal("sugar_standard_deviation");
-    subject.sugarSampleSize = integerValue(resultSet, "sugar_sample_size");
     subject.acidityValue = resultSet.getBigDecimal("acidity_value");
-    subject.acidityValueKind = enumValue(MeasurementValueKind.class, resultSet.getString("acidity_value_kind"));
+    subject.acidityValueKind = enumValue(AxisValueKind.class, resultSet.getString("acidity_value_kind"));
     subject.acidityMin = resultSet.getBigDecimal("acidity_min");
     subject.acidityMax = resultSet.getBigDecimal("acidity_max");
-    subject.acidityStandardDeviation = resultSet.getBigDecimal("acidity_standard_deviation");
-    subject.aciditySampleSize = integerValue(resultSet, "acidity_sample_size");
-    subject.tanninityValue = resultSet.getBigDecimal("tanninity_value");
-    subject.tanninityValueKind = enumValue(MeasurementValueKind.class, resultSet.getString("tanninity_value_kind"));
-    subject.tanninityMin = resultSet.getBigDecimal("tanninity_min");
-    subject.tanninityMax = resultSet.getBigDecimal("tanninity_max");
-    subject.tanninityStandardDeviation = resultSet.getBigDecimal("tanninity_standard_deviation");
-    subject.tanninitySampleSize = integerValue(resultSet, "tanninity_sample_size");
+    subject.tanninValue = resultSet.getBigDecimal("tannin_value");
+    subject.tanninValueKind = enumValue(AxisValueKind.class, resultSet.getString("tannin_value_kind"));
+    subject.tanninMin = resultSet.getBigDecimal("tannin_min");
+    subject.tanninMax = resultSet.getBigDecimal("tannin_max");
     subject.yeastAssimilableNitrogenValue = resultSet.getBigDecimal("yan_value");
     subject.yeastAssimilableNitrogenValueKind = enumValue(
-        MeasurementValueKind.class,
+        AxisValueKind.class,
         resultSet.getString("yan_value_kind")
     );
     subject.yeastAssimilableNitrogenMin = resultSet.getBigDecimal("yan_min");
     subject.yeastAssimilableNitrogenMax = resultSet.getBigDecimal("yan_max");
-    subject.yeastAssimilableNitrogenStandardDeviation = resultSet.getBigDecimal("yan_standard_deviation");
-    subject.yeastAssimilableNitrogenSampleSize = integerValue(resultSet, "yan_sample_size");
     return new StepSubjectRow(resultSet.getObject("step_id", UUID.class), subject);
   }
 
@@ -105,14 +97,6 @@ class JdbcBatchTraceabilityQueryStore implements BatchTraceabilityQueryStore {
       @Nullable String value
   ) {
     return value == null ? null : Enum.valueOf(type, value);
-  }
-
-  private static @Nullable Integer integerValue(
-      @NonNull ResultSet resultSet,
-      @NonNull String columnName
-  ) throws SQLException {
-    final var value = resultSet.getInt(columnName);
-    return resultSet.wasNull() ? null : value;
   }
 
   private static @NonNull Instant instant(
@@ -249,26 +233,18 @@ class JdbcBatchTraceabilityQueryStore implements BatchTraceabilityQueryStore {
               sugar_value_kind,
               sugar_min,
               sugar_max,
-              sugar_standard_deviation,
-              sugar_sample_size,
               acidity_value,
               acidity_value_kind,
               acidity_min,
               acidity_max,
-              acidity_standard_deviation,
-              acidity_sample_size,
-              tanninity_value,
-              tanninity_value_kind,
-              tanninity_min,
-              tanninity_max,
-              tanninity_standard_deviation,
-              tanninity_sample_size,
+              tannin_value,
+              tannin_value_kind,
+              tannin_min,
+              tannin_max,
               yan_value,
               yan_value_kind,
               yan_min,
-              yan_max,
-              yan_standard_deviation,
-              yan_sample_size
+              yan_max
             FROM batch_trace_step_subjects
             WHERE step_id IN (:stepIds)
             ORDER BY step_id ASC, subject_role ASC, subject_order ASC

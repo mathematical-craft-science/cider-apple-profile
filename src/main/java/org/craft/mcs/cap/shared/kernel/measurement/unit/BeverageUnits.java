@@ -2,6 +2,7 @@ package org.craft.mcs.cap.shared.kernel.measurement.unit;
 
 import javax.measure.MetricPrefix;
 import javax.measure.Unit;
+import javax.measure.quantity.Temperature;
 import javax.measure.quantity.Volume;
 import org.jspecify.annotations.NonNull;
 import systems.uom.quantity.Acidity;
@@ -50,15 +51,15 @@ public final class BeverageUnits
           MultiplyConverter.ofRational(670435, 640413)
       );
 
-  public static final Unit<Tanninity> MILLIGRAM_PER_LITER_AS_TANNIC_ACID =
+  public static final Unit<Tannin> MILLIGRAM_PER_LITER_AS_TANNIC_ACID =
       MetricPrefix.MILLI(Units.GRAM)
           .divide(Units.LITRE)
-          .asType(Tanninity.class);
+          .asType(Tannin.class);
 
-  public static final Unit<Tanninity> GRAM_PER_LITER_AS_TANNIC_ACID =
+  public static final Unit<Tannin> GRAM_PER_LITER_AS_TANNIC_ACID =
       Units.GRAM
           .divide(Units.LITRE)
-          .asType(Tanninity.class);
+          .asType(Tannin.class);
 
   public static final Unit<YeastAssimilableNitrogen> MILLIGRAM_NITROGEN_PER_LITER =
       MetricPrefix.MILLI(Units.GRAM)
@@ -70,6 +71,15 @@ public final class BeverageUnits
 
   public static final Unit<Volume> LITRE =
       Units.LITRE.asType(Volume.class);
+
+  public static final Unit<Temperature> CELSIUS =
+      Units.CELSIUS;
+
+  public static final Unit<Turbidity> NTU =
+      new AlternateUnit<>(AbstractUnit.ONE, "NTU");
+
+  public static final Unit<Turbidity> FTU =
+      new AlternateUnit<>(AbstractUnit.ONE, "FTU");
 
   public static final Unit<TitratableAcidity> TA = GRAM_PER_LITER_AS_MALIC_ACID;
   public static final Unit<YeastAssimilableNitrogen> YAN = MILLIGRAM_NITROGEN_PER_LITER;
@@ -83,6 +93,9 @@ public final class BeverageUnits
     addUnit(PH);
     addUnit(PERCENT_ABV);
     addUnit(LITRE);
+    addUnit(CELSIUS);
+    addUnit(NTU);
+    addUnit(FTU);
     //
     addUnit(GRAM_PER_LITER_AS_MALIC_ACID);
     addUnit(GRAM_PER_LITRE_AS_LACTIC_ACID);
@@ -101,6 +114,9 @@ public final class BeverageUnits
     f.label(PH, "pH");
     f.label(PERCENT_ABV, "% ABV");
     f.label(LITRE, "L");
+    f.label(CELSIUS, "°C");
+    f.label(NTU, "NTU");
+    f.label(FTU, "FTU");
     //
     f.label(GRAM_PER_LITER_AS_MALIC_ACID, "g/L as malic acid");
     f.label(GRAM_PER_LITRE_AS_LACTIC_ACID, "g/L as lactic acid");
@@ -135,6 +151,15 @@ public final class BeverageUnits
     }
     if (unit == LITRE) {
       return "L";
+    }
+    if (unit == CELSIUS) {
+      return "°C";
+    }
+    if (unit == NTU) {
+      return "NTU";
+    }
+    if (unit == FTU) {
+      return "FTU";
     }
     if (unit == GRAM_PER_LITER_AS_MALIC_ACID) {
       return "g/L as malic acid";

@@ -31,9 +31,9 @@ import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
 import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
-import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurement;
-import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurementId;
-import org.craft.mcs.cap.core.feedstock.domain.model.measurement.value.FeedstockMeasurementName;
+import org.craft.mcs.cap.shared.testing.FeedstockMeasurementFixture;
+import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementId;
+import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementName;
 import org.craft.mcs.cap.core.profileanalysis.abv.domain.FixedFinalGravityPredictionStrategy;
 import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPredictor;
 import org.craft.mcs.cap.core.profileanalysis.abv.domain.StandardGravityDropAbvPredictionStrategy;
@@ -47,12 +47,12 @@ import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.Rectangle
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
 import org.craft.mcs.cap.shared.kernel.chemical.value.PhValue;
-import org.craft.mcs.cap.shared.kernel.chemical.value.TanninityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
-import org.craft.mcs.cap.shared.kernel.measurement.ExactMeasurement;
+import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
@@ -125,21 +125,21 @@ class GetFeedstockBatchDetailServiceTest {
     );
   }
 
-  private static FeedstockMeasurement measurement(
+  private static FeedstockMeasurementFixture measurement(
       FeedstockBatchId batchId,
       String name,
       String measuredAt
   ) {
-    return FeedstockMeasurement.create(
+    return FeedstockMeasurementFixture.create(
         FeedstockMeasurementId.newId(),
         batchId,
         FeedstockMeasurementName.of(name),
         ChemicalProfile.builder()
-            .sugar(ExactMeasurement.of(SugarConcentration.ofSpecificGravity(SpecificGravityValue.of("1.060"))))
-            .titratableAcidity(ExactMeasurement.of(TitratableAcidityValue.of("5.0")))
-            .ph(ExactMeasurement.of(PhValue.of("3.40")))
-            .tanninity(ExactMeasurement.of(TanninityValue.of("1400")))
-            .yeastAssimilableNitrogen(ExactMeasurement.of(YeastAssimilableNitrogenValue.of("120")))
+            .sugar(PointCharacteristicValue.of(SugarConcentration.ofSpecificGravity(SpecificGravityValue.of("1.060"))))
+            .titratableAcidity(PointCharacteristicValue.of(TitratableAcidityValue.of("5.0")))
+            .ph(PointCharacteristicValue.of(PhValue.of("3.40")))
+            .tannin(PointCharacteristicValue.of(TanninValue.of("1400")))
+            .yeastAssimilableNitrogen(PointCharacteristicValue.of(YeastAssimilableNitrogenValue.of("120")))
             .build(),
         Instant.parse(measuredAt),
         feedstockMeasurementRecordedAt()
@@ -148,7 +148,7 @@ class GetFeedstockBatchDetailServiceTest {
 
   private static FeedstockMeasurementSummary measurementSummary(
       FeedstockBatch batch,
-      FeedstockMeasurement measurement
+      FeedstockMeasurementFixture measurement
   ) {
     return new FeedstockMeasurementSummary(
         measurement.measurementId(),

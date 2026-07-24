@@ -92,8 +92,8 @@ public final class ProfileTargetRestMapper {
         distance.insideSugarAcidityTarget(),
         distance.insideTarget(),
         toResponse(distance.nearestTargetPoint()),
-        quantity(distance.tannin(), CanonicalUnitLabels.TANNINITY),
-        quantity(distance.nearestTargetTannin(), CanonicalUnitLabels.TANNINITY),
+        quantity(distance.tannin(), CanonicalUnitLabels.TANNIN),
+        quantity(distance.nearestTargetTannin(), CanonicalUnitLabels.TANNIN),
         distance.objectiveFunction(),
         distance.metric(),
         distance.targetKind(),
@@ -110,15 +110,16 @@ public final class ProfileTargetRestMapper {
     requireNonNull(targetResolver, "sugar-acidity target resolver cannot be null");
 
     return switch (request) {
-      case PredefinedZoneProfileTargetRequest predefined -> targetResolver.resolvePredefinedZone(predefined.zone());
-      case CustomRectangleProfileTargetRequest custom -> new CustomRectangleSugarAcidityTarget(
-          new RectangleSugarAcidityTargetGeometry(
-              custom.sugarMin(),
-              custom.sugarMax(),
-              custom.acidityMin(),
-              custom.acidityMax()
-          )
-      );
+      case PredefinedZoneProfileTargetRequest(_, var zone) -> targetResolver.resolvePredefinedZone(zone);
+      case CustomRectangleProfileTargetRequest(_, var sugarMin, var sugarMax, var acidityMin, var acidityMax) ->
+          new CustomRectangleSugarAcidityTarget(
+              new RectangleSugarAcidityTargetGeometry(
+                  sugarMin,
+                  sugarMax,
+                  acidityMin,
+                  acidityMax
+              )
+          );
     };
   }
 

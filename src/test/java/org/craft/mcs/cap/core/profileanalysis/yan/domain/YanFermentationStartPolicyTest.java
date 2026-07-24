@@ -8,7 +8,7 @@ import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.Fermentat
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.craft.mcs.cap.shared.kernel.chemical.value.PhValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
-import org.craft.mcs.cap.shared.kernel.measurement.ExactMeasurement;
+import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -98,13 +98,13 @@ class YanFermentationStartPolicyTest {
 
   private static ChemicalProfile profile(String yan) {
     return ChemicalProfile.builder()
-        .yeastAssimilableNitrogen(ExactMeasurement.of(YeastAssimilableNitrogenValue.of(yan)))
+        .yeastAssimilableNitrogen(PointCharacteristicValue.of(YeastAssimilableNitrogenValue.of(yan)))
         .build();
   }
 
   private static ChemicalProfile profileWithoutYan() {
     return ChemicalProfile.builder()
-        .ph(ExactMeasurement.of(PhValue.of("3.50")))
+        .ph(PointCharacteristicValue.of(PhValue.of("3.50")))
         .build();
   }
 }

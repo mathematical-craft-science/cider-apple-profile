@@ -2,8 +2,8 @@ package org.craft.mcs.cap.core.feedstock.application.measurement.usecase;
 
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
 import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchNotFoundException;
+import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchRepository;
 import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementSummary;
 import org.craft.mcs.cap.core.feedstock.application.measurement.port.in.ListFeedstockMeasurementsUseCase;
@@ -15,19 +15,13 @@ import org.springframework.stereotype.Component;
 import static java.util.Objects.requireNonNull;
 
 
-/**
- * Read-side use case for measurement history of one feedstock batch.
- *
- * <p>The returned list is historical evidence for the batch. It is intentionally separate from
- * current-profile queries so clients can show both the latest actionable profile and the full
- * timeline without mixing semantics.
- */
+/** Exposes active generic measurement sets through the legacy Feedstock history read model. */
 @Component
 @RequiredArgsConstructor
 public final class ListFeedstockMeasurementsService
     implements ListFeedstockMeasurementsUseCase {
 
-  private final @NonNull FeedstockMeasurementQueryRepository feedstockMeasurementQueryRepository;
+  private final @NonNull FeedstockMeasurementQueryRepository measurementQueryRepository;
   private final @NonNull FeedstockBatchRepository feedstockBatchRepository;
   private final @NonNull FeedstockAccessControl feedstockAccessControl;
 
@@ -39,6 +33,6 @@ public final class ListFeedstockMeasurementsService
     final var batch = feedstockBatchRepository.findById(batchId)
         .orElseThrow(() -> new FeedstockBatchNotFoundException(batchId));
     feedstockAccessControl.requireReadAccess(batch.workspaceId());
-    return feedstockMeasurementQueryRepository.findSummariesByBatchId(batchId);
+    return measurementQueryRepository.findSummariesByBatchId(batchId);
   }
 }

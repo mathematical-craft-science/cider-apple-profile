@@ -1,9 +1,11 @@
 package org.craft.mcs.cap.core.feedstock.application.inventory.port.in;
 
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
+import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import static java.util.Objects.requireNonNull;
 
@@ -19,7 +21,8 @@ public record ConsumedFeedstockBatchMaterial(
     @NonNull FeedstockBatchMaterialName batchName,
     @NonNull VolumeValue volume,
     @NonNull FeedstockBatchMaterialEvidenceReference evidenceReference,
-    @NonNull ChemicalProfile chemicalProfile
+    @NonNull ChemicalProfile chemicalProfile,
+    @Nullable ConfidenceLevel profileConfidence
 ) {
 
   public ConsumedFeedstockBatchMaterial {

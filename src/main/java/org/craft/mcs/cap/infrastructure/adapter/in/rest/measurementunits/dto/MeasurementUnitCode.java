@@ -13,7 +13,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 public enum MeasurementUnitCode {
   SG,
   TA,
-  TANNINITY,
+  TANNIN,
   YAN,
   PH,
   ABV,

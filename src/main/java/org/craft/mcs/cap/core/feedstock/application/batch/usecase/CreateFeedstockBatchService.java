@@ -19,8 +19,8 @@ import static java.util.Objects.requireNonNull;
  * Application service for registering a new feedstock batch in a workspace.
  *
  * <p>The service creates the operational batch aggregate with season/source/available-volume
- * metadata. Chemical data is intentionally not captured here; it is added through
- * {@code CreateFeedstockMeasurementService} so the batch can keep a measurement history.
+ * metadata. Chemical data is intentionally not captured here; it is recorded through the independent
+ * Measurement context so the batch lifecycle does not own measurement history.
  */
 @Component
 @RequiredArgsConstructor

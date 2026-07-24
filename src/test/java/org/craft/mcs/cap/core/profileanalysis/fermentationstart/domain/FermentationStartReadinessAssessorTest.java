@@ -4,7 +4,7 @@ import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.craft.mcs.cap.shared.kernel.chemical.value.PhValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
-import org.craft.mcs.cap.shared.kernel.measurement.ExactMeasurement;
+import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.junit.jupiter.api.Test;
@@ -48,8 +48,8 @@ class FermentationStartReadinessAssessorTest {
   @Test
   void returnsAttentionWhenYanIsMissing() {
     final var assessment = assessor.assess(ChemicalProfile.builder()
-        .sugar(ExactMeasurement.of(SugarConcentration.ofSpecificGravity(SpecificGravityValue.of("1.052"))))
-        .ph(ExactMeasurement.of(PhValue.of("3.45")))
+        .sugar(PointCharacteristicValue.of(SugarConcentration.ofSpecificGravity(SpecificGravityValue.of("1.052"))))
+        .ph(PointCharacteristicValue.of(PhValue.of("3.45")))
         .build());
 
     assertThat(assessment)
@@ -63,8 +63,8 @@ class FermentationStartReadinessAssessorTest {
   @Test
   void returnsNotReadyWhenSugarIsMissing() {
     final var assessment = assessor.assess(ChemicalProfile.builder()
-        .titratableAcidity(ExactMeasurement.of(TitratableAcidityValue.of("5.2")))
-        .yeastAssimilableNitrogen(ExactMeasurement.of(YeastAssimilableNitrogenValue.of("180")))
+        .titratableAcidity(PointCharacteristicValue.of(TitratableAcidityValue.of("5.2")))
+        .yeastAssimilableNitrogen(PointCharacteristicValue.of(YeastAssimilableNitrogenValue.of("180")))
         .build());
 
     assertThat(assessment)
@@ -113,9 +113,9 @@ class FermentationStartReadinessAssessorTest {
       String yan
   ) {
     return ChemicalProfile.builder()
-        .sugar(ExactMeasurement.of(SugarConcentration.ofSpecificGravity(SpecificGravityValue.of(sugar))))
-        .ph(ExactMeasurement.of(PhValue.of(ph)))
-        .yeastAssimilableNitrogen(ExactMeasurement.of(YeastAssimilableNitrogenValue.of(yan)))
+        .sugar(PointCharacteristicValue.of(SugarConcentration.ofSpecificGravity(SpecificGravityValue.of(sugar))))
+        .ph(PointCharacteristicValue.of(PhValue.of(ph)))
+        .yeastAssimilableNitrogen(PointCharacteristicValue.of(YeastAssimilableNitrogenValue.of(yan)))
         .build();
   }
 }

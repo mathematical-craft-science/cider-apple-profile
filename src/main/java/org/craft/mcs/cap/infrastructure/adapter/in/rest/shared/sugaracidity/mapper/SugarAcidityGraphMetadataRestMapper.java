@@ -1,17 +1,19 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.sugaracidity.mapper;
 
+import java.math.BigDecimal;
+import org.craft.mcs.cap.core.profileanalysis.sugaracidity.graph.domain.EllipseSugarAcidityGraphZone;
+import org.craft.mcs.cap.core.profileanalysis.sugaracidity.graph.domain.RectangleSugarAcidityGraphZone;
+import org.craft.mcs.cap.core.profileanalysis.sugaracidity.graph.domain.SugarAcidityGraphAxis;
+import org.craft.mcs.cap.core.profileanalysis.sugaracidity.graph.domain.SugarAcidityGraphMetadata;
+import org.craft.mcs.cap.core.profileanalysis.sugaracidity.graph.domain.SugarAcidityGraphRange;
+import org.craft.mcs.cap.core.profileanalysis.sugaracidity.graph.domain.SugarAcidityGraphZone;
+import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.SugarAcidityZone;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.sugaracidity.dto.EllipseSugarAcidityGraphZoneResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.sugaracidity.dto.RectangleSugarAcidityGraphZoneResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.sugaracidity.dto.SugarAcidityGraphAxisResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.sugaracidity.dto.SugarAcidityGraphMetadataResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.sugaracidity.dto.SugarAcidityGraphRangeResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.sugaracidity.dto.SugarAcidityGraphZoneResponse;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.graph.domain.SugarAcidityGraphAxis;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.graph.domain.EllipseSugarAcidityGraphZone;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.graph.domain.RectangleSugarAcidityGraphZone;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.graph.domain.SugarAcidityGraphMetadata;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.graph.domain.SugarAcidityGraphRange;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.graph.domain.SugarAcidityGraphZone;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.measurement.CanonicalUnitLabels;
 import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
 import org.jspecify.annotations.NonNull;
@@ -44,30 +46,49 @@ public final class SugarAcidityGraphMetadataRestMapper {
     requireNonNull(zone, "sugar-acidity graph zone cannot be null");
 
     return switch (zone) {
-      case RectangleSugarAcidityGraphZone rectangle -> rectangleZoneResponse(rectangle);
-      case EllipseSugarAcidityGraphZone ellipse -> ellipseZoneResponse(ellipse);
+      case RectangleSugarAcidityGraphZone(var zoneCode, var sugarRange, var acidityRange) ->
+          rectangleZoneResponse(zoneCode, sugarRange, acidityRange);
+      case EllipseSugarAcidityGraphZone(
+          var zoneCode,
+          var sugarCenter,
+          var acidityCenter,
+          var sugarRadius,
+          var acidityRadius
+      ) -> ellipseZoneResponse(
+          zoneCode,
+          sugarCenter,
+          acidityCenter,
+          sugarRadius,
+          acidityRadius
+      );
     };
   }
 
   private static @NonNull RectangleSugarAcidityGraphZoneResponse rectangleZoneResponse(
-      @NonNull RectangleSugarAcidityGraphZone rectangle
+      @NonNull SugarAcidityZone zone,
+      @NonNull SugarAcidityGraphRange sugarRange,
+      @NonNull SugarAcidityGraphRange acidityRange
   ) {
     return new RectangleSugarAcidityGraphZoneResponse(
-        rectangle.zone(),
-        rangeResponse(rectangle.sugarRange(), CanonicalUnitLabels.SUGAR),
-        rangeResponse(rectangle.acidityRange(), CanonicalUnitLabels.TITRATABLE_ACIDITY)
+        zone,
+        rangeResponse(sugarRange, CanonicalUnitLabels.SUGAR),
+        rangeResponse(acidityRange, CanonicalUnitLabels.TITRATABLE_ACIDITY)
     );
   }
 
   private static @NonNull EllipseSugarAcidityGraphZoneResponse ellipseZoneResponse(
-      @NonNull EllipseSugarAcidityGraphZone ellipse
+      @NonNull SugarAcidityZone zone,
+      @NonNull BigDecimal sugarCenter,
+      @NonNull BigDecimal acidityCenter,
+      @NonNull BigDecimal sugarRadius,
+      @NonNull BigDecimal acidityRadius
   ) {
     return new EllipseSugarAcidityGraphZoneResponse(
-        ellipse.zone(),
-        new DecimalQuantityResponse(ellipse.sugarCenter(), CanonicalUnitLabels.SUGAR),
-        new DecimalQuantityResponse(ellipse.acidityCenter(), CanonicalUnitLabels.TITRATABLE_ACIDITY),
-        new DecimalQuantityResponse(ellipse.sugarRadius(), CanonicalUnitLabels.SUGAR),
-        new DecimalQuantityResponse(ellipse.acidityRadius(), CanonicalUnitLabels.TITRATABLE_ACIDITY)
+        zone,
+        new DecimalQuantityResponse(sugarCenter, CanonicalUnitLabels.SUGAR),
+        new DecimalQuantityResponse(acidityCenter, CanonicalUnitLabels.TITRATABLE_ACIDITY),
+        new DecimalQuantityResponse(sugarRadius, CanonicalUnitLabels.SUGAR),
+        new DecimalQuantityResponse(acidityRadius, CanonicalUnitLabels.TITRATABLE_ACIDITY)
     );
   }
 

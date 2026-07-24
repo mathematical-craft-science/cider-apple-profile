@@ -13,7 +13,7 @@ import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfile
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
-import org.craft.mcs.cap.shared.kernel.measurement.ExactMeasurement;
+import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.junit.jupiter.api.Test;
@@ -29,10 +29,10 @@ class AppleVarietySugarAcidityZoneRestMapperTest {
   @Test
   void serializesAxisPointDiscriminatorForPlottableSingleResult() throws Exception {
     final var profile = ChemicalProfile.builder()
-        .sugar(ExactMeasurement.of(SugarConcentration.ofSpecificGravity(
+        .sugar(PointCharacteristicValue.of(SugarConcentration.ofSpecificGravity(
             SpecificGravityValue.of("1.066")
         )))
-        .titratableAcidity(ExactMeasurement.of(TitratableAcidityValue.of("5.7")))
+        .titratableAcidity(PointCharacteristicValue.of(TitratableAcidityValue.of("5.7")))
         .build();
     final var axes = new ChemicalProfileAxisExtractor().extract(profile);
     final var assessment = new RectangleSugarAcidityZoneAssessor(
@@ -55,15 +55,15 @@ class AppleVarietySugarAcidityZoneRestMapperTest {
 
     final var json = OBJECT_MAPPER.valueToTree(response);
 
-    assertThat(json.at("/assessment/point/sugar/valueKind").asText()).isEqualTo("EXACT");
-    assertThat(json.at("/assessment/point/acidity/valueKind").asText()).isEqualTo("EXACT");
+    assertThat(json.at("/assessment/point/sugar/valueKind").asText()).isEqualTo("POINT");
+    assertThat(json.at("/assessment/point/acidity/valueKind").asText()).isEqualTo("POINT");
     assertThat(json.at("/potentialAbv/potentialAbv/value").decimalValue()).isEqualByComparingTo("8.663");
   }
 
   @Test
   void mapsUnplottableSingleResultWithCapabilityAssessment() {
     final var profile = ChemicalProfile.builder()
-        .sugar(ExactMeasurement.of(SugarConcentration.ofSpecificGravity(
+        .sugar(PointCharacteristicValue.of(SugarConcentration.ofSpecificGravity(
             SpecificGravityValue.of("1.050")
         )))
         .build();

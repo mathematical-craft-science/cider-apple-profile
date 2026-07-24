@@ -10,7 +10,7 @@ import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchLifec
 import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
 import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
-import org.craft.mcs.cap.shared.kernel.chemical.value.TanninityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
@@ -152,7 +152,7 @@ class JdbcProductionBatchPersistenceDataJdbcTest {
         new ProductionProfileSnapshot(
             SpecificGravityValue.of("1.052"),
             TitratableAcidityValue.of("5.8"),
-            TanninityValue.of("1200"),
+            TanninValue.of("1200"),
             YeastAssimilableNitrogenValue.of("180")
         ),
         null

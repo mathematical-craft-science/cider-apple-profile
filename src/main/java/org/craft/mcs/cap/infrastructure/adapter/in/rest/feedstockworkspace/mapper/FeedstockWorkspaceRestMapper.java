@@ -32,6 +32,7 @@ import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.common.dto.Fee
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.readiness.dto.FermentationStartReadinessAssessmentResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.readiness.mapper.FeedstockBatchReadinessRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.batch.mapper.FeedstockBatchRestMapper;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.common.mapper.FeedstockProfileEvidenceRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.common.mapper.FeedstockProfileSummaryRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstockworkspace.dto.FeedstockWorkspaceTargetCandidateResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstockworkspace.dto.FeedstockWorkspaceBatchQueryRequest;
@@ -106,6 +107,9 @@ public final class FeedstockWorkspaceRestMapper {
         FeedstockBatchRestMapper.toResponse(view.batch()),
         toCurrentMeasurementResponse(view.currentMeasurement()),
         toProfileSummaryResponse(view.currentMeasurement()),
+        view.profileEvidence().stream()
+            .map(FeedstockProfileEvidenceRestMapper::toResponse)
+            .toList(),
         toMeasurementFreshnessResponse(view.measurementFreshness()),
         toSugarAcidityResponse(view.sugarAcidity()),
         toPotentialAbvResponse(view.potentialAbv()),
@@ -353,9 +357,7 @@ public final class FeedstockWorkspaceRestMapper {
             axisValue.value(),
             axisValue.valueKind(),
             axisValue.min(),
-            axisValue.max(),
-            axisValue.standardDeviation(),
-            axisValue.sampleSize()
+            axisValue.max()
         ),
         CanonicalUnitLabels.YEAST_ASSIMILABLE_NITROGEN
     );
@@ -368,14 +370,14 @@ public final class FeedstockWorkspaceRestMapper {
   private static @NonNull FeedstockProfileTargetSelection toTarget(@NonNull ProfileTargetRequest request) {
     requireNonNull(request, "profile target request cannot be null");
     return switch (request) {
-      case PredefinedZoneProfileTargetRequest predefined ->
-          new PredefinedFeedstockProfileTargetSelection(predefined.zone());
-      case CustomRectangleProfileTargetRequest custom ->
+      case PredefinedZoneProfileTargetRequest(_, var zone) ->
+          new PredefinedFeedstockProfileTargetSelection(zone);
+      case CustomRectangleProfileTargetRequest(_, var sugarMin, var sugarMax, var acidityMin, var acidityMax) ->
           new CustomRectangleFeedstockProfileTargetSelection(new RectangleSugarAcidityTargetGeometry(
-              custom.sugarMin(),
-              custom.sugarMax(),
-              custom.acidityMin(),
-              custom.acidityMax()
+              sugarMin,
+              sugarMax,
+              acidityMin,
+              acidityMax
           ));
     };
   }

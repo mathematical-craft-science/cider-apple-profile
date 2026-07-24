@@ -15,7 +15,7 @@ import java.util.Set;
 import java.util.UUID;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVariety;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
-import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurement;
+import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSet;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatch;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.jspecify.annotations.NonNull;
@@ -119,6 +119,7 @@ class ContextBoundaryArchitectureTest {
               "org.craft.mcs.cap.core.appleprofile.domain..",
               "org.craft.mcs.cap.core.batchtraceability.domain..",
               "org.craft.mcs.cap.core.feedstock.domain..",
+              "org.craft.mcs.cap.core.measurement.domain..",
               "org.craft.mcs.cap.core.production.domain..",
               "org.craft.mcs.cap.core.varietyprofile.domain.."
           )
@@ -199,6 +200,31 @@ class ContextBoundaryArchitectureTest {
           .should()
           .dependOnClassesThat()
           .resideInAPackage("org.craft.mcs.cap.core.account..");
+
+  @ArchTest
+  static final ArchRule measurement_context_does_not_depend_on_subject_owner_contexts =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.core.measurement..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAnyPackage(
+              "org.craft.mcs.cap.core.account..",
+              "org.craft.mcs.cap.core.feedstock..",
+              "org.craft.mcs.cap.core.production.."
+          );
+
+  @ArchTest
+  static final ArchRule measurement_subject_acl_uses_owner_inbound_boundaries_only =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.infrastructure.adapter.out.measurement..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAnyPackage(
+              "org.craft.mcs.cap.core.feedstock.application..port.out..",
+              "org.craft.mcs.cap.core.production.application..port.out.."
+          );
 
   @ArchTest
   static final ArchRule account_context_does_not_depend_on_feedstock_or_production_contexts =
@@ -295,6 +321,15 @@ class ContextBoundaryArchitectureTest {
           .resideInAPackage("org.craft.mcs.cap.core.feedstock..");
 
   @ArchTest
+  static final ArchRule production_context_does_not_depend_on_measurement_context =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.core.production..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAPackage("org.craft.mcs.cap.core.measurement..");
+
+  @ArchTest
   static final ArchRule production_source_acl_uses_feedstock_inbound_boundary_only =
       noClasses()
           .that()
@@ -304,8 +339,7 @@ class ContextBoundaryArchitectureTest {
           .resideInAnyPackage(
               "org.craft.mcs.cap.core.feedstock.application..port.out..",
               "org.craft.mcs.cap.core.feedstock.application..query..",
-              "org.craft.mcs.cap.core.feedstock.domain.model.batch..",
-              "org.craft.mcs.cap.core.feedstock.domain.model.measurement.."
+              "org.craft.mcs.cap.core.feedstock.domain.model.batch.."
           );
 
   @ArchTest
@@ -357,7 +391,7 @@ class ContextBoundaryArchitectureTest {
     final var aggregateRootNames = Set.of(
         AppleVariety.class.getName(),
         FeedstockBatch.class.getName(),
-        FeedstockMeasurement.class.getName(),
+        MeasurementSet.class.getName(),
         ProductionBatch.class.getName()
     );
 

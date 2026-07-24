@@ -5,7 +5,7 @@ import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyId;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyName;
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
-import org.craft.mcs.cap.shared.kernel.measurement.ExactMeasurement;
+import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.craft.mcs.cap.shared.testing.jdbc.PostgresDataJdbcTestConfiguration;
@@ -41,8 +41,8 @@ class JdbcAppleVarietyRepositoryDataJdbcTest {
 
     saved.aggregate().rename(AppleVarietyName.of("Updated variety"));
     saved.aggregate().changeChemicalProfile(ChemicalProfile.builder()
-        .sugar(ExactMeasurement.of(SugarConcentration.ofSpecificGravity(SpecificGravityValue.of("1.055"))))
-        .titratableAcidity(ExactMeasurement.of(TitratableAcidityValue.of("6.1")))
+        .sugar(PointCharacteristicValue.of(SugarConcentration.ofSpecificGravity(SpecificGravityValue.of("1.055"))))
+        .titratableAcidity(PointCharacteristicValue.of(TitratableAcidityValue.of("6.1")))
         .build());
 
     final var updated = repository.update(saved).aggregate();
@@ -72,7 +72,7 @@ class JdbcAppleVarietyRepositoryDataJdbcTest {
         AppleVarietyId.newId(),
         AppleVarietyName.of("Initial variety"),
         ChemicalProfile.builder()
-            .sugar(ExactMeasurement.of(SugarConcentration.ofSpecificGravity(SpecificGravityValue.of("1.052"))))
+            .sugar(PointCharacteristicValue.of(SugarConcentration.ofSpecificGravity(SpecificGravityValue.of("1.052"))))
             .build()
     );
   }

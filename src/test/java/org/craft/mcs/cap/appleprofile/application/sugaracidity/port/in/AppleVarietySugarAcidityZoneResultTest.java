@@ -9,7 +9,7 @@ import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfile
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileEvaluation;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
-import org.craft.mcs.cap.shared.kernel.measurement.ExactMeasurement;
+import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.BuiltInSugarAcidityZoneProfiles;
@@ -41,7 +41,7 @@ class AppleVarietySugarAcidityZoneResultTest {
         AppleVarietyId.newId(),
         AppleVarietyName.of("Partial Profile"),
         evaluation(ChemicalProfile.builder()
-        .sugar(ExactMeasurement.of(SugarConcentration.ofSpecificGravity(
+        .sugar(PointCharacteristicValue.of(SugarConcentration.ofSpecificGravity(
             SpecificGravityValue.of("1.050")
         )))
         .build()),
@@ -68,10 +68,10 @@ class AppleVarietySugarAcidityZoneResultTest {
 
   private static ChemicalProfile plottableProfile() {
     return ChemicalProfile.builder()
-        .sugar(ExactMeasurement.of(SugarConcentration.ofSpecificGravity(
+        .sugar(PointCharacteristicValue.of(SugarConcentration.ofSpecificGravity(
             SpecificGravityValue.of("1.060")
         )))
-        .titratableAcidity(ExactMeasurement.of(TitratableAcidityValue.of("5.0")))
+        .titratableAcidity(PointCharacteristicValue.of(TitratableAcidityValue.of("5.0")))
         .build();
   }
 

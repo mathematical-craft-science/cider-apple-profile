@@ -1,7 +1,9 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstockworkspace.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.List;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.batch.dto.FeedstockBatchResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.common.dto.FeedstockProfileEvidenceResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.readiness.dto.FermentationStartReadinessAssessmentResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.sugaracidity.dto.SugarAcidityAxisPointResponse;
 import org.jspecify.annotations.NonNull;
@@ -13,22 +15,30 @@ public record FeedstockWorkspaceBatchResponse(
     @Schema(description = "Feedstock batch metadata and available volume.", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull FeedstockBatchResponse batch,
     @Schema(
-        description = "Latest measurement used as current batch profile.",
+        description = """
+            Latest contributing MeasurementSet retained as a compatibility anchor. The current
+            profile is composite and may use older evidence for other characteristics.
+            """,
         nullable = true,
         requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )
     @Nullable FeedstockWorkspaceCurrentMeasurementResponse currentMeasurement,
     @Schema(
         description = """
-            Compact current profile projection for board rows. It is derived from currentMeasurement
-            and does not replace the original measurement payload.
+            Compact composite current profile projection for board rows. Characteristics may come
+            from different MeasurementSets; profileEvidence identifies every selected source.
             """,
         nullable = true,
         requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )
     @Nullable FeedstockWorkspaceProfileSummaryResponse profileSummary,
     @Schema(
-        description = "Freshness assessment for the latest measurement.",
+        description = "Per-characteristic evidence selected for the composite current profile.",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
+    @NonNull List<@NonNull FeedstockProfileEvidenceResponse> profileEvidence,
+    @Schema(
+        description = "Worst freshness status among the planning-required SG and TA evidence.",
         nullable = true,
         requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )

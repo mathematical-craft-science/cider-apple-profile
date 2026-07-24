@@ -1,11 +1,11 @@
 package org.craft.mcs.cap.core.profileanalysis.profileaxis.domain;
 
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
-import org.craft.mcs.cap.shared.kernel.chemical.value.TanninityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
-import org.craft.mcs.cap.shared.kernel.measurement.ExactMeasurement;
+import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.junit.jupiter.api.Test;
@@ -22,7 +22,7 @@ class ChemicalProfileCapabilityAssessorTest {
   void sugarAcidityPlotRequiresSugarAndAcidity() {
     final var assessment = assessor.assess(
         axisExtractor.extract(ChemicalProfile.builder()
-            .sugar(ExactMeasurement.of(SugarConcentration.ofSpecificGravity(
+            .sugar(PointCharacteristicValue.of(SugarConcentration.ofSpecificGravity(
                 SpecificGravityValue.of("1.052")
             )))
             .build()),
@@ -42,10 +42,10 @@ class ChemicalProfileCapabilityAssessorTest {
   void sugarAcidityPlotIsCapableWhenSugarAndAcidityArePresent() {
     final var assessment = assessor.assess(
         axisExtractor.extract(ChemicalProfile.builder()
-            .sugar(ExactMeasurement.of(SugarConcentration.ofSpecificGravity(
+            .sugar(PointCharacteristicValue.of(SugarConcentration.ofSpecificGravity(
                 SpecificGravityValue.of("1.052")
             )))
-            .titratableAcidity(ExactMeasurement.of(TitratableAcidityValue.of("5.2")))
+            .titratableAcidity(PointCharacteristicValue.of(TitratableAcidityValue.of("5.2")))
             .build()),
         ChemicalProfileCapability.SUGAR_ACIDITY_PLOT
     );
@@ -58,7 +58,7 @@ class ChemicalProfileCapabilityAssessorTest {
   void abvPredictionRequiresOnlySugar() {
     final var assessment = assessor.assess(
         axisExtractor.extract(ChemicalProfile.builder()
-            .sugar(ExactMeasurement.of(SugarConcentration.ofSpecificGravity(
+            .sugar(PointCharacteristicValue.of(SugarConcentration.ofSpecificGravity(
                 SpecificGravityValue.of("1.052")
             )))
             .build()),
@@ -71,7 +71,7 @@ class ChemicalProfileCapabilityAssessorTest {
   }
 
   @Test
-  void northAmericanProfileRequiresSugarAcidityAndTanninity() {
+  void northAmericanProfileRequiresSugarAcidityAndTannin() {
     final var assessment = assessor.assess(
         axisExtractor.extract(sugarAndAcidityProfile()),
         ChemicalProfileCapability.NORTH_AMERICAN_PROFILE
@@ -81,19 +81,19 @@ class ChemicalProfileCapabilityAssessorTest {
     assertThat(assessment.requiredAxes()).containsExactlyInAnyOrder(
         ChemicalAxis.SUGAR,
         ChemicalAxis.ACIDITY,
-        ChemicalAxis.TANNINITY
+        ChemicalAxis.TANNIN
     );
     assertThat(assessment.presentAxes()).containsExactlyInAnyOrder(
         ChemicalAxis.SUGAR,
         ChemicalAxis.ACIDITY
     );
-    assertThat(assessment.missingAxes()).containsExactly(ChemicalAxis.TANNINITY);
+    assertThat(assessment.missingAxes()).containsExactly(ChemicalAxis.TANNIN);
   }
 
   @Test
-  void singleVarietyCiderAssessmentRequiresSugarAcidityAndTanninity() {
+  void singleVarietyCiderAssessmentRequiresSugarAcidityAndTannin() {
     final var assessment = assessor.assess(
-        axisExtractor.extract(sugarAcidityAndTanninityProfile()),
+        axisExtractor.extract(sugarAcidityAndTanninProfile()),
         ChemicalProfileCapability.SINGLE_VARIETY_CIDER_ASSESSMENT
     );
 
@@ -101,27 +101,27 @@ class ChemicalProfileCapabilityAssessorTest {
     assertThat(assessment.requiredAxes()).containsExactlyInAnyOrder(
         ChemicalAxis.SUGAR,
         ChemicalAxis.ACIDITY,
-        ChemicalAxis.TANNINITY
+        ChemicalAxis.TANNIN
     );
     assertThat(assessment.missingAxes()).isEmpty();
   }
 
   private static ChemicalProfile sugarAndAcidityProfile() {
     return ChemicalProfile.builder()
-        .sugar(ExactMeasurement.of(SugarConcentration.ofSpecificGravity(
+        .sugar(PointCharacteristicValue.of(SugarConcentration.ofSpecificGravity(
             SpecificGravityValue.of("1.052")
         )))
-        .titratableAcidity(ExactMeasurement.of(TitratableAcidityValue.of("5.2")))
+        .titratableAcidity(PointCharacteristicValue.of(TitratableAcidityValue.of("5.2")))
         .build();
   }
 
-  private static ChemicalProfile sugarAcidityAndTanninityProfile() {
+  private static ChemicalProfile sugarAcidityAndTanninProfile() {
     return ChemicalProfile.builder()
-        .sugar(ExactMeasurement.of(SugarConcentration.ofSpecificGravity(
+        .sugar(PointCharacteristicValue.of(SugarConcentration.ofSpecificGravity(
             SpecificGravityValue.of("1.052")
         )))
-        .titratableAcidity(ExactMeasurement.of(TitratableAcidityValue.of("5.2")))
-        .tanninity(ExactMeasurement.of(TanninityValue.of("1500")))
+        .titratableAcidity(PointCharacteristicValue.of(TitratableAcidityValue.of("5.2")))
+        .tannin(PointCharacteristicValue.of(TanninValue.of("1500")))
         .build();
   }
 }

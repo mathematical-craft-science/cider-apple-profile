@@ -1,17 +1,17 @@
 package org.craft.mcs.cap.feedstock.application.analysis.sugaracidity.port.in;
 
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.*;
-import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurementId;
+import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementId;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
-import org.craft.mcs.cap.core.feedstock.domain.model.measurement.value.FeedstockMeasurementName;
+import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementName;
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapability;
 import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityAssessment;
 import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityAssessor;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileEvaluation;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
-import org.craft.mcs.cap.shared.kernel.measurement.ExactMeasurement;
+import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.junit.jupiter.api.Test;
@@ -52,7 +52,7 @@ class FeedstockMeasurementSugarAcidityZoneResultTest {
   private static ChemicalProfileCapabilityAssessment capabilityAssessment() {
     return new ChemicalProfileCapabilityAssessor().assess(
         new ChemicalProfileAxisExtractor().extract(ChemicalProfile.builder()
-            .sugar(ExactMeasurement.of(SugarConcentration.ofSpecificGravity(
+            .sugar(PointCharacteristicValue.of(SugarConcentration.ofSpecificGravity(
                 SpecificGravityValue.of("1.050")
             )))
             .build()),
@@ -62,7 +62,7 @@ class FeedstockMeasurementSugarAcidityZoneResultTest {
 
   private static SugarAcidityProfileEvaluation evaluation() {
     final var axes = new ChemicalProfileAxisExtractor().extract(ChemicalProfile.builder()
-        .sugar(ExactMeasurement.of(SugarConcentration.ofSpecificGravity(
+        .sugar(PointCharacteristicValue.of(SugarConcentration.ofSpecificGravity(
             SpecificGravityValue.of("1.050")
         )))
         .build());

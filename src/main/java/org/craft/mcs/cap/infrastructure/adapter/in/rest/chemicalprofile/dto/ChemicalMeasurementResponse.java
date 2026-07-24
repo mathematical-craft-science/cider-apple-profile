@@ -16,28 +16,29 @@ import org.jspecify.annotations.NonNull;
 @JsonSubTypes(
     {
         @JsonSubTypes.Type(value = ExactChemicalMeasurementResponse.class, name = "EXACT"),
-        @JsonSubTypes.Type(value = RangeChemicalMeasurementResponse.class, name = "RANGE"),
-        @JsonSubTypes.Type(value = StatisticalChemicalMeasurementResponse.class, name = "STATISTICAL")
+        @JsonSubTypes.Type(value = RangeChemicalMeasurementResponse.class, name = "RANGE")
     }
 )
 @Schema(
-    description = "Chemical measurement response. Uses EXACT, RANGE or STATISTICAL shape.",
+    description = "Legacy chemical profile value. Uses EXACT or RANGE shape.",
     discriminatorProperty = "kind",
     oneOf = {
         ExactChemicalMeasurementResponse.class,
-        RangeChemicalMeasurementResponse.class,
-        StatisticalChemicalMeasurementResponse.class
+        RangeChemicalMeasurementResponse.class
     },
     discriminatorMapping = {
         @DiscriminatorMapping(value = "EXACT", schema = ExactChemicalMeasurementResponse.class),
-        @DiscriminatorMapping(value = "RANGE", schema = RangeChemicalMeasurementResponse.class),
-        @DiscriminatorMapping(value = "STATISTICAL", schema = StatisticalChemicalMeasurementResponse.class)
+        @DiscriminatorMapping(value = "RANGE", schema = RangeChemicalMeasurementResponse.class)
     }
 )
 public sealed interface ChemicalMeasurementResponse
-    permits ExactChemicalMeasurementResponse, RangeChemicalMeasurementResponse, StatisticalChemicalMeasurementResponse {
+    permits ExactChemicalMeasurementResponse, RangeChemicalMeasurementResponse {
 
   @NonNull
-  @Schema(description = "Measurement shape discriminator.", example = "EXACT", requiredMode = Schema.RequiredMode.REQUIRED)
+  @Schema(
+      description = "Measurement shape discriminator.",
+      example = "EXACT",
+      requiredMode = Schema.RequiredMode.REQUIRED
+  )
   String kind();
 }

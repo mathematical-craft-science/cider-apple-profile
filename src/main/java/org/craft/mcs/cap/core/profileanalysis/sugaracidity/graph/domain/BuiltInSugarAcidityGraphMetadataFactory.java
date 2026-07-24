@@ -6,6 +6,8 @@ import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.EllipseSu
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.RectangleSugarAcidityZoneGeometry;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.SugarAcidityZoneGeometry;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.SugarAcidityZoneGeometryProfile;
+import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.SugarAcidityZone;
+import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.SugarAcidityZoneRange;
 import org.craft.mcs.cap.shared.kernel.measurement.unit.BeverageUnits;
 import org.jspecify.annotations.NonNull;
 
@@ -57,24 +59,33 @@ public final class BuiltInSugarAcidityGraphMetadataFactory {
       @NonNull SugarAcidityZoneGeometry geometry
   ) {
     return switch (geometry) {
-      case RectangleSugarAcidityZoneGeometry rectangle -> rectangleGraphZone(rectangle);
-      case EllipseSugarAcidityZoneGeometry ellipse -> new EllipseSugarAcidityGraphZone(
-          ellipse.zone(),
-          ellipse.sugarCenter(),
-          ellipse.acidityCenter(),
-          ellipse.sugarRadius(),
-          ellipse.acidityRadius()
+      case RectangleSugarAcidityZoneGeometry(var zone, var sugarRange, var acidityRange) ->
+          rectangleGraphZone(zone, sugarRange, acidityRange);
+      case EllipseSugarAcidityZoneGeometry(
+          var zone,
+          var sugarCenter,
+          var acidityCenter,
+          var sugarRadius,
+          var acidityRadius
+      ) -> new EllipseSugarAcidityGraphZone(
+          zone,
+          sugarCenter,
+          acidityCenter,
+          sugarRadius,
+          acidityRadius
       );
     };
   }
 
   private static @NonNull RectangleSugarAcidityGraphZone rectangleGraphZone(
-      @NonNull RectangleSugarAcidityZoneGeometry rectangle
+      @NonNull SugarAcidityZone zone,
+      @NonNull SugarAcidityZoneRange sugarRange,
+      @NonNull SugarAcidityZoneRange acidityRange
   ) {
     return new RectangleSugarAcidityGraphZone(
-        rectangle.zone(),
-        new SugarAcidityGraphRange(rectangle.sugarRange().min(), rectangle.sugarRange().max()),
-        new SugarAcidityGraphRange(rectangle.acidityRange().min(), rectangle.acidityRange().max())
+        zone,
+        new SugarAcidityGraphRange(sugarRange.min(), sugarRange.max()),
+        new SugarAcidityGraphRange(acidityRange.min(), acidityRange.max())
     );
   }
 }

@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import java.util.UUID;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceSubjectType;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.batchtraceability.BatchTraceabilityPersistenceMappingException;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.MeasurementValueKind;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValueKind;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -40,7 +40,7 @@ public class BatchTraceStepSubjectJdbcRow {
   public BigDecimal sugarValue;
 
   @Nullable
-  public MeasurementValueKind sugarValueKind;
+  public AxisValueKind sugarValueKind;
 
   @Nullable
   public BigDecimal sugarMin;
@@ -49,16 +49,10 @@ public class BatchTraceStepSubjectJdbcRow {
   public BigDecimal sugarMax;
 
   @Nullable
-  public BigDecimal sugarStandardDeviation;
-
-  @Nullable
-  public Integer sugarSampleSize;
-
-  @Nullable
   public BigDecimal acidityValue;
 
   @Nullable
-  public MeasurementValueKind acidityValueKind;
+  public AxisValueKind acidityValueKind;
 
   @Nullable
   public BigDecimal acidityMin;
@@ -67,46 +61,28 @@ public class BatchTraceStepSubjectJdbcRow {
   public BigDecimal acidityMax;
 
   @Nullable
-  public BigDecimal acidityStandardDeviation;
+  public BigDecimal tanninValue;
 
   @Nullable
-  public Integer aciditySampleSize;
+  public AxisValueKind tanninValueKind;
 
   @Nullable
-  public BigDecimal tanninityValue;
+  public BigDecimal tanninMin;
 
   @Nullable
-  public MeasurementValueKind tanninityValueKind;
-
-  @Nullable
-  public BigDecimal tanninityMin;
-
-  @Nullable
-  public BigDecimal tanninityMax;
-
-  @Nullable
-  public BigDecimal tanninityStandardDeviation;
-
-  @Nullable
-  public Integer tanninitySampleSize;
+  public BigDecimal tanninMax;
 
   @Nullable
   public BigDecimal yeastAssimilableNitrogenValue;
 
   @Nullable
-  public MeasurementValueKind yeastAssimilableNitrogenValueKind;
+  public AxisValueKind yeastAssimilableNitrogenValueKind;
 
   @Nullable
   public BigDecimal yeastAssimilableNitrogenMin;
 
   @Nullable
   public BigDecimal yeastAssimilableNitrogenMax;
-
-  @Nullable
-  public BigDecimal yeastAssimilableNitrogenStandardDeviation;
-
-  @Nullable
-  public Integer yeastAssimilableNitrogenSampleSize;
 
   @SuppressWarnings("NullAway.Init")
   public BatchTraceStepSubjectJdbcRow() {

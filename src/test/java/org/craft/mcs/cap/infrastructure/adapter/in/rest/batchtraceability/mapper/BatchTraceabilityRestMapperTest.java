@@ -16,7 +16,7 @@ import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.MeasurementValueKind;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValueKind;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -81,9 +81,7 @@ class BatchTraceabilityRestMapperTest {
                 new AxisValue(
                     ChemicalAxis.YEAST_ASSIMILABLE_NITROGEN,
                     new BigDecimal("180"),
-                    MeasurementValueKind.CALCULATED,
-                    null,
-                    null,
+                    AxisValueKind.CALCULATED,
                     null,
                     null
                 )
@@ -106,7 +104,7 @@ class BatchTraceabilityRestMapperTest {
               assertThat(axis.axis()).isEqualTo(ChemicalAxis.YEAST_ASSIMILABLE_NITROGEN);
               assertThat(axis.value().value()).isEqualByComparingTo("180");
               assertThat(axis.value().unit()).isEqualTo("mg N/L");
-              assertThat(axis.valueKind()).isEqualTo(MeasurementValueKind.CALCULATED);
+              assertThat(axis.valueKind()).isEqualTo(AxisValueKind.CALCULATED);
             }));
   }
 }

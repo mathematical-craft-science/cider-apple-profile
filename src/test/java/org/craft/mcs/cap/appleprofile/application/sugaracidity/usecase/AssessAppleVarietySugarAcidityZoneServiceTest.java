@@ -12,7 +12,7 @@ import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfile
 import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityAssessor;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
-import org.craft.mcs.cap.shared.kernel.measurement.ExactMeasurement;
+import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.BuiltInSugarAcidityZoneProfiles;
@@ -39,7 +39,7 @@ class AssessAppleVarietySugarAcidityZoneServiceTest {
         AppleVarietyId.newId(),
         AppleVarietyName.of("Partial Profile"),
         ChemicalProfile.builder()
-            .sugar(ExactMeasurement.of(SugarConcentration.ofSpecificGravity(
+            .sugar(PointCharacteristicValue.of(SugarConcentration.ofSpecificGravity(
                 SpecificGravityValue.of("1.050")
             )))
             .build()

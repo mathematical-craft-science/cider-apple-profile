@@ -6,15 +6,15 @@ import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchNotFoundExcept
 import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.usecase.*;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchRepository;
-import org.craft.mcs.cap.core.feedstock.application.measurement.port.out.FeedstockMeasurementRepository;
+import org.craft.mcs.cap.core.feedstock.application.measurement.port.out.FeedstockMeasurementQueryRepository;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
 import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
-import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurement;
-import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurementId;
-import org.craft.mcs.cap.core.feedstock.domain.model.measurement.value.FeedstockMeasurementName;
+import org.craft.mcs.cap.shared.testing.FeedstockMeasurementFixture;
+import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementId;
+import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementName;
 import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapability;
 import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityAssessment;
 import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityAssessor;
@@ -27,7 +27,7 @@ import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
-import org.craft.mcs.cap.shared.kernel.measurement.ExactMeasurement;
+import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
@@ -37,6 +37,7 @@ import org.junit.jupiter.api.Test;
 import static org.craft.mcs.cap.shared.kernel.identity.UuidV7Generator.newUuid;
 import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementInstant;
 import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementRecordedAt;
+import static org.craft.mcs.cap.shared.testing.FeedstockMeasurementViews.view;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
@@ -47,7 +48,7 @@ class AssessFeedstockMeasurementSugarAcidityZoneServiceTest {
 
   @Test
   void returnsUnplottableResultForIncompleteProfile() {
-    final var repository = mock(FeedstockMeasurementRepository.class);
+    final var repository = mock(FeedstockMeasurementQueryRepository.class);
     final var batchRepository = mock(FeedstockBatchRepository.class);
     final var service = new AssessFeedstockMeasurementSugarAcidityZoneService(
         repository,
@@ -55,7 +56,7 @@ class AssessFeedstockMeasurementSugarAcidityZoneServiceTest {
         mock(FeedstockAccessControl.class),
         projector()
     );
-    final var sample = FeedstockMeasurement.create(
+    final var sample = FeedstockMeasurementFixture.create(
         FeedstockMeasurementId.newId(),
         FeedstockBatchId.newId(),
         FeedstockMeasurementName.of("Partial batch"),
@@ -63,7 +64,7 @@ class AssessFeedstockMeasurementSugarAcidityZoneServiceTest {
         feedstockMeasurementInstant(),
         feedstockMeasurementRecordedAt()
     );
-    when(repository.findById(sample.measurementId())).thenReturn(Optional.of(sample));
+    when(repository.findById(sample.measurementId())).thenReturn(Optional.of(view(sample)));
     when(batchRepository.findById(sample.batchId()))
         .thenReturn(Optional.of(batch(sample.batchId(), WorkspaceId.of(newUuid()))));
 
@@ -83,7 +84,7 @@ class AssessFeedstockMeasurementSugarAcidityZoneServiceTest {
 
   @Test
   void reportsMissingBatchWithApplicationNotFoundException() {
-    final var repository = mock(FeedstockMeasurementRepository.class);
+    final var repository = mock(FeedstockMeasurementQueryRepository.class);
     final var batchRepository = mock(FeedstockBatchRepository.class);
     final var service = new AssessFeedstockMeasurementSugarAcidityZoneService(
         repository,
@@ -91,7 +92,7 @@ class AssessFeedstockMeasurementSugarAcidityZoneServiceTest {
         mock(FeedstockAccessControl.class),
         projector()
     );
-    final var sample = FeedstockMeasurement.create(
+    final var sample = FeedstockMeasurementFixture.create(
         FeedstockMeasurementId.newId(),
         FeedstockBatchId.newId(),
         FeedstockMeasurementName.of("Orphan measurement"),
@@ -99,7 +100,7 @@ class AssessFeedstockMeasurementSugarAcidityZoneServiceTest {
         feedstockMeasurementInstant(),
         feedstockMeasurementRecordedAt()
     );
-    when(repository.findById(sample.measurementId())).thenReturn(Optional.of(sample));
+    when(repository.findById(sample.measurementId())).thenReturn(Optional.of(view(sample)));
     when(batchRepository.findById(sample.batchId())).thenReturn(Optional.empty());
 
     assertThatThrownBy(() -> service.assess(sample.measurementId()))
@@ -109,7 +110,7 @@ class AssessFeedstockMeasurementSugarAcidityZoneServiceTest {
 
   private static @NonNull ChemicalProfile sugarOnlyProfile() {
     return ChemicalProfile.builder()
-        .sugar(ExactMeasurement.of(SugarConcentration.ofSpecificGravity(
+        .sugar(PointCharacteristicValue.of(SugarConcentration.ofSpecificGravity(
             SpecificGravityValue.of("1.050")
         )))
         .build();

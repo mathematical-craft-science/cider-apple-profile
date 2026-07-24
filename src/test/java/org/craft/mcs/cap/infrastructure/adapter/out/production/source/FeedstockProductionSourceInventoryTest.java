@@ -25,7 +25,7 @@ import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtracto
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
-import org.craft.mcs.cap.shared.kernel.measurement.ExactMeasurement;
+import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
@@ -56,7 +56,8 @@ class FeedstockProductionSourceInventoryTest {
             UUID.fromString("019f0f03-4715-7cbd-a634-a178df719e28"),
             3
         ),
-        profile
+        profile,
+        ConfidenceLevel.LAB_VERIFIED
     ));
     final var inventory = inventory(useCase);
 
@@ -153,11 +154,10 @@ class FeedstockProductionSourceInventoryTest {
 
   private static @NonNull ChemicalProfile profile() {
     return ChemicalProfile.builder()
-        .sugar(ExactMeasurement.of(
+        .sugar(PointCharacteristicValue.of(
             SugarConcentration.ofSpecificGravity(SpecificGravityValue.of("1.052"))
         ))
-        .titratableAcidity(ExactMeasurement.of(TitratableAcidityValue.of("5.8")))
-        .confidence(ConfidenceLevel.LAB_VERIFIED)
+        .titratableAcidity(PointCharacteristicValue.of(TitratableAcidityValue.of("5.8")))
         .build();
   }
 

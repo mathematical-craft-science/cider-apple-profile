@@ -3,14 +3,19 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.measurement.d
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Instant;
 import java.util.UUID;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.dto.ChemicalProfileResponse;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 
 @Schema(description = "Feedstock measurement response.")
 public record FeedstockMeasurementResponse(
-    @Schema(description = "Feedstock measurement identifier.", format = "uuid", example = "ed7c0818-aad9-47dd-97c0-d1d37561ca18", requiredMode = Schema.RequiredMode.REQUIRED) @NonNull UUID measurementId,
+    @Schema(
+        description = "Feedstock measurement identifier.",
+        format = "uuid",
+        example = "ed7c0818-aad9-47dd-97c0-d1d37561ca18",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
+    @NonNull UUID measurementId,
     @Schema(
         description = "Workspace identifier derived from the batch.",
         format = "uuid",
@@ -18,8 +23,19 @@ public record FeedstockMeasurementResponse(
         requiredMode = Schema.RequiredMode.REQUIRED
     )
     @NonNull UUID workspaceId,
-    @Schema(description = "Feedstock batch identifier.", format = "uuid", example = "b2a49b8a-3a19-4f8f-989d-9278f4e00d2f", requiredMode = Schema.RequiredMode.REQUIRED) @NonNull UUID batchId,
-    @Schema(description = "Measurement name.", example = "Pressing measurement #1", requiredMode = Schema.RequiredMode.REQUIRED) @NonNull String name,
+    @Schema(
+        description = "Feedstock batch identifier.",
+        format = "uuid",
+        example = "b2a49b8a-3a19-4f8f-989d-9278f4e00d2f",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
+    @NonNull UUID batchId,
+    @Schema(
+        description = "Measurement name.",
+        example = "Pressing measurement #1",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
+    @NonNull String name,
     @Schema(
         description = "Timestamp when the measurement was taken.",
         format = "date-time",
@@ -31,7 +47,13 @@ public record FeedstockMeasurementResponse(
         description = "Measured chemical profile in canonical service units.",
         requiredMode = Schema.RequiredMode.REQUIRED
     )
-    @NonNull ChemicalProfileResponse chemicalProfile,
-    @Schema(description = "Optional measurement note.", example = "Measured immediately after pressing.", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED) @Nullable String note
+    @NonNull FeedstockMeasurementChemicalProfileResponse chemicalProfile,
+    @Schema(
+        description = "Optional measurement note.",
+        example = "Measured immediately after pressing.",
+        nullable = true,
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
+    @Nullable String note
 ) {
 }

@@ -1,11 +1,11 @@
 package org.craft.mcs.cap.core.feedstock.application.analysis.abv.port.in;
 
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
-import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurementId;
-import org.craft.mcs.cap.core.feedstock.domain.model.measurement.value.FeedstockMeasurementName;
+import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementId;
+import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementName;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPrediction;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.MeasurementValueKind;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValueKind;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
@@ -16,7 +16,7 @@ public record FeedstockBatchCurrentPotentialAbvPrediction(
     @NonNull WorkspaceId workspaceId,
     @NonNull FeedstockMeasurementId currentMeasurementId,
     @NonNull FeedstockMeasurementName currentMeasurementName,
-    @NonNull MeasurementValueKind originalGravityValueKind,
+    @NonNull AxisValueKind originalGravityValueKind,
     @NonNull PotentialAbvPrediction prediction
 ) {
 

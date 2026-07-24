@@ -14,7 +14,7 @@ import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
 import org.craft.mcs.cap.core.profileanalysis.classification.domain.result.ClassificationAssessment;
 import org.craft.mcs.cap.core.profileanalysis.classification.domain.result.ClassificationConfidence;
 import org.craft.mcs.cap.core.profileanalysis.classification.domain.rule.ClassificationRule;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.MeasurementValueKind;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValueKind;
 import org.jmolecules.ddd.annotation.Service;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -56,26 +56,6 @@ public class ClassificationConfidencePolicy {
     }
   }
 
-  private static void detectStandardDeviationOverlap(
-      @NonNull AxisValue axisValue,
-      @NonNull AxisRange range,
-      @NonNull List<@NonNull BorderlineEvidence> evidence
-  ) {
-    if (axisValue.standardDeviation() == null) {
-      return;
-    }
-
-    final var lower = axisValue.value().subtract(axisValue.standardDeviation());
-    final var upper = axisValue.value().add(axisValue.standardDeviation());
-
-    if (!range.contains(lower) || !range.contains(upper)) {
-      evidence.add(new BorderlineEvidence(
-          axisValue.axis(),
-          BorderlineReason.STANDARD_DEVIATION_OVERLAPS_BOUNDARY
-      ));
-    }
-  }
-
   private static boolean isCloseTo(
       @NonNull BigDecimal value,
       @Nullable BigDecimal boundary
@@ -96,15 +76,15 @@ public class ClassificationConfidencePolicy {
       return ClassificationConfidence.LOW;
     }
 
-    final var hasOnlyExactValues = Stream.of(
+    final var hasOnlyPointValues = Stream.of(
             ChemicalAxis.SUGAR,
             ChemicalAxis.ACIDITY,
-            ChemicalAxis.TANNINITY
+            ChemicalAxis.TANNIN
         )
         .flatMap(axis -> axes.valueOf(axis).stream())
-        .allMatch(value -> value.valueKind() == MeasurementValueKind.EXACT);
+        .allMatch(value -> value.valueKind() == AxisValueKind.POINT);
 
-    return hasOnlyExactValues
+    return hasOnlyPointValues
            ? ClassificationConfidence.HIGH
            : ClassificationConfidence.MEDIUM;
   }
@@ -130,7 +110,6 @@ public class ClassificationConfidencePolicy {
 
       detectCloseToBoundary(value.orElseThrow(), range, evidence);
       detectRangeOverlap(value.orElseThrow(), range, evidence);
-      detectStandardDeviationOverlap(value.orElseThrow(), range, evidence);
     }
 
     final var confidence = confidenceFrom(evidence, axes);

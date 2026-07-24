@@ -6,6 +6,7 @@ import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.jspecify.annotations.NonNull;
 
 
+/** Compatibility read use case for the historical Feedstock measurement list. */
 public interface ListFeedstockMeasurementsUseCase {
 
   @NonNull

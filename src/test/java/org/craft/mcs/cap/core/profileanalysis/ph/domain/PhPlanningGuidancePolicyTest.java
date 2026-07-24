@@ -2,7 +2,7 @@ package org.craft.mcs.cap.core.profileanalysis.ph.domain;
 
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.craft.mcs.cap.shared.kernel.chemical.value.PhValue;
-import org.craft.mcs.cap.shared.kernel.measurement.ExactMeasurement;
+import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.junit.jupiter.api.Test;
@@ -17,7 +17,7 @@ class PhPlanningGuidancePolicyTest {
   @Test
   void returnsMissingGuidanceWhenPhIsAbsent() {
     final var guidance = policy.assess(ChemicalProfile.builder()
-        .sugar(ExactMeasurement.of(SugarConcentration.ofSpecificGravity(SpecificGravityValue.of("1.050"))))
+        .sugar(PointCharacteristicValue.of(SugarConcentration.ofSpecificGravity(SpecificGravityValue.of("1.050"))))
         .build());
 
     assertThat(guidance)
@@ -54,7 +54,7 @@ class PhPlanningGuidancePolicyTest {
 
   private static ChemicalProfile profile(String ph) {
     return ChemicalProfile.builder()
-        .ph(ExactMeasurement.of(PhValue.of(ph)))
+        .ph(PointCharacteristicValue.of(PhValue.of(ph)))
         .build();
   }
 }

@@ -34,7 +34,7 @@ import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuant
 import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.MeasurementValueKind;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValueKind;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -183,7 +183,7 @@ public final class ChemicalProfileCompositionCommonRestMapper {
     return ChemicalProfileAxes.of(
         axis(ChemicalAxis.SUGAR, requireNonNull(request.sugar(), "composition source sugar cannot be null")),
         axis(ChemicalAxis.ACIDITY, requireNonNull(request.acidity(), "composition source acidity cannot be null")),
-        axisOrNull(ChemicalAxis.TANNINITY, request.tannin()),
+        axisOrNull(ChemicalAxis.TANNIN, request.tannin()),
         axisOrNull(ChemicalAxis.YEAST_ASSIMILABLE_NITROGEN, request.yeastAssimilableNitrogen())
     );
   }
@@ -210,15 +210,16 @@ public final class ChemicalProfileCompositionCommonRestMapper {
   ) {
     requireNonNull(request, "profile target request cannot be null");
     return switch (request) {
-      case PredefinedZoneProfileTargetRequest predefined -> targetResolver.resolvePredefinedZone(predefined.zone());
-      case CustomRectangleProfileTargetRequest custom -> new CustomRectangleSugarAcidityTarget(
-          new RectangleSugarAcidityTargetGeometry(
-              custom.sugarMin(),
-              custom.sugarMax(),
-              custom.acidityMin(),
-              custom.acidityMax()
-          )
-      );
+      case PredefinedZoneProfileTargetRequest(_, var zone) -> targetResolver.resolvePredefinedZone(zone);
+      case CustomRectangleProfileTargetRequest(_, var sugarMin, var sugarMax, var acidityMin, var acidityMax) ->
+          new CustomRectangleSugarAcidityTarget(
+              new RectangleSugarAcidityTargetGeometry(
+                  sugarMin,
+                  sugarMax,
+                  acidityMin,
+                  acidityMax
+              )
+          );
     };
   }
 
@@ -238,7 +239,7 @@ public final class ChemicalProfileCompositionCommonRestMapper {
     requireNonNull(axis, "chemical axis cannot be null");
     requireNonNull(value, "chemical axis value cannot be null");
 
-    return new AxisValue(axis, value, MeasurementValueKind.EXACT, null, null, null, null);
+    return new AxisValue(axis, value, AxisValueKind.POINT, null, null);
   }
 
   private static @Nullable AxisValue axisOrNull(

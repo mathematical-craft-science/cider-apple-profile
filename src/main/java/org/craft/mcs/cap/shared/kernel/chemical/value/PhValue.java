@@ -3,7 +3,7 @@ package org.craft.mcs.cap.shared.kernel.chemical.value;
 import java.math.BigDecimal;
 import javax.measure.Quantity;
 import javax.measure.Unit;
-import org.craft.mcs.cap.shared.kernel.measurement.MeasuredValue;
+import org.craft.mcs.cap.shared.kernel.measurement.AbstractMeasuredValue;
 import org.jmolecules.ddd.annotation.ValueObject;
 import org.jspecify.annotations.NonNull;
 import systems.uom.quantity.Acidity;
@@ -21,7 +21,7 @@ import static java.util.Objects.requireNonNull;
  */
 @ValueObject
 public final class PhValue
-    extends MeasuredValue<Acidity, PhValue> {
+    extends AbstractMeasuredValue<Acidity, PhValue> {
 
   private static final BigDecimal MIN = BigDecimal.ZERO;
   private static final BigDecimal MAX = new BigDecimal("15.0");
@@ -59,6 +59,11 @@ public final class PhValue
   @NonNull
   public static PhValue of(double ph) {
     return of(BigDecimal.valueOf(ph));
+  }
+
+  @Override
+  public @NonNull PhValue withValue(@NonNull BigDecimal value) {
+    return of(value);
   }
 
   public double asDouble() {

@@ -15,7 +15,7 @@ import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.SugarAc
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.SugarAcidityTargetGeometryShape;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.SugarAcidityTargetKind;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.TanninTargetRange;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.MeasurementValueKind;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValueKind;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
@@ -80,7 +80,8 @@ class DistanceToTargetAreaObjectiveFunctionTest {
     ), target);
 
     assertThat(distance.metric()).isEqualTo(ProfileDistanceMetric.NORMALIZED_WEIGHTED_MANHATTAN);
-    assertThat(distance.objectiveFunction()).isEqualTo(ProfileTargetObjectiveFunctionCode.MANHATTAN_DISTANCE_TO_TARGET_AREA);
+    assertThat(distance.objectiveFunction())
+        .isEqualTo(ProfileTargetObjectiveFunctionCode.MANHATTAN_DISTANCE_TO_TARGET_AREA);
     assertThat(distance.value()).isCloseTo(new BigDecimal("0.266667"), within(new BigDecimal("0.000001")));
   }
 
@@ -152,9 +153,7 @@ class DistanceToTargetAreaObjectiveFunctionTest {
   private static SugarAcidityAxisPoint axis(@NonNull String value) {
     return new SugarAcidityAxisPoint(
         new BigDecimal(value),
-        MeasurementValueKind.EXACT,
-        null,
-        null,
+        AxisValueKind.POINT,
         null,
         null
     );

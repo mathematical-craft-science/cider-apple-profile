@@ -1,5 +1,6 @@
 package org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.usecase;
 
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -105,6 +106,7 @@ public final class QueryFeedstockPlanningBatchesService implements QueryFeedstoc
       return new FeedstockPlanningBatchView(
           batch,
           null,
+          List.of(),
           null,
           null,
           null,
@@ -121,12 +123,18 @@ public final class QueryFeedstockPlanningBatchesService implements QueryFeedstoc
     return new FeedstockPlanningBatchView(
         batch,
         toCurrentMeasurement(measurement),
+        batchAssessmentService.evidence(measurement, settings),
         freshness,
         evaluation,
         potentialAbv(evaluation),
         yeastAssimilableNitrogen(evaluation),
         batchAssessmentService.planningReadiness(batch, measurement.chemicalProfile()),
-        batchAssessmentService.dataQuality(measurement.chemicalProfile(), evaluation, freshness),
+        batchAssessmentService.dataQuality(
+            measurement.chemicalProfile(),
+            evaluation,
+            freshness,
+            measurement.axisEvidence()
+        ),
         fermentationStartReadinessAssessor.assess(measurement.chemicalProfile()),
         targetCandidate
     );

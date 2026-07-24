@@ -1,12 +1,12 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.mapper;
 
 import java.math.BigDecimal;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.acl.ExternalChemicalMeasurementNormalizer;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.acl.PhQuantityNormalizer;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.acl.SugarQuantityNormalizer;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.acl.TanninityQuantityNormalizer;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.acl.TitratableAcidityQuantityNormalizer;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.acl.YeastAssimilableNitrogenQuantityNormalizer;
+import org.craft.mcs.cap.infrastructure.adapter.shared.measurement.conversion.ExternalMeasurementConverter;
+import org.craft.mcs.cap.infrastructure.adapter.shared.measurement.conversion.PhQuantityConverter;
+import org.craft.mcs.cap.infrastructure.adapter.shared.measurement.conversion.SugarQuantityConverter;
+import org.craft.mcs.cap.infrastructure.adapter.shared.measurement.conversion.TanninQuantityConverter;
+import org.craft.mcs.cap.infrastructure.adapter.shared.measurement.conversion.TitratableAcidityQuantityConverter;
+import org.craft.mcs.cap.infrastructure.adapter.shared.measurement.conversion.YeastAssimilableNitrogenQuantityConverter;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.dto.ChemicalMeasurementRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.dto.ChemicalMeasurementResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.dto.ChemicalProfileRequest;
@@ -15,20 +15,16 @@ import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.dto.Exac
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.dto.ExactChemicalMeasurementResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.dto.RangeChemicalMeasurementRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.dto.RangeChemicalMeasurementResponse;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.dto.StatisticalChemicalMeasurementRequest;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.dto.StatisticalChemicalMeasurementResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.measurement.CanonicalUnitLabels;
 import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
-import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfileSource;
 import org.craft.mcs.cap.shared.kernel.chemical.value.PhValue;
-import org.craft.mcs.cap.shared.kernel.chemical.value.TanninityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
-import org.craft.mcs.cap.shared.kernel.measurement.ExactMeasurement;
-import org.craft.mcs.cap.shared.kernel.measurement.MeasuredCharacteristic;
-import org.craft.mcs.cap.shared.kernel.measurement.RangeMeasurement;
-import org.craft.mcs.cap.shared.kernel.measurement.StatisticalMeasurement;
+import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
+import org.craft.mcs.cap.shared.kernel.characteristic.CharacteristicValue;
+import org.craft.mcs.cap.shared.kernel.characteristic.IntervalCharacteristicValue;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -37,13 +33,14 @@ import static java.util.Objects.requireNonNull;
 
 public final class ChemicalProfileRestMapper {
 
-  private static final @NonNull SugarQuantityNormalizer SUGAR_NORMALIZER = new SugarQuantityNormalizer();
-  private static final @NonNull PhQuantityNormalizer PH_NORMALIZER = new PhQuantityNormalizer();
-  private static final @NonNull TitratableAcidityQuantityNormalizer TITRATABLE_ACIDITY_NORMALIZER =
-      new TitratableAcidityQuantityNormalizer();
-  private static final @NonNull TanninityQuantityNormalizer TANNINITY_NORMALIZER = new TanninityQuantityNormalizer();
-  private static final @NonNull YeastAssimilableNitrogenQuantityNormalizer
-      YEAST_ASSIMILABLE_NITROGEN_NORMALIZER = new YeastAssimilableNitrogenQuantityNormalizer();
+  private static final @NonNull SugarQuantityConverter SUGAR_CONVERTER = new SugarQuantityConverter();
+  private static final @NonNull PhQuantityConverter PH_CONVERTER = new PhQuantityConverter();
+  private static final @NonNull TitratableAcidityQuantityConverter TITRATABLE_ACIDITY_CONVERTER =
+      new TitratableAcidityQuantityConverter();
+  private static final @NonNull TanninQuantityConverter TANNIN_CONVERTER =
+      new TanninQuantityConverter();
+  private static final @NonNull YeastAssimilableNitrogenQuantityConverter
+      YEAST_ASSIMILABLE_NITROGEN_CONVERTER = new YeastAssimilableNitrogenQuantityConverter();
 
   private ChemicalProfileRestMapper() {
   }
@@ -55,7 +52,7 @@ public final class ChemicalProfileRestMapper {
 
     final var sugar = toMeasurement(
         request.sugar(),
-        SUGAR_NORMALIZER
+        SUGAR_CONVERTER
     );
     if (sugar != null) {
       builder.sugar(sugar);
@@ -63,7 +60,7 @@ public final class ChemicalProfileRestMapper {
 
     final var ph = toMeasurement(
         request.ph(),
-        PH_NORMALIZER
+        PH_CONVERTER
     );
     if (ph != null) {
       builder.ph(ph);
@@ -71,31 +68,27 @@ public final class ChemicalProfileRestMapper {
 
     final var titratableAcidity = toMeasurement(
         request.titratableAcidity(),
-        TITRATABLE_ACIDITY_NORMALIZER
+        TITRATABLE_ACIDITY_CONVERTER
     );
     if (titratableAcidity != null) {
       builder.titratableAcidity(titratableAcidity);
     }
 
-    final var tanninity = toMeasurement(
-        request.tanninity(),
-        TANNINITY_NORMALIZER
+    final var tannin = toMeasurement(
+        request.tannin(),
+        TANNIN_CONVERTER
     );
-    if (tanninity != null) {
-      builder.tanninity(tanninity);
+    if (tannin != null) {
+      builder.tannin(tannin);
     }
 
     final var yeastAssimilableNitrogen = toMeasurement(
         request.yeastAssimilableNitrogen(),
-        YEAST_ASSIMILABLE_NITROGEN_NORMALIZER
+        YEAST_ASSIMILABLE_NITROGEN_CONVERTER
     );
     if (yeastAssimilableNitrogen != null) {
       builder.yeastAssimilableNitrogen(yeastAssimilableNitrogen);
     }
-
-    applySource(builder, request.source());
-
-    builder.confidence(request.confidence());
 
     return builder.build();
   }
@@ -107,26 +100,15 @@ public final class ChemicalProfileRestMapper {
         sugarResponse(profile),
         phResponse(profile),
         titratableAcidityResponse(profile),
-        tanninityResponse(profile),
-        yeastAssimilableNitrogenResponse(profile),
-        sourceResponse(profile),
-        profile.confidence()
+        tanninResponse(profile),
+        yeastAssimilableNitrogenResponse(profile)
     );
-  }
-
-  private static void applySource(
-      ChemicalProfile.@NonNull Builder builder,
-      @Nullable String source
-  ) {
-    if (source != null) {
-      builder.source(ChemicalProfileSource.of(source));
-    }
   }
 
   private static @Nullable ChemicalMeasurementResponse sugarResponse(@NonNull ChemicalProfile profile) {
     final var measurement = profile.sugar();
     return measurement.map(
-        sugarConcentrationMeasuredCharacteristic -> toResponse(sugarConcentrationMeasuredCharacteristic,
+        profileValue -> toResponse(profileValue,
             sugar -> sugar.specificGravity().asBigDecimal(), CanonicalUnitLabels.SUGAR))
         .orElse(null); // NOSONAR
   }
@@ -134,7 +116,7 @@ public final class ChemicalProfileRestMapper {
   private static @Nullable ChemicalMeasurementResponse phResponse(@NonNull ChemicalProfile profile) {
     final var measurement = profile.ph();
     return measurement.map(
-        phValueMeasuredCharacteristic -> toResponse(phValueMeasuredCharacteristic, PhValue::asBigDecimal,
+        profileValue -> toResponse(profileValue, PhValue::asBigDecimal,
             CanonicalUnitLabels.PH))
         .orElse(null); // NOSONAR
   }
@@ -144,15 +126,15 @@ public final class ChemicalProfileRestMapper {
   ) {
     final var measurement = profile.titratableAcidity();
     return measurement.map(
-        titratableAcidityValueMeasuredCharacteristic -> toResponse(titratableAcidityValueMeasuredCharacteristic,
+        profileValue -> toResponse(profileValue,
             TitratableAcidityValue::asBigDecimal, CanonicalUnitLabels.TITRATABLE_ACIDITY))
         .orElse(null); // NOSONAR
   }
 
-  private static @Nullable ChemicalMeasurementResponse tanninityResponse(@NonNull ChemicalProfile profile) {
-    final var measurement = profile.tanninity();
-    return measurement.map(tanninityValueMeasuredCharacteristic -> toResponse(tanninityValueMeasuredCharacteristic,
-        TanninityValue::asBigDecimal, CanonicalUnitLabels.TANNINITY))
+  private static @Nullable ChemicalMeasurementResponse tanninResponse(@NonNull ChemicalProfile profile) {
+    final var measurement = profile.tannin();
+    return measurement.map(profileValue -> toResponse(profileValue,
+        TanninValue::asBigDecimal, CanonicalUnitLabels.TANNIN))
         .orElse(null); // NOSONAR
   }
 
@@ -160,51 +142,36 @@ public final class ChemicalProfileRestMapper {
       @NonNull ChemicalProfile profile
   ) {
     final var measurement = profile.yeastAssimilableNitrogen();
-    return measurement.map(yeastAssimilableNitrogenValueMeasuredCharacteristic -> toResponse(
-        yeastAssimilableNitrogenValueMeasuredCharacteristic,
+    return measurement.map(profileValue -> toResponse(
+        profileValue,
         YeastAssimilableNitrogenValue::asBigDecimal,
         CanonicalUnitLabels.YEAST_ASSIMILABLE_NITROGEN
     )).orElse(null); // NOSONAR
   }
 
-  private static @Nullable String sourceResponse(@NonNull ChemicalProfile profile) {
-    final var source = profile.source();
-    return source == null ? null : source.value();
-  }
-
-  private static <T extends Comparable<T>> @Nullable MeasuredCharacteristic<T> toMeasurement(
+  private static <T extends Comparable<? super T>> @Nullable CharacteristicValue<T> toMeasurement(
       @Nullable ChemicalMeasurementRequest request,
-      @NonNull ExternalChemicalMeasurementNormalizer<T> normalizer
+      @NonNull ExternalMeasurementConverter<T> converter
   ) {
-    requireNonNull(normalizer, "external measurement normalizer cannot be null");
+    requireNonNull(converter, "external measurement converter cannot be null");
 
     if (request == null) {
       return null;
     }
 
     return switch (request) {
-      case ExactChemicalMeasurementRequest exact -> ExactMeasurement.of(
-          normalizer.normalizeValue(exact.value(), exact.unit())
+      case ExactChemicalMeasurementRequest(_, var unit, var measuredValue) -> PointCharacteristicValue.of(
+          converter.convertValue(measuredValue, unit)
       );
-      case RangeChemicalMeasurementRequest range -> RangeMeasurement.of(
-          normalizer.normalizeValue(range.min(), range.unit()),
-          normalizer.normalizeValue(range.max(), range.unit())
-      );
-      case StatisticalChemicalMeasurementRequest statistical -> StatisticalMeasurement.of(
-          normalizer.normalizeValue(statistical.mean(), statistical.unit()),
-          normalizedMedian(statistical, normalizer),
-          normalizer.normalizeStandardDeviation(
-              statistical.mean(),
-              statistical.standardDeviation(),
-              statistical.unit()
-          ),
-          statistical.sampleSize()
+      case RangeChemicalMeasurementRequest(_, var unit, var minimum, var maximum) -> IntervalCharacteristicValue.of(
+          converter.convertValue(minimum, unit),
+          converter.convertValue(maximum, unit)
       );
     };
   }
 
-  private static <T extends Comparable<T>> @NonNull ChemicalMeasurementResponse toResponse(
-      @NonNull MeasuredCharacteristic<T> measurement,
+  private static <T extends Comparable<? super T>> @NonNull ChemicalMeasurementResponse toResponse(
+      @NonNull CharacteristicValue<T> measurement,
       @NonNull CanonicalValueExtractor<T> extractor,
       @NonNull String unit
   ) {
@@ -213,66 +180,34 @@ public final class ChemicalProfileRestMapper {
     requireNonNull(unit, "measurement unit cannot be null");
 
     return switch (measurement) {
-      case ExactMeasurement<T> exact -> exactResponse(exact, extractor, unit);
-      case RangeMeasurement<T> range -> rangeResponse(range, extractor, unit);
-      case StatisticalMeasurement<T> statistical -> statisticalResponse(statistical, extractor, unit);
+      case PointCharacteristicValue<T>(var measuredValue) -> exactResponse(measuredValue, extractor, unit);
+      case IntervalCharacteristicValue<T>(var minimum, var maximum) ->
+          rangeResponse(minimum, maximum, extractor, unit);
     };
   }
 
-  private static <T extends Comparable<T>> @Nullable T normalizedMedian(
-      @NonNull StatisticalChemicalMeasurementRequest statistical,
-      @NonNull ExternalChemicalMeasurementNormalizer<T> normalizer
-  ) {
-    final var median = statistical.median();
-    return median == null
-        ? null
-        : normalizer.normalizeValue(median, statistical.unit());
-  }
-
-  private static <T extends Comparable<T>> @NonNull ExactChemicalMeasurementResponse exactResponse(
-      @NonNull ExactMeasurement<T> exact,
+  private static <T extends Comparable<? super T>> @NonNull ExactChemicalMeasurementResponse exactResponse(
+      @NonNull T measuredValue,
       @NonNull CanonicalValueExtractor<T> extractor,
       @NonNull String unit
   ) {
     return new ExactChemicalMeasurementResponse(
         "EXACT",
-        quantity(extractor.extract(exact.value()), unit)
+        quantity(extractor.extract(measuredValue), unit)
     );
   }
 
-  private static <T extends Comparable<T>> @NonNull RangeChemicalMeasurementResponse rangeResponse(
-      @NonNull RangeMeasurement<T> range,
+  private static <T extends Comparable<? super T>> @NonNull RangeChemicalMeasurementResponse rangeResponse(
+      @NonNull T minimum,
+      @NonNull T maximum,
       @NonNull CanonicalValueExtractor<T> extractor,
       @NonNull String unit
   ) {
     return new RangeChemicalMeasurementResponse(
         "RANGE",
-        quantity(extractor.extract(range.min()), unit),
-        quantity(extractor.extract(range.max()), unit)
+        quantity(extractor.extract(minimum), unit),
+        quantity(extractor.extract(maximum), unit)
     );
-  }
-
-  private static <T extends Comparable<T>> @NonNull StatisticalChemicalMeasurementResponse statisticalResponse(
-      @NonNull StatisticalMeasurement<T> statistical,
-      @NonNull CanonicalValueExtractor<T> extractor,
-      @NonNull String unit
-  ) {
-    return new StatisticalChemicalMeasurementResponse(
-        "STATISTICAL",
-        quantity(extractor.extract(statistical.mean()), unit),
-        medianQuantity(statistical, extractor, unit),
-        optionalQuantity(statistical.standardDeviation(), unit),
-        statistical.sampleSize()
-    );
-  }
-
-  private static <T extends Comparable<T>> @Nullable DecimalQuantityResponse medianQuantity(
-      @NonNull StatisticalMeasurement<T> statistical,
-      @NonNull CanonicalValueExtractor<T> extractor,
-      @NonNull String unit
-  ) {
-    final var median = statistical.median();
-    return median == null ? null : quantity(extractor.extract(median), unit);
   }
 
   private static @NonNull DecimalQuantityResponse quantity(
@@ -282,15 +217,8 @@ public final class ChemicalProfileRestMapper {
     return new DecimalQuantityResponse(value, unit);
   }
 
-  private static @Nullable DecimalQuantityResponse optionalQuantity(
-      @Nullable BigDecimal value,
-      @NonNull String unit
-  ) {
-    return value == null ? null : new DecimalQuantityResponse(value, unit);
-  }
-
   @FunctionalInterface
-  private interface CanonicalValueExtractor<T extends Comparable<T>> {
+  private interface CanonicalValueExtractor<T extends Comparable<? super T>> {
 
     @NonNull
     BigDecimal extract(@NonNull T value);

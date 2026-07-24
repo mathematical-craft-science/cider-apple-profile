@@ -1,6 +1,6 @@
 package org.craft.mcs.cap.core.production.domain.model.value;
 
-import org.craft.mcs.cap.shared.kernel.chemical.value.TanninityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
@@ -15,7 +15,7 @@ import static java.util.Objects.requireNonNull;
 public record ProductionProfileSnapshot(
     @NonNull SpecificGravityValue sugar,
     @NonNull TitratableAcidityValue acidity,
-    @Nullable TanninityValue tannin,
+    @Nullable TanninValue tannin,
     @Nullable YeastAssimilableNitrogenValue yeastAssimilableNitrogen
 ) {
 
@@ -27,7 +27,7 @@ public record ProductionProfileSnapshot(
   public ProductionProfileSnapshot(
       @NonNull SpecificGravityValue sugar,
       @NonNull TitratableAcidityValue acidity,
-      @Nullable TanninityValue tannin
+      @Nullable TanninValue tannin
   ) {
     this(sugar, acidity, tannin, null);
   }

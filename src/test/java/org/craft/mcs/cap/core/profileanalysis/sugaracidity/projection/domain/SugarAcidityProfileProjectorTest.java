@@ -9,7 +9,7 @@ import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
-import org.craft.mcs.cap.shared.kernel.measurement.ExactMeasurement;
+import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.junit.jupiter.api.Test;
@@ -31,10 +31,10 @@ class SugarAcidityProfileProjectorTest {
   @Test
   void projectsCompleteChemicalProfileToSugarAcidityPointAndZoneAssessment() {
     final var profile = ChemicalProfile.builder()
-        .sugar(ExactMeasurement.of(SugarConcentration.ofSpecificGravity(
+        .sugar(PointCharacteristicValue.of(SugarConcentration.ofSpecificGravity(
             SpecificGravityValue.of("1.060")
         )))
-        .titratableAcidity(ExactMeasurement.of(TitratableAcidityValue.of("4.50")))
+        .titratableAcidity(PointCharacteristicValue.of(TitratableAcidityValue.of("4.50")))
         .build();
 
     final var evaluation = projector.project(profile);
@@ -53,7 +53,7 @@ class SugarAcidityProfileProjectorTest {
   @Test
   void returnsEmptyPointWhenChemicalProfileIsMissingRequiredAxis() {
     final var profile = ChemicalProfile.builder()
-        .sugar(ExactMeasurement.of(SugarConcentration.ofSpecificGravity(
+        .sugar(PointCharacteristicValue.of(SugarConcentration.ofSpecificGravity(
             SpecificGravityValue.of("1.050")
         )))
         .build();
@@ -70,10 +70,10 @@ class SugarAcidityProfileProjectorTest {
   @Test
   void exposesDirectChemicalProfileToSugarAcidityPointProjection() {
     final var profile = ChemicalProfile.builder()
-        .sugar(ExactMeasurement.of(SugarConcentration.ofSpecificGravity(
+        .sugar(PointCharacteristicValue.of(SugarConcentration.ofSpecificGravity(
             SpecificGravityValue.of("1.060")
         )))
-        .titratableAcidity(ExactMeasurement.of(TitratableAcidityValue.of("4.50")))
+        .titratableAcidity(PointCharacteristicValue.of(TitratableAcidityValue.of("4.50")))
         .build();
 
     assertThat(projector.projectPoint(profile))

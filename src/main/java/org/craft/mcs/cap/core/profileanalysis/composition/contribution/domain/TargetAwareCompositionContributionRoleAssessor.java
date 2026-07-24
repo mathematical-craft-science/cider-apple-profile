@@ -121,9 +121,9 @@ public final class TargetAwareCompositionContributionRoleAssessor
       return;
     }
 
-    final var tannin = nullableValueOf(axes, ChemicalAxis.TANNINITY);
+    final var tannin = nullableValueOf(axes, ChemicalAxis.TANNIN);
     if (tannin == null) {
-      missingAxes.add(ChemicalAxis.TANNINITY);
+      missingAxes.add(ChemicalAxis.TANNIN);
       return;
     }
 
@@ -166,7 +166,7 @@ public final class TargetAwareCompositionContributionRoleAssessor
       return sugarAcidityMatches;
     }
 
-    final var tannin = nullableValueOf(axes, ChemicalAxis.TANNINITY);
+    final var tannin = nullableValueOf(axes, ChemicalAxis.TANNIN);
     return tannin != null && tanninTarget.contains(tannin);
   }
 

@@ -15,9 +15,7 @@ class ChemicalProfileAxesTest {
     final var sugar = new AxisValue(
         ChemicalAxis.SUGAR,
         BigDecimal.valueOf(1.055),
-        MeasurementValueKind.EXACT,
-        null,
-        null,
+        AxisValueKind.POINT,
         null,
         null
     );

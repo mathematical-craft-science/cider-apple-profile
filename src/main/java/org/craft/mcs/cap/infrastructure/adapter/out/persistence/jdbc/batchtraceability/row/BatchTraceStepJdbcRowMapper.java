@@ -14,7 +14,7 @@ import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceSubject;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.MeasurementValueKind;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValueKind;
 import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
@@ -124,7 +124,7 @@ public final class BatchTraceStepJdbcRowMapper {
     row.snapshotConfidence = confidenceName(snapshot.confidence());
     applyAxis(row, ChemicalAxis.SUGAR, axisValue(snapshot.profile(), ChemicalAxis.SUGAR));
     applyAxis(row, ChemicalAxis.ACIDITY, axisValue(snapshot.profile(), ChemicalAxis.ACIDITY));
-    applyAxis(row, ChemicalAxis.TANNINITY, axisValue(snapshot.profile(), ChemicalAxis.TANNINITY));
+    applyAxis(row, ChemicalAxis.TANNIN, axisValue(snapshot.profile(), ChemicalAxis.TANNIN));
     applyAxis(
         row,
         ChemicalAxis.YEAST_ASSIMILABLE_NITROGEN,
@@ -147,32 +147,24 @@ public final class BatchTraceStepJdbcRowMapper {
         row.sugarValueKind = value.valueKind();
         row.sugarMin = value.min();
         row.sugarMax = value.max();
-        row.sugarStandardDeviation = value.standardDeviation();
-        row.sugarSampleSize = value.sampleSize();
       }
       case ACIDITY -> {
         row.acidityValue = value.value();
         row.acidityValueKind = value.valueKind();
         row.acidityMin = value.min();
         row.acidityMax = value.max();
-        row.acidityStandardDeviation = value.standardDeviation();
-        row.aciditySampleSize = value.sampleSize();
       }
-      case TANNINITY -> {
-        row.tanninityValue = value.value();
-        row.tanninityValueKind = value.valueKind();
-        row.tanninityMin = value.min();
-        row.tanninityMax = value.max();
-        row.tanninityStandardDeviation = value.standardDeviation();
-        row.tanninitySampleSize = value.sampleSize();
+      case TANNIN -> {
+        row.tanninValue = value.value();
+        row.tanninValueKind = value.valueKind();
+        row.tanninMin = value.min();
+        row.tanninMax = value.max();
       }
       case YEAST_ASSIMILABLE_NITROGEN -> {
         row.yeastAssimilableNitrogenValue = value.value();
         row.yeastAssimilableNitrogenValueKind = value.valueKind();
         row.yeastAssimilableNitrogenMin = value.min();
         row.yeastAssimilableNitrogenMax = value.max();
-        row.yeastAssimilableNitrogenStandardDeviation = value.standardDeviation();
-        row.yeastAssimilableNitrogenSampleSize = value.sampleSize();
       }
     }
   }
@@ -200,51 +192,41 @@ public final class BatchTraceStepJdbcRowMapper {
         row.sugarValue,
         row.sugarValueKind,
         row.sugarMin,
-        row.sugarMax,
-        row.sugarStandardDeviation,
-        row.sugarSampleSize
+        row.sugarMax
     );
     final var acidity = toAxisValue(
         ChemicalAxis.ACIDITY,
         row.acidityValue,
         row.acidityValueKind,
         row.acidityMin,
-        row.acidityMax,
-        row.acidityStandardDeviation,
-        row.aciditySampleSize
+        row.acidityMax
     );
-    final var tanninity = toAxisValue(
-        ChemicalAxis.TANNINITY,
-        row.tanninityValue,
-        row.tanninityValueKind,
-        row.tanninityMin,
-        row.tanninityMax,
-        row.tanninityStandardDeviation,
-        row.tanninitySampleSize
+    final var tannin = toAxisValue(
+        ChemicalAxis.TANNIN,
+        row.tanninValue,
+        row.tanninValueKind,
+        row.tanninMin,
+        row.tanninMax
     );
     final var yeastAssimilableNitrogen = toAxisValue(
         ChemicalAxis.YEAST_ASSIMILABLE_NITROGEN,
         row.yeastAssimilableNitrogenValue,
         row.yeastAssimilableNitrogenValueKind,
         row.yeastAssimilableNitrogenMin,
-        row.yeastAssimilableNitrogenMax,
-        row.yeastAssimilableNitrogenStandardDeviation,
-        row.yeastAssimilableNitrogenSampleSize
+        row.yeastAssimilableNitrogenMax
     );
 
-    return sugar == null && acidity == null && tanninity == null && yeastAssimilableNitrogen == null
+    return sugar == null && acidity == null && tannin == null && yeastAssimilableNitrogen == null
         ? null
-        : ChemicalProfileAxes.of(sugar, acidity, tanninity, yeastAssimilableNitrogen);
+        : ChemicalProfileAxes.of(sugar, acidity, tannin, yeastAssimilableNitrogen);
   }
 
   private static @Nullable AxisValue toAxisValue(
       @NonNull ChemicalAxis axis,
       @Nullable BigDecimal value,
-      @Nullable MeasurementValueKind valueKind,
+      @Nullable AxisValueKind valueKind,
       @Nullable BigDecimal min,
-      @Nullable BigDecimal max,
-      @Nullable BigDecimal standardDeviation,
-      @Nullable Integer sampleSize
+      @Nullable BigDecimal max
   ) {
     if (value == null) {
       return null;
@@ -255,9 +237,7 @@ public final class BatchTraceStepJdbcRowMapper {
         value,
         requireNonNull(valueKind, "batch trace axis value kind cannot be null"),
         min,
-        max,
-        standardDeviation,
-        sampleSize
+        max
     );
   }
 

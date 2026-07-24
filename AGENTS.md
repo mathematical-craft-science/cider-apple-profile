@@ -126,9 +126,10 @@ Act as a senior Java architect and production-grade software engineer for the Ci
 ## Domain Rules
 
 - `FeedstockBatch` is the central aggregate for source material.
-- `FeedstockMeasurement` is measurement history for a batch.
-- Graph and workspace views for feedstock use the latest/current measurement only.
-- The "latest measurement only" rule belongs in application/query layer.
+- `MeasurementSet` is the single source of immutable measurement evidence for Feedstock and Production.
+- Do not create separate Feedstock/Production measurement aggregates or dual-write measurement facts.
+- Feedstock compatibility endpoints must delegate to generic Measurement use cases and persistence.
+- Current measurement state is selected independently per characteristic in application/query projections.
 - `ProductionBatch` creation should consume an already chosen source composition or source selection.
 - Composition calculation/optimization must happen before creation of a production batch, not inside
   the creation use case.
@@ -147,6 +148,8 @@ Act as a senior Java architect and production-grade software engineer for the Ci
   - YAN: mg N/L;
   - volume: L;
   - turbidity: NTU.
+- Measurement records store characteristic-specific `MeasuredValue` value objects, not generic decimal/unit pairs.
+- Do not persist unit labels for measurement records: the concrete value object defines the canonical unit.
 - At API boundaries, accept and return explicit units.
 - Use JSR-385/Indriya at boundaries where unit conversion is needed.
 - REST response DTOs for physical quantities must use `value + unit`, not a bare numeric value.

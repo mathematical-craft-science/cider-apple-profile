@@ -21,15 +21,15 @@ public final class ChemicalProfileAxes {
   public static @NonNull ChemicalProfileAxes of(
       @Nullable AxisValue sugar,
       @Nullable AxisValue acidity,
-      @Nullable AxisValue tanninity
+      @Nullable AxisValue tannin
   ) {
-    return of(sugar, acidity, tanninity, null);
+    return of(sugar, acidity, tannin, null);
   }
 
   public static @NonNull ChemicalProfileAxes of(
       @Nullable AxisValue sugar,
       @Nullable AxisValue acidity,
-      @Nullable AxisValue tanninity,
+      @Nullable AxisValue tannin,
       @Nullable AxisValue yeastAssimilableNitrogen
   ) {
     final var values = new EnumMap<ChemicalAxis, AxisValue>(ChemicalAxis.class);
@@ -40,8 +40,8 @@ public final class ChemicalProfileAxes {
     if (acidity != null) {
       values.put(ChemicalAxis.ACIDITY, acidity);
     }
-    if (tanninity != null) {
-      values.put(ChemicalAxis.TANNINITY, tanninity);
+    if (tannin != null) {
+      values.put(ChemicalAxis.TANNIN, tannin);
     }
     if (yeastAssimilableNitrogen != null) {
       values.put(ChemicalAxis.YEAST_ASSIMILABLE_NITROGEN, yeastAssimilableNitrogen);

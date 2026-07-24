@@ -19,15 +19,15 @@ import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.i
 import org.craft.mcs.cap.core.feedstock.application.measurement.port.out.FeedstockMeasurementQueryRepository;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.out.*;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
-import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurement;
-import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurementId;
-import org.craft.mcs.cap.core.feedstock.domain.model.measurement.value.FeedstockMeasurementName;
+import org.craft.mcs.cap.shared.testing.FeedstockMeasurementFixture;
+import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementId;
+import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementName;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
 import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityAssessor;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
-import org.craft.mcs.cap.shared.kernel.measurement.ExactMeasurement;
+import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.junit.jupiter.api.Test;
@@ -108,11 +108,11 @@ class ScoreFeedstockBatchProfileTargetServiceTest {
     );
   }
 
-  private static FeedstockMeasurement sample(
+  private static FeedstockMeasurementFixture sample(
       String name,
       ChemicalProfile profile
   ) {
-    return FeedstockMeasurement.create(
+    return FeedstockMeasurementFixture.create(
         FeedstockMeasurementId.newId(),
         FeedstockBatchId.newId(),
         FeedstockMeasurementName.of(name),
@@ -127,10 +127,10 @@ class ScoreFeedstockBatchProfileTargetServiceTest {
       String acidity
   ) {
     return ChemicalProfile.builder()
-        .sugar(ExactMeasurement.of(SugarConcentration.ofSpecificGravity(
+        .sugar(PointCharacteristicValue.of(SugarConcentration.ofSpecificGravity(
             SpecificGravityValue.of(sg)
         )))
-        .titratableAcidity(ExactMeasurement.of(TitratableAcidityValue.of(acidity)))
+        .titratableAcidity(PointCharacteristicValue.of(TitratableAcidityValue.of(acidity)))
         .build();
   }
 }

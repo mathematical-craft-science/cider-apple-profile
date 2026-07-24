@@ -87,6 +87,6 @@ public final class ProductionBatchCompositionRestMapper {
     final var tannin = profile.tannin();
     return tannin == null
         ? null
-        : new CalculatedSugarAcidityAxisPointResponse(tannin.asBigDecimal(), CanonicalUnitLabels.TANNINITY);
+        : new CalculatedSugarAcidityAxisPointResponse(tannin.asBigDecimal(), CanonicalUnitLabels.TANNIN);
   }
 }

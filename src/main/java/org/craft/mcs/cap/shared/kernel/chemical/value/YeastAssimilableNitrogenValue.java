@@ -3,7 +3,7 @@ package org.craft.mcs.cap.shared.kernel.chemical.value;
 import java.math.BigDecimal;
 import javax.measure.Quantity;
 import javax.measure.Unit;
-import org.craft.mcs.cap.shared.kernel.measurement.MeasuredValue;
+import org.craft.mcs.cap.shared.kernel.measurement.AbstractMeasuredValue;
 import org.craft.mcs.cap.shared.kernel.measurement.unit.BeverageUnits;
 import org.craft.mcs.cap.shared.kernel.measurement.unit.YeastAssimilableNitrogen;
 import org.jmolecules.ddd.annotation.ValueObject;
@@ -22,7 +22,7 @@ import static java.util.Objects.requireNonNull;
  */
 @ValueObject
 public final class YeastAssimilableNitrogenValue
-    extends MeasuredValue<YeastAssimilableNitrogen, YeastAssimilableNitrogenValue> {
+    extends AbstractMeasuredValue<YeastAssimilableNitrogen, YeastAssimilableNitrogenValue> {
 
   private static final BigDecimal MIN = BigDecimal.ZERO;
   private static final BigDecimal MAX = new BigDecimal("2000.0");
@@ -58,6 +58,11 @@ public final class YeastAssimilableNitrogenValue
 
   public static @NonNull YeastAssimilableNitrogenValue of(double milligramsNitrogenPerLiter) {
     return of(BigDecimal.valueOf(milligramsNitrogenPerLiter));
+  }
+
+  @Override
+  public @NonNull YeastAssimilableNitrogenValue withValue(@NonNull BigDecimal value) {
+    return of(value);
   }
 
   public @NonNull BigDecimal milligramsNitrogenPerLiter() {

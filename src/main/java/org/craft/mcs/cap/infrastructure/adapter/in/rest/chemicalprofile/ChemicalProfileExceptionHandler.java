@@ -5,6 +5,7 @@ import java.net.URI;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+import org.craft.mcs.cap.shared.application.UnsupportedMeasurementUnitException;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityNotMetException;
 import org.jspecify.annotations.NonNull;
@@ -46,9 +47,9 @@ public final class ChemicalProfileExceptionHandler {
     return response(UNPROCESSABLE_ENTITY, problem);
   }
 
-  @ExceptionHandler(UnsupportedChemicalMeasurementUnitException.class)
+  @ExceptionHandler(UnsupportedMeasurementUnitException.class)
   public @NonNull ResponseEntity<@NonNull ProblemDetail> handleUnsupportedChemicalMeasurementUnit(
-      @NonNull UnsupportedChemicalMeasurementUnitException exception
+      @NonNull UnsupportedMeasurementUnitException exception
   ) {
     return response(
         BAD_REQUEST,

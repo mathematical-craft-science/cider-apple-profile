@@ -9,7 +9,7 @@ import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.TanninT
 import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.MeasurementValueKind;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValueKind;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -97,7 +97,7 @@ class TargetAwareCompositionContributionRoleAssessorTest {
     ));
 
     assertThat(assessment.primaryRole()).isEqualTo(CompositionContributionRole.LOW_FIT_SOURCE);
-    assertThat(assessment.missingAxes()).containsExactly(ChemicalAxis.TANNINITY);
+    assertThat(assessment.missingAxes()).containsExactly(ChemicalAxis.TANNIN);
   }
 
   private static CompositionContributionRoleAssessmentRequest request(
@@ -133,7 +133,7 @@ class TargetAwareCompositionContributionRoleAssessorTest {
     return ChemicalProfileAxes.of(
         axis(ChemicalAxis.SUGAR, sugar),
         axis(ChemicalAxis.ACIDITY, acidity),
-        tannin == null ? null : axis(ChemicalAxis.TANNINITY, tannin)
+        tannin == null ? null : axis(ChemicalAxis.TANNIN, tannin)
     );
   }
 
@@ -144,9 +144,7 @@ class TargetAwareCompositionContributionRoleAssessorTest {
     return new AxisValue(
         axis,
         new BigDecimal(value),
-        MeasurementValueKind.EXACT,
-        null,
-        null,
+        AxisValueKind.POINT,
         null,
         null
     );

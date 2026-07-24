@@ -5,7 +5,7 @@ import javax.measure.Quantity;
 import javax.measure.Unit;
 import org.craft.mcs.cap.shared.kernel.measurement.unit.BeverageUnits;
 import org.craft.mcs.cap.shared.kernel.measurement.unit.SpecificGravity;
-import org.craft.mcs.cap.shared.kernel.measurement.MeasuredValue;
+import org.craft.mcs.cap.shared.kernel.measurement.AbstractMeasuredValue;
 import org.jmolecules.ddd.annotation.ValueObject;
 import org.jspecify.annotations.NonNull;
 import tech.units.indriya.quantity.Quantities;
@@ -20,7 +20,7 @@ import tech.units.indriya.quantity.Quantities;
  */
 @ValueObject
 public final class SpecificGravityValue
-    extends MeasuredValue<SpecificGravity, SpecificGravityValue>
+    extends AbstractMeasuredValue<SpecificGravity, SpecificGravityValue>
     implements SugarValue {
 
   private static final BigDecimal MIN = new BigDecimal("1.000");
@@ -52,5 +52,10 @@ public final class SpecificGravityValue
   @NonNull
   public static SpecificGravityValue of(@NonNull String value) {
     return of(new BigDecimal(value));
+  }
+
+  @Override
+  public @NonNull SpecificGravityValue withValue(@NonNull BigDecimal value) {
+    return of(value);
   }
 }

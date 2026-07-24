@@ -42,7 +42,7 @@ public final class ChemicalProfileCapabilityAssessor {
       case NORTH_AMERICAN_PROFILE, SINGLE_VARIETY_CIDER_ASSESSMENT -> Set.of(
           ChemicalAxis.SUGAR,
           ChemicalAxis.ACIDITY,
-          ChemicalAxis.TANNINITY
+          ChemicalAxis.TANNIN
       );
     };
   }

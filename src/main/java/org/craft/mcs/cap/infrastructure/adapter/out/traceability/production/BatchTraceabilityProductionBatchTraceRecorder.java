@@ -21,7 +21,7 @@ import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSna
 import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.MeasurementValueKind;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValueKind;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
@@ -91,8 +91,8 @@ class BatchTraceabilityProductionBatchTraceRecorder implements ProductionBatchTr
       @NonNull ProductionBatchTraceSource source
   ) {
     return switch (source) {
-      case ProductionBatchFeedstockTraceSource ignored -> BatchTraceSubjectType.FEEDSTOCK_BATCH;
-      case ProductionBatchCompositionTraceSource ignored -> BatchTraceSubjectType.COMPOSITION_RESULT;
+      case ProductionBatchFeedstockTraceSource _ -> BatchTraceSubjectType.FEEDSTOCK_BATCH;
+      case ProductionBatchCompositionTraceSource _ -> BatchTraceSubjectType.COMPOSITION_RESULT;
     };
   }
 
@@ -121,29 +121,23 @@ class BatchTraceabilityProductionBatchTraceRecorder implements ProductionBatchTr
         new AxisValue(
             ChemicalAxis.SUGAR,
             profile.sugar().asBigDecimal(),
-            MeasurementValueKind.CALCULATED,
-            null,
-            null,
+            AxisValueKind.CALCULATED,
             null,
             null
         ),
         new AxisValue(
             ChemicalAxis.ACIDITY,
             profile.acidity().asBigDecimal(),
-            MeasurementValueKind.CALCULATED,
-            null,
-            null,
+            AxisValueKind.CALCULATED,
             null,
             null
         ),
         profile.tannin() == null
             ? null
             : new AxisValue(
-                ChemicalAxis.TANNINITY,
+                ChemicalAxis.TANNIN,
                 profile.tannin().asBigDecimal(),
-                MeasurementValueKind.CALCULATED,
-                null,
-                null,
+                AxisValueKind.CALCULATED,
                 null,
                 null
             ),
@@ -152,9 +146,7 @@ class BatchTraceabilityProductionBatchTraceRecorder implements ProductionBatchTr
             : new AxisValue(
                 ChemicalAxis.YEAST_ASSIMILABLE_NITROGEN,
                 profile.yeastAssimilableNitrogen().asBigDecimal(),
-                MeasurementValueKind.CALCULATED,
-                null,
-                null,
+                AxisValueKind.CALCULATED,
                 null,
                 null
             )
