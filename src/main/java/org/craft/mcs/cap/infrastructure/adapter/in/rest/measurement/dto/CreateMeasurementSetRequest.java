@@ -24,6 +24,13 @@ public record CreateMeasurementSetRequest(
     )
     @NonNull MeasurementSubjectRequest subject,
     @Schema(
+        description = "Current material-state identifier observed before recording this measurement. "
+            + "The request fails with 409 when the material has already changed.",
+        format = "uuid",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
+    @NonNull UUID expectedCurrentStateId,
+    @Schema(
         description = "Human-readable name of the measurement session or laboratory result.",
         minLength = 1,
         maxLength = 160,

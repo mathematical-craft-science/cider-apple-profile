@@ -26,7 +26,7 @@ class BatchTraceStepTest {
     final var step = BatchTraceStep.create(
         WORKSPACE_ID,
         null,
-        BatchTraceOperationType.CREATE_PRODUCTION_BATCH,
+        BatchTraceStepType.PRODUCTION_BATCH_CREATED,
         List.of(BatchTraceStepSubject.of(subject("feedstock-1"))),
         outputs,
         Instant.parse("2026-05-18T00:00:00Z"),
@@ -48,7 +48,7 @@ class BatchTraceStepTest {
     final var step = BatchTraceStep.create(
         WORKSPACE_ID,
         null,
-        BatchTraceOperationType.CREATE_PRODUCTION_BATCH,
+        BatchTraceStepType.PRODUCTION_BATCH_CREATED,
         List.of(BatchTraceStepSubject.of(subject("feedstock-1"))),
         List.of(BatchTraceStepSubject.of(subject("production-1"))),
         Instant.parse("2026-05-18T00:00:00Z"),
@@ -65,7 +65,7 @@ class BatchTraceStepTest {
     assertThatThrownBy(() -> BatchTraceStep.create(
         WORKSPACE_ID,
         null,
-        BatchTraceOperationType.CREATE_PRODUCTION_BATCH,
+        BatchTraceStepType.PRODUCTION_BATCH_CREATED,
         List.of(BatchTraceStepSubject.of(subject("feedstock-1"))),
         List.of(),
         Instant.parse("2026-05-18T00:00:00Z"),
@@ -83,12 +83,12 @@ class BatchTraceStepTest {
     final var firstProduction = BatchTraceStep.create(
         WORKSPACE_ID,
         null,
-        BatchTraceOperationType.CREATE_PRODUCTION_BATCH,
+        BatchTraceStepType.PRODUCTION_BATCH_CREATED,
         List.of(feedstock),
-        List.of(BatchTraceStepSubject.of(new BatchTraceSubject(
+        List.of(BatchTraceStepSubject.of(
+            org.craft.mcs.cap.shared.testing.BatchTraceSubjects.subject(
             BatchTraceSubjectType.PRODUCTION_BATCH,
-            "production-1",
-            null
+            "production-1"
         ))),
         Instant.parse("2026-05-18T00:00:00Z"),
         ACTOR,
@@ -97,12 +97,12 @@ class BatchTraceStepTest {
     final var secondProduction = BatchTraceStep.create(
         WORKSPACE_ID,
         null,
-        BatchTraceOperationType.CREATE_PRODUCTION_BATCH,
+        BatchTraceStepType.PRODUCTION_BATCH_CREATED,
         List.of(feedstock),
-        List.of(BatchTraceStepSubject.of(new BatchTraceSubject(
+        List.of(BatchTraceStepSubject.of(
+            org.craft.mcs.cap.shared.testing.BatchTraceSubjects.subject(
             BatchTraceSubjectType.PRODUCTION_BATCH,
-            "production-2",
-            null
+            "production-2"
         ))),
         Instant.parse("2026-05-18T01:00:00Z"),
         ACTOR,
@@ -112,13 +112,6 @@ class BatchTraceStepTest {
     assertThat(firstProduction.inputs()).containsExactly(feedstock);
     assertThat(secondProduction.inputs()).containsExactly(feedstock);
     assertThat(firstProduction.outputs()).isNotEqualTo(secondProduction.outputs());
-  }
-
-  @Test
-  void rejectsBlankSubjectId() {
-    assertThatThrownBy(() -> BatchTraceSubject.of(BatchTraceSubjectType.FEEDSTOCK_BATCH, " "))
-        .isInstanceOf(DomainRuleViolationException.class)
-        .hasMessageContaining("subject id");
   }
 
   @Test
@@ -143,7 +136,11 @@ class BatchTraceStepTest {
     assertThat(state.traceStateId().value().version()).isEqualTo(7);
   }
 
-  private static BatchTraceSubject subject(String id) {
-    return new BatchTraceSubject(BatchTraceSubjectType.FEEDSTOCK_BATCH, id, "Source " + id);
+  private static BatchTraceSubject subject(String fixtureReference) {
+    return new BatchTraceSubject(
+        BatchTraceSubjectType.FEEDSTOCK_BATCH,
+        org.craft.mcs.cap.shared.testing.BatchTraceSubjects.id(fixtureReference),
+        "Source " + fixtureReference
+    );
   }
 }

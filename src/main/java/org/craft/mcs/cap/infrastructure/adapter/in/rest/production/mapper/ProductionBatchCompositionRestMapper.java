@@ -50,9 +50,12 @@ public final class ProductionBatchCompositionRestMapper {
   ) {
     requireNonNull(profile, "production profile snapshot cannot be null");
     return new SugarAcidityProfilePointResponse(
-        new CalculatedSugarAcidityAxisPointResponse(profile.sugar().asBigDecimal(), CanonicalUnitLabels.SUGAR),
         new CalculatedSugarAcidityAxisPointResponse(
-            profile.acidity().asBigDecimal(),
+            profile.specificGravity().asBigDecimal(),
+            CanonicalUnitLabels.SUGAR
+        ),
+        new CalculatedSugarAcidityAxisPointResponse(
+            profile.titratableAcidity().asBigDecimal(),
             CanonicalUnitLabels.TITRATABLE_ACIDITY
         ),
         toTanninAxisPointResponse(profile)

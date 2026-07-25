@@ -20,7 +20,7 @@ public record BatchTraceNodeResponse(
     )
     @NonNull BatchTraceSubjectResponse subject,
     @Schema(
-        description = "Material snapshot captured for this subject when the trace step was recorded.",
+        description = "Immutable state snapshot captured by the step that produced this node.",
         nullable = true,
         requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )

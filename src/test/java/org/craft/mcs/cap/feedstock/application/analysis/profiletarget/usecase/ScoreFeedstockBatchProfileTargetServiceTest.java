@@ -55,7 +55,7 @@ class ScoreFeedstockBatchProfileTargetServiceTest {
     final var near = sample("Near", profile("1.070", "6.0"));
     final var far = sample("Far", profile("1.040", "9.0"));
 
-    when(repository.findLatestSugarAcidityPointCandidates(any()))
+    when(repository.findCurrentSugarAcidityPointCandidates(any()))
         .thenReturn(List.of(view(far), view(near)));
 
     final var result = service.score(new ScoreFeedstockBatchProfileTargetCommand(
@@ -76,8 +76,8 @@ class ScoreFeedstockBatchProfileTargetServiceTest {
         .containsExactly(near.measurementId(), far.measurementId());
     assertThat(result.scores().getFirst().distance().value()).isEqualByComparingTo("0");
 
-    final var query = ArgumentCaptor.forClass(LatestFeedstockMeasurementSugarAcidityPointCandidateQuery.class);
-    verify(repository).findLatestSugarAcidityPointCandidates(query.capture());
+    final var query = ArgumentCaptor.forClass(CurrentFeedstockBatchSugarAcidityPointCandidateQuery.class);
+    verify(repository).findCurrentSugarAcidityPointCandidates(query.capture());
     verify(repository, never()).findSugarAcidityPointCandidates(any());
     assertThat(query.getValue().workspaceId()).isEqualTo(workspaceId);
     assertThat(query.getValue().limit()).isEqualTo(50);

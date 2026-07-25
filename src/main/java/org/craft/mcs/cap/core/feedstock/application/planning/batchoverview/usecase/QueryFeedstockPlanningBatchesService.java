@@ -19,6 +19,7 @@ import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.out.Feed
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.usecase.FeedstockCurrentProfileAssessmentService;
 import org.craft.mcs.cap.core.feedstock.application.measurement.query.FeedstockBatchCurrentMeasurementQueryService;
 import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementView;
+import org.craft.mcs.cap.core.feedstock.application.inventory.port.out.FeedstockMaterialStateProvider;
 import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.model.FeedstockPlanningBatchView;
 import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.FeedstockPlanningBatchViewQuery;
 import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.model.FeedstockPlanningTargetAnalysisView;
@@ -33,6 +34,7 @@ import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.Sug
 import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
+import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -43,7 +45,7 @@ import static java.util.Objects.requireNonNull;
 /**
  * Application read model for the feedstock planning.
  *
- * <p>This query service deliberately composes batch metadata, latest measurement state, graph
+ * <p>This query service deliberately composes batch metadata, current material-state evidence, graph
  * projection, target candidate scoring, ABV, YAN and fermentation-start readiness into one
  * application read model. It is not a domain aggregate; its responsibility is to give API clients a
  * coherent planning snapshot without forcing them to stitch several business endpoints
@@ -62,6 +64,7 @@ public final class QueryFeedstockPlanningBatchesService implements QueryFeedstoc
   private final @NonNull FeedstockCurrentProfileAssessmentService batchAssessmentService;
   private final @NonNull FeedstockCurrentProfileSettingsProvider currentProfileSettingsProvider;
   private final @NonNull FeedstockPlanningContributionRoleExplainer contributionRoleExplainer;
+  private final @NonNull FeedstockMaterialStateProvider materialStateProvider;
 
   @Override
   public @NonNull FeedstockPlanningView query(@NonNull FeedstockPlanningBatchViewQuery query) {
@@ -82,11 +85,16 @@ public final class QueryFeedstockPlanningBatchesService implements QueryFeedstoc
         ));
     final var targetCandidates = targetCandidates(query);
     final var currentProfileSettings = currentProfileSettingsProvider.get(query.workspaceId());
+    final var currentStates = materialStateProvider.currentStatesOf(query.workspaceId(), batchIds);
 
     return new FeedstockPlanningView(
         batches.stream()
             .map(batch -> toBatchView(
                 batch,
+                requireNonNull(
+                    currentStates.get(batch.batchId()),
+                    "feedstock current material state cannot be null"
+                ),
                 measurementsByBatchId.get(batch.batchId()),
                 targetCandidates.candidatesByBatchId().get(batch.batchId()),
                 currentProfileSettings
@@ -98,6 +106,7 @@ public final class QueryFeedstockPlanningBatchesService implements QueryFeedstoc
 
   private @NonNull FeedstockPlanningBatchView toBatchView(
       @NonNull FeedstockBatchSummary batch,
+      @NonNull MaterialStateId currentMaterialStateId,
       @Nullable FeedstockMeasurementView measurement,
       @Nullable FeedstockPlanningTargetCandidateView targetCandidate,
       @NonNull FeedstockCurrentProfileSettings settings
@@ -105,6 +114,7 @@ public final class QueryFeedstockPlanningBatchesService implements QueryFeedstoc
     if (measurement == null) {
       return new FeedstockPlanningBatchView(
           batch,
+          currentMaterialStateId,
           null,
           List.of(),
           null,
@@ -122,6 +132,7 @@ public final class QueryFeedstockPlanningBatchesService implements QueryFeedstoc
     final var freshness = batchAssessmentService.freshness(measurement, settings);
     return new FeedstockPlanningBatchView(
         batch,
+        currentMaterialStateId,
         toCurrentMeasurement(measurement),
         batchAssessmentService.evidence(measurement, settings),
         freshness,

@@ -5,7 +5,7 @@ import java.util.Optional;
 import java.util.Set;
 import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementSummary;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.out.FeedstockMeasurementSugarAcidityPointCandidateQuery;
-import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.out.LatestFeedstockMeasurementSugarAcidityPointCandidateQuery;
+import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.out.CurrentFeedstockBatchSugarAcidityPointCandidateQuery;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementId;
 import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementView;
@@ -23,15 +23,17 @@ public interface FeedstockMeasurementQueryRepository {
   );
 
   @NonNull
-  List<@NonNull FeedstockMeasurementView> findLatestSugarAcidityPointCandidates(
-      @NonNull LatestFeedstockMeasurementSugarAcidityPointCandidateQuery query
+  List<@NonNull FeedstockMeasurementView> findCurrentSugarAcidityPointCandidates(
+      @NonNull CurrentFeedstockBatchSugarAcidityPointCandidateQuery query
   );
 
   @NonNull
-  Optional<@NonNull FeedstockMeasurementView> findLatestByBatchId(@NonNull FeedstockBatchId batchId);
+  Optional<@NonNull FeedstockMeasurementView> findCurrentByBatchId(@NonNull FeedstockBatchId batchId);
 
   @NonNull
-  List<@NonNull FeedstockMeasurementView> findLatestByBatchIds(@NonNull Set<@NonNull FeedstockBatchId> batchIds);
+  List<@NonNull FeedstockMeasurementView> findCurrentByBatchIds(
+      @NonNull Set<@NonNull FeedstockBatchId> batchIds
+  );
 
   @NonNull
   List<@NonNull FeedstockMeasurementSummary> findSummariesByBatchId(@NonNull FeedstockBatchId batchId);

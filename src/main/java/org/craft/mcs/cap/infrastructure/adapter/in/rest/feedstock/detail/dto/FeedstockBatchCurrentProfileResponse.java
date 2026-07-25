@@ -13,8 +13,8 @@ import org.jspecify.annotations.Nullable;
 /**
  * Transport projection of the current chemical profile for feedstock batch details.
  *
- * <p>The response combines latest-measurement evidence, graph assessment, readiness and freshness
- * signals. It is not an editable measurement command model.
+ * <p>The response combines independently selected current evidence, graph assessment, readiness and
+ * freshness signals. It is not an editable measurement command model.
  */
 @Schema(description = "Current profile read model for a feedstock batch detail page.")
 public record FeedstockBatchCurrentProfileResponse(

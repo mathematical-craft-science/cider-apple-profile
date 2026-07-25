@@ -26,7 +26,7 @@ public final class ProductionBatchTraceabilityController implements ProductionBa
   public @NonNull BatchTraceabilityGraphResponse traceability(@PathVariable @NonNull UUID batchId) {
     return BatchTraceabilityRestMapper.toResponse(
         queryBatchTraceabilityUseCase.sourceGraphFor(
-            BatchTraceSubject.of(BatchTraceSubjectType.PRODUCTION_BATCH, batchId.toString())
+            BatchTraceSubject.of(BatchTraceSubjectType.PRODUCTION_BATCH, batchId)
         )
     );
   }

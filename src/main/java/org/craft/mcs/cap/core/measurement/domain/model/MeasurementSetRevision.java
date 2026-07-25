@@ -7,6 +7,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
 import org.craft.mcs.cap.shared.kernel.identity.ActorReference;
+import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.jmolecules.ddd.annotation.Entity;
 import org.jmolecules.ddd.annotation.Identity;
 import org.jspecify.annotations.NonNull;
@@ -20,6 +21,7 @@ import static java.util.Objects.requireNonNull;
 public record MeasurementSetRevision(
     @Identity @NonNull MeasurementSetRevisionId revisionId,
     @NonNull MeasurementSetRevisionNumber revisionNumber,
+    @NonNull MaterialStateId materialStateId,
     @NonNull MeasurementSetName name,
     @Nullable String note,
     @Nullable MeasurementCorrectionReason correctionReason,
@@ -33,6 +35,7 @@ public record MeasurementSetRevision(
   public MeasurementSetRevision {
     requireNonNull(revisionId, "measurement set revision id cannot be null");
     requireNonNull(revisionNumber, "measurement set revision number cannot be null");
+    requireNonNull(materialStateId, "measurement revision material state id cannot be null");
     requireNonNull(name, "measurement set name cannot be null");
     requireNonNull(createdAt, "measurement set revision creation time cannot be null");
     requireNonNull(actor, "measurement actor reference cannot be null");

@@ -6,10 +6,9 @@ import java.util.List;
 import org.craft.mcs.cap.core.batchtraceability.domain.graph.BatchTraceabilityGraphProjector;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceActorReference;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceMaterialSnapshot;
-import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceOperationType;
+import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStepType;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStep;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStepSubject;
-import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceSubject;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceSubjectType;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.batchtraceability.dto.BatchTraceNodeResponse;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
@@ -20,6 +19,7 @@ import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValueKind;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.craft.mcs.cap.shared.testing.BatchTraceSubjects.subject;
 
 
 class BatchTraceabilityRestMapperTest {
@@ -30,12 +30,12 @@ class BatchTraceabilityRestMapperTest {
     final var step = BatchTraceStep.create(
         WorkspaceId.newId(),
         null,
-        BatchTraceOperationType.CREATE_PRODUCTION_BATCH,
-        List.of(BatchTraceStepSubject.of(BatchTraceSubject.of(
+        BatchTraceStepType.PRODUCTION_BATCH_CREATED,
+        List.of(BatchTraceStepSubject.of(subject(
             BatchTraceSubjectType.FEEDSTOCK_BATCH,
             "feedstock-1"
         ))),
-        List.of(BatchTraceStepSubject.of(BatchTraceSubject.of(
+        List.of(BatchTraceStepSubject.of(subject(
             BatchTraceSubjectType.PRODUCTION_BATCH,
             "production-1"
         ))),
@@ -67,13 +67,13 @@ class BatchTraceabilityRestMapperTest {
     final var step = BatchTraceStep.create(
         WorkspaceId.newId(),
         null,
-        BatchTraceOperationType.CREATE_PRODUCTION_BATCH,
-        List.of(BatchTraceStepSubject.of(BatchTraceSubject.of(
+        BatchTraceStepType.PRODUCTION_BATCH_CREATED,
+        List.of(BatchTraceStepSubject.of(subject(
             BatchTraceSubjectType.FEEDSTOCK_BATCH,
             "feedstock-1"
         ))),
         List.of(BatchTraceStepSubject.capture(
-            BatchTraceSubject.of(BatchTraceSubjectType.PRODUCTION_BATCH, "production-1"),
+            subject(BatchTraceSubjectType.PRODUCTION_BATCH, "production-1"),
             new BatchTraceMaterialSnapshot(null, ChemicalProfileAxes.of(
                 null,
                 null,

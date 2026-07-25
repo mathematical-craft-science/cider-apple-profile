@@ -5,7 +5,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
-import org.craft.mcs.cap.core.measurement.domain.model.MeasurementCharacteristic;
+import org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementDerivationMethod;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementRecordRole;
 import org.jspecify.annotations.NonNull;
@@ -27,11 +27,15 @@ public record MeasurementRecordResponse(
     @NonNull UUID recordId,
     @Schema(
         description = "Material or process characteristic represented by this record.",
+        implementation = MeasurementCharacteristic.class,
+        example = "TITRATABLE_ACIDITY",
         requiredMode = Schema.RequiredMode.REQUIRED
     )
     @NonNull MeasurementCharacteristic characteristic,
     @Schema(
         description = "OBSERVATION preserves one reading; RESULT is the value used by current projections.",
+        implementation = MeasurementRecordRole.class,
+        example = "RESULT",
         requiredMode = Schema.RequiredMode.REQUIRED
     )
     @NonNull MeasurementRecordRole role,
@@ -53,6 +57,8 @@ public record MeasurementRecordResponse(
     @NonNull MeasurementProvenanceResponse provenance,
     @Schema(
         description = "Derivation used by a calculated RESULT; null for direct results and observations.",
+        implementation = MeasurementDerivationMethod.class,
+        example = "ARITHMETIC_MEAN",
         nullable = true
     )
     @Nullable MeasurementDerivationMethod derivationMethod,

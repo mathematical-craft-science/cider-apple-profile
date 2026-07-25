@@ -7,7 +7,7 @@ import java.util.Optional;
 import org.craft.mcs.cap.core.batchtraceability.application.port.out.BatchTraceabilityAccessControl;
 import org.craft.mcs.cap.core.batchtraceability.application.port.out.BatchTraceabilityQueryStore;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceActorReference;
-import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceOperationType;
+import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStepType;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStep;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStepSubject;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceSubject;
@@ -17,6 +17,7 @@ import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.craft.mcs.cap.shared.testing.BatchTraceSubjects.subject;
 
 
 class QueryBatchTraceabilityServiceTest {
@@ -25,13 +26,13 @@ class QueryBatchTraceabilityServiceTest {
 
   @Test
   void queriesStepsByInputSubjectAndProjectsGraph() {
-    final var feedstock = BatchTraceSubject.of(BatchTraceSubjectType.FEEDSTOCK_BATCH, "feedstock-1");
+    final var feedstock = subject(BatchTraceSubjectType.FEEDSTOCK_BATCH, "feedstock-1");
     final var step = BatchTraceStep.create(
         WORKSPACE_ID,
         null,
-        BatchTraceOperationType.CREATE_PRODUCTION_BATCH,
+        BatchTraceStepType.PRODUCTION_BATCH_CREATED,
         List.of(BatchTraceStepSubject.of(feedstock)),
-        List.of(BatchTraceStepSubject.of(BatchTraceSubject.of(
+        List.of(BatchTraceStepSubject.of(subject(
             BatchTraceSubjectType.PRODUCTION_BATCH,
             "production-1"
         ))),
@@ -55,12 +56,12 @@ class QueryBatchTraceabilityServiceTest {
 
   @Test
   void queriesStepsByOutputSubjectAndProjectsSourceGraph() {
-    final var production = BatchTraceSubject.of(BatchTraceSubjectType.PRODUCTION_BATCH, "production-1");
+    final var production = subject(BatchTraceSubjectType.PRODUCTION_BATCH, "production-1");
     final var step = BatchTraceStep.create(
         WORKSPACE_ID,
         null,
-        BatchTraceOperationType.CREATE_PRODUCTION_BATCH,
-        List.of(BatchTraceStepSubject.of(BatchTraceSubject.of(
+        BatchTraceStepType.PRODUCTION_BATCH_CREATED,
+        List.of(BatchTraceStepSubject.of(subject(
             BatchTraceSubjectType.FEEDSTOCK_BATCH,
             "feedstock-1"
         ))),

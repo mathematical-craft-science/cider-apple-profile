@@ -4,33 +4,42 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.craft.mcs.cap.core.profileanalysis.abv.domain.FixedFinalGravityPredictionStrategy;
 import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPredictor;
 import org.craft.mcs.cap.core.profileanalysis.abv.domain.StandardGravityDropAbvPredictionStrategy;
 import org.craft.mcs.cap.core.production.application.authorization.port.out.ProductionAccessControl;
 import org.craft.mcs.cap.core.production.application.model.ProductionBatchView;
-import org.craft.mcs.cap.core.production.application.model.ProductionMeasurementEvidenceReference;
-import org.craft.mcs.cap.core.production.application.model.ProductionMeasurementEvidenceView;
 import org.craft.mcs.cap.core.production.application.model.ProductionMeasurementProfileView;
-import org.craft.mcs.cap.core.production.application.model.ProductionMeasurementProvenanceView;
 import org.craft.mcs.cap.core.production.application.port.in.ListProductionBatchesQuery;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchQueryRepository;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionMeasurementProfileProvider;
+import org.craft.mcs.cap.core.production.application.port.out.ProductionMaterialStateProvider;
 import org.craft.mcs.cap.core.production.application.usecase.ProductionCurrentProfileProjector;
 import org.craft.mcs.cap.core.production.application.usecase.QueryProductionBatchesService;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatchId;
 import org.craft.mcs.cap.core.production.domain.model.value.AlcoholicFermentationState;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchLifecycle;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
+import org.craft.mcs.cap.shared.application.measurement.MeasurementEvidenceReference;
+import org.craft.mcs.cap.shared.application.measurement.MeasurementEvidenceValidity;
+import org.craft.mcs.cap.shared.application.measurement.MeasurementEvidenceView;
+import org.craft.mcs.cap.shared.application.measurement.MeasurementFreshnessStatus;
+import org.craft.mcs.cap.shared.application.measurement.MeasurementProvenanceView;
+import org.craft.mcs.cap.shared.application.measurement.MeasurementValueOrigin;
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
+import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
+import org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic;
+import org.craft.mcs.cap.shared.kernel.measurement.MeasurementSourceType;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.junit.jupiter.api.Test;
@@ -96,18 +105,21 @@ class QueryProductionBatchesServiceTest {
     final var accessControl = mock(ProductionAccessControl.class);
     final var measurementProvider = mock(ProductionMeasurementProfileProvider.class);
     final var service = service(repository, accessControl, measurementProvider);
-    final var evidence = new ProductionMeasurementEvidenceView(
-        ProductionMeasurementEvidenceView.Characteristic.SUGAR,
-        new ProductionMeasurementEvidenceReference(newUuid(), newUuid()),
+    final var evidence = new MeasurementEvidenceView(
+        MeasurementCharacteristic.SPECIFIC_GRAVITY,
+        MeasurementValueOrigin.MEASURED,
+        MaterialStateId.newId(),
+        new MeasurementEvidenceReference(newUuid(), newUuid()),
         Instant.parse("2026-07-24T00:00:00Z"),
-        new ProductionMeasurementProvenanceView(
-            ProductionMeasurementProvenanceView.SourceType.USER,
+        new MeasurementProvenanceView(
+            MeasurementSourceType.USER,
             "Hydrometer",
             null,
             null,
             null
         ),
-        ProductionMeasurementEvidenceView.FreshnessStatus.CURRENT
+        MeasurementFreshnessStatus.CURRENT,
+        MeasurementEvidenceValidity.VALID
     );
     final var measuredProfile = new ProductionMeasurementProfileView(
         ChemicalProfile.builder()
@@ -134,7 +146,7 @@ class QueryProductionBatchesServiceTest {
         ).isEqualByComparingTo("6.2"));
     assertThat(details)
         .satisfies(value -> assertThat(value.currentProfile().evidence()).containsExactly(evidence))
-        .satisfies(value -> assertThat(value.batch().initialProfileSnapshot().sugar())
+        .satisfies(value -> assertThat(value.batch().initialProfileSnapshot().specificGravity())
             .isEqualTo(SpecificGravityValue.of("1.052")));
   }
 
@@ -162,13 +174,24 @@ class QueryProductionBatchesServiceTest {
       ProductionAccessControl accessControl,
       ProductionMeasurementProfileProvider measurementProvider
   ) {
+    final var materialStateId = MaterialStateId.newId();
+    final var materialStateProvider = mock(ProductionMaterialStateProvider.class);
+    when(materialStateProvider.currentStateOf(any())).thenReturn(materialStateId);
+    when(materialStateProvider.currentStatesOf(any(), any())).thenAnswer(invocation -> {
+      final Set<ProductionBatchId> batchIds = invocation.getArgument(1);
+      return batchIds.stream().collect(Collectors.toUnmodifiableMap(
+          batchId -> batchId,
+          batchId -> materialStateId
+      ));
+    });
     return new QueryProductionBatchesService(
         repository,
         accessControl,
         measurementProvider,
         new ProductionCurrentProfileProjector(),
         new ChemicalProfileAxisExtractor(),
-        POTENTIAL_ABV_PREDICTOR
+        POTENTIAL_ABV_PREDICTOR,
+        materialStateProvider
     );
   }
 }

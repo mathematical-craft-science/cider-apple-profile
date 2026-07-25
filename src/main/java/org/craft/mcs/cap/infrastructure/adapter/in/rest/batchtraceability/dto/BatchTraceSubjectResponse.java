@@ -1,6 +1,7 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.batchtraceability.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.UUID;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceSubjectType;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -15,11 +16,11 @@ public record BatchTraceSubjectResponse(
     )
     @NonNull BatchTraceSubjectType type,
     @Schema(
-        description = "Stable business subject identifier, shared by all historical states of that material. UUID "
-            + "values are represented as strings because subject id format depends on subject type.",
+        description = "Stable business subject identifier shared by all historical states of that material.",
+        format = "uuid",
         requiredMode = Schema.RequiredMode.REQUIRED
     )
-    @NonNull String id,
+    @NonNull UUID id,
     @Schema(
         description = "Display name captured when the trace step was recorded.",
         nullable = true,

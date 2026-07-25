@@ -69,6 +69,7 @@ CREATE TABLE IF NOT EXISTS measurement_set_revisions
     revision_id       UUID                     NOT NULL PRIMARY KEY,
     measurement_set_id UUID                   NOT NULL,
     revision_number   INTEGER                  NOT NULL,
+    material_state_id UUID                     NOT NULL,
     name              VARCHAR(160)             NOT NULL,
     note              VARCHAR(2000),
     correction_reason VARCHAR(1000),
@@ -209,6 +210,9 @@ CREATE INDEX IF NOT EXISTS idx_measurement_sets_current_revision
 
 CREATE INDEX IF NOT EXISTS idx_measurement_set_revisions_set
     ON measurement_set_revisions (measurement_set_id, revision_number DESC);
+
+CREATE INDEX IF NOT EXISTS idx_measurement_set_revisions_material_state
+    ON measurement_set_revisions (material_state_id, measurement_set_id, revision_number DESC);
 
 CREATE INDEX IF NOT EXISTS idx_measurement_records_revision_characteristic_role
     ON measurement_records (revision_id, characteristic, role);

@@ -9,11 +9,11 @@ import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceMaterialS
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStep;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStepId;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStepSubject;
-import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStateId;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceSubject;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
+import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValueKind;
 import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
@@ -36,7 +36,7 @@ public final class BatchTraceStepJdbcRowMapper {
         step.stepId().value(),
         step.workspaceId().value(),
         stepIdValue(step.parentStepId()),
-        step.operationType(),
+        step.stepType(),
         step.occurredAt(),
         step.performedBy().type(),
         step.performedBy().id(),
@@ -55,7 +55,7 @@ public final class BatchTraceStepJdbcRowMapper {
         WorkspaceId.of(requireNonNull(row.workspaceId, "batch trace workspace id cannot be null")),
         BatchTraceStepId.of(requireNonNull(row.stepId, "batch trace step id cannot be null")),
         stepId(row.parentStepId),
-        requireNonNull(row.operationType, "batch trace operation type cannot be null"),
+        requireNonNull(row.stepType, "batch trace step type cannot be null"),
         toSubjects(row, BatchTraceStepSubjectRole.INPUT),
         toSubjects(row, BatchTraceStepSubjectRole.OUTPUT),
         requireNonNull(row.occurredAt, "batch trace occurred at cannot be null"),
@@ -94,15 +94,15 @@ public final class BatchTraceStepJdbcRowMapper {
     return row.subjects.stream()
         .filter(subject -> subject.role == role)
         .sorted(Comparator.comparingInt(subject -> subject.subjectOrder))
-        .map(BatchTraceStepJdbcRowMapper::toSubject)
+        .map(BatchTraceStepJdbcRowMapper::toDomainSubject)
         .toList();
   }
 
-  private static @NonNull BatchTraceStepSubject toSubject(
+  public static @NonNull BatchTraceStepSubject toDomainSubject(
       @NonNull BatchTraceStepSubjectJdbcRow row
   ) {
     return new BatchTraceStepSubject(
-        BatchTraceStateId.of(requireNonNull(row.traceStateId, "batch trace state id cannot be null")),
+        MaterialStateId.of(requireNonNull(row.traceStateId, "batch trace state id cannot be null")),
         new BatchTraceSubject(
             requireNonNull(row.subjectType, "batch trace subject type cannot be null"),
             requireNonNull(row.subjectId, "batch trace subject id cannot be null"),

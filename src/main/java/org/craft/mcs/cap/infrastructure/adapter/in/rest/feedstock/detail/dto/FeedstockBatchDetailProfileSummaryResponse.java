@@ -10,7 +10,8 @@ import org.jspecify.annotations.Nullable;
 @Schema(
     description = """
         Compact current chemical profile projection for feedstock detail cards. This is derived from
-        the latest measurement and does not replace latestMeasurement.chemicalProfile.
+        independently selected evidence along the current material-state lineage. It does not replace
+        the per-characteristic evidence returned by the current-profile read model.
         """
 )
 public record FeedstockBatchDetailProfileSummaryResponse(

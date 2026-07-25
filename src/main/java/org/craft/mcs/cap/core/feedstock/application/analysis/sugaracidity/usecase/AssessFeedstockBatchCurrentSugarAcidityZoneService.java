@@ -19,7 +19,7 @@ import static java.util.Objects.requireNonNull;
  * Application service for assessing the current profile of a feedstock batch on the sugar-acidity
  * graph.
  *
- * <p>Current means the latest measurement selected by
+ * <p>Current means the state-aware composite selected by
  * {@link FeedstockBatchCurrentMeasurementQueryService}. The service returns an unplottable result
  * when sugar/acidity capability is missing so clients can show actionable warnings instead of
  * hiding incomplete batches.

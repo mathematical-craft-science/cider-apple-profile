@@ -6,6 +6,7 @@ import org.craft.mcs.cap.shared.application.ApplicationValidationException;
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
+import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -16,6 +17,7 @@ import static java.util.Objects.requireNonNull;
 public record FeedstockMeasurementView(
     @NonNull FeedstockMeasurementId measurementId,
     @NonNull FeedstockBatchId batchId,
+    @NonNull MaterialStateId currentMaterialStateId,
     @NonNull FeedstockMeasurementName name,
     @NonNull ChemicalProfile chemicalProfile,
     @NonNull Instant measuredAt,
@@ -27,6 +29,7 @@ public record FeedstockMeasurementView(
   public FeedstockMeasurementView {
     requireNonNull(measurementId, "feedstock measurement id cannot be null");
     requireNonNull(batchId, "feedstock batch id cannot be null");
+    requireNonNull(currentMaterialStateId, "feedstock current material state id cannot be null");
     requireNonNull(name, "feedstock measurement name cannot be null");
     requireNonNull(chemicalProfile, "feedstock chemical profile cannot be null");
     requireNonNull(measuredAt, "feedstock measurement time cannot be null");
@@ -39,6 +42,7 @@ public record FeedstockMeasurementView(
   public FeedstockMeasurementView(
       @NonNull FeedstockMeasurementId measurementId,
       @NonNull FeedstockBatchId batchId,
+      @NonNull MaterialStateId currentMaterialStateId,
       @NonNull FeedstockMeasurementName name,
       @NonNull ChemicalProfile chemicalProfile,
       @NonNull Instant measuredAt,
@@ -48,6 +52,7 @@ public record FeedstockMeasurementView(
     this(
         measurementId,
         batchId,
+        currentMaterialStateId,
         name,
         chemicalProfile,
         measuredAt,

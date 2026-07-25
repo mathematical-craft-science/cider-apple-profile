@@ -1,7 +1,7 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.measurement;
 
 import java.math.BigDecimal;
-import org.craft.mcs.cap.core.measurement.domain.model.MeasurementCharacteristic;
+import org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.measurement.unit.BeverageUnits;
 import org.craft.mcs.cap.shared.kernel.measurement.value.TemperatureValue;

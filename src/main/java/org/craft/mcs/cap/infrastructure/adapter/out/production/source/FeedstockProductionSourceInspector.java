@@ -56,6 +56,7 @@ public final class FeedstockProductionSourceInspector implements ProductionSourc
         snapshot.availableVolume(),
         axisExtractor.extract(snapshot.chemicalProfile()),
         snapshot.profileConfidence(),
+        snapshot.materialStateId(),
         ProductionSourceEvidenceReference.of(snapshot.evidenceReference().externalValue())
     );
   }

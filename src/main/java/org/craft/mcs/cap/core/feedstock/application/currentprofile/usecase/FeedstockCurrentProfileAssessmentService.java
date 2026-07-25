@@ -1,6 +1,7 @@
 package org.craft.mcs.cap.core.feedstock.application.currentprofile.usecase;
 
 import java.time.Clock;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -9,24 +10,25 @@ import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.Feedsto
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.*;
 import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementView;
 import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockProfileAxisEvidence;
-import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockProfileCharacteristic;
 import org.craft.mcs.cap.core.profileanalysis.ph.domain.PhPlanningGuidance;
 import org.craft.mcs.cap.core.profileanalysis.ph.domain.PhPlanningGuidanceCode;
 import org.craft.mcs.cap.core.profileanalysis.ph.domain.PhPlanningGuidancePolicy;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileEvaluation;
+import org.craft.mcs.cap.shared.application.measurement.MeasurementFreshnessStatus;
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.characteristic.CharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.characteristic.IntervalCharacteristicValue;
+import org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 
 import static java.util.Objects.requireNonNull;
 
 /**
- * Builds current-profile diagnostics from the latest feedstock batch evidence.
+ * Builds current-profile diagnostics from state-aware Feedstock evidence.
  *
  * <p>The service belongs to application read-side logic: it does not change aggregates and does
  * not decide for the technologist. It only summarizes freshness, planning readiness and data
@@ -37,7 +39,7 @@ import static java.util.Objects.requireNonNull;
 public final class FeedstockCurrentProfileAssessmentService {
 
   private static final @NonNull String STALE_MEASUREMENT_REASON =
-      "Current measurement is older than configured freshness threshold";
+      "Current profile contains planning evidence older than the configured freshness threshold";
 
   private final @NonNull Clock clock;
   private final @NonNull PhPlanningGuidancePolicy phPlanningGuidancePolicy;
@@ -54,19 +56,19 @@ public final class FeedstockCurrentProfileAssessmentService {
     final var oldestEvidenceAt = measurement.axisEvidence().stream()
         .filter(FeedstockCurrentProfileAssessmentService::isPlanningFreshnessEvidence)
         .map(FeedstockProfileAxisEvidence::measuredAt)
-        .min(java.time.Instant::compareTo)
+        .min(Instant::compareTo)
         .orElse(measurement.measuredAt());
     final var stale = measurementFreshnessPolicy.isStale(oldestEvidenceAt, clock.instant());
     if (!stale) {
       return new FeedstockCurrentMeasurementFreshnessView(
-          FeedstockCurrentMeasurementFreshnessStatus.CURRENT,
+          MeasurementFreshnessStatus.CURRENT,
           false,
           null
       );
     }
 
     return new FeedstockCurrentMeasurementFreshnessView(
-        FeedstockCurrentMeasurementFreshnessStatus.STALE,
+        MeasurementFreshnessStatus.STALE,
         true,
         STALE_MEASUREMENT_REASON
     );
@@ -87,14 +89,17 @@ public final class FeedstockCurrentProfileAssessmentService {
           final var stale = freshnessPolicy.isStale(axis.measuredAt(), assessedAt);
           return new FeedstockCurrentProfileEvidenceView(
               axis.characteristic(),
+              axis.origin(),
+              axis.materialStateId(),
               axis.measurementSetId(),
               axis.recordId(),
               axis.measuredAt(),
               axis.source(),
               axis.confidence(),
+              axis.validity(),
               stale
-                  ? FeedstockCurrentMeasurementFreshnessStatus.STALE
-                  : FeedstockCurrentMeasurementFreshnessStatus.CURRENT,
+                  ? MeasurementFreshnessStatus.STALE
+                  : MeasurementFreshnessStatus.CURRENT,
               stale
           );
         })
@@ -104,8 +109,8 @@ public final class FeedstockCurrentProfileAssessmentService {
   private static boolean isPlanningFreshnessEvidence(
       @NonNull FeedstockProfileAxisEvidence evidence
   ) {
-    return evidence.characteristic() == FeedstockProfileCharacteristic.SUGAR
-        || evidence.characteristic() == FeedstockProfileCharacteristic.TITRATABLE_ACIDITY;
+    return evidence.characteristic() == MeasurementCharacteristic.SPECIFIC_GRAVITY
+        || evidence.characteristic() == MeasurementCharacteristic.TITRATABLE_ACIDITY;
   }
 
   public @NonNull FeedstockPlanningReadinessView planningReadinessWithoutMeasurement(
@@ -140,7 +145,7 @@ public final class FeedstockCurrentProfileAssessmentService {
     checks.add(volumeCheck(batch));
     checks.add(requiredProfileCheck(
         profile.sugar().isPresent(),
-        FeedstockPlanningReadinessFactor.SUGAR,
+        FeedstockPlanningReadinessFactor.SPECIFIC_GRAVITY,
         FeedstockPlanningReadinessCheckCode.SUGAR_PRESENT,
         FeedstockPlanningReadinessCheckCode.SUGAR_MISSING,
         "Sugar is available",

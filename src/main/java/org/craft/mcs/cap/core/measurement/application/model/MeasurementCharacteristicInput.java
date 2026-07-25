@@ -2,7 +2,7 @@ package org.craft.mcs.cap.core.measurement.application.model;
 
 import java.time.Instant;
 import java.util.List;
-import org.craft.mcs.cap.core.measurement.domain.model.MeasurementCharacteristic;
+import org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementDerivationMethod;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementProvenance;
 import org.craft.mcs.cap.shared.kernel.characteristic.CharacteristicValue;

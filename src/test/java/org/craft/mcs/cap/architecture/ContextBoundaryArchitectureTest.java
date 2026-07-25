@@ -202,7 +202,7 @@ class ContextBoundaryArchitectureTest {
           .resideInAPackage("org.craft.mcs.cap.core.account..");
 
   @ArchTest
-  static final ArchRule measurement_context_does_not_depend_on_subject_owner_contexts =
+  static final ArchRule measurement_context_does_not_depend_on_subject_owner_or_traceability_contexts =
       noClasses()
           .that()
           .resideInAPackage("org.craft.mcs.cap.core.measurement..")
@@ -210,6 +210,7 @@ class ContextBoundaryArchitectureTest {
           .dependOnClassesThat()
           .resideInAnyPackage(
               "org.craft.mcs.cap.core.account..",
+              "org.craft.mcs.cap.core.batchtraceability..",
               "org.craft.mcs.cap.core.feedstock..",
               "org.craft.mcs.cap.core.production.."
           );

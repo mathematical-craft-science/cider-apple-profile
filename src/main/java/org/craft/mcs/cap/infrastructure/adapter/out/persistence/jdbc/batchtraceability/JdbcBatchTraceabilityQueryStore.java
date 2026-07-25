@@ -12,7 +12,7 @@ import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.batchtraceability.application.port.out.BatchTraceabilityQueryStore;
-import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceOperationType;
+import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStepType;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceActorType;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStep;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceSubject;
@@ -46,7 +46,7 @@ class JdbcBatchTraceabilityQueryStore implements BatchTraceabilityQueryStore {
         resultSet.getObject("step_id", UUID.class),
         resultSet.getObject("workspace_id", UUID.class),
         resultSet.getObject("parent_step_id", UUID.class),
-        BatchTraceOperationType.valueOf(resultSet.getString("operation_type")),
+        BatchTraceStepType.valueOf(resultSet.getString("step_type")),
         instant(resultSet, "occurred_at"),
         BatchTraceActorType.valueOf(resultSet.getString("performed_by_type")),
         resultSet.getString("performed_by_id"),
@@ -65,7 +65,7 @@ class JdbcBatchTraceabilityQueryStore implements BatchTraceabilityQueryStore {
         resultSet.getInt("subject_order"),
         resultSet.getObject("trace_state_id", UUID.class),
         BatchTraceSubjectType.valueOf(resultSet.getString("subject_type")),
-        resultSet.getString("subject_id"),
+        resultSet.getObject("subject_id", UUID.class),
         resultSet.getString("display_name_snapshot")
     );
     subject.snapshotVolumeLiters = resultSet.getBigDecimal("snapshot_volume_liters");
@@ -194,7 +194,7 @@ class JdbcBatchTraceabilityQueryStore implements BatchTraceabilityQueryStore {
               step_id,
               workspace_id,
               parent_step_id,
-              operation_type,
+              step_type,
               occurred_at,
               performed_by_type,
               performed_by_id,

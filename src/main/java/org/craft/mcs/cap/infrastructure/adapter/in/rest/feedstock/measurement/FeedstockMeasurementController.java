@@ -21,9 +21,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
-
+/** Serves the deprecated Feedstock measurement transport contract through the generic Measurement context. */
 @RestController
 @RequiredArgsConstructor
+@SuppressWarnings("deprecation")
 public final class FeedstockMeasurementController implements FeedstockMeasurementApi {
 
   private final @NonNull FeedstockMeasurementCompatibilityFacade compatibilityFacade;

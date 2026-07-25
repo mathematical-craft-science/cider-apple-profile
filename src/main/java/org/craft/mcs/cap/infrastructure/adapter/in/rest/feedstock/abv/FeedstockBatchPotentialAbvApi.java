@@ -17,18 +17,21 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @Tag(
     name = "Feedstock ABV analysis",
-    description = "Potential ABV endpoints based on the latest measurement of a feedstock batch."
+    description = "Potential ABV endpoints based on the state-aware current feedstock profile."
 )
 public interface FeedstockBatchPotentialAbvApi {
 
   @Operation(
       summary = "Predict current feedstock batch potential ABV",
-      description = "Predicts potential ABV from the latest batch measurement sugar value."
+      description = "Predicts potential ABV from the sugar evidence selected for the state-aware current profile."
   )
   @ApiResponse(
       responseCode = "200",
       description = "Current potential ABV prediction.",
-      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = FeedstockBatchCurrentPotentialAbvResponse.class))
+      content = @Content(
+          mediaType = APPLICATION_JSON_VALUE,
+          schema = @Schema(implementation = FeedstockBatchCurrentPotentialAbvResponse.class)
+      )
   )
   @ApiResponse(
       responseCode = "422",

@@ -7,7 +7,18 @@ import org.jspecify.annotations.NonNull;
 
 @Schema(description = "Feedstock season date range request.")
 public record FeedstockSeasonRequest(
-    @Schema(description = "Season start date.", format = "date", example = "2026-09-15", requiredMode = Schema.RequiredMode.REQUIRED) @NonNull LocalDate startsOn,
-    @Schema(description = "Season end date.", format = "date", example = "2026-12-01", requiredMode = Schema.RequiredMode.REQUIRED) @NonNull LocalDate endsOn
+    @Schema(
+        description = "Season start date.",
+        format = "date",
+        example = "2026-09-15",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    ) @NonNull LocalDate startsOn,
+    @Schema(
+        description = "Season end date.",
+        format = "date",
+        example = "2026-12-01",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    ) @NonNull LocalDate endsOn
 ) {
+
 }

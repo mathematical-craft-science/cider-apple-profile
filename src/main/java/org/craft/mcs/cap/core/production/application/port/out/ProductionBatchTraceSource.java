@@ -1,8 +1,10 @@
 package org.craft.mcs.cap.core.production.application.port.out;
 
+import java.util.UUID;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
 import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
+import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -15,9 +17,11 @@ import org.jspecify.annotations.Nullable;
  * in Batch Traceability.
  */
 public sealed interface ProductionBatchTraceSource
-    permits ProductionBatchFeedstockTraceSource, ProductionBatchCompositionTraceSource {
+    permits ProductionBatchFeedstockTraceSource {
 
-  @NonNull String id();
+  @NonNull UUID id();
+
+  @NonNull MaterialStateId materialStateId();
 
   @Nullable ProductionSourceDisplayName displayName();
 

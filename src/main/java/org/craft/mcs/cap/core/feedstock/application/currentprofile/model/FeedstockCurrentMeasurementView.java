@@ -11,7 +11,7 @@ import static java.util.Objects.requireNonNull;
 
 
 /**
- * Latest measurement evidence used to derive the current feedstock chemical profile.
+ * Compatibility-shaped summary of the state-aware current Feedstock profile.
  */
 public record FeedstockCurrentMeasurementView(
     @NonNull FeedstockMeasurementId measurementId,

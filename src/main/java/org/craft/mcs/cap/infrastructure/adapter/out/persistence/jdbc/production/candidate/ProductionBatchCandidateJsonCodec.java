@@ -15,6 +15,7 @@ import org.craft.mcs.cap.core.production.domain.model.ProductionSourceType;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionWarning;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.assessment.ProfileTargetDistance;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
+import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
@@ -45,7 +46,8 @@ final class ProductionBatchCandidateJsonCodec {
             source.reference().type(),
             source.reference().id(),
             source.volume().liters(),
-            candidate.evidenceFor(source.reference()).value()
+            candidate.evidenceFor(source.reference()).value(),
+            candidate.materialStateFor(source.reference()).value()
         ))
         .toList();
     return write(payload);
@@ -64,7 +66,12 @@ final class ProductionBatchCandidateJsonCodec {
             source -> new ProductionSourceReference(source.type(), source.id()),
             source -> ProductionSourceEvidenceReference.of(source.evidenceReference())
         ));
-    return new DecodedSources(ProductionSourceComposition.of(components), evidence);
+    final Map<ProductionSourceReference, MaterialStateId> materialStates = payload.stream()
+        .collect(Collectors.toUnmodifiableMap(
+            source -> new ProductionSourceReference(source.type(), source.id()),
+            source -> MaterialStateId.of(source.materialStateId())
+        ));
+    return new DecodedSources(ProductionSourceComposition.of(components), evidence, materialStates);
   }
 
   @Nullable String encodeTargetDistance(@Nullable ProfileTargetDistance targetDistance) {
@@ -117,13 +124,15 @@ final class ProductionBatchCandidateJsonCodec {
       @NonNull ProductionSourceType type,
       @NonNull UUID id,
       @NonNull BigDecimal volumeLiters,
-      @NonNull String evidenceReference
+      @NonNull String evidenceReference,
+      @NonNull UUID materialStateId
   ) {
   }
 
   record DecodedSources(
       @NonNull ProductionSourceComposition composition,
-      @NonNull Map<@NonNull ProductionSourceReference, @NonNull ProductionSourceEvidenceReference> evidence
+      @NonNull Map<@NonNull ProductionSourceReference, @NonNull ProductionSourceEvidenceReference> evidence,
+      @NonNull Map<@NonNull ProductionSourceReference, @NonNull MaterialStateId> materialStates
   ) {
   }
 }

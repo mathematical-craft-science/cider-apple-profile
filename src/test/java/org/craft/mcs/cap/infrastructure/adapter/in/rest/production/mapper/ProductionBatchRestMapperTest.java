@@ -8,6 +8,7 @@ import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPredictor;
 import org.craft.mcs.cap.core.profileanalysis.abv.domain.PredictionConfidence;
 import org.craft.mcs.cap.core.profileanalysis.abv.domain.StandardGravityDropAbvPredictionStrategy;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
+import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.core.production.application.port.in.ProductionBatchCreated;
 import org.craft.mcs.cap.core.production.application.model.ProductionBatchDetailsView;
@@ -55,8 +56,9 @@ class ProductionBatchRestMapperTest {
     final var response = ProductionBatchRestMapper.toDetailsResponse(
         new ProductionBatchDetailsView(
             view,
+            MaterialStateId.newId(),
             currentProfile(view),
-            potentialAbvPredictor.predict(view.initialProfileSnapshot().sugar())
+            potentialAbvPredictor.predict(view.initialProfileSnapshot().specificGravity())
         )
     );
 
@@ -117,8 +119,9 @@ class ProductionBatchRestMapperTest {
     final var response = ProductionBatchRestMapper.toListResponse(
         List.of(new ProductionBatchDetailsView(
             view,
+            MaterialStateId.newId(),
             currentProfile(view),
-            potentialAbvPredictor.predict(view.initialProfileSnapshot().sugar())
+            potentialAbvPredictor.predict(view.initialProfileSnapshot().specificGravity())
         ))
     );
 
@@ -172,8 +175,8 @@ class ProductionBatchRestMapperTest {
   private static ProductionCurrentProfileView currentProfile(ProductionBatchView batch) {
     final var snapshot = batch.initialProfileSnapshot();
     final var profile = ChemicalProfile.builder()
-        .sugar(PointCharacteristicValue.of(SugarConcentration.ofSpecificGravity(snapshot.sugar())))
-        .titratableAcidity(PointCharacteristicValue.of(snapshot.acidity()))
+        .sugar(PointCharacteristicValue.of(SugarConcentration.ofSpecificGravity(snapshot.specificGravity())))
+        .titratableAcidity(PointCharacteristicValue.of(snapshot.titratableAcidity()))
         .tannin(PointCharacteristicValue.of(snapshot.tannin()))
         .yeastAssimilableNitrogen(PointCharacteristicValue.of(snapshot.yeastAssimilableNitrogen()))
         .build();
@@ -190,7 +193,7 @@ class ProductionBatchRestMapperTest {
             VolumeValue.ofLiters("120")
         ))),
         profileSnapshot(),
-        prediction(profileSnapshot().sugar()),
+        prediction(profileSnapshot().specificGravity()),
         null,
         null,
         List.of(),

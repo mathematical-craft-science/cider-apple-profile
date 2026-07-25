@@ -12,6 +12,7 @@ import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.abv.mapper.PotentialAbvPredictionRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.mapper.ChemicalProfileRestMapper;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement.MeasurementEvidenceRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.CreateProductionBatchRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.ProductionBatchDetailsResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.ProductionBatchListResponse;
@@ -73,6 +74,7 @@ public final class ProductionBatchRestMapper {
     return new ProductionBatchDetailsResponse(
         batch.batchId().value(),
         batch.workspaceId().value(),
+        details.currentMaterialStateId().value(),
         batch.name().value(),
         batch.vessel().name(),
         batch.lifecycle(),
@@ -81,7 +83,7 @@ public final class ProductionBatchRestMapper {
         ProductionBatchCompositionRestMapper.toProfilePointResponse(batch.initialProfileSnapshot()),
         ChemicalProfileRestMapper.toResponse(details.currentProfile().chemicalProfile()),
         details.currentProfile().evidence().stream()
-            .map(ProductionMeasurementEvidenceRestMapper::toResponse)
+            .map(MeasurementEvidenceRestMapper::toResponse)
             .toList(),
         toYeastAssimilableNitrogenResponse(details.currentProfile().chemicalProfile()),
         PotentialAbvPredictionRestMapper.toResponse(details.potentialAbv()),

@@ -2,7 +2,7 @@ package org.craft.mcs.cap.core.measurement.domain.projection;
 
 import java.math.BigDecimal;
 import java.util.Map;
-import org.craft.mcs.cap.core.measurement.domain.model.MeasurementCharacteristic;
+import org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic;
 import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
 import org.craft.mcs.cap.shared.kernel.characteristic.CharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.characteristic.IntervalCharacteristicValue;

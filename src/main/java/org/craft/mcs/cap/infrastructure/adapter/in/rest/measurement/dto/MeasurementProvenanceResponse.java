@@ -1,7 +1,7 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSourceType;
+import org.craft.mcs.cap.shared.kernel.measurement.MeasurementSourceType;
 import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -11,6 +11,8 @@ import org.jspecify.annotations.Nullable;
 public record MeasurementProvenanceResponse(
     @Schema(
         description = "Category of the authority or mechanism that supplied the measured value.",
+        implementation = MeasurementSourceType.class,
+        example = "INSTRUMENT",
         requiredMode = Schema.RequiredMode.REQUIRED
     )
     @NonNull MeasurementSourceType sourceType,
@@ -37,6 +39,8 @@ public record MeasurementProvenanceResponse(
     @Nullable String reference,
     @Schema(
         description = "Declared confidence; null means that confidence was not provided.",
+        implementation = ConfidenceLevel.class,
+        example = "HIGH",
         nullable = true
     )
     @Nullable ConfidenceLevel confidence

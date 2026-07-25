@@ -48,6 +48,7 @@ import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValueKind;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
+import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
@@ -67,6 +68,7 @@ class CreateProductionBatchServiceTest {
       Clock.fixed(Instant.parse("2026-05-18T10:15:30Z"), ZoneOffset.UTC);
   private static final ProductionSourceEvidenceReference EVIDENCE =
       ProductionSourceEvidenceReference.of("measurement-2026-05-18");
+  private static final MaterialStateId MATERIAL_STATE = MaterialStateId.newId();
 
   @Test
   void confirmsCandidateCreatesProductionBatchAndRecordsTraceInSameTransaction() {
@@ -97,8 +99,8 @@ class CreateProductionBatchServiceTest {
             ProductionBatchView::alcoholicFermentationState
         );
     assertThat(created.productionBatch().initialProfileSnapshot())
-        .returns(SpecificGravityValue.of("1.050"), ProductionProfileSnapshot::sugar)
-        .returns(TitratableAcidityValue.of("6.1"), ProductionProfileSnapshot::acidity)
+        .returns(SpecificGravityValue.of("1.050"), ProductionProfileSnapshot::specificGravity)
+        .returns(TitratableAcidityValue.of("6.1"), ProductionProfileSnapshot::titratableAcidity)
         .returns(TanninValue.of("1400"), ProductionProfileSnapshot::tannin);
     assertThat(created.candidate())
         .returns(ProductionBatchCandidateStatus.CONFIRMED, ProductionBatchCandidateView::status)
@@ -120,7 +122,7 @@ class CreateProductionBatchServiceTest {
             .satisfies(source -> {
               assertThat(source)
                   .isInstanceOf(ProductionBatchFeedstockTraceSource.class)
-                  .returns(sourceReference.id().toString(), ProductionBatchTraceSource::id)
+                  .returns(sourceReference.id(), ProductionBatchTraceSource::id)
                   .returns(ProductionSourceDisplayName.of("Late juice"), ProductionBatchTraceSource::displayName)
                   .returns(VolumeValue.ofLiters("100"), ProductionBatchTraceSource::volume)
                   .returns(ConfidenceLevel.LAB_VERIFIED, ProductionBatchTraceSource::confidence);
@@ -183,6 +185,30 @@ class CreateProductionBatchServiceTest {
         .isEqualTo(ProductionBatchCandidateStatus.AVAILABLE);
   }
 
+  @Test
+  void rejectsCandidateWhenSourceMaterialStateChanged() {
+    final var transactionHelper = new StagingTransactionHelper();
+    final var workspaceId = WorkspaceId.newId();
+    final var sourceReference = ProductionSourceReference.feedstockBatch(FeedstockBatchId.newId().value());
+    final var candidate = candidate(workspaceId, sourceReference);
+    final var candidateStore = new StagingCandidateStore(transactionHelper, candidate);
+    final var productionRepository = new StagingProductionBatchRepository(transactionHelper);
+    final var service = service(
+        sourceInventory(EVIDENCE, MaterialStateId.newId()),
+        candidateStore,
+        productionRepository,
+        new CapturingTraceRecorder(),
+        transactionHelper
+    );
+
+    assertThatThrownBy(() -> service.create(command(workspaceId, candidate.candidate().candidateId())))
+        .isInstanceOf(ProductionBatchCandidateStaleException.class);
+    assertThat(productionRepository.committed)
+        .isEmpty();
+    assertThat(candidateStore.committed.candidate().status())
+        .isEqualTo(ProductionBatchCandidateStatus.AVAILABLE);
+  }
+
   private static @NonNull CreateProductionBatchService service(
       @NonNull ProductionSourceInventory sourceInventory,
       @NonNull ProductionBatchCandidateStore candidateStore,
@@ -228,9 +254,10 @@ class CreateProductionBatchServiceTest {
             workspaceId,
             composition,
             Map.of(sourceReference, EVIDENCE),
+            Map.of(sourceReference, MATERIAL_STATE),
             productionProfile()
         ),
-        prediction(productionProfile().sugar()),
+        prediction(productionProfile().specificGravity()),
         null,
         null,
         List.of()
@@ -248,6 +275,13 @@ class CreateProductionBatchServiceTest {
   private static @NonNull ProductionSourceInventory sourceInventory(
       @NonNull ProductionSourceEvidenceReference evidenceReference
   ) {
+    return sourceInventory(evidenceReference, MATERIAL_STATE);
+  }
+
+  private static @NonNull ProductionSourceInventory sourceInventory(
+      @NonNull ProductionSourceEvidenceReference evidenceReference,
+      @NonNull MaterialStateId materialStateId
+  ) {
     return (workspaceId, source) -> new ConsumedProductionSource(
         source.reference(),
         ProductionSourceDisplayName.of("Late juice"),
@@ -258,6 +292,7 @@ class CreateProductionBatchServiceTest {
             axis(ChemicalAxis.TANNIN, "1400")
         ),
         ConfidenceLevel.LAB_VERIFIED,
+        materialStateId,
         evidenceReference
     );
   }
@@ -388,6 +423,7 @@ class CreateProductionBatchServiceTest {
               candidate.workspaceId(),
               candidate.sourceComposition(),
               candidate.sourceEvidence(),
+              candidate.sourceMaterialStates(),
               candidate.profile(),
               candidate.status(),
               candidate.confirmedProductionBatchId()

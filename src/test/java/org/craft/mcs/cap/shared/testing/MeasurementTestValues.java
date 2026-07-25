@@ -1,7 +1,7 @@
 package org.craft.mcs.cap.shared.testing;
 
 import java.math.BigDecimal;
-import org.craft.mcs.cap.core.measurement.domain.model.MeasurementCharacteristic;
+import org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic;
 import org.craft.mcs.cap.shared.kernel.characteristic.CharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.characteristic.IntervalCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;

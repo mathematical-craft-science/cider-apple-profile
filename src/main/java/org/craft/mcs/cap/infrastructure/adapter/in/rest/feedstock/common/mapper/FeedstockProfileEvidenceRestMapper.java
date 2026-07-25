@@ -19,11 +19,14 @@ public final class FeedstockProfileEvidenceRestMapper {
     requireNonNull(evidence, "feedstock profile evidence cannot be null");
     return new FeedstockProfileEvidenceResponse(
         evidence.characteristic(),
+        evidence.origin(),
+        evidence.materialStateId().value(),
         evidence.measurementSetId(),
         evidence.recordId(),
         evidence.measuredAt(),
         evidence.source(),
         evidence.confidence(),
+        evidence.validity(),
         evidence.freshnessStatus(),
         evidence.stale()
     );

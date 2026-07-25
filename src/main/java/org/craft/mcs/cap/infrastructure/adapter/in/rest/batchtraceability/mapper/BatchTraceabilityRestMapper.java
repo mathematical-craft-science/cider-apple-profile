@@ -57,7 +57,7 @@ public final class BatchTraceabilityRestMapper {
   private static @NonNull BatchTraceEdgeResponse toResponse(@NonNull BatchTraceEdge edge) {
     return new BatchTraceEdgeResponse(
         edge.stepId().value(),
-        edge.operationType(),
+        edge.stepType(),
         edge.occurredAt(),
         edge.inputs().stream()
             .map(BatchTraceabilityRestMapper::toResponse)

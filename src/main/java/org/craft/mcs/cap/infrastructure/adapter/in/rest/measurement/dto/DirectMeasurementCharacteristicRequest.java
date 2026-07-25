@@ -2,7 +2,7 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Instant;
-import org.craft.mcs.cap.core.measurement.domain.model.MeasurementCharacteristic;
+import org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic;
 import org.craft.mcs.cap.shared.application.ApplicationValidationException;
 import org.jspecify.annotations.NonNull;
 
@@ -13,12 +13,15 @@ import org.jspecify.annotations.NonNull;
 public record DirectMeasurementCharacteristicRequest(
     @Schema(
         description = "Polymorphic input discriminator; must be DIRECT.",
+        implementation = MeasurementInputKind.class,
         allowableValues = "DIRECT",
         requiredMode = Schema.RequiredMode.REQUIRED
     )
     @NonNull MeasurementInputKind inputKind,
     @Schema(
         description = "Characteristic measured by this result.",
+        implementation = MeasurementCharacteristic.class,
+        example = "PH",
         requiredMode = Schema.RequiredMode.REQUIRED
     )
     @NonNull MeasurementCharacteristic characteristic,

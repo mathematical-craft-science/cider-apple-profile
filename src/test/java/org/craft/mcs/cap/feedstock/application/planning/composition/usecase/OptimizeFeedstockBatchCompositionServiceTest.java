@@ -5,7 +5,7 @@ import java.time.LocalDate;
 import java.util.List;
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.PredefinedFeedstockProfileTargetSelection;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockMeasurementPointFilters;
-import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.out.LatestFeedstockMeasurementSugarAcidityPointCandidateQuery;
+import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.out.CurrentFeedstockBatchSugarAcidityPointCandidateQuery;
 import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchSummaryQueryRepository;
 import org.craft.mcs.cap.core.feedstock.application.measurement.port.out.FeedstockMeasurementQueryRepository;
@@ -89,7 +89,7 @@ class OptimizeFeedstockBatchCompositionServiceTest {
             toSummary(secondUsableBatch),
             toSummary(incompleteBatch)
         ));
-    when(measurementRepository.findLatestSugarAcidityPointCandidates(any()))
+    when(measurementRepository.findCurrentSugarAcidityPointCandidates(any()))
         .thenReturn(List.of(
             view(incompleteMeasurement),
             view(usableMeasurement),
@@ -100,8 +100,8 @@ class OptimizeFeedstockBatchCompositionServiceTest {
 
     assertThat(result.sourceCount()).isEqualTo(2);
 
-    final var query = ArgumentCaptor.forClass(LatestFeedstockMeasurementSugarAcidityPointCandidateQuery.class);
-    verify(measurementRepository).findLatestSugarAcidityPointCandidates(query.capture());
+    final var query = ArgumentCaptor.forClass(CurrentFeedstockBatchSugarAcidityPointCandidateQuery.class);
+    verify(measurementRepository).findCurrentSugarAcidityPointCandidates(query.capture());
     assertThat(query.getValue().workspaceId()).isEqualTo(workspaceId);
     assertThat(query.getValue().limit()).isEqualTo(25);
 
@@ -138,7 +138,7 @@ class OptimizeFeedstockBatchCompositionServiceTest {
 
     when(batchRepository.findAllByWorkspaceId(workspaceId))
         .thenReturn(List.of(toSummary(firstBatch), toSummary(secondBatch)));
-    when(measurementRepository.findLatestSugarAcidityPointCandidates(any()))
+    when(measurementRepository.findCurrentSugarAcidityPointCandidates(any()))
         .thenReturn(List.of(
             view(sample(firstBatch.batchId(), profile("1.065", "5.5"))),
             view(sample(secondBatch.batchId(), profile("1.070", "6.0")))
@@ -168,7 +168,7 @@ class OptimizeFeedstockBatchCompositionServiceTest {
 
     when(batchRepository.findAllByWorkspaceId(workspaceId))
         .thenReturn(List.of(toSummary(batch)));
-    when(measurementRepository.findLatestSugarAcidityPointCandidates(any()))
+    when(measurementRepository.findCurrentSugarAcidityPointCandidates(any()))
         .thenReturn(List.of(view(sample(batch.batchId(), profile("1.065", "5.5")))));
 
     assertThatThrownBy(() -> service.optimize(command(workspaceId, null)))

@@ -54,7 +54,7 @@ class AssessFeedstockBatchCurrentFermentationStartReadinessServiceTest {
     final var measurement = measurement(batchId);
 
     when(batchRepository.findById(batchId)).thenReturn(Optional.of(batch(batchId, workspaceId)));
-    when(measurementQueryRepository.findLatestByBatchId(batchId)).thenReturn(Optional.of(view(measurement)));
+    when(measurementQueryRepository.findCurrentByBatchId(batchId)).thenReturn(Optional.of(view(measurement)));
 
     final var result = service.assess(batchId);
 

@@ -9,6 +9,7 @@ import org.craft.mcs.cap.core.production.domain.model.ProductionSourceReference;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
 import org.craft.mcs.cap.shared.kernel.DomainConflictException;
 import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
+import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jmolecules.ddd.annotation.AggregateRoot;
 import org.jmolecules.ddd.annotation.Identity;
@@ -24,6 +25,7 @@ import static java.util.Objects.requireNonNull;
  * <p>The aggregate preserves selected source volumes, their measurement evidence and the calculated
  * profile. Target assessment remains application analysis metadata and does not enter this aggregate.
  */
+// TODO: разобраться в сценариях использования. Сейча вроде не реалмзовано на фронте
 @AggregateRoot
 public final class ProductionBatchCandidate {
 
@@ -33,15 +35,18 @@ public final class ProductionBatchCandidate {
   private final @NonNull ProductionSourceComposition sourceComposition;
   private final @NonNull Map<@NonNull ProductionSourceReference, @NonNull ProductionSourceEvidenceReference>
       sourceEvidence;
+  private final @NonNull Map<@NonNull ProductionSourceReference, @NonNull MaterialStateId> sourceMaterialStates;
   private final @NonNull ProductionProfileSnapshot profile;
   private @NonNull ProductionBatchCandidateStatus status;
   private @Nullable ProductionBatchId confirmedProductionBatchId;
 
+  @SuppressWarnings("java:S107")
   private ProductionBatchCandidate(
       @NonNull ProductionBatchCandidateId candidateId,
       @NonNull WorkspaceId workspaceId,
       @NonNull ProductionSourceComposition sourceComposition,
       @NonNull Map<@NonNull ProductionSourceReference, @NonNull ProductionSourceEvidenceReference> sourceEvidence,
+      @NonNull Map<@NonNull ProductionSourceReference, @NonNull MaterialStateId> sourceMaterialStates,
       @NonNull ProductionProfileSnapshot profile,
       @NonNull ProductionBatchCandidateStatus status,
       @Nullable ProductionBatchId confirmedProductionBatchId
@@ -50,10 +55,14 @@ public final class ProductionBatchCandidate {
     this.workspaceId = requireNonNull(workspaceId, "workspace id cannot be null");
     this.sourceComposition = requireNonNull(sourceComposition, "production source composition cannot be null");
     this.sourceEvidence = Map.copyOf(requireNonNull(sourceEvidence, "production source evidence cannot be null"));
+    this.sourceMaterialStates = Map.copyOf(
+        requireNonNull(sourceMaterialStates, "production source material states cannot be null")
+    );
     this.profile = requireNonNull(profile, "production candidate profile cannot be null");
     this.status = requireNonNull(status, "production batch candidate status cannot be null");
     this.confirmedProductionBatchId = confirmedProductionBatchId;
     validateSourceEvidence(sourceComposition, this.sourceEvidence);
+    validateSourceMaterialStates(sourceComposition, this.sourceMaterialStates);
     validateConfirmationState(status, confirmedProductionBatchId);
   }
 
@@ -62,6 +71,7 @@ public final class ProductionBatchCandidate {
       @NonNull WorkspaceId workspaceId,
       @NonNull ProductionSourceComposition sourceComposition,
       @NonNull Map<@NonNull ProductionSourceReference, @NonNull ProductionSourceEvidenceReference> sourceEvidence,
+      @NonNull Map<@NonNull ProductionSourceReference, @NonNull MaterialStateId> sourceMaterialStates,
       @NonNull ProductionProfileSnapshot profile
   ) {
     return new ProductionBatchCandidate(
@@ -69,17 +79,20 @@ public final class ProductionBatchCandidate {
         workspaceId,
         sourceComposition,
         sourceEvidence,
+        sourceMaterialStates,
         profile,
         ProductionBatchCandidateStatus.AVAILABLE,
         null
     );
   }
 
+  @SuppressWarnings("java:S107")
   public static @NonNull ProductionBatchCandidate restore(
       @NonNull ProductionBatchCandidateId candidateId,
       @NonNull WorkspaceId workspaceId,
       @NonNull ProductionSourceComposition sourceComposition,
       @NonNull Map<@NonNull ProductionSourceReference, @NonNull ProductionSourceEvidenceReference> sourceEvidence,
+      @NonNull Map<@NonNull ProductionSourceReference, @NonNull MaterialStateId> sourceMaterialStates,
       @NonNull ProductionProfileSnapshot profile,
       @NonNull ProductionBatchCandidateStatus status,
       @Nullable ProductionBatchId confirmedProductionBatchId
@@ -89,6 +102,7 @@ public final class ProductionBatchCandidate {
         workspaceId,
         sourceComposition,
         sourceEvidence,
+        sourceMaterialStates,
         profile,
         status,
         confirmedProductionBatchId
@@ -123,6 +137,19 @@ public final class ProductionBatchCandidate {
     return evidence;
   }
 
+  public @NonNull MaterialStateId materialStateFor(
+      @NonNull ProductionSourceReference sourceReference
+  ) {
+    final var materialStateId = sourceMaterialStates.get(requireNonNull(
+        sourceReference,
+        "production source reference cannot be null"
+    ));
+    if (materialStateId == null) {
+      throw new DomainRuleViolationException("production source material state is missing");
+    }
+    return materialStateId;
+  }
+
   public @NonNull ProductionBatchCandidateId candidateId() {
     return candidateId;
   }
@@ -138,6 +165,11 @@ public final class ProductionBatchCandidate {
   public @NonNull Map<@NonNull ProductionSourceReference, @NonNull ProductionSourceEvidenceReference>
       sourceEvidence() {
     return sourceEvidence;
+  }
+
+  public @NonNull Map<@NonNull ProductionSourceReference, @NonNull MaterialStateId>
+      sourceMaterialStates() {
+    return sourceMaterialStates;
   }
 
   public @NonNull ProductionProfileSnapshot profile() {
@@ -164,6 +196,18 @@ public final class ProductionBatchCandidate {
     }
     if (!references.equals(sourceEvidence.keySet())) {
       throw new DomainRuleViolationException("production source evidence must match candidate sources");
+    }
+  }
+
+  private static void validateSourceMaterialStates(
+      @NonNull ProductionSourceComposition sourceComposition,
+      @NonNull Map<@NonNull ProductionSourceReference, @NonNull MaterialStateId> sourceMaterialStates
+  ) {
+    final var references = sourceComposition.sources().stream()
+        .map(ProductionSourceComponent::reference)
+        .collect(Collectors.toUnmodifiableSet());
+    if (!references.equals(sourceMaterialStates.keySet())) {
+      throw new DomainRuleViolationException("production source material states must match candidate sources");
     }
   }
 

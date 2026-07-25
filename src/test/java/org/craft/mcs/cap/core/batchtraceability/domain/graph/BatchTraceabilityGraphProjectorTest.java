@@ -6,8 +6,7 @@ import java.util.List;
 import java.util.UUID;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceActorReference;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceMaterialSnapshot;
-import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceOperationType;
-import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStateId;
+import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStepType;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStep;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStepId;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStepSubject;
@@ -17,6 +16,7 @@ import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
+import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValueKind;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.assertj.core.api.Assertions.tuple;
+import static org.craft.mcs.cap.shared.testing.BatchTraceSubjects.id;
 
 
 class BatchTraceabilityGraphProjectorTest {
@@ -58,56 +58,13 @@ class BatchTraceabilityGraphProjectorTest {
         .allSatisfy(edge -> assertThat(edge.inputs()).containsExactly(feedstock));
     assertThat(graph.edges())
         .extracting(edge -> edge.outputs().getFirst().subject().id())
-        .containsExactly("production-1", "production-2");
+        .containsExactly(id("production-1"), id("production-2"));
     assertThat(graph.edges())
         .extracting(BatchTraceEdge::occurredAt)
         .containsExactly(
             Instant.parse("2026-05-18T00:00:00Z"),
             Instant.parse("2026-05-18T01:00:00Z")
         );
-  }
-
-  @Test
-  void supportsSplitStepWithOneInputAndSeveralOutputs() {
-    final var sourceProduction = BatchTraceStepSubject.of(subject(
-        BatchTraceSubjectType.PRODUCTION_BATCH,
-        "production-1"
-    ));
-    final var firstSplitPart = BatchTraceStepSubject.of(subject(
-        BatchTraceSubjectType.PRODUCTION_BATCH,
-        "production-1-a"
-    ));
-    final var secondSplitPart = BatchTraceStepSubject.of(subject(
-        BatchTraceSubjectType.PRODUCTION_BATCH,
-        "production-1-b"
-    ));
-    final var splitStep = BatchTraceStep.create(
-        WORKSPACE_ID,
-        null,
-        BatchTraceOperationType.SPLIT,
-        List.of(sourceProduction),
-        List.of(firstSplitPart, secondSplitPart),
-        Instant.parse("2026-05-18T02:00:00Z"),
-        BatchTraceActorReference.system("test"),
-        null
-    );
-
-    final var graph = BatchTraceabilityGraphProjector.sourceTreeFrom(List.of(splitStep));
-
-    assertThat(graph.nodes())
-        .extracting(BatchTraceNode::subject)
-        .containsExactly(
-            sourceProduction.subject(),
-            firstSplitPart.subject(),
-            secondSplitPart.subject()
-        );
-    assertThat(graph.edges()).singleElement()
-        .satisfies(edge -> {
-          assertThat(edge.operationType()).isEqualTo(BatchTraceOperationType.SPLIT);
-          assertThat(edge.occurredAt()).isEqualTo(Instant.parse("2026-05-18T02:00:00Z"));
-          assertThat(edge.inputs()).containsExactly(sourceProduction);
-          assertThat(edge.outputs()).containsExactly(firstSplitPart, secondSplitPart);
-        });
   }
 
   @Test
@@ -143,140 +100,70 @@ class BatchTraceabilityGraphProjectorTest {
 
     assertThat(graph.edges())
         .extracting(edge -> edge.outputs().getFirst().subject().id())
-        .containsExactly("production-first", "production-second", "production-later");
+        .containsExactly(id("production-first"), id("production-second"), id("production-later"));
   }
 
   @Test
-  void preservesTemporalStatesOfTheSameProductionBatchAsDistinctNodes() {
+  void rejectsDifferentOutputSnapshotsForTheSameTraceStateId() {
     final var production = subject(BatchTraceSubjectType.PRODUCTION_BATCH, "production-1");
-    final var initial = state(
-        "019b24e0-3500-7000-8000-000000000001",
-        production,
-        "100",
-        "1.060"
-    );
-    final var afterFirstRacking = state(
-        "019b24e0-3500-7000-8000-000000000002",
-        production,
-        "92",
-        "1.060"
-    );
-    final var afterMeasurement = state(
-        "019b24e0-3500-7000-8000-000000000003",
-        production,
-        "92",
-        "1.035"
-    );
-    final var afterSecondRacking = state(
-        "019b24e0-3500-7000-8000-000000000004",
-        production,
-        "88",
-        "1.035"
-    );
-    final var firstRacking = step(
-        BatchTraceOperationType.RACKING,
-        initial,
-        afterFirstRacking,
-        "2026-05-18T01:00:00Z"
-    );
-    final var measurement = step(
-        BatchTraceOperationType.MEASUREMENT_ADDED,
-        afterFirstRacking,
-        afterMeasurement,
-        "2026-05-18T02:00:00Z"
-    );
-    final var secondRacking = step(
-        BatchTraceOperationType.RACKING,
-        afterMeasurement,
-        afterSecondRacking,
-        "2026-05-18T03:00:00Z"
-    );
-
-    final var graph = BatchTraceabilityGraphProjector.sourceTreeFrom(List.of(
-        firstRacking,
-        measurement,
-        secondRacking
-    ));
-
-    assertThat(graph.nodes())
-        .extracting(
-            node -> node.traceStateId().value().toString(),
-            node -> node.subject().id(),
-            node -> node.snapshot().volume().liters(),
-            BatchTraceabilityGraphProjectorTest::sugarValue
-        )
-        .containsExactly(
-            tuple("019b24e0-3500-7000-8000-000000000001", "production-1", new BigDecimal("100"),
-                new BigDecimal("1.060")),
-            tuple("019b24e0-3500-7000-8000-000000000002", "production-1", new BigDecimal("92"),
-                new BigDecimal("1.060")),
-            tuple("019b24e0-3500-7000-8000-000000000003", "production-1", new BigDecimal("92"),
-                new BigDecimal("1.035")),
-            tuple("019b24e0-3500-7000-8000-000000000004", "production-1", new BigDecimal("88"),
-                new BigDecimal("1.035"))
-        );
-    assertThat(graph.edges())
-        .extracting(
-            BatchTraceEdge::operationType,
-            edge -> edge.inputs().getFirst().traceStateId(),
-            edge -> edge.outputs().getFirst().traceStateId()
-        )
-        .containsExactly(
-            tuple(BatchTraceOperationType.RACKING, initial.traceStateId(), afterFirstRacking.traceStateId()),
-            tuple(
-                BatchTraceOperationType.MEASUREMENT_ADDED,
-                afterFirstRacking.traceStateId(),
-                afterMeasurement.traceStateId()
-            ),
-            tuple(
-                BatchTraceOperationType.RACKING,
-                afterMeasurement.traceStateId(),
-                afterSecondRacking.traceStateId()
-            )
-        );
-  }
-
-  @Test
-  void rejectsDifferentSnapshotsForTheSameTraceStateId() {
-    final var production = subject(BatchTraceSubjectType.PRODUCTION_BATCH, "production-1");
-    final var stateId = BatchTraceStateId.newId();
+    final var stateId = MaterialStateId.newId();
     final var initial = state(stateId, production, "100", "1.060");
     final var conflicting = state(stateId, production, "92", "1.060");
-    final var firstStep = step(initial, BatchTraceStepSubject.of(production), "2026-05-18T01:00:00Z");
-    final var secondStep = step(conflicting, BatchTraceStepSubject.of(production), "2026-05-18T02:00:00Z");
+    final var firstStep = step(
+        BatchTraceStepSubject.of(subject(BatchTraceSubjectType.FEEDSTOCK_BATCH, "feedstock-1")),
+        initial,
+        "2026-05-18T01:00:00Z"
+    );
+    final var secondStep = step(
+        BatchTraceStepSubject.of(subject(BatchTraceSubjectType.FEEDSTOCK_BATCH, "feedstock-2")),
+        conflicting,
+        "2026-05-18T02:00:00Z"
+    );
     final var steps = List.of(firstStep, secondStep);
 
     assertThatThrownBy(() -> BatchTraceabilityGraphProjector.sourceTreeFrom(steps))
         .isInstanceOf(DomainRuleViolationException.class)
-        .hasMessage("batch trace state id cannot identify different subjects or snapshots");
+        .hasMessage("batch trace state id cannot identify different output subjects or state snapshots");
   }
 
   @Test
-  void reusesStateIdentityWhenOperationDoesNotChangeMaterialState() {
-    final var state = state(
-        "019b24e0-3500-7000-8000-000000000005",
-        subject(BatchTraceSubjectType.PRODUCTION_BATCH, "production-1"),
-        "88",
-        "1.035"
+  void preservesStepParticipationSnapshotWithoutRedefiningMaterialStateNode() {
+    final var feedstock = subject(BatchTraceSubjectType.FEEDSTOCK_BATCH, "feedstock-1");
+    final var production = subject(BatchTraceSubjectType.PRODUCTION_BATCH, "production-1");
+    final var feedstockStateId = MaterialStateId.newId();
+    final var stateDefinition = state(feedstockStateId, feedstock, "530", "1.054");
+    final var consumedParticipation = state(feedstockStateId, feedstock, "50", "1.054");
+    final var creation = step(
+        BatchTraceStepSubject.of(subject(BatchTraceSubjectType.FEEDSTOCK_BATCH, "orchard-source")),
+        stateDefinition,
+        "2026-05-18T01:00:00Z"
     );
-    final var assessment = step(
-        BatchTraceOperationType.FINAL_ASSESSMENT,
-        state,
-        state,
-        "2026-05-18T04:00:00Z"
+    final var productionCreation = step(
+        consumedParticipation,
+        BatchTraceStepSubject.of(production),
+        "2026-05-18T02:00:00Z"
     );
 
-    final var graph = BatchTraceabilityGraphProjector.sourceTreeFrom(List.of(assessment));
+    final var graph = BatchTraceabilityGraphProjector.sourceTreeFrom(List.of(
+        productionCreation,
+        creation
+    ));
 
-    assertThat(graph.nodes()).singleElement()
-        .returns(state.traceStateId(), BatchTraceNode::traceStateId);
-    assertThat(graph.edges()).singleElement()
-        .satisfies(edge -> assertThat(edge)
-            .extracting(
-                value -> value.inputs().getFirst().traceStateId(),
-                value -> value.outputs().getFirst().traceStateId()
-            )
-            .containsOnly(state.traceStateId()));
+    assertThat(graph.nodes())
+        .filteredOn(node -> node.traceStateId().equals(feedstockStateId))
+        .singleElement()
+        .satisfies(node -> assertThat(node.snapshot())
+            .isNotNull()
+            .satisfies(snapshot -> assertThat(snapshot.volume())
+                .isNotNull()
+                .satisfies(volume -> assertThat(volume.liters()).isEqualByComparingTo("530"))));
+    assertThat(graph.edges()).last()
+        .satisfies(edge -> assertThat(edge.inputs()).singleElement()
+            .satisfies(input -> assertThat(input.snapshot())
+                .isNotNull()
+                .satisfies(snapshot -> assertThat(snapshot.volume())
+                    .isNotNull()
+                    .satisfies(volume -> assertThat(volume.liters()).isEqualByComparingTo("50")))));
   }
 
   @Test
@@ -285,7 +172,7 @@ class BatchTraceabilityGraphProjectorTest {
     final var output = BatchTraceStepSubject.of(subject(BatchTraceSubjectType.PRODUCTION_BATCH, "production-1"));
     final var edge = new BatchTraceEdge(
         BatchTraceStepId.newId(),
-        BatchTraceOperationType.CREATE_PRODUCTION_BATCH,
+        BatchTraceStepType.PRODUCTION_BATCH_CREATED,
         Instant.parse("2026-05-18T00:00:00Z"),
         List.of(input),
         List.of(output)
@@ -307,25 +194,6 @@ class BatchTraceabilityGraphProjectorTest {
   }
 
   private static BatchTraceStep step(
-      BatchTraceOperationType operationType,
-      BatchTraceStepSubject input,
-      BatchTraceStepSubject output,
-      String occurredAt
-  ) {
-    return new BatchTraceStep(
-        WORKSPACE_ID,
-        BatchTraceStepId.newId(),
-        null,
-        operationType,
-        List.of(input),
-        List.of(output),
-        Instant.parse(occurredAt),
-        BatchTraceActorReference.system("test"),
-        null
-    );
-  }
-
-  private static BatchTraceStep step(
       BatchTraceStepId stepId,
       BatchTraceStepSubject input,
       BatchTraceStepSubject output,
@@ -335,7 +203,7 @@ class BatchTraceabilityGraphProjectorTest {
         WORKSPACE_ID,
         stepId,
         null,
-        BatchTraceOperationType.CREATE_PRODUCTION_BATCH,
+        BatchTraceStepType.PRODUCTION_BATCH_CREATED,
         List.of(input),
         List.of(output),
         Instant.parse(occurredAt),
@@ -346,27 +214,13 @@ class BatchTraceabilityGraphProjectorTest {
 
   private static BatchTraceSubject subject(
       BatchTraceSubjectType type,
-      String id
+      String fixtureReference
   ) {
-    return BatchTraceSubject.of(type, id);
+    return org.craft.mcs.cap.shared.testing.BatchTraceSubjects.subject(type, fixtureReference);
   }
 
   private static BatchTraceStepSubject state(
-      String stateId,
-      BatchTraceSubject subject,
-      String volume,
-      String sugar
-  ) {
-    return state(
-        BatchTraceStateId.of(UUID.fromString(stateId)),
-        subject,
-        volume,
-        sugar
-    );
-  }
-
-  private static BatchTraceStepSubject state(
-      BatchTraceStateId stateId,
+      MaterialStateId stateId,
       BatchTraceSubject subject,
       String volume,
       String sugar
@@ -393,7 +247,4 @@ class BatchTraceabilityGraphProjectorTest {
     );
   }
 
-  private static BigDecimal sugarValue(BatchTraceNode node) {
-    return node.snapshot().profile().valueOf(ChemicalAxis.SUGAR).orElseThrow().value();
-  }
 }

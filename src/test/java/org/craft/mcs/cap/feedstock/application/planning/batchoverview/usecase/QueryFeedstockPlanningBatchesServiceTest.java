@@ -9,6 +9,7 @@ import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentMeasurementFreshnessView;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentProfileDataQualityView;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockPlanningReadinessView;
@@ -33,10 +34,11 @@ import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.QueryFeedstockBatchProfileTargetCandidatesUseCase;
 import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.FeedstockPlanningBatchViewQuery;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentProfileDataQualityStatus;
-import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentMeasurementFreshnessStatus;
+import org.craft.mcs.cap.shared.application.measurement.MeasurementFreshnessStatus;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockPlanningReadinessStatus;
 import org.craft.mcs.cap.core.feedstock.application.measurement.query.FeedstockBatchCurrentMeasurementQueryService;
 import org.craft.mcs.cap.core.feedstock.application.measurement.port.out.FeedstockMeasurementQueryRepository;
+import org.craft.mcs.cap.core.feedstock.application.inventory.port.out.FeedstockMaterialStateProvider;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.usecase.FeedstockCurrentProfileAssessmentService;
 import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.usecase.FeedstockPlanningContributionRoleExplainer;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentProfileSettings;
@@ -50,6 +52,7 @@ import org.craft.mcs.cap.shared.testing.FeedstockMeasurementFixture;
 import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementId;
 import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementName;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
+import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
@@ -91,7 +94,7 @@ class QueryFeedstockPlanningBatchesServiceTest {
     final var targetCandidates = mock(QueryFeedstockBatchProfileTargetCandidatesUseCase.class);
     final var service = service(listBatches, measurementRepository, targetCandidates);
     when(listBatches.list(any())).thenReturn(List.of(batch));
-    when(measurementRepository.findLatestByBatchIds(Set.of(batchId))).thenReturn(List.of(view(measurement)));
+    when(measurementRepository.findCurrentByBatchIds(Set.of(batchId))).thenReturn(List.of(view(measurement)));
 
     final var view = service.query(queryWithoutTarget());
 
@@ -103,7 +106,7 @@ class QueryFeedstockPlanningBatchesServiceTest {
     assertThat(row.measurementFreshness())
         .isNotNull()
         .extracting(FeedstockCurrentMeasurementFreshnessView::status)
-        .isEqualTo(FeedstockCurrentMeasurementFreshnessStatus.CURRENT);
+        .isEqualTo(MeasurementFreshnessStatus.CURRENT);
     assertThat(row.sugarAcidity()).isNotNull();
     assertThat(row.sugarAcidity().plottable()).isTrue();
     assertThat(row.sugarAcidity().point()).isPresent();
@@ -132,7 +135,7 @@ class QueryFeedstockPlanningBatchesServiceTest {
     final var targetCandidates = mock(QueryFeedstockBatchProfileTargetCandidatesUseCase.class);
     final var service = service(listBatches, measurementRepository, targetCandidates);
     when(listBatches.list(any())).thenReturn(List.of(batch(batchId)));
-    when(measurementRepository.findLatestByBatchIds(Set.of(batchId)))
+    when(measurementRepository.findCurrentByBatchIds(Set.of(batchId)))
         .thenReturn(List.of(view(measurement(batchId))));
     when(targetCandidates.query(any())).thenReturn(new FeedstockBatchProfileTargetCandidates(
         ProfileTargetScoringPurpose.BLENDING_PLANNING,
@@ -162,7 +165,7 @@ class QueryFeedstockPlanningBatchesServiceTest {
         Duration.ofDays(3)
     );
     when(listBatches.list(any())).thenReturn(List.of(batch));
-    when(measurementRepository.findLatestByBatchIds(Set.of(batchId))).thenReturn(List.of(view(measurement)));
+    when(measurementRepository.findCurrentByBatchIds(Set.of(batchId))).thenReturn(List.of(view(measurement)));
 
     final var view = service.query(queryWithoutTarget());
 
@@ -170,13 +173,16 @@ class QueryFeedstockPlanningBatchesServiceTest {
         .singleElement()
         .satisfies(row -> assertThat(row.measurementFreshness())
             .isNotNull()
-            .satisfies(freshness -> {
-              assertThat(freshness.status()).isEqualTo(FeedstockCurrentMeasurementFreshnessStatus.STALE);
-              assertThat(freshness.stale()).isTrue();
-              assertThat(freshness.reason()).isEqualTo(
-                  "Current measurement is older than configured freshness threshold"
-              );
-            }));
+            .satisfies(freshness -> assertThat(freshness)
+                .returns(
+                    MeasurementFreshnessStatus.STALE,
+                    FeedstockCurrentMeasurementFreshnessView::status
+                )
+                .returns(true, FeedstockCurrentMeasurementFreshnessView::stale)
+                .returns(
+                    "Current profile contains planning evidence older than the configured freshness threshold",
+                    FeedstockCurrentMeasurementFreshnessView::reason
+                )));
   }
 
   private static QueryFeedstockPlanningBatchesService service(
@@ -198,6 +204,14 @@ class QueryFeedstockPlanningBatchesServiceTest {
       QueryFeedstockBatchProfileTargetCandidatesUseCase targetCandidates,
       Duration measurementStaleAfter
   ) {
+    final var materialStateProvider = mock(FeedstockMaterialStateProvider.class);
+    when(materialStateProvider.currentStatesOf(any(), any())).thenAnswer(invocation -> {
+      final Set<FeedstockBatchId> batchIds = invocation.getArgument(1);
+      return batchIds.stream().collect(Collectors.toUnmodifiableMap(
+          batchId -> batchId,
+          batchId -> MaterialStateId.newId()
+      ));
+    });
     return new QueryFeedstockPlanningBatchesService(
         listBatches,
         new FeedstockBatchCurrentMeasurementQueryService(measurementRepository),
@@ -213,7 +227,8 @@ class QueryFeedstockPlanningBatchesServiceTest {
             PhPlanningGuidancePolicy.curatedCiderV1()
         ),
         _ -> new FeedstockCurrentProfileSettings(measurementStaleAfter),
-        new FeedstockPlanningContributionRoleExplainer()
+        new FeedstockPlanningContributionRoleExplainer(),
+        materialStateProvider
     );
   }
 

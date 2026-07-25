@@ -14,7 +14,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.measurement.application.MeasurementSetAlreadyExistsException;
 import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementSetRepository;
-import org.craft.mcs.cap.core.measurement.domain.model.MeasurementCharacteristic;
+import org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementCorrectionReason;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementDerivationMethod;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementRecord;
@@ -36,6 +36,7 @@ import org.craft.mcs.cap.shared.kernel.characteristic.CharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.characteristic.IntervalCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
+import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.shared.kernel.measurement.MeasuredValue;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -69,6 +70,7 @@ class JdbcMeasurementSetRepository implements MeasurementSetRepository {
              s.version,
              r.revision_id,
              r.revision_number,
+             r.material_state_id,
              r.name,
              r.note,
              r.correction_reason,
@@ -217,6 +219,7 @@ class JdbcMeasurementSetRepository implements MeasurementSetRepository {
                 revision_id,
                 measurement_set_id,
                 revision_number,
+                material_state_id,
                 name,
                 note,
                 correction_reason,
@@ -226,6 +229,7 @@ class JdbcMeasurementSetRepository implements MeasurementSetRepository {
                 :revisionId,
                 :measurementSetId,
                 :revisionNumber,
+                :materialStateId,
                 :name,
                 :note,
                 :correctionReason,
@@ -237,6 +241,7 @@ class JdbcMeasurementSetRepository implements MeasurementSetRepository {
             .addValue("revisionId", revision.revisionId().value())
             .addValue("measurementSetId", measurementSetId.value())
             .addValue("revisionNumber", revision.revisionNumber().value())
+            .addValue("materialStateId", revision.materialStateId().value())
             .addValue("name", revision.name().value())
             .addValue("note", revision.note())
             .addValue(
@@ -347,6 +352,7 @@ class JdbcMeasurementSetRepository implements MeasurementSetRepository {
     final var revision = new MeasurementSetRevision(
         revisionId,
         MeasurementSetRevisionNumber.of(resultSet.getInt("revision_number")),
+        MaterialStateId.of(resultSet.getObject("material_state_id", UUID.class)),
         MeasurementSetName.of(resultSet.getString("name")),
         resultSet.getString("note"),
         correctionReason(resultSet.getString("correction_reason")),

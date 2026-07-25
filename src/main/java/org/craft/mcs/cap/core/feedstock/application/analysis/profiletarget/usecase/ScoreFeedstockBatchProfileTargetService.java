@@ -19,11 +19,10 @@ import static java.util.Objects.requireNonNull;
 /**
  * Scores current feedstock batch profiles against a selected target area.
  *
- * <p>This service adapts current feedstock batch profiles to the generic profile-target scoring use case.
- * It selects only the latest measurement per batch, filters unplottable or non-matching profiles,
- * resolves either a predefined zone target or a custom rectangle, then ranks candidates by target
- * distance. It does not generate new compositions and does not add screen-specific analysis
- * enrichments such as contribution roles.
+ * <p>This service adapts state-aware current Feedstock profiles to the generic profile-target
+ * scoring use case. It filters unplottable or non-matching profiles, resolves either a predefined
+ * zone target or a custom rectangle, then ranks candidates by target distance. It does not
+ * generate compositions or add screen-specific enrichments such as contribution roles.
  */
 @Component
 @RequiredArgsConstructor

@@ -9,7 +9,7 @@ import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;
 
 
-/** Projects latest active RESULT evidence independently for every measured characteristic. */
+/** Adapts state-aware current evidence to the transitional ChemicalProfile representation. */
 public interface ProjectCurrentMeasurementProfileUseCase {
 
   @NonNull Optional<@NonNull CurrentMeasurementProfileView> project(

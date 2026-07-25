@@ -3,7 +3,6 @@ package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.batchtrace
 import java.math.BigDecimal;
 import java.util.UUID;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceSubjectType;
-import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.batchtraceability.BatchTraceabilityPersistenceMappingException;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValueKind;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -25,7 +24,7 @@ public class BatchTraceStepSubjectJdbcRow {
   public BatchTraceSubjectType subjectType;
 
   @NonNull
-  public String subjectId;
+  public UUID subjectId;
 
   @Nullable
   public String displayNameSnapshot;
@@ -93,26 +92,15 @@ public class BatchTraceStepSubjectJdbcRow {
       int subjectOrder,
       @NonNull UUID traceStateId,
       @NonNull BatchTraceSubjectType subjectType,
-      @NonNull String subjectId,
+      @NonNull UUID subjectId,
       @Nullable String displayNameSnapshot
   ) {
     this.role = requireNonNull(role, "batch trace subject role cannot be null");
     this.subjectOrder = subjectOrder;
     this.traceStateId = requireNonNull(traceStateId, "batch trace state id cannot be null");
     this.subjectType = requireNonNull(subjectType, "batch trace subject type cannot be null");
-    this.subjectId = normalizeRequired(subjectId, "batch trace subject id cannot be blank");
+    this.subjectId = requireNonNull(subjectId, "batch trace subject id cannot be null");
     this.displayNameSnapshot = normalize(displayNameSnapshot);
-  }
-
-  private static @NonNull String normalizeRequired(
-      @NonNull String value,
-      @NonNull String message
-  ) {
-    final var normalized = requireNonNull(value, message).strip();
-    if (normalized.isEmpty()) {
-      throw new BatchTraceabilityPersistenceMappingException(message);
-    }
-    return normalized;
   }
 
   private static @Nullable String normalize(@Nullable String value) {

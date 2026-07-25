@@ -24,9 +24,9 @@ import static java.util.Objects.requireNonNull;
 /**
  * Application service for potential ABV prediction from the current feedstock batch profile.
  *
- * <p>The service uses the latest measurement of the batch, verifies that sugar is present through
- * {@link ChemicalProfileCapability#ABV_PREDICTION}, then delegates ABV analysis math to the
- * configured {@link PotentialAbvPredictor}. Final gravity assumptions belong to the configured
+ * <p>The service uses sugar evidence applicable to the current material state, verifies capability
+ * through {@link ChemicalProfileCapability#ABV_PREDICTION}, then delegates ABV analysis math to
+ * the configured {@link PotentialAbvPredictor}. Final-gravity assumptions belong to the configured
  * prediction strategy, not to this use case.
  */
 @Component

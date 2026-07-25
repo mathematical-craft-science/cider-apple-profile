@@ -16,12 +16,11 @@ import static java.util.Objects.requireNonNull;
 
 
 /**
- * Application service for assessing whether the latest feedstock measurement is ready to start
+ * Application service for assessing whether the current feedstock material state is ready to start
  * fermentation.
  *
- * <p>The use case deliberately applies the batch-level "latest measurement only" rule: historical
- * measurements remain visible in batch history, but fermentation-start assessments are based on the
- * current measured profile of the feedstock batch.
+ * <p>Historical measurements remain visible in batch history. The assessment uses only evidence
+ * applicable to the current material-state lineage, selected independently per characteristic.
  */
 @Component
 @RequiredArgsConstructor

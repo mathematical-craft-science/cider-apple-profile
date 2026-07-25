@@ -2,6 +2,7 @@ package org.craft.mcs.cap.core.measurement.domain.model;
 
 import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
 import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
+import org.craft.mcs.cap.shared.kernel.measurement.MeasurementSourceType;
 import org.jmolecules.ddd.annotation.ValueObject;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;

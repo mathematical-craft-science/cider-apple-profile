@@ -5,12 +5,11 @@ import java.time.Instant;
 import java.util.List;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceActorReference;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceMaterialSnapshot;
-import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceOperationType;
+import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStepType;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStep;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStepSubject;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceSubject;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceSubjectType;
-import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.batchtraceability.BatchTraceabilityPersistenceMappingException;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
@@ -20,45 +19,43 @@ import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.junit.jupiter.api.Test;
 
-import static org.craft.mcs.cap.shared.kernel.identity.UuidV7Generator.newUuid;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 
 class BatchTraceStepJdbcRowMapperTest {
 
   @Test
-  void mapsSplitStepWithSeveralOutputs() {
-    final var source = BatchTraceStepSubject.of(subject(
+  void mapsProductionCreationStepWithSeveralInputs() {
+    final var firstSource = BatchTraceStepSubject.of(subject(
         BatchTraceSubjectType.FEEDSTOCK_BATCH,
         "feedstock-1"
     ));
-    final var firstOutput = BatchTraceStepSubject.of(subject(
+    final var secondSource = BatchTraceStepSubject.of(subject(
         BatchTraceSubjectType.FEEDSTOCK_BATCH,
-        "feedstock-1-a"
+        "feedstock-2"
     ));
-    final var secondOutput = BatchTraceStepSubject.of(subject(
-        BatchTraceSubjectType.FEEDSTOCK_BATCH,
-        "feedstock-1-b"
+    final var output = BatchTraceStepSubject.of(subject(
+        BatchTraceSubjectType.PRODUCTION_BATCH,
+        "production-1"
     ));
     final var step = BatchTraceStep.create(
         WorkspaceId.newId(),
         null,
-        BatchTraceOperationType.SPLIT,
-        List.of(source),
-        List.of(firstOutput, secondOutput),
+        BatchTraceStepType.PRODUCTION_BATCH_CREATED,
+        List.of(firstSource, secondSource),
+        List.of(output),
         Instant.parse("2026-05-18T00:00:00Z"),
         BatchTraceActorReference.system("test"),
-        "split for two production paths"
+        null
     );
 
     final var row = BatchTraceStepJdbcRowMapper.fromDomain(step);
     final var restored = BatchTraceStepJdbcRowMapper.toDomain(row);
 
     assertThat(row.subjects).hasSize(3);
-    assertThat(restored.operationType()).isEqualTo(BatchTraceOperationType.SPLIT);
-    assertThat(restored.inputs()).containsExactly(source);
-    assertThat(restored.outputs()).containsExactly(firstOutput, secondOutput);
+    assertThat(restored.stepType()).isEqualTo(BatchTraceStepType.PRODUCTION_BATCH_CREATED);
+    assertThat(restored.inputs()).containsExactly(firstSource, secondSource);
+    assertThat(restored.outputs()).containsExactly(output);
   }
 
   @Test
@@ -102,7 +99,7 @@ class BatchTraceStepJdbcRowMapperTest {
     final var step = BatchTraceStep.create(
         WorkspaceId.newId(),
         null,
-        BatchTraceOperationType.CREATE_PRODUCTION_BATCH,
+        BatchTraceStepType.PRODUCTION_BATCH_CREATED,
         List.of(input),
         List.of(output),
         Instant.parse("2026-05-18T00:00:00Z"),
@@ -130,24 +127,10 @@ class BatchTraceStepJdbcRowMapperTest {
         .containsExactly(new BigDecimal("180"), AxisValueKind.POINT);
   }
 
-  @Test
-  void rejectsBlankPersistedSubjectIdentifierWithMappingException() {
-    assertThatThrownBy(() -> new BatchTraceStepSubjectJdbcRow(
-        BatchTraceStepSubjectRole.INPUT,
-        0,
-        newUuid(),
-        BatchTraceSubjectType.FEEDSTOCK_BATCH,
-        " ",
-        null
-    ))
-        .isInstanceOf(BatchTraceabilityPersistenceMappingException.class)
-        .hasMessage("batch trace subject id cannot be blank");
-  }
-
   private static BatchTraceSubject subject(
       BatchTraceSubjectType type,
-      String id
+      String fixtureReference
   ) {
-    return BatchTraceSubject.of(type, id);
+    return org.craft.mcs.cap.shared.testing.BatchTraceSubjects.subject(type, fixtureReference);
   }
 }

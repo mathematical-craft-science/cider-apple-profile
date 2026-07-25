@@ -6,11 +6,14 @@ import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockM
 import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementName;
 import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementView;
 import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockProfileAxisEvidence;
-import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockProfileCharacteristic;
+import org.craft.mcs.cap.shared.application.measurement.MeasurementEvidenceValidity;
+import org.craft.mcs.cap.shared.application.measurement.MeasurementValueOrigin;
 import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
+import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
+import org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.junit.jupiter.api.Test;
@@ -34,8 +37,8 @@ class FeedstockMeasurementViewTest {
   @Test
   void returnsNoAggregateConfidenceWhenAnyAxisHasNoDeclaredConfidence() {
     assertThat(view(List.of(
-        evidence(FeedstockProfileCharacteristic.SUGAR, ConfidenceLevel.HIGH),
-        evidence(FeedstockProfileCharacteristic.TITRATABLE_ACIDITY, null)
+        evidence(MeasurementCharacteristic.SPECIFIC_GRAVITY, ConfidenceLevel.HIGH),
+        evidence(MeasurementCharacteristic.TITRATABLE_ACIDITY, null)
     )))
         .returns(null, FeedstockMeasurementView::aggregateConfidence);
   }
@@ -43,9 +46,9 @@ class FeedstockMeasurementViewTest {
   @Test
   void returnsWeakestDeclaredAxisConfidence() {
     assertThat(view(List.of(
-        evidence(FeedstockProfileCharacteristic.SUGAR, ConfidenceLevel.LAB_VERIFIED),
-        evidence(FeedstockProfileCharacteristic.TITRATABLE_ACIDITY, ConfidenceLevel.LOW),
-        evidence(FeedstockProfileCharacteristic.TANNIN, ConfidenceLevel.MEDIUM)
+        evidence(MeasurementCharacteristic.SPECIFIC_GRAVITY, ConfidenceLevel.LAB_VERIFIED),
+        evidence(MeasurementCharacteristic.TITRATABLE_ACIDITY, ConfidenceLevel.LOW),
+        evidence(MeasurementCharacteristic.TANNIN, ConfidenceLevel.MEDIUM)
     )))
         .returns(ConfidenceLevel.LOW, FeedstockMeasurementView::aggregateConfidence);
   }
@@ -56,6 +59,7 @@ class FeedstockMeasurementViewTest {
     return new FeedstockMeasurementView(
         FeedstockMeasurementId.newId(),
         FeedstockBatchId.newId(),
+        MaterialStateId.newId(),
         FeedstockMeasurementName.of("Current profile"),
         ChemicalProfile.builder()
             .sugar(PointCharacteristicValue.of(SugarConcentration.ofSpecificGravity(
@@ -70,16 +74,19 @@ class FeedstockMeasurementViewTest {
   }
 
   private static @NonNull FeedstockProfileAxisEvidence evidence(
-      @NonNull FeedstockProfileCharacteristic characteristic,
+      @NonNull MeasurementCharacteristic characteristic,
       @Nullable ConfidenceLevel confidence
   ) {
     return new FeedstockProfileAxisEvidence(
         characteristic,
+        MeasurementValueOrigin.MEASURED,
+        MaterialStateId.newId(),
         newUuid(),
         newUuid(),
         MEASURED_AT,
         null,
-        confidence
+        confidence,
+        MeasurementEvidenceValidity.VALID
     );
   }
 }

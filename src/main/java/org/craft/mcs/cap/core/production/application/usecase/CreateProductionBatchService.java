@@ -137,7 +137,8 @@ public final class CreateProductionBatchService
       @NonNull List<@NonNull ConsumedProductionSource> consumedSources
   ) {
     for (final var consumedSource : consumedSources) {
-      if (!candidate.evidenceFor(consumedSource.reference()).equals(consumedSource.evidenceReference())) {
+      if (!candidate.evidenceFor(consumedSource.reference()).equals(consumedSource.evidenceReference())
+          || !candidate.materialStateFor(consumedSource.reference()).equals(consumedSource.materialStateId())) {
         throw new ProductionBatchCandidateStaleException(consumedSource.reference());
       }
     }
@@ -163,6 +164,7 @@ public final class CreateProductionBatchService
     return switch (source.reference().type()) {
       case FEEDSTOCK_BATCH -> new ProductionBatchFeedstockTraceSource(
           FeedstockBatchId.of(source.reference().id()),
+          source.materialStateId(),
           source.displayName(),
           source.volume(),
           source.profile(),

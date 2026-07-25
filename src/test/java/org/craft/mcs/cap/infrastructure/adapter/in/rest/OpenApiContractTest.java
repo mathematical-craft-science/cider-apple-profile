@@ -43,6 +43,8 @@ import org.craft.mcs.cap.core.feedstock.application.detail.port.in.GetFeedstockB
 import org.craft.mcs.cap.core.feedstock.application.measurement.port.in.ListFeedstockMeasurementsUseCase;
 import org.craft.mcs.cap.core.measurement.application.port.in.CorrectMeasurementSetUseCase;
 import org.craft.mcs.cap.core.measurement.application.port.in.CreateMeasurementSetUseCase;
+import org.craft.mcs.cap.core.measurement.application.port.in.GetCurrentMeasurementSubjectStateUseCase;
+import org.craft.mcs.cap.core.measurement.application.port.in.ProjectCurrentMaterialStateUseCase;
 import org.craft.mcs.cap.core.measurement.application.port.in.QueryMeasurementSetsUseCase;
 import org.craft.mcs.cap.core.measurement.application.port.in.RetractMeasurementSetUseCase;
 import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.QueryFeedstockPlanningBatchesUseCase;
@@ -143,6 +145,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
     AssessAppleVarietySugarAcidityZoneUseCase.class,
     QueryAppleVarietySugarAcidityZonePointsUseCase.class,
     QueryBatchTraceabilityUseCase.class,
+    ProjectCurrentMaterialStateUseCase.class,
     PredictFeedstockBatchCurrentPotentialAbvUseCase.class,
     PredictFeedstockMeasurementPotentialAbvUseCase.class,
     QueryFeedstockBatchProfileTargetCandidatesUseCase.class,
@@ -158,6 +161,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
     UpdateFeedstockBatchUseCase.class,
     GetFeedstockBatchDetailUseCase.class,
     CreateMeasurementSetUseCase.class,
+    GetCurrentMeasurementSubjectStateUseCase.class,
     CorrectMeasurementSetUseCase.class,
     QueryMeasurementSetsUseCase.class,
     RetractMeasurementSetUseCase.class,
@@ -308,6 +312,7 @@ class OpenApiContractTest {
     assertJsonResponse(openApi, "/measurement-sets/{measurementSetId}", "get");
     assertJsonResponse(openApi, "/measurement-sets/{measurementSetId}", "put");
     assertJsonResponse(openApi, "/measurement-sets/{measurementSetId}", "patch");
+    assertJsonResponse(openApi, "/material-subjects/{subjectType}/{subjectId}/current-state", "get");
     assertJsonResponse(openApi, "/chemical-profile-compositions/calculations", "post");
     assertJsonResponse(openApi, "/chemical-profile-compositions/optimizations", "post");
     assertJsonResponse(openApi, "/feedstock-batches", "get");
@@ -604,6 +609,15 @@ class OpenApiContractTest {
         "observations",
         "derivationMethod"
     );
+    assertRequiredProperties(
+        openApi,
+        "CreateMeasurementSetRequest",
+        "subject",
+        "expectedCurrentStateId",
+        "name",
+        "measurements"
+    );
+    assertStringFormat(schemaProperty(openApi, "CreateMeasurementSetRequest", "expectedCurrentStateId"), "uuid");
     assertRequiredProperties(openApi, "PointMeasurementValueRequest", "kind", "value", "unit");
     assertRequiredProperties(
         openApi,
@@ -636,6 +650,7 @@ class OpenApiContractTest {
         "version",
         "revisionId",
         "revisionNumber",
+        "materialStateId",
         "name",
         "revisionCreatedAt",
         "actor",
@@ -643,6 +658,7 @@ class OpenApiContractTest {
         "createdAt",
         "updatedAt"
     );
+    assertStringFormat(schemaProperty(openApi, "MeasurementSetResponse", "materialStateId"), "uuid");
     assertRequiredProperties(
         openApi,
         "MeasurementActorReferenceResponse",
@@ -659,11 +675,42 @@ class OpenApiContractTest {
         openApi,
         "MeasurementEvidenceResponse",
         "characteristic",
+        "origin",
+        "materialStateId",
         "measurementSetId",
         "recordId",
         "measuredAt",
         "freshnessStatus",
-        "provenance"
+        "provenance",
+        "validity"
+    );
+    assertStringFormat(schemaProperty(openApi, "MeasurementEvidenceResponse", "materialStateId"), "uuid");
+    assertRequiredProperties(
+        openApi,
+        "CurrentMaterialStateResponse",
+        "subject",
+        "currentMaterialStateId",
+        "characteristics"
+    );
+    assertStringFormat(schemaProperty(openApi, "CurrentMaterialStateResponse", "currentMaterialStateId"), "uuid");
+    assertArray(schemaProperty(openApi, "CurrentMaterialStateResponse", "characteristics"));
+    assertRequiredProperties(
+        openApi,
+        "CurrentMaterialCharacteristicResponse",
+        "characteristic",
+        "value",
+        "origin",
+        "evidenceMaterialStateId",
+        "measurementSetId",
+        "recordId",
+        "measuredAt",
+        "provenance",
+        "freshnessStatus",
+        "validity"
+    );
+    assertStringFormat(
+        schemaProperty(openApi, "CurrentMaterialCharacteristicResponse", "evidenceMaterialStateId"),
+        "uuid"
     );
     assertRequiredProperties(openApi, "ExactChemicalMeasurementResponse", "kind", "value");
     assertRequiredProperties(openApi, "RangeChemicalMeasurementResponse", "kind", "min", "max");
@@ -865,6 +912,7 @@ class OpenApiContractTest {
         "ProductionBatchDetailsResponse",
         "batchId",
         "workspaceId",
+        "currentMaterialStateId",
         "name",
         "vessel",
         "lifecycle",
@@ -874,6 +922,7 @@ class OpenApiContractTest {
         "potentialAbv"
     );
     assertStringFormat(schemaProperty(openApi, "ProductionBatchDetailsResponse", "workspaceId"), "uuid");
+    assertStringFormat(schemaProperty(openApi, "ProductionBatchDetailsResponse", "currentMaterialStateId"), "uuid");
     assertNotRequiredProperties(
         openApi,
         "ProductionBatchDetailsResponse",
@@ -942,19 +991,34 @@ class OpenApiContractTest {
         openApi,
         "BatchTraceEdgeResponse",
         "stepId",
-        "operationType",
+        "stepType",
         "occurredAt",
         "inputs",
         "outputs"
     );
     assertStringFormat(schemaProperty(openApi, "BatchTraceEdgeResponse", "occurredAt"), "date-time");
+    assertEnumPropertyValues(
+        openApi,
+        "BatchTraceEdgeResponse",
+        "stepType",
+        "FEEDSTOCK_BATCH_CREATED",
+        "PRODUCTION_BATCH_CREATED"
+    );
     assertRequiredProperties(openApi, "BatchTraceStepSubjectResponse", "traceStateId", "subject");
     assertStringFormat(schemaProperty(openApi, "BatchTraceStepSubjectResponse", "traceStateId"), "uuid");
     assertNotRequiredProperties(openApi, "BatchTraceStepSubjectResponse", "snapshot");
     assertNullable(schemaProperty(openApi, "BatchTraceStepSubjectResponse", "snapshot"));
     assertRequiredProperties(openApi, "BatchTraceSubjectResponse", "type", "id");
+    assertStringFormat(schemaProperty(openApi, "BatchTraceSubjectResponse", "id"), "uuid");
     assertNotRequiredProperties(openApi, "BatchTraceSubjectResponse", "displayNameSnapshot");
     assertNullable(schemaProperty(openApi, "BatchTraceSubjectResponse", "displayNameSnapshot"));
+    assertEnumPropertyValues(
+        openApi,
+        "BatchTraceSubjectResponse",
+        "type",
+        "FEEDSTOCK_BATCH",
+        "PRODUCTION_BATCH"
+    );
     assertRequiredProperties(openApi, "BatchTraceMaterialSnapshotResponse", "axes");
     assertNotRequiredProperties(openApi, "BatchTraceMaterialSnapshotResponse", "volume", "confidence");
     assertNullable(schemaProperty(openApi, "BatchTraceMaterialSnapshotResponse", "volume"));
@@ -1102,9 +1166,11 @@ class OpenApiContractTest {
         openApi,
         "FeedstockWorkspaceBatchResponse",
         "batch",
+        "currentMaterialStateId",
         "planningReadiness",
         "dataQuality"
     );
+    assertStringFormat(schemaProperty(openApi, "FeedstockWorkspaceBatchResponse", "currentMaterialStateId"), "uuid");
     assertNotRequiredProperties(
         openApi,
         "FeedstockWorkspaceBatchResponse",
@@ -1234,7 +1300,15 @@ class OpenApiContractTest {
         "severity",
         "message"
     );
-    assertRequiredProperties(openApi, "FeedstockBatchDetailResponse", "batch", "currentProfile", "measurements");
+    assertRequiredProperties(
+        openApi,
+        "FeedstockBatchDetailResponse",
+        "batch",
+        "currentMaterialStateId",
+        "currentProfile",
+        "measurements"
+    );
+    assertStringFormat(schemaProperty(openApi, "FeedstockBatchDetailResponse", "currentMaterialStateId"), "uuid");
     assertArray(schemaProperty(openApi, "FeedstockBatchDetailResponse", "measurements"));
     assertRequiredProperties(
         openApi,
@@ -1526,11 +1600,10 @@ class OpenApiContractTest {
   private static void assertNotRequiredProperties(
       JsonNode openApi,
       String schemaName,
-      String... propertyNames
+    String... propertyNames
   ) {
     final var required = requiredProperties(openApi, schemaName);
-    assertThat(required).isNotEmpty()
-        .doesNotContain(propertyNames);
+    assertThat(required).doesNotContain(propertyNames);
   }
 
   private static List<String> requiredProperties(

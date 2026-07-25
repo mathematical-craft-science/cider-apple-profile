@@ -3,77 +3,54 @@ package org.craft.mcs.cap.infrastructure.adapter.out.traceability.production;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 import org.craft.mcs.cap.core.account.shared.domain.value.AccountUserId;
 import org.craft.mcs.cap.core.account.shared.domain.value.DisplayName;
 import org.craft.mcs.cap.core.account.shared.domain.value.EmailAddress;
 import org.craft.mcs.cap.core.account.user.application.port.in.AccountUserView;
 import org.craft.mcs.cap.core.account.user.application.port.in.GetCurrentAccountProfileUseCase;
 import org.craft.mcs.cap.core.account.user.domain.model.AccountUserStatus;
-import org.craft.mcs.cap.core.batchtraceability.application.port.in.AppendBatchTraceStepUseCase;
-import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceOperationType;
+import org.craft.mcs.cap.core.batchtraceability.application.model.MaterialStateSnapshot;
+import org.craft.mcs.cap.core.batchtraceability.application.port.in.GetCurrentMaterialStateUseCase;
+import org.craft.mcs.cap.core.batchtraceability.application.port.in.InitializeMaterialStateUseCase;
+import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceMaterialSnapshot;
+import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStepType;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStep;
-import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStepId;
+import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStepSubject;
+import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceSubject;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceSubjectType;
-import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
-import org.craft.mcs.cap.shared.kernel.identity.UuidV7Generator;
-import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
-import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchCompositionTraceSource;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchFeedstockTraceSource;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionSourceDisplayName;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatch;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatchId;
-import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
-import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
 import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValueKind;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValueKind;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
+import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
+import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
+import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
+import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 
 class BatchTraceabilityProductionBatchTraceRecorderTest {
 
   private static final AccountUserId ACTOR_USER_ID = AccountUserId.newId();
-
-  @Test
-  void mapsCompositionResultInputToTraceSubject() {
-    final var appendUseCase = new CapturingAppendUseCase();
-    final var recorder = new BatchTraceabilityProductionBatchTraceRecorder(
-        appendUseCase,
-        currentAccountProfile()
-    );
-    final var workspaceId = WorkspaceId.newId();
-    final var sourceId = UuidV7Generator.newUuid().toString();
-    final var productionBatch = productionBatch(workspaceId);
-
-    recorder.recordCreated(
-        productionBatch,
-        List.of(new ProductionBatchCompositionTraceSource(
-            sourceId,
-            ProductionSourceDisplayName.of("Accepted composition"),
-            VolumeValue.ofLiters("100")
-        )),
-        Instant.parse("2026-05-18T10:15:30Z"),
-        null
-    );
-
-    assertThat(appendUseCase.step.inputs()).singleElement()
-        .satisfies(inputSubject -> {
-          assertThat(inputSubject.subject().type()).isEqualTo(BatchTraceSubjectType.COMPOSITION_RESULT);
-          assertThat(inputSubject.subject().id()).isEqualTo(sourceId);
-          assertThat(inputSubject.subject().displayNameSnapshot()).isEqualTo("Accepted composition");
-        });
-  }
 
   private static ChemicalProfileAxes sourceAxes() {
     return ChemicalProfileAxes.of(
@@ -86,13 +63,23 @@ class BatchTraceabilityProductionBatchTraceRecorderTest {
 
   @Test
   void mapsProductionCreatedFactToBatchTraceStep() {
-    final var appendUseCase = new CapturingAppendUseCase();
+    final var workspaceId = WorkspaceId.newId();
+    final var sourceStateId = MaterialStateId.newId();
+    final var sourceId = FeedstockBatchId.newId().value();
+    final var initializeUseCase = new CapturingInitializeUseCase();
     final var recorder = new BatchTraceabilityProductionBatchTraceRecorder(
-        appendUseCase,
+        initializeUseCase,
+        stateQuery(sourceState(
+            workspaceId,
+            sourceStateId,
+            BatchTraceSubjectType.FEEDSTOCK_BATCH,
+            sourceId,
+            "Late juice",
+            null,
+            null
+        )),
         currentAccountProfile()
     );
-    final var workspaceId = WorkspaceId.newId();
-    final var sourceId = FeedstockBatchId.newId().value();
     final var productionBatch = productionBatch(workspaceId);
     final var occurredAt = Instant.parse("2026-05-18T10:15:30Z");
 
@@ -100,6 +87,7 @@ class BatchTraceabilityProductionBatchTraceRecorderTest {
         productionBatch,
         List.of(new ProductionBatchFeedstockTraceSource(
             FeedstockBatchId.of(sourceId),
+            sourceStateId,
             ProductionSourceDisplayName.of("Late juice"),
             VolumeValue.ofLiters("100"),
             sourceAxes(),
@@ -109,17 +97,18 @@ class BatchTraceabilityProductionBatchTraceRecorderTest {
         "accepted input"
     );
 
-    assertThat(appendUseCase.step)
+    assertThat(initializeUseCase.step)
         .isNotNull()
-        .returns(BatchTraceOperationType.CREATE_PRODUCTION_BATCH, BatchTraceStep::operationType)
+        .returns(BatchTraceStepType.PRODUCTION_BATCH_CREATED, BatchTraceStep::stepType)
         .returns(occurredAt, BatchTraceStep::occurredAt)
         .returns("accepted input", BatchTraceStep::note)
         .satisfies(step -> assertThat(step.performedBy().id())
             .isEqualTo(ACTOR_USER_ID.value().toString()));
-    assertThat(appendUseCase.step.inputs()).singleElement()
+    assertThat(initializeUseCase.step.inputs()).singleElement()
         .satisfies(inputSubject -> {
+          assertThat(inputSubject.traceStateId()).isEqualTo(sourceStateId);
           assertThat(inputSubject.subject().type()).isEqualTo(BatchTraceSubjectType.FEEDSTOCK_BATCH);
-          assertThat(inputSubject.subject().id()).isEqualTo(sourceId.toString());
+          assertThat(inputSubject.subject().id()).isEqualTo(sourceId);
           assertThat(inputSubject.subject().displayNameSnapshot()).isEqualTo("Late juice");
           assertThat(inputSubject.snapshot().volume().liters()).isEqualByComparingTo("100");
           assertThat(inputSubject.snapshot().confidence()).isEqualTo(ConfidenceLevel.LAB_VERIFIED);
@@ -130,10 +119,10 @@ class BatchTraceabilityProductionBatchTraceRecorderTest {
               .get()
               .satisfies(value -> assertThat(value.value()).isEqualByComparingTo("180"));
         });
-    assertThat(appendUseCase.step.outputs()).singleElement()
+    assertThat(initializeUseCase.step.outputs()).singleElement()
         .satisfies(outputSubject -> {
           assertThat(outputSubject.subject().type()).isEqualTo(BatchTraceSubjectType.PRODUCTION_BATCH);
-          assertThat(outputSubject.subject().id()).isEqualTo(productionBatch.batchId().value().toString());
+          assertThat(outputSubject.subject().id()).isEqualTo(productionBatch.batchId().value());
           assertThat(outputSubject.snapshot().volume().liters()).isEqualByComparingTo("100");
           assertThat(outputSubject.snapshot().profile().valueOf(ChemicalAxis.SUGAR))
               .get()
@@ -145,6 +134,33 @@ class BatchTraceabilityProductionBatchTraceRecorderTest {
                 assertThat(value.valueKind()).isEqualTo(AxisValueKind.CALCULATED);
               });
         });
+  }
+
+  private static @NonNull MaterialStateSnapshot sourceState(
+      @NonNull WorkspaceId workspaceId,
+      @NonNull MaterialStateId stateId,
+      @NonNull BatchTraceSubjectType subjectType,
+      @NonNull UUID subjectId,
+      @NonNull String displayName,
+      @Nullable ChemicalProfileAxes profile,
+      @Nullable ConfidenceLevel confidence
+  ) {
+    return new MaterialStateSnapshot(
+        workspaceId,
+        new BatchTraceStepSubject(
+            stateId,
+            new BatchTraceSubject(subjectType, subjectId, displayName),
+            new BatchTraceMaterialSnapshot(VolumeValue.ofLiters("530"), profile, confidence)
+        )
+    );
+  }
+
+  private static @NonNull GetCurrentMaterialStateUseCase stateQuery(
+      @NonNull MaterialStateSnapshot state
+  ) {
+    final var query = mock(GetCurrentMaterialStateUseCase.class);
+    when(query.getState(state.state().traceStateId())).thenReturn(state);
+    return query;
   }
 
   private static AxisValue axis(
@@ -187,14 +203,17 @@ class BatchTraceabilityProductionBatchTraceRecorderTest {
     );
   }
 
-  private static final class CapturingAppendUseCase implements AppendBatchTraceStepUseCase {
+  private static final class CapturingInitializeUseCase implements InitializeMaterialStateUseCase {
 
     private BatchTraceStep step;
 
     @Override
-    public @NonNull BatchTraceStepId append(@NonNull BatchTraceStep step) {
+    public void initialize(
+        @NonNull BatchTraceStep step,
+        @NonNull BatchTraceSubject subject,
+        @NonNull MaterialStateId initialStateId
+    ) {
       this.step = step;
-      return step.stepId();
     }
   }
 }

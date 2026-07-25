@@ -2,6 +2,7 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstockworkspace.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
+import java.util.UUID;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.batch.dto.FeedstockBatchResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.common.dto.FeedstockProfileEvidenceResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.readiness.dto.FermentationStartReadinessAssessmentResponse;
@@ -14,6 +15,12 @@ import org.jspecify.annotations.Nullable;
 public record FeedstockWorkspaceBatchResponse(
     @Schema(description = "Feedstock batch metadata and available volume.", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull FeedstockBatchResponse batch,
+    @Schema(
+        description = "Current immutable state of the batch material.",
+        format = "uuid",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
+    @NonNull UUID currentMaterialStateId,
     @Schema(
         description = """
             Latest contributing MeasurementSet retained as a compatibility anchor. The current

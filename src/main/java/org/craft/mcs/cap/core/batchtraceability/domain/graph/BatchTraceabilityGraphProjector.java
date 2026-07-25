@@ -5,8 +5,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStep;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStepSubject;
-import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStateId;
+import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceSubject;
 import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
+import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
@@ -27,28 +28,32 @@ public final class BatchTraceabilityGraphProjector {
   public static @NonNull BatchTraceabilityGraph sourceTreeFrom(
       @NonNull List<@NonNull BatchTraceStep> steps
   ) {
-    final var nodesByState = new LinkedHashMap<BatchTraceStateId, BatchTraceNode>();
-    final var edges = requireNonNull(steps, "batch trace steps cannot be null").stream()
+    final var orderedSteps = requireNonNull(steps, "batch trace steps cannot be null").stream()
         .sorted(Comparator.comparing(BatchTraceStep::occurredAt)
             .thenComparing(batchTraceStep -> batchTraceStep.stepId().value()))
-        .map(step -> {
-          registerNodes(nodesByState, step.inputs());
-          registerNodes(nodesByState, step.outputs());
-          return new BatchTraceEdge(
-              step.stepId(),
-              step.operationType(),
-              step.occurredAt(),
-              step.inputs(),
-              step.outputs()
-          );
-        })
+        .toList();
+    final var stateDefinitions = new LinkedHashMap<MaterialStateId, BatchTraceNode>();
+    orderedSteps.forEach(step -> registerStateDefinitions(stateDefinitions, step.outputs()));
+    final var nodesByState = new LinkedHashMap<MaterialStateId, BatchTraceNode>();
+    orderedSteps.forEach(step -> {
+      registerGraphNodes(nodesByState, stateDefinitions, step.inputs());
+      registerGraphNodes(nodesByState, stateDefinitions, step.outputs());
+    });
+    final var edges = orderedSteps.stream()
+        .map(step -> new BatchTraceEdge(
+            step.stepId(),
+            step.stepType(),
+            step.occurredAt(),
+            step.inputs(),
+            step.outputs()
+        ))
         .toList();
 
     return new BatchTraceabilityGraph(List.copyOf(nodesByState.values()), edges);
   }
 
-  private static void registerNodes(
-      @NonNull LinkedHashMap<BatchTraceStateId, BatchTraceNode> nodesByState,
+  private static void registerStateDefinitions(
+      @NonNull LinkedHashMap<MaterialStateId, BatchTraceNode> nodesByState,
       @NonNull List<@NonNull BatchTraceStepSubject> stepSubjects
   ) {
     for (final var stepSubject : stepSubjects) {
@@ -56,9 +61,38 @@ public final class BatchTraceabilityGraphProjector {
       final var existingNode = nodesByState.putIfAbsent(stepSubject.traceStateId(), node);
       if (existingNode != null && !existingNode.equals(node)) {
         throw new DomainRuleViolationException(
-            "batch trace state id cannot identify different subjects or snapshots"
+            "batch trace state id cannot identify different output subjects or state snapshots"
         );
       }
     }
+  }
+
+  private static void registerGraphNodes(
+      @NonNull LinkedHashMap<MaterialStateId, BatchTraceNode> nodesByState,
+      @NonNull LinkedHashMap<MaterialStateId, BatchTraceNode> stateDefinitions,
+      @NonNull List<@NonNull BatchTraceStepSubject> stepSubjects
+  ) {
+    for (final var stepSubject : stepSubjects) {
+      final var node = stateDefinitions.getOrDefault(
+          stepSubject.traceStateId(),
+          BatchTraceNode.from(stepSubject)
+      );
+      final var existingNode = nodesByState.putIfAbsent(
+          stepSubject.traceStateId(),
+          node
+      );
+      if (existingNode != null && !sameSubject(existingNode.subject(), stepSubject.subject())) {
+        throw new DomainRuleViolationException(
+            "batch trace state id cannot reference different business subjects"
+        );
+      }
+    }
+  }
+
+  private static boolean sameSubject(
+      @NonNull BatchTraceSubject first,
+      @NonNull BatchTraceSubject second
+  ) {
+    return first.type() == second.type() && first.id().equals(second.id());
   }
 }

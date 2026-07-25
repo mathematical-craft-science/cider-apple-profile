@@ -94,6 +94,9 @@ public final class MeasurementSet {
     if (!revision.revisionNumber().equals(currentRevision.revisionNumber().next())) {
       throw new DomainConflictException("measurement correction must append the next revision");
     }
+    if (!revision.materialStateId().equals(currentRevision.materialStateId())) {
+      throw new DomainConflictException("measurement correction must preserve the observed material state");
+    }
     currentRevision = revision;
     updatedAt = correctedAt;
   }

@@ -1,11 +1,13 @@
 package org.craft.mcs.cap.core.feedstock.application.batch.usecase;
 
+import java.time.Clock;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.CreateFeedstockBatchCommand;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.CreateFeedstockBatchUseCase;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.FeedstockBatchCreated;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchRepository;
+import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchTraceRecorder;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.craft.mcs.cap.shared.platform.TransactionHelper;
@@ -28,8 +30,10 @@ public final class CreateFeedstockBatchService
     implements CreateFeedstockBatchUseCase {
 
   private final @NonNull FeedstockBatchRepository feedstockBatchRepository;
+  private final @NonNull FeedstockBatchTraceRecorder traceRecorder;
   private final @NonNull FeedstockAccessControl feedstockAccessControl;
   private final @NonNull TransactionHelper transactionHelper;
+  private final @NonNull Clock clock;
 
   @Override
   public @NonNull FeedstockBatchCreated create(@NonNull CreateFeedstockBatchCommand command) {
@@ -48,6 +52,7 @@ public final class CreateFeedstockBatchService
       ).changeSource(command.source()).changeNote(command.note());
 
       final var saved = feedstockBatchRepository.create(batch);
+      traceRecorder.recordCreated(saved, clock.instant());
 
       return new FeedstockBatchCreated(
           saved.batchId(),

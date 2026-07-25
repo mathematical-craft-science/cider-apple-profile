@@ -34,6 +34,7 @@ import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValueKind;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
+import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
@@ -72,7 +73,7 @@ class CreateProductionBatchCandidateServiceTest {
     when(calculator.calculate(List.of(availableSource), command.calculationRequest()))
         .thenReturn(new ProductionBatchCandidateCalculation(
             profile,
-            prediction(profile.sugar()),
+            prediction(profile.specificGravity()),
             ProfileAxisNormalizerCode.SENSITIVITY_UNIT,
             null,
             List.of()
@@ -95,7 +96,7 @@ class CreateProductionBatchCandidateServiceTest {
         .returns(workspaceId, ProductionBatchCandidateView::workspaceId)
         .returns(ProductionBatchCandidateStatus.AVAILABLE, ProductionBatchCandidateView::status)
         .returns(profile, ProductionBatchCandidateView::profile)
-        .returns(prediction(profile.sugar()), ProductionBatchCandidateView::potentialAbv)
+        .returns(prediction(profile.specificGravity()), ProductionBatchCandidateView::potentialAbv)
         .returns(ProfileAxisNormalizerCode.SENSITIVITY_UNIT, ProductionBatchCandidateView::normalizerCode);
     assertThat(savedSnapshot.getValue().candidate())
         .returns(command.sourceComposition(), ProductionBatchCandidate::sourceComposition)
@@ -117,6 +118,7 @@ class CreateProductionBatchCandidateServiceTest {
             null
         ),
         ConfidenceLevel.LAB_VERIFIED,
+        MaterialStateId.newId(),
         ProductionSourceEvidenceReference.of("measurement-2026-07-16")
     );
   }

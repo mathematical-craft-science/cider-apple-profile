@@ -97,7 +97,8 @@ public interface FeedstockBatchApi {
       summary = "Get feedstock batch detail",
       description = """
           Returns feedstock batch metadata, measurement history and current-profile read model for a
-          batch detail page. The current profile is derived from the latest measurement only.
+          batch detail page. The current profile selects applicable evidence independently for each
+          characteristic along the current material-state lineage.
           """
   )
   @ApiResponse(

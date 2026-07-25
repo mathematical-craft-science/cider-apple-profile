@@ -44,6 +44,8 @@ Act as a senior Java architect and production-grade software engineer for the Ci
 - Strategy classes and abstract-class implementations must have a short comment or Javadoc explaining
   which approach they implement.
 - If a method declaration has more than one parameter, place parameters on separate lines.
+- Do not use Java keywords or restricted identifiers such as `record` as variable, parameter,
+  lambda-parameter, or field names.
 - Keep project source-code lines at 120 characters or less; wrap long annotations, comments, Javadoc,
   and argument lists. Import declarations may exceed 120 characters.
 - The 120-character limit does not apply to Obsidian documents; format Markdown for readability.

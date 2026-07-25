@@ -38,8 +38,8 @@ public final class ProductionBatchJdbcMapper {
         batch.lifecycle(),
         batch.alcoholicFermentationState(),
         batch.currentVolume().liters(),
-        profile.sugar().asBigDecimal(),
-        profile.acidity().asBigDecimal(),
+        profile.specificGravity().asBigDecimal(),
+        profile.titratableAcidity().asBigDecimal(),
         tanninValue(profile),
         yeastAssimilableNitrogenValue(profile),
         batch.note()

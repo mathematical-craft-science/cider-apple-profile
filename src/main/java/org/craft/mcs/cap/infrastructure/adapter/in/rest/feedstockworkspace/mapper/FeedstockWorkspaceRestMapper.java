@@ -105,6 +105,7 @@ public final class FeedstockWorkspaceRestMapper {
     requireNonNull(view, "feedstock workspace batch view cannot be null");
     return new FeedstockWorkspaceBatchResponse(
         FeedstockBatchRestMapper.toResponse(view.batch()),
+        view.currentMaterialStateId().value(),
         toCurrentMeasurementResponse(view.currentMeasurement()),
         toProfileSummaryResponse(view.currentMeasurement()),
         view.profileEvidence().stream()

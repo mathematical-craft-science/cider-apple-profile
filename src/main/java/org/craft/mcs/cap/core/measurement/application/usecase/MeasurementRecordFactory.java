@@ -10,7 +10,7 @@ import org.craft.mcs.cap.core.measurement.application.model.DirectMeasurementCha
 import org.craft.mcs.cap.core.measurement.application.model.MeasurementCharacteristicInput;
 import org.craft.mcs.cap.core.measurement.application.model.MeasurementObservationInput;
 import org.craft.mcs.cap.core.measurement.application.model.RepeatedMeasurementCharacteristicInput;
-import org.craft.mcs.cap.core.measurement.domain.model.MeasurementCharacteristic;
+import org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementDerivationMethod;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementProvenance;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementRecord;

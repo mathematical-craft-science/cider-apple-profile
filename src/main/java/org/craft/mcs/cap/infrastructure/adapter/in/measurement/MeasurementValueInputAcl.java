@@ -3,7 +3,7 @@ package org.craft.mcs.cap.infrastructure.adapter.in.measurement;
 import java.math.BigDecimal;
 import java.util.Locale;
 import org.craft.mcs.cap.shared.kernel.characteristic.IntervalCharacteristicValue;
-import org.craft.mcs.cap.core.measurement.domain.model.MeasurementCharacteristic;
+import org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic;
 import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.craft.mcs.cap.infrastructure.adapter.shared.measurement.conversion.PhQuantityConverter;
 import org.craft.mcs.cap.infrastructure.adapter.shared.measurement.conversion.SugarQuantityConverter;

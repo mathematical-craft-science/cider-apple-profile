@@ -5,6 +5,7 @@ import org.craft.mcs.cap.core.measurement.application.model.MeasurementCharacter
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetId;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetName;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSubjectReference;
+import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -15,6 +16,7 @@ import static java.util.Objects.requireNonNull;
 public record CreateMeasurementSetCommand(
     @Nullable MeasurementSetId requestedId,
     @NonNull MeasurementSubjectReference subject,
+    @NonNull MaterialStateId expectedCurrentStateId,
     @NonNull MeasurementSetName name,
     @Nullable String note,
     @NonNull List<@NonNull MeasurementCharacteristicInput> measurements
@@ -22,6 +24,7 @@ public record CreateMeasurementSetCommand(
 
   public CreateMeasurementSetCommand {
     requireNonNull(subject, "measurement subject cannot be null");
+    requireNonNull(expectedCurrentStateId, "expected current material state id cannot be null");
     requireNonNull(name, "measurement set name cannot be null");
     measurements = List.copyOf(requireNonNull(measurements, "measurement inputs cannot be null"));
   }

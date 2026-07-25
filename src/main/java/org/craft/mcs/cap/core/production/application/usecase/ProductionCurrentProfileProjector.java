@@ -37,8 +37,8 @@ public final class ProductionCurrentProfileProjector {
       @NonNull ProductionProfileSnapshot snapshot
   ) {
     final var builder = ChemicalProfile.builder()
-        .sugar(PointCharacteristicValue.of(SugarConcentration.ofSpecificGravity(snapshot.sugar())))
-        .titratableAcidity(PointCharacteristicValue.of(snapshot.acidity()));
+        .sugar(PointCharacteristicValue.of(SugarConcentration.ofSpecificGravity(snapshot.specificGravity())))
+        .titratableAcidity(PointCharacteristicValue.of(snapshot.titratableAcidity()));
     if (snapshot.tannin() != null) {
       builder.tannin(PointCharacteristicValue.of(snapshot.tannin())); // NOSONAR
     }

@@ -29,8 +29,9 @@ public interface FeedstockMeasurementApi {
   @Operation(
       summary = "Create feedstock measurement",
       deprecated = true,
-      description = "Creates a feedstock measurement inside an existing batch. The owning workspace is derived from "
-          + "the batch.",
+      description = "Deprecated compatibility operation. Use POST /measurement-sets with subject type "
+          + "FEEDSTOCK_BATCH and expectedCurrentStateId. The facade resolves the current state and delegates to the "
+          + "same generic use case.",
       requestBody = @RequestBody(
           description = "Feedstock measurement creation payload.",
           required = true,
@@ -58,6 +59,12 @@ public interface FeedstockMeasurementApi {
       description = "Feedstock batch not found.",
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
   )
+  @ApiResponse(
+      responseCode = "409",
+      description = "Feedstock material state changed while the compatibility facade created the measurement.",
+      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
+  )
+  @Deprecated
   @NonNull ResponseEntity<@NonNull FeedstockMeasurementResponse> create(
       @Parameter(description = "Feedstock batch identifier.", required = true, schema = @Schema(format = "uuid"))
       @NonNull UUID batchId,
@@ -67,7 +74,8 @@ public interface FeedstockMeasurementApi {
   @Operation(
       summary = "List feedstock measurements by batch",
       deprecated = true,
-      description = "Returns feedstock measurement summaries for a single feedstock batch."
+      description = "Deprecated compatibility operation. Use "
+          + "GET /measurement-sets?subjectType=FEEDSTOCK_BATCH&subjectId={batchId}."
   )
   @ApiResponse(
       responseCode = "200",
@@ -77,6 +85,7 @@ public interface FeedstockMeasurementApi {
           schema = @Schema(implementation = FeedstockMeasurementListResponse.class)
       )
   )
+  @Deprecated
   @NonNull ResponseEntity<@NonNull FeedstockMeasurementListResponse> listByBatchId(
       @Parameter(description = "Feedstock batch identifier.", required = true, schema = @Schema(format = "uuid"))
       @NonNull UUID batchId
@@ -85,7 +94,7 @@ public interface FeedstockMeasurementApi {
   @Operation(
       summary = "Replace feedstock measurement",
       deprecated = true,
-      description = "Replaces editable feedstock measurement fields and the whole chemical profile."
+      description = "Deprecated compatibility operation. Use PUT /measurement-sets/{measurementSetId}."
   )
   @ApiResponse(
       responseCode = "200",
@@ -110,6 +119,7 @@ public interface FeedstockMeasurementApi {
       description = "Feedstock measurement was modified concurrently.",
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
   )
+  @Deprecated
   @NonNull ResponseEntity<@NonNull FeedstockMeasurementResponse> update(
       @Parameter(description = "Feedstock batch identifier.", required = true, schema = @Schema(format = "uuid"))
       @NonNull UUID batchId,
@@ -129,8 +139,7 @@ public interface FeedstockMeasurementApi {
   @Operation(
       summary = "Patch feedstock measurement",
       deprecated = true,
-      description = "Partially updates measurement metadata and merges provided chemical profile axes "
-          + "into the existing profile."
+      description = "Deprecated compatibility operation. Use PATCH /measurement-sets/{measurementSetId}."
   )
   @ApiResponse(
       responseCode = "200",
@@ -155,6 +164,7 @@ public interface FeedstockMeasurementApi {
       description = "Feedstock measurement was modified concurrently.",
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
   )
+  @Deprecated
   @NonNull ResponseEntity<@NonNull FeedstockMeasurementResponse> patch(
       @Parameter(description = "Feedstock batch identifier.", required = true, schema = @Schema(format = "uuid"))
       @NonNull UUID batchId,
@@ -174,7 +184,8 @@ public interface FeedstockMeasurementApi {
   @Operation(
       summary = "Delete feedstock measurement",
       deprecated = true,
-      description = "Retracts a feedstock measurement while preserving its immutable evidence."
+      description = "Deprecated compatibility operation. Use DELETE /measurement-sets/{measurementSetId}. "
+          + "Both operations retract evidence without physical deletion."
   )
   @ApiResponse(responseCode = "204", description = "Feedstock measurement deleted.")
   @ApiResponse(
@@ -187,6 +198,7 @@ public interface FeedstockMeasurementApi {
       description = "Feedstock measurement was modified concurrently.",
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
   )
+  @Deprecated
   @NonNull ResponseEntity<Void> delete(
       @Parameter(description = "Feedstock batch identifier.", required = true, schema = @Schema(format = "uuid"))
       @NonNull UUID batchId,

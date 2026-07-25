@@ -3,7 +3,7 @@ package org.craft.mcs.cap.core.measurement.application.port.in;
 import java.util.List;
 import java.util.Set;
 import org.craft.mcs.cap.core.measurement.application.model.MeasurementCharacteristicInput;
-import org.craft.mcs.cap.core.measurement.domain.model.MeasurementCharacteristic;
+import org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementCorrectionReason;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetId;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetName;
@@ -33,6 +33,13 @@ public record PatchMeasurementSetCommand(
     removals = Set.copyOf(requireNonNull(removals, "measurement removals cannot be null"));
     if (expectedVersion < 0) {
       throw new ApplicationValidationException("expected measurement-set version cannot be negative");
+    }
+    if (replacements.stream()
+        .map(MeasurementCharacteristicInput::characteristic)
+        .anyMatch(removals::contains)) {
+      throw new ApplicationValidationException(
+          "measurement characteristic cannot be replaced and removed in the same correction"
+      );
     }
   }
 }

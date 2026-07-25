@@ -20,6 +20,12 @@ public record ProductionBatchDetailsResponse(
     @NonNull UUID batchId,
     @Schema(description = "Workspace identifier.", format = "uuid", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull UUID workspaceId,
+    @Schema(
+        description = "Current immutable state of the production material.",
+        format = "uuid",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
+    @NonNull UUID currentMaterialStateId,
     @Schema(description = "Production batch name.", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull String name,
     @Schema(

@@ -1,14 +1,17 @@
 package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.measurement;
 
+import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Set;
 import org.craft.mcs.cap.core.measurement.application.MeasurementSetAlreadyExistsException;
+import org.craft.mcs.cap.core.measurement.application.model.CurrentMeasurementResultView;
 import org.craft.mcs.cap.core.measurement.application.port.out.CurrentMeasurementResultQuery;
 import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementSetRepository;
 import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementSetViewQuery;
 import org.craft.mcs.cap.shared.kernel.characteristic.IntervalCharacteristicValue;
-import org.craft.mcs.cap.core.measurement.domain.model.MeasurementCharacteristic;
+import org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementDerivationMethod;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementMethod;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementProvenance;
@@ -24,13 +27,14 @@ import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetRevisionId;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetRevisionNumber;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSourceName;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSourceReference;
-import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSourceType;
+import org.craft.mcs.cap.shared.kernel.measurement.MeasurementSourceType;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSubjectReference;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSubjectType;
 import org.craft.mcs.cap.shared.kernel.characteristic.CharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
 import org.craft.mcs.cap.shared.kernel.identity.ActorReference;
+import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.measurement.MeasuredValue;
 import org.craft.mcs.cap.shared.kernel.measurement.unit.BeverageUnits;
@@ -49,6 +53,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.tuple;
 import static org.craft.mcs.cap.shared.kernel.identity.UuidV7Generator.newUuid;
 import static org.craft.mcs.cap.shared.testing.MeasurementTestValues.value;
 import static org.craft.mcs.cap.shared.testing.MeasurementTestValues.pointValue;
@@ -103,8 +108,8 @@ class JdbcMeasurementSetRepositoryDataJdbcTest {
             """,
         new MapSqlParameterSource()
             .addValue("workspaceId", workspaceId.value())
-            .addValue("createdAt", java.time.OffsetDateTime.parse("2026-07-20T10:00:00Z"))
-            .addValue("updatedAt", java.time.OffsetDateTime.parse("2026-07-20T10:00:00Z"))
+            .addValue("createdAt", OffsetDateTime.parse("2026-07-20T10:00:00Z"))
+            .addValue("updatedAt", OffsetDateTime.parse("2026-07-20T10:00:00Z"))
     );
   }
 
@@ -126,6 +131,7 @@ class JdbcMeasurementSetRepositoryDataJdbcTest {
     );
 
     final var created = repository.create(set);
+    initializeCurrentState(subject, set.currentRevision().materialStateId());
 
     final var restored = repository.findVersionedById(set.measurementSetId()).orElseThrow();
     assertThat(restored.aggregate().currentRevision().records())
@@ -160,6 +166,37 @@ class JdbcMeasurementSetRepositoryDataJdbcTest {
                     List.of(firstObservation.recordId(), secondObservation.recordId()),
                     measurementRecord -> measurementRecord.derivationInputs()
                 )));
+  }
+
+  private void initializeCurrentState(
+      MeasurementSubjectReference subject,
+      MaterialStateId materialStateId
+  ) {
+    jdbcTemplate.update(
+        """
+            INSERT INTO batch_trace_current_states (
+                workspace_id,
+                subject_type,
+                subject_id,
+                current_state_id,
+                version,
+                updated_at
+            ) VALUES (
+                :workspaceId,
+                :subjectType,
+                :subjectId,
+                :currentStateId,
+                0,
+                :updatedAt
+            )
+            """,
+        new MapSqlParameterSource()
+            .addValue("workspaceId", workspaceId.value())
+            .addValue("subjectType", subject.type().name())
+            .addValue("subjectId", subject.id())
+            .addValue("currentStateId", materialStateId.value())
+            .addValue("updatedAt", OffsetDateTime.parse("2026-07-20T10:00:00Z"))
+    );
   }
 
   @Test
@@ -216,12 +253,84 @@ class JdbcMeasurementSetRepositoryDataJdbcTest {
   }
 
   @Test
-  void retractsSetWithoutDeletingEvidenceAndRemovesItFromCurrentResults() {
+  void combinesLatestCharacteristicsFromIndependentSetsOnTheSameMaterialState() {
     final var subject = new MeasurementSubjectReference(
         MeasurementSubjectType.FEEDSTOCK_BATCH,
         newUuid()
     );
-    final var result = new MeasurementRecord(
+    final var stateId = MaterialStateId.newId();
+    final var sugar = directResult(
+        MeasurementCharacteristic.SPECIFIC_GRAVITY,
+        point(MeasurementCharacteristic.SPECIFIC_GRAVITY, "1.052"),
+        RECORDED_AT.minusSeconds(3600)
+    );
+    final var ph = directResult(
+        MeasurementCharacteristic.PH,
+        point(MeasurementCharacteristic.PH, "3.35"),
+        RECORDED_AT
+    );
+    repository.create(MeasurementSet.create(
+        MeasurementSetId.newId(),
+        workspaceId,
+        subject,
+        revision(1, stateId, List.of(sugar)),
+        RECORDED_AT.minusSeconds(3600)
+    ));
+    initializeCurrentState(subject, stateId);
+    repository.create(MeasurementSet.create(
+        MeasurementSetId.newId(),
+        workspaceId,
+        subject,
+        revision(1, stateId, List.of(ph)),
+        RECORDED_AT
+    ));
+
+    assertThat(currentResultQuery.findBySubjects(workspaceId, Set.of(subject)))
+        .extracting(
+            CurrentMeasurementResultView::characteristic,
+            CurrentMeasurementResultView::recordId,
+            CurrentMeasurementResultView::evidenceMaterialStateId
+        )
+        .containsExactlyInAnyOrder(
+            tuple(MeasurementCharacteristic.SPECIFIC_GRAVITY, sugar.recordId(), stateId),
+            tuple(MeasurementCharacteristic.PH, ph.recordId(), stateId)
+        );
+  }
+
+  @Test
+  void retractionPreservesEvidenceAndRestoresPreviousApplicableResult() {
+    final var subject = new MeasurementSubjectReference(
+        MeasurementSubjectType.FEEDSTOCK_BATCH,
+        newUuid()
+    );
+    final var previousResult = new MeasurementRecord(
+        MeasurementRecordId.newId(),
+        MeasurementCharacteristic.PH,
+        MeasurementRecordRole.RESULT,
+        point(MeasurementCharacteristic.PH, "3.30"),
+        RECORDED_AT.minusSeconds(3600),
+        new MeasurementProvenance(
+            MeasurementSourceType.USER,
+            MeasurementSourceName.of("Manual entry"),
+            null,
+            null,
+            null
+        ),
+        null,
+        List.of()
+    );
+    final var previousStateId = MaterialStateId.newId();
+    final var previousSet = MeasurementSet.create(
+        MeasurementSetId.newId(),
+        workspaceId,
+        subject,
+        revision(1, previousStateId, List.of(previousResult)),
+        RECORDED_AT
+    );
+    repository.create(previousSet);
+    initializeCurrentState(subject, previousStateId);
+
+    final var currentResult = new MeasurementRecord(
         MeasurementRecordId.newId(),
         MeasurementCharacteristic.PH,
         MeasurementRecordRole.RESULT,
@@ -237,26 +346,34 @@ class JdbcMeasurementSetRepositoryDataJdbcTest {
         null,
         List.of()
     );
-    final var set = MeasurementSet.create(
+    final var currentSet = MeasurementSet.create(
         MeasurementSetId.newId(),
         workspaceId,
         subject,
-        revision(1, List.of(result)),
+        revision(1, previousStateId, List.of(currentResult)),
         RECORDED_AT
     );
-    final var created = repository.create(set);
+    final var created = repository.create(currentSet);
 
-    set.retract(RECORDED_AT.plusSeconds(60));
+    assertThat(currentResultQuery.findBySubjects(workspaceId, Set.of(subject)))
+        .singleElement()
+        .returns(currentResult.recordId(), CurrentMeasurementResultView::recordId);
+
+    currentSet.retract(RECORDED_AT.plusSeconds(60));
     repository.retract(created);
 
-    assertThat(viewQuery.findById(set.measurementSetId()))
+    assertThat(viewQuery.findById(currentSet.measurementSetId()))
         .get()
         .returns(
             MeasurementSetLifecycle.RETRACTED,
             value -> value.lifecycle()
         )
         .satisfies(view -> assertThat(view.records()).singleElement());
-    assertThat(currentResultQuery.findBySubjects(workspaceId, Set.of(subject))).isEmpty();
+    assertThat(currentResultQuery.findBySubjects(workspaceId, Set.of(subject)))
+        .singleElement()
+        .returns(previousResult.recordId(), CurrentMeasurementResultView::recordId)
+        .satisfies(result -> assertThat(pointValue(result.value()).asBigDecimal())
+            .isEqualByComparingTo("3.30"));
   }
 
   @Test
@@ -320,9 +437,18 @@ class JdbcMeasurementSetRepositoryDataJdbcTest {
       int number,
       List<MeasurementRecord> records
   ) {
+    return revision(number, MaterialStateId.newId(), records);
+  }
+
+  private static MeasurementSetRevision revision(
+      int number,
+      MaterialStateId materialStateId,
+      List<MeasurementRecord> records
+  ) {
     return new MeasurementSetRevision(
         MeasurementSetRevisionId.newId(),
         MeasurementSetRevisionNumber.of(number),
+        materialStateId,
         MeasurementSetName.of("Repeated gravity reading"),
         null,
         null,
@@ -374,12 +500,20 @@ class JdbcMeasurementSetRepositoryDataJdbcTest {
       MeasurementCharacteristic characteristic,
       CharacteristicValue<MeasuredValue> value
   ) {
+    return directResult(characteristic, value, RECORDED_AT);
+  }
+
+  private static MeasurementRecord directResult(
+      MeasurementCharacteristic characteristic,
+      CharacteristicValue<MeasuredValue> value,
+      Instant measuredAt
+  ) {
     return new MeasurementRecord(
         MeasurementRecordId.newId(),
         characteristic,
         MeasurementRecordRole.RESULT,
         value,
-        RECORDED_AT,
+        measuredAt,
         new MeasurementProvenance(MeasurementSourceType.USER, null, null, null, null),
         null,
         List.of()
@@ -391,7 +525,7 @@ class JdbcMeasurementSetRepositoryDataJdbcTest {
       String value
   ) {
     return PointCharacteristicValue.of(
-        value(characteristic, new java.math.BigDecimal(value))
+        value(characteristic, new BigDecimal(value))
     );
   }
 
@@ -401,8 +535,8 @@ class JdbcMeasurementSetRepositoryDataJdbcTest {
       String upper
   ) {
     return IntervalCharacteristicValue.of(
-        value(characteristic, new java.math.BigDecimal(lower)),
-        value(characteristic, new java.math.BigDecimal(upper))
+        value(characteristic, new BigDecimal(lower)),
+        value(characteristic, new BigDecimal(upper))
     );
   }
 

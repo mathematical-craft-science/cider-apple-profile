@@ -18,6 +18,7 @@ import org.craft.mcs.cap.core.production.candidate.domain.model.ProductionBatchC
 import org.craft.mcs.cap.core.production.candidate.domain.model.ProductionSourceEvidenceReference;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceReference;
 import org.craft.mcs.cap.shared.platform.TransactionHelper;
+import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 
@@ -55,6 +56,7 @@ public final class CreateProductionBatchCandidateService implements CreateProduc
         command.workspaceId(),
         command.sourceComposition(),
         evidenceBySource(sources),
+        materialStatesBySource(sources),
         calculation.profile()
     );
     final var saved = candidateStore.create(new ProductionBatchCandidateSnapshot(
@@ -80,6 +82,14 @@ public final class CreateProductionBatchCandidateService implements CreateProduc
     return sources.stream().collect(Collectors.toUnmodifiableMap(
         AvailableProductionSource::reference,
         AvailableProductionSource::evidenceReference
+    ));
+  }
+
+  private static @NonNull Map<@NonNull ProductionSourceReference, @NonNull MaterialStateId>
+      materialStatesBySource(@NonNull List<@NonNull AvailableProductionSource> sources) {
+    return sources.stream().collect(Collectors.toUnmodifiableMap(
+        AvailableProductionSource::reference,
+        AvailableProductionSource::materialStateId
     ));
   }
 }

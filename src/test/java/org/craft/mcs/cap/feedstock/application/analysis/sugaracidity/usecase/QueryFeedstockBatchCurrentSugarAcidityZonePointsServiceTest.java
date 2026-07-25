@@ -13,7 +13,7 @@ import org.craft.mcs.cap.core.feedstock.application.measurement.query.FeedstockB
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockBatchCurrentSugarAcidityZonePointQuery;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockBatchCurrentSugarAcidityZoneResult;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockMeasurementPointFilters;
-import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.out.LatestFeedstockMeasurementSugarAcidityPointCandidateQuery;
+import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.out.CurrentFeedstockBatchSugarAcidityPointCandidateQuery;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.usecase.QueryFeedstockBatchCurrentSugarAcidityZonePointsService;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchSummaryQueryRepository;
 import org.craft.mcs.cap.core.feedstock.application.measurement.port.out.FeedstockMeasurementQueryRepository;
@@ -63,7 +63,7 @@ class QueryFeedstockBatchCurrentSugarAcidityZonePointsServiceTest {
     final var current = measurement("Current", batch.batchId());
 
     when(batchRepository.findAllByWorkspaceId(workspaceId)).thenReturn(List.of(toSummary(batch)));
-    when(repository.findLatestSugarAcidityPointCandidates(any())).thenReturn(List.of(view(current)));
+    when(repository.findCurrentSugarAcidityPointCandidates(any())).thenReturn(List.of(view(current)));
 
     final var result = service.query(new FeedstockBatchCurrentSugarAcidityZonePointQuery(
         workspaceId,
@@ -72,12 +72,12 @@ class QueryFeedstockBatchCurrentSugarAcidityZonePointsServiceTest {
     ));
 
     final var candidateQuery = ArgumentCaptor.forClass(
-        LatestFeedstockMeasurementSugarAcidityPointCandidateQuery.class
+        CurrentFeedstockBatchSugarAcidityPointCandidateQuery.class
     );
-    verify(repository).findLatestSugarAcidityPointCandidates(candidateQuery.capture());
+    verify(repository).findCurrentSugarAcidityPointCandidates(candidateQuery.capture());
 
     assertThat(candidateQuery.getValue())
-        .returns(QueryLimits.MAXIMUM_PAGE_FETCH, LatestFeedstockMeasurementSugarAcidityPointCandidateQuery::limit);
+        .returns(QueryLimits.MAXIMUM_PAGE_FETCH, CurrentFeedstockBatchSugarAcidityPointCandidateQuery::limit);
     assertThat(result.items())
         .singleElement()
         .returns(current.measurementId(), FeedstockBatchCurrentSugarAcidityZoneResult::currentMeasurementId)

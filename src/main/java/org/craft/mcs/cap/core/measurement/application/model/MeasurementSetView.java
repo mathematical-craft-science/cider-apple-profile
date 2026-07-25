@@ -11,6 +11,7 @@ import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetRevisionNum
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSubjectReference;
 import org.craft.mcs.cap.shared.application.ApplicationValidationException;
 import org.craft.mcs.cap.shared.kernel.identity.ActorReference;
+import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -27,6 +28,7 @@ public record MeasurementSetView(
     long version,
     @NonNull MeasurementSetRevisionId revisionId,
     @NonNull MeasurementSetRevisionNumber revisionNumber,
+    @NonNull MaterialStateId materialStateId,
     @NonNull MeasurementSetName name,
     @Nullable String note,
     @Nullable MeasurementCorrectionReason correctionReason,
@@ -44,6 +46,7 @@ public record MeasurementSetView(
     requireNonNull(lifecycle, "measurement set view lifecycle cannot be null");
     requireNonNull(revisionId, "measurement set view revision id cannot be null");
     requireNonNull(revisionNumber, "measurement set view revision number cannot be null");
+    requireNonNull(materialStateId, "measurement set view material state id cannot be null");
     requireNonNull(name, "measurement set view name cannot be null");
     requireNonNull(revisionCreatedAt, "measurement set view revision creation time cannot be null");
     requireNonNull(actor, "measurement set view actor cannot be null");

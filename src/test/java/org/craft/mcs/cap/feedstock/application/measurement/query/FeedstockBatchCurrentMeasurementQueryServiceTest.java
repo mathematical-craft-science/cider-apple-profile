@@ -33,7 +33,7 @@ class FeedstockBatchCurrentMeasurementQueryServiceTest {
     final var measurement = measurement(batchId);
 
     final var measurementView = view(measurement);
-    when(repository.findLatestByBatchId(batchId)).thenReturn(Optional.of(measurementView));
+    when(repository.findCurrentByBatchId(batchId)).thenReturn(Optional.of(measurementView));
 
     assertThat(service.requireCurrentMeasurement(batchId)).isSameAs(measurementView);
   }
@@ -44,7 +44,7 @@ class FeedstockBatchCurrentMeasurementQueryServiceTest {
     final var service = new FeedstockBatchCurrentMeasurementQueryService(repository);
     final var batchId = FeedstockBatchId.newId();
 
-    when(repository.findLatestByBatchId(batchId)).thenReturn(Optional.empty());
+    when(repository.findCurrentByBatchId(batchId)).thenReturn(Optional.empty());
 
     assertThatThrownBy(() -> service.requireCurrentMeasurement(batchId))
         .isInstanceOf(FeedstockBatchHasNoMeasurementsException.class);

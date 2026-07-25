@@ -9,7 +9,7 @@ import static java.util.Objects.requireNonNull;
 
 
 /**
- * Configurable policy that defines when a latest feedstock measurement becomes stale.
+ * Configurable policy that defines when current Feedstock measurement evidence becomes stale.
  *
  * <p>The policy belongs to the current-profile read side. It does not change measurement
  * invariants; it only expresses how fresh evidence must be for read-side assessments.

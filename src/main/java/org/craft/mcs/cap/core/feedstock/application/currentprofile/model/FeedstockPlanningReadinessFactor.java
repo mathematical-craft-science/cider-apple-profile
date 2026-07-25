@@ -11,16 +11,17 @@ package org.craft.mcs.cap.core.feedstock.application.currentprofile.model;
 public enum FeedstockPlanningReadinessFactor {
 
   /**
-   * A latest/current measurement is available for the batch. Without it, planning cannot reason
-   * about the current chemical state of the feedstock.
+   * Current measurement evidence is available for the batch. Without it, planning cannot reason
+   * about the current material profile.
    */
   CURRENT_MEASUREMENT,
 
   /**
-   * Sugar concentration is available in the current chemical profile. This is a required input for
-   * sugar-acidity analysis, ABV prediction, and composition planning.
+   * Specific gravity is available in the current material profile. It is the measured
+   * characteristic used as the sugar axis for sugar-acidity analysis, ABV prediction, and
+   * composition planning.
    */
-  SUGAR,
+  SPECIFIC_GRAVITY,
 
   /**
    * Titratable acidity is available in the current chemical profile. This is a required input for

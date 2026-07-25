@@ -11,6 +11,7 @@ import org.craft.mcs.cap.core.feedstock.application.inventory.port.in.ConsumeFee
 import org.craft.mcs.cap.core.feedstock.application.inventory.port.in.ConsumedFeedstockBatchMaterial;
 import org.craft.mcs.cap.core.feedstock.application.inventory.port.in.FeedstockBatchMaterialEvidenceReference;
 import org.craft.mcs.cap.core.feedstock.application.inventory.port.in.FeedstockBatchMaterialName;
+import org.craft.mcs.cap.core.feedstock.application.inventory.port.out.FeedstockMaterialStateProvider;
 import org.craft.mcs.cap.core.feedstock.application.measurement.query.FeedstockBatchCurrentMeasurementQueryService;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
 import org.craft.mcs.cap.shared.platform.TransactionHelper;
@@ -35,6 +36,7 @@ public final class ConsumeFeedstockBatchMaterialService
 
   private final @NonNull FeedstockBatchRepository feedstockBatchRepository;
   private final @NonNull FeedstockBatchCurrentMeasurementQueryService currentMeasurementQueryService;
+  private final @NonNull FeedstockMaterialStateProvider materialStateProvider;
   private final @NonNull FeedstockAccessControl feedstockAccessControl;
   private final @NonNull TransactionHelper transactionHelper;
 
@@ -54,6 +56,7 @@ public final class ConsumeFeedstockBatchMaterialService
     final var batch = state.aggregate();
     requireAvailableVolume(batch, command);
     final var measurement = currentMeasurementQueryService.requireCurrentMeasurement(batch.batchId());
+    final var materialStateId = materialStateProvider.currentStateOf(batch.batchId());
 
     batch.consumeAvailableVolume(command.volume());
     feedstockBatchRepository.update(state.withAggregate(batch));
@@ -62,6 +65,7 @@ public final class ConsumeFeedstockBatchMaterialService
         batch.batchId(),
         FeedstockBatchMaterialName.of(batch.name().value()),
         command.volume(),
+        materialStateId,
         new FeedstockBatchMaterialEvidenceReference(
             measurement.measurementId().value(),
             measurement.evidenceVersion()

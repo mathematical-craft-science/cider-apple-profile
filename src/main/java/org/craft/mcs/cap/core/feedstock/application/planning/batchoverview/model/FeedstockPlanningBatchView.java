@@ -11,6 +11,7 @@ import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.Feedsto
 import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.FermentationStartReadinessAssessment;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileEvaluation;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
+import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -25,6 +26,7 @@ import static java.util.Objects.requireNonNull;
  */
 public record FeedstockPlanningBatchView(
     @NonNull FeedstockBatchSummary batch,
+    @NonNull MaterialStateId currentMaterialStateId,
     @Nullable FeedstockCurrentMeasurementView currentMeasurement,
     @NonNull List<@NonNull FeedstockCurrentProfileEvidenceView> profileEvidence,
     @Nullable FeedstockCurrentMeasurementFreshnessView measurementFreshness,
@@ -39,6 +41,7 @@ public record FeedstockPlanningBatchView(
 
   public FeedstockPlanningBatchView {
     requireNonNull(batch, "feedstock batch summary cannot be null");
+    requireNonNull(currentMaterialStateId, "feedstock current material state id cannot be null");
     profileEvidence = List.copyOf(requireNonNull(profileEvidence, "feedstock profile evidence cannot be null"));
     requireNonNull(planningReadiness, "feedstock planning readiness cannot be null");
     requireNonNull(dataQuality, "feedstock current profile data quality cannot be null");
@@ -46,6 +49,7 @@ public record FeedstockPlanningBatchView(
 
   public FeedstockPlanningBatchView(
       @NonNull FeedstockBatchSummary batch,
+      @NonNull MaterialStateId currentMaterialStateId,
       @Nullable FeedstockCurrentMeasurementView currentMeasurement,
       @Nullable FeedstockCurrentMeasurementFreshnessView measurementFreshness,
       @Nullable SugarAcidityProfileEvaluation sugarAcidity,
@@ -58,6 +62,7 @@ public record FeedstockPlanningBatchView(
   ) {
     this(
         batch,
+        currentMaterialStateId,
         currentMeasurement,
         List.of(),
         measurementFreshness,

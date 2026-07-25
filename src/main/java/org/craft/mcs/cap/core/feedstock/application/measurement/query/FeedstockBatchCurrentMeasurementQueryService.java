@@ -7,7 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchHasNoMeasurementsException;
 import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementView;
 import org.craft.mcs.cap.core.feedstock.application.measurement.port.out.FeedstockMeasurementQueryRepository;
-import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.out.LatestFeedstockMeasurementSugarAcidityPointCandidateQuery;
+import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.out.CurrentFeedstockBatchSugarAcidityPointCandidateQuery;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
@@ -18,10 +18,9 @@ import static java.util.Objects.requireNonNull;
 /**
  * Application query boundary for the current chemical state of a {@code FeedstockBatch}.
  *
- * <p>Feedstock measurements are historical observations. Batch-level decisions must use only the
- * current measurement, defined as the measurement with the greatest {@code measuredAt}; ties are
- * resolved by the greatest measurement id. Persistence adapters may optimize the query, but use
- * cases should depend on this service so the rule remains explicit in the application layer.
+ * <p>Feedstock measurements are historical evidence. Batch-level decisions use a state-aware
+ * composite profile that selects the nearest applicable evidence for each characteristic along
+ * the current material-state lineage.
  */
 @Component
 @RequiredArgsConstructor
@@ -40,15 +39,15 @@ public final class FeedstockBatchCurrentMeasurementQueryService {
       @NonNull FeedstockBatchId batchId
   ) {
     requireNonNull(batchId, "feedstock batch id cannot be null");
-    return feedstockMeasurementQueryRepository.findLatestByBatchId(batchId);
+    return feedstockMeasurementQueryRepository.findCurrentByBatchId(batchId);
   }
 
   public @NonNull List<@NonNull FeedstockMeasurementView> findCurrentSugarAcidityPointCandidates(
-      @NonNull LatestFeedstockMeasurementSugarAcidityPointCandidateQuery query
+      @NonNull CurrentFeedstockBatchSugarAcidityPointCandidateQuery query
   ) {
     requireNonNull(query, "current feedstock batch sugar-acidity point candidate query cannot be null");
 
-    return feedstockMeasurementQueryRepository.findLatestSugarAcidityPointCandidates(query);
+    return feedstockMeasurementQueryRepository.findCurrentSugarAcidityPointCandidates(query);
   }
 
   public @NonNull List<@NonNull FeedstockMeasurementView> findCurrentMeasurementsByBatchIds(
@@ -59,6 +58,6 @@ public final class FeedstockBatchCurrentMeasurementQueryService {
       return List.of();
     }
 
-    return feedstockMeasurementQueryRepository.findLatestByBatchIds(batchIds);
+    return feedstockMeasurementQueryRepository.findCurrentByBatchIds(batchIds);
   }
 }

@@ -15,14 +15,15 @@ import org.craft.mcs.cap.core.measurement.application.model.MeasurementSetView;
 import org.craft.mcs.cap.core.measurement.application.port.in.CreateMeasurementSetCommand;
 import org.craft.mcs.cap.core.measurement.application.port.in.PatchMeasurementSetCommand;
 import org.craft.mcs.cap.core.measurement.application.port.in.ReplaceMeasurementSetCommand;
-import org.craft.mcs.cap.core.measurement.domain.model.MeasurementCharacteristic;
+import org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementCorrectionReason;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementProvenance;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementRecordRole;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetName;
-import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSourceType;
+import org.craft.mcs.cap.shared.kernel.measurement.MeasurementSourceType;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSubjectReference;
 import org.craft.mcs.cap.shared.kernel.characteristic.CharacteristicValue;
+import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.core.measurement.domain.projection.MeasurementChemicalProfileProjector;
 import org.craft.mcs.cap.infrastructure.adapter.in.measurement.MeasurementValueInputAcl;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.dto.ChemicalMeasurementRequest;
@@ -70,11 +71,13 @@ final class FeedstockMeasurementCompatibilityMapper {
 
   @NonNull CreateMeasurementSetCommand toCommand(
       @NonNull MeasurementSubjectReference subject,
+      @NonNull MaterialStateId expectedCurrentStateId,
       @NonNull CreateFeedstockMeasurementRequest request
   ) {
     return new CreateMeasurementSetCommand(
         null,
         subject,
+        expectedCurrentStateId,
         MeasurementSetName.of(request.name()),
         request.note(),
         inputs(request.chemicalProfile(), request.measuredAt(), Map.of())

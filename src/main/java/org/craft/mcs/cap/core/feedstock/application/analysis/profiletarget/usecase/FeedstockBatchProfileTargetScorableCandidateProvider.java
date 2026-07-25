@@ -11,7 +11,7 @@ import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.Sug
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.application.model.SugarAcidityZoneCriteria;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.SugarAcidityZoneAssessment;
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.ScoreFeedstockBatchProfileTargetCommand;
-import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.out.LatestFeedstockMeasurementSugarAcidityPointCandidateQuery;
+import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.out.CurrentFeedstockBatchSugarAcidityPointCandidateQuery;
 import org.craft.mcs.cap.core.feedstock.application.measurement.query.FeedstockBatchCurrentMeasurementQueryService;
 import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementView;
 import org.jspecify.annotations.NonNull;
@@ -22,11 +22,11 @@ import static java.util.Objects.requireNonNull;
 
 
 /**
- * Selects latest feedstock batch measurements that can participate in profile-target scoring.
+ * Selects current Feedstock material states that can participate in profile-target scoring.
  *
- * <p>The provider enforces the feedstock planning rule: profile-target candidates are based on
- * the latest measurement only. It does not calculate distance or contribution roles; it only builds
- * the normalized candidate input shared by the score endpoint and analysis candidate endpoint.
+ * <p>The provider uses state-aware current evidence and only builds the normalized candidate input
+ * shared by the score endpoint and analysis candidate endpoint. It does not calculate distance or
+ * contribution roles.
  */
 @Component
 @RequiredArgsConstructor
@@ -43,7 +43,7 @@ public final class FeedstockBatchProfileTargetScorableCandidateProvider {
     requireNonNull(command, "score feedstock batch profile target command cannot be null");
 
     return currentMeasurementQueryService.findCurrentSugarAcidityPointCandidates(
-            new LatestFeedstockMeasurementSugarAcidityPointCandidateQuery(
+            new CurrentFeedstockBatchSugarAcidityPointCandidateQuery(
                 command.workspaceId(),
                 command.filters().batch(),
                 command.filters().season(),
@@ -94,7 +94,7 @@ public final class FeedstockBatchProfileTargetScorableCandidateProvider {
       return true;
     }
     return sugarAcidityProfileProjector.assessCapability(evaluation, criteria.capability()).capable()
-        == Boolean.TRUE.equals(criteria.capable());
+        == criteria.capable(); // NOSONAR
   }
 
   private static boolean matchesSugarAcidityZone(

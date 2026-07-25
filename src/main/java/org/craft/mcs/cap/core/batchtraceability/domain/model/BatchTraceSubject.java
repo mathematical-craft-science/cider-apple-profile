@@ -1,7 +1,6 @@
 package org.craft.mcs.cap.core.batchtraceability.domain.model;
 
-import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
-
+import java.util.UUID;
 import org.jmolecules.ddd.annotation.ValueObject;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -9,35 +8,30 @@ import org.jspecify.annotations.Nullable;
 import static java.util.Objects.requireNonNull;
 
 
+/**
+ * Stable business subject identity used across immutable material states.
+ *
+ * <p>{@code displayNameSnapshot} is intentionally a string: it preserves a historical label and is
+ * not the authoritative name of the owning aggregate.
+ */
 @ValueObject
 public record BatchTraceSubject(
     @NonNull BatchTraceSubjectType type,
-    @NonNull String id,
+    @NonNull UUID id,
     @Nullable String displayNameSnapshot
 ) {
 
   public BatchTraceSubject {
     requireNonNull(type, "batch trace subject type cannot be null");
-    id = normalizeRequired(id, "batch trace subject id cannot be blank");
+    requireNonNull(id, "batch trace subject id cannot be null");
     displayNameSnapshot = normalize(displayNameSnapshot);
   }
 
   public static @NonNull BatchTraceSubject of(
       @NonNull BatchTraceSubjectType type,
-      @NonNull String id
+      @NonNull UUID id
   ) {
     return new BatchTraceSubject(type, id, null);
-  }
-
-  private static @NonNull String normalizeRequired(
-      @NonNull String value,
-      @NonNull String message
-  ) {
-    final var normalized = requireNonNull(value, message).strip();
-    if (normalized.isEmpty()) {
-      throw new DomainRuleViolationException(message);
-    }
-    return normalized;
   }
 
   private static @Nullable String normalize(@Nullable String value) {

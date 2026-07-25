@@ -6,10 +6,9 @@ import java.util.List;
 import org.craft.mcs.cap.core.batchtraceability.application.port.in.AppendBatchTraceStepUseCase;
 import org.craft.mcs.cap.core.batchtraceability.application.usecase.AppendBatchTraceStepService;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceActorReference;
-import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceOperationType;
+import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStepType;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStep;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStepSubject;
-import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceSubject;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceSubjectType;
 import org.craft.mcs.cap.shared.testing.jdbc.PostgresDataJdbcTestConfiguration;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
@@ -27,15 +26,18 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.craft.mcs.cap.shared.testing.BatchTraceSubjects.subject;
 
 
 @DataJdbcTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import({
-    PostgresDataJdbcTestConfiguration.class,
-    JdbcBatchTraceabilityStore.class,
-    AppendBatchTraceStepService.class
-})
+@Import(
+    {
+        PostgresDataJdbcTestConfiguration.class,
+        JdbcBatchTraceabilityStore.class,
+        AppendBatchTraceStepService.class
+    }
+)
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
 class AppendBatchTraceStepMandatoryDataJdbcTest {
 
@@ -88,9 +90,9 @@ class AppendBatchTraceStepMandatoryDataJdbcTest {
     return BatchTraceStep.create(
         workspaceId,
         null,
-        BatchTraceOperationType.CREATE_FEEDSTOCK_BATCH,
+        BatchTraceStepType.FEEDSTOCK_BATCH_CREATED,
         List.of(),
-        List.of(BatchTraceStepSubject.of(BatchTraceSubject.of(
+        List.of(BatchTraceStepSubject.of(subject(
             BatchTraceSubjectType.FEEDSTOCK_BATCH,
             "feedstock-1"
         ))),

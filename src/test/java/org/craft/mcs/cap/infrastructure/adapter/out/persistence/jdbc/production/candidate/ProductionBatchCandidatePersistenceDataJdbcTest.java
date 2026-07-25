@@ -27,6 +27,7 @@ import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
+import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
@@ -143,9 +144,10 @@ class ProductionBatchCandidatePersistenceDataJdbcTest {
             workspaceId,
             composition,
             Map.of(sourceReference, ProductionSourceEvidenceReference.of("measurement-2026-07-16")),
+            Map.of(sourceReference, MaterialStateId.newId()),
             productionProfile()
         ),
-        prediction(productionProfile().sugar()),
+        prediction(productionProfile().specificGravity()),
         ProfileAxisNormalizerCode.SENSITIVITY_UNIT,
         targetDistance(),
         List.of(ChemicalProfileCompositionWarning.TANNIN_INCOMPLETE)

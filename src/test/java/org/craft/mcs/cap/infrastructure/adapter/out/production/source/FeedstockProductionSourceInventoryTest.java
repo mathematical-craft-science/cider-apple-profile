@@ -24,6 +24,7 @@ import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
+import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
@@ -52,6 +53,7 @@ class FeedstockProductionSourceInventoryTest {
         batchId,
         FeedstockBatchMaterialName.of("Late juice"),
         source.volume(),
+        MaterialStateId.newId(),
         new FeedstockBatchMaterialEvidenceReference(
             UUID.fromString("019f0f03-4715-7cbd-a634-a178df719e28"),
             3

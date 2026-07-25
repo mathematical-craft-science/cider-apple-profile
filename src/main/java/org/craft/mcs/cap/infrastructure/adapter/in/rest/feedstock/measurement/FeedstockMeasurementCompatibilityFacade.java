@@ -7,6 +7,7 @@ import org.craft.mcs.cap.core.measurement.application.MeasurementSetNotFoundExce
 import org.craft.mcs.cap.core.measurement.application.model.MeasurementSetView;
 import org.craft.mcs.cap.core.measurement.application.port.in.CorrectMeasurementSetUseCase;
 import org.craft.mcs.cap.core.measurement.application.port.in.CreateMeasurementSetUseCase;
+import org.craft.mcs.cap.core.measurement.application.port.in.GetCurrentMeasurementSubjectStateUseCase;
 import org.craft.mcs.cap.core.measurement.application.port.in.QueryMeasurementSetsUseCase;
 import org.craft.mcs.cap.core.measurement.application.port.in.RetractMeasurementSetCommand;
 import org.craft.mcs.cap.core.measurement.application.port.in.RetractMeasurementSetUseCase;
@@ -35,6 +36,7 @@ public final class FeedstockMeasurementCompatibilityFacade {
   private final @NonNull CorrectMeasurementSetUseCase correctMeasurementSetUseCase;
   private final @NonNull QueryMeasurementSetsUseCase queryMeasurementSetsUseCase;
   private final @NonNull RetractMeasurementSetUseCase retractMeasurementSetUseCase;
+  private final @NonNull GetCurrentMeasurementSubjectStateUseCase currentMeasurementSubjectStateUseCase;
   private final @NonNull FeedstockMeasurementCompatibilityMapper compatibilityMapper;
 
   @NonNull FeedstockMeasurementResponse create(
@@ -43,9 +45,14 @@ public final class FeedstockMeasurementCompatibilityFacade {
   ) {
     requireNonNull(batchId, "feedstock batch id cannot be null");
     requireNonNull(request, "create feedstock measurement request cannot be null");
+    final var subject = subject(batchId);
     return compatibilityMapper.toResponse(
         createMeasurementSetUseCase.create(
-            compatibilityMapper.toCommand(subject(batchId), request)
+            compatibilityMapper.toCommand(
+                subject,
+                currentMeasurementSubjectStateUseCase.currentStateOf(subject),
+                request
+            )
         )
     );
   }

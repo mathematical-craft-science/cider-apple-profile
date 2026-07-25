@@ -4,7 +4,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceOperationType;
+import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStepType;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceActorType;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -24,7 +24,7 @@ public class BatchTraceStepJdbcRow {
   public UUID parentStepId;
 
   @NonNull
-  public BatchTraceOperationType operationType;
+  public BatchTraceStepType stepType;
 
   @NonNull
   public Instant occurredAt;
@@ -52,7 +52,7 @@ public class BatchTraceStepJdbcRow {
       @NonNull UUID stepId,
       @NonNull UUID workspaceId,
       @Nullable UUID parentStepId,
-      @NonNull BatchTraceOperationType operationType,
+      @NonNull BatchTraceStepType stepType,
       @NonNull Instant occurredAt,
       @NonNull BatchTraceActorType performedByType,
       @NonNull String performedById,
@@ -61,7 +61,7 @@ public class BatchTraceStepJdbcRow {
     this.stepId = requireNonNull(stepId, "batch trace step id cannot be null");
     this.workspaceId = requireNonNull(workspaceId, "batch trace workspace id cannot be null");
     this.parentStepId = parentStepId;
-    this.operationType = requireNonNull(operationType, "batch trace operation type cannot be null");
+    this.stepType = requireNonNull(stepType, "batch trace step type cannot be null");
     this.occurredAt = requireNonNull(occurredAt, "batch trace occurred at cannot be null");
     this.performedByType = requireNonNull(performedByType, "batch trace actor type cannot be null");
     this.performedById = requireNonNull(performedById, "batch trace actor id cannot be null");

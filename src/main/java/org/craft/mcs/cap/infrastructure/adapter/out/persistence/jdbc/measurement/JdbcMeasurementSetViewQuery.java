@@ -14,7 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.measurement.application.model.MeasurementRecordView;
 import org.craft.mcs.cap.core.measurement.application.model.MeasurementSetView;
 import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementSetViewQuery;
-import org.craft.mcs.cap.core.measurement.domain.model.MeasurementCharacteristic;
+import org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementCorrectionReason;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementDerivationMethod;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementRecordId;
@@ -27,6 +27,7 @@ import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetRevisionNum
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSubjectReference;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSubjectType;
 import org.craft.mcs.cap.shared.kernel.identity.ActorReference;
+import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -53,6 +54,7 @@ class JdbcMeasurementSetViewQuery implements MeasurementSetViewQuery {
              s.updated_at,
              revision.revision_id,
              revision.revision_number,
+             revision.material_state_id,
              revision.name,
              revision.note,
              revision.correction_reason,
@@ -198,6 +200,7 @@ class JdbcMeasurementSetViewQuery implements MeasurementSetViewQuery {
         resultSet.getLong("version"),
         MeasurementSetRevisionId.of(resultSet.getObject("revision_id", UUID.class)),
         MeasurementSetRevisionNumber.of(resultSet.getInt("revision_number")),
+        MaterialStateId.of(resultSet.getObject("material_state_id", UUID.class)),
         MeasurementSetName.of(resultSet.getString("name")),
         resultSet.getString("note"),
         correctionReason(resultSet.getString("correction_reason")),
@@ -240,6 +243,7 @@ class JdbcMeasurementSetViewQuery implements MeasurementSetViewQuery {
       long version,
       @NonNull MeasurementSetRevisionId revisionId,
       @NonNull MeasurementSetRevisionNumber revisionNumber,
+      @NonNull MaterialStateId materialStateId,
       @NonNull MeasurementSetName name,
       @Nullable String note,
       @Nullable MeasurementCorrectionReason correctionReason,
@@ -260,6 +264,7 @@ class JdbcMeasurementSetViewQuery implements MeasurementSetViewQuery {
           version,
           revisionId,
           revisionNumber,
+          materialStateId,
           name,
           note,
           correctionReason,

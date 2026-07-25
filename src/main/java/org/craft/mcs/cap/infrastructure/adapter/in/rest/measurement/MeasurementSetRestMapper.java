@@ -8,19 +8,17 @@ import org.craft.mcs.cap.core.measurement.application.model.MeasurementSetView;
 import org.craft.mcs.cap.core.measurement.application.port.in.CreateMeasurementSetCommand;
 import org.craft.mcs.cap.core.measurement.application.port.in.PatchMeasurementSetCommand;
 import org.craft.mcs.cap.core.measurement.application.port.in.ReplaceMeasurementSetCommand;
-import org.craft.mcs.cap.core.measurement.domain.model.MeasurementCharacteristic;
+import org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementCorrectionReason;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementProvenance;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementRecordId;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetId;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetName;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSubjectReference;
-import org.craft.mcs.cap.core.measurement.domain.model.MeasurementValueKind;
 import org.craft.mcs.cap.infrastructure.adapter.in.measurement.MeasurementValueInputAcl;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement.dto.CreateMeasurementSetRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement.dto.DirectMeasurementCharacteristicRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement.dto.IntervalMeasurementValueRequest;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement.dto.IntervalMeasurementValueResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement.dto.MeasurementActorReferenceResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement.dto.MeasurementCharacteristicRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement.dto.MeasurementProvenanceRequest;
@@ -30,17 +28,12 @@ import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement.dto.Measurem
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement.dto.MeasurementSubjectRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement.dto.MeasurementSubjectResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement.dto.MeasurementValueRequest;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement.dto.MeasurementValueResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement.dto.PatchMeasurementSetRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement.dto.PointMeasurementValueRequest;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement.dto.PointMeasurementValueResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement.dto.RepeatedMeasurementCharacteristicRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement.dto.ReplaceMeasurementSetRequest;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.measurement.CanonicalUnitLabels;
-import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
 import org.craft.mcs.cap.shared.kernel.characteristic.CharacteristicValue;
-import org.craft.mcs.cap.shared.kernel.characteristic.IntervalCharacteristicValue;
-import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
+import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.shared.kernel.measurement.MeasuredValue;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
@@ -68,6 +61,7 @@ public final class MeasurementSetRestMapper {
     return new CreateMeasurementSetCommand(
         request.measurementSetId() == null ? null : MeasurementSetId.of(request.measurementSetId()), // NOSONAR
         toSubject(request.subject()),
+        MaterialStateId.of(request.expectedCurrentStateId()),
         MeasurementSetName.of(request.name()),
         request.note(),
         toInputs(request.measurements())
@@ -121,6 +115,7 @@ public final class MeasurementSetRestMapper {
         view.version(),
         view.revisionId().value(),
         view.revisionNumber().value(),
+        view.materialStateId().value(),
         view.name().value(),
         view.note(),
         view.correctionReason() == null ? null : view.correctionReason().value(), // NOSONAR
@@ -131,7 +126,7 @@ public final class MeasurementSetRestMapper {
                 recordView.recordId().value(),
                 recordView.characteristic(),
                 recordView.role(),
-                toResponse(recordView.characteristic(), recordView.value()),
+                MeasurementValueRestMapper.toResponse(recordView.characteristic(), recordView.value()),
                 recordView.measuredAt(),
                 new MeasurementProvenanceResponse(
                     recordView.provenance().sourceType(),
@@ -215,35 +210,6 @@ public final class MeasurementSetRestMapper {
         method(request.method()),
         reference(request.reference()),
         request.confidence()
-    );
-  }
-
-  private static @NonNull MeasurementValueResponse toResponse(
-      @NonNull MeasurementCharacteristic characteristic,
-      @NonNull CharacteristicValue<MeasuredValue> value
-  ) {
-    return switch (value) {
-      case PointCharacteristicValue<MeasuredValue>(var measuredValue) ->
-          new PointMeasurementValueResponse(
-              MeasurementValueKind.POINT,
-              toResponse(characteristic, measuredValue)
-          );
-      case IntervalCharacteristicValue<MeasuredValue>(var lower, var upper) ->
-          new IntervalMeasurementValueResponse(
-              MeasurementValueKind.INTERVAL,
-              toResponse(characteristic, lower),
-              toResponse(characteristic, upper)
-          );
-    };
-  }
-
-  private static @NonNull DecimalQuantityResponse toResponse(
-      @NonNull MeasurementCharacteristic characteristic,
-      @NonNull MeasuredValue value
-  ) {
-    return new DecimalQuantityResponse(
-        value.asBigDecimal(),
-        CanonicalUnitLabels.forCharacteristic(characteristic)
     );
   }
 

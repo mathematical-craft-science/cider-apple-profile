@@ -56,6 +56,7 @@ public final class FeedstockBatchDetailRestMapper {
     requireNonNull(view, "feedstock batch detail view cannot be null");
     return new FeedstockBatchDetailResponse(
         FeedstockBatchRestMapper.toResponse(view.batch()),
+        view.currentMaterialStateId().value(),
         toResponse(view.currentProfile()),
         view.measurements().stream()
             .map(FeedstockMeasurementRestMapper::toResponse)

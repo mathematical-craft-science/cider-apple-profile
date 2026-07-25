@@ -25,7 +25,7 @@ public record BatchTraceStep(
     @NonNull WorkspaceId workspaceId,
     @Identity @NonNull BatchTraceStepId stepId,
     @Nullable BatchTraceStepId parentStepId,
-    @NonNull BatchTraceOperationType operationType,
+    @NonNull BatchTraceStepType stepType,
     @NonNull List<@NonNull BatchTraceStepSubject> inputs,
     @NonNull List<@NonNull BatchTraceStepSubject> outputs,
     @NonNull Instant occurredAt,
@@ -36,7 +36,7 @@ public record BatchTraceStep(
   public BatchTraceStep {
     requireNonNull(workspaceId, "batch trace workspace id cannot be null");
     requireNonNull(stepId, "batch trace step id cannot be null");
-    requireNonNull(operationType, "batch trace operation type cannot be null");
+    requireNonNull(stepType, "batch trace step type cannot be null");
     inputs = List.copyOf(requireNonNull(inputs, "batch trace step inputs cannot be null"));
     outputs = List.copyOf(requireNonNull(outputs, "batch trace step outputs cannot be null"));
     requireNonNull(occurredAt, "batch trace step occurred at cannot be null");
@@ -51,7 +51,7 @@ public record BatchTraceStep(
   public static @NonNull BatchTraceStep create(
       @NonNull WorkspaceId workspaceId,
       @Nullable BatchTraceStepId parentStepId,
-      @NonNull BatchTraceOperationType operationType,
+      @NonNull BatchTraceStepType stepType,
       @NonNull List<@NonNull BatchTraceStepSubject> inputs,
       @NonNull List<@NonNull BatchTraceStepSubject> outputs,
       @NonNull Instant occurredAt,
@@ -62,7 +62,7 @@ public record BatchTraceStep(
         workspaceId,
         BatchTraceStepId.newId(),
         parentStepId,
-        operationType,
+        stepType,
         inputs,
         outputs,
         occurredAt,

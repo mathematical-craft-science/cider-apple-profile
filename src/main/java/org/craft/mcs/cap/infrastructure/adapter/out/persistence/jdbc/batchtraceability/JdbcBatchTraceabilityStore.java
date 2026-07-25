@@ -46,7 +46,7 @@ class JdbcBatchTraceabilityStore implements BatchTraceabilityStore {
               step_id,
               workspace_id,
               parent_step_id,
-              operation_type,
+              step_type,
               occurred_at,
               performed_by_type,
               performed_by_id,
@@ -57,7 +57,7 @@ class JdbcBatchTraceabilityStore implements BatchTraceabilityStore {
               :stepId,
               :workspaceId,
               :parentStepId,
-              :operationType,
+              :stepType,
               :occurredAt,
               :performedByType,
               :performedById,
@@ -69,7 +69,7 @@ class JdbcBatchTraceabilityStore implements BatchTraceabilityStore {
             .addValue("stepId", row.stepId)
             .addValue("workspaceId", row.workspaceId)
             .addValue("parentStepId", row.parentStepId)
-            .addValue("operationType", row.operationType.name())
+            .addValue("stepType", row.stepType.name())
             .addValue("occurredAt", timestamp(row.occurredAt), Types.TIMESTAMP_WITH_TIMEZONE)
             .addValue("performedByType", row.performedByType.name())
             .addValue("performedById", row.performedById)

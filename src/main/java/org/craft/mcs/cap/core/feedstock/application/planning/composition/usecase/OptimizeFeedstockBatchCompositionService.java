@@ -31,7 +31,7 @@ import org.craft.mcs.cap.core.feedstock.application.planning.composition.port.in
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.PredefinedFeedstockProfileTargetSelection;
 import org.craft.mcs.cap.core.feedstock.application.batch.model.FeedstockBatchSummary;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchSummaryQueryRepository;
-import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.out.LatestFeedstockMeasurementSugarAcidityPointCandidateQuery;
+import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.out.CurrentFeedstockBatchSugarAcidityPointCandidateQuery;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityCriteria;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.application.model.SugarAcidityZoneCriteria;
@@ -46,7 +46,7 @@ import static java.util.Objects.requireNonNull;
  * Builds a composition optimization problem from current feedstock batch measurements.
  *
  * <p>The service projects the feedstock bounded context into the generic profile-analysis optimization
- * model: latest batch measurements become optimization sources, batch available volume becomes the
+ * model: current batch profiles become optimization sources, batch available volume becomes the
  * source bound, and the selected target is passed to the shared composition optimizer.
  */
 @Component
@@ -74,7 +74,7 @@ public final class OptimizeFeedstockBatchCompositionService implements OptimizeF
         .stream()
         .collect(Collectors.toMap(FeedstockBatchSummary::batchId, Function.identity()));
     final var sources = currentMeasurementQueryService.findCurrentSugarAcidityPointCandidates(
-            new LatestFeedstockMeasurementSugarAcidityPointCandidateQuery(
+            new CurrentFeedstockBatchSugarAcidityPointCandidateQuery(
                 command.workspaceId(),
                 command.filters().batch(),
                 command.filters().season(),
@@ -148,7 +148,7 @@ public final class OptimizeFeedstockBatchCompositionService implements OptimizeF
       return true;
     }
     return sugarAcidityProfileProjector.assessCapability(evaluation, criteria.capability()).capable()
-        == Boolean.TRUE.equals(criteria.capable());
+        == criteria.capable(); // NOSONAR
   }
 
   private static boolean matchesSugarAcidityZone(

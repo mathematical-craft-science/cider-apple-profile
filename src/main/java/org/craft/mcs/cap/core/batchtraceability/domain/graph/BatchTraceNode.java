@@ -1,9 +1,9 @@
 package org.craft.mcs.cap.core.batchtraceability.domain.graph;
 
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceMaterialSnapshot;
-import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStateId;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStepSubject;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceSubject;
+import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.jmolecules.ddd.annotation.ValueObject;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -14,7 +14,7 @@ import static java.util.Objects.requireNonNull;
 /** Read-model node representing one immutable historical state of a business material. */
 @ValueObject
 public record BatchTraceNode(
-    @NonNull BatchTraceStateId traceStateId,
+    @NonNull MaterialStateId traceStateId,
     @NonNull BatchTraceSubject subject,
     @Nullable BatchTraceMaterialSnapshot snapshot
 ) {

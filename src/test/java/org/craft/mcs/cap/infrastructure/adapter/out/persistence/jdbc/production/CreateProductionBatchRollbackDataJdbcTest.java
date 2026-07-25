@@ -10,6 +10,7 @@ import java.util.Optional;
 import org.craft.mcs.cap.core.production.application.authorization.port.out.ProductionAccessControl;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
+import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.core.production.application.port.in.CreateProductionBatchCommand;
 import org.craft.mcs.cap.core.production.application.port.out.ConsumedProductionSource;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionSourceDisplayName;
@@ -67,6 +68,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 })
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
 class CreateProductionBatchRollbackDataJdbcTest {
+
+  private static final MaterialStateId SOURCE_STATE_ID = MaterialStateId.newId();
 
   @Autowired
   private @NonNull CreateProductionBatchService service;
@@ -161,9 +164,10 @@ class CreateProductionBatchRollbackDataJdbcTest {
             workspaceId,
             composition,
             Map.of(sourceReference, evidenceReference()),
+            Map.of(sourceReference, SOURCE_STATE_ID),
             productionProfile()
         ),
-        prediction(productionProfile().sugar()),
+        prediction(productionProfile().specificGravity()),
         null,
         null,
         List.of()
@@ -210,6 +214,7 @@ class CreateProductionBatchRollbackDataJdbcTest {
                 axis(ChemicalAxis.TANNIN, "1400")
             ),
             ConfidenceLevel.LAB_VERIFIED,
+            SOURCE_STATE_ID,
             evidenceReference()
         );
       };

@@ -1,10 +1,12 @@
 package org.craft.mcs.cap.feedstock.application.batch.usecase;
 
 import java.time.LocalDate;
+import java.time.Clock;
 import java.util.function.Supplier;
 import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.CreateFeedstockBatchCommand;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchRepository;
+import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchTraceRecorder;
 import org.craft.mcs.cap.core.feedstock.application.batch.usecase.CreateFeedstockBatchService;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
@@ -34,8 +36,10 @@ class CreateFeedstockBatchServiceTest {
     final var repository = mock(FeedstockBatchRepository.class);
     final var service = new CreateFeedstockBatchService(
         repository,
+        mock(FeedstockBatchTraceRecorder.class),
         mock(FeedstockAccessControl.class),
-        transactionHelper()
+        transactionHelper(),
+        Clock.systemUTC()
     );
     final var workspaceId = WorkspaceId.of(newUuid());
     when(repository.create(any(FeedstockBatch.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -64,8 +68,10 @@ class CreateFeedstockBatchServiceTest {
     final var repository = mock(FeedstockBatchRepository.class);
     final var service = new CreateFeedstockBatchService(
         repository,
+        mock(FeedstockBatchTraceRecorder.class),
         mock(FeedstockAccessControl.class),
-        transactionHelper()
+        transactionHelper(),
+        Clock.systemUTC()
     );
     final var command = new CreateFeedstockBatchCommand(
         WorkspaceId.of(newUuid()),

@@ -2,41 +2,19 @@ package org.craft.mcs.cap.core.batchtraceability.domain.model;
 
 
 /**
- * Type of business object participating in batch traceability.
+ * Type of material aggregate whose immutable states participate in batch traceability.
+ *
+ * <p>Measurements, calculations and assessments are evidence or operation facts. They do not
+ * represent material and therefore are not trace subjects.
  */
 public enum BatchTraceSubjectType {
   /**
-   * Feedstock batch material before production.
+   * Liquid source material managed as a FeedstockBatch.
    */
   FEEDSTOCK_BATCH,
 
   /**
-   * Measurement recorded for feedstock material.
+   * Bulk material managed through the ProductionBatch lifecycle.
    */
-  FEEDSTOCK_MEASUREMENT,
-
-  /**
-   * Accepted or calculated composition result used as a production input.
-   */
-  COMPOSITION_RESULT,
-
-  /**
-   * Production batch created from accepted material input.
-   */
-  PRODUCTION_BATCH,
-
-  /**
-   * Fermentation process reading.
-   */
-  FERMENTATION_READING,
-
-  /**
-   * Bottled or packaged lot.
-   */
-  BOTTLE_LOT,
-
-  /**
-   * Final product chemical or sensory assessment.
-   */
-  FINISHED_PRODUCT_ASSESSMENT
+  PRODUCTION_BATCH
 }

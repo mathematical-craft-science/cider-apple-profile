@@ -12,6 +12,7 @@ import org.craft.mcs.cap.core.feedstock.application.inventory.port.in.ConsumeFee
 import org.craft.mcs.cap.core.feedstock.application.inventory.port.in.ConsumedFeedstockBatchMaterial;
 import org.craft.mcs.cap.core.feedstock.application.inventory.usecase.ConsumeFeedstockBatchMaterialService;
 import org.craft.mcs.cap.core.feedstock.application.measurement.query.FeedstockBatchCurrentMeasurementQueryService;
+import org.craft.mcs.cap.core.feedstock.application.inventory.port.out.FeedstockMaterialStateProvider;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
@@ -23,6 +24,7 @@ import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockM
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
+import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
@@ -138,9 +140,16 @@ class ConsumeFeedstockBatchMaterialServiceTest {
     return new ConsumeFeedstockBatchMaterialService(
         repository,
         measurementQuery,
+        stateProvider(),
         accessControl,
         transactionHelper()
     );
+  }
+
+  private static @NonNull FeedstockMaterialStateProvider stateProvider() {
+    final var provider = mock(FeedstockMaterialStateProvider.class);
+    when(provider.currentStateOf(any())).thenReturn(MaterialStateId.newId());
+    return provider;
   }
 
   private static @NonNull FeedstockBatch batch(@NonNull WorkspaceId workspaceId) {

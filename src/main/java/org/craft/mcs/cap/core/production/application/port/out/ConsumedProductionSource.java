@@ -4,6 +4,7 @@ import org.craft.mcs.cap.core.production.candidate.domain.model.ProductionSource
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceReference;
 import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
+import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -23,12 +24,14 @@ public record ConsumedProductionSource(
     @NonNull VolumeValue volume,
     @Nullable ChemicalProfileAxes profile,
     @Nullable ConfidenceLevel confidence,
+    @NonNull MaterialStateId materialStateId,
     @NonNull ProductionSourceEvidenceReference evidenceReference
 ) {
 
   public ConsumedProductionSource {
     requireNonNull(reference, "production source reference cannot be null");
     requireNonNull(volume, "consumed production source volume cannot be null");
+    requireNonNull(materialStateId, "consumed production source material state id cannot be null");
     requireNonNull(evidenceReference, "production source evidence reference cannot be null");
   }
 }

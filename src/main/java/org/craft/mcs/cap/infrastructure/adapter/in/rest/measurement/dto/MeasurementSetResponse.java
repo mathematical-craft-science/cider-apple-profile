@@ -55,6 +55,13 @@ public record MeasurementSetResponse(
     )
     int revisionNumber,
     @Schema(
+        description = "Immutable material state to which this measurement revision applies. "
+            + "Corrections retain the same state identifier.",
+        format = "uuid",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
+    @NonNull UUID materialStateId,
+    @Schema(
         description = "Human-readable name stored in this revision.",
         minLength = 1,
         maxLength = 160,

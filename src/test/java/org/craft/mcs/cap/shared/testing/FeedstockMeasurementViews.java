@@ -1,6 +1,7 @@
 package org.craft.mcs.cap.shared.testing;
 
 import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementView;
+import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.jspecify.annotations.NonNull;
 
 /**
@@ -17,6 +18,7 @@ public final class FeedstockMeasurementViews {
     return new FeedstockMeasurementView(
         measurement.measurementId(),
         measurement.batchId(),
+        MaterialStateId.newId(),
         measurement.name(),
         measurement.chemicalProfile(),
         measurement.measuredAt(),

@@ -29,6 +29,7 @@ import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
+import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.characteristic.IntervalCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
@@ -90,6 +91,7 @@ class FeedstockWorkspaceRestMapperTest {
   private static @NonNull FeedstockPlanningBatchView batchView() {
     return new FeedstockPlanningBatchView(
         batch(),
+        MaterialStateId.newId(),
         new FeedstockCurrentMeasurementView(
             FeedstockMeasurementId.newId(),
             FeedstockMeasurementName.of("Current profile"),

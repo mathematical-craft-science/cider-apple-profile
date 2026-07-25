@@ -1,6 +1,7 @@
 package org.craft.mcs.cap.core.production.application.model;
 
 import java.util.List;
+import org.craft.mcs.cap.shared.application.measurement.MeasurementEvidenceView;
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.jspecify.annotations.NonNull;
 
@@ -10,7 +11,7 @@ import static java.util.Objects.requireNonNull;
 /** Production-owned current measurement projection supplied through an outbound boundary. */
 public record ProductionMeasurementProfileView(
     @NonNull ChemicalProfile chemicalProfile,
-    @NonNull List<@NonNull ProductionMeasurementEvidenceView> evidence
+    @NonNull List<@NonNull MeasurementEvidenceView> evidence
 ) {
 
   public ProductionMeasurementProfileView {

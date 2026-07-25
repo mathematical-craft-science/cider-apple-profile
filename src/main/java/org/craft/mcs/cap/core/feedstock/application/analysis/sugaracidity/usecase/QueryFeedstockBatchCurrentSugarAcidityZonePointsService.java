@@ -16,7 +16,7 @@ import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.i
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.QueryFeedstockBatchCurrentSugarAcidityZonePointsUseCase;
 import org.craft.mcs.cap.core.feedstock.application.batch.model.FeedstockBatchSummary;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchSummaryQueryRepository;
-import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.out.LatestFeedstockMeasurementSugarAcidityPointCandidateQuery;
+import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.out.CurrentFeedstockBatchSugarAcidityPointCandidateQuery;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityCriteria;
 import org.craft.mcs.cap.shared.application.query.pagination.ChunkedCursorPageCollector;
@@ -33,9 +33,8 @@ import static java.util.stream.Collectors.toMap;
 /**
  * Read-side use case for current feedstock batch points on the sugar-acidity graph.
  *
- * <p>The service applies the product rule that only the latest measurement of each batch represents
- * the current batch profile. It then evaluates capability and zone filters in the application
- * layer, returning cursor pages for feedstock graph clients.
+ * <p>The service projects each batch's current material state, then evaluates capability and zone
+ * filters in the application layer and returns cursor pages for feedstock graph clients.
  */
 @Component
 @RequiredArgsConstructor
@@ -63,7 +62,7 @@ public final class QueryFeedstockBatchCurrentSugarAcidityZonePointsService
     return ChunkedCursorPageCollector.collect(
         query.page(),
         (afterPosition, limit) -> currentMeasurementQueryService.findCurrentSugarAcidityPointCandidates(
-            new LatestFeedstockMeasurementSugarAcidityPointCandidateQuery(
+            new CurrentFeedstockBatchSugarAcidityPointCandidateQuery(
                 query.workspaceId(),
                 query.filters().batch(),
                 query.filters().season(),

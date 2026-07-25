@@ -26,6 +26,8 @@ public interface MeasurementSetApi {
 
   @Operation(
       summary = "Create a logical measurement set",
+      description = "Records evidence against the expected current material state without changing that state. "
+          + "The expected identifier protects the measurement from concurrent material lifecycle operations.",
       requestBody = @RequestBody(
           required = true,
           content = @Content(
@@ -39,6 +41,14 @@ public interface MeasurementSetApi {
       content = @Content(
           mediaType = APPLICATION_JSON_VALUE,
           schema = @Schema(implementation = MeasurementSetResponse.class)
+      )
+  )
+  @ApiResponse(
+      responseCode = "409",
+      description = "The expected current material state is stale.",
+      content = @Content(
+          mediaType = APPLICATION_JSON_VALUE,
+          schema = @Schema(implementation = ProblemDetail.class)
       )
   )
   @NonNull ResponseEntity<@NonNull MeasurementSetResponse> create(

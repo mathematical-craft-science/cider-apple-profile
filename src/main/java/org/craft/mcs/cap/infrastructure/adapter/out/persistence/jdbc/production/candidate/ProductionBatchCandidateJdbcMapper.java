@@ -39,8 +39,8 @@ final class ProductionBatchCandidateJdbcMapper {
         candidate.status(),
         codec.encodeSources(candidate),
         candidate.sourceComposition().totalVolume().liters(),
-        profile.sugar().asBigDecimal(),
-        profile.acidity().asBigDecimal(),
+        profile.specificGravity().asBigDecimal(),
+        profile.titratableAcidity().asBigDecimal(),
         tannin(profile),
         yeastAssimilableNitrogen(profile),
         snapshot.potentialAbv().predictedFinalGravity().asBigDecimal(),
@@ -72,8 +72,8 @@ final class ProductionBatchCandidateJdbcMapper {
     entity.status = candidate.status();
     entity.sourcesJson = codec.encodeSources(candidate);
     entity.totalVolumeLiters = candidate.sourceComposition().totalVolume().liters();
-    entity.sugarSpecificGravity = profile.sugar().asBigDecimal();
-    entity.acidityGLAsMalic = profile.acidity().asBigDecimal();
+    entity.sugarSpecificGravity = profile.specificGravity().asBigDecimal();
+    entity.acidityGLAsMalic = profile.titratableAcidity().asBigDecimal();
     entity.tanninMgLTae = tannin(profile);
     entity.yeastAssimilableNitrogenMgNL = yeastAssimilableNitrogen(profile);
     entity.predictedFinalGravity = snapshot.potentialAbv().predictedFinalGravity().asBigDecimal();
@@ -102,6 +102,7 @@ final class ProductionBatchCandidateJdbcMapper {
         WorkspaceId.of(entity.workspaceId),
         sources.composition(),
         sources.evidence(),
+        sources.materialStates(),
         new ProductionProfileSnapshot(
             SpecificGravityValue.of(entity.sugarSpecificGravity),
             TitratableAcidityValue.of(entity.acidityGLAsMalic),
@@ -118,7 +119,7 @@ final class ProductionBatchCandidateJdbcMapper {
     return new ProductionBatchCandidateSnapshot(
         candidate,
         new PotentialAbvPrediction(
-            candidate.profile().sugar(),
+            candidate.profile().specificGravity(),
             SpecificGravityValue.of(entity.predictedFinalGravity),
             entity.predictedFinalGravitySource,
             AbvValue.of(entity.potentialAbvPercent),

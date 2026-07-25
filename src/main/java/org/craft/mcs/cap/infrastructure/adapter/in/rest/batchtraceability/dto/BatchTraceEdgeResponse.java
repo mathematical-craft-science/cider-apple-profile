@@ -5,7 +5,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
-import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceOperationType;
+import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStepType;
 import org.jspecify.annotations.NonNull;
 
 
@@ -18,20 +18,20 @@ public record BatchTraceEdgeResponse(
     )
     @NonNull UUID stepId,
     @Schema(
-        description = "Trace operation type.",
-        implementation = BatchTraceOperationType.class,
+        description = "Kind of immutable trace fact represented by this step.",
+        implementation = BatchTraceStepType.class,
         requiredMode = Schema.RequiredMode.REQUIRED
     )
-    @NonNull BatchTraceOperationType operationType,
+    @NonNull BatchTraceStepType stepType,
     @Schema(
-        description = "Business time when the trace operation occurred.",
+        description = "Business time when the trace fact occurred.",
         format = "date-time",
         requiredMode = Schema.RequiredMode.REQUIRED
     )
     @NonNull Instant occurredAt,
     @ArraySchema(
         arraySchema = @Schema(
-            description = "Input subjects consumed or referenced by the operation.",
+            description = "Input material states consumed or referenced by the trace step.",
             requiredMode = Schema.RequiredMode.REQUIRED
         ),
         schema = @Schema(implementation = BatchTraceStepSubjectResponse.class)
@@ -39,7 +39,7 @@ public record BatchTraceEdgeResponse(
     @NonNull List<@NonNull BatchTraceStepSubjectResponse> inputs,
     @ArraySchema(
         arraySchema = @Schema(
-            description = "Output subjects produced or updated by the operation.",
+            description = "Output material states produced by the trace step.",
             requiredMode = Schema.RequiredMode.REQUIRED
         ),
         schema = @Schema(implementation = BatchTraceStepSubjectResponse.class)

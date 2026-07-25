@@ -75,10 +75,10 @@ public final class QueryBatchTraceabilityService implements QueryBatchTraceabili
   private void collectSourceSteps(
       @NonNull WorkspaceId workspaceId,
       @NonNull BatchTraceSubject subject,
-      @NonNull Set<@NonNull String> visitedSubjects,
+      @NonNull Set<@NonNull BatchTraceSubject> visitedSubjects,
       @NonNull LinkedHashMap<@NonNull BatchTraceStepId, @NonNull BatchTraceStep> stepsById
   ) {
-    if (!visitedSubjects.add(subjectKey(subject))) {
+    if (!visitedSubjects.add(subject)) {
       return;
     }
 
@@ -88,9 +88,5 @@ public final class QueryBatchTraceabilityService implements QueryBatchTraceabili
         collectSourceSteps(workspaceId, input.subject(), visitedSubjects, stepsById);
       }
     }
-  }
-
-  private static @NonNull String subjectKey(@NonNull BatchTraceSubject subject) {
-    return subject.type().name() + ':' + subject.id();
   }
 }

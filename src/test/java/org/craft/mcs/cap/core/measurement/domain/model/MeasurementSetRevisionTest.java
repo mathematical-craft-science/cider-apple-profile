@@ -1,12 +1,16 @@
 package org.craft.mcs.cap.core.measurement.domain.model;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
 import org.craft.mcs.cap.shared.kernel.characteristic.IntervalCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.identity.ActorReference;
+import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.shared.kernel.measurement.MeasuredValue;
+import org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic;
+import org.craft.mcs.cap.shared.kernel.measurement.MeasurementSourceType;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -29,8 +33,8 @@ class MeasurementSetRevisionTest {
   @Test
   void preservesCanonicalIntervalBoundsWithoutStoredMean() {
     final var value = IntervalCharacteristicValue.of(
-        value(MeasurementCharacteristic.SPECIFIC_GRAVITY, new java.math.BigDecimal("1.048")),
-        value(MeasurementCharacteristic.SPECIFIC_GRAVITY, new java.math.BigDecimal("1.052"))
+        value(MeasurementCharacteristic.SPECIFIC_GRAVITY, new BigDecimal("1.048")),
+        value(MeasurementCharacteristic.SPECIFIC_GRAVITY, new BigDecimal("1.052"))
     );
 
     assertThat(value)
@@ -126,6 +130,7 @@ class MeasurementSetRevisionTest {
     return new MeasurementSetRevision(
         MeasurementSetRevisionId.newId(),
         MeasurementSetRevisionNumber.of(revisionNumber),
+        MaterialStateId.newId(),
         MeasurementSetName.of("Laboratory result"),
         null,
         correctionReason == null ? null : MeasurementCorrectionReason.of(correctionReason),
@@ -166,7 +171,7 @@ class MeasurementSetRevisionTest {
       String value
   ) {
     return PointCharacteristicValue.of(
-        value(characteristic, new java.math.BigDecimal(value))
+        value(characteristic, new BigDecimal(value))
     );
   }
 }
