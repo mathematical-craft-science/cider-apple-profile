@@ -110,10 +110,10 @@ class CreateProductionBatchRollbackDataJdbcTest {
   ) {
     jdbcTemplate.update("""
         INSERT INTO feedstock_batches (
-            batch_id, workspace_id, name, type, season_starts_on, season_ends_on,
+            batch_id, workspace_id, name, type, season_starts_on, season_ends_on, lifecycle,
             available_volume_liters, version, created_at, updated_at
         ) VALUES (?, ?, 'Late juice', 'JUICE', DATE '2026-01-01', DATE '2026-12-31',
-                  250, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+                  'ACTIVE', 250, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
         """, sourceReference.id(), workspaceId.value());
   }
 
@@ -207,7 +207,9 @@ class CreateProductionBatchRollbackDataJdbcTest {
         return new ConsumedProductionSource(
             source.reference(),
             ProductionSourceDisplayName.of("Late juice"),
+            VolumeValue.ofLiters("250"),
             source.volume(),
+            VolumeValue.ofLiters("150"),
             ChemicalProfileAxes.of(
                 axis(ChemicalAxis.SUGAR, "1.050"),
                 axis(ChemicalAxis.ACIDITY, "6.1"),

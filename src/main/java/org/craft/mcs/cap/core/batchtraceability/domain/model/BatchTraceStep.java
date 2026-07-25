@@ -46,6 +46,9 @@ public record BatchTraceStep(
     if (outputs.isEmpty()) {
       throw new DomainRuleViolationException("batch trace step must contain at least one output subject");
     }
+    if (outputs.stream().map(BatchTraceStepSubject::traceStateId).distinct().count() != outputs.size()) {
+      throw new DomainRuleViolationException("batch trace step output state ids must be unique");
+    }
   }
 
   public static @NonNull BatchTraceStep create(

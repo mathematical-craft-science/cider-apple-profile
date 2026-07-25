@@ -152,6 +152,19 @@ class MassBalanceChemicalProfileCompositionStrategyTest {
         .hasMessageContaining("a");
   }
 
+  @Test
+  void rejectsDuplicateSourceReferences() {
+    assertThatThrownBy(() -> new ChemicalProfileCompositionRequest(
+        List.of(
+            source("same", axes("1.060", "5.0", null), CompositionProportion.of("0.5")),
+            source("same", axes("1.040", "9.0", null), CompositionProportion.of("0.5"))
+        ),
+        ChemicalProfileCompositionTanninPolicy.CALCULATE_WHEN_COMPLETE
+    ))
+        .isInstanceOf(InvalidChemicalProfileCompositionException.class)
+        .hasMessageContaining("each source exactly once");
+  }
+
   private static @NonNull ChemicalProfileCompositionSource source(
       @NonNull String id,
       @NonNull ChemicalProfileAxes axes,

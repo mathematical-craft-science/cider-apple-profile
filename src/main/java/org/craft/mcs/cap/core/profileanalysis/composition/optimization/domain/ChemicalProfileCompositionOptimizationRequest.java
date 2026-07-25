@@ -55,6 +55,14 @@ public record ChemicalProfileCompositionOptimizationRequest(
               + " sources"
       );
     }
+    if (sources.stream()
+        .map(ChemicalProfileCompositionOptimizationSource::reference)
+        .distinct()
+        .count() != sources.size()) {
+      throw new InvalidChemicalProfileCompositionOptimizationException(
+          "chemical profile composition optimization must contain each source exactly once"
+      );
+    }
     final var gridCombinations = gridCombinations(sources.size(), settings.stepPercent());
     if (gridCombinations > DiscretizedCompositionOptimizationSettings.MAX_GRID_COMBINATIONS) {
       throw new InvalidChemicalProfileCompositionOptimizationException(

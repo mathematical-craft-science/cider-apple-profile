@@ -101,6 +101,81 @@ class MeasurementSetRevisionTest {
   }
 
   @Test
+  void acceptsArithmeticMeanThatMatchesReferencedObservations() {
+    final var first = observation(MeasurementCharacteristic.PH, "3.20");
+    final var second = observation(MeasurementCharacteristic.PH, "3.40");
+    final var result = derivedMeanResult("3.30", first, second);
+
+    assertThat(revision(List.of(first, second, result)).records())
+        .containsExactly(first, second, result);
+  }
+
+  @Test
+  void rejectsArithmeticMeanThatDoesNotMatchReferencedObservations() {
+    final var first = observation(MeasurementCharacteristic.PH, "3.20");
+    final var second = observation(MeasurementCharacteristic.PH, "3.40");
+    final var result = derivedMeanResult("3.40", first, second);
+
+    assertThatThrownBy(() -> revision(List.of(first, second, result)))
+        .isInstanceOf(DomainRuleViolationException.class)
+        .hasMessage("derived measurement result must equal the declared derivation of its observations");
+  }
+
+  @Test
+  void requiresDerivedResultToReferenceEveryObservationOfItsCharacteristic() {
+    final var first = observation(MeasurementCharacteristic.PH, "3.20");
+    final var second = observation(MeasurementCharacteristic.PH, "3.40");
+    final var ignored = observation(MeasurementCharacteristic.PH, "3.60");
+    final var result = derivedMeanResult("3.30", first, second);
+
+    assertThatThrownBy(() -> revision(List.of(first, second, ignored, result)))
+        .isInstanceOf(DomainRuleViolationException.class)
+        .hasMessage("derived measurement result must reference every observation of its characteristic");
+  }
+
+  @Test
+  void rejectsObservationsWithoutDerivedResult() {
+    final var observation = observation(MeasurementCharacteristic.PH, "3.20");
+    final var directResult = result(MeasurementCharacteristic.PH);
+
+    assertThatThrownBy(() -> revision(List.of(observation, directResult)))
+        .isInstanceOf(DomainRuleViolationException.class)
+        .hasMessage("measurement observations require a derived result");
+  }
+
+  @Test
+  void rejectsRecordMeasuredAfterRevisionCreation() {
+    final var futureResult = result(
+        MeasurementCharacteristic.PH,
+        MEASURED_AT.plusSeconds(1)
+    );
+
+    assertThatThrownBy(() -> revision(List.of(futureResult)))
+        .isInstanceOf(DomainRuleViolationException.class)
+        .hasMessage("measurement record time cannot be after its revision creation time");
+  }
+
+  @Test
+  void requiresDerivedResultTimeToEqualLatestObservationTime() {
+    final var first = observation(
+        MeasurementCharacteristic.PH,
+        "3.20",
+        MEASURED_AT.minusSeconds(60)
+    );
+    final var second = observation(MeasurementCharacteristic.PH, "3.40", MEASURED_AT);
+    final var result = derivedMeanResult(
+        "3.30",
+        MEASURED_AT.minusSeconds(60),
+        first,
+        second
+    );
+
+    assertThatThrownBy(() -> revision(List.of(first, second, result)))
+        .isInstanceOf(DomainRuleViolationException.class)
+        .hasMessage("derived measurement result time must equal its latest observation time");
+  }
+
+  @Test
   void rejectsCorrectionReasonForInitialRevision() {
     final var result = result(MeasurementCharacteristic.PH);
 
@@ -141,25 +216,73 @@ class MeasurementSetRevisionTest {
   }
 
   private static MeasurementRecord observation(MeasurementCharacteristic characteristic) {
+    return observation(characteristic, "3.40");
+  }
+
+  private static MeasurementRecord observation(
+      MeasurementCharacteristic characteristic,
+      String measuredValue
+  ) {
+    return observation(characteristic, measuredValue, MEASURED_AT);
+  }
+
+  private static MeasurementRecord observation(
+      MeasurementCharacteristic characteristic,
+      String measuredValue,
+      Instant measuredAt
+  ) {
     return new MeasurementRecord(
         MeasurementRecordId.newId(),
         characteristic,
         MeasurementRecordRole.OBSERVATION,
-        point(characteristic, "3.40"),
-        MEASURED_AT,
+        point(characteristic, measuredValue),
+        measuredAt,
         PROVENANCE,
         null,
         List.of()
     );
   }
 
+  private static MeasurementRecord derivedMeanResult(
+      String measuredValue,
+      MeasurementRecord first,
+      MeasurementRecord second
+  ) {
+    return derivedMeanResult(measuredValue, MEASURED_AT, first, second);
+  }
+
+  private static MeasurementRecord derivedMeanResult(
+      String measuredValue,
+      Instant measuredAt,
+      MeasurementRecord first,
+      MeasurementRecord second
+  ) {
+    return new MeasurementRecord(
+        MeasurementRecordId.newId(),
+        MeasurementCharacteristic.PH,
+        MeasurementRecordRole.RESULT,
+        point(MeasurementCharacteristic.PH, measuredValue),
+        measuredAt,
+        MeasurementProvenance.derived(),
+        MeasurementDerivationMethod.ARITHMETIC_MEAN,
+        List.of(first.recordId(), second.recordId())
+    );
+  }
+
   private static MeasurementRecord result(MeasurementCharacteristic characteristic) {
+    return result(characteristic, MEASURED_AT);
+  }
+
+  private static MeasurementRecord result(
+      MeasurementCharacteristic characteristic,
+      Instant measuredAt
+  ) {
     return new MeasurementRecord(
         MeasurementRecordId.newId(),
         characteristic,
         MeasurementRecordRole.RESULT,
         point(characteristic, "3.40"),
-        MEASURED_AT,
+        measuredAt,
         PROVENANCE,
         null,
         List.of()

@@ -1,16 +1,16 @@
 package org.craft.mcs.cap.core.feedstock.application.batch.usecase;
 
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
 import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchNotFoundException;
 import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchOwnershipMismatchException;
+import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
 import org.craft.mcs.cap.core.feedstock.application.batch.model.FeedstockBatchSummary;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.UpdateFeedstockBatchCommand;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.UpdateFeedstockBatchUseCase;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchRepository;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
-import org.craft.mcs.cap.shared.platform.TransactionHelper;
 import org.craft.mcs.cap.shared.application.persistence.VersionedAggregate;
+import org.craft.mcs.cap.shared.platform.TransactionHelper;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 
@@ -18,11 +18,11 @@ import static java.util.Objects.requireNonNull;
 
 
 /**
- * Application service for editing feedstock batch metadata and available stock volume.
+ * Application service for editing non-material feedstock batch metadata.
  *
  * <p>The service is the ownership boundary for feedstock batch changes: it verifies that the requested
- * workspace owns the batch before applying partial changes to the aggregate. It does not edit
- * chemical profile values because those belong to measurement history.
+ * workspace owns the batch before applying partial changes to the aggregate. Volume and vessel are
+ * material-state concerns and can only change through explicit material operations.
  */
 @Component
 @RequiredArgsConstructor
@@ -44,7 +44,6 @@ public final class UpdateFeedstockBatchService
     final var state = findOwnedBatch(command);
     final var batch = state.aggregate();
     applyChanges(batch, command);
-    batch.ensureAvailableVolumeIsPositive();
     return toSummary(feedstockBatchRepository.update(state.withAggregate(batch)).aggregate());
   }
 
@@ -79,7 +78,6 @@ public final class UpdateFeedstockBatchService
     if (name != null) {
       batch.rename(name);
     }
-    applyVesselChange(batch, command);
     final var type = command.type();
     if (type != null) {
       batch.changeType(type);
@@ -89,10 +87,6 @@ public final class UpdateFeedstockBatchService
       batch.changeSeason(season);
     }
     applySourceChange(batch, command);
-    final var availableVolume = command.availableVolume();
-    if (availableVolume != null) {
-      batch.changeAvailableVolume(availableVolume);
-    }
     applyNoteChange(batch, command);
   }
 
@@ -107,20 +101,6 @@ public final class UpdateFeedstockBatchService
     final var source = command.source();
     if (source != null) {
       batch.changeSource(source);
-    }
-  }
-
-  private static void applyVesselChange(
-      @NonNull FeedstockBatch batch,
-      @NonNull UpdateFeedstockBatchCommand command
-  ) {
-    if (command.clearVessel()) {
-      batch.clearVessel();
-      return;
-    }
-    final var vessel = command.vessel();
-    if (vessel != null) {
-      batch.changeVessel(vessel);
     }
   }
 
@@ -147,6 +127,7 @@ public final class UpdateFeedstockBatchService
         batch.type(),
         batch.season(),
         batch.source(),
+        batch.lifecycle(),
         batch.availableVolume(),
         batch.note()
     );

@@ -6,8 +6,10 @@ import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.jspecify.annotations.NonNull;
 
 
-/** Confirms and pins the expected current material state for a transactional dependent write. */
+/** Locks one material subject while a transactional dependent write validates or changes its evidence. */
 public interface RequireCurrentMaterialStateUseCase {
+
+  @NonNull CurrentMaterialState lockCurrent(@NonNull BatchTraceSubject subject);
 
   @NonNull CurrentMaterialState requireCurrent(
       @NonNull BatchTraceSubject subject,

@@ -194,13 +194,68 @@ Act as a senior Java architect and production-grade software engineer for the Ci
 ## Testing
 
 - Use focused tests with risk proportional to the change.
+- Every changed or newly introduced domain invariant must have focused tests for:
+  - valid behavior;
+  - boundary values;
+  - invalid states and transitions;
+  - every public constructor, factory, or method that could bypass the invariant.
+- Stateful domain models must have table-driven transition tests covering allowed and forbidden transitions.
+- Mathematical and measurement logic must be checked through invariant/property scenarios such as conservation,
+  bounds, identity cases, and monotonicity where applicable.
+- Do not add a property-based testing framework without explicit agreement. Use focused generated or table-driven
+  tests with the existing stack until such a framework is approved.
 - For integration tests, use Spring Boot test slices only.
 - Do not use `@SpringBootTest`.
 - Use JDBC/Data JDBC slices for persistence behavior.
+- Critical persistence invariants must be backed by focused PostgreSQL tests for constraints, optimistic locking,
+  transaction rollback, and concurrency when applicable.
 - Use fixed test `Clock` or deterministic instants for time-sensitive tests.
 - Do not compare directly against `Instant.now()` in tests.
 - Domain models should not depend on `Clock` unless there is a clear domain reason.
 - Ignore test classes when the user explicitly asks to fix only production Sonar/IDEA issues.
+- Do not introduce a contract-testing framework or new OpenAPI contract tests unless the user explicitly requests
+  them. When an API changes, inspect the affected transport DTOs, annotations, generated schema, and compatibility
+  impact using the existing project tooling.
+- Mutation testing is not a mandatory completion gate. Do not add or run mutation-testing tools without explicit
+  agreement. If adopted later, prefer targeted runs for changed core packages; a separate application stand is not
+  required, but a resource-isolated local or CI job is recommended because mutation testing can be slow.
+- The project currently has no CI. Do not claim CI verification or rely on unavailable CI gates. Run every required
+  completion check locally and report the exact commands and runtime checks that were actually executed.
+
+## Completion Protocol
+
+- A green build is necessary but is not sufficient evidence that a task is complete.
+- Before implementation, derive a requirement-to-evidence checklist from the user's request. For every
+  applicable requirement, verify:
+  - domain invariant and public construction paths;
+  - application use cases and transaction boundaries;
+  - persistence schema, mappings, locking, and existing-data compatibility;
+  - REST/OpenAPI contract and compatibility impact;
+  - focused positive, negative, concurrency, and regression tests;
+  - runtime configuration, migration, and startup behavior.
+- After implementation, reread the original request and compare every requirement against the actual diff
+  and tests. Do not rely on memory or only on the implementation plan.
+- For substantial domain or architectural changes, perform an independent second-pass review after implementation.
+  Use a separate reviewer/sub-agent when available, or a fresh adversarial reread that does not assume the chosen
+  design is correct. Independently verify all findings before changing code.
+- Perform at least three orthogonal review cycles for substantial domain or architectural changes:
+  1. semantic and adversarial review: business meaning, invalid states, bypasses through public constructors,
+     boundary values, and lifecycle transitions;
+  2. architecture and consistency review: DDD/hexagonal boundaries, ownership of invariants, transactions,
+     concurrency, persistence constraints, migrations, and API contracts;
+  3. quality and operational review: duplication, nullness, static-analysis findings, formatting, full tests,
+     application startup, and relevant database smoke checks.
+- Review cycles must use different inspection criteria. Repeating the same build command does not count as
+  multiple review cycles.
+- If any review finds a defect and code, DDL, configuration, or contract changes, invalidate the previous
+  completion result. Rerun focused tests and all affected review cycles, followed by the full verification.
+- Do not make further source changes after the final full verification. If a change is necessary, restart the
+  final verification sequence.
+- Do not report a task as complete while required commands or application processes are still running.
+- In the final response, state completion only for the explicitly audited scope and provide concrete evidence:
+  checks executed, runtime/database verification when applicable, and any deliberately deferred work.
+- Never claim that no tails remain based only on tests passing. Report that conclusion only after the checklist,
+  orthogonal reviews, and final verification are complete.
 
 ## Documentation And Knowledge Base
 

@@ -3,7 +3,7 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.UUID;
 import org.craft.mcs.cap.core.production.domain.model.value.AlcoholicFermentationState;
-import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchLifecycle;
+import org.craft.mcs.cap.shared.kernel.material.value.BatchLifecycle;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -38,11 +38,11 @@ public record ProductionBatchResponse(
     @NonNull String vessel,
     @Schema(
         description = "Current material lifecycle.",
-        implementation = ProductionBatchLifecycle.class,
+        implementation = BatchLifecycle.class,
         example = "ACTIVE",
         requiredMode = Schema.RequiredMode.REQUIRED
     )
-    @NonNull ProductionBatchLifecycle lifecycle,
+    @NonNull BatchLifecycle lifecycle,
     @Schema(
         description = "Current state of the primary alcoholic fermentation cycle.",
         implementation = AlcoholicFermentationState.class,

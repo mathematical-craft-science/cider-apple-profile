@@ -6,10 +6,10 @@ import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.sugaracidity.dto.
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.sugaracidity.dto.SugarAcidityAxisPointResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.sugaracidity.dto.SugarAcidityProfilePointResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.sugaracidity.dto.SugarAcidityZoneAssessmentResponse;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.point.domain.SugarAcidityAxisPoint;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.point.domain.SugarAcidityProfilePoint;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.SugarAcidityZoneAssessment;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.measurement.CanonicalUnitLabels;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -50,13 +50,13 @@ public final class SugarAcidityZoneRestMapper {
   }
 
   private static @Nullable SugarAcidityAxisPointResponse toTanninResponse(
-      @Nullable SugarAcidityAxisPoint point
+      @Nullable AxisValue point
   ) {
     return point == null ? null : toResponse(point, CanonicalUnitLabels.TANNIN);
   }
 
   public static @NonNull SugarAcidityAxisPointResponse toResponse(
-      @NonNull SugarAcidityAxisPoint point,
+      @NonNull AxisValue point,
       @NonNull String unit
   ) {
     requireNonNull(point, "sugar-acidity axis point cannot be null");

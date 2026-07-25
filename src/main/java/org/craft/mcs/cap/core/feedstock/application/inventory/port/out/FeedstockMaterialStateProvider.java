@@ -13,6 +13,8 @@ public interface FeedstockMaterialStateProvider {
 
   @NonNull MaterialStateId currentStateOf(@NonNull FeedstockBatchId batchId);
 
+  @NonNull MaterialStateId lockCurrentStateOf(@NonNull FeedstockBatchId batchId);
+
   @NonNull Map<@NonNull FeedstockBatchId, @NonNull MaterialStateId> currentStatesOf(
       @NonNull WorkspaceId workspaceId,
       @NonNull Set<@NonNull FeedstockBatchId> batchIds

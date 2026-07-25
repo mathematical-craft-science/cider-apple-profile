@@ -15,12 +15,12 @@ import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.norma
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.normalization.BuiltInProfileAxisNormalizerSelector;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetObjective;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.assessment.ProfileTargetDistanceStatus;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.point.domain.SugarAcidityAxisPoint;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.point.domain.SugarAcidityProfilePoint;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.CustomRectangleSugarAcidityTarget;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.RectangleSugarAcidityTargetGeometry;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.TanninTargetRange;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValueKind;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
@@ -157,19 +157,17 @@ class ScoreProfileTargetDistanceCandidatesServiceTest {
       @Nullable String tannin
   ) {
     return new SugarAcidityProfilePoint(
-        axis(sugar),
-        axis(acidity),
-        tannin == null ? null : axis(tannin)
+        axis(ChemicalAxis.SUGAR, sugar),
+        axis(ChemicalAxis.ACIDITY, acidity),
+        tannin == null ? null : axis(ChemicalAxis.TANNIN, tannin)
     );
   }
 
   @NonNull
-  private static SugarAcidityAxisPoint axis(@NonNull String value) {
-    return new SugarAcidityAxisPoint(
-        new BigDecimal(value),
-        AxisValueKind.POINT,
-        null,
-        null
-    );
+  private static AxisValue axis(
+      @NonNull ChemicalAxis chemicalAxis,
+      @NonNull String value
+  ) {
+    return AxisValue.point(chemicalAxis, new BigDecimal(value));
   }
 }

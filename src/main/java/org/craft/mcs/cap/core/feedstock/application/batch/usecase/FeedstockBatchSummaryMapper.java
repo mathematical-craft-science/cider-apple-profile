@@ -25,6 +25,7 @@ public final class FeedstockBatchSummaryMapper {
         batch.type(),
         batch.season(),
         batch.source(),
+        batch.lifecycle(),
         batch.availableVolume(),
         batch.note()
     );

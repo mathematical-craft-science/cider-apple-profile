@@ -13,6 +13,8 @@ public interface MeasurementMaterialStateProvider {
 
   @NonNull MaterialStateId currentStateOf(@NonNull MeasurementSubjectReference subject);
 
+  @NonNull MaterialStateId lockCurrentState(@NonNull MeasurementSubjectReference subject);
+
   @NonNull MaterialStateId requireCurrentState(
       @NonNull MeasurementSubjectReference subject,
       @NonNull MaterialStateId expectedStateId

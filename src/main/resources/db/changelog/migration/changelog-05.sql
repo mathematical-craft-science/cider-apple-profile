@@ -76,6 +76,10 @@ CREATE INDEX IF NOT EXISTS idx_batch_trace_step_subjects_lookup
 CREATE INDEX IF NOT EXISTS idx_batch_trace_step_subjects_state_id
     ON batch_trace_step_subjects (trace_state_id);
 
+CREATE UNIQUE INDEX IF NOT EXISTS ux_batch_trace_step_subjects_output_state
+    ON batch_trace_step_subjects (trace_state_id)
+    WHERE subject_role = 'OUTPUT';
+
 CREATE TABLE IF NOT EXISTS batch_trace_current_states
 (
     workspace_id     UUID                     NOT NULL,

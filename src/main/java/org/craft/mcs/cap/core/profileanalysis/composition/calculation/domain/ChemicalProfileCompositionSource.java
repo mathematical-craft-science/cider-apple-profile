@@ -26,5 +26,13 @@ public record ChemicalProfileCompositionSource(
     requireNonNull(reference, "chemical profile composition source reference cannot be null");
     requireNonNull(axes, "chemical profile composition source axes cannot be null");
     requireNonNull(weight, "chemical profile composition source weight cannot be null");
+
+    if (weight instanceof AbsoluteCompositionVolume(VolumeValue volume)
+        && availableVolume != null
+        && volume.exceeds(availableVolume)) {
+      throw new InvalidChemicalProfileCompositionException(
+          "composition source requested volume exceeds available volume: " + reference.type() + ":" + reference.id()
+      );
+    }
   }
 }

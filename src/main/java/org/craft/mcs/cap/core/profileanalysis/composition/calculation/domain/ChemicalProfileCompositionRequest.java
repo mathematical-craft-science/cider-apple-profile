@@ -18,6 +18,19 @@ public record ChemicalProfileCompositionRequest(
     if (sources.isEmpty()) {
       throw new InvalidChemicalProfileCompositionException("chemical profile composition requires at least one source");
     }
+    if (sources.stream().map(ChemicalProfileCompositionSource::reference).distinct().count() != sources.size()) {
+      throw new InvalidChemicalProfileCompositionException(
+          "chemical profile composition must contain each source exactly once"
+      );
+    }
+
+    final var weightType = sources.getFirst().weight().getClass();
+    if (sources.stream().map(ChemicalProfileCompositionSource::weight).map(Object::getClass)
+        .anyMatch(candidateType -> !candidateType.equals(weightType))) {
+      throw new InvalidChemicalProfileCompositionException(
+          "chemical profile composition cannot mix absolute volumes and proportions"
+      );
+    }
   }
 
   public static @NonNull ChemicalProfileCompositionRequest calculateTanninWhenComplete(

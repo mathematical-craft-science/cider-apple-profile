@@ -7,7 +7,6 @@ import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisRange;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.point.domain.SugarAcidityAxisPoint;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.point.domain.SugarAcidityProfilePoint;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -47,27 +46,15 @@ abstract class AbstractSugarAcidityZoneAssessor
     return axes.valueOf(axis).map(AxisValue::value);
   }
 
-  protected static @NonNull SugarAcidityAxisPoint pointOf(@NonNull AxisValue axisValue) {
-    requireNonNull(axisValue, "axis value cannot be null");
-
-    return new SugarAcidityAxisPoint(
-        axisValue.value(),
-        axisValue.valueKind(),
-        axisValue.min(),
-        axisValue.max()
-    );
-  }
-
   protected static @NonNull SugarAcidityProfilePoint profilePoint(
       @NonNull ChemicalProfileAxes axes
   ) {
     requireNonNull(axes, "chemical profile axes cannot be null");
 
     return new SugarAcidityProfilePoint(
-        axes.valueOf(ChemicalAxis.SUGAR).map(AbstractSugarAcidityZoneAssessor::pointOf).orElseThrow(),
-        axes.valueOf(ChemicalAxis.ACIDITY).map(AbstractSugarAcidityZoneAssessor::pointOf).orElseThrow(),
+        axes.valueOf(ChemicalAxis.SUGAR).orElseThrow(),
+        axes.valueOf(ChemicalAxis.ACIDITY).orElseThrow(),
         axes.valueOf(ChemicalAxis.TANNIN)
-            .map(AbstractSugarAcidityZoneAssessor::pointOf)
             .orElse(null) // NOSONAR
     );
   }

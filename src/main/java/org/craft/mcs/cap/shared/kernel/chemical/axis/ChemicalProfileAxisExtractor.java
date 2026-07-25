@@ -1,7 +1,6 @@
 package org.craft.mcs.cap.shared.kernel.chemical.axis;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.function.Function;
 import org.craft.mcs.cap.shared.kernel.characteristic.CharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.characteristic.IntervalCharacteristicValue;
@@ -19,8 +18,6 @@ import static java.util.Objects.requireNonNull;
 
 @Service
 public class ChemicalProfileAxisExtractor {
-
-  private static final int MIDPOINT_SCALE = 6;
 
   private static <T extends Comparable<? super T>> @Nullable AxisValue toAxisValue(
       @NonNull ChemicalAxis axis,
@@ -73,13 +70,7 @@ public class ChemicalProfileAxisExtractor {
       @NonNull T value,
       @NonNull Function<@NonNull T, @NonNull BigDecimal> extractor
   ) {
-    return new AxisValue(
-        axis,
-        extractor.apply(value),
-        AxisValueKind.POINT,
-        null,
-        null
-    );
+    return AxisValue.point(axis, extractor.apply(value));
   }
 
   private static <T extends Comparable<? super T>> @NonNull AxisValue intervalAxisValue(
@@ -90,15 +81,7 @@ public class ChemicalProfileAxisExtractor {
   ) {
     final var min = extractor.apply(minValue);
     final var max = extractor.apply(maxValue);
-    final var midpoint = min.add(max).divide(BigDecimal.valueOf(2), MIDPOINT_SCALE, RoundingMode.HALF_UP);
-
-    return new AxisValue(
-        axis,
-        midpoint,
-        AxisValueKind.INTERVAL_MIDPOINT,
-        min,
-        max
-    );
+    return AxisValue.intervalMidpoint(axis, min, max);
   }
 
 }

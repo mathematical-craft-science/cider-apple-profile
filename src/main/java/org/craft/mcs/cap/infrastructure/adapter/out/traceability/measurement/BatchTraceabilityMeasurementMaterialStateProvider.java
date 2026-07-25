@@ -34,6 +34,12 @@ final class BatchTraceabilityMeasurementMaterialStateProvider implements Measure
   }
 
   @Override
+  public @NonNull MaterialStateId lockCurrentState(@NonNull MeasurementSubjectReference subject) {
+    requireNonNull(subject, "measurement subject cannot be null");
+    return requireCurrentMaterialStateUseCase.lockCurrent(toTraceSubject(subject)).materialStateId();
+  }
+
+  @Override
   public @NonNull MaterialStateId requireCurrentState(
       @NonNull MeasurementSubjectReference subject,
       @NonNull MaterialStateId expectedStateId

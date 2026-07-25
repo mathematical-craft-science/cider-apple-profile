@@ -1,9 +1,12 @@
 package org.craft.mcs.cap.production.domain.model;
 
+import java.util.Arrays;
+import java.util.Set;
+import java.util.stream.Stream;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatch;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatchId;
 import org.craft.mcs.cap.core.production.domain.model.value.AlcoholicFermentationState;
-import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchLifecycle;
+import org.craft.mcs.cap.shared.kernel.material.value.BatchLifecycle;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
 import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
@@ -14,6 +17,9 @@ import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -27,7 +33,7 @@ class ProductionBatchTest {
 
     assertThat(batch)
         .returns(Vessel.named("Tank F-03"), ProductionBatch::vessel)
-        .returns(ProductionBatchLifecycle.ACTIVE, ProductionBatch::lifecycle)
+        .returns(BatchLifecycle.ACTIVE, ProductionBatch::lifecycle)
         .returns(
             AlcoholicFermentationState.NOT_STARTED,
             ProductionBatch::alcoholicFermentationState
@@ -58,15 +64,39 @@ class ProductionBatchTest {
         .isEqualTo(AlcoholicFermentationState.COMPLETED);
   }
 
-  @Test
-  void rejectsStartingCompletedAlcoholicFermentationAgain() {
-    final var batch = productionBatch()
-        .startAlcoholicFermentation()
-        .completeAlcoholicFermentation();
+  @ParameterizedTest(name = "{0} is allowed from {1}")
+  @MethodSource("allowedFermentationTransitions")
+  void allowsOnlyDeclaredAlcoholicFermentationTransitions(
+      FermentationAction action,
+      AlcoholicFermentationState initialState,
+      AlcoholicFermentationState expectedState
+  ) {
+    final var batch = restoredBatch(
+        BatchLifecycle.ACTIVE,
+        initialState,
+        VolumeValue.ofLiters("100")
+    );
 
-    assertThatThrownBy(batch::startAlcoholicFermentation)
+    action.apply(batch);
+
+    assertThat(batch.alcoholicFermentationState()).isEqualTo(expectedState);
+  }
+
+  @ParameterizedTest(name = "{0} is forbidden from {1}")
+  @MethodSource("forbiddenFermentationTransitions")
+  void rejectsEveryUndeclaredAlcoholicFermentationTransition(
+      FermentationAction action,
+      AlcoholicFermentationState initialState
+  ) {
+    final var batch = restoredBatch(
+        BatchLifecycle.ACTIVE,
+        initialState,
+        VolumeValue.ofLiters("100")
+    );
+
+    assertThatThrownBy(() -> action.apply(batch))
         .isInstanceOf(DomainConflictException.class)
-        .hasMessageContaining("state is COMPLETED");
+        .hasMessageContaining("state is " + initialState);
   }
 
   @Test
@@ -75,7 +105,7 @@ class ProductionBatchTest {
     final var targetVessel = Vessel.named("Tank F-04");
 
     assertThat(batch)
-        .returns(ProductionBatchLifecycle.DEPLETED, ProductionBatch::lifecycle)
+        .returns(BatchLifecycle.DEPLETED, ProductionBatch::lifecycle)
         .returns(VolumeValue.ofLiters("0"), ProductionBatch::currentVolume);
     assertThatThrownBy(() -> batch.transferTo(targetVessel))
         .isInstanceOf(DomainConflictException.class)
@@ -89,7 +119,7 @@ class ProductionBatchTest {
         .discard();
 
     assertThat(batch)
-        .returns(ProductionBatchLifecycle.DISCARDED, ProductionBatch::lifecycle)
+        .returns(BatchLifecycle.DISCARDED, ProductionBatch::lifecycle)
         .returns(VolumeValue.ofLiters("0"), ProductionBatch::currentVolume)
         .returns(
             AlcoholicFermentationState.ACTIVE,
@@ -116,23 +146,12 @@ class ProductionBatchTest {
 
   @Test
   void rejectsRestoredLifecycleAndVolumeMismatch() {
-    final var batchId = ProductionBatchId.newId();
-    final var workspaceId = WorkspaceId.newId();
-    final var name = BatchName.of("Invalid batch");
-    final var vessel = Vessel.named("Tank F-03");
     final var zeroVolume = VolumeValue.ofLiters("0");
-    final var initialProfileSnapshot = profile();
 
-    assertThatThrownBy(() -> ProductionBatch.restore(
-        batchId,
-        workspaceId,
-        name,
-        vessel,
-        ProductionBatchLifecycle.ACTIVE,
+    assertThatThrownBy(() -> restoredBatch(
+        BatchLifecycle.ACTIVE,
         AlcoholicFermentationState.NOT_STARTED,
-        zeroVolume,
-        initialProfileSnapshot,
-        null
+        zeroVolume
     ))
         .isInstanceOf(DomainRuleViolationException.class)
         .hasMessage("active production batch volume must be greater than zero");
@@ -140,23 +159,12 @@ class ProductionBatchTest {
 
   @Test
   void rejectsRestoredInactiveBatchWithMaterial() {
-    final var batchId = ProductionBatchId.newId();
-    final var workspaceId = WorkspaceId.newId();
-    final var name = BatchName.of("Invalid discarded batch");
-    final var vessel = Vessel.named("Tank F-03");
     final var remainingVolume = VolumeValue.ofLiters("5");
-    final var initialProfileSnapshot = profile();
 
-    assertThatThrownBy(() -> ProductionBatch.restore(
-        batchId,
-        workspaceId,
-        name,
-        vessel,
-        ProductionBatchLifecycle.DISCARDED,
+    assertThatThrownBy(() -> restoredBatch(
+        BatchLifecycle.DISCARDED,
         AlcoholicFermentationState.NOT_STARTED,
-        remainingVolume,
-        initialProfileSnapshot,
-        null
+        remainingVolume
     ))
         .isInstanceOf(DomainRuleViolationException.class)
         .hasMessage("inactive production batch volume must be zero");
@@ -178,6 +186,37 @@ class ProductionBatchTest {
     );
   }
 
+  private static ProductionBatch restoredBatch(
+      BatchLifecycle lifecycle,
+      AlcoholicFermentationState alcoholicFermentationState,
+      VolumeValue volume
+  ) {
+    return ProductionBatch.restore(
+        ProductionBatchId.newId(),
+        WorkspaceId.newId(),
+        BatchName.of("Classic cider"),
+        Vessel.named("Tank F-03"),
+        lifecycle,
+        alcoholicFermentationState,
+        volume,
+        profile(),
+        null
+    );
+  }
+
+  private static Stream<Arguments> allowedFermentationTransitions() {
+    return Arrays.stream(FermentationAction.values())
+        .flatMap(action -> action.allowedInitialStates().stream()
+            .map(initialState -> Arguments.of(action, initialState, action.resultingState())));
+  }
+
+  private static Stream<Arguments> forbiddenFermentationTransitions() {
+    return Arrays.stream(FermentationAction.values())
+        .flatMap(action -> Arrays.stream(AlcoholicFermentationState.values())
+            .filter(initialState -> !action.allowedInitialStates().contains(initialState))
+            .map(initialState -> Arguments.of(action, initialState)));
+  }
+
   private static ProductionProfileSnapshot profile() {
     return new ProductionProfileSnapshot(
         SpecificGravityValue.of("1.052"),
@@ -185,5 +224,68 @@ class ProductionBatchTest {
         null,
         null
     );
+  }
+
+  private enum FermentationAction {
+    START(
+        Set.of(AlcoholicFermentationState.NOT_STARTED),
+        AlcoholicFermentationState.ACTIVE
+    ) {
+      @Override
+      void apply(ProductionBatch batch) {
+        batch.startAlcoholicFermentation();
+      }
+    },
+    ARREST(
+        Set.of(AlcoholicFermentationState.ACTIVE),
+        AlcoholicFermentationState.ARRESTED
+    ) {
+      @Override
+      void apply(ProductionBatch batch) {
+        batch.arrestAlcoholicFermentation();
+      }
+    },
+    RESUME(
+        Set.of(AlcoholicFermentationState.ARRESTED),
+        AlcoholicFermentationState.ACTIVE
+    ) {
+      @Override
+      void apply(ProductionBatch batch) {
+        batch.resumeAlcoholicFermentation();
+      }
+    },
+    COMPLETE(
+        Set.of(
+            AlcoholicFermentationState.ACTIVE,
+            AlcoholicFermentationState.ARRESTED
+        ),
+        AlcoholicFermentationState.COMPLETED
+    ) {
+      @Override
+      void apply(ProductionBatch batch) {
+        batch.completeAlcoholicFermentation();
+      }
+    };
+
+    private final Set<AlcoholicFermentationState> allowedInitialStates;
+    private final AlcoholicFermentationState resultingState;
+
+    FermentationAction(
+        Set<AlcoholicFermentationState> allowedInitialStates,
+        AlcoholicFermentationState resultingState
+    ) {
+      this.allowedInitialStates = Set.copyOf(allowedInitialStates);
+      this.resultingState = resultingState;
+    }
+
+    abstract void apply(ProductionBatch batch);
+
+    Set<AlcoholicFermentationState> allowedInitialStates() {
+      return allowedInitialStates;
+    }
+
+    AlcoholicFermentationState resultingState() {
+      return resultingState;
+    }
   }
 }

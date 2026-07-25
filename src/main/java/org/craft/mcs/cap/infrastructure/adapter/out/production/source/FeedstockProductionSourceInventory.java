@@ -58,7 +58,9 @@ public final class FeedstockProductionSourceInventory implements ProductionSourc
     return new ConsumedProductionSource(
         reference,
         ProductionSourceDisplayName.of(consumed.batchName().value()),
-        consumed.volume(),
+        consumed.availableBefore(),
+        consumed.consumed(),
+        consumed.remaining(),
         axisExtractor.extract(profile),
         consumed.profileConfidence(),
         consumed.materialStateId(),

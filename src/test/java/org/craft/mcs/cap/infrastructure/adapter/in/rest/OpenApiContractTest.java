@@ -463,8 +463,7 @@ class OpenApiContractTest {
         "workspaceId",
         "name",
         "type",
-        "season",
-        "availableVolumeLiters"
+        "season"
     );
     assertNotRequiredProperties(openApi, "CreateFeedstockBatchRequest", "vessel", "source", "note");
     assertNullable(schemaProperty(openApi, "CreateFeedstockBatchRequest", "vessel"));
@@ -1039,8 +1038,7 @@ class OpenApiContractTest {
         "workspaceId",
         "name",
         "type",
-        "season",
-        "availableVolumeLiters"
+        "season"
     );
     assertRequiredProperties(
         openApi,
@@ -1052,30 +1050,26 @@ class OpenApiContractTest {
         "season",
         "availableVolume"
     );
-    assertNotRequiredProperties(openApi, "UpdateFeedstockBatchRequest", "vessel", "source", "note");
+    assertNotRequiredProperties(openApi, "UpdateFeedstockBatchRequest", "source", "note");
     assertNotRequiredProperties(openApi, "FeedstockBatchResponse", "vessel", "source", "note");
-    assertNullable(schemaProperty(openApi, "UpdateFeedstockBatchRequest", "vessel"));
     assertNullable(schemaProperty(openApi, "UpdateFeedstockBatchRequest", "source"));
     assertNullable(schemaProperty(openApi, "UpdateFeedstockBatchRequest", "note"));
     assertNullable(schemaProperty(openApi, "FeedstockBatchResponse", "vessel"));
-    assertExclusiveMinimumZero(schemaProperty(openApi, "UpdateFeedstockBatchRequest", "availableVolumeLiters"));
+    assertMissingProperties(openApi, "UpdateFeedstockBatchRequest", "availableVolumeLiters", "vessel");
     assertRequiredProperties(openApi, "PatchFeedstockBatchRequest", "workspaceId");
     assertNotRequiredProperties(
         openApi,
         "PatchFeedstockBatchRequest",
         "name",
-        "vessel",
         "type",
         "season",
         "source",
-        "availableVolumeLiters",
         "note"
     );
     assertNullable(schemaProperty(openApi, "PatchFeedstockBatchRequest", "name"));
-    assertNullable(schemaProperty(openApi, "PatchFeedstockBatchRequest", "vessel"));
     assertNullable(schemaProperty(openApi, "PatchFeedstockBatchRequest", "season"));
     assertNullable(schemaProperty(openApi, "PatchFeedstockBatchRequest", "note"));
-    assertExclusiveMinimumZero(schemaProperty(openApi, "PatchFeedstockBatchRequest", "availableVolumeLiters"));
+    assertMissingProperties(openApi, "PatchFeedstockBatchRequest", "availableVolumeLiters", "vessel");
 
     assertRequiredProperties(openApi, "UpdateFeedstockMeasurementRequest", "name", "chemicalProfile", "measuredAt");
     assertNotRequiredProperties(openApi, "UpdateFeedstockMeasurementRequest", "note");
@@ -1600,10 +1594,25 @@ class OpenApiContractTest {
   private static void assertNotRequiredProperties(
       JsonNode openApi,
       String schemaName,
-    String... propertyNames
+      String... propertyNames
   ) {
     final var required = requiredProperties(openApi, schemaName);
     assertThat(required).doesNotContain(propertyNames);
+  }
+
+  private static void assertMissingProperties(
+      JsonNode openApi,
+      String schemaName,
+      String... propertyNames
+  ) {
+    final var properties = openApi
+        .path("components")
+        .path("schemas")
+        .path(schemaName)
+        .path("properties");
+    assertThat(List.of(propertyNames))
+        .as("%s properties", schemaName)
+        .noneMatch(properties::has);
   }
 
   private static List<String> requiredProperties(

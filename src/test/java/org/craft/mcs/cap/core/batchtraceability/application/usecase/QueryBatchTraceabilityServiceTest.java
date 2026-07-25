@@ -3,6 +3,7 @@ package org.craft.mcs.cap.core.batchtraceability.application.usecase;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.Optional;
 import org.craft.mcs.cap.core.batchtraceability.application.port.out.BatchTraceabilityAccessControl;
 import org.craft.mcs.cap.core.batchtraceability.application.port.out.BatchTraceabilityQueryStore;
@@ -98,6 +99,14 @@ class QueryBatchTraceabilityServiceTest {
     }
 
     @Override
+    public @NonNull List<@NonNull BatchTraceStep> findAllByWorkspace(
+        @NonNull WorkspaceId workspaceId
+    ) {
+      requestedWorkspaceId = workspaceId;
+      return steps;
+    }
+
+    @Override
     public @NonNull Optional<@NonNull WorkspaceId> findWorkspaceIdBySubject(
         @NonNull BatchTraceSubject subject
     ) {
@@ -144,6 +153,14 @@ class QueryBatchTraceabilityServiceTest {
 
     @Override
     public void requireReadAccess(@NonNull WorkspaceId workspaceId) {
+      requestedWorkspaceId = workspaceId;
+    }
+
+    @Override
+    public void requireWriteAccess(
+        @NonNull WorkspaceId workspaceId,
+        @NonNull Set<@NonNull BatchTraceSubjectType> subjectTypes
+    ) {
       requestedWorkspaceId = workspaceId;
     }
   }

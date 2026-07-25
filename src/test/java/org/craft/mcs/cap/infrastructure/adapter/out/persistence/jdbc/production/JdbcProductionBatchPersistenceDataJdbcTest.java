@@ -6,7 +6,7 @@ import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchQue
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatch;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatchId;
 import org.craft.mcs.cap.core.production.domain.model.value.AlcoholicFermentationState;
-import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchLifecycle;
+import org.craft.mcs.cap.shared.kernel.material.value.BatchLifecycle;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
 import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
@@ -59,7 +59,7 @@ class JdbcProductionBatchPersistenceDataJdbcTest {
         saved.aggregate().workspaceId(),
         BatchName.of("Updated production batch"),
         saved.aggregate().vessel(),
-        ProductionBatchLifecycle.ACTIVE,
+        BatchLifecycle.ACTIVE,
         AlcoholicFermentationState.NOT_STARTED,
         saved.aggregate().currentVolume(),
         saved.aggregate().initialProfileSnapshot(),

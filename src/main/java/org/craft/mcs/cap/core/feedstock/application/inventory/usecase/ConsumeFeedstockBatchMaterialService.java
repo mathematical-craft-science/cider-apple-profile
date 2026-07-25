@@ -55,8 +55,9 @@ public final class ConsumeFeedstockBatchMaterialService
     final var state = requireOwnedBatch(command);
     final var batch = state.aggregate();
     requireAvailableVolume(batch, command);
+    final var materialStateId = materialStateProvider.lockCurrentStateOf(batch.batchId());
     final var measurement = currentMeasurementQueryService.requireCurrentMeasurement(batch.batchId());
-    final var materialStateId = materialStateProvider.currentStateOf(batch.batchId());
+    final var availableBefore = batch.availableVolume();
 
     batch.consumeAvailableVolume(command.volume());
     feedstockBatchRepository.update(state.withAggregate(batch));
@@ -64,12 +65,11 @@ public final class ConsumeFeedstockBatchMaterialService
     return new ConsumedFeedstockBatchMaterial(
         batch.batchId(),
         FeedstockBatchMaterialName.of(batch.name().value()),
+        availableBefore,
         command.volume(),
+        batch.availableVolume(),
         materialStateId,
-        new FeedstockBatchMaterialEvidenceReference(
-            measurement.measurementId().value(),
-            measurement.evidenceVersion()
-        ),
+        FeedstockBatchMaterialEvidenceReference.from(measurement.axisEvidence()),
         measurement.chemicalProfile(),
         measurement.aggregateConfidence()
     );

@@ -18,7 +18,6 @@ import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetName;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetRevision;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetRevisionId;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetRevisionNumber;
-import org.craft.mcs.cap.shared.application.ApplicationValidationException;
 import org.craft.mcs.cap.shared.kernel.identity.ActorReference;
 import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic;
@@ -49,7 +48,7 @@ final class MeasurementSetRevisionFactory {
             command.name(),
             command.note(),
             null,
-            records(command.measurements(), createdAt)
+            records(command.measurements())
         ),
         createdAt,
         actor
@@ -71,7 +70,7 @@ final class MeasurementSetRevisionFactory {
             command.name(),
             command.note(),
             command.correctionReason(),
-            records(command.measurements(), createdAt)
+            records(command.measurements())
         ),
         createdAt,
         actor
@@ -86,7 +85,7 @@ final class MeasurementSetRevisionFactory {
   ) {
     requireNonNull(current, "current measurement revision cannot be null");
     requireNonNull(command, "patch measurement set command cannot be null");
-    final var replacementRecords = records(command.replacements(), createdAt);
+    final var replacementRecords = records(command.replacements());
     final var replaced = replacementRecords.stream()
         .map(MeasurementRecord::characteristic)
         .collect(Collectors.toUnmodifiableSet());
@@ -111,14 +110,9 @@ final class MeasurementSetRevisionFactory {
   }
 
   private @NonNull List<@NonNull MeasurementRecord> records(
-      @NonNull List<@NonNull MeasurementCharacteristicInput> inputs,
-      @NonNull Instant recordedAt
+      @NonNull List<@NonNull MeasurementCharacteristicInput> inputs
   ) {
-    final var records = recordFactory.create(inputs);
-    if (records.stream().anyMatch(measurementRecord -> measurementRecord.measuredAt().isAfter(recordedAt))) {
-      throw new ApplicationValidationException("measurement time cannot be in the future");
-    }
-    return records;
+    return recordFactory.create(inputs);
   }
 
   private static @NonNull MeasurementSetRevision revision(

@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS feedstock_batches
     season_starts_on         DATE                     NOT NULL,
     season_ends_on           DATE                     NOT NULL,
     source                   VARCHAR(255),
+    lifecycle                VARCHAR(16)              NOT NULL,
     available_volume_liters  NUMERIC(15, 3)           NOT NULL,
     note                     VARCHAR(2000),
     deleted_at               TIMESTAMP WITH TIME ZONE,
@@ -19,7 +20,12 @@ CREATE TABLE IF NOT EXISTS feedstock_batches
     CONSTRAINT chk_feedstock_batches_season_dates
         CHECK (season_ends_on >= season_starts_on),
     CONSTRAINT chk_feedstock_batches_available_volume
-        CHECK (available_volume_liters > 0),
+        CHECK (
+            (lifecycle = 'ACTIVE' AND available_volume_liters > 0)
+            OR (lifecycle IN ('DEPLETED', 'DISCARDED') AND available_volume_liters = 0)
+        ),
+    CONSTRAINT chk_feedstock_batches_lifecycle
+        CHECK (lifecycle IN ('ACTIVE', 'DEPLETED', 'DISCARDED')),
     CONSTRAINT fk_feedstock_batches_workspace
         FOREIGN KEY (workspace_id) REFERENCES workspaces (workspace_id)
 );
@@ -170,6 +176,19 @@ CREATE TABLE IF NOT EXISTS measurement_records
                 AND lower_value IS NOT NULL
                 AND upper_value IS NOT NULL
                 AND lower_value <= upper_value
+            )
+        ),
+    CONSTRAINT chk_measurement_records_specific_gravity_range
+        CHECK (
+            characteristic <> 'SPECIFIC_GRAVITY'
+            OR (
+                value_kind = 'POINT'
+                AND point_value BETWEEN 0.900 AND 1.200
+            )
+            OR (
+                value_kind = 'INTERVAL'
+                AND lower_value >= 0.900
+                AND upper_value <= 1.200
             )
         ),
     CONSTRAINT chk_measurement_records_observation

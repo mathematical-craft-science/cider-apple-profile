@@ -7,15 +7,15 @@ import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.objec
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.objective.ManhattanDistanceToTargetAreaObjectiveFunction;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.objective.ProfileDistanceMetric;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.objective.ProfileTargetObjectiveFunctionCode;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.point.domain.SugarAcidityAxisPoint;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.point.domain.SugarAcidityProfilePoint;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.CustomRectangleSugarAcidityTarget;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.RectangleSugarAcidityTargetGeometry;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.SugarAcidityCoordinates;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.SugarAcidityTargetGeometryShape;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.SugarAcidityTargetKind;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.TanninTargetRange;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValueKind;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
@@ -130,7 +130,11 @@ class DistanceToTargetAreaObjectiveFunctionTest {
     );
 
     final var distance = objective.distanceTo(
-        new SugarAcidityProfilePoint(axis("1.070"), axis("6.0"), null),
+        new SugarAcidityProfilePoint(
+            axis(ChemicalAxis.SUGAR, "1.070"),
+            axis(ChemicalAxis.ACIDITY, "6.0"),
+            null
+        ),
         objectiveWithTannin
     );
 
@@ -146,16 +150,18 @@ class DistanceToTargetAreaObjectiveFunctionTest {
       @NonNull String acidity,
       @NonNull String tannin
   ) {
-    return new SugarAcidityProfilePoint(axis(sugar), axis(acidity), axis(tannin));
+    return new SugarAcidityProfilePoint(
+        axis(ChemicalAxis.SUGAR, sugar),
+        axis(ChemicalAxis.ACIDITY, acidity),
+        axis(ChemicalAxis.TANNIN, tannin)
+    );
   }
 
   @NonNull
-  private static SugarAcidityAxisPoint axis(@NonNull String value) {
-    return new SugarAcidityAxisPoint(
-        new BigDecimal(value),
-        AxisValueKind.POINT,
-        null,
-        null
-    );
+  private static AxisValue axis(
+      @NonNull ChemicalAxis chemicalAxis,
+      @NonNull String value
+  ) {
+    return AxisValue.point(chemicalAxis, new BigDecimal(value));
   }
 }

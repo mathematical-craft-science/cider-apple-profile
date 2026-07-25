@@ -10,6 +10,7 @@ import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.Feeds
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchRepository;
 import org.craft.mcs.cap.core.feedstock.application.inventory.port.in.ConsumeFeedstockBatchMaterialCommand;
 import org.craft.mcs.cap.core.feedstock.application.inventory.port.in.ConsumedFeedstockBatchMaterial;
+import org.craft.mcs.cap.core.feedstock.application.inventory.port.in.FeedstockBatchMaterialName;
 import org.craft.mcs.cap.core.feedstock.application.inventory.usecase.ConsumeFeedstockBatchMaterialService;
 import org.craft.mcs.cap.core.feedstock.application.measurement.query.FeedstockBatchCurrentMeasurementQueryService;
 import org.craft.mcs.cap.core.feedstock.application.inventory.port.out.FeedstockMaterialStateProvider;
@@ -66,8 +67,10 @@ class ConsumeFeedstockBatchMaterialServiceTest {
 
     assertThat(consumed)
         .returns(batch.batchId(), ConsumedFeedstockBatchMaterial::batchId)
-        .returns(batch.name().value(), material -> material.batchName().value())
-        .returns(command.volume(), ConsumedFeedstockBatchMaterial::volume)
+        .returns(FeedstockBatchMaterialName.of(batch.name().value()), ConsumedFeedstockBatchMaterial::batchName)
+        .returns(VolumeValue.ofLiters("250"), ConsumedFeedstockBatchMaterial::availableBefore)
+        .returns(command.volume(), ConsumedFeedstockBatchMaterial::consumed)
+        .returns(VolumeValue.ofLiters("150"), ConsumedFeedstockBatchMaterial::remaining)
         .returns(measurement.chemicalProfile(), ConsumedFeedstockBatchMaterial::chemicalProfile)
         .satisfies(result -> assertThat(batch.availableVolume()).isEqualTo(VolumeValue.ofLiters("150")));
     verify(accessControl).requireWriteAccess(workspaceId);
@@ -148,7 +151,7 @@ class ConsumeFeedstockBatchMaterialServiceTest {
 
   private static @NonNull FeedstockMaterialStateProvider stateProvider() {
     final var provider = mock(FeedstockMaterialStateProvider.class);
-    when(provider.currentStateOf(any())).thenReturn(MaterialStateId.newId());
+    when(provider.lockCurrentStateOf(any())).thenReturn(MaterialStateId.newId());
     return provider;
   }
 

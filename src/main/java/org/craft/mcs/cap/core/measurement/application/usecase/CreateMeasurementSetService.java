@@ -9,6 +9,7 @@ import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementActorP
 import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementMaterialStateProvider;
 import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementSetRepository;
 import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementSubjectAccessControl;
+import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementSubjectMeasurementPolicy;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSet;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetId;
 import org.craft.mcs.cap.shared.platform.TransactionHelper;
@@ -26,6 +27,7 @@ public final class CreateMeasurementSetService implements CreateMeasurementSetUs
 
   private final @NonNull MeasurementSetRepository repository;
   private final @NonNull MeasurementSubjectAccessControl subjectAccessControl;
+  private final @NonNull MeasurementSubjectMeasurementPolicy subjectMeasurementPolicy;
   private final @NonNull MeasurementActorProvider actorProvider;
   private final @NonNull MeasurementMaterialStateProvider materialStateProvider;
   private final @NonNull MeasurementSetRevisionFactory revisionFactory;
@@ -37,6 +39,7 @@ public final class CreateMeasurementSetService implements CreateMeasurementSetUs
     requireNonNull(command, "create measurement set command cannot be null");
     return transactionHelper.callInTransactionNonNull(() -> {
       final var workspaceId = subjectAccessControl.requireWriteAccess(command.subject());
+      subjectMeasurementPolicy.validate(command.subject(), command.measurements());
       final var currentStateId = materialStateProvider.requireCurrentState(
           command.subject(),
           command.expectedCurrentStateId()
@@ -55,8 +58,7 @@ public final class CreateMeasurementSetService implements CreateMeasurementSetUs
               currentStateId,
               now,
               actorProvider.requireCurrentActorReference()
-          ),
-          now
+          )
       );
       return toView(repository.create(set));
     });

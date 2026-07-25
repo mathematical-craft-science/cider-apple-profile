@@ -20,7 +20,7 @@ import org.craft.mcs.cap.core.production.application.usecase.ProductionCurrentPr
 import org.craft.mcs.cap.core.production.application.usecase.QueryProductionBatchesService;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatchId;
 import org.craft.mcs.cap.core.production.domain.model.value.AlcoholicFermentationState;
-import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchLifecycle;
+import org.craft.mcs.cap.shared.kernel.material.value.BatchLifecycle;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
 import org.craft.mcs.cap.shared.application.measurement.MeasurementEvidenceReference;
 import org.craft.mcs.cap.shared.application.measurement.MeasurementEvidenceValidity;
@@ -156,7 +156,7 @@ class QueryProductionBatchesServiceTest {
         WorkspaceId.newId(),
         BatchName.of("Late season cider"),
         Vessel.named("Tank F-03"),
-        ProductionBatchLifecycle.ACTIVE,
+        BatchLifecycle.ACTIVE,
         AlcoholicFermentationState.NOT_STARTED,
         VolumeValue.ofLiters("120"),
         new ProductionProfileSnapshot(

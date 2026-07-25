@@ -1,6 +1,5 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.batch.mapper;
 
-import java.math.BigDecimal;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.CreateFeedstockBatchCommand;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.FeedstockBatchCreated;
 import org.craft.mcs.cap.core.feedstock.application.batch.model.FeedstockBatchSummary;
@@ -64,6 +63,7 @@ public final class FeedstockBatchRestMapper {
         batch.type(),
         toResponse(batch.season()),
         toResponse(batch.source()),
+        batch.lifecycle(),
         new DecimalQuantityResponse(batch.availableVolume().liters(), CanonicalUnitLabels.VOLUME),
         batch.note()
     );
@@ -82,6 +82,7 @@ public final class FeedstockBatchRestMapper {
         batch.type(),
         toResponse(batch.season()),
         toResponse(batch.source()),
+        batch.lifecycle(),
         new DecimalQuantityResponse(batch.availableVolume().liters(), CanonicalUnitLabels.VOLUME),
         batch.note()
     );
@@ -99,13 +100,10 @@ public final class FeedstockBatchRestMapper {
         batchId,
         WorkspaceId.of(requireNonNull(request.workspaceId(), WORKSPACE_ID_REQUIRED)),
         BatchName.of(request.name()),
-        vesselOf(request.vessel()),
-        isBlank(request.vessel()),
         requireNonNull(request.type(), "feedstock type cannot be null"),
         FeedstockSeason.of(request.season().startsOn(), request.season().endsOn()),
         sourceOf(request.source()),
         isBlank(request.source()),
-        VolumeValue.ofLiters(request.availableVolumeLiters()),
         request.note(),
         isBlank(request.note())
     );
@@ -122,13 +120,10 @@ public final class FeedstockBatchRestMapper {
         batchId,
         WorkspaceId.of(requireNonNull(request.workspaceId(), WORKSPACE_ID_REQUIRED)),
         nameOf(request.name()),
-        vesselOf(request.vessel()),
-        isPresentBlank(request.vessel()),
         request.type(),
         seasonOf(request.season()),
         sourceOf(request.source()),
         isPresentBlank(request.source()),
-        volumeOf(request.availableVolumeLiters()),
         request.note(),
         isPresentBlank(request.note())
     );
@@ -160,10 +155,6 @@ public final class FeedstockBatchRestMapper {
 
   private static @Nullable FeedstockSource sourceOf(@Nullable String source) {
     return isBlank(source) ? null : FeedstockSource.of(source);
-  }
-
-  private static @Nullable VolumeValue volumeOf(@Nullable BigDecimal liters) {
-    return liters == null ? null : VolumeValue.ofLiters(liters);
   }
 
   private static boolean isBlank(@Nullable String value) {

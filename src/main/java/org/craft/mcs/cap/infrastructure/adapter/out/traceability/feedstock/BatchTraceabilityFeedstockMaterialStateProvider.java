@@ -5,6 +5,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.batchtraceability.application.port.in.GetCurrentMaterialStateUseCase;
+import org.craft.mcs.cap.core.batchtraceability.application.port.in.RequireCurrentMaterialStateUseCase;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceSubject;
 import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceSubjectType;
 import org.craft.mcs.cap.core.feedstock.application.inventory.port.out.FeedstockMaterialStateProvider;
@@ -23,11 +24,18 @@ import static java.util.Objects.requireNonNull;
 final class BatchTraceabilityFeedstockMaterialStateProvider implements FeedstockMaterialStateProvider {
 
   private final @NonNull GetCurrentMaterialStateUseCase getCurrentMaterialStateUseCase;
+  private final @NonNull RequireCurrentMaterialStateUseCase requireCurrentMaterialStateUseCase;
 
   @Override
   public @NonNull MaterialStateId currentStateOf(@NonNull FeedstockBatchId batchId) {
     requireNonNull(batchId, "feedstock batch id cannot be null");
     return getCurrentMaterialStateUseCase.getCurrent(toSubject(batchId)).materialStateId();
+  }
+
+  @Override
+  public @NonNull MaterialStateId lockCurrentStateOf(@NonNull FeedstockBatchId batchId) {
+    requireNonNull(batchId, "feedstock batch id cannot be null");
+    return requireCurrentMaterialStateUseCase.lockCurrent(toSubject(batchId)).materialStateId();
   }
 
   @Override

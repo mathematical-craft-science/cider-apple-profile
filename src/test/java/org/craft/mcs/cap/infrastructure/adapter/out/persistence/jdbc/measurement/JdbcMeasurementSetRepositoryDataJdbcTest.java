@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Set;
 import org.craft.mcs.cap.core.measurement.application.MeasurementSetAlreadyExistsException;
 import org.craft.mcs.cap.core.measurement.application.model.CurrentMeasurementResultView;
+import org.craft.mcs.cap.core.measurement.application.model.MeasurementRecordView;
+import org.craft.mcs.cap.core.measurement.application.model.MeasurementSetView;
 import org.craft.mcs.cap.core.measurement.application.port.out.CurrentMeasurementResultQuery;
 import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementSetRepository;
 import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementSetViewQuery;
@@ -48,6 +50,7 @@ import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabas
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
@@ -61,10 +64,12 @@ import static org.craft.mcs.cap.shared.testing.MeasurementTestValues.pointValue;
 
 @DataJdbcTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import({
-    PostgresDataJdbcTestConfiguration.class,
-    JdbcMeasurementSetRepositoryDataJdbcTest.MeasurementJdbcAdaptersTestConfiguration.class
-})
+@Import(
+    {
+        PostgresDataJdbcTestConfiguration.class,
+        JdbcMeasurementSetRepositoryDataJdbcTest.MeasurementJdbcAdaptersTestConfiguration.class
+    }
+)
 class JdbcMeasurementSetRepositoryDataJdbcTest {
 
   private static final Instant RECORDED_AT = Instant.parse("2026-07-20T10:00:00Z");
@@ -126,8 +131,7 @@ class JdbcMeasurementSetRepositoryDataJdbcTest {
         MeasurementSetId.newId(),
         workspaceId,
         subject,
-        revision(1, List.of(firstObservation, secondObservation, result)),
-        RECORDED_AT
+        revision(1, List.of(firstObservation, secondObservation, result))
     );
 
     final var created = repository.create(set);
@@ -139,32 +143,36 @@ class JdbcMeasurementSetRepositoryDataJdbcTest {
         .filteredOn(measurementRecord -> measurementRecord.role() == MeasurementRecordRole.RESULT)
         .singleElement()
         .returns(MeasurementDerivationMethod.ARITHMETIC_MEAN, MeasurementRecord::derivationMethod)
-        .returns(List.of(firstObservation.recordId(), secondObservation.recordId()),
-            MeasurementRecord::derivationInputs)
+        .returns(
+            List.of(firstObservation.recordId(), secondObservation.recordId()),
+            MeasurementRecord::derivationInputs
+        )
         .satisfies(measurementRecord -> assertThat(pointValue(measurementRecord.value()))
-            .isInstanceOfSatisfying(SpecificGravityValue.class, value -> assertThat(value)
-                .returns(BeverageUnits.SG, SpecificGravityValue::unit)
-                .satisfies(specificGravity -> assertThat(specificGravity.asBigDecimal())
-                    .isEqualByComparingTo("1.051"))));
+            .isInstanceOfSatisfying(
+                SpecificGravityValue.class, value -> assertThat(value)
+                    .returns(BeverageUnits.SG, SpecificGravityValue::unit)
+                    .satisfies(specificGravity -> assertThat(specificGravity.asBigDecimal())
+                        .isEqualByComparingTo("1.051"))
+            ));
 
     assertThat(currentResultQuery.findBySubjects(workspaceId, Set.of(subject)))
         .singleElement()
-        .returns(result.recordId(), current -> current.recordId())
-        .returns(MeasurementCharacteristic.SPECIFIC_GRAVITY, current -> current.characteristic())
+        .returns(result.recordId(), CurrentMeasurementResultView::recordId)
+        .returns(MeasurementCharacteristic.SPECIFIC_GRAVITY, CurrentMeasurementResultView::characteristic)
         .satisfies(current -> assertThat(current.provenance())
             .returns(MeasurementSourceType.DERIVED, MeasurementProvenance::sourceType));
     assertThat(viewQuery.findBySubject(workspaceId, subject))
         .singleElement()
         .satisfies(view -> assertThat(view)
-            .returns(created.revision().value(), value -> value.version())
-            .returns(set.measurementSetId(), value -> value.measurementSetId())
-                .satisfies(value -> assertThat(value.records())
+            .returns(created.revision().value(), MeasurementSetView::version)
+            .returns(set.measurementSetId(), MeasurementSetView::measurementSetId)
+            .satisfies(value -> assertThat(value.records())
                 .hasSize(3)
                 .filteredOn(measurementRecord -> measurementRecord.role() == MeasurementRecordRole.RESULT)
                 .singleElement()
                 .returns(
                     List.of(firstObservation.recordId(), secondObservation.recordId()),
-                    measurementRecord -> measurementRecord.derivationInputs()
+                    MeasurementRecordView::derivationInputs
                 )));
   }
 
@@ -239,8 +247,7 @@ class JdbcMeasurementSetRepositoryDataJdbcTest {
         MeasurementSetId.newId(),
         workspaceId,
         subject,
-        revision(1, records),
-        RECORDED_AT
+        revision(1, records)
     );
 
     repository.create(set);
@@ -273,16 +280,14 @@ class JdbcMeasurementSetRepositoryDataJdbcTest {
         MeasurementSetId.newId(),
         workspaceId,
         subject,
-        revision(1, stateId, List.of(sugar)),
-        RECORDED_AT.minusSeconds(3600)
+        revision(1, stateId, List.of(sugar))
     ));
     initializeCurrentState(subject, stateId);
     repository.create(MeasurementSet.create(
         MeasurementSetId.newId(),
         workspaceId,
         subject,
-        revision(1, stateId, List.of(ph)),
-        RECORDED_AT
+        revision(1, stateId, List.of(ph))
     ));
 
     assertThat(currentResultQuery.findBySubjects(workspaceId, Set.of(subject)))
@@ -324,8 +329,7 @@ class JdbcMeasurementSetRepositoryDataJdbcTest {
         MeasurementSetId.newId(),
         workspaceId,
         subject,
-        revision(1, previousStateId, List.of(previousResult)),
-        RECORDED_AT
+        revision(1, previousStateId, List.of(previousResult))
     );
     repository.create(previousSet);
     initializeCurrentState(subject, previousStateId);
@@ -350,8 +354,7 @@ class JdbcMeasurementSetRepositoryDataJdbcTest {
         MeasurementSetId.newId(),
         workspaceId,
         subject,
-        revision(1, previousStateId, List.of(currentResult)),
-        RECORDED_AT
+        revision(1, previousStateId, List.of(currentResult))
     );
     final var created = repository.create(currentSet);
 
@@ -366,7 +369,7 @@ class JdbcMeasurementSetRepositoryDataJdbcTest {
         .get()
         .returns(
             MeasurementSetLifecycle.RETRACTED,
-            value -> value.lifecycle()
+            MeasurementSetView::lifecycle
         )
         .satisfies(view -> assertThat(view.records()).singleElement());
     assertThat(currentResultQuery.findBySubjects(workspaceId, Set.of(subject)))
@@ -396,8 +399,7 @@ class JdbcMeasurementSetRepositoryDataJdbcTest {
         MeasurementSetId.newId(),
         workspaceId,
         subject,
-        revision(1, List.of(result)),
-        RECORDED_AT
+        revision(1, List.of(result))
     );
     repository.create(set);
 
@@ -431,6 +433,102 @@ class JdbcMeasurementSetRepositoryDataJdbcTest {
         .singleElement()
         .isNull();
     assertThat(statisticalColumns).isZero();
+  }
+
+  @Test
+  void databaseRejectsSpecificGravityOutsideTheCanonicalRange() {
+    final var measurementSetId = newUuid();
+    final var revisionId = newUuid();
+    final var subjectId = newUuid();
+    jdbcTemplate.update(
+        """
+            INSERT INTO measurement_sets (
+                measurement_set_id,
+                workspace_id,
+                subject_type,
+                subject_id,
+                lifecycle,
+                current_revision_id,
+                version,
+                created_at,
+                updated_at
+            ) VALUES (
+                :measurementSetId,
+                :workspaceId,
+                'PRODUCTION_BATCH',
+                :subjectId,
+                'ACTIVE',
+                :revisionId,
+                0,
+                :createdAt,
+                :updatedAt
+            )
+            """,
+        new MapSqlParameterSource()
+            .addValue("measurementSetId", measurementSetId)
+            .addValue("workspaceId", workspaceId.value())
+            .addValue("subjectId", subjectId)
+            .addValue("revisionId", revisionId)
+            .addValue("createdAt", OffsetDateTime.parse("2026-07-20T10:00:00Z"))
+            .addValue("updatedAt", OffsetDateTime.parse("2026-07-20T10:00:00Z"))
+    );
+    jdbcTemplate.update(
+        """
+            INSERT INTO measurement_set_revisions (
+                revision_id,
+                measurement_set_id,
+                revision_number,
+                material_state_id,
+                name,
+                created_at,
+                actor_reference
+            ) VALUES (
+                :revisionId,
+                :measurementSetId,
+                1,
+                :materialStateId,
+                'Invalid gravity evidence',
+                :createdAt,
+                :actorReference
+            )
+            """,
+        new MapSqlParameterSource()
+            .addValue("revisionId", revisionId)
+            .addValue("measurementSetId", measurementSetId)
+            .addValue("materialStateId", newUuid())
+            .addValue("createdAt", OffsetDateTime.parse("2026-07-20T10:00:00Z"))
+            .addValue("actorReference", "ACCOUNT_USER:" + newUuid())
+    );
+
+    assertThatThrownBy(() -> jdbcTemplate.update(
+        """
+            INSERT INTO measurement_records (
+                record_id,
+                revision_id,
+                characteristic,
+                role,
+                value_kind,
+                measured_at,
+                source_type,
+                point_value
+            ) VALUES (
+                :recordId,
+                :revisionId,
+                'SPECIFIC_GRAVITY',
+                'RESULT',
+                'POINT',
+                :measuredAt,
+                'USER',
+                0.899
+            )
+            """,
+        new MapSqlParameterSource()
+            .addValue("recordId", newUuid())
+            .addValue("revisionId", revisionId)
+            .addValue("measuredAt", OffsetDateTime.parse("2026-07-20T10:00:00Z"))
+    ))
+        .isInstanceOf(DataIntegrityViolationException.class)
+        .hasMessageContaining("chk_measurement_records_specific_gravity_range");
   }
 
   private static MeasurementSetRevision revision(
@@ -543,5 +641,6 @@ class JdbcMeasurementSetRepositoryDataJdbcTest {
   @TestConfiguration(proxyBeanMethods = false)
   @ComponentScan("org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.measurement")
   static class MeasurementJdbcAdaptersTestConfiguration {
+
   }
 }

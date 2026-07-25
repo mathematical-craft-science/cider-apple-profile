@@ -5,9 +5,7 @@ import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSource;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
-import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
-import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -18,13 +16,10 @@ public record UpdateFeedstockBatchCommand(
     @NonNull FeedstockBatchId batchId,
     @NonNull WorkspaceId workspaceId,
     @Nullable BatchName name,
-    @Nullable Vessel vessel,
-    boolean clearVessel,
     @Nullable FeedstockType type,
     @Nullable FeedstockSeason season,
     @Nullable FeedstockSource source,
     boolean clearSource,
-    @Nullable VolumeValue availableVolume,
     @Nullable String note,
     boolean clearNote
 ) {

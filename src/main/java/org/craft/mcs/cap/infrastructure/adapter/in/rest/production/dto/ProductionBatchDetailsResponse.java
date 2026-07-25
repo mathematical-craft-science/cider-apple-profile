@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 import java.util.UUID;
 import org.craft.mcs.cap.core.production.domain.model.value.AlcoholicFermentationState;
-import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchLifecycle;
+import org.craft.mcs.cap.shared.kernel.material.value.BatchLifecycle;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.abv.dto.PotentialAbvPredictionResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.dto.ChemicalProfileResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement.dto.MeasurementEvidenceResponse;
@@ -35,10 +35,10 @@ public record ProductionBatchDetailsResponse(
     @NonNull String vessel,
     @Schema(
         description = "Current material lifecycle.",
-        implementation = ProductionBatchLifecycle.class,
+        implementation = BatchLifecycle.class,
         requiredMode = Schema.RequiredMode.REQUIRED
     )
-    @NonNull ProductionBatchLifecycle lifecycle,
+    @NonNull BatchLifecycle lifecycle,
     @Schema(
         description = "Current state of the primary alcoholic fermentation cycle.",
         implementation = AlcoholicFermentationState.class,

@@ -2,7 +2,7 @@ package org.craft.mcs.cap.core.production.application.model;
 
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatchId;
 import org.craft.mcs.cap.core.production.domain.model.value.AlcoholicFermentationState;
-import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchLifecycle;
+import org.craft.mcs.cap.shared.kernel.material.value.BatchLifecycle;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
 import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
@@ -23,7 +23,7 @@ public record ProductionBatchView(
     @NonNull WorkspaceId workspaceId,
     @NonNull BatchName name,
     @NonNull Vessel vessel,
-    @NonNull ProductionBatchLifecycle lifecycle,
+    @NonNull BatchLifecycle lifecycle,
     @NonNull AlcoholicFermentationState alcoholicFermentationState,
     @NonNull VolumeValue currentVolume,
     @NonNull ProductionProfileSnapshot initialProfileSnapshot,

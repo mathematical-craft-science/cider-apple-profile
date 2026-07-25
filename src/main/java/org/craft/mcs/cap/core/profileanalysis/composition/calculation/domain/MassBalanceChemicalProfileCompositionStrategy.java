@@ -4,12 +4,9 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.point.domain.SugarAcidityAxisPoint;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.point.domain.SugarAcidityProfilePoint;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValueKind;
-import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -50,8 +47,6 @@ public final class MassBalanceChemicalProfileCompositionStrategy
   @Override
   public @NonNull ChemicalProfileComposition calculate(@NonNull ChemicalProfileCompositionRequest request) {
     requireNonNull(request, "chemical profile composition request cannot be null");
-    validateWeightMode(request.sources());
-    validateAvailableVolume(request.sources());
 
     final var warnings = new ArrayList<ChemicalProfileCompositionWarning>();
     final var sugar = calculateSugar(request.sources());
@@ -62,41 +57,15 @@ public final class MassBalanceChemicalProfileCompositionStrategy
     return ChemicalProfileComposition.of(
         request.sources(),
         new SugarAcidityProfilePoint(
-            calculatedPoint(sugar),
-            calculatedPoint(acidity),
-            tannin == null ? null : calculatedPoint(tannin)
+            calculatedPoint(ChemicalAxis.SUGAR, sugar),
+            calculatedPoint(ChemicalAxis.ACIDITY, acidity),
+            tannin == null ? null : calculatedPoint(ChemicalAxis.TANNIN, tannin)
         ),
-        yeastAssimilableNitrogen == null ? null : calculatedPoint(yeastAssimilableNitrogen),
+        yeastAssimilableNitrogen == null
+            ? null
+            : calculatedPoint(ChemicalAxis.YEAST_ASSIMILABLE_NITROGEN, yeastAssimilableNitrogen),
         warnings
     );
-  }
-
-  private static void validateWeightMode(@NonNull List<@NonNull ChemicalProfileCompositionSource> sources) {
-    final var firstWeightClass = sources.getFirst().weight().getClass();
-    final var mixedWeights = sources.stream()
-        .map(source -> source.weight().getClass())
-        .anyMatch(weightClass -> !weightClass.equals(firstWeightClass));
-
-    if (mixedWeights) {
-      throw new InvalidChemicalProfileCompositionException(
-          "chemical profile composition cannot mix absolute volumes and proportions");
-    }
-  }
-
-  private static void validateAvailableVolume(@NonNull List<@NonNull ChemicalProfileCompositionSource> sources) {
-    for (final var source : sources) {
-      final var availableVolume = source.availableVolume();
-      if (!(source.weight() instanceof AbsoluteCompositionVolume(VolumeValue volume))
-          || availableVolume == null) {
-        continue;
-      }
-
-      if (volume.exceeds(availableVolume)) {
-        throw new InvalidChemicalProfileCompositionException(
-            "composition source requested volume exceeds available volume: " + sourceReference(source)
-        );
-      }
-    }
   }
 
   private static @NonNull BigDecimal calculateSugar(
@@ -206,13 +175,11 @@ public final class MassBalanceChemicalProfileCompositionStrategy
     return weightedSum.divide(totalWeight, CALCULATION_SCALE, RoundingMode.HALF_UP);
   }
 
-  private static @NonNull SugarAcidityAxisPoint calculatedPoint(@NonNull BigDecimal value) {
-    return new SugarAcidityAxisPoint(
-        value,
-        AxisValueKind.CALCULATED,
-        null,
-        null
-    );
+  private static @NonNull AxisValue calculatedPoint(
+      @NonNull ChemicalAxis axis,
+      @NonNull BigDecimal value
+  ) {
+    return AxisValue.calculated(axis, value);
   }
 
   @FunctionalInterface

@@ -30,9 +30,4 @@ public record FeedstockSeason(
   ) {
     return new FeedstockSeason(startsOn, endsOn);
   }
-
-  public boolean contains(@NonNull LocalDate date) {
-    requireNonNull(date, "feedstock season date cannot be null");
-    return !date.isBefore(startsOn) && !date.isAfter(endsOn);
-  }
 }

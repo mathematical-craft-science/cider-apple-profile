@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 import org.craft.mcs.cap.core.production.domain.model.value.AlcoholicFermentationState;
-import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchLifecycle;
+import org.craft.mcs.cap.shared.kernel.material.value.BatchLifecycle;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.data.annotation.CreatedDate;
@@ -24,7 +24,7 @@ public class ProductionBatchJdbcEntity {
   @NonNull @Column("workspace_id") UUID workspaceId;
   @NonNull @Column("name") String name;
   @NonNull @Column("vessel") String vessel;
-  @NonNull @Column("lifecycle") ProductionBatchLifecycle lifecycle;
+  @NonNull @Column("lifecycle") BatchLifecycle lifecycle;
   @NonNull @Column("alcoholic_fermentation_state") AlcoholicFermentationState alcoholicFermentationState;
   @NonNull @Column("current_volume_liters") BigDecimal currentVolumeLiters;
   @NonNull @Column("initial_sugar_specific_gravity") BigDecimal initialSugarSpecificGravity;
@@ -46,7 +46,7 @@ public class ProductionBatchJdbcEntity {
       @NonNull UUID workspaceId,
       @NonNull String name,
       @NonNull String vessel,
-      @NonNull ProductionBatchLifecycle lifecycle,
+      @NonNull BatchLifecycle lifecycle,
       @NonNull AlcoholicFermentationState alcoholicFermentationState,
       @NonNull BigDecimal currentVolumeLiters,
       @NonNull BigDecimal initialSugarSpecificGravity,

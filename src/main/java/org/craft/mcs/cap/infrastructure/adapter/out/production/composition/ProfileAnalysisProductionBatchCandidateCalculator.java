@@ -13,7 +13,7 @@ import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.Abs
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileComposition;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionSource;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionSourceReference;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.point.domain.SugarAcidityAxisPoint;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
@@ -87,12 +87,12 @@ public final class ProfileAnalysisProductionBatchCandidateCalculator
     );
   }
 
-  private static @Nullable TanninValue toTannin(@Nullable SugarAcidityAxisPoint tannin) {
+  private static @Nullable TanninValue toTannin(@Nullable AxisValue tannin) {
     return tannin == null ? null : TanninValue.of(tannin.value());
   }
 
   private static @Nullable YeastAssimilableNitrogenValue toYeastAssimilableNitrogen(
-      @Nullable SugarAcidityAxisPoint yeastAssimilableNitrogen
+      @Nullable AxisValue yeastAssimilableNitrogen
   ) {
     return yeastAssimilableNitrogen == null
         ? null

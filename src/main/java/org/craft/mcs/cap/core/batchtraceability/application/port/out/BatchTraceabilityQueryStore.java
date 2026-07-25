@@ -10,6 +10,10 @@ import org.jspecify.annotations.NonNull;
 
 public interface BatchTraceabilityQueryStore {
 
+  /** Loads all immutable trace facts for rebuilding workspace-owned projections. */
+  @NonNull
+  List<@NonNull BatchTraceStep> findAllByWorkspace(@NonNull WorkspaceId workspaceId);
+
   /** Resolves the workspace owning trace facts for a globally identified material subject. */
   @NonNull
   Optional<@NonNull WorkspaceId> findWorkspaceIdBySubject(@NonNull BatchTraceSubject subject);

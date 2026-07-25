@@ -1,9 +1,9 @@
 package org.craft.mcs.cap.core.production.domain.model;
 
 import org.craft.mcs.cap.core.production.domain.model.value.AlcoholicFermentationState;
-import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchLifecycle;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
+import org.craft.mcs.cap.shared.kernel.material.value.BatchLifecycle;
 import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
 import org.craft.mcs.cap.shared.kernel.DomainConflictException;
 import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
@@ -37,7 +37,7 @@ public final class ProductionBatch {
 
   private @NonNull Vessel vessel;
 
-  private @NonNull ProductionBatchLifecycle lifecycle;
+  private @NonNull BatchLifecycle lifecycle;
 
   private @NonNull AlcoholicFermentationState alcoholicFermentationState;
 
@@ -53,7 +53,7 @@ public final class ProductionBatch {
       @NonNull WorkspaceId workspaceId,
       @NonNull BatchName name,
       @NonNull Vessel vessel,
-      @NonNull ProductionBatchLifecycle lifecycle,
+      @NonNull BatchLifecycle lifecycle,
       @NonNull AlcoholicFermentationState alcoholicFermentationState,
       @NonNull VolumeValue currentVolume,
       @NonNull ProductionProfileSnapshot initialProfileSnapshot,
@@ -92,7 +92,7 @@ public final class ProductionBatch {
         workspaceId,
         name,
         vessel,
-        ProductionBatchLifecycle.ACTIVE,
+        BatchLifecycle.ACTIVE,
         AlcoholicFermentationState.NOT_STARTED,
         initialVolume,
         initialProfileSnapshot,
@@ -106,7 +106,7 @@ public final class ProductionBatch {
       @NonNull WorkspaceId workspaceId,
       @NonNull BatchName name,
       @NonNull Vessel vessel,
-      @NonNull ProductionBatchLifecycle lifecycle,
+      @NonNull BatchLifecycle lifecycle,
       @NonNull AlcoholicFermentationState alcoholicFermentationState,
       @NonNull VolumeValue currentVolume,
       @NonNull ProductionProfileSnapshot initialProfileSnapshot,
@@ -141,7 +141,7 @@ public final class ProductionBatch {
     return vessel;
   }
 
-  public @NonNull ProductionBatchLifecycle lifecycle() {
+  public @NonNull BatchLifecycle lifecycle() {
     return lifecycle;
   }
 
@@ -188,7 +188,7 @@ public final class ProductionBatch {
    */
   public @NonNull ProductionBatch deplete() {
     requireActive("deplete");
-    lifecycle = ProductionBatchLifecycle.DEPLETED;
+    lifecycle = BatchLifecycle.DEPLETED;
     currentVolume = VolumeValue.ofLiters("0");
     return this;
   }
@@ -198,7 +198,7 @@ public final class ProductionBatch {
    */
   public @NonNull ProductionBatch discard() {
     requireActive("discard");
-    lifecycle = ProductionBatchLifecycle.DISCARDED;
+    lifecycle = BatchLifecycle.DISCARDED;
     currentVolume = VolumeValue.ofLiters("0");
     return this;
   }
@@ -248,7 +248,7 @@ public final class ProductionBatch {
   }
 
   private void requireActive(@NonNull String action) {
-    if (lifecycle != ProductionBatchLifecycle.ACTIVE) {
+    if (lifecycle != BatchLifecycle.ACTIVE) {
       throw new DomainConflictException(
           "cannot " + action + " when production batch lifecycle is " + lifecycle
       );
@@ -271,13 +271,13 @@ public final class ProductionBatch {
   }
 
   private static void validateMaterialState(
-      @NonNull ProductionBatchLifecycle lifecycle,
+      @NonNull BatchLifecycle lifecycle,
       @NonNull VolumeValue currentVolume
   ) {
-    if (lifecycle == ProductionBatchLifecycle.ACTIVE && currentVolume.isZero()) {
+    if (lifecycle == BatchLifecycle.ACTIVE && currentVolume.isZero()) {
       throw new DomainRuleViolationException("active production batch volume must be greater than zero");
     }
-    if (lifecycle != ProductionBatchLifecycle.ACTIVE && !currentVolume.isZero()) {
+    if (lifecycle != BatchLifecycle.ACTIVE && !currentVolume.isZero()) {
       throw new DomainRuleViolationException("inactive production batch volume must be zero");
     }
   }

@@ -34,6 +34,7 @@ public final class FeedstockBatchJdbcMapper {
         batch.season().startsOn(),
         batch.season().endsOn(),
         batch.source() == null ? null : batch.source().value(),
+        batch.lifecycle(),
         batch.availableVolume().liters(),
         batch.note(),
         batch.deletedAt()
@@ -53,6 +54,7 @@ public final class FeedstockBatchJdbcMapper {
     entity.seasonStartsOn = batch.season().startsOn();
     entity.seasonEndsOn = batch.season().endsOn();
     entity.source = batch.source() == null ? null : batch.source().value();
+    entity.lifecycle = batch.lifecycle();
     entity.availableVolumeLiters = batch.availableVolume().liters();
     entity.note = batch.note();
     entity.deletedAt = batch.deletedAt();
@@ -76,6 +78,7 @@ public final class FeedstockBatchJdbcMapper {
             requireNonNull(entity.seasonEndsOn, "feedstock season end date cannot be null")
         ),
         source,
+        requireNonNull(entity.lifecycle, "feedstock batch lifecycle cannot be null"),
         VolumeValue.ofLiters(requireNonNull(entity.availableVolumeLiters, "available volume cannot be null")),
         entity.note,
         entity.deletedAt
@@ -106,6 +109,7 @@ public final class FeedstockBatchJdbcMapper {
             requireNonNull(entity.seasonEndsOn, "feedstock season end date cannot be null")
         ),
         entity.source == null ? null : FeedstockSource.of(entity.source),
+        requireNonNull(entity.lifecycle, "feedstock batch lifecycle cannot be null"),
         VolumeValue.ofLiters(requireNonNull(entity.availableVolumeLiters, "available volume cannot be null")),
         entity.note
     );

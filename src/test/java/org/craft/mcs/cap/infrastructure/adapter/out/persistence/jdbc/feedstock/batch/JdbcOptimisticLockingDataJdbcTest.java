@@ -3,6 +3,7 @@ package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.feedstock.
 import java.time.LocalDate;
 import java.util.UUID;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
+import org.craft.mcs.cap.shared.kernel.material.value.BatchLifecycle;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
@@ -114,6 +115,22 @@ class JdbcOptimisticLockingDataJdbcTest {
         .isInstanceOf(ConcurrentResourceModificationException.class)
         .hasMessage("resource was modified concurrently: feedstock batch");
     assertThat(aggregateRepository.findById(created.batchId())).isPresent();
+  }
+
+  @Test
+  void persistsDepletedLifecycleWhenEntireVolumeIsConsumed() {
+    final var aggregateRepository = new JdbcFeedstockBatchRepository(repository);
+    final var created = aggregateRepository.create(feedstockBatch(persistWorkspace()));
+    final var state = aggregateRepository.findByIdForConsumption(created.batchId()).orElseThrow();
+
+    state.aggregate().consumeAvailableVolume(created.availableVolume());
+    aggregateRepository.update(state);
+
+    assertThat(aggregateRepository.findById(created.batchId()))
+        .isPresent()
+        .get()
+        .returns(BatchLifecycle.DEPLETED, FeedstockBatch::lifecycle)
+        .satisfies(batch -> assertThat(batch.availableVolume().liters()).isZero());
   }
 
   private static FeedstockBatch feedstockBatch(WorkspaceId workspaceId) {

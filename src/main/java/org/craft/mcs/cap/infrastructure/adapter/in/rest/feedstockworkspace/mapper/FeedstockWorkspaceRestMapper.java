@@ -1,7 +1,6 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstockworkspace.mapper;
 
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.port.in.ProfileTargetScoringPurpose;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.point.domain.SugarAcidityAxisPoint;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileEvaluation;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.RectangleSugarAcidityTargetGeometry;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.TanninTargetRange;
@@ -354,12 +353,7 @@ public final class FeedstockWorkspaceRestMapper {
   private static @NonNull SugarAcidityAxisPointResponse toResponse(@NonNull AxisValue axisValue) {
     requireNonNull(axisValue, "chemical axis value cannot be null");
     return SugarAcidityZoneRestMapper.toResponse(
-        new SugarAcidityAxisPoint(
-            axisValue.value(),
-            axisValue.valueKind(),
-            axisValue.min(),
-            axisValue.max()
-        ),
+        axisValue,
         CanonicalUnitLabels.YEAST_ASSIMILABLE_NITROGEN
     );
   }

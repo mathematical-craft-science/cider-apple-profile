@@ -133,8 +133,8 @@ public interface FeedstockBatchApi {
   @Operation(
       summary = "Replace feedstock batch",
       description = """
-          Replaces editable feedstock batch fields. The request must include the owning workspace id
-          for ownership validation.
+          Replaces editable feedstock metadata. Available volume and vessel are material-state
+          properties and cannot be changed through this endpoint.
           """,
       requestBody = @RequestBody(
           description = "Full feedstock batch update payload.",
@@ -181,7 +181,10 @@ public interface FeedstockBatchApi {
 
   @Operation(
       summary = "Patch feedstock batch",
-      description = "Partially updates editable feedstock batch fields. Blank optional text values clear that field."
+      description = """
+          Partially updates editable feedstock metadata. Blank optional text values clear that
+          field. Available volume and vessel can only change through explicit material operations.
+          """
   )
   @ApiResponse(
       responseCode = "200",

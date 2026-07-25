@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 import org.craft.mcs.cap.core.production.application.authorization.port.out.ProductionAccessControl;
 import org.craft.mcs.cap.core.production.application.model.ProductionBatchView;
@@ -34,10 +35,11 @@ import org.craft.mcs.cap.core.production.domain.model.ProductionSourceComponent;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceComposition;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceReference;
 import org.craft.mcs.cap.core.production.domain.model.value.AlcoholicFermentationState;
-import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchLifecycle;
+import org.craft.mcs.cap.shared.kernel.material.value.BatchLifecycle;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
 import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
+import org.craft.mcs.cap.shared.kernel.DomainConflictException;
 import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
 import org.craft.mcs.cap.shared.application.persistence.VersionedAggregate;
 import org.craft.mcs.cap.shared.application.persistence.AggregateRevision;
@@ -93,7 +95,7 @@ class CreateProductionBatchServiceTest {
         .hasSize(1);
     assertThat(created.productionBatch())
         .returns(Vessel.named("Tank F-03"), ProductionBatchView::vessel)
-        .returns(ProductionBatchLifecycle.ACTIVE, ProductionBatchView::lifecycle)
+        .returns(BatchLifecycle.ACTIVE, ProductionBatchView::lifecycle)
         .returns(
             AlcoholicFermentationState.NOT_STARTED,
             ProductionBatchView::alcoholicFermentationState
@@ -124,7 +126,9 @@ class CreateProductionBatchServiceTest {
                   .isInstanceOf(ProductionBatchFeedstockTraceSource.class)
                   .returns(sourceReference.id(), ProductionBatchTraceSource::id)
                   .returns(ProductionSourceDisplayName.of("Late juice"), ProductionBatchTraceSource::displayName)
-                  .returns(VolumeValue.ofLiters("100"), ProductionBatchTraceSource::volume)
+                  .returns(VolumeValue.ofLiters("250"), ProductionBatchTraceSource::availableBefore)
+                  .returns(VolumeValue.ofLiters("100"), ProductionBatchTraceSource::consumed)
+                  .returns(VolumeValue.ofLiters("150"), ProductionBatchTraceSource::remaining)
                   .returns(ConfidenceLevel.LAB_VERIFIED, ProductionBatchTraceSource::confidence);
               assertThat(source.profile().valueOf(ChemicalAxis.SUGAR))
                   .get()
@@ -209,6 +213,40 @@ class CreateProductionBatchServiceTest {
         .isEqualTo(ProductionBatchCandidateStatus.AVAILABLE);
   }
 
+  @Test
+  void repeatedCandidateConfirmationDoesNotConsumeSourceAgain() {
+    final var transactionHelper = new StagingTransactionHelper();
+    final var workspaceId = WorkspaceId.newId();
+    final var sourceReference = ProductionSourceReference.feedstockBatch(FeedstockBatchId.newId().value());
+    final var candidate = candidate(workspaceId, sourceReference);
+    final var candidateStore = new StagingCandidateStore(transactionHelper, candidate);
+    final var productionRepository = new StagingProductionBatchRepository(transactionHelper);
+    final var sourceConsumptionCount = new AtomicInteger();
+    final var sourceInventory = sourceInventory(EVIDENCE);
+    final ProductionSourceInventory countingInventory = (requestedWorkspaceId, source) -> {
+      sourceConsumptionCount.incrementAndGet();
+      return sourceInventory.consume(requestedWorkspaceId, source);
+    };
+    final var service = service(
+        countingInventory,
+        candidateStore,
+        productionRepository,
+        new CapturingTraceRecorder(),
+        transactionHelper
+    );
+    final var command = command(workspaceId, candidate.candidate().candidateId());
+
+    service.create(command);
+
+    assertThatThrownBy(() -> service.create(command))
+        .isInstanceOf(DomainConflictException.class)
+        .hasMessageContaining("already been confirmed");
+    assertThat(sourceConsumptionCount)
+        .hasValue(1);
+    assertThat(productionRepository.committed)
+        .hasSize(1);
+  }
+
   private static @NonNull CreateProductionBatchService service(
       @NonNull ProductionSourceInventory sourceInventory,
       @NonNull ProductionBatchCandidateStore candidateStore,
@@ -285,7 +323,9 @@ class CreateProductionBatchServiceTest {
     return (workspaceId, source) -> new ConsumedProductionSource(
         source.reference(),
         ProductionSourceDisplayName.of("Late juice"),
+        VolumeValue.ofLiters("250"),
         source.volume(),
+        VolumeValue.ofLiters("150"),
         ChemicalProfileAxes.of(
             axis(ChemicalAxis.SUGAR, "1.050"),
             axis(ChemicalAxis.ACIDITY, "6.1"),

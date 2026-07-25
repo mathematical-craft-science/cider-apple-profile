@@ -33,4 +33,13 @@ class ChemicalProfileAxesTest {
         .isInstanceOf(DomainRuleViolationException.class)
         .hasMessage("required chemical axis is missing: SUGAR");
   }
+
+  @Test
+  void rejectsAxisValuePlacedIntoAnotherCharacteristicSlot() {
+    final var acidity = AxisValue.point(ChemicalAxis.ACIDITY, BigDecimal.valueOf(5.2));
+
+    assertThatThrownBy(() -> ChemicalProfileAxes.of(acidity, null, null))
+        .isInstanceOf(DomainRuleViolationException.class)
+        .hasMessage("chemical profile axis slot SUGAR cannot contain ACIDITY");
+  }
 }

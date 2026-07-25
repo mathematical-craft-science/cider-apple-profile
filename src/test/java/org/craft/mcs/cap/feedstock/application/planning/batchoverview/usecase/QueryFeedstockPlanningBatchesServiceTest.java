@@ -46,6 +46,7 @@ import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.useca
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
+import org.craft.mcs.cap.shared.kernel.material.value.BatchLifecycle;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
 import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
 import org.craft.mcs.cap.shared.testing.FeedstockMeasurementFixture;
@@ -276,6 +277,7 @@ class QueryFeedstockPlanningBatchesServiceTest {
         FeedstockType.JUICE,
         SEASON,
         null,
+        BatchLifecycle.ACTIVE,
         VolumeValue.ofLiters("120"),
         null
     );

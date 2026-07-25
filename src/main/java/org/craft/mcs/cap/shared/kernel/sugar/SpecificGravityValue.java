@@ -23,7 +23,7 @@ public final class SpecificGravityValue
     extends AbstractMeasuredValue<SpecificGravity, SpecificGravityValue>
     implements SugarValue {
 
-  private static final BigDecimal MIN = new BigDecimal("1.000");
+  private static final BigDecimal MIN = new BigDecimal("0.900");
   private static final BigDecimal MAX = new BigDecimal("1.200");
   private static final BigDecimal STEP = new BigDecimal("0.001");
   private static final Unit<SpecificGravity> UNIT = BeverageUnits.SG;

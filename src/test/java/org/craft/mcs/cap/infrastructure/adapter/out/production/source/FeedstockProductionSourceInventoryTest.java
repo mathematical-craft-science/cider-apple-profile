@@ -1,6 +1,5 @@
 package org.craft.mcs.cap.infrastructure.adapter.out.production.source;
 
-import java.util.UUID;
 import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchHasNoMeasurementsException;
 import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchInsufficientAvailableVolumeException;
 import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchNotFoundException;
@@ -52,12 +51,11 @@ class FeedstockProductionSourceInventoryTest {
     when(useCase.consume(any())).thenReturn(new ConsumedFeedstockBatchMaterial(
         batchId,
         FeedstockBatchMaterialName.of("Late juice"),
+        VolumeValue.ofLiters("250"),
         source.volume(),
+        VolumeValue.ofLiters("150"),
         MaterialStateId.newId(),
-        new FeedstockBatchMaterialEvidenceReference(
-            UUID.fromString("019f0f03-4715-7cbd-a634-a178df719e28"),
-            3
-        ),
+        new FeedstockBatchMaterialEvidenceReference("feedstock-profile-v1:measurement-evidence"),
         profile,
         ConfidenceLevel.LAB_VERIFIED
     ));
@@ -68,10 +66,12 @@ class FeedstockProductionSourceInventoryTest {
     assertThat(consumed)
         .returns(source.reference(), ConsumedProductionSource::reference)
         .returns(ProductionSourceDisplayName.of("Late juice"), ConsumedProductionSource::displayName)
-        .returns(VolumeValue.ofLiters("100"), ConsumedProductionSource::volume)
+        .returns(VolumeValue.ofLiters("250"), ConsumedProductionSource::availableBefore)
+        .returns(VolumeValue.ofLiters("100"), ConsumedProductionSource::consumed)
+        .returns(VolumeValue.ofLiters("150"), ConsumedProductionSource::remaining)
         .returns(ConfidenceLevel.LAB_VERIFIED, ConsumedProductionSource::confidence)
         .returns(
-            ProductionSourceEvidenceReference.of("019f0f03-4715-7cbd-a634-a178df719e28:v3"),
+            ProductionSourceEvidenceReference.of("feedstock-profile-v1:measurement-evidence"),
             ConsumedProductionSource::evidenceReference
         )
         .satisfies(result -> assertThat(result.profile())

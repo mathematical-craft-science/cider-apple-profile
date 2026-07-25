@@ -132,6 +132,7 @@ class MeasurementSetCommandServicesTest {
   void patchAppendsRevisionAndCopiesUnchangedEvidenceWithNewRecordIdentity() {
     final var repository = mock(MeasurementSetRepository.class);
     final var subjectAccessControl = mock(MeasurementSubjectAccessControl.class);
+    final var materialStateProvider = mock(MeasurementMaterialStateProvider.class);
     final var set = measurementSet();
     final var originalSugar = set.currentRevision().records().getFirst();
     final var state = new VersionedAggregate<>(set, AggregateRevision.of(3));
@@ -140,7 +141,7 @@ class MeasurementSetCommandServicesTest {
       final VersionedAggregate<MeasurementSet> argument = invocation.getArgument(0);
       return new VersionedAggregate<>(argument.aggregate(), AggregateRevision.of(4));
     });
-    final var service = correctionService(repository, subjectAccessControl);
+    final var service = correctionService(repository, subjectAccessControl, materialStateProvider);
 
     final var result = service.patch(new PatchMeasurementSetCommand(
         set.measurementSetId(),
@@ -168,17 +169,19 @@ class MeasurementSetCommandServicesTest {
                 .satisfies(value -> assertThat(pointValue(value.value()).asBigDecimal())
                     .isEqualByComparingTo("3.25"))));
     verify(subjectAccessControl).requireWriteAccess(set.subject());
+    verify(materialStateProvider).lockCurrentState(set.subject());
   }
 
   @Test
   void patchRejectsStaleExpectedVersionBeforeAppendingRevision() {
     final var repository = mock(MeasurementSetRepository.class);
     final var subjectAccessControl = mock(MeasurementSubjectAccessControl.class);
+    final var materialStateProvider = mock(MeasurementMaterialStateProvider.class);
     final var set = measurementSet();
     when(repository.findVersionedById(set.measurementSetId())).thenReturn(Optional.of(
         new VersionedAggregate<>(set, AggregateRevision.of(4))
     ));
-    final var service = correctionService(repository, subjectAccessControl);
+    final var service = correctionService(repository, subjectAccessControl, materialStateProvider);
     final var command = new PatchMeasurementSetCommand(
         set.measurementSetId(),
         3,
@@ -193,6 +196,7 @@ class MeasurementSetCommandServicesTest {
     assertThatThrownBy(() -> service.patch(command))
         .isInstanceOf(ConcurrentResourceModificationException.class);
     verify(subjectAccessControl).requireWriteAccess(set.subject());
+    verify(materialStateProvider, never()).lockCurrentState(any());
     verify(repository, never()).appendRevision(any());
   }
 
@@ -227,11 +231,12 @@ class MeasurementSetCommandServicesTest {
   void retractPreservesEvidenceAndChangesAggregateLifecycle() {
     final var repository = mock(MeasurementSetRepository.class);
     final var subjectAccessControl = mock(MeasurementSubjectAccessControl.class);
+    final var materialStateProvider = mock(MeasurementMaterialStateProvider.class);
     final var set = measurementSet();
     final var state = new VersionedAggregate<>(set, AggregateRevision.of(2));
     when(repository.findVersionedById(set.measurementSetId())).thenReturn(Optional.of(state));
     when(repository.retract(state)).thenReturn(state);
-    final var service = retractionService(repository, subjectAccessControl);
+    final var service = retractionService(repository, subjectAccessControl, materialStateProvider);
 
     service.retract(new RetractMeasurementSetCommand(set.measurementSetId(), 2));
 
@@ -239,6 +244,7 @@ class MeasurementSetCommandServicesTest {
         .returns(MeasurementSetLifecycle.RETRACTED, MeasurementSet::lifecycle)
         .satisfies(retracted -> assertThat(retracted.currentRevision().records()).hasSize(2));
     verify(subjectAccessControl).requireWriteAccess(set.subject());
+    verify(materialStateProvider).lockCurrentState(set.subject());
     verify(repository).retract(state);
   }
 
@@ -251,6 +257,8 @@ class MeasurementSetCommandServicesTest {
     return new CreateMeasurementSetService(
         repository,
         subjectAccessControl,
+        (subject, measurements) -> {
+        },
         actorProvider,
         materialStateProvider,
         new MeasurementSetRevisionFactory(),
@@ -261,12 +269,16 @@ class MeasurementSetCommandServicesTest {
 
   private static CorrectMeasurementSetService correctionService(
       MeasurementSetRepository repository,
-      MeasurementSubjectAccessControl subjectAccessControl
+      MeasurementSubjectAccessControl subjectAccessControl,
+      MeasurementMaterialStateProvider materialStateProvider
   ) {
     final MeasurementActorProvider actorProvider = () -> ActorReference.accountUser(newUuid());
     return new CorrectMeasurementSetService(
         repository,
         new MeasurementSetWriteAccess(repository, subjectAccessControl),
+        materialStateProvider,
+        (subject, measurements) -> {
+        },
         actorProvider,
         new MeasurementSetRevisionFactory(),
         new DirectTransactionHelper(),
@@ -276,11 +288,13 @@ class MeasurementSetCommandServicesTest {
 
   private static RetractMeasurementSetService retractionService(
       MeasurementSetRepository repository,
-      MeasurementSubjectAccessControl subjectAccessControl
+      MeasurementSubjectAccessControl subjectAccessControl,
+      MeasurementMaterialStateProvider materialStateProvider
   ) {
     return new RetractMeasurementSetService(
         repository,
         new MeasurementSetWriteAccess(repository, subjectAccessControl),
+        materialStateProvider,
         new DirectTransactionHelper(),
         Clock.fixed(CORRECTION_TIME, ZoneOffset.UTC)
     );
@@ -323,8 +337,7 @@ class MeasurementSetCommandServicesTest {
         MeasurementSetId.newId(),
         WorkspaceId.newId(),
         subject,
-        revision,
-        INITIAL_TIME
+        revision
     );
   }
 

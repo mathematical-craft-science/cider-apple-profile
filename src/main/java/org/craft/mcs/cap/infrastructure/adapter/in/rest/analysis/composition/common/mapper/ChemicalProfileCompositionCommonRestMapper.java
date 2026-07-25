@@ -11,7 +11,6 @@ import java.math.BigDecimal;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.assessment.ProfileTargetDistance;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetObjective;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetObjectiveWeights;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.point.domain.SugarAcidityAxisPoint;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.CustomRectangleSugarAcidityTarget;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.RectangleSugarAcidityTargetGeometry;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.SugarAcidityTarget;
@@ -136,7 +135,7 @@ public final class ChemicalProfileCompositionCommonRestMapper {
   }
 
   public static @Nullable SugarAcidityAxisPointResponse toYeastAssimilableNitrogenResponse(
-      @Nullable SugarAcidityAxisPoint point
+      @Nullable AxisValue point
   ) {
     return point == null
         ? null

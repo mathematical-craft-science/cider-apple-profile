@@ -26,6 +26,7 @@ import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 
 class DiscretizedBoundedChemicalProfileCompositionOptimizationStrategyTest {
@@ -144,6 +145,28 @@ class DiscretizedBoundedChemicalProfileCompositionOptimizationStrategyTest {
 
     assertThat(result.evaluatedCandidates()).isEqualTo(1);
     assertThat(result.candidates()).isEmpty();
+  }
+
+  @Test
+  void rejectsDuplicateSourceReferencesBeforeOptimization() {
+    assertThatThrownBy(() -> new ChemicalProfileCompositionOptimizationRequest(
+        List.of(
+            source("same", "1.050", "6.0", null),
+            source("same", "1.052", "6.2", null)
+        ),
+        ChemicalProfileCompositionTanninPolicy.CALCULATE_WHEN_COMPLETE,
+        target("1.049", "1.051", "5.9", "6.1"),
+        new DistanceToTargetAreaObjectiveFunction(
+            EffectiveRangeProfileAxisNormalizer.ciderBlendingDefaults(),
+            ProfileTargetObjectiveWeights.balanced()
+        ),
+        List.of(),
+        new DiscretizedCompositionOptimizationSettings(50, 3),
+        CompositionOptimizationMode.PROPORTION,
+        null
+    ))
+        .isInstanceOf(InvalidChemicalProfileCompositionOptimizationException.class)
+        .hasMessageContaining("each source exactly once");
   }
 
   private static @NonNull ProfileTargetObjective target(

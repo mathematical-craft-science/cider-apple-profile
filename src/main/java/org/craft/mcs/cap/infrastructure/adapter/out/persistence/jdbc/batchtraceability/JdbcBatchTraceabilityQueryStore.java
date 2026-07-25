@@ -38,6 +38,32 @@ class JdbcBatchTraceabilityQueryStore implements BatchTraceabilityQueryStore {
 
   private final @NonNull NamedParameterJdbcTemplate jdbcTemplate;
 
+  @Override
+  public @NonNull List<@NonNull BatchTraceStep> findAllByWorkspace(
+      @NonNull WorkspaceId workspaceId
+  ) {
+    requireNonNull(workspaceId, "batch trace workspace id cannot be null");
+    final var stepIds = jdbcTemplate.queryForList(
+        """
+            SELECT step_id
+              FROM batch_trace_steps
+             WHERE workspace_id = :workspaceId
+             ORDER BY occurred_at ASC, step_id ASC
+            """,
+        new MapSqlParameterSource("workspaceId", workspaceId.value()),
+        UUID.class
+    );
+    if (stepIds.isEmpty()) {
+      return List.of();
+    }
+
+    final var rows = findSteps(workspaceId, stepIds);
+    addSubjects(rows);
+    return rows.values().stream()
+        .map(BatchTraceStepJdbcRowMapper::toDomain)
+        .toList();
+  }
+
   private static @NonNull BatchTraceStepJdbcRow toStepRow(
       @NonNull ResultSet resultSet,
       int rowNumber

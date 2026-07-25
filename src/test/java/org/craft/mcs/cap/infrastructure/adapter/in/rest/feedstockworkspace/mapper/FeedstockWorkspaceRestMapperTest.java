@@ -14,6 +14,7 @@ import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.Feedsto
 import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.model.FeedstockPlanningView;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
+import org.craft.mcs.cap.shared.kernel.material.value.BatchLifecycle;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
 import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
 import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementId;
@@ -119,6 +120,7 @@ class FeedstockWorkspaceRestMapperTest {
         FeedstockType.JUICE,
         FeedstockSeason.of(LocalDate.parse("2026-09-01"), LocalDate.parse("2026-12-31")),
         null,
+        BatchLifecycle.ACTIVE,
         VolumeValue.ofLiters("100.0"),
         null
     );

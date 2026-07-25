@@ -2,6 +2,7 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.batch.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.UUID;
+import org.craft.mcs.cap.shared.kernel.material.value.BatchLifecycle;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.common.dto.FeedstockSeasonResponse;
 import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
@@ -58,6 +59,13 @@ public record FeedstockBatchResponse(
         requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )
     @Nullable String source,
+    @Schema(
+        description = "Material availability lifecycle of the feedstock batch.",
+        implementation = BatchLifecycle.class,
+        example = "ACTIVE",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
+    @NonNull BatchLifecycle lifecycle,
     @Schema(description = "Available feedstock volume.", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull DecimalQuantityResponse availableVolume,
     @Schema(

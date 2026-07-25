@@ -3,11 +3,17 @@ package org.craft.mcs.cap.core.measurement.domain.model;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import org.craft.mcs.cap.core.measurement.domain.calculation.ArithmeticMeanMeasurementDerivation;
 import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
+import org.craft.mcs.cap.shared.kernel.characteristic.CharacteristicValue;
+import org.craft.mcs.cap.shared.kernel.characteristic.IntervalCharacteristicValue;
+import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.identity.ActorReference;
 import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
+import org.craft.mcs.cap.shared.kernel.measurement.MeasuredValue;
 import org.jmolecules.ddd.annotation.Entity;
 import org.jmolecules.ddd.annotation.Identity;
 import org.jspecify.annotations.NonNull;
@@ -54,6 +60,7 @@ public record MeasurementSetRevision(
     requireMaximumLength(note, MAX_NOTE_LENGTH, "measurement set note");
     validateRecordIdentities(records);
     validateResults(records);
+    validateRecordChronology(records, createdAt);
     validateDerivations(records);
   }
 
@@ -90,17 +97,117 @@ public record MeasurementSetRevision(
         .collect(Collectors.toUnmodifiableMap(MeasurementRecord::recordId, Function.identity()));
 
     for (final var result : records) {
-      for (final var inputId : result.derivationInputs()) {
-        final var input = recordsById.get(inputId);
-        if (input == null
-            || input.role() != MeasurementRecordRole.OBSERVATION
-            || input.characteristic() != result.characteristic()) {
-          throw new DomainRuleViolationException(
-              "derived measurement inputs must reference observations of the same characteristic"
-          );
-        }
+      if (result.derivationMethod() == null) {
+        continue;
+      }
+      final var inputs = result.derivationInputs().stream()
+          .map(inputId -> requireCompatibleObservation(result, recordsById.get(inputId)))
+          .toList();
+      requireEveryObservationParticipates(result, records);
+      requireDerivedResultTime(result, inputs);
+      final var expectedValue = switch (result.derivationMethod()) {
+        case ARITHMETIC_MEAN -> ArithmeticMeanMeasurementDerivation.derive(
+            inputs.stream()
+                .map(MeasurementRecord::value)
+                .map(MeasurementSetRevision::pointValue)
+                .toList()
+        );
+      };
+      if (!expectedValue.equals(result.value())) {
+        throw new DomainRuleViolationException(
+            "derived measurement result must equal the declared derivation of its observations"
+        );
       }
     }
+
+    records.stream()
+        .filter(measurementRecord -> measurementRecord.role() == MeasurementRecordRole.RESULT)
+        .filter(result -> result.derivationMethod() == null)
+        .forEach(result -> requireNoUnassociatedObservations(result, records));
+  }
+
+  private static void requireEveryObservationParticipates(
+      @NonNull MeasurementRecord result,
+      @NonNull List<@NonNull MeasurementRecord> records
+  ) {
+    final var observationIds = observationIds(result, records);
+    if (!observationIds.equals(Set.copyOf(result.derivationInputs()))) {
+      throw new DomainRuleViolationException(
+          "derived measurement result must reference every observation of its characteristic"
+      );
+    }
+  }
+
+  private static void requireNoUnassociatedObservations(
+      @NonNull MeasurementRecord result,
+      @NonNull List<@NonNull MeasurementRecord> records
+  ) {
+    if (!observationIds(result, records).isEmpty()) {
+      throw new DomainRuleViolationException(
+          "measurement observations require a derived result"
+      );
+    }
+  }
+
+  private static @NonNull Set<@NonNull MeasurementRecordId> observationIds(
+      @NonNull MeasurementRecord result,
+      @NonNull List<@NonNull MeasurementRecord> records
+  ) {
+    return records.stream()
+        .filter(measurementRecord -> measurementRecord.role() == MeasurementRecordRole.OBSERVATION)
+        .filter(measurementRecord -> measurementRecord.characteristic() == result.characteristic())
+        .map(MeasurementRecord::recordId)
+        .collect(Collectors.toUnmodifiableSet());
+  }
+
+  private static void validateRecordChronology(
+      @NonNull List<@NonNull MeasurementRecord> records,
+      @NonNull Instant createdAt
+  ) {
+    if (records.stream().anyMatch(measurementRecord -> measurementRecord.measuredAt().isAfter(createdAt))) {
+      throw new DomainRuleViolationException(
+          "measurement record time cannot be after its revision creation time"
+      );
+    }
+  }
+
+  private static void requireDerivedResultTime(
+      @NonNull MeasurementRecord result,
+      @NonNull List<@NonNull MeasurementRecord> inputs
+  ) {
+    final var latestObservationTime = inputs.stream()
+        .map(MeasurementRecord::measuredAt)
+        .max(Instant::compareTo)
+        .orElse(inputs.getFirst().measuredAt());
+    if (!result.measuredAt().equals(latestObservationTime)) {
+      throw new DomainRuleViolationException(
+          "derived measurement result time must equal its latest observation time"
+      );
+    }
+  }
+
+  private static @NonNull MeasurementRecord requireCompatibleObservation(
+      @NonNull MeasurementRecord result,
+      @Nullable MeasurementRecord input
+  ) {
+    if (input == null
+        || input.role() != MeasurementRecordRole.OBSERVATION
+        || input.characteristic() != result.characteristic()) {
+      throw new DomainRuleViolationException(
+          "derived measurement inputs must reference observations of the same characteristic"
+      );
+    }
+    return input;
+  }
+
+  private static @NonNull MeasuredValue pointValue(
+      @NonNull CharacteristicValue<MeasuredValue> value
+  ) {
+    return switch (value) {
+      case PointCharacteristicValue<MeasuredValue>(var point) -> point;
+      case IntervalCharacteristicValue<MeasuredValue> _ ->
+          throw new DomainRuleViolationException("derived measurement inputs must be point observations");
+    };
   }
 
   private static @Nullable String normalize(@Nullable String value) {

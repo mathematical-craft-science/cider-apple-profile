@@ -34,20 +34,28 @@ public final class ChemicalProfileAxes {
   ) {
     final var values = new EnumMap<ChemicalAxis, AxisValue>(ChemicalAxis.class);
 
-    if (sugar != null) {
-      values.put(ChemicalAxis.SUGAR, sugar);
-    }
-    if (acidity != null) {
-      values.put(ChemicalAxis.ACIDITY, acidity);
-    }
-    if (tannin != null) {
-      values.put(ChemicalAxis.TANNIN, tannin);
-    }
-    if (yeastAssimilableNitrogen != null) {
-      values.put(ChemicalAxis.YEAST_ASSIMILABLE_NITROGEN, yeastAssimilableNitrogen);
-    }
+    add(values, ChemicalAxis.SUGAR, sugar);
+    add(values, ChemicalAxis.ACIDITY, acidity);
+    add(values, ChemicalAxis.TANNIN, tannin);
+    add(values, ChemicalAxis.YEAST_ASSIMILABLE_NITROGEN, yeastAssimilableNitrogen);
 
     return new ChemicalProfileAxes(values);
+  }
+
+  private static void add(
+      @NonNull Map<@NonNull ChemicalAxis, @NonNull AxisValue> values,
+      @NonNull ChemicalAxis expectedAxis,
+      @Nullable AxisValue value
+  ) {
+    if (value == null) {
+      return;
+    }
+    if (value.axis() != expectedAxis) {
+      throw new DomainRuleViolationException(
+          "chemical profile axis slot %s cannot contain %s".formatted(expectedAxis, value.axis())
+      );
+    }
+    values.put(expectedAxis, value);
   }
 
   public @NonNull Optional<@NonNull AxisValue> valueOf(@NonNull ChemicalAxis axis) {

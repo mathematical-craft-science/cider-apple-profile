@@ -1,7 +1,5 @@
 package org.craft.mcs.cap.core.measurement.application.usecase;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -10,7 +8,7 @@ import org.craft.mcs.cap.core.measurement.application.model.DirectMeasurementCha
 import org.craft.mcs.cap.core.measurement.application.model.MeasurementCharacteristicInput;
 import org.craft.mcs.cap.core.measurement.application.model.MeasurementObservationInput;
 import org.craft.mcs.cap.core.measurement.application.model.RepeatedMeasurementCharacteristicInput;
-import org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic;
+import org.craft.mcs.cap.core.measurement.domain.calculation.ArithmeticMeanMeasurementDerivation;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementDerivationMethod;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementProvenance;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementRecord;
@@ -21,6 +19,7 @@ import org.craft.mcs.cap.shared.kernel.characteristic.CharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.characteristic.IntervalCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.measurement.MeasuredValue;
+import org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
@@ -28,8 +27,6 @@ import static java.util.Objects.requireNonNull;
 
 /** Creates immutable direct and derived records while preserving every repeated observation. */
 final class MeasurementRecordFactory {
-
-  private static final int CALCULATION_SCALE = 12;
 
   @NonNull List<@NonNull MeasurementRecord> create(
       @NonNull List<@NonNull MeasurementCharacteristicInput> inputs
@@ -94,7 +91,7 @@ final class MeasurementRecordFactory {
         .map(MeasurementRecordFactory::pointValue)
         .toList();
     final var resultValue = switch (derivationMethod) {
-      case ARITHMETIC_MEAN -> arithmeticMean(values);
+      case ARITHMETIC_MEAN -> ArithmeticMeanMeasurementDerivation.derive(values);
     };
     final var measuredAt = observations.stream()
         .map(MeasurementRecord::measuredAt)
@@ -114,17 +111,6 @@ final class MeasurementRecordFactory {
     final var records = new ArrayList<>(observations);
     records.add(result);
     return List.copyOf(records);
-  }
-
-  private static @NonNull PointCharacteristicValue<MeasuredValue> arithmeticMean(
-      @NonNull List<@NonNull MeasuredValue> values
-  ) {
-    final var average = values.stream()
-        .map(MeasuredValue::asBigDecimal)
-        .reduce(BigDecimal.ZERO, BigDecimal::add)
-        .divide(BigDecimal.valueOf(values.size()), CALCULATION_SCALE, RoundingMode.HALF_UP)
-        .stripTrailingZeros();
-    return PointCharacteristicValue.of(values.getFirst().withValue(average));
   }
 
   private static @NonNull MeasuredValue pointValue(

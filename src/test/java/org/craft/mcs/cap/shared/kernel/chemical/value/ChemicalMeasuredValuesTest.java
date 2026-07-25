@@ -14,7 +14,7 @@ class ChemicalMeasuredValuesTest {
 
   @Test
   void acceptsBoundaryValues() {
-    assertThat(SpecificGravityValue.of("1.000").asBigDecimal()).isEqualByComparingTo("1.000");
+    assertThat(SpecificGravityValue.of("0.900").asBigDecimal()).isEqualByComparingTo("0.900");
     assertThat(SpecificGravityValue.of("1.200").asBigDecimal()).isEqualByComparingTo("1.200");
     assertThat(BrixValue.of("0").asBigDecimal()).isEqualByComparingTo("0");
     assertThat(BrixValue.of("32.0").asBigDecimal()).isEqualByComparingTo("32.0");
@@ -30,7 +30,7 @@ class ChemicalMeasuredValuesTest {
 
   @Test
   void rejectsOutOfRangeValues() {
-    assertThatThrownBy(() -> SpecificGravityValue.of("0.999"))
+    assertThatThrownBy(() -> SpecificGravityValue.of("0.899"))
         .isInstanceOf(DomainRuleViolationException.class);
     assertThatThrownBy(() -> SpecificGravityValue.of("1.201"))
         .isInstanceOf(DomainRuleViolationException.class);

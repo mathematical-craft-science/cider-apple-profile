@@ -77,6 +77,24 @@ class BatchTraceStepTest {
   }
 
   @Test
+  void rejectsRepeatedOutputStateWithinOneStep() {
+    final var outputState = BatchTraceStepSubject.of(subject("production-1"));
+
+    assertThatThrownBy(() -> BatchTraceStep.create(
+        WORKSPACE_ID,
+        null,
+        BatchTraceStepType.PRODUCTION_BATCH_CREATED,
+        List.of(BatchTraceStepSubject.of(subject("feedstock-1"))),
+        List.of(outputState, outputState),
+        Instant.parse("2026-05-18T00:00:00Z"),
+        ACTOR,
+        null
+    ))
+        .isInstanceOf(DomainRuleViolationException.class)
+        .hasMessage("batch trace step output state ids must be unique");
+  }
+
+  @Test
   void supportsSeveralProductionStepsFromSameFeedstockSubject() {
     final var feedstock = BatchTraceStepSubject.of(subject("feedstock-1"));
 

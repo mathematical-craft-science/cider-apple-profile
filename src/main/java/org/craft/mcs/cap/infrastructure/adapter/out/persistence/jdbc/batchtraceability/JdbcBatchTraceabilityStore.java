@@ -12,8 +12,10 @@ import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStep;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.batchtraceability.row.BatchTraceStepJdbcRow;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.batchtraceability.row.BatchTraceStepJdbcRowMapper;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.batchtraceability.row.BatchTraceStepSubjectJdbcRow;
+import org.craft.mcs.cap.shared.application.ConcurrentResourceModificationException;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -33,11 +35,14 @@ class JdbcBatchTraceabilityStore implements BatchTraceabilityStore {
   public @NonNull BatchTraceStep append(@NonNull BatchTraceStep step) {
     requireNonNull(step, "batch trace step cannot be null");
 
-    final var row = BatchTraceStepJdbcRowMapper.fromDomain(step);
-    insertStep(row);
-    insertSubjects(row);
-
-    return step;
+    try {
+      final var row = BatchTraceStepJdbcRowMapper.fromDomain(step);
+      insertStep(row);
+      insertSubjects(row);
+      return step;
+    } catch (DuplicateKeyException exception) {
+      throw new ConcurrentResourceModificationException("batch trace state", exception);
+    }
   }
 
   private void insertStep(@NonNull BatchTraceStepJdbcRow row) {

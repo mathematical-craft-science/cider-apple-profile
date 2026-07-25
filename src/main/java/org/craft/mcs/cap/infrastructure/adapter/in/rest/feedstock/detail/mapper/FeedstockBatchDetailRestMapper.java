@@ -9,7 +9,6 @@ import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.Feedsto
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentProfilePotentialAbvView;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockPlanningReadinessCheck;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockPlanningReadinessView;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.point.domain.SugarAcidityAxisPoint;
 import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileEvaluation;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.abv.mapper.PotentialAbvPredictionRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.mapper.ChemicalProfileCapabilityRestMapper;
@@ -127,12 +126,7 @@ public final class FeedstockBatchDetailRestMapper {
     }
 
     return SugarAcidityZoneRestMapper.toResponse(
-        new SugarAcidityAxisPoint(
-            axisValue.value(),
-            axisValue.valueKind(),
-            axisValue.min(),
-            axisValue.max()
-        ),
+        axisValue,
         CanonicalUnitLabels.YEAST_ASSIMILABLE_NITROGEN
     );
   }

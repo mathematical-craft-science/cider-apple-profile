@@ -62,6 +62,7 @@ public final class CreateFeedstockBatchService
           saved.type(),
           saved.season(),
           saved.source(),
+          saved.lifecycle(),
           saved.availableVolume(),
           saved.note()
       );

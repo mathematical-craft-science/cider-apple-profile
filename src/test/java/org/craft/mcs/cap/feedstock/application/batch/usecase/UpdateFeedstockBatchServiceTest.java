@@ -4,36 +4,36 @@ import java.time.LocalDate;
 import java.util.Optional;
 import java.util.function.Supplier;
 import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
+import org.craft.mcs.cap.core.feedstock.application.batch.model.FeedstockBatchSummary;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.UpdateFeedstockBatchCommand;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchRepository;
 import org.craft.mcs.cap.core.feedstock.application.batch.usecase.UpdateFeedstockBatchService;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
-import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
+import org.craft.mcs.cap.shared.kernel.material.value.BatchLifecycle;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
-import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
-import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
-import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
+import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
+import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.craft.mcs.cap.shared.platform.TransactionHelper;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.craft.mcs.cap.shared.kernel.identity.UuidV7Generator.newUuid;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.craft.mcs.cap.support.VersionedAggregateFixtures.versioned;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.craft.mcs.cap.support.VersionedAggregateFixtures.versioned;
 
 
 class UpdateFeedstockBatchServiceTest {
 
   @Test
-  void rejectsUpdatingFeedstockBatchAvailableVolumeToZero() {
+  void updatesMetadataWithoutChangingMaterialStateProperties() {
     final var repository = mock(FeedstockBatchRepository.class);
     final var service = new UpdateFeedstockBatchService(
         repository,
@@ -43,28 +43,30 @@ class UpdateFeedstockBatchServiceTest {
     final var workspaceId = WorkspaceId.of(newUuid());
     final var batch = batch(workspaceId, VolumeValue.ofLiters("250.000"));
     when(repository.findVersionedById(batch.batchId())).thenReturn(Optional.of(versioned(batch)));
+    when(repository.update(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
-    assertThatThrownBy(() -> service.update(new UpdateFeedstockBatchCommand(
+    final var updated = service.update(new UpdateFeedstockBatchCommand(
         batch.batchId(),
         workspaceId,
-        null,
-        null,
-        false,
-        null,
-        null,
+        BatchName.of("Renamed batch"),
+        FeedstockType.BLEND,
+        FeedstockSeason.of(LocalDate.parse("2026-09-01"), LocalDate.parse("2026-11-30")),
         null,
         false,
-        VolumeValue.ofLiters("0"),
-        null,
+        "metadata update",
         false
-    )))
-        .isInstanceOf(DomainRuleViolationException.class)
-        .hasMessageContaining("available volume must be greater than zero");
-    verify(repository, never()).update(any());
+    ));
+
+    assertThat(updated)
+        .returns(BatchName.of("Renamed batch"), FeedstockBatchSummary::name)
+        .returns(FeedstockType.BLEND, FeedstockBatchSummary::type)
+        .returns(Vessel.named("Tank A-01"), FeedstockBatchSummary::vessel)
+        .returns(VolumeValue.ofLiters("250.000"), FeedstockBatchSummary::availableVolume);
+    verify(repository).update(any());
   }
 
   @Test
-  void rejectsSavingEditedLegacyFeedstockBatchWithZeroAvailableVolume() {
+  void allowsMetadataUpdateAfterBatchWasFullyConsumed() {
     final var repository = mock(FeedstockBatchRepository.class);
     final var service = new UpdateFeedstockBatchService(
         repository,
@@ -74,24 +76,24 @@ class UpdateFeedstockBatchServiceTest {
     final var workspaceId = WorkspaceId.of(newUuid());
     final var batch = batch(workspaceId, VolumeValue.ofLiters("0"));
     when(repository.findVersionedById(batch.batchId())).thenReturn(Optional.of(versioned(batch)));
+    when(repository.update(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
-    assertThatThrownBy(() -> service.update(new UpdateFeedstockBatchCommand(
+    final var updated = service.update(new UpdateFeedstockBatchCommand(
         batch.batchId(),
         workspaceId,
         BatchName.of("Renamed batch"),
         null,
-        false,
-        null,
         null,
         null,
         false,
-        null,
         null,
         false
-    )))
-        .isInstanceOf(DomainRuleViolationException.class)
-        .hasMessageContaining("available volume must be greater than zero");
-    verify(repository, never()).update(any());
+    ));
+
+    assertThat(updated)
+        .returns(BatchName.of("Renamed batch"), FeedstockBatchSummary::name)
+        .returns(VolumeValue.ofLiters("0"), FeedstockBatchSummary::availableVolume);
+    verify(repository).update(any());
   }
 
   private static @NonNull FeedstockBatch batch(
@@ -106,6 +108,9 @@ class UpdateFeedstockBatchServiceTest {
         FeedstockType.JUICE,
         FeedstockSeason.of(LocalDate.parse("2026-10-01"), LocalDate.parse("2026-12-15")),
         null,
+        availableVolume.isZero()
+            ? BatchLifecycle.DEPLETED
+            : BatchLifecycle.ACTIVE,
         availableVolume,
         null,
         null

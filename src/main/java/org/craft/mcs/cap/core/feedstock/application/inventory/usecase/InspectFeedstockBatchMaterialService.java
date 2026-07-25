@@ -66,10 +66,7 @@ public final class InspectFeedstockBatchMaterialService implements InspectFeedst
         command.requestedVolume(),
         batch.availableVolume(),
         materialStateProvider.currentStateOf(batch.batchId()),
-        new FeedstockBatchMaterialEvidenceReference(
-            measurement.measurementId().value(),
-            measurement.evidenceVersion()
-        ),
+        FeedstockBatchMaterialEvidenceReference.from(measurement.axisEvidence()),
         measurement.chemicalProfile(),
         measurement.aggregateConfidence()
     );

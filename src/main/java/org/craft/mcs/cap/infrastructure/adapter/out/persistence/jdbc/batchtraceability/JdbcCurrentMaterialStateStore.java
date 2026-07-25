@@ -3,6 +3,7 @@ package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.batchtrace
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -16,12 +17,14 @@ import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceSubjectTy
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.batchtraceability.row.BatchTraceStepJdbcRowMapper;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.batchtraceability.row.BatchTraceStepSubjectJdbcRow;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.batchtraceability.row.BatchTraceStepSubjectRole;
+import org.craft.mcs.cap.shared.application.ApplicationValidationException;
 import org.craft.mcs.cap.shared.application.ConcurrentResourceModificationException;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValueKind;
 import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -45,7 +48,7 @@ class JdbcCurrentMaterialStateStore implements CurrentMaterialStateStore {
        WHERE current_state.subject_type = :subjectType
          AND current_state.subject_id = :subjectId
       """;
-  private static final String FIND_CURRENT_FOR_CONSISTENCY = FIND_CURRENT + " FOR SHARE OF current_state";
+  private static final String LOCK_CURRENT = FIND_CURRENT + " FOR UPDATE OF current_state";
 
   private final @NonNull NamedParameterJdbcTemplate jdbcTemplate;
 
@@ -58,11 +61,11 @@ class JdbcCurrentMaterialStateStore implements CurrentMaterialStateStore {
   }
 
   @Override
-  public @NonNull Optional<@NonNull CurrentMaterialState> findCurrentForConsistency(
+  public @NonNull Optional<@NonNull CurrentMaterialState> lockCurrent(
       @NonNull BatchTraceSubject subject
   ) {
     requireNonNull(subject, "material state subject cannot be null");
-    return queryCurrent(subject, FIND_CURRENT_FOR_CONSISTENCY);
+    return queryCurrent(subject, LOCK_CURRENT);
   }
 
   @Override
@@ -163,6 +166,211 @@ class JdbcCurrentMaterialStateStore implements CurrentMaterialStateStore {
     } catch (DuplicateKeyException exception) {
       throw new ConcurrentResourceModificationException("current material state", exception);
     }
+  }
+
+  @Override
+  public void compareAndSet(
+      @NonNull WorkspaceId workspaceId,
+      @NonNull BatchTraceSubject subject,
+      @NonNull MaterialStateId expectedStateId,
+      @NonNull MaterialStateId nextStateId
+  ) {
+    requireNonNull(workspaceId, "material state workspace id cannot be null");
+    requireNonNull(subject, "material state subject cannot be null");
+    requireNonNull(expectedStateId, "expected material state id cannot be null");
+    requireNonNull(nextStateId, "next material state id cannot be null");
+    final var affectedRows = jdbcTemplate.update(
+        """
+            UPDATE batch_trace_current_states
+               SET current_state_id = :nextStateId,
+                   version = version + 1,
+                   updated_at = CURRENT_TIMESTAMP
+             WHERE workspace_id = :workspaceId
+               AND subject_type = :subjectType
+               AND subject_id = :subjectId
+               AND current_state_id = :expectedStateId
+            """,
+        subjectParameters(subject)
+            .addValue("workspaceId", workspaceId.value())
+            .addValue("expectedStateId", expectedStateId.value())
+            .addValue("nextStateId", nextStateId.value())
+    );
+    if (affectedRows != 1) {
+      throw new ConcurrentResourceModificationException("current material state", null);
+    }
+  }
+
+  @Override
+  public void replaceAll(
+      @NonNull WorkspaceId workspaceId,
+      @NonNull List<@NonNull CurrentMaterialState> currentStates
+  ) {
+    requireNonNull(workspaceId, "material state workspace id cannot be null");
+    requireNonNull(currentStates, "current material states cannot be null");
+    final var rebuiltBySubject = indexRebuiltStates(workspaceId, currentStates);
+    final var persistedBySubject = findCurrentByWorkspace(workspaceId);
+
+    rebuiltBySubject.forEach((subject, rebuilt) -> reconcileState(
+        workspaceId,
+        persistedBySubject.remove(subject),
+        rebuilt
+    ));
+    persistedBySubject.values().forEach(this::deleteState);
+  }
+
+  private static @NonNull Map<@NonNull BatchTraceSubject, @NonNull CurrentMaterialState> indexRebuiltStates(
+      @NonNull WorkspaceId workspaceId,
+      @NonNull List<@NonNull CurrentMaterialState> currentStates
+  ) {
+    final Map<BatchTraceSubject, CurrentMaterialState> indexed = new LinkedHashMap<>();
+    for (final var state : currentStates) {
+      if (!state.workspaceId().equals(workspaceId)) {
+        throw new ApplicationValidationException(
+            "rebuilt current material states must belong to the requested workspace"
+        );
+      }
+      if (indexed.putIfAbsent(state.subject(), state) != null) {
+        throw new ApplicationValidationException(
+            "rebuilt current material states must contain unique subjects"
+        );
+      }
+    }
+    return indexed;
+  }
+
+  private @NonNull Map<@NonNull BatchTraceSubject, @NonNull CurrentMaterialState> findCurrentByWorkspace(
+      @NonNull WorkspaceId workspaceId
+  ) {
+    final Map<BatchTraceSubject, CurrentMaterialState> states = new LinkedHashMap<>();
+    jdbcTemplate.query(
+        """
+            SELECT workspace_id,
+                   subject_type,
+                   subject_id,
+                   current_state_id,
+                   version
+              FROM batch_trace_current_states
+             WHERE workspace_id = :workspaceId
+            """,
+        new MapSqlParameterSource("workspaceId", workspaceId.value()),
+        JdbcCurrentMaterialStateStore::mapCurrentState
+    ).forEach(state -> states.put(state.subject(), state));
+    return states;
+  }
+
+  private void reconcileState(
+      @NonNull WorkspaceId workspaceId,
+      @Nullable CurrentMaterialState persisted,
+      @NonNull CurrentMaterialState rebuilt
+  ) {
+    if (persisted == null) {
+      insertRebuiltState(rebuilt);
+    } else if (!hasSamePointer(persisted, rebuilt)) {
+      updateState(workspaceId, persisted, rebuilt);
+    }
+  }
+
+  private static boolean hasSamePointer(
+      @NonNull CurrentMaterialState persisted,
+      @NonNull CurrentMaterialState rebuilt
+  ) {
+    return persisted.materialStateId().equals(rebuilt.materialStateId())
+        && persisted.version() == rebuilt.version();
+  }
+
+  private void insertRebuiltState(@NonNull CurrentMaterialState state) {
+    try {
+      jdbcTemplate.update(
+          """
+              INSERT INTO batch_trace_current_states (
+                  workspace_id,
+                  subject_type,
+                  subject_id,
+                  current_state_id,
+                  version,
+                  updated_at
+              ) VALUES (
+                  :workspaceId,
+                  :subjectType,
+                  :subjectId,
+                  :currentStateId,
+                  :version,
+                  CURRENT_TIMESTAMP
+              )
+              """,
+          subjectParameters(state.subject())
+              .addValue("workspaceId", state.workspaceId().value())
+              .addValue("currentStateId", state.materialStateId().value())
+              .addValue("version", state.version())
+      );
+    } catch (DuplicateKeyException | ConcurrencyFailureException exception) {
+      throw rebuildConflict(exception);
+    }
+  }
+
+  private void updateState(
+      @NonNull WorkspaceId workspaceId,
+      @NonNull CurrentMaterialState persisted,
+      @NonNull CurrentMaterialState rebuilt
+  ) {
+    try {
+      final var affectedRows = jdbcTemplate.update(
+          """
+              UPDATE batch_trace_current_states
+                 SET current_state_id = :rebuiltStateId,
+                     version = :rebuiltVersion,
+                     updated_at = CURRENT_TIMESTAMP
+               WHERE workspace_id = :workspaceId
+                 AND subject_type = :subjectType
+                 AND subject_id = :subjectId
+                 AND current_state_id = :persistedStateId
+                 AND version = :persistedVersion
+              """,
+          subjectParameters(rebuilt.subject())
+              .addValue("workspaceId", workspaceId.value())
+              .addValue("rebuiltStateId", rebuilt.materialStateId().value())
+              .addValue("rebuiltVersion", rebuilt.version())
+              .addValue("persistedStateId", persisted.materialStateId().value())
+              .addValue("persistedVersion", persisted.version())
+      );
+      requireRebuildUpdate(affectedRows);
+    } catch (ConcurrencyFailureException exception) {
+      throw rebuildConflict(exception);
+    }
+  }
+
+  private void deleteState(@NonNull CurrentMaterialState persisted) {
+    try {
+      final var affectedRows = jdbcTemplate.update(
+          """
+              DELETE FROM batch_trace_current_states
+               WHERE workspace_id = :workspaceId
+                 AND subject_type = :subjectType
+                 AND subject_id = :subjectId
+                 AND current_state_id = :persistedStateId
+                 AND version = :persistedVersion
+              """,
+          subjectParameters(persisted.subject())
+              .addValue("workspaceId", persisted.workspaceId().value())
+              .addValue("persistedStateId", persisted.materialStateId().value())
+              .addValue("persistedVersion", persisted.version())
+      );
+      requireRebuildUpdate(affectedRows);
+    } catch (ConcurrencyFailureException exception) {
+      throw rebuildConflict(exception);
+    }
+  }
+
+  private static void requireRebuildUpdate(int affectedRows) {
+    if (affectedRows != 1) {
+      throw rebuildConflict(null);
+    }
+  }
+
+  private static @NonNull ConcurrentResourceModificationException rebuildConflict(
+      @Nullable Throwable cause
+  ) {
+    return new ConcurrentResourceModificationException("current material state rebuild", cause);
   }
 
   private static @NonNull MaterialStateSnapshot mapState(

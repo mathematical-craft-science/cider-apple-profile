@@ -166,7 +166,9 @@ public final class CreateProductionBatchService
           FeedstockBatchId.of(source.reference().id()),
           source.materialStateId(),
           source.displayName(),
-          source.volume(),
+          source.availableBefore(),
+          source.consumed(),
+          source.remaining(),
           source.profile(),
           source.confidence()
       );
