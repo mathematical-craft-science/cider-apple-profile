@@ -13,6 +13,7 @@ import org.craft.mcs.cap.shared.kernel.material.value.BatchLifecycle;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
+import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
@@ -112,6 +113,7 @@ class UpdateFeedstockBatchServiceTest {
             ? BatchLifecycle.DEPLETED
             : BatchLifecycle.ACTIVE,
         availableVolume,
+        MaterialStateId.newId(),
         null,
         null
     );

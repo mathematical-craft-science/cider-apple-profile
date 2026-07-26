@@ -71,13 +71,13 @@ final class FeedstockMeasurementCompatibilityMapper {
 
   @NonNull CreateMeasurementSetCommand toCommand(
       @NonNull MeasurementSubjectReference subject,
-      @NonNull MaterialStateId expectedCurrentStateId,
+      @NonNull MaterialStateId observedMaterialStateId,
       @NonNull CreateFeedstockMeasurementRequest request
   ) {
     return new CreateMeasurementSetCommand(
         null,
         subject,
-        expectedCurrentStateId,
+        observedMaterialStateId,
         MeasurementSetName.of(request.name()),
         request.note(),
         inputs(request.chemicalProfile(), request.measuredAt(), Map.of())

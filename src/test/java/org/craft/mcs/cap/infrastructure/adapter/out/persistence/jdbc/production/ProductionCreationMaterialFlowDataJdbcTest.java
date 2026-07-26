@@ -16,11 +16,10 @@ import org.craft.mcs.cap.core.account.shared.domain.value.EmailAddress;
 import org.craft.mcs.cap.core.account.user.application.port.in.AccountUserView;
 import org.craft.mcs.cap.core.account.user.application.port.in.GetCurrentAccountProfileUseCase;
 import org.craft.mcs.cap.core.account.user.domain.model.AccountUserStatus;
-import org.craft.mcs.cap.core.batchtraceability.application.port.out.BatchTraceabilityAccessControl;
-import org.craft.mcs.cap.core.batchtraceability.application.usecase.InitializeMaterialStateService;
-import org.craft.mcs.cap.core.batchtraceability.application.usecase.QueryMaterialStateService;
-import org.craft.mcs.cap.core.batchtraceability.application.usecase.TransitionMaterialStatesService;
-import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceSubjectType;
+import org.craft.mcs.cap.core.traceability.application.port.out.BatchTraceabilityAccessControl;
+import org.craft.mcs.cap.core.traceability.application.usecase.AppendBatchTraceStepService;
+import org.craft.mcs.cap.core.traceability.application.usecase.GetMaterialStateService;
+import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceSubjectType;
 import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
 import org.craft.mcs.cap.core.feedstock.application.inventory.usecase.ConsumeFeedstockBatchMaterialService;
 import org.craft.mcs.cap.core.feedstock.application.inventory.usecase.InspectFeedstockBatchMaterialService;
@@ -98,9 +97,8 @@ import static org.craft.mcs.cap.shared.kernel.identity.UuidV7Generator.newUuid;
         FeedstockBatchCurrentMeasurementQueryService.class,
         InspectFeedstockBatchMaterialService.class,
         ConsumeFeedstockBatchMaterialService.class,
-        InitializeMaterialStateService.class,
-        QueryMaterialStateService.class,
-        TransitionMaterialStatesService.class,
+        AppendBatchTraceStepService.class,
+        GetMaterialStateService.class,
         CreateProductionBatchService.class,
         ChemicalProfileAxisExtractor.class,
         JdbcProductionBatchRepository.class
@@ -149,7 +147,6 @@ class ProductionCreationMaterialFlowDataJdbcTest {
     initialFeedstockStateId = MaterialStateId.newId();
     insertWorkspace();
     insertFeedstockBatch();
-    insertCurrentState();
     insertMeasurementSet();
   }
 
@@ -190,9 +187,9 @@ class ProductionCreationMaterialFlowDataJdbcTest {
            AND subject_role = 'OUTPUT'
         """))
         .isEqualByComparingTo("150");
-    assertThat(currentState("FEEDSTOCK_BATCH", feedstockBatchId.value()))
+    assertThat(feedstockCurrentState())
         .isNotEqualTo(initialFeedstockStateId.value());
-    assertThat(currentState("PRODUCTION_BATCH", created.productionBatch().batchId().value()))
+    assertThat(productionCurrentState(created.productionBatch().batchId().value()))
         .isNotNull();
   }
 
@@ -229,7 +226,7 @@ class ProductionCreationMaterialFlowDataJdbcTest {
         workspaceId.value()
     ))
         .isZero();
-    assertThat(currentState("FEEDSTOCK_BATCH", feedstockBatchId.value()))
+    assertThat(feedstockCurrentState())
         .isEqualTo(initialFeedstockStateId.value());
     assertThat(candidateStore.findById(saved.candidate().candidateId()))
         .get()
@@ -331,6 +328,7 @@ class ProductionCreationMaterialFlowDataJdbcTest {
                 season_ends_on,
                 lifecycle,
                 available_volume_liters,
+                current_material_state_id,
                 version,
                 created_at,
                 updated_at
@@ -344,6 +342,7 @@ class ProductionCreationMaterialFlowDataJdbcTest {
                 DATE '2026-12-31',
                 'ACTIVE',
                 250,
+                ?,
                 1,
                 ?,
                 ?
@@ -351,26 +350,8 @@ class ProductionCreationMaterialFlowDataJdbcTest {
             """,
         feedstockBatchId.value(),
         workspaceId.value(),
-        OffsetDateTime.parse("2026-07-25T10:00:00Z"),
-        OffsetDateTime.parse("2026-07-25T10:00:00Z")
-    );
-  }
-
-  private void insertCurrentState() {
-    jdbcTemplate.update(
-        """
-            INSERT INTO batch_trace_current_states (
-                workspace_id,
-                subject_type,
-                subject_id,
-                current_state_id,
-                version,
-                updated_at
-            ) VALUES (?, 'FEEDSTOCK_BATCH', ?, ?, 0, ?)
-            """,
-        workspaceId.value(),
-        feedstockBatchId.value(),
         initialFeedstockStateId.value(),
+        OffsetDateTime.parse("2026-07-25T10:00:00Z"),
         OffsetDateTime.parse("2026-07-25T10:00:00Z")
     );
   }
@@ -427,11 +408,11 @@ class ProductionCreationMaterialFlowDataJdbcTest {
       @NonNull String characteristic,
       @NonNull String value
   ) {
+    final var recordId = newUuid();
     jdbcTemplate.update(
         """
             INSERT INTO measurement_records (
                 record_id,
-                revision_id,
                 characteristic,
                 role,
                 value_kind,
@@ -439,13 +420,25 @@ class ProductionCreationMaterialFlowDataJdbcTest {
                 source_type,
                 confidence,
                 point_value
-            ) VALUES (?, ?, ?, 'RESULT', 'POINT', ?, 'LAB', 'LAB_VERIFIED', ?)
+            ) VALUES (?, ?, 'RESULT', 'POINT', ?, 'LAB', 'LAB_VERIFIED', ?)
             """,
-        newUuid(),
-        revisionId,
+        recordId,
         characteristic,
         OffsetDateTime.parse("2026-07-25T10:00:00Z"),
         new BigDecimal(value)
+    );
+    jdbcTemplate.update(
+        """
+            INSERT INTO measurement_revision_records (
+                revision_id,
+                record_id,
+                characteristic,
+                role
+            ) VALUES (?, ?, ?, 'RESULT')
+            """,
+        revisionId,
+        recordId,
+        characteristic
     );
   }
 
@@ -465,20 +458,27 @@ class ProductionCreationMaterialFlowDataJdbcTest {
     );
   }
 
-  private @NonNull UUID currentState(
-      @NonNull String subjectType,
-      @NonNull UUID subjectId
-  ) {
+  private @NonNull UUID feedstockCurrentState() {
     return jdbcTemplate.queryForObject(
         """
-            SELECT current_state_id
-              FROM batch_trace_current_states
-             WHERE subject_type = ?
-               AND subject_id = ?
+            SELECT current_material_state_id
+              FROM feedstock_batches
+             WHERE batch_id = ?
             """,
         UUID.class,
-        subjectType,
-        subjectId
+        feedstockBatchId.value()
+    );
+  }
+
+  private @NonNull UUID productionCurrentState(@NonNull UUID productionBatchId) {
+    return jdbcTemplate.queryForObject(
+        """
+            SELECT current_material_state_id
+              FROM production_batches
+             WHERE batch_id = ?
+            """,
+        UUID.class,
+        productionBatchId
     );
   }
 
@@ -488,7 +488,7 @@ class ProductionCreationMaterialFlowDataJdbcTest {
           "org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.feedstock.batch",
           "org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.feedstock.query",
           "org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.measurement",
-          "org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.batchtraceability",
+          "org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.traceability",
           "org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.production.candidate",
           "org.craft.mcs.cap.infrastructure.adapter.out.traceability.feedstock",
           "org.craft.mcs.cap.infrastructure.adapter.out.traceability.measurement",

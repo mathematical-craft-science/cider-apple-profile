@@ -7,7 +7,6 @@ import org.craft.mcs.cap.core.measurement.application.port.in.CorrectMeasurement
 import org.craft.mcs.cap.core.measurement.application.port.in.PatchMeasurementSetCommand;
 import org.craft.mcs.cap.core.measurement.application.port.in.ReplaceMeasurementSetCommand;
 import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementActorProvider;
-import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementMaterialStateProvider;
 import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementSetRepository;
 import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementSubjectMeasurementPolicy;
 import org.craft.mcs.cap.shared.platform.TransactionHelper;
@@ -25,7 +24,6 @@ public final class CorrectMeasurementSetService implements CorrectMeasurementSet
 
   private final @NonNull MeasurementSetRepository repository;
   private final @NonNull MeasurementSetWriteAccess writeAccess;
-  private final @NonNull MeasurementMaterialStateProvider materialStateProvider;
   private final @NonNull MeasurementSubjectMeasurementPolicy subjectMeasurementPolicy;
   private final @NonNull MeasurementActorProvider actorProvider;
   private final @NonNull MeasurementSetRevisionFactory revisionFactory;
@@ -38,7 +36,6 @@ public final class CorrectMeasurementSetService implements CorrectMeasurementSet
     return transactionHelper.callInTransactionNonNull(() -> {
       final var state = writeAccess.require(command.measurementSetId(), command.expectedVersion());
       final var set = state.aggregate();
-      materialStateProvider.lockCurrentState(set.subject());
       subjectMeasurementPolicy.validate(set.subject(), command.measurements());
       final var now = clock.instant();
       set.correct(revisionFactory.replacement(
@@ -57,7 +54,6 @@ public final class CorrectMeasurementSetService implements CorrectMeasurementSet
     return transactionHelper.callInTransactionNonNull(() -> {
       final var state = writeAccess.require(command.measurementSetId(), command.expectedVersion());
       final var set = state.aggregate();
-      materialStateProvider.lockCurrentState(set.subject());
       subjectMeasurementPolicy.validate(set.subject(), command.replacements());
       final var now = clock.instant();
       set.correct(revisionFactory.patch(

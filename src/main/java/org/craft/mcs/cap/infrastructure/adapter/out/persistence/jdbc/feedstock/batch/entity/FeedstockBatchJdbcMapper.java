@@ -3,6 +3,7 @@ package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.feedstock.
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
 import org.craft.mcs.cap.core.feedstock.application.batch.model.FeedstockBatchSummary;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
+import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSource;
@@ -36,6 +37,7 @@ public final class FeedstockBatchJdbcMapper {
         batch.source() == null ? null : batch.source().value(),
         batch.lifecycle(),
         batch.availableVolume().liters(),
+        batch.currentMaterialStateId().value(),
         batch.note(),
         batch.deletedAt()
     );
@@ -56,6 +58,7 @@ public final class FeedstockBatchJdbcMapper {
     entity.source = batch.source() == null ? null : batch.source().value();
     entity.lifecycle = batch.lifecycle();
     entity.availableVolumeLiters = batch.availableVolume().liters();
+    entity.currentMaterialStateId = batch.currentMaterialStateId().value();
     entity.note = batch.note();
     entity.deletedAt = batch.deletedAt();
 
@@ -80,6 +83,10 @@ public final class FeedstockBatchJdbcMapper {
         source,
         requireNonNull(entity.lifecycle, "feedstock batch lifecycle cannot be null"),
         VolumeValue.ofLiters(requireNonNull(entity.availableVolumeLiters, "available volume cannot be null")),
+        MaterialStateId.of(requireNonNull(
+            entity.currentMaterialStateId,
+            "feedstock current material state id cannot be null"
+        )),
         entity.note,
         entity.deletedAt
     );
@@ -111,6 +118,10 @@ public final class FeedstockBatchJdbcMapper {
         entity.source == null ? null : FeedstockSource.of(entity.source),
         requireNonNull(entity.lifecycle, "feedstock batch lifecycle cannot be null"),
         VolumeValue.ofLiters(requireNonNull(entity.availableVolumeLiters, "available volume cannot be null")),
+        MaterialStateId.of(requireNonNull(
+            entity.currentMaterialStateId,
+            "feedstock current material state id cannot be null"
+        )),
         entity.note
     );
   }

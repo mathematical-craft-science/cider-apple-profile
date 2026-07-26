@@ -27,6 +27,7 @@ public class ProductionBatchJdbcEntity {
   @NonNull @Column("lifecycle") BatchLifecycle lifecycle;
   @NonNull @Column("alcoholic_fermentation_state") AlcoholicFermentationState alcoholicFermentationState;
   @NonNull @Column("current_volume_liters") BigDecimal currentVolumeLiters;
+  @NonNull @Column("current_material_state_id") UUID currentMaterialStateId;
   @NonNull @Column("initial_sugar_specific_gravity") BigDecimal initialSugarSpecificGravity;
   @NonNull @Column("initial_acidity_g_l_as_malic") BigDecimal initialAcidityGLAsMalic;
   @Nullable @Column("initial_tannin_mg_l_tae") BigDecimal initialTanninMgLTae;
@@ -49,6 +50,7 @@ public class ProductionBatchJdbcEntity {
       @NonNull BatchLifecycle lifecycle,
       @NonNull AlcoholicFermentationState alcoholicFermentationState,
       @NonNull BigDecimal currentVolumeLiters,
+      @NonNull UUID currentMaterialStateId,
       @NonNull BigDecimal initialSugarSpecificGravity,
       @NonNull BigDecimal initialAcidityGLAsMalic,
       @Nullable BigDecimal initialTanninMgLTae,
@@ -65,6 +67,10 @@ public class ProductionBatchJdbcEntity {
         "alcoholic fermentation state cannot be null"
     );
     this.currentVolumeLiters = requireNonNull(currentVolumeLiters, "production current volume cannot be null");
+    this.currentMaterialStateId = requireNonNull(
+        currentMaterialStateId,
+        "production current material state id cannot be null"
+    );
     this.initialSugarSpecificGravity = requireNonNull(
         initialSugarSpecificGravity,
         "production initial sugar specific gravity cannot be null"

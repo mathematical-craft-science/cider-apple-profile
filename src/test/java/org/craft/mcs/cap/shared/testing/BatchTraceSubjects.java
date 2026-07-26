@@ -2,8 +2,8 @@ package org.craft.mcs.cap.shared.testing;
 
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
-import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceSubject;
-import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceSubjectType;
+import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceSubject;
+import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceSubjectType;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;

@@ -333,6 +333,7 @@ class CreateProductionBatchServiceTest {
         ),
         ConfidenceLevel.LAB_VERIFIED,
         materialStateId,
+        MaterialStateId.newId(),
         evidenceReference
     );
   }

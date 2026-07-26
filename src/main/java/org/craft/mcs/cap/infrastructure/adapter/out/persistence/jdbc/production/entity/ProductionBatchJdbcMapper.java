@@ -3,6 +3,7 @@ package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.production
 import java.math.BigDecimal;
 import org.craft.mcs.cap.core.production.application.model.ProductionBatchView;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
+import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatch;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatchId;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
@@ -38,6 +39,7 @@ public final class ProductionBatchJdbcMapper {
         batch.lifecycle(),
         batch.alcoholicFermentationState(),
         batch.currentVolume().liters(),
+        batch.currentMaterialStateId().value(),
         profile.specificGravity().asBigDecimal(),
         profile.titratableAcidity().asBigDecimal(),
         tanninValue(profile),
@@ -61,6 +63,7 @@ public final class ProductionBatchJdbcMapper {
     entity.lifecycle = updated.lifecycle;
     entity.alcoholicFermentationState = updated.alcoholicFermentationState;
     entity.currentVolumeLiters = updated.currentVolumeLiters;
+    entity.currentMaterialStateId = updated.currentMaterialStateId;
     entity.initialSugarSpecificGravity = updated.initialSugarSpecificGravity;
     entity.initialAcidityGLAsMalic = updated.initialAcidityGLAsMalic;
     entity.initialTanninMgLTae = updated.initialTanninMgLTae;
@@ -80,6 +83,10 @@ public final class ProductionBatchJdbcMapper {
         requireNonNull(entity.lifecycle, "production batch lifecycle cannot be null"),
         requireNonNull(entity.alcoholicFermentationState, "alcoholic fermentation state cannot be null"),
         VolumeValue.ofLiters(requireNonNull(entity.currentVolumeLiters, "production current volume cannot be null")),
+        MaterialStateId.of(requireNonNull(
+            entity.currentMaterialStateId,
+            "production current material state id cannot be null"
+        )),
         toProfile(entity),
         entity.note
     );
@@ -105,6 +112,10 @@ public final class ProductionBatchJdbcMapper {
         requireNonNull(entity.lifecycle, "production batch lifecycle cannot be null"),
         requireNonNull(entity.alcoholicFermentationState, "alcoholic fermentation state cannot be null"),
         VolumeValue.ofLiters(requireNonNull(entity.currentVolumeLiters, "production current volume cannot be null")),
+        MaterialStateId.of(requireNonNull(
+            entity.currentMaterialStateId,
+            "production current material state id cannot be null"
+        )),
         toProfile(entity),
         entity.note
     );

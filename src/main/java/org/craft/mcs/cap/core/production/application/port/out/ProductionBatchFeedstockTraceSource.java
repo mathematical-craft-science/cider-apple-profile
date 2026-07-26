@@ -18,7 +18,8 @@ import static java.util.Objects.requireNonNull;
  */
 public record ProductionBatchFeedstockTraceSource(
     @NonNull FeedstockBatchId feedstockBatchId,
-    @NonNull MaterialStateId materialStateId,
+    @NonNull MaterialStateId sourceStateId,
+    @NonNull MaterialStateId remainingSourceStateId,
     @Nullable ProductionSourceDisplayName displayName,
     @NonNull VolumeValue availableBefore,
     @NonNull VolumeValue consumed,
@@ -29,13 +30,19 @@ public record ProductionBatchFeedstockTraceSource(
 
   public ProductionBatchFeedstockTraceSource {
     requireNonNull(feedstockBatchId, "feedstock batch id cannot be null");
-    requireNonNull(materialStateId, "feedstock material state id cannot be null");
+    requireNonNull(sourceStateId, "feedstock source material state id cannot be null");
+    requireNonNull(remainingSourceStateId, "remaining feedstock material state id cannot be null");
     requireNonNull(availableBefore, "production trace source volume before consumption cannot be null");
     requireNonNull(consumed, "production trace source consumed volume cannot be null");
     requireNonNull(remaining, "production trace source remaining volume cannot be null");
 
     if (consumed.isZero()) {
       throw new ApplicationValidationException("production trace source volume must be positive");
+    }
+    if (sourceStateId.equals(remainingSourceStateId)) {
+      throw new ApplicationValidationException(
+          "production trace source must describe a material state transition"
+      );
     }
     if (availableBefore.liters().compareTo(consumed.liters().add(remaining.liters())) != 0) {
       throw new ApplicationValidationException(

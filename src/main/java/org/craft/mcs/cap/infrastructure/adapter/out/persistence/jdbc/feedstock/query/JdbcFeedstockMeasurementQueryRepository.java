@@ -83,8 +83,10 @@ class JdbcFeedstockMeasurementQueryRepository
         FROM measurement_sets
         JOIN measurement_set_revisions revision
           ON revision.revision_id = s.current_revision_id
+        JOIN measurement_revision_records revision_record
+          ON revision_record.revision_id = revision.revision_id
         JOIN measurement_records record
-          ON record.revision_id = revision.revision_id
+          ON record.record_id = revision_record.record_id
          AND record.role = 'RESULT'
         JOIN feedstock_batches batch
           ON batch.batch_id = s.subject_id
@@ -253,25 +255,26 @@ class JdbcFeedstockMeasurementQueryRepository
   ) {
     final var sql = new StringBuilder("""
         WITH RECURSIVE state_lineage AS (
-            SELECT current_state.subject_type,
-                   current_state.subject_id,
-                   current_state.current_state_id AS material_state_id,
+            SELECT 'FEEDSTOCK_BATCH' AS subject_type,
+                   batch.batch_id AS subject_id,
+                   batch.current_material_state_id AS material_state_id,
                    0 AS state_depth,
-                   ARRAY[current_state.current_state_id] AS visited_states
-              FROM batch_trace_current_states current_state
-             WHERE current_state.workspace_id = :workspaceId
-               AND current_state.subject_type = 'FEEDSTOCK_BATCH'
+                   ARRAY[batch.current_material_state_id] AS visited_states,
+                   ARRAY[]::VARCHAR[] AS invalidated_characteristics
+              FROM feedstock_batches batch
+             WHERE batch.workspace_id = :workspaceId
 
             UNION ALL
 
             SELECT lineage.subject_type,
                    lineage.subject_id,
-                   input_state.trace_state_id,
+                   input_state.material_state_id,
                    lineage.state_depth + 1,
-                   lineage.visited_states || input_state.trace_state_id
+                   lineage.visited_states || input_state.material_state_id,
+                   lineage.invalidated_characteristics || output_state.invalidated_characteristics
               FROM state_lineage lineage
               JOIN batch_trace_step_subjects output_state
-                ON output_state.trace_state_id = lineage.material_state_id
+                ON output_state.material_state_id = lineage.material_state_id
                AND output_state.subject_role = 'OUTPUT'
                AND output_state.subject_type = lineage.subject_type
                AND output_state.subject_id = lineage.subject_id
@@ -280,15 +283,19 @@ class JdbcFeedstockMeasurementQueryRepository
                AND input_state.subject_role = 'INPUT'
                AND input_state.subject_type = lineage.subject_type
                AND input_state.subject_id = lineage.subject_id
-             WHERE NOT input_state.trace_state_id = ANY(lineage.visited_states)
+             WHERE NOT input_state.material_state_id = ANY(lineage.visited_states)
         ),
         distinct_lineage AS (
             SELECT subject_type,
                    subject_id,
                    material_state_id,
-                   MIN(state_depth) AS state_depth
+                   MIN(state_depth) AS state_depth,
+                   invalidated_characteristics
               FROM state_lineage
-             GROUP BY subject_type, subject_id, material_state_id
+             GROUP BY subject_type,
+                      subject_id,
+                      material_state_id,
+                      invalidated_characteristics
         ),
         ranked_records AS (
             SELECT s.subject_id AS batch_id,
@@ -311,9 +318,12 @@ class JdbcFeedstockMeasurementQueryRepository
               JOIN measurement_set_revisions revision
                 ON revision.revision_id = s.current_revision_id
                AND revision.material_state_id = lineage.material_state_id
+              JOIN measurement_revision_records revision_record
+                ON revision_record.revision_id = revision.revision_id
               JOIN measurement_records record
-                ON record.revision_id = revision.revision_id
+                ON record.record_id = revision_record.record_id
                AND record.role = 'RESULT'
+               AND NOT record.characteristic = ANY(lineage.invalidated_characteristics)
               JOIN feedstock_batches batch
                 ON batch.batch_id = s.subject_id
                AND batch.deleted_at IS NULL
@@ -519,8 +529,10 @@ class JdbcFeedstockMeasurementQueryRepository
               FROM measurement_sets s
               JOIN measurement_set_revisions revision
                 ON revision.revision_id = s.current_revision_id
+              JOIN measurement_revision_records revision_record
+                ON revision_record.revision_id = revision.revision_id
               JOIN measurement_records record
-                ON record.revision_id = revision.revision_id
+                ON record.record_id = revision_record.record_id
                AND record.role = 'RESULT'
              WHERE s.measurement_set_id IN (:measurementSetIds)
                AND record.characteristic IN (

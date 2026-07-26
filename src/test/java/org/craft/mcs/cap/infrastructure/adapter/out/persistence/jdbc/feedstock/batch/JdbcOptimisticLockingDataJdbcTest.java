@@ -68,14 +68,12 @@ class JdbcOptimisticLockingDataJdbcTest {
   }
 
   @Test
-  void loadsAggregateThroughConsumptionLockQuery() {
+  void loadsAggregateForOptimisticMaterialConsumption() {
     final var workspaceId = persistWorkspace();
     final var batch = feedstockBatch(workspaceId);
     repository.save(FeedstockBatchJdbcMapper.fromDomain(batch));
     final var aggregateRepository = new JdbcFeedstockBatchRepository(repository);
-    final var transaction = new TransactionTemplate(transactionManager);
-
-    final var loaded = transaction.execute(status -> aggregateRepository.findByIdForConsumption(batch.batchId()));
+    final var loaded = aggregateRepository.findVersionedById(batch.batchId());
 
     assertThat(loaded)
         .isNotNull()
@@ -118,10 +116,21 @@ class JdbcOptimisticLockingDataJdbcTest {
   }
 
   @Test
+  void excludesSoftDeletedBatchFromAggregateReads() {
+    final var aggregateRepository = new JdbcFeedstockBatchRepository(repository);
+    final var created = aggregateRepository.create(feedstockBatch(persistWorkspace()));
+    final var current = aggregateRepository.findVersionedById(created.batchId()).orElseThrow();
+
+    aggregateRepository.delete(current);
+
+    assertThat(aggregateRepository.findVersionedById(created.batchId())).isEmpty();
+  }
+
+  @Test
   void persistsDepletedLifecycleWhenEntireVolumeIsConsumed() {
     final var aggregateRepository = new JdbcFeedstockBatchRepository(repository);
     final var created = aggregateRepository.create(feedstockBatch(persistWorkspace()));
-    final var state = aggregateRepository.findByIdForConsumption(created.batchId()).orElseThrow();
+    final var state = aggregateRepository.findVersionedById(created.batchId()).orElseThrow();
 
     state.aggregate().consumeAvailableVolume(created.availableVolume());
     aggregateRepository.update(state);

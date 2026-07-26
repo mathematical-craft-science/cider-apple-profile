@@ -66,7 +66,7 @@ class JdbcMeasurementSetViewQuery implements MeasurementSetViewQuery {
       """;
 
   private static final String SELECT_RECORDS = """
-      SELECT record.revision_id,
+      SELECT revision_record.revision_id,
              record.record_id,
              record.characteristic,
              record.role,
@@ -81,9 +81,10 @@ class JdbcMeasurementSetViewQuery implements MeasurementSetViewQuery {
              record.lower_value,
              record.upper_value,
              record.derivation_method
-        FROM measurement_records record
-       WHERE record.revision_id IN (:revisionIds)
-       ORDER BY record.revision_id,
+        FROM measurement_revision_records revision_record
+        JOIN measurement_records record ON record.record_id = revision_record.record_id
+       WHERE revision_record.revision_id IN (:revisionIds)
+       ORDER BY revision_record.revision_id,
                 record.characteristic,
                 record.role,
                 record.measured_at,
@@ -165,8 +166,10 @@ class JdbcMeasurementSetViewQuery implements MeasurementSetViewQuery {
     final var pairs = jdbcTemplate.query(
         """
             SELECT derived_record_id, input_record_id
-              FROM measurement_derivation_inputs
-             WHERE revision_id IN (:revisionIds)
+              FROM measurement_derivation_inputs derivation
+              JOIN measurement_revision_records revision_record
+                ON revision_record.record_id = derivation.derived_record_id
+             WHERE revision_record.revision_id IN (:revisionIds)
              ORDER BY derived_record_id, input_record_id
             """,
         new MapSqlParameterSource(

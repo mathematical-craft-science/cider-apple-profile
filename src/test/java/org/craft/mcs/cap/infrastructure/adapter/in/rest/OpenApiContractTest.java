@@ -30,7 +30,7 @@ import org.craft.mcs.cap.core.appleprofile.application.classification.port.in.Cl
 import org.craft.mcs.cap.core.appleprofile.application.classification.port.in.ClassifyAppleVarietyUseCase;
 import org.craft.mcs.cap.core.appleprofile.application.profiletarget.port.in.*;
 import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.in.*;
-import org.craft.mcs.cap.core.batchtraceability.application.port.in.QueryBatchTraceabilityUseCase;
+import org.craft.mcs.cap.core.traceability.application.port.in.QueryBatchTraceabilityUseCase;
 import org.craft.mcs.cap.core.feedstock.application.analysis.abv.port.in.*;
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.*;
 import org.craft.mcs.cap.core.feedstock.application.analysis.readiness.port.in.*;
@@ -612,11 +612,11 @@ class OpenApiContractTest {
         openApi,
         "CreateMeasurementSetRequest",
         "subject",
-        "expectedCurrentStateId",
+        "observedMaterialStateId",
         "name",
         "measurements"
     );
-    assertStringFormat(schemaProperty(openApi, "CreateMeasurementSetRequest", "expectedCurrentStateId"), "uuid");
+    assertStringFormat(schemaProperty(openApi, "CreateMeasurementSetRequest", "observedMaterialStateId"), "uuid");
     assertRequiredProperties(openApi, "PointMeasurementValueRequest", "kind", "value", "unit");
     assertRequiredProperties(
         openApi,

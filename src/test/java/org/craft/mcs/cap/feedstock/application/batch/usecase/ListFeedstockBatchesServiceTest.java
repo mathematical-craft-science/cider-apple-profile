@@ -8,6 +8,7 @@ import org.craft.mcs.cap.core.feedstock.application.batch.port.in.ListFeedstockB
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchSummaryQueryRepository;
 import org.craft.mcs.cap.core.feedstock.application.batch.usecase.ListFeedstockBatchesService;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
+import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchLifecycle;
@@ -60,6 +61,7 @@ class ListFeedstockBatchesServiceTest {
         null,
         BatchLifecycle.ACTIVE,
         VolumeValue.ofLiters("250.000"),
+        MaterialStateId.newId(),
         null
     );
   }

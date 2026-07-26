@@ -11,7 +11,6 @@ import org.craft.mcs.cap.core.feedstock.application.inventory.port.in.FeedstockB
 import org.craft.mcs.cap.core.feedstock.application.inventory.port.in.FeedstockBatchMaterialSnapshot;
 import org.craft.mcs.cap.core.feedstock.application.inventory.port.in.InspectFeedstockBatchMaterialCommand;
 import org.craft.mcs.cap.core.feedstock.application.inventory.port.in.InspectFeedstockBatchMaterialUseCase;
-import org.craft.mcs.cap.core.feedstock.application.inventory.port.out.FeedstockMaterialStateProvider;
 import org.craft.mcs.cap.core.feedstock.application.measurement.query.FeedstockBatchCurrentMeasurementQueryService;
 import org.craft.mcs.cap.shared.platform.TransactionHelper;
 import org.jspecify.annotations.NonNull;
@@ -27,7 +26,6 @@ public final class InspectFeedstockBatchMaterialService implements InspectFeedst
 
   private final @NonNull FeedstockBatchRepository feedstockBatchRepository;
   private final @NonNull FeedstockBatchCurrentMeasurementQueryService currentMeasurementQueryService;
-  private final @NonNull FeedstockMaterialStateProvider materialStateProvider;
   private final @NonNull FeedstockAccessControl feedstockAccessControl;
   private final @NonNull TransactionHelper transactionHelper;
 
@@ -65,7 +63,7 @@ public final class InspectFeedstockBatchMaterialService implements InspectFeedst
         FeedstockBatchMaterialName.of(batch.name().value()),
         command.requestedVolume(),
         batch.availableVolume(),
-        materialStateProvider.currentStateOf(batch.batchId()),
+        batch.currentMaterialStateId(),
         FeedstockBatchMaterialEvidenceReference.from(measurement.axisEvidence()),
         measurement.chemicalProfile(),
         measurement.aggregateConfidence()

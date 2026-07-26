@@ -33,6 +33,8 @@ public record MeasurementSetResponse(
     @NonNull MeasurementSubjectResponse subject,
     @Schema(
         description = "Whether this logical set contributes to current projections or has been retracted.",
+        implementation = MeasurementSetLifecycle.class,
+        example = "ACTIVE",
         requiredMode = Schema.RequiredMode.REQUIRED
     )
     @NonNull MeasurementSetLifecycle lifecycle,

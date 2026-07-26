@@ -14,15 +14,17 @@ import org.jspecify.annotations.Nullable;
  *
  * <p>The sealed hierarchy keeps production language explicit without mirroring traceability's
  * subject enum. The infrastructure adapter chooses how each production source type is represented
- * in Batch Traceability. {@code materialStateId} and {@code availableBefore} describe the input
- * state; {@code remaining} describes its output state.
+ * in Batch Traceability. {@code sourceStateId} and {@code availableBefore} describe the input
+ * state; {@code remainingSourceStateId} and {@code remaining} describe its output state.
  */
 public sealed interface ProductionBatchTraceSource
     permits ProductionBatchFeedstockTraceSource {
 
   @NonNull UUID id();
 
-  @NonNull MaterialStateId materialStateId();
+  @NonNull MaterialStateId sourceStateId();
+
+  @NonNull MaterialStateId remainingSourceStateId();
 
   @Nullable ProductionSourceDisplayName displayName();
 

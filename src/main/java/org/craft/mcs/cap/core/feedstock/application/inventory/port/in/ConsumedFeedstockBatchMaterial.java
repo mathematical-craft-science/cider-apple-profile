@@ -16,9 +16,9 @@ import static java.util.Objects.requireNonNull;
  * Immutable feedstock-owned snapshot returned with a successful material consumption.
  *
  * <p>The profile captures the current evidence used when the volume left the feedstock batch.
- * {@code materialStateId} identifies the state before consumption; the caller must record the
- * transition to a new state containing {@code remaining}. Consumers must not query the
- * mutable batch again to reconstruct this fact.
+ * {@code sourceStateId} identifies the source before consumption, while {@code remainingStateId}
+ * identifies the remaining feedstock state. Consumers must not query the mutable batch again to
+ * reconstruct this fact.
  */
 public record ConsumedFeedstockBatchMaterial(
     @NonNull FeedstockBatchId batchId,
@@ -26,7 +26,8 @@ public record ConsumedFeedstockBatchMaterial(
     @NonNull VolumeValue availableBefore,
     @NonNull VolumeValue consumed,
     @NonNull VolumeValue remaining,
-    @NonNull MaterialStateId materialStateId,
+    @NonNull MaterialStateId sourceStateId,
+    @NonNull MaterialStateId remainingStateId,
     @NonNull FeedstockBatchMaterialEvidenceReference evidenceReference,
     @NonNull ChemicalProfile chemicalProfile,
     @Nullable ConfidenceLevel profileConfidence
@@ -38,9 +39,18 @@ public record ConsumedFeedstockBatchMaterial(
     requireNonNull(availableBefore, "feedstock volume before consumption cannot be null");
     requireNonNull(consumed, "consumed feedstock material volume cannot be null");
     requireNonNull(remaining, "remaining feedstock volume cannot be null");
-    requireNonNull(materialStateId, "consumed feedstock material state id cannot be null");
+    requireNonNull(sourceStateId, "source feedstock material state id cannot be null");
+    requireNonNull(remainingStateId, "remaining feedstock material state id cannot be null");
     requireNonNull(evidenceReference, "feedstock material evidence reference cannot be null");
     requireNonNull(chemicalProfile, "feedstock chemical profile cannot be null");
+    if (consumed.isZero()) {
+      throw new ApplicationValidationException("consumed feedstock material volume must be positive");
+    }
+    if (sourceStateId.equals(remainingStateId)) {
+      throw new ApplicationValidationException(
+          "feedstock consumption must produce a new material state"
+      );
+    }
     if (availableBefore.liters().compareTo(consumed.liters().add(remaining.liters())) != 0) {
       throw new ApplicationValidationException(
           "feedstock volume before consumption must equal consumed plus remaining volume"

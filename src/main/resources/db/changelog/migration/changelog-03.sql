@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS feedstock_batches
     source                   VARCHAR(255),
     lifecycle                VARCHAR(16)              NOT NULL,
     available_volume_liters  NUMERIC(15, 3)           NOT NULL,
+    current_material_state_id UUID                    NOT NULL,
     note                     VARCHAR(2000),
     deleted_at               TIMESTAMP WITH TIME ZONE,
 
@@ -32,6 +33,9 @@ CREATE TABLE IF NOT EXISTS feedstock_batches
 
 CREATE INDEX IF NOT EXISTS idx_feedstock_batches_workspace_id
     ON feedstock_batches (workspace_id);
+
+CREATE UNIQUE INDEX IF NOT EXISTS ux_feedstock_batches_current_material_state
+    ON feedstock_batches (current_material_state_id);
 
 CREATE INDEX IF NOT EXISTS idx_feedstock_batches_workspace_season
     ON feedstock_batches (workspace_id, season_starts_on, season_ends_on);
@@ -102,7 +106,6 @@ CREATE TABLE IF NOT EXISTS measurement_set_revisions
 CREATE TABLE IF NOT EXISTS measurement_records
 (
     record_id              UUID                     NOT NULL PRIMARY KEY,
-    revision_id            UUID                     NOT NULL,
     characteristic         VARCHAR(64)              NOT NULL,
     role                   VARCHAR(16)              NOT NULL,
     value_kind             VARCHAR(16)              NOT NULL,
@@ -118,7 +121,7 @@ CREATE TABLE IF NOT EXISTS measurement_records
     derivation_method      VARCHAR(32),
 
     CONSTRAINT ux_measurement_records_identity_scope
-        UNIQUE (record_id, revision_id, characteristic, role),
+        UNIQUE (record_id, characteristic, role),
     CONSTRAINT chk_measurement_records_role
         CHECK (role IN ('OBSERVATION', 'RESULT')),
     CONSTRAINT chk_measurement_records_value_kind
@@ -195,14 +198,27 @@ CREATE TABLE IF NOT EXISTS measurement_records
         CHECK (
             role <> 'OBSERVATION'
             OR (value_kind = 'POINT' AND derivation_method IS NULL)
-        ),
-    CONSTRAINT fk_measurement_records_revision
-        FOREIGN KEY (revision_id) REFERENCES measurement_set_revisions (revision_id)
+        )
+);
+
+CREATE TABLE IF NOT EXISTS measurement_revision_records
+(
+    revision_id    UUID        NOT NULL,
+    record_id      UUID        NOT NULL,
+    characteristic VARCHAR(64) NOT NULL,
+    role           VARCHAR(16) NOT NULL,
+
+    CONSTRAINT pk_measurement_revision_records
+        PRIMARY KEY (revision_id, record_id),
+    CONSTRAINT fk_measurement_revision_records_revision
+        FOREIGN KEY (revision_id) REFERENCES measurement_set_revisions (revision_id),
+    CONSTRAINT fk_measurement_revision_records_record
+        FOREIGN KEY (record_id, characteristic, role)
+            REFERENCES measurement_records (record_id, characteristic, role)
 );
 
 CREATE TABLE IF NOT EXISTS measurement_derivation_inputs
 (
-    revision_id       UUID        NOT NULL,
     characteristic    VARCHAR(64) NOT NULL,
     derived_record_id UUID        NOT NULL,
     derived_role      VARCHAR(16) NOT NULL,
@@ -214,11 +230,11 @@ CREATE TABLE IF NOT EXISTS measurement_derivation_inputs
     CONSTRAINT chk_measurement_derivation_roles
         CHECK (derived_role = 'RESULT' AND input_role = 'OBSERVATION'),
     CONSTRAINT fk_measurement_derivation_result
-        FOREIGN KEY (derived_record_id, revision_id, characteristic, derived_role)
-            REFERENCES measurement_records (record_id, revision_id, characteristic, role),
+        FOREIGN KEY (derived_record_id, characteristic, derived_role)
+            REFERENCES measurement_records (record_id, characteristic, role),
     CONSTRAINT fk_measurement_derivation_input
-        FOREIGN KEY (input_record_id, revision_id, characteristic, input_role)
-            REFERENCES measurement_records (record_id, revision_id, characteristic, role)
+        FOREIGN KEY (input_record_id, characteristic, input_role)
+            REFERENCES measurement_records (record_id, characteristic, role)
 );
 
 CREATE INDEX IF NOT EXISTS idx_measurement_sets_subject
@@ -233,15 +249,15 @@ CREATE INDEX IF NOT EXISTS idx_measurement_set_revisions_set
 CREATE INDEX IF NOT EXISTS idx_measurement_set_revisions_material_state
     ON measurement_set_revisions (material_state_id, measurement_set_id, revision_number DESC);
 
-CREATE INDEX IF NOT EXISTS idx_measurement_records_revision_characteristic_role
-    ON measurement_records (revision_id, characteristic, role);
+CREATE INDEX IF NOT EXISTS idx_measurement_revision_records_revision
+    ON measurement_revision_records (revision_id, characteristic, role);
 
-CREATE UNIQUE INDEX IF NOT EXISTS ux_measurement_records_revision_result
-    ON measurement_records (revision_id, characteristic)
+CREATE UNIQUE INDEX IF NOT EXISTS ux_measurement_revision_records_result
+    ON measurement_revision_records (revision_id, characteristic)
     WHERE role = 'RESULT';
 
 CREATE INDEX IF NOT EXISTS idx_measurement_records_characteristic_measured
     ON measurement_records (characteristic, measured_at DESC, record_id DESC);
 
-CREATE INDEX IF NOT EXISTS idx_measurement_derivation_inputs_revision
-    ON measurement_derivation_inputs (revision_id, characteristic);
+CREATE INDEX IF NOT EXISTS idx_measurement_derivation_inputs_characteristic
+    ON measurement_derivation_inputs (characteristic);

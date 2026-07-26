@@ -201,15 +201,17 @@ class ProductionBatchCandidatePersistenceDataJdbcTest {
         """
             INSERT INTO production_batches (
                 batch_id, workspace_id, name, vessel, lifecycle, alcoholic_fermentation_state,
-                current_volume_liters, initial_sugar_specific_gravity, initial_acidity_g_l_as_malic,
+                current_volume_liters, current_material_state_id,
+                initial_sugar_specific_gravity, initial_acidity_g_l_as_malic,
                 initial_tannin_mg_l_tae, initial_yan_mg_n_l,
                 version, created_at, updated_at
             ) VALUES (?, ?, 'Confirmed batch', 'Tank F-03', 'ACTIVE', 'NOT_STARTED',
-                      120, 1.052, 6.2, 1200, 180,
+                      120, ?, 1.052, 6.2, 1200, 180,
                       0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
             """,
         productionBatchId.value(),
-        workspaceId.value()
+        workspaceId.value(),
+        MaterialStateId.newId().value()
     );
     return productionBatchId;
   }

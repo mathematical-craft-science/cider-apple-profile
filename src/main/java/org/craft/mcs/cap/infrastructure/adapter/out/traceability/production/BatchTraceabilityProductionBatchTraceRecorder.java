@@ -5,17 +5,14 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.account.user.application.port.in.GetCurrentAccountProfileUseCase;
-import org.craft.mcs.cap.core.batchtraceability.application.model.MaterialStateAdvance;
-import org.craft.mcs.cap.core.batchtraceability.application.model.MaterialStateInitialization;
-import org.craft.mcs.cap.core.batchtraceability.application.model.MaterialStatesTransition;
-import org.craft.mcs.cap.core.batchtraceability.application.port.in.TransitionMaterialStatesUseCase;
-import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceActorReference;
-import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceMaterialSnapshot;
-import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStepType;
-import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStep;
-import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStepSubject;
-import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceSubject;
-import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceSubjectType;
+import org.craft.mcs.cap.core.traceability.application.port.in.AppendBatchTraceStepUseCase;
+import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceActorReference;
+import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceMaterialSnapshot;
+import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceStepType;
+import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceStep;
+import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceStepSubject;
+import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceSubject;
+import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceSubjectType;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchTraceRecorder;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchTraceSource;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatch;
@@ -37,14 +34,13 @@ import static java.util.Objects.requireNonNull;
  *
  * <p>The adapter is the anti-corruption layer between production and traceability: production emits
  * a domain-specific "production batch was created" fact, while this adapter maps it to
- * {@code PRODUCTION_BATCH_CREATED}. The actual append remains guarded by {@code MANDATORY}
- * transaction propagation in {@link TransitionMaterialStatesUseCase}.
+ * {@code PRODUCTION_BATCH_CREATED}. The actual append joins the production transaction.
  */
 @Component
 @RequiredArgsConstructor
 class BatchTraceabilityProductionBatchTraceRecorder implements ProductionBatchTraceRecorder {
 
-  private final @NonNull TransitionMaterialStatesUseCase transitionMaterialStatesUseCase;
+  private final @NonNull AppendBatchTraceStepUseCase appendBatchTraceStepUseCase;
   private final @NonNull GetCurrentAccountProfileUseCase getCurrentAccountProfileUseCase;
 
   @Override
@@ -65,7 +61,7 @@ class BatchTraceabilityProductionBatchTraceRecorder implements ProductionBatchTr
     final var sourceTransitions = sources.stream()
         .map(BatchTraceabilityProductionBatchTraceRecorder::sourceTransition)
         .toList();
-    final var productionStateId = MaterialStateId.newId();
+    final var productionStateId = productionBatch.currentMaterialStateId();
     final var productionOutput = outputSubject(
         productionBatch,
         productionSubject,
@@ -85,13 +81,7 @@ class BatchTraceabilityProductionBatchTraceRecorder implements ProductionBatchTr
         ),
         note
     );
-    transitionMaterialStatesUseCase.transition(new MaterialStatesTransition(
-        step,
-        sourceTransitions.stream()
-            .map(SourceTransition::advance)
-            .toList(),
-        List.of(new MaterialStateInitialization(productionSubject, productionStateId))
-    ));
+    appendBatchTraceStepUseCase.append(step);
   }
 
   private static @NonNull SourceTransition sourceTransition(
@@ -104,9 +94,9 @@ class BatchTraceabilityProductionBatchTraceRecorder implements ProductionBatchTr
         source.id(),
         displayName == null ? null : displayName.value()
     );
-    final var nextStateId = MaterialStateId.newId();
+    final var remainingSourceStateId = source.remainingSourceStateId();
     final var input = new BatchTraceStepSubject(
-        source.materialStateId(),
+        source.sourceStateId(),
         subject,
         new BatchTraceMaterialSnapshot(
             source.availableBefore(),
@@ -115,7 +105,7 @@ class BatchTraceabilityProductionBatchTraceRecorder implements ProductionBatchTr
         )
     );
     final var output = new BatchTraceStepSubject(
-        nextStateId,
+        remainingSourceStateId,
         subject,
         new BatchTraceMaterialSnapshot(
             source.remaining(),
@@ -124,7 +114,6 @@ class BatchTraceabilityProductionBatchTraceRecorder implements ProductionBatchTr
         )
     );
     return new SourceTransition(
-        new MaterialStateAdvance(subject, source.materialStateId(), nextStateId),
         input,
         output
     );
@@ -196,7 +185,6 @@ class BatchTraceabilityProductionBatchTraceRecorder implements ProductionBatchTr
   }
 
   private record SourceTransition(
-      @NonNull MaterialStateAdvance advance,
       @NonNull BatchTraceStepSubject input,
       @NonNull BatchTraceStepSubject output
   ) {

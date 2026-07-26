@@ -61,7 +61,7 @@ public final class MeasurementSetRestMapper {
     return new CreateMeasurementSetCommand(
         request.measurementSetId() == null ? null : MeasurementSetId.of(request.measurementSetId()), // NOSONAR
         toSubject(request.subject()),
-        MaterialStateId.of(request.expectedCurrentStateId()),
+        MaterialStateId.of(request.observedMaterialStateId()),
         MeasurementSetName.of(request.name()),
         request.note(),
         toInputs(request.measurements())

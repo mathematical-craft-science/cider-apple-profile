@@ -73,7 +73,7 @@ class CurrentMeasurementProfileProjectorTest {
         .requireReadAccess(MeasurementSubjectType.FEEDSTOCK_BATCH, workspaceId);
     when(materialStateProvider.currentStatesOf(workspaceId, Set.of(subject)))
         .thenReturn(Map.of(subject, CURRENT_STATE_ID));
-    when(resultQuery.findBySubjects(workspaceId, Set.of(subject))).thenReturn(List.of(
+    when(resultQuery.findByStates(workspaceId, Map.of(subject, CURRENT_STATE_ID))).thenReturn(List.of(
         result(
             subject,
             INHERITED_STATE_ID,
@@ -155,7 +155,7 @@ class CurrentMeasurementProfileProjectorTest {
     when(materialStateProvider.currentStatesOf(workspaceId, Set.of(subject)))
         .thenReturn(Map.of(subject, CURRENT_STATE_ID));
     when(freshnessThresholdProvider.staleAfter(workspaceId)).thenReturn(Duration.ofDays(14));
-    when(resultQuery.findBySubjects(workspaceId, Set.of(subject))).thenReturn(List.of());
+    when(resultQuery.findByStates(workspaceId, Map.of(subject, CURRENT_STATE_ID))).thenReturn(List.of());
     final var projector = new CurrentMaterialStateProjector(
         resultQuery,
         accessControl,

@@ -31,6 +31,7 @@ public class FeedstockBatchJdbcEntity {
   @Nullable @Column("source") String source;
   @NonNull @Column("lifecycle") BatchLifecycle lifecycle;
   @NonNull @Column("available_volume_liters") BigDecimal availableVolumeLiters;
+  @NonNull @Column("current_material_state_id") UUID currentMaterialStateId;
   @Nullable @Column("note") String note;
   @Nullable @Column("deleted_at") Instant deletedAt;
   @CreatedDate @Nullable @Column("created_at") Instant createdAt;
@@ -52,6 +53,7 @@ public class FeedstockBatchJdbcEntity {
       @Nullable String source,
       @NonNull BatchLifecycle lifecycle,
       @NonNull BigDecimal availableVolumeLiters,
+      @NonNull UUID currentMaterialStateId,
       @Nullable String note,
       @Nullable Instant deletedAt
   ) {
@@ -65,6 +67,10 @@ public class FeedstockBatchJdbcEntity {
     this.source = normalize(source);
     this.lifecycle = requireNonNull(lifecycle, "feedstock batch lifecycle cannot be null");
     this.availableVolumeLiters = requireNonNull(availableVolumeLiters, "available volume cannot be null");
+    this.currentMaterialStateId = requireNonNull(
+        currentMaterialStateId,
+        "feedstock current material state id cannot be null"
+    );
     this.note = normalize(note);
     this.deletedAt = deletedAt;
   }

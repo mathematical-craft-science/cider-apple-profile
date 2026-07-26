@@ -5,24 +5,23 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.measurement.application.model.CurrentMaterialCharacteristicView;
-import org.craft.mcs.cap.core.measurement.application.model.CurrentMaterialStateView;
-import org.craft.mcs.cap.shared.application.measurement.MeasurementValueOrigin;
-import org.craft.mcs.cap.shared.application.measurement.MeasurementEvidenceValidity;
 import org.craft.mcs.cap.core.measurement.application.model.CurrentMeasurementResultView;
-import org.craft.mcs.cap.shared.application.measurement.MeasurementFreshnessStatus;
+import org.craft.mcs.cap.core.measurement.application.model.CurrentMaterialStateView;
 import org.craft.mcs.cap.core.measurement.application.port.in.ProjectCurrentMaterialStateUseCase;
 import org.craft.mcs.cap.core.measurement.application.port.out.CurrentMeasurementResultQuery;
 import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementFreshnessThresholdProvider;
 import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementMaterialStateProvider;
 import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementSubjectAccessControl;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSubjectReference;
-import org.craft.mcs.cap.shared.application.ApplicationValidationException;
-import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
+import org.craft.mcs.cap.shared.application.measurement.MeasurementEvidenceValidity;
+import org.craft.mcs.cap.shared.application.measurement.MeasurementFreshnessStatus;
+import org.craft.mcs.cap.shared.application.measurement.MeasurementValueOrigin;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
@@ -82,9 +81,9 @@ public final class CurrentMaterialStateProjector implements ProjectCurrentMateri
     final var assessedAt = clock.instant();
     final var staleAfter = freshnessThresholdProvider.staleAfter(workspaceId);
     final var currentStateIds = materialStateProvider.currentStatesOf(workspaceId, subjects);
-    final Map<MeasurementSubjectReference, ArrayList<CurrentMeasurementResultView>> resultsBySubject =
+    final Map<MeasurementSubjectReference, List<CurrentMeasurementResultView>> resultsBySubject =
         new LinkedHashMap<>();
-    resultQuery.findBySubjects(workspaceId, subjects).forEach(result -> resultsBySubject
+    resultQuery.findByStates(workspaceId, currentStateIds).forEach(result -> resultsBySubject
         .computeIfAbsent(result.subject(), _ -> new ArrayList<>())
         .add(result));
 
@@ -94,8 +93,7 @@ public final class CurrentMaterialStateProjector implements ProjectCurrentMateri
           currentStateIds.get(subject),
           "current material state id cannot be null"
       );
-      final var results = resultsBySubject.getOrDefault(subject, new ArrayList<>());
-      requireMatchingCurrentState(subject, currentStateId, results);
+      final var results = resultsBySubject.getOrDefault(subject, List.of());
       states.put(
         subject,
         new CurrentMaterialStateView(
@@ -130,20 +128,6 @@ public final class CurrentMaterialStateProjector implements ProjectCurrentMateri
         freshnessStatus(result.measuredAt(), staleAfter, assessedAt),
         MeasurementEvidenceValidity.VALID
     );
-  }
-
-  private static void requireMatchingCurrentState(
-      @NonNull MeasurementSubjectReference subject,
-      @NonNull MaterialStateId expectedCurrentStateId,
-      @NonNull Iterable<@NonNull CurrentMeasurementResultView> results
-  ) {
-    results.forEach(result -> {
-      if (!result.currentMaterialStateId().equals(expectedCurrentStateId)) {
-        throw new ApplicationValidationException(
-            "current measurement results contain mixed material states for " + subject
-        );
-      }
-    });
   }
 
   private static @NonNull MeasurementFreshnessStatus freshnessStatus(

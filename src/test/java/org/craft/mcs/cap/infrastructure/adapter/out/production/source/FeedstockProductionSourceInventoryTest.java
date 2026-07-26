@@ -17,6 +17,7 @@ import org.craft.mcs.cap.core.production.application.port.out.ProductionSourceDi
 import org.craft.mcs.cap.core.production.candidate.domain.model.ProductionSourceEvidenceReference;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceComponent;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceReference;
+import org.craft.mcs.cap.shared.application.ApplicationValidationException;
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
@@ -48,13 +49,16 @@ class FeedstockProductionSourceInventoryTest {
     final var batchId = FeedstockBatchId.newId();
     final var source = source(batchId, "100");
     final var profile = profile();
+    final var sourceStateId = MaterialStateId.newId();
+    final var remainingStateId = MaterialStateId.newId();
     when(useCase.consume(any())).thenReturn(new ConsumedFeedstockBatchMaterial(
         batchId,
         FeedstockBatchMaterialName.of("Late juice"),
         VolumeValue.ofLiters("250"),
         source.volume(),
         VolumeValue.ofLiters("150"),
-        MaterialStateId.newId(),
+        sourceStateId,
+        remainingStateId,
         new FeedstockBatchMaterialEvidenceReference("feedstock-profile-v1:measurement-evidence"),
         profile,
         ConfidenceLevel.LAB_VERIFIED
@@ -69,6 +73,8 @@ class FeedstockProductionSourceInventoryTest {
         .returns(VolumeValue.ofLiters("250"), ConsumedProductionSource::availableBefore)
         .returns(VolumeValue.ofLiters("100"), ConsumedProductionSource::consumed)
         .returns(VolumeValue.ofLiters("150"), ConsumedProductionSource::remaining)
+        .returns(sourceStateId, ConsumedProductionSource::sourceStateId)
+        .returns(remainingStateId, ConsumedProductionSource::remainingSourceStateId)
         .returns(ConfidenceLevel.LAB_VERIFIED, ConsumedProductionSource::confidence)
         .returns(
             ProductionSourceEvidenceReference.of("feedstock-profile-v1:measurement-evidence"),
@@ -77,6 +83,65 @@ class FeedstockProductionSourceInventoryTest {
         .satisfies(result -> assertThat(result.profile())
             .isNotNull()
             .satisfies(axes -> assertThat(axes.valueOf(ChemicalAxis.SUGAR)).isPresent()));
+  }
+
+  @Test
+  void rejectsZeroVolumeFeedstockConsumptionSnapshot() {
+    final var batchId = FeedstockBatchId.newId();
+    final var batchName = FeedstockBatchMaterialName.of("Late juice");
+    final var availableBefore = VolumeValue.ofLiters("100");
+    final var consumed = VolumeValue.ofLiters("0");
+    final var remaining = VolumeValue.ofLiters("100");
+    final var stateId = MaterialStateId.newId();
+    final var resultingStateId = MaterialStateId.newId();
+    final var evidenceReference = new FeedstockBatchMaterialEvidenceReference(
+        "feedstock-profile-v1:measurement-evidence"
+    );
+    final var chemicalProfile = profile();
+
+    assertThatThrownBy(() -> new ConsumedFeedstockBatchMaterial(
+        batchId,
+        batchName,
+        availableBefore,
+        consumed,
+        remaining,
+        stateId,
+        resultingStateId,
+        evidenceReference,
+        chemicalProfile,
+        ConfidenceLevel.HIGH
+    ))
+        .isInstanceOf(ApplicationValidationException.class)
+        .hasMessage("consumed feedstock material volume must be positive");
+  }
+
+  @Test
+  void rejectsZeroVolumeProductionSourceSnapshot() {
+    final var source = source(FeedstockBatchId.newId(), "100");
+    final var sourceReference = source.reference();
+    final var availableBefore = VolumeValue.ofLiters("100");
+    final var consumed = VolumeValue.ofLiters("0");
+    final var remaining = VolumeValue.ofLiters("100");
+    final var stateId = MaterialStateId.newId();
+    final var resultingStateId = MaterialStateId.newId();
+    final var evidenceReference = ProductionSourceEvidenceReference.of(
+        "feedstock-profile-v1:measurement-evidence"
+    );
+
+    assertThatThrownBy(() -> new ConsumedProductionSource(
+        sourceReference,
+        null,
+        availableBefore,
+        consumed,
+        remaining,
+        null,
+        null,
+        stateId,
+        resultingStateId,
+        evidenceReference
+    ))
+        .isInstanceOf(ApplicationValidationException.class)
+        .hasMessage("consumed production source volume must be positive");
   }
 
   @Test

@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 import static java.util.Objects.requireNonNull;
 
 
-/** Returns the material state against which new measurement evidence must be recorded. */
+/** Returns the subject's current material state for immediate sampling and compatibility flows. */
 @Component
 @RequiredArgsConstructor
 public final class GetCurrentMeasurementSubjectStateService implements GetCurrentMeasurementSubjectStateUseCase {

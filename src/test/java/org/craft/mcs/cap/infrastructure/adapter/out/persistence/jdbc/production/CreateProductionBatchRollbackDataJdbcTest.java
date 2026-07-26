@@ -111,10 +111,14 @@ class CreateProductionBatchRollbackDataJdbcTest {
     jdbcTemplate.update("""
         INSERT INTO feedstock_batches (
             batch_id, workspace_id, name, type, season_starts_on, season_ends_on, lifecycle,
-            available_volume_liters, version, created_at, updated_at
+            available_volume_liters, current_material_state_id, version, created_at, updated_at
         ) VALUES (?, ?, 'Late juice', 'JUICE', DATE '2026-01-01', DATE '2026-12-31',
-                  'ACTIVE', 250, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-        """, sourceReference.id(), workspaceId.value());
+                  'ACTIVE', 250, ?, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+        """,
+        sourceReference.id(),
+        workspaceId.value(),
+        MaterialStateId.newId().value()
+    );
   }
 
   private @NonNull RollbackState rollbackState(@NonNull ProductionSourceReference sourceReference) {
@@ -217,6 +221,7 @@ class CreateProductionBatchRollbackDataJdbcTest {
             ),
             ConfidenceLevel.LAB_VERIFIED,
             SOURCE_STATE_ID,
+            MaterialStateId.newId(),
             evidenceReference()
         );
       };

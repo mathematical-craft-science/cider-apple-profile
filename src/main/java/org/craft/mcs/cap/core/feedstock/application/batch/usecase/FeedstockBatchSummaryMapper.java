@@ -27,6 +27,7 @@ public final class FeedstockBatchSummaryMapper {
         batch.source(),
         batch.lifecycle(),
         batch.availableVolume(),
+        batch.currentMaterialStateId(),
         batch.note()
     );
   }

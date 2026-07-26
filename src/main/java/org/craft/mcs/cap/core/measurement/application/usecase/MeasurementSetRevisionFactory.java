@@ -2,9 +2,7 @@ package org.craft.mcs.cap.core.measurement.application.usecase;
 
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.craft.mcs.cap.core.measurement.application.model.MeasurementCharacteristicInput;
@@ -13,7 +11,6 @@ import org.craft.mcs.cap.core.measurement.application.port.in.PatchMeasurementSe
 import org.craft.mcs.cap.core.measurement.application.port.in.ReplaceMeasurementSetCommand;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementCorrectionReason;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementRecord;
-import org.craft.mcs.cap.core.measurement.domain.model.MeasurementRecordId;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetName;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetRevision;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetRevisionId;
@@ -140,38 +137,10 @@ final class MeasurementSetRevisionFactory {
       @NonNull Set<@NonNull MeasurementCharacteristic> replaced,
       @NonNull Set<@NonNull MeasurementCharacteristic> removed
   ) {
-    final var retained = current.stream()
+    return current.stream()
         .filter(measurementRecord -> !replaced.contains(measurementRecord.characteristic()))
         .filter(measurementRecord -> !removed.contains(measurementRecord.characteristic()))
         .toList();
-    final Map<MeasurementRecordId, MeasurementRecordId> copiedIds = new HashMap<>();
-    retained.forEach(measurementRecord ->
-        copiedIds.put(measurementRecord.recordId(), MeasurementRecordId.newId())
-    );
-    return retained.stream()
-        .map(measurementRecord -> new MeasurementRecord(
-            copiedRecordId(copiedIds, measurementRecord.recordId()),
-            measurementRecord.characteristic(),
-            measurementRecord.role(),
-            measurementRecord.value(),
-            measurementRecord.measuredAt(),
-            measurementRecord.provenance(),
-            measurementRecord.derivationMethod(),
-            measurementRecord.derivationInputs().stream()
-                .map(inputId -> copiedRecordId(copiedIds, inputId))
-                .toList()
-        ))
-        .toList();
-  }
-
-  private static @NonNull MeasurementRecordId copiedRecordId(
-      @NonNull Map<@NonNull MeasurementRecordId, @NonNull MeasurementRecordId> copiedIds,
-      @NonNull MeasurementRecordId originalId
-  ) {
-    return requireNonNull(
-        copiedIds.get(originalId),
-        "copied measurement record id cannot be null"
-    );
   }
 
   private record RevisionContent(

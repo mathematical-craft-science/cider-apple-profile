@@ -15,7 +15,6 @@ import org.craft.mcs.cap.core.production.application.port.in.ListProductionBatch
 import org.craft.mcs.cap.core.production.application.port.in.ListProductionBatchesUseCase;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchQueryRepository;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionMeasurementProfileProvider;
-import org.craft.mcs.cap.core.production.application.port.out.ProductionMaterialStateProvider;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatchId;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
@@ -45,7 +44,6 @@ public final class QueryProductionBatchesService
   private final @NonNull ProductionCurrentProfileProjector productionCurrentProfileProjector;
   private final @NonNull ChemicalProfileAxisExtractor chemicalProfileAxisExtractor;
   private final @NonNull PotentialAbvPredictor potentialAbvPredictor;
-  private final @NonNull ProductionMaterialStateProvider materialStateProvider;
 
   @Override
   public @NonNull ProductionBatchDetailsView get(@NonNull ProductionBatchId batchId) {
@@ -56,7 +54,7 @@ public final class QueryProductionBatchesService
     productionAccessControl.requireReadAccess(batch.workspaceId());
     return toDetailsView(
         batch,
-        materialStateProvider.currentStateOf(batch.batchId()),
+        batch.currentMaterialStateId(),
         measurementProfileProvider.findCurrent(batch.batchId()).orElse(null) // NOSONAR
     );
   }
@@ -71,15 +69,10 @@ public final class QueryProductionBatchesService
         .map(ProductionBatchView::batchId)
         .collect(Collectors.toUnmodifiableSet());
     final var measuredProfiles = measurementProfileProvider.findAllCurrent(query.workspaceId(), batchIds);
-    final var materialStates = materialStateProvider.currentStatesOf(query.workspaceId(), batchIds);
-
     return batches.stream()
         .map(batch -> toDetailsView(
             batch,
-            requireNonNull(
-                materialStates.get(batch.batchId()),
-                "production current material state cannot be null"
-            ),
+            batch.currentMaterialStateId(),
             measuredProfiles.get(batch.batchId())
         ))
         .toList();

@@ -1,58 +1,32 @@
 package org.craft.mcs.cap.infrastructure.configuration;
 
-import org.craft.mcs.cap.core.batchtraceability.application.port.out.BatchTraceabilityQueryStore;
-import org.craft.mcs.cap.core.batchtraceability.application.port.out.BatchTraceabilityAccessControl;
-import org.craft.mcs.cap.core.batchtraceability.application.port.out.BatchTraceabilityStore;
-import org.craft.mcs.cap.core.batchtraceability.application.port.out.CurrentMaterialStateStore;
-import org.craft.mcs.cap.core.batchtraceability.application.usecase.InitializeMaterialStateService;
-import org.craft.mcs.cap.core.batchtraceability.application.usecase.QueryBatchTraceabilityService;
-import org.craft.mcs.cap.core.batchtraceability.application.usecase.QueryMaterialStateService;
-import org.craft.mcs.cap.core.batchtraceability.application.usecase.RebuildCurrentMaterialStatesService;
-import org.craft.mcs.cap.core.batchtraceability.application.usecase.TransitionMaterialStatesService;
+import org.craft.mcs.cap.core.traceability.application.port.out.BatchTraceabilityAccessControl;
+import org.craft.mcs.cap.core.traceability.application.port.out.BatchTraceabilityQueryStore;
+import org.craft.mcs.cap.core.traceability.application.port.out.BatchTraceabilityStore;
+import org.craft.mcs.cap.core.traceability.application.port.out.MaterialStateHistoryStore;
+import org.craft.mcs.cap.core.traceability.application.usecase.AppendBatchTraceStepService;
+import org.craft.mcs.cap.core.traceability.application.usecase.GetMaterialStateService;
+import org.craft.mcs.cap.core.traceability.application.usecase.QueryBatchTraceabilityService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
 
 @Configuration
 class BatchTraceabilityConfiguration {
 
   @Bean
-  InitializeMaterialStateService initializeMaterialStateService(
+  AppendBatchTraceStepService appendBatchTraceStepService(
       BatchTraceabilityStore traceabilityStore,
-      CurrentMaterialStateStore currentStateStore,
       BatchTraceabilityAccessControl accessControl
   ) {
-    return new InitializeMaterialStateService(traceabilityStore, currentStateStore, accessControl);
+    return new AppendBatchTraceStepService(traceabilityStore, accessControl);
   }
 
   @Bean
-  QueryMaterialStateService queryMaterialStateService(
-      CurrentMaterialStateStore currentStateStore,
+  GetMaterialStateService getMaterialStateService(
+      MaterialStateHistoryStore historyStore,
       BatchTraceabilityAccessControl accessControl
   ) {
-    return new QueryMaterialStateService(currentStateStore, accessControl);
-  }
-
-  @Bean
-  TransitionMaterialStatesService transitionMaterialStatesService(
-      BatchTraceabilityStore traceabilityStore,
-      CurrentMaterialStateStore currentStateStore,
-      BatchTraceabilityAccessControl accessControl
-  ) {
-    return new TransitionMaterialStatesService(traceabilityStore, currentStateStore, accessControl);
-  }
-
-  @Bean
-  RebuildCurrentMaterialStatesService rebuildCurrentMaterialStatesService(
-      BatchTraceabilityQueryStore traceabilityQueryStore,
-      CurrentMaterialStateStore currentStateStore,
-      BatchTraceabilityAccessControl accessControl
-  ) {
-    return new RebuildCurrentMaterialStatesService(
-        traceabilityQueryStore,
-        currentStateStore,
-        accessControl
-    );
+    return new GetMaterialStateService(historyStore, accessControl);
   }
 
   @Bean

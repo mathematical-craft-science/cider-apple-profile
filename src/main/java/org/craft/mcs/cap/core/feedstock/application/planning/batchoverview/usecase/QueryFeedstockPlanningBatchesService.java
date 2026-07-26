@@ -19,7 +19,6 @@ import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.out.Feed
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.usecase.FeedstockCurrentProfileAssessmentService;
 import org.craft.mcs.cap.core.feedstock.application.measurement.query.FeedstockBatchCurrentMeasurementQueryService;
 import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementView;
-import org.craft.mcs.cap.core.feedstock.application.inventory.port.out.FeedstockMaterialStateProvider;
 import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.model.FeedstockPlanningBatchView;
 import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.FeedstockPlanningBatchViewQuery;
 import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.model.FeedstockPlanningTargetAnalysisView;
@@ -64,7 +63,6 @@ public final class QueryFeedstockPlanningBatchesService implements QueryFeedstoc
   private final @NonNull FeedstockCurrentProfileAssessmentService batchAssessmentService;
   private final @NonNull FeedstockCurrentProfileSettingsProvider currentProfileSettingsProvider;
   private final @NonNull FeedstockPlanningContributionRoleExplainer contributionRoleExplainer;
-  private final @NonNull FeedstockMaterialStateProvider materialStateProvider;
 
   @Override
   public @NonNull FeedstockPlanningView query(@NonNull FeedstockPlanningBatchViewQuery query) {
@@ -85,16 +83,11 @@ public final class QueryFeedstockPlanningBatchesService implements QueryFeedstoc
         ));
     final var targetCandidates = targetCandidates(query);
     final var currentProfileSettings = currentProfileSettingsProvider.get(query.workspaceId());
-    final var currentStates = materialStateProvider.currentStatesOf(query.workspaceId(), batchIds);
-
     return new FeedstockPlanningView(
         batches.stream()
             .map(batch -> toBatchView(
                 batch,
-                requireNonNull(
-                    currentStates.get(batch.batchId()),
-                    "feedstock current material state cannot be null"
-                ),
+                batch.currentMaterialStateId(),
                 measurementsByBatchId.get(batch.batchId()),
                 targetCandidates.candidatesByBatchId().get(batch.batchId()),
                 currentProfileSettings

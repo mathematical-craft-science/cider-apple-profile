@@ -61,17 +61,7 @@ class JdbcFeedstockBatchRepository
   ) {
     requireNonNull(batchId, "feedstock batch id cannot be null");
 
-    return repository.findById(batchId.value())
-        .map(FeedstockBatchJdbcMapper::toVersionedAggregate);
-  }
-
-  @Override
-  public @NonNull Optional<@NonNull VersionedAggregate<FeedstockBatch>> findByIdForConsumption(
-      @NonNull FeedstockBatchId batchId
-  ) {
-    requireNonNull(batchId, "feedstock batch id cannot be null");
-
-    return repository.findByIdForConsumption(batchId.value())
+    return repository.findByBatchIdAndDeletedAtIsNull(batchId.value())
         .map(FeedstockBatchJdbcMapper::toVersionedAggregate);
   }
 

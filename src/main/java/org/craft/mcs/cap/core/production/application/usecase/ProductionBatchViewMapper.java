@@ -22,6 +22,7 @@ final class ProductionBatchViewMapper {
         batch.lifecycle(),
         batch.alcoholicFermentationState(),
         batch.currentVolume(),
+        batch.currentMaterialStateId(),
         batch.initialProfileSnapshot(),
         batch.note()
     );

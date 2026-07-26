@@ -41,12 +41,16 @@ public sealed interface MeasurementCharacteristicRequest
 
   @Schema(
       description = "Discriminator selecting direct input or repeated observations.",
+      implementation = MeasurementInputKind.class,
+      example = "DIRECT",
       requiredMode = Schema.RequiredMode.REQUIRED
   )
   @NonNull MeasurementInputKind inputKind();
 
   @Schema(
       description = "Material or process characteristic represented by this input.",
+      implementation = MeasurementCharacteristic.class,
+      example = "SPECIFIC_GRAVITY",
       requiredMode = Schema.RequiredMode.REQUIRED
   )
   @NonNull MeasurementCharacteristic characteristic();

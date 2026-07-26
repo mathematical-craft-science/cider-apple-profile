@@ -63,7 +63,8 @@ public final class FeedstockProductionSourceInventory implements ProductionSourc
         consumed.remaining(),
         axisExtractor.extract(profile),
         consumed.profileConfidence(),
-        consumed.materialStateId(),
+        consumed.sourceStateId(),
+        consumed.remainingStateId(),
         ProductionSourceEvidenceReference.of(consumed.evidenceReference().externalValue())
     );
   }

@@ -21,8 +21,8 @@ public interface MaterialStateApi {
 
   @Operation(
       summary = "Get the current material state",
-      description = "Returns the state identifier required for optimistic measurement creation together with "
-          + "currently applicable characteristic values and their immutable evidence."
+      description = "Returns the subject's current state identifier together with applicable characteristic "
+          + "values and their immutable evidence. The identifier can bind a new measurement to the sampled state."
   )
   @ApiResponse(
       responseCode = "200",

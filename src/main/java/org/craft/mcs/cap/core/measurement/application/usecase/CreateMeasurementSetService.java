@@ -20,7 +20,7 @@ import static java.util.Objects.requireNonNull;
 import static org.craft.mcs.cap.core.measurement.application.usecase.MeasurementSetViewMapper.toView;
 
 
-/** Records a new logical measurement set against the subject's expected material state. */
+/** Records a new logical measurement set against the material state that was sampled. */
 @Component
 @RequiredArgsConstructor
 public final class CreateMeasurementSetService implements CreateMeasurementSetUseCase {
@@ -40,9 +40,9 @@ public final class CreateMeasurementSetService implements CreateMeasurementSetUs
     return transactionHelper.callInTransactionNonNull(() -> {
       final var workspaceId = subjectAccessControl.requireWriteAccess(command.subject());
       subjectMeasurementPolicy.validate(command.subject(), command.measurements());
-      final var currentStateId = materialStateProvider.requireCurrentState(
+      final var observedStateId = materialStateProvider.requireObservedState(
           command.subject(),
-          command.expectedCurrentStateId()
+          command.observedMaterialStateId()
       );
       final var now = clock.instant();
       final var requestedId = command.requestedId();
@@ -55,7 +55,7 @@ public final class CreateMeasurementSetService implements CreateMeasurementSetUs
           command.subject(),
           revisionFactory.initial(
               command,
-              currentStateId,
+              observedStateId,
               now,
               actorProvider.requireCurrentActorReference()
           )

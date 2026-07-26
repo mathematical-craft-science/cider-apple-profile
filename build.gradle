@@ -102,8 +102,20 @@ tasks.named('test') {
 }
 
 pitest {
-    targetClasses = ['org.craft.mcs.cap.core.feedstock.domain.*']
-    targetTests = ['org.craft.mcs.cap.feedstock.domain.*']
+    targetClasses = [
+        'org.craft.mcs.cap.core.feedstock.domain.*',
+        'org.craft.mcs.cap.core.production.domain.*',
+        'org.craft.mcs.cap.core.production.candidate.domain.*',
+        'org.craft.mcs.cap.core.measurement.domain.*',
+        'org.craft.mcs.cap.core.traceability.domain.*'
+    ]
+    targetTests = [
+        'org.craft.mcs.cap.feedstock.domain.*',
+        'org.craft.mcs.cap.production.domain.*',
+        'org.craft.mcs.cap.production.candidate.domain.*',
+        'org.craft.mcs.cap.core.measurement.domain.*',
+        'org.craft.mcs.cap.core.traceability.domain.*'
+    ]
     pitestVersion = pitestCoreVersion
     junit5PluginVersion = pitestJUnit5Version
     threads = 1

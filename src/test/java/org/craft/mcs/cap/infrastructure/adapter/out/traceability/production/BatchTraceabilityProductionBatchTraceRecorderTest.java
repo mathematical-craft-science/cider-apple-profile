@@ -9,19 +9,17 @@ import org.craft.mcs.cap.core.account.shared.domain.value.EmailAddress;
 import org.craft.mcs.cap.core.account.user.application.port.in.AccountUserView;
 import org.craft.mcs.cap.core.account.user.application.port.in.GetCurrentAccountProfileUseCase;
 import org.craft.mcs.cap.core.account.user.domain.model.AccountUserStatus;
-import org.craft.mcs.cap.core.batchtraceability.application.model.MaterialStateAdvance;
-import org.craft.mcs.cap.core.batchtraceability.application.model.MaterialStateInitialization;
-import org.craft.mcs.cap.core.batchtraceability.application.model.MaterialStatesTransition;
-import org.craft.mcs.cap.core.batchtraceability.application.port.in.TransitionMaterialStatesUseCase;
-import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStep;
-import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStepSubject;
-import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStepType;
-import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceSubjectType;
+import org.craft.mcs.cap.core.traceability.application.port.in.AppendBatchTraceStepUseCase;
+import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceStep;
+import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceStepSubject;
+import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceStepType;
+import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceSubjectType;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchFeedstockTraceSource;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionSourceDisplayName;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatch;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatchId;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
+import org.craft.mcs.cap.shared.application.ApplicationValidationException;
 import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValueKind;
@@ -41,6 +39,7 @@ import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 
 class BatchTraceabilityProductionBatchTraceRecorderTest {
@@ -48,13 +47,14 @@ class BatchTraceabilityProductionBatchTraceRecorderTest {
   private static final AccountUserId ACTOR_USER_ID = AccountUserId.newId();
 
   @Test
-  void mapsProductionCreationToSourceAdvanceAndProductionInitialization() {
+  void mapsProductionCreationToOneImmutableTraceStep() {
     final var workspaceId = WorkspaceId.newId();
     final var sourceStateId = MaterialStateId.newId();
+    final var remainingSourceStateId = MaterialStateId.newId();
     final var sourceId = FeedstockBatchId.newId();
-    final var transitionUseCase = new CapturingTransitionUseCase();
+    final var appendUseCase = new CapturingAppendUseCase();
     final var recorder = new BatchTraceabilityProductionBatchTraceRecorder(
-        transitionUseCase,
+        appendUseCase,
         currentAccountProfile()
     );
     final var productionBatch = productionBatch(workspaceId);
@@ -65,6 +65,7 @@ class BatchTraceabilityProductionBatchTraceRecorderTest {
         List.of(new ProductionBatchFeedstockTraceSource(
             sourceId,
             sourceStateId,
+            remainingSourceStateId,
             ProductionSourceDisplayName.of("Late juice"),
             VolumeValue.ofLiters("250"),
             VolumeValue.ofLiters("100"),
@@ -76,24 +77,25 @@ class BatchTraceabilityProductionBatchTraceRecorderTest {
         "accepted input"
     );
 
-    final var transition = transitionUseCase.transition;
-    assertThat(transition)
+    final var traceStep = appendUseCase.traceStep;
+    assertThat(traceStep)
         .isNotNull();
-    assertThat(transition.traceStep())
+    assertThat(traceStep)
         .returns(BatchTraceStepType.PRODUCTION_BATCH_CREATED, BatchTraceStep::stepType)
         .returns(occurredAt, BatchTraceStep::occurredAt)
         .returns("accepted input", BatchTraceStep::note)
         .satisfies(step -> assertThat(step.performedBy().id())
             .isEqualTo(ACTOR_USER_ID.value().toString()));
 
-    final var sourceInput = transition.traceStep().inputs().getFirst();
-    final var sourceOutput = outputOfType(transition, BatchTraceSubjectType.FEEDSTOCK_BATCH);
-    final var productionOutput = outputOfType(transition, BatchTraceSubjectType.PRODUCTION_BATCH);
+    final var sourceInput = traceStep.inputs().getFirst();
+    final var sourceOutput = outputOfType(traceStep, BatchTraceSubjectType.FEEDSTOCK_BATCH);
+    final var productionOutput = outputOfType(traceStep, BatchTraceSubjectType.PRODUCTION_BATCH);
     assertThat(sourceInput)
-        .returns(sourceStateId, BatchTraceStepSubject::traceStateId)
+        .returns(sourceStateId, BatchTraceStepSubject::materialStateId)
         .satisfies(input -> assertThat(input.snapshot().volume().liters())
             .isEqualByComparingTo("250"));
     assertThat(sourceOutput)
+        .returns(remainingSourceStateId, BatchTraceStepSubject::materialStateId)
         .satisfies(output -> assertThat(output.snapshot().volume().liters())
             .isEqualByComparingTo("150"))
         .satisfies(output -> assertThat(output.snapshot().profile()
@@ -101,28 +103,43 @@ class BatchTraceabilityProductionBatchTraceRecorderTest {
             .get()
             .returns(new BigDecimal("180"), AxisValue::value));
     assertThat(productionOutput)
+        .returns(productionBatch.currentMaterialStateId(), BatchTraceStepSubject::materialStateId)
         .satisfies(output -> assertThat(output.snapshot().volume().liters())
             .isEqualByComparingTo("100"))
         .satisfies(output -> assertThat(output.snapshot().profile().valueOf(ChemicalAxis.SUGAR))
             .get()
             .returns(AxisValueKind.CALCULATED, AxisValue::valueKind));
 
-    assertThat(transition.advances()).singleElement()
-        .satisfies(advance -> assertThat(advance)
-            .returns(sourceStateId, MaterialStateAdvance::expectedStateId)
-            .returns(sourceOutput.traceStateId(), MaterialStateAdvance::nextStateId));
-    assertThat(transition.initializations()).singleElement()
-        .satisfies(initialization -> assertThat(initialization)
-            .returns(productionOutput.traceStateId(), MaterialStateInitialization::initialStateId)
-            .satisfies(created -> assertThat(created.subject().id())
-                .isEqualTo(productionBatch.batchId().value())));
+  }
+
+  @Test
+  void rejectsTraceSourceWithoutMaterialStateTransition() {
+    final var batchId = FeedstockBatchId.newId();
+    final var materialStateId = MaterialStateId.newId();
+    final var availableBefore = VolumeValue.ofLiters("250");
+    final var consumed = VolumeValue.ofLiters("100");
+    final var remaining = VolumeValue.ofLiters("150");
+
+    assertThatThrownBy(() -> new ProductionBatchFeedstockTraceSource(
+        batchId,
+        materialStateId,
+        materialStateId,
+        null,
+        availableBefore,
+        consumed,
+        remaining,
+        null,
+        null
+    ))
+        .isInstanceOf(ApplicationValidationException.class)
+        .hasMessage("production trace source must describe a material state transition");
   }
 
   private static @NonNull BatchTraceStepSubject outputOfType(
-      @NonNull MaterialStatesTransition transition,
+      @NonNull BatchTraceStep traceStep,
       @NonNull BatchTraceSubjectType subjectType
   ) {
-    return transition.traceStep().outputs().stream()
+    return traceStep.outputs().stream()
         .filter(output -> output.subject().type() == subjectType)
         .findFirst()
         .orElseThrow();
@@ -177,13 +194,13 @@ class BatchTraceabilityProductionBatchTraceRecorderTest {
     );
   }
 
-  private static final class CapturingTransitionUseCase implements TransitionMaterialStatesUseCase {
+  private static final class CapturingAppendUseCase implements AppendBatchTraceStepUseCase {
 
-    private MaterialStatesTransition transition;
+    private BatchTraceStep traceStep;
 
     @Override
-    public void transition(@NonNull MaterialStatesTransition materialStatesTransition) {
-      transition = materialStatesTransition;
+    public void append(@NonNull BatchTraceStep traceStep) {
+      this.traceStep = traceStep;
     }
   }
 }

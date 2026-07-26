@@ -62,6 +62,7 @@ class JdbcProductionBatchPersistenceDataJdbcTest {
         BatchLifecycle.ACTIVE,
         AlcoholicFermentationState.NOT_STARTED,
         saved.aggregate().currentVolume(),
+        saved.aggregate().currentMaterialStateId(),
         saved.aggregate().initialProfileSnapshot(),
         "Updated note"
     );
@@ -116,6 +117,7 @@ class JdbcProductionBatchPersistenceDataJdbcTest {
         batch.lifecycle(),
         batch.alcoholicFermentationState(),
         batch.currentVolume(),
+        batch.currentMaterialStateId(),
         batch.initialProfileSnapshot(),
         batch.note()
     );

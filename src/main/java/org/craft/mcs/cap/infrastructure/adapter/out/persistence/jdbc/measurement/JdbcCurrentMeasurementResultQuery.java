@@ -4,18 +4,18 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.measurement.application.model.CurrentMeasurementResultView;
 import org.craft.mcs.cap.core.measurement.application.port.out.CurrentMeasurementResultQuery;
-import org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementRecordId;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetId;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSubjectReference;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSubjectType;
-import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
+import org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic;
 import org.jspecify.annotations.NonNull;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -29,30 +29,32 @@ import static java.util.Objects.requireNonNull;
 @RequiredArgsConstructor
 class JdbcCurrentMeasurementResultQuery implements CurrentMeasurementResultQuery {
 
-  private static final String FIND_BY_SUBJECTS = """
-      WITH RECURSIVE state_lineage AS (
-          SELECT current_state.subject_type,
-                 current_state.subject_id,
-                 current_state.current_state_id,
-                 current_state.current_state_id AS material_state_id,
+  private static final String FIND_BY_STATES = """
+      WITH RECURSIVE requested_states(subject_id, current_state_id) AS (
+          VALUES %s
+      ),
+      state_lineage AS (
+          SELECT CAST(:subjectType AS VARCHAR) AS subject_type,
+                 requested_state.subject_id,
+                 requested_state.current_state_id,
+                 requested_state.current_state_id AS material_state_id,
                  0 AS state_depth,
-                 ARRAY[current_state.current_state_id] AS visited_states
-            FROM batch_trace_current_states current_state
-           WHERE current_state.workspace_id = :workspaceId
-             AND current_state.subject_type = :subjectType
-             AND current_state.subject_id IN (:subjectIds)
+                 ARRAY[requested_state.current_state_id] AS visited_states,
+                 ARRAY[]::VARCHAR[] AS invalidated_characteristics
+            FROM requested_states requested_state
 
           UNION ALL
 
           SELECT lineage.subject_type,
                  lineage.subject_id,
                  lineage.current_state_id,
-                 input_state.trace_state_id,
+                 input_state.material_state_id,
                  lineage.state_depth + 1,
-                 lineage.visited_states || input_state.trace_state_id
+                 lineage.visited_states || input_state.material_state_id,
+                 lineage.invalidated_characteristics || output_state.invalidated_characteristics
             FROM state_lineage lineage
             JOIN batch_trace_step_subjects output_state
-              ON output_state.trace_state_id = lineage.material_state_id
+              ON output_state.material_state_id = lineage.material_state_id
              AND output_state.subject_role = 'OUTPUT'
              AND output_state.subject_type = lineage.subject_type
              AND output_state.subject_id = lineage.subject_id
@@ -61,16 +63,21 @@ class JdbcCurrentMeasurementResultQuery implements CurrentMeasurementResultQuery
              AND input_state.subject_role = 'INPUT'
              AND input_state.subject_type = lineage.subject_type
              AND input_state.subject_id = lineage.subject_id
-           WHERE NOT input_state.trace_state_id = ANY(lineage.visited_states)
+           WHERE NOT input_state.material_state_id = ANY(lineage.visited_states)
       ),
       distinct_lineage AS (
           SELECT subject_type,
                  subject_id,
                  current_state_id,
                  material_state_id,
-                 MIN(state_depth) AS state_depth
+                 MIN(state_depth) AS state_depth,
+                 invalidated_characteristics
             FROM state_lineage
-           GROUP BY subject_type, subject_id, current_state_id, material_state_id
+           GROUP BY subject_type,
+                    subject_id,
+                    current_state_id,
+                    material_state_id,
+                    invalidated_characteristics
       ),
       ranked_results AS (
           SELECT measurement_set.subject_type,
@@ -107,9 +114,12 @@ class JdbcCurrentMeasurementResultQuery implements CurrentMeasurementResultQuery
             JOIN measurement_set_revisions revision
               ON revision.revision_id = measurement_set.current_revision_id
              AND revision.material_state_id = lineage.material_state_id
+            JOIN measurement_revision_records revision_record
+              ON revision_record.revision_id = revision.revision_id
             JOIN measurement_records record
-              ON record.revision_id = revision.revision_id
+              ON record.record_id = revision_record.record_id
              AND record.role = 'RESULT'
+             AND NOT record.characteristic = ANY(lineage.invalidated_characteristics)
       )
       SELECT subject_type,
              subject_id,
@@ -136,24 +146,23 @@ class JdbcCurrentMeasurementResultQuery implements CurrentMeasurementResultQuery
   private final @NonNull NamedParameterJdbcTemplate jdbcTemplate;
 
   @Override
-  public @NonNull List<@NonNull CurrentMeasurementResultView> findBySubjects(
+  public @NonNull List<@NonNull CurrentMeasurementResultView> findByStates(
       @NonNull WorkspaceId workspaceId,
-      @NonNull Set<@NonNull MeasurementSubjectReference> subjects
+      @NonNull Map<@NonNull MeasurementSubjectReference, @NonNull MaterialStateId> currentStates
   ) {
     requireNonNull(workspaceId, "measurement workspace id cannot be null");
-    requireNonNull(subjects, "measurement subjects cannot be null");
-    if (subjects.isEmpty()) {
+    requireNonNull(currentStates, "current measurement states cannot be null");
+    if (currentStates.isEmpty()) {
       return List.of();
     }
 
     final var results = new ArrayList<CurrentMeasurementResultView>();
     for (final var subjectType : MeasurementSubjectType.values()) {
-      final var subjectIds = subjects.stream()
-          .filter(subject -> subject.type() == subjectType)
-          .map(MeasurementSubjectReference::id)
+      final var states = currentStates.entrySet().stream()
+          .filter(entry -> entry.getKey().type() == subjectType)
           .toList();
-      if (!subjectIds.isEmpty()) {
-        results.addAll(findBySubjectType(workspaceId, subjectType, subjectIds));
+      if (!states.isEmpty()) {
+        results.addAll(findBySubjectType(workspaceId, subjectType, states));
       }
     }
     return List.copyOf(results);
@@ -162,14 +171,26 @@ class JdbcCurrentMeasurementResultQuery implements CurrentMeasurementResultQuery
   private @NonNull List<@NonNull CurrentMeasurementResultView> findBySubjectType(
       @NonNull WorkspaceId workspaceId,
       @NonNull MeasurementSubjectType subjectType,
-      @NonNull List<@NonNull UUID> subjectIds
+      @NonNull List<Map.Entry<@NonNull MeasurementSubjectReference, @NonNull MaterialStateId>> states
   ) {
+    final var parameters = new MapSqlParameterSource()
+        .addValue("workspaceId", workspaceId.value())
+        .addValue("subjectType", subjectType.name());
+    final var requestedStates = new ArrayList<String>();
+    for (var index = 0; index < states.size(); index++) {
+      final var state = states.get(index);
+      final var subjectParameter = "subjectId" + index;
+      final var stateParameter = "stateId" + index;
+      requestedStates.add(
+          "(CAST(:" + subjectParameter + " AS UUID), CAST(:" + stateParameter + " AS UUID))"
+      );
+      parameters
+          .addValue(subjectParameter, state.getKey().id())
+          .addValue(stateParameter, state.getValue().value());
+    }
     return jdbcTemplate.query(
-        FIND_BY_SUBJECTS,
-        new MapSqlParameterSource()
-            .addValue("workspaceId", workspaceId.value())
-            .addValue("subjectType", subjectType.name())
-            .addValue("subjectIds", subjectIds),
+        FIND_BY_STATES.formatted(String.join(", ", requestedStates)),
+        parameters,
         JdbcCurrentMeasurementResultQuery::mapResult
     );
   }

@@ -10,6 +10,8 @@ import org.jspecify.annotations.NonNull;
 public record MeasurementSubjectRequest(
     @Schema(
         description = "Supported aggregate type of the measured subject.",
+        implementation = MeasurementSubjectType.class,
+        example = "FEEDSTOCK_BATCH",
         requiredMode = Schema.RequiredMode.REQUIRED
     )
     @NonNull MeasurementSubjectType type,

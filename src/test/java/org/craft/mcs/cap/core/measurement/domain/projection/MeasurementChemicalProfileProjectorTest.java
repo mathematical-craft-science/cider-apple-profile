@@ -21,12 +21,18 @@ import static org.craft.mcs.cap.shared.testing.MeasurementTestValues.value;
 class MeasurementChemicalProfileProjectorTest {
 
   @Test
-  void projectsPointAndCanonicalIntervalWithoutPersistingAMidpoint() {
+  void projectsCanonicalPointValues() {
     final Map<MeasurementCharacteristic, CharacteristicValue<MeasuredValue>> values = Map.of(
         MeasurementCharacteristic.SPECIFIC_GRAVITY,
         point(MeasurementCharacteristic.SPECIFIC_GRAVITY, "1.052"),
         MeasurementCharacteristic.TITRATABLE_ACIDITY,
-        interval(MeasurementCharacteristic.TITRATABLE_ACIDITY, "5.5", "6.5")
+        point(MeasurementCharacteristic.TITRATABLE_ACIDITY, "6.0"),
+        MeasurementCharacteristic.PH,
+        point(MeasurementCharacteristic.PH, "3.40"),
+        MeasurementCharacteristic.TANNIN,
+        point(MeasurementCharacteristic.TANNIN, "1200"),
+        MeasurementCharacteristic.YAN,
+        point(MeasurementCharacteristic.YAN, "180")
     );
     final var profile = MeasurementChemicalProfileProjector.project(values).orElseThrow();
 
@@ -34,9 +40,45 @@ class MeasurementChemicalProfileProjectorTest {
         .satisfies(value -> assertThat(value.sugar())
             .containsInstanceOf(PointCharacteristicValue.class))
         .satisfies(value -> assertThat(value.titratableAcidity().orElseThrow())
-            .isInstanceOf(IntervalCharacteristicValue.class));
+            .isInstanceOf(PointCharacteristicValue.class))
+        .satisfies(value -> assertThat(value.ph())
+            .containsInstanceOf(PointCharacteristicValue.class))
+        .satisfies(value -> assertThat(value.tannin())
+            .containsInstanceOf(PointCharacteristicValue.class))
+        .satisfies(value -> assertThat(value.yeastAssimilableNitrogen())
+            .containsInstanceOf(PointCharacteristicValue.class));
     assertThat(new ChemicalProfileAxisExtractor().extract(profile).requireValueOf(ChemicalAxis.ACIDITY).value())
         .isEqualByComparingTo("6.0");
+  }
+
+  @Test
+  void projectsIntervalsForEveryChemicalCharacteristic() {
+    final Map<MeasurementCharacteristic, CharacteristicValue<MeasuredValue>> values = Map.of(
+        MeasurementCharacteristic.SPECIFIC_GRAVITY,
+        interval(MeasurementCharacteristic.SPECIFIC_GRAVITY, "1.050", "1.054"),
+        MeasurementCharacteristic.TITRATABLE_ACIDITY,
+        interval(MeasurementCharacteristic.TITRATABLE_ACIDITY, "5.5", "6.5"),
+        MeasurementCharacteristic.PH,
+        interval(MeasurementCharacteristic.PH, "3.30", "3.50"),
+        MeasurementCharacteristic.TANNIN,
+        interval(MeasurementCharacteristic.TANNIN, "1000", "1400"),
+        MeasurementCharacteristic.YAN,
+        interval(MeasurementCharacteristic.YAN, "160", "200")
+    );
+
+    final var profile = MeasurementChemicalProfileProjector.project(values).orElseThrow();
+
+    assertThat(profile)
+        .satisfies(value -> assertThat(value.sugar())
+            .containsInstanceOf(IntervalCharacteristicValue.class))
+        .satisfies(value -> assertThat(value.titratableAcidity())
+            .containsInstanceOf(IntervalCharacteristicValue.class))
+        .satisfies(value -> assertThat(value.ph())
+            .containsInstanceOf(IntervalCharacteristicValue.class))
+        .satisfies(value -> assertThat(value.tannin())
+            .containsInstanceOf(IntervalCharacteristicValue.class))
+        .satisfies(value -> assertThat(value.yeastAssimilableNitrogen())
+            .containsInstanceOf(IntervalCharacteristicValue.class));
   }
 
   @Test

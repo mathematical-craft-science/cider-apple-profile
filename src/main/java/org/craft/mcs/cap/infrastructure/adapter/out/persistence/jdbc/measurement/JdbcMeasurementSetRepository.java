@@ -83,23 +83,24 @@ class JdbcMeasurementSetRepository implements MeasurementSetRepository {
       """;
 
   private static final String FIND_RECORDS = """
-      SELECT record_id,
-             characteristic,
-             role,
-             value_kind,
-             measured_at,
-             source_type,
-             source_name,
-             measurement_method,
-             source_reference,
-             confidence,
-             point_value,
-             lower_value,
-             upper_value,
-             derivation_method
-        FROM measurement_records
-       WHERE revision_id = :revisionId
-       ORDER BY characteristic, role, measured_at, record_id
+      SELECT record.record_id,
+             record.characteristic,
+             record.role,
+             record.value_kind,
+             record.measured_at,
+             record.source_type,
+             record.source_name,
+             record.measurement_method,
+             record.source_reference,
+             record.confidence,
+             record.point_value,
+             record.lower_value,
+             record.upper_value,
+             record.derivation_method
+        FROM measurement_revision_records revision_record
+        JOIN measurement_records record ON record.record_id = revision_record.record_id
+       WHERE revision_record.revision_id = :revisionId
+       ORDER BY record.characteristic, record.role, record.measured_at, record.record_id
       """;
 
   private final @NonNull NamedParameterJdbcTemplate jdbcTemplate;
@@ -251,19 +252,18 @@ class JdbcMeasurementSetRepository implements MeasurementSetRepository {
             .addValue("revisionCreatedAt", timestamp(revision.createdAt()))
             .addValue("actorReference", ActorReferenceJdbcCodec.encode(revision.actor()))
     );
-    revision.records().forEach(measurementRecord -> insertRecord(revision.revisionId(), measurementRecord));
+    revision.records().forEach(measurementRecord -> {
+      insertRecord(measurementRecord);
+      associateRecord(revision.revisionId(), measurementRecord);
+    });
     revision.records().stream()
         .filter(measurementRecord -> !measurementRecord.derivationInputs().isEmpty())
-        .forEach(measurementRecord -> insertDerivationInputs(revision.revisionId(), measurementRecord));
+        .forEach(this::insertDerivationInputs);
   }
 
-  private void insertRecord(
-      @NonNull MeasurementSetRevisionId revisionId,
-      @NonNull MeasurementRecord measurementRecord
-  ) {
+  private void insertRecord(@NonNull MeasurementRecord measurementRecord) {
     final var parameters = new MapSqlParameterSource()
         .addValue("recordId", measurementRecord.recordId().value())
-        .addValue("revisionId", revisionId.value())
         .addValue("characteristic", measurementRecord.characteristic().name())
         .addValue("role", measurementRecord.role().name())
         .addValue("valueKind", measurementRecord.valueKind().name())
@@ -279,7 +279,6 @@ class JdbcMeasurementSetRepository implements MeasurementSetRepository {
         """
             INSERT INTO measurement_records (
                 record_id,
-                revision_id,
                 characteristic,
                 role,
                 value_kind,
@@ -295,7 +294,6 @@ class JdbcMeasurementSetRepository implements MeasurementSetRepository {
                 derivation_method
             ) VALUES (
                 :recordId,
-                :revisionId,
                 :characteristic,
                 :role,
                 :valueKind,
@@ -310,35 +308,59 @@ class JdbcMeasurementSetRepository implements MeasurementSetRepository {
                 :upperValue,
                 :derivationMethod
             )
+            ON CONFLICT (record_id) DO NOTHING
             """,
         parameters
     );
   }
 
-  private void insertDerivationInputs(
+  private void associateRecord(
       @NonNull MeasurementSetRevisionId revisionId,
+      @NonNull MeasurementRecord measurementRecord
+  ) {
+    jdbcTemplate.update(
+        """
+            INSERT INTO measurement_revision_records (
+                revision_id,
+                record_id,
+                characteristic,
+                role
+            ) VALUES (
+                :revisionId,
+                :recordId,
+                :characteristic,
+                :role
+            )
+            """,
+        new MapSqlParameterSource()
+            .addValue("revisionId", revisionId.value())
+            .addValue("recordId", measurementRecord.recordId().value())
+            .addValue("characteristic", measurementRecord.characteristic().name())
+            .addValue("role", measurementRecord.role().name())
+    );
+  }
+
+  private void insertDerivationInputs(
       @NonNull MeasurementRecord result
   ) {
     result.derivationInputs().forEach(inputId -> jdbcTemplate.update(
         """
             INSERT INTO measurement_derivation_inputs (
-                revision_id,
                 characteristic,
                 derived_record_id,
                 derived_role,
                 input_record_id,
                 input_role
             ) VALUES (
-                :revisionId,
                 :characteristic,
                 :derivedRecordId,
                 'RESULT',
                 :inputRecordId,
                 'OBSERVATION'
             )
+            ON CONFLICT (derived_record_id, input_record_id) DO NOTHING
             """,
         new MapSqlParameterSource()
-            .addValue("revisionId", revisionId.value())
             .addValue("characteristic", result.characteristic().name())
             .addValue("derivedRecordId", result.recordId().value())
             .addValue("inputRecordId", inputId.value())
@@ -394,7 +416,9 @@ class JdbcMeasurementSetRepository implements MeasurementSetRepository {
         """
             SELECT d.derived_record_id, d.input_record_id
               FROM measurement_derivation_inputs d
-             WHERE d.revision_id = :revisionId
+              JOIN measurement_revision_records revision_record
+                ON revision_record.record_id = d.derived_record_id
+             WHERE revision_record.revision_id = :revisionId
              ORDER BY d.derived_record_id, d.input_record_id
         """,
         new MapSqlParameterSource("revisionId", revisionId.value()),

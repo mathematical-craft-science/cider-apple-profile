@@ -26,8 +26,8 @@ public interface MeasurementSetApi {
 
   @Operation(
       summary = "Create a logical measurement set",
-      description = "Records evidence against the expected current material state without changing that state. "
-          + "The expected identifier protects the measurement from concurrent material lifecycle operations.",
+      description = "Records evidence against the immutable material state that was sampled without changing "
+          + "the subject's current state. The observed state may be current or historical.",
       requestBody = @RequestBody(
           required = true,
           content = @Content(
@@ -45,7 +45,15 @@ public interface MeasurementSetApi {
   )
   @ApiResponse(
       responseCode = "409",
-      description = "The expected current material state is stale.",
+      description = "The caller-assigned measurement-set identifier already exists.",
+      content = @Content(
+          mediaType = APPLICATION_JSON_VALUE,
+          schema = @Schema(implementation = ProblemDetail.class)
+      )
+  )
+  @ApiResponse(
+      responseCode = "404",
+      description = "The measured subject or observed material state was not found.",
       content = @Content(
           mediaType = APPLICATION_JSON_VALUE,
           schema = @Schema(implementation = ProblemDetail.class)

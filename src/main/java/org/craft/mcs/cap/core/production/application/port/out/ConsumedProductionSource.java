@@ -17,8 +17,8 @@ import static java.util.Objects.requireNonNull;
  * Immutable snapshot of material consumed from a production source.
  *
  * <p>The production use case records this source fact without depending on the source context's
- * aggregate or persistence model. {@code materialStateId} is the source state before consumption;
- * {@code remaining} belongs to the next state recorded by production traceability.
+ * aggregate or persistence model. {@code sourceStateId} describes the source before consumption;
+ * {@code remainingSourceStateId} describes the source material that remains afterwards.
  */
 public record ConsumedProductionSource(
     @NonNull ProductionSourceReference reference,
@@ -28,7 +28,8 @@ public record ConsumedProductionSource(
     @NonNull VolumeValue remaining,
     @Nullable ChemicalProfileAxes profile,
     @Nullable ConfidenceLevel confidence,
-    @NonNull MaterialStateId materialStateId,
+    @NonNull MaterialStateId sourceStateId,
+    @NonNull MaterialStateId remainingSourceStateId,
     @NonNull ProductionSourceEvidenceReference evidenceReference
 ) {
 
@@ -37,8 +38,17 @@ public record ConsumedProductionSource(
     requireNonNull(availableBefore, "production source volume before consumption cannot be null");
     requireNonNull(consumed, "consumed production source volume cannot be null");
     requireNonNull(remaining, "remaining production source volume cannot be null");
-    requireNonNull(materialStateId, "consumed production source material state id cannot be null");
+    requireNonNull(sourceStateId, "production source material state id cannot be null");
+    requireNonNull(remainingSourceStateId, "remaining production source material state id cannot be null");
     requireNonNull(evidenceReference, "production source evidence reference cannot be null");
+    if (consumed.isZero()) {
+      throw new ApplicationValidationException("consumed production source volume must be positive");
+    }
+    if (sourceStateId.equals(remainingSourceStateId)) {
+      throw new ApplicationValidationException(
+          "production source consumption must produce a new material state"
+      );
+    }
     if (availableBefore.liters().compareTo(consumed.liters().add(remaining.liters())) != 0) {
       throw new ApplicationValidationException(
           "production source volume before consumption must equal consumed plus remaining volume"

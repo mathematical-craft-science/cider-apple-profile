@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchLifecycle;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
+import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSource;
@@ -171,12 +172,15 @@ class FeedstockBatchTest {
       BatchLifecycle expectedLifecycle
   ) {
     final var batch = activeBatch(VolumeValue.ofLiters(initialVolume));
+    final var stateBeforeConsumption = batch.currentMaterialStateId();
 
     final var consumed = batch.consumeAvailableVolume(VolumeValue.ofLiters(consumedVolume));
 
     assertThat(consumed)
         .isSameAs(batch)
         .returns(expectedLifecycle, FeedstockBatch::lifecycle)
+        .satisfies(updated -> assertThat(updated.currentMaterialStateId())
+            .isNotEqualTo(stateBeforeConsumption))
         .satisfies(updated -> assertThat(updated.availableVolume().liters())
             .isEqualByComparingTo(expectedVolume));
   }
@@ -194,6 +198,7 @@ class FeedstockBatchTest {
         null,
         lifecycle,
         VolumeValue.ofLiters("0"),
+        MaterialStateId.newId(),
         null,
         null
     );
@@ -201,6 +206,16 @@ class FeedstockBatchTest {
     assertThatThrownBy(() -> batch.consumeAvailableVolume(VolumeValue.ofLiters("1")))
         .isInstanceOf(DomainConflictException.class)
         .hasMessage("cannot consume feedstock batch when lifecycle is " + lifecycle);
+  }
+
+  @Test
+  void rejectsConsumingMaterialFromDeletedBatch() {
+    final var batch = activeBatch(VolumeValue.ofLiters("250"))
+        .delete(feedstockMeasurementInstant());
+
+    assertThatThrownBy(() -> batch.consumeAvailableVolume(VolumeValue.ofLiters("1")))
+        .isInstanceOf(DomainConflictException.class)
+        .hasMessage("cannot consume deleted feedstock batch");
   }
 
   @Test
@@ -250,6 +265,7 @@ class FeedstockBatchTest {
         null,
         lifecycle,
         availableVolume,
+        MaterialStateId.newId(),
         null,
         null
     );

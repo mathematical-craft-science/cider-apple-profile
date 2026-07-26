@@ -4,8 +4,6 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 import org.craft.mcs.cap.core.profileanalysis.abv.domain.FixedFinalGravityPredictionStrategy;
 import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPredictor;
 import org.craft.mcs.cap.core.profileanalysis.abv.domain.StandardGravityDropAbvPredictionStrategy;
@@ -15,7 +13,6 @@ import org.craft.mcs.cap.core.production.application.model.ProductionMeasurement
 import org.craft.mcs.cap.core.production.application.port.in.ListProductionBatchesQuery;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchQueryRepository;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionMeasurementProfileProvider;
-import org.craft.mcs.cap.core.production.application.port.out.ProductionMaterialStateProvider;
 import org.craft.mcs.cap.core.production.application.usecase.ProductionCurrentProfileProjector;
 import org.craft.mcs.cap.core.production.application.usecase.QueryProductionBatchesService;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatchId;
@@ -159,6 +156,7 @@ class QueryProductionBatchesServiceTest {
         BatchLifecycle.ACTIVE,
         AlcoholicFermentationState.NOT_STARTED,
         VolumeValue.ofLiters("120"),
+        MaterialStateId.newId(),
         new ProductionProfileSnapshot(
             SpecificGravityValue.of("1.052"),
             TitratableAcidityValue.of("6.2"),
@@ -174,24 +172,13 @@ class QueryProductionBatchesServiceTest {
       ProductionAccessControl accessControl,
       ProductionMeasurementProfileProvider measurementProvider
   ) {
-    final var materialStateId = MaterialStateId.newId();
-    final var materialStateProvider = mock(ProductionMaterialStateProvider.class);
-    when(materialStateProvider.currentStateOf(any())).thenReturn(materialStateId);
-    when(materialStateProvider.currentStatesOf(any(), any())).thenAnswer(invocation -> {
-      final Set<ProductionBatchId> batchIds = invocation.getArgument(1);
-      return batchIds.stream().collect(Collectors.toUnmodifiableMap(
-          batchId -> batchId,
-          batchId -> materialStateId
-      ));
-    });
     return new QueryProductionBatchesService(
         repository,
         accessControl,
         measurementProvider,
         new ProductionCurrentProfileProjector(),
         new ChemicalProfileAxisExtractor(),
-        POTENTIAL_ABV_PREDICTOR,
-        materialStateProvider
+        POTENTIAL_ABV_PREDICTOR
     );
   }
 }

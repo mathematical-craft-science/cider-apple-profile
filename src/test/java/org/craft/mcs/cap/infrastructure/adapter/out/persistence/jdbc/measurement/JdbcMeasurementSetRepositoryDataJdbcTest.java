@@ -4,7 +4,9 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
+import java.util.UUID;
+import org.craft.mcs.cap.core.traceability.application.port.in.GetMaterialStateUseCase;
 import org.craft.mcs.cap.core.measurement.application.MeasurementSetAlreadyExistsException;
 import org.craft.mcs.cap.core.measurement.application.model.CurrentMeasurementResultView;
 import org.craft.mcs.cap.core.measurement.application.model.MeasurementRecordView;
@@ -14,6 +16,7 @@ import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementSetRep
 import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementSetViewQuery;
 import org.craft.mcs.cap.shared.kernel.characteristic.IntervalCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic;
+import org.craft.mcs.cap.core.measurement.domain.model.MeasurementCorrectionReason;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementDerivationMethod;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementMethod;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementProvenance;
@@ -42,12 +45,14 @@ import org.craft.mcs.cap.shared.kernel.measurement.MeasuredValue;
 import org.craft.mcs.cap.shared.kernel.measurement.unit.BeverageUnits;
 import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.craft.mcs.cap.shared.testing.jdbc.PostgresDataJdbcTestConfiguration;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jdbc.test.autoconfigure.DataJdbcTest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -155,7 +160,10 @@ class JdbcMeasurementSetRepositoryDataJdbcTest {
                         .isEqualByComparingTo("1.051"))
             ));
 
-    assertThat(currentResultQuery.findBySubjects(workspaceId, Set.of(subject)))
+    assertThat(currentResultQuery.findByStates(
+        workspaceId,
+        Map.of(subject, set.currentRevision().materialStateId())
+    ))
         .singleElement()
         .returns(result.recordId(), CurrentMeasurementResultView::recordId)
         .returns(MeasurementCharacteristic.SPECIFIC_GRAVITY, CurrentMeasurementResultView::characteristic)
@@ -176,34 +184,238 @@ class JdbcMeasurementSetRepositoryDataJdbcTest {
                 )));
   }
 
+  @Test
+  void reusesImmutableDerivedEvidenceAcrossCorrections() {
+    final var subject = new MeasurementSubjectReference(
+        MeasurementSubjectType.FEEDSTOCK_BATCH,
+        newUuid()
+    );
+    final var firstObservation = observation("1.050", "2026-07-20T09:58:00Z");
+    final var secondObservation = observation("1.052", "2026-07-20T10:00:00Z");
+    final var result = result(firstObservation, secondObservation);
+    final var initialRevision = revision(
+        1,
+        List.of(firstObservation, secondObservation, result)
+    );
+    final var set = MeasurementSet.create(
+        MeasurementSetId.newId(),
+        workspaceId,
+        subject,
+        initialRevision
+    );
+    final var created = repository.create(set);
+    final var correctedRevision = new MeasurementSetRevision(
+        MeasurementSetRevisionId.newId(),
+        MeasurementSetRevisionNumber.of(2),
+        initialRevision.materialStateId(),
+        initialRevision.name(),
+        "Corrected note",
+        MeasurementCorrectionReason.of("Clarified the laboratory note"),
+        RECORDED_AT.plusSeconds(60),
+        ActorReference.accountUser(newUuid()),
+        initialRevision.records()
+    );
+
+    set.correct(correctedRevision);
+    repository.appendRevision(created.withAggregate(set));
+
+    assertThat(repository.findVersionedById(set.measurementSetId()).orElseThrow())
+        .returns(1L, restored -> restored.revision().value())
+        .extracting(restored -> restored.aggregate().currentRevision())
+        .returns(correctedRevision.revisionId(), MeasurementSetRevision::revisionId)
+        .satisfies(revision -> assertThat(revision.records())
+            .extracting(MeasurementRecord::recordId)
+            .containsExactlyInAnyOrder(
+                firstObservation.recordId(),
+                secondObservation.recordId(),
+                result.recordId()
+            ))
+        .satisfies(revision -> assertThat(revision.records())
+            .filteredOn(record -> record.role() == MeasurementRecordRole.RESULT)
+            .singleElement()
+            .returns(
+                List.of(firstObservation.recordId(), secondObservation.recordId()),
+                MeasurementRecord::derivationInputs
+            ));
+  }
+
   private void initializeCurrentState(
+      MeasurementSubjectReference subject,
+      MaterialStateId materialStateId
+  ) {
+    switch (subject.type()) {
+      case FEEDSTOCK_BATCH -> insertFeedstockBatch(subject, materialStateId);
+      case PRODUCTION_BATCH -> insertProductionBatch(subject, materialStateId);
+    }
+  }
+
+  private void insertFeedstockBatch(
       MeasurementSubjectReference subject,
       MaterialStateId materialStateId
   ) {
     jdbcTemplate.update(
         """
-            INSERT INTO batch_trace_current_states (
+            INSERT INTO feedstock_batches (
+                batch_id,
                 workspace_id,
-                subject_type,
-                subject_id,
-                current_state_id,
+                name,
+                vessel,
+                type,
+                season_starts_on,
+                season_ends_on,
+                lifecycle,
+                available_volume_liters,
+                current_material_state_id,
                 version,
+                created_at,
                 updated_at
             ) VALUES (
+                :batchId,
                 :workspaceId,
-                :subjectType,
-                :subjectId,
-                :currentStateId,
+                'Measurement feedstock',
+                'Test vessel',
+                'JUICE',
+                DATE '2026-01-01',
+                DATE '2026-12-31',
+                'ACTIVE',
+                100,
+                :materialStateId,
                 0,
+                :createdAt,
                 :updatedAt
             )
             """,
+        materialSubjectParameters(subject, materialStateId)
+    );
+  }
+
+  private void insertProductionBatch(
+      MeasurementSubjectReference subject,
+      MaterialStateId materialStateId
+  ) {
+    jdbcTemplate.update(
+        """
+            INSERT INTO production_batches (
+                batch_id,
+                workspace_id,
+                name,
+                vessel,
+                lifecycle,
+                alcoholic_fermentation_state,
+                current_volume_liters,
+                current_material_state_id,
+                initial_sugar_specific_gravity,
+                initial_acidity_g_l_as_malic,
+                version,
+                created_at,
+                updated_at
+            ) VALUES (
+                :batchId,
+                :workspaceId,
+                'Measurement production',
+                'Test vessel',
+                'ACTIVE',
+                'NOT_STARTED',
+                100,
+                :materialStateId,
+                1.050,
+                6.0,
+                0,
+                :createdAt,
+                :updatedAt
+            )
+            """,
+        materialSubjectParameters(subject, materialStateId)
+    );
+  }
+
+  private @NonNull MapSqlParameterSource materialSubjectParameters(
+      @NonNull MeasurementSubjectReference subject,
+      @NonNull MaterialStateId materialStateId
+  ) {
+    final var timestamp = OffsetDateTime.parse("2026-07-20T10:00:00Z");
+    return new MapSqlParameterSource()
+        .addValue("batchId", subject.id())
+        .addValue("workspaceId", workspaceId.value())
+        .addValue("materialStateId", materialStateId.value())
+        .addValue("createdAt", timestamp)
+        .addValue("updatedAt", timestamp);
+  }
+
+  private void insertStateTransition(
+      @NonNull MeasurementSubjectReference subject,
+      @NonNull MaterialStateId inputStateId,
+      @NonNull MaterialStateId outputStateId
+  ) {
+    final var stepId = newUuid();
+    final var occurredAt = OffsetDateTime.parse("2026-07-20T11:00:00Z");
+    jdbcTemplate.update(
+        """
+            INSERT INTO batch_trace_steps (
+                step_id,
+                workspace_id,
+                step_type,
+                occurred_at,
+                performed_by_type,
+                performed_by_id,
+                created_at
+            ) VALUES (
+                :stepId,
+                :workspaceId,
+                'PRODUCTION_BATCH_CREATED',
+                :occurredAt,
+                'SYSTEM',
+                'test',
+                :createdAt
+            )
+            """,
         new MapSqlParameterSource()
+            .addValue("stepId", stepId)
             .addValue("workspaceId", workspaceId.value())
+            .addValue("occurredAt", occurredAt)
+            .addValue("createdAt", occurredAt)
+    );
+    insertStateTransitionSubject(stepId, subject, inputStateId, "INPUT", false);
+    insertStateTransitionSubject(stepId, subject, outputStateId, "OUTPUT", true);
+  }
+
+  private void insertStateTransitionSubject(
+      @NonNull UUID stepId,
+      @NonNull MeasurementSubjectReference subject,
+      @NonNull MaterialStateId stateId,
+      @NonNull String role,
+      boolean invalidatePh
+  ) {
+    jdbcTemplate.update(
+        """
+            INSERT INTO batch_trace_step_subjects (
+                step_id,
+                subject_role,
+                subject_order,
+                material_state_id,
+                subject_type,
+                subject_id,
+                invalidated_characteristics
+            ) VALUES (
+                :stepId,
+                :subjectRole,
+                0,
+                :traceStateId,
+                :subjectType,
+                :subjectId,
+                CASE
+                  WHEN :invalidatePh THEN ARRAY['PH']::VARCHAR[]
+                  ELSE ARRAY[]::VARCHAR[]
+                END
+            )
+            """,
+        new MapSqlParameterSource()
+            .addValue("stepId", stepId)
+            .addValue("subjectRole", role)
+            .addValue("traceStateId", stateId.value())
             .addValue("subjectType", subject.type().name())
             .addValue("subjectId", subject.id())
-            .addValue("currentStateId", materialStateId.value())
-            .addValue("updatedAt", OffsetDateTime.parse("2026-07-20T10:00:00Z"))
+            .addValue("invalidatePh", invalidatePh)
     );
   }
 
@@ -290,7 +502,7 @@ class JdbcMeasurementSetRepositoryDataJdbcTest {
         revision(1, stateId, List.of(ph))
     ));
 
-    assertThat(currentResultQuery.findBySubjects(workspaceId, Set.of(subject)))
+    assertThat(currentResultQuery.findByStates(workspaceId, Map.of(subject, stateId)))
         .extracting(
             CurrentMeasurementResultView::characteristic,
             CurrentMeasurementResultView::recordId,
@@ -300,6 +512,40 @@ class JdbcMeasurementSetRepositoryDataJdbcTest {
             tuple(MeasurementCharacteristic.SPECIFIC_GRAVITY, sugar.recordId(), stateId),
             tuple(MeasurementCharacteristic.PH, ph.recordId(), stateId)
         );
+  }
+
+  @Test
+  void excludesEvidenceInvalidatedByMaterialStateTransition() {
+    final var subject = new MeasurementSubjectReference(
+        MeasurementSubjectType.FEEDSTOCK_BATCH,
+        newUuid()
+    );
+    final var evidenceStateId = MaterialStateId.newId();
+    final var currentStateId = MaterialStateId.newId();
+    final var sugar = directResult(
+        MeasurementCharacteristic.SPECIFIC_GRAVITY,
+        point(MeasurementCharacteristic.SPECIFIC_GRAVITY, "1.052")
+    );
+    final var ph = directResult(
+        MeasurementCharacteristic.PH,
+        point(MeasurementCharacteristic.PH, "3.35")
+    );
+    repository.create(MeasurementSet.create(
+        MeasurementSetId.newId(),
+        workspaceId,
+        subject,
+        revision(1, evidenceStateId, List.of(sugar, ph))
+    ));
+    insertFeedstockBatch(subject, currentStateId);
+    insertStateTransition(subject, evidenceStateId, currentStateId);
+
+    assertThat(currentResultQuery.findByStates(workspaceId, Map.of(subject, currentStateId)))
+        .singleElement()
+        .returns(
+            MeasurementCharacteristic.SPECIFIC_GRAVITY,
+            CurrentMeasurementResultView::characteristic
+        )
+        .returns(evidenceStateId, CurrentMeasurementResultView::evidenceMaterialStateId);
   }
 
   @Test
@@ -358,7 +604,7 @@ class JdbcMeasurementSetRepositoryDataJdbcTest {
     );
     final var created = repository.create(currentSet);
 
-    assertThat(currentResultQuery.findBySubjects(workspaceId, Set.of(subject)))
+    assertThat(currentResultQuery.findByStates(workspaceId, Map.of(subject, previousStateId)))
         .singleElement()
         .returns(currentResult.recordId(), CurrentMeasurementResultView::recordId);
 
@@ -372,7 +618,7 @@ class JdbcMeasurementSetRepositoryDataJdbcTest {
             MeasurementSetView::lifecycle
         )
         .satisfies(view -> assertThat(view.records()).singleElement());
-    assertThat(currentResultQuery.findBySubjects(workspaceId, Set.of(subject)))
+    assertThat(currentResultQuery.findByStates(workspaceId, Map.of(subject, previousStateId)))
         .singleElement()
         .returns(previousResult.recordId(), CurrentMeasurementResultView::recordId)
         .satisfies(result -> assertThat(pointValue(result.value()).asBigDecimal())
@@ -504,7 +750,6 @@ class JdbcMeasurementSetRepositoryDataJdbcTest {
         """
             INSERT INTO measurement_records (
                 record_id,
-                revision_id,
                 characteristic,
                 role,
                 value_kind,
@@ -513,7 +758,6 @@ class JdbcMeasurementSetRepositoryDataJdbcTest {
                 point_value
             ) VALUES (
                 :recordId,
-                :revisionId,
                 'SPECIFIC_GRAVITY',
                 'RESULT',
                 'POINT',
@@ -524,7 +768,6 @@ class JdbcMeasurementSetRepositoryDataJdbcTest {
             """,
         new MapSqlParameterSource()
             .addValue("recordId", newUuid())
-            .addValue("revisionId", revisionId)
             .addValue("measuredAt", OffsetDateTime.parse("2026-07-20T10:00:00Z"))
     ))
         .isInstanceOf(DataIntegrityViolationException.class)
@@ -642,5 +885,11 @@ class JdbcMeasurementSetRepositoryDataJdbcTest {
   @ComponentScan("org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.measurement")
   static class MeasurementJdbcAdaptersTestConfiguration {
 
+    @Bean
+    GetMaterialStateUseCase getMaterialStateUseCase() {
+      return materialStateId -> {
+        throw new UnsupportedOperationException("historical state lookup is outside this persistence test");
+      };
+    }
   }
 }

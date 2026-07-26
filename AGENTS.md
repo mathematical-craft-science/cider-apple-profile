@@ -44,6 +44,8 @@ Act as a senior Java architect and production-grade software engineer for the Ci
 - Strategy classes and abstract-class implementations must have a short comment or Javadoc explaining
   which approach they implement.
 - If a method declaration has more than one parameter, place parameters on separate lines.
+- Prefer method references over equivalent lambda expressions when no additional logic, argument
+  adaptation, or explicit parameter naming is needed.
 - Do not use Java keywords or restricted identifiers such as `record` as variable, parameter,
   lambda-parameter, or field names.
 - Keep project source-code lines at 120 characters or less; wrap long annotations, comments, Javadoc,
@@ -85,7 +87,7 @@ Act as a senior Java architect and production-grade software engineer for the Ci
 - Current important contexts:
   - `core.feedstock`: feedstock batches, measurements, source material state;
   - `core.production`: production batches and production lifecycle;
-  - `core.batchtraceability`: material traceability across feedstock and production;
+  - `core.traceability`: material traceability across feedstock and production;
   - `core.appleprofile`: base apple variety catalog/reference profile;
   - `core.varietyprofile`: regional variety profiles, provenance, contributors, source imports;
   - `core.profileanalysis`: reusable analysis tools such as graph projection, profile targets,

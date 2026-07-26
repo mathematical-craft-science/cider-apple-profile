@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS production_batches
     lifecycle                   VARCHAR(32)              NOT NULL,
     alcoholic_fermentation_state VARCHAR(32)              NOT NULL,
     current_volume_liters       NUMERIC(15, 3)           NOT NULL,
+    current_material_state_id   UUID                     NOT NULL,
 
     initial_sugar_specific_gravity NUMERIC(12, 9)           NOT NULL,
     initial_acidity_g_l_as_malic   NUMERIC(12, 6)           NOT NULL,
@@ -34,6 +35,9 @@ CREATE TABLE IF NOT EXISTS production_batches
 
 CREATE INDEX IF NOT EXISTS idx_production_batches_workspace_id
     ON production_batches (workspace_id);
+
+CREATE UNIQUE INDEX IF NOT EXISTS ux_production_batches_current_material_state
+    ON production_batches (current_material_state_id);
 
 CREATE TABLE IF NOT EXISTS production_batch_candidates
 (

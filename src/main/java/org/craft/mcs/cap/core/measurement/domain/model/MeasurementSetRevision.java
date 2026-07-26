@@ -1,11 +1,14 @@
 package org.craft.mcs.cap.core.measurement.domain.model;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 import org.craft.mcs.cap.core.measurement.domain.calculation.ArithmeticMeanMeasurementDerivation;
 import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
 import org.craft.mcs.cap.shared.kernel.characteristic.CharacteristicValue;
@@ -14,6 +17,7 @@ import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.identity.ActorReference;
 import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.shared.kernel.measurement.MeasuredValue;
+import org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic;
 import org.jmolecules.ddd.annotation.Entity;
 import org.jmolecules.ddd.annotation.Identity;
 import org.jspecify.annotations.NonNull;
@@ -65,27 +69,34 @@ public record MeasurementSetRevision(
   }
 
   private static void validateRecordIdentities(@NonNull List<@NonNull MeasurementRecord> records) {
-    if (records.stream().map(MeasurementRecord::recordId).distinct().count() != records.size()) {
-      throw new DomainRuleViolationException("measurement record ids must be unique within a revision");
+    final Set<MeasurementRecordId> recordIds = new HashSet<>();
+    for (final var measurementRecord : records) {
+      if (!recordIds.add(measurementRecord.recordId())) {
+        throw new DomainRuleViolationException("measurement record ids must be unique within a revision");
+      }
     }
   }
 
   private static void validateResults(@NonNull List<@NonNull MeasurementRecord> records) {
-    final var resultCountByCharacteristic = records.stream()
-        .filter(r -> r.role() == MeasurementRecordRole.RESULT)
-        .collect(Collectors.groupingBy(MeasurementRecord::characteristic, Collectors.counting()));
-
-    if (resultCountByCharacteristic.values().stream().anyMatch(count -> count != 1L)) {
-      throw new DomainRuleViolationException(
-          "measurement revision must contain exactly one result per represented characteristic"
-      );
+    final Map<MeasurementCharacteristic, Integer> resultCountByCharacteristic =
+        new EnumMap<>(MeasurementCharacteristic.class);
+    final Set<MeasurementCharacteristic> representedCharacteristics =
+        EnumSet.noneOf(MeasurementCharacteristic.class);
+    for (final var measurementRecord : records) {
+      representedCharacteristics.add(measurementRecord.characteristic());
+      if (measurementRecord.role() == MeasurementRecordRole.RESULT) {
+        resultCountByCharacteristic.merge(measurementRecord.characteristic(), 1, Integer::sum);
+      }
     }
 
-    final var representedCharacteristics = records.stream()
-        .map(MeasurementRecord::characteristic)
-        .distinct()
-        .count();
-    if (resultCountByCharacteristic.size() != representedCharacteristics) {
+    for (final var resultCount : resultCountByCharacteristic.values()) {
+      if (resultCount != 1) {
+        throw new DomainRuleViolationException(
+            "measurement revision must contain exactly one result per represented characteristic"
+        );
+      }
+    }
+    if (resultCountByCharacteristic.size() != representedCharacteristics.size()) {
       throw new DomainRuleViolationException(
           "each represented measurement characteristic requires one result record"
       );
@@ -93,25 +104,23 @@ public record MeasurementSetRevision(
   }
 
   private static void validateDerivations(@NonNull List<@NonNull MeasurementRecord> records) {
-    final Map<MeasurementRecordId, MeasurementRecord> recordsById = records.stream()
-        .collect(Collectors.toUnmodifiableMap(MeasurementRecord::recordId, Function.identity()));
+    final Map<MeasurementRecordId, MeasurementRecord> recordsById = new HashMap<>();
+    for (final var measurementRecord : records) {
+      recordsById.put(measurementRecord.recordId(), measurementRecord);
+    }
 
     for (final var result : records) {
       if (result.derivationMethod() == null) {
         continue;
       }
-      final var inputs = result.derivationInputs().stream()
-          .map(inputId -> requireCompatibleObservation(result, recordsById.get(inputId)))
-          .toList();
+      final var inputs = new ArrayList<MeasurementRecord>();
+      for (final var inputId : result.derivationInputs()) {
+        inputs.add(requireCompatibleObservation(result, recordsById.get(inputId)));
+      }
       requireEveryObservationParticipates(result, records);
       requireDerivedResultTime(result, inputs);
       final var expectedValue = switch (result.derivationMethod()) {
-        case ARITHMETIC_MEAN -> ArithmeticMeanMeasurementDerivation.derive(
-            inputs.stream()
-                .map(MeasurementRecord::value)
-                .map(MeasurementSetRevision::pointValue)
-                .toList()
-        );
+        case ARITHMETIC_MEAN -> ArithmeticMeanMeasurementDerivation.derive(pointValues(inputs));
       };
       if (!expectedValue.equals(result.value())) {
         throw new DomainRuleViolationException(
@@ -120,10 +129,21 @@ public record MeasurementSetRevision(
       }
     }
 
-    records.stream()
-        .filter(measurementRecord -> measurementRecord.role() == MeasurementRecordRole.RESULT)
-        .filter(result -> result.derivationMethod() == null)
-        .forEach(result -> requireNoUnassociatedObservations(result, records));
+    for (final var result : records) {
+      if (result.role() == MeasurementRecordRole.RESULT && result.derivationMethod() == null) {
+        requireNoUnassociatedObservations(result, records);
+      }
+    }
+  }
+
+  private static @NonNull List<@NonNull MeasuredValue> pointValues(
+      @NonNull List<@NonNull MeasurementRecord> inputs
+  ) {
+    final var values = new ArrayList<MeasuredValue>(inputs.size());
+    for (final var input : inputs) {
+      values.add(pointValue(input.value()));
+    }
+    return List.copyOf(values);
   }
 
   private static void requireEveryObservationParticipates(
@@ -153,21 +173,26 @@ public record MeasurementSetRevision(
       @NonNull MeasurementRecord result,
       @NonNull List<@NonNull MeasurementRecord> records
   ) {
-    return records.stream()
-        .filter(measurementRecord -> measurementRecord.role() == MeasurementRecordRole.OBSERVATION)
-        .filter(measurementRecord -> measurementRecord.characteristic() == result.characteristic())
-        .map(MeasurementRecord::recordId)
-        .collect(Collectors.toUnmodifiableSet());
+    final Set<MeasurementRecordId> observationIds = new HashSet<>();
+    for (final var measurementRecord : records) {
+      if (measurementRecord.role() == MeasurementRecordRole.OBSERVATION
+          && measurementRecord.characteristic() == result.characteristic()) {
+        observationIds.add(measurementRecord.recordId());
+      }
+    }
+    return Set.copyOf(observationIds);
   }
 
   private static void validateRecordChronology(
       @NonNull List<@NonNull MeasurementRecord> records,
       @NonNull Instant createdAt
   ) {
-    if (records.stream().anyMatch(measurementRecord -> measurementRecord.measuredAt().isAfter(createdAt))) {
-      throw new DomainRuleViolationException(
-          "measurement record time cannot be after its revision creation time"
-      );
+    for (final var measurementRecord : records) {
+      if (measurementRecord.measuredAt().isAfter(createdAt)) {
+        throw new DomainRuleViolationException(
+            "measurement record time cannot be after its revision creation time"
+        );
+      }
     }
   }
 
@@ -175,10 +200,12 @@ public record MeasurementSetRevision(
       @NonNull MeasurementRecord result,
       @NonNull List<@NonNull MeasurementRecord> inputs
   ) {
-    final var latestObservationTime = inputs.stream()
-        .map(MeasurementRecord::measuredAt)
-        .max(Instant::compareTo)
-        .orElse(inputs.getFirst().measuredAt());
+    var latestObservationTime = inputs.getFirst().measuredAt();
+    for (final var input : inputs) {
+      if (input.measuredAt().isAfter(latestObservationTime)) {
+        latestObservationTime = input.measuredAt();
+      }
+    }
     if (!result.measuredAt().equals(latestObservationTime)) {
       throw new DomainRuleViolationException(
           "derived measurement result time must equal its latest observation time"

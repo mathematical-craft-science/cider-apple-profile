@@ -10,6 +10,7 @@ import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
 import org.craft.mcs.cap.shared.kernel.DomainConflictException;
 import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
+import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.jmolecules.ddd.annotation.AggregateRoot;
@@ -54,6 +55,8 @@ public final class FeedstockBatch {
 
   private @NonNull VolumeValue availableVolume;
 
+  private @NonNull MaterialStateId currentMaterialStateId;
+
   private @Nullable String note;
 
   private @Nullable Instant deletedAt;
@@ -69,6 +72,7 @@ public final class FeedstockBatch {
       @Nullable FeedstockSource source,
       @NonNull BatchLifecycle lifecycle,
       @NonNull VolumeValue availableVolume,
+      @NonNull MaterialStateId currentMaterialStateId,
       @Nullable String note,
       @Nullable Instant deletedAt
   ) {
@@ -81,6 +85,10 @@ public final class FeedstockBatch {
     this.source = source;
     this.lifecycle = requireNonNull(lifecycle, "feedstock batch lifecycle cannot be null");
     this.availableVolume = requireNonNull(availableVolume, "available volume cannot be null");
+    this.currentMaterialStateId = requireNonNull(
+        currentMaterialStateId,
+        "feedstock current material state id cannot be null"
+    );
     this.note = normalize(note);
     this.deletedAt = deletedAt;
     validateMaterialState(lifecycle, availableVolume);
@@ -106,6 +114,7 @@ public final class FeedstockBatch {
         null,
         BatchLifecycle.ACTIVE,
         availableVolume,
+        MaterialStateId.newId(),
         null,
         null
     );
@@ -122,6 +131,7 @@ public final class FeedstockBatch {
       @Nullable FeedstockSource source,
       @NonNull BatchLifecycle lifecycle,
       @NonNull VolumeValue availableVolume,
+      @NonNull MaterialStateId currentMaterialStateId,
       @Nullable String note,
       @Nullable Instant deletedAt
   ) {
@@ -135,6 +145,7 @@ public final class FeedstockBatch {
         source,
         lifecycle,
         availableVolume,
+        currentMaterialStateId,
         note,
         deletedAt
     );
@@ -174,6 +185,10 @@ public final class FeedstockBatch {
 
   public @NonNull VolumeValue availableVolume() {
     return availableVolume;
+  }
+
+  public @NonNull MaterialStateId currentMaterialStateId() {
+    return currentMaterialStateId;
   }
 
   public @Nullable String note() {
@@ -224,6 +239,7 @@ public final class FeedstockBatch {
     }
 
     this.availableVolume = availableVolume.subtract(volume);
+    currentMaterialStateId = MaterialStateId.newId();
     if (availableVolume.isZero()) {
       lifecycle = BatchLifecycle.DEPLETED;
     }
@@ -262,6 +278,9 @@ public final class FeedstockBatch {
   }
 
   private void requireActive() {
+    if (deleted()) {
+      throw new DomainConflictException("cannot consume deleted feedstock batch");
+    }
     if (lifecycle != BatchLifecycle.ACTIVE) {
       throw new DomainConflictException(
           "cannot consume feedstock batch when lifecycle is " + lifecycle

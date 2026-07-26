@@ -30,7 +30,7 @@ public interface FeedstockMeasurementApi {
       summary = "Create feedstock measurement",
       deprecated = true,
       description = "Deprecated compatibility operation. Use POST /measurement-sets with subject type "
-          + "FEEDSTOCK_BATCH and expectedCurrentStateId. The facade resolves the current state and delegates to the "
+          + "FEEDSTOCK_BATCH and observedMaterialStateId. The facade resolves the current state and delegates to the "
           + "same generic use case.",
       requestBody = @RequestBody(
           description = "Feedstock measurement creation payload.",
@@ -57,11 +57,6 @@ public interface FeedstockMeasurementApi {
   @ApiResponse(
       responseCode = "404",
       description = "Feedstock batch not found.",
-      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
-  )
-  @ApiResponse(
-      responseCode = "409",
-      description = "Feedstock material state changed while the compatibility facade created the measurement.",
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
   )
   @Deprecated

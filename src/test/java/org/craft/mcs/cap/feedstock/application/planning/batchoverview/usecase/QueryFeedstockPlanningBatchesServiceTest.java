@@ -9,7 +9,6 @@ import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentMeasurementFreshnessView;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentProfileDataQualityView;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockPlanningReadinessView;
@@ -38,7 +37,6 @@ import org.craft.mcs.cap.shared.application.measurement.MeasurementFreshnessStat
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockPlanningReadinessStatus;
 import org.craft.mcs.cap.core.feedstock.application.measurement.query.FeedstockBatchCurrentMeasurementQueryService;
 import org.craft.mcs.cap.core.feedstock.application.measurement.port.out.FeedstockMeasurementQueryRepository;
-import org.craft.mcs.cap.core.feedstock.application.inventory.port.out.FeedstockMaterialStateProvider;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.usecase.FeedstockCurrentProfileAssessmentService;
 import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.usecase.FeedstockPlanningContributionRoleExplainer;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentProfileSettings;
@@ -205,14 +203,6 @@ class QueryFeedstockPlanningBatchesServiceTest {
       QueryFeedstockBatchProfileTargetCandidatesUseCase targetCandidates,
       Duration measurementStaleAfter
   ) {
-    final var materialStateProvider = mock(FeedstockMaterialStateProvider.class);
-    when(materialStateProvider.currentStatesOf(any(), any())).thenAnswer(invocation -> {
-      final Set<FeedstockBatchId> batchIds = invocation.getArgument(1);
-      return batchIds.stream().collect(Collectors.toUnmodifiableMap(
-          batchId -> batchId,
-          batchId -> MaterialStateId.newId()
-      ));
-    });
     return new QueryFeedstockPlanningBatchesService(
         listBatches,
         new FeedstockBatchCurrentMeasurementQueryService(measurementRepository),
@@ -228,8 +218,7 @@ class QueryFeedstockPlanningBatchesServiceTest {
             PhPlanningGuidancePolicy.curatedCiderV1()
         ),
         _ -> new FeedstockCurrentProfileSettings(measurementStaleAfter),
-        new FeedstockPlanningContributionRoleExplainer(),
-        materialStateProvider
+        new FeedstockPlanningContributionRoleExplainer()
     );
   }
 
@@ -279,6 +268,7 @@ class QueryFeedstockPlanningBatchesServiceTest {
         null,
         BatchLifecycle.ACTIVE,
         VolumeValue.ofLiters("120"),
+        MaterialStateId.newId(),
         null
     );
   }

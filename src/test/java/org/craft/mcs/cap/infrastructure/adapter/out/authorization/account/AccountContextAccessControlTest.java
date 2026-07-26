@@ -2,7 +2,7 @@ package org.craft.mcs.cap.infrastructure.adapter.out.authorization.account;
 
 import java.util.Set;
 import org.craft.mcs.cap.core.account.context.application.port.in.WorkspacePermissionAuthorizer;
-import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceSubjectType;
+import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceSubjectType;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.junit.jupiter.api.Test;
 

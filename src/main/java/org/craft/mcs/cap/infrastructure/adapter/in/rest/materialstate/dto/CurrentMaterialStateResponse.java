@@ -15,8 +15,7 @@ public record CurrentMaterialStateResponse(
     )
     @NonNull MeasurementSubjectResponse subject,
     @Schema(
-        description = "Current immutable material-state identifier used to bind evidence and detect concurrent "
-            + "material lifecycle changes.",
+        description = "Current immutable material-state identifier used to bind new evidence to the sampled state.",
         format = "uuid",
         requiredMode = Schema.RequiredMode.REQUIRED
     )

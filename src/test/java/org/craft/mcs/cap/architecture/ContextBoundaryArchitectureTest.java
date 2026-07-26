@@ -117,7 +117,7 @@ class ContextBoundaryArchitectureTest {
           .resideInAnyPackage(
               "org.craft.mcs.cap.core.account..domain..",
               "org.craft.mcs.cap.core.appleprofile.domain..",
-              "org.craft.mcs.cap.core.batchtraceability.domain..",
+              "org.craft.mcs.cap.core.traceability.domain..",
               "org.craft.mcs.cap.core.feedstock.domain..",
               "org.craft.mcs.cap.core.measurement.domain..",
               "org.craft.mcs.cap.core.production.domain..",
@@ -210,7 +210,7 @@ class ContextBoundaryArchitectureTest {
           .dependOnClassesThat()
           .resideInAnyPackage(
               "org.craft.mcs.cap.core.account..",
-              "org.craft.mcs.cap.core.batchtraceability..",
+              "org.craft.mcs.cap.core.traceability..",
               "org.craft.mcs.cap.core.feedstock..",
               "org.craft.mcs.cap.core.production.."
           );

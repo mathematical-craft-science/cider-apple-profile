@@ -122,6 +122,7 @@ class FeedstockWorkspaceRestMapperTest {
         null,
         BatchLifecycle.ACTIVE,
         VolumeValue.ofLiters("100.0"),
+        MaterialStateId.newId(),
         null
     );
   }

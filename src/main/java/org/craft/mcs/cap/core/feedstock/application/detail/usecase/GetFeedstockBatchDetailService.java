@@ -22,7 +22,6 @@ import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockM
 import org.craft.mcs.cap.core.feedstock.application.measurement.port.in.ListFeedstockMeasurementsUseCase;
 import org.craft.mcs.cap.core.feedstock.application.measurement.query.FeedstockBatchCurrentMeasurementQueryService;
 import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementView;
-import org.craft.mcs.cap.core.feedstock.application.inventory.port.out.FeedstockMaterialStateProvider;
 import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPredictor;
 import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.FermentationStartReadinessAssessor;
 import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapability;
@@ -57,7 +56,6 @@ public final class GetFeedstockBatchDetailService implements GetFeedstockBatchDe
   private final @NonNull FermentationStartReadinessAssessor fermentationStartReadinessAssessor;
   private final @NonNull FeedstockCurrentProfileAssessmentService batchAssessmentService;
   private final @NonNull FeedstockCurrentProfileSettingsProvider currentProfileSettingsProvider;
-  private final @NonNull FeedstockMaterialStateProvider materialStateProvider;
 
   @Override
   public @NonNull FeedstockBatchDetailView get(@NonNull GetFeedstockBatchDetailQuery query) {
@@ -82,7 +80,7 @@ public final class GetFeedstockBatchDetailService implements GetFeedstockBatchDe
 
     return new FeedstockBatchDetailView(
         batchSummary,
-        materialStateProvider.currentStateOf(batch.batchId()),
+        batch.currentMaterialStateId(),
         toCurrentProfile(batchSummary, currentMeasurement, currentProfileSettings),
         measurements
     );

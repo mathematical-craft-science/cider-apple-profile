@@ -27,12 +27,53 @@ class MeasurementSetTest {
 
   @Test
   void derivesAggregateCreationAndUpdateTimeFromInitialRevision() {
-    final var set = createSet(revision(1, INITIAL_TIME));
+    final var measurementSetId = MeasurementSetId.of(newUuid());
+    final var workspaceId = WorkspaceId.newId();
+    final var subject = subject();
+    final var initialRevision = revision(1, INITIAL_TIME);
+    final var set = MeasurementSet.create(
+        measurementSetId,
+        workspaceId,
+        subject,
+        initialRevision
+    );
 
     assertThat(set)
+        .returns(measurementSetId, MeasurementSet::measurementSetId)
+        .returns(workspaceId, MeasurementSet::workspaceId)
+        .returns(subject, MeasurementSet::subject)
+        .returns(initialRevision, MeasurementSet::currentRevision)
         .returns(INITIAL_TIME, MeasurementSet::createdAt)
         .returns(INITIAL_TIME, MeasurementSet::updatedAt)
         .returns(MeasurementSetLifecycle.ACTIVE, MeasurementSet::lifecycle);
+  }
+
+  @Test
+  void restoresPersistedAggregateState() {
+    final var measurementSetId = MeasurementSetId.newId();
+    final var workspaceId = WorkspaceId.newId();
+    final var subject = subject();
+    final var currentRevision = revision(2, INITIAL_TIME.plusSeconds(60));
+    final var updatedAt = INITIAL_TIME.plusSeconds(120);
+
+    final var restored = MeasurementSet.restore(
+        measurementSetId,
+        workspaceId,
+        subject,
+        MeasurementSetLifecycle.RETRACTED,
+        currentRevision,
+        INITIAL_TIME,
+        updatedAt
+    );
+
+    assertThat(restored)
+        .returns(measurementSetId, MeasurementSet::measurementSetId)
+        .returns(workspaceId, MeasurementSet::workspaceId)
+        .returns(subject, MeasurementSet::subject)
+        .returns(MeasurementSetLifecycle.RETRACTED, MeasurementSet::lifecycle)
+        .returns(currentRevision, MeasurementSet::currentRevision)
+        .returns(INITIAL_TIME, MeasurementSet::createdAt)
+        .returns(updatedAt, MeasurementSet::updatedAt);
   }
 
   @Test

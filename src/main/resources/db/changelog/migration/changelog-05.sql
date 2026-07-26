@@ -18,10 +18,11 @@ CREATE TABLE IF NOT EXISTS batch_trace_step_subjects
     step_id                      UUID        NOT NULL,
     subject_role                 VARCHAR(16) NOT NULL,
     subject_order                INTEGER     NOT NULL,
-    trace_state_id               UUID        NOT NULL,
+    material_state_id            UUID        NOT NULL,
     subject_type                 VARCHAR(64) NOT NULL,
     subject_id                   UUID        NOT NULL,
     display_name_snapshot        VARCHAR(255),
+    invalidated_characteristics  VARCHAR(64)[] NOT NULL DEFAULT ARRAY[]::VARCHAR(64)[],
 
     snapshot_volume_liters       NUMERIC(15, 3),
     snapshot_confidence          VARCHAR(64),
@@ -74,31 +75,8 @@ CREATE INDEX IF NOT EXISTS idx_batch_trace_step_subjects_lookup
     ON batch_trace_step_subjects (subject_role, subject_type, subject_id);
 
 CREATE INDEX IF NOT EXISTS idx_batch_trace_step_subjects_state_id
-    ON batch_trace_step_subjects (trace_state_id);
+    ON batch_trace_step_subjects (material_state_id);
 
 CREATE UNIQUE INDEX IF NOT EXISTS ux_batch_trace_step_subjects_output_state
-    ON batch_trace_step_subjects (trace_state_id)
+    ON batch_trace_step_subjects (material_state_id)
     WHERE subject_role = 'OUTPUT';
-
-CREATE TABLE IF NOT EXISTS batch_trace_current_states
-(
-    workspace_id     UUID                     NOT NULL,
-    subject_type     VARCHAR(64)              NOT NULL,
-    subject_id       UUID                     NOT NULL,
-    current_state_id UUID                     NOT NULL,
-    version          BIGINT                   NOT NULL DEFAULT 0,
-    updated_at       TIMESTAMP WITH TIME ZONE NOT NULL,
-
-    CONSTRAINT pk_batch_trace_current_states
-        PRIMARY KEY (workspace_id, subject_type, subject_id),
-    CONSTRAINT fk_batch_trace_current_states_workspace
-        FOREIGN KEY (workspace_id) REFERENCES workspaces (workspace_id),
-    CONSTRAINT chk_batch_trace_current_states_version
-        CHECK (version >= 0)
-);
-
-CREATE UNIQUE INDEX IF NOT EXISTS ux_batch_trace_current_states_subject
-    ON batch_trace_current_states (subject_type, subject_id);
-
-CREATE INDEX IF NOT EXISTS idx_batch_trace_current_states_state_id
-    ON batch_trace_current_states (current_state_id);

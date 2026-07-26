@@ -8,6 +8,7 @@ import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSource
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
 import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
+import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -25,6 +26,7 @@ public record FeedstockBatchSummary(
     @Nullable FeedstockSource source,
     @NonNull BatchLifecycle lifecycle,
     @NonNull VolumeValue availableVolume,
+    @NonNull MaterialStateId currentMaterialStateId,
     @Nullable String note
 ) {
 
@@ -36,5 +38,6 @@ public record FeedstockBatchSummary(
     requireNonNull(season, "feedstock season cannot be null");
     requireNonNull(lifecycle, "feedstock batch lifecycle cannot be null");
     requireNonNull(availableVolume, "available volume cannot be null");
+    requireNonNull(currentMaterialStateId, "feedstock current material state id cannot be null");
   }
 }

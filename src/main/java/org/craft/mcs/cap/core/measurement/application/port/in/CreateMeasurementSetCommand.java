@@ -16,7 +16,7 @@ import static java.util.Objects.requireNonNull;
 public record CreateMeasurementSetCommand(
     @Nullable MeasurementSetId requestedId,
     @NonNull MeasurementSubjectReference subject,
-    @NonNull MaterialStateId expectedCurrentStateId,
+    @NonNull MaterialStateId observedMaterialStateId,
     @NonNull MeasurementSetName name,
     @Nullable String note,
     @NonNull List<@NonNull MeasurementCharacteristicInput> measurements
@@ -24,7 +24,7 @@ public record CreateMeasurementSetCommand(
 
   public CreateMeasurementSetCommand {
     requireNonNull(subject, "measurement subject cannot be null");
-    requireNonNull(expectedCurrentStateId, "expected current material state id cannot be null");
+    requireNonNull(observedMaterialStateId, "observed material state id cannot be null");
     requireNonNull(name, "measurement set name cannot be null");
     measurements = List.copyOf(requireNonNull(measurements, "measurement inputs cannot be null"));
   }

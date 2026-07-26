@@ -25,7 +25,6 @@ import org.craft.mcs.cap.core.feedstock.application.detail.usecase.GetFeedstockB
 import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementSummary;
 import org.craft.mcs.cap.core.feedstock.application.measurement.port.in.ListFeedstockMeasurementsUseCase;
 import org.craft.mcs.cap.core.feedstock.application.measurement.port.out.FeedstockMeasurementQueryRepository;
-import org.craft.mcs.cap.core.feedstock.application.inventory.port.out.FeedstockMaterialStateProvider;
 import org.craft.mcs.cap.core.feedstock.application.measurement.query.FeedstockBatchCurrentMeasurementQueryService;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
@@ -52,7 +51,6 @@ import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
-import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
@@ -65,7 +63,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.craft.mcs.cap.shared.testing.FeedstockMeasurementViews.view;
 import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementRecordedAt;
 import static java.util.Objects.requireNonNull;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -83,8 +80,6 @@ class GetFeedstockBatchDetailServiceTest {
       ListFeedstockMeasurementsUseCase listMeasurements,
       FeedstockMeasurementQueryRepository measurementRepository
   ) {
-    final var materialStateProvider = mock(FeedstockMaterialStateProvider.class);
-    when(materialStateProvider.currentStateOf(any())).thenReturn(MaterialStateId.newId());
     return new GetFeedstockBatchDetailService(
         batchRepository,
         mock(FeedstockAccessControl.class),
@@ -100,8 +95,7 @@ class GetFeedstockBatchDetailServiceTest {
             CLOCK,
             PhPlanningGuidancePolicy.curatedCiderV1()
         ),
-        _ -> new FeedstockCurrentProfileSettings(Duration.ofDays(3)),
-        materialStateProvider
+        _ -> new FeedstockCurrentProfileSettings(Duration.ofDays(3))
     );
   }
 

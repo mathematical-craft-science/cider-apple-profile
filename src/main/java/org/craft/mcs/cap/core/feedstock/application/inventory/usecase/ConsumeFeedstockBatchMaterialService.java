@@ -11,7 +11,6 @@ import org.craft.mcs.cap.core.feedstock.application.inventory.port.in.ConsumeFee
 import org.craft.mcs.cap.core.feedstock.application.inventory.port.in.ConsumedFeedstockBatchMaterial;
 import org.craft.mcs.cap.core.feedstock.application.inventory.port.in.FeedstockBatchMaterialEvidenceReference;
 import org.craft.mcs.cap.core.feedstock.application.inventory.port.in.FeedstockBatchMaterialName;
-import org.craft.mcs.cap.core.feedstock.application.inventory.port.out.FeedstockMaterialStateProvider;
 import org.craft.mcs.cap.core.feedstock.application.measurement.query.FeedstockBatchCurrentMeasurementQueryService;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
 import org.craft.mcs.cap.shared.platform.TransactionHelper;
@@ -36,7 +35,6 @@ public final class ConsumeFeedstockBatchMaterialService
 
   private final @NonNull FeedstockBatchRepository feedstockBatchRepository;
   private final @NonNull FeedstockBatchCurrentMeasurementQueryService currentMeasurementQueryService;
-  private final @NonNull FeedstockMaterialStateProvider materialStateProvider;
   private final @NonNull FeedstockAccessControl feedstockAccessControl;
   private final @NonNull TransactionHelper transactionHelper;
 
@@ -55,7 +53,7 @@ public final class ConsumeFeedstockBatchMaterialService
     final var state = requireOwnedBatch(command);
     final var batch = state.aggregate();
     requireAvailableVolume(batch, command);
-    final var materialStateId = materialStateProvider.lockCurrentStateOf(batch.batchId());
+    final var sourceStateId = batch.currentMaterialStateId();
     final var measurement = currentMeasurementQueryService.requireCurrentMeasurement(batch.batchId());
     final var availableBefore = batch.availableVolume();
 
@@ -68,7 +66,8 @@ public final class ConsumeFeedstockBatchMaterialService
         availableBefore,
         command.volume(),
         batch.availableVolume(),
-        materialStateId,
+        sourceStateId,
+        batch.currentMaterialStateId(),
         FeedstockBatchMaterialEvidenceReference.from(measurement.axisEvidence()),
         measurement.chemicalProfile(),
         measurement.aggregateConfidence()
@@ -78,7 +77,7 @@ public final class ConsumeFeedstockBatchMaterialService
   private @NonNull VersionedAggregate<FeedstockBatch> requireOwnedBatch(
       @NonNull ConsumeFeedstockBatchMaterialCommand command
   ) {
-    final var state = feedstockBatchRepository.findByIdForConsumption(command.batchId())
+    final var state = feedstockBatchRepository.findVersionedById(command.batchId())
         .orElseThrow(() -> new FeedstockBatchNotFoundException(command.batchId()));
     final var batch = state.aggregate();
 

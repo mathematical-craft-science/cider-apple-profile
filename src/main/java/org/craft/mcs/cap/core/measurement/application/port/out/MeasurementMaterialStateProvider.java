@@ -8,16 +8,20 @@ import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;
 
 
-/** Resolves the current state token required before recording new measurement evidence. */
+/** Resolves material states owned by measurable business subjects. */
 public interface MeasurementMaterialStateProvider {
 
   @NonNull MaterialStateId currentStateOf(@NonNull MeasurementSubjectReference subject);
 
-  @NonNull MaterialStateId lockCurrentState(@NonNull MeasurementSubjectReference subject);
-
-  @NonNull MaterialStateId requireCurrentState(
+  /**
+   * Verifies that an immutable state belongs to the supplied business subject.
+   *
+   * <p>The state does not have to remain current. This permits delayed laboratory results to be
+   * attached to the material state that was actually sampled.</p>
+   */
+  @NonNull MaterialStateId requireObservedState(
       @NonNull MeasurementSubjectReference subject,
-      @NonNull MaterialStateId expectedStateId
+      @NonNull MaterialStateId observedStateId
   );
 
   @NonNull Map<@NonNull MeasurementSubjectReference, @NonNull MaterialStateId> currentStatesOf(

@@ -1,6 +1,7 @@
 package org.craft.mcs.cap.core.measurement.domain.model;
 
 import java.time.Instant;
+import java.util.HashSet;
 import java.util.List;
 import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
 import org.craft.mcs.cap.shared.kernel.characteristic.CharacteristicValue;
@@ -130,8 +131,11 @@ public record MeasurementRecord(
   private static void validateUniqueDerivationInputs(
       @NonNull List<@NonNull MeasurementRecordId> derivationInputs
   ) {
-    if (derivationInputs.stream().distinct().count() != derivationInputs.size()) {
-      throw new DomainRuleViolationException("measurement derivation inputs must be unique");
+    final var uniqueInputs = new HashSet<MeasurementRecordId>();
+    for (final var derivationInput : derivationInputs) {
+      if (!uniqueInputs.add(derivationInput)) {
+        throw new DomainRuleViolationException("measurement derivation inputs must be unique");
+      }
     }
   }
 }

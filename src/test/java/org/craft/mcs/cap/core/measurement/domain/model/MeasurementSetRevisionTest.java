@@ -193,6 +193,39 @@ class MeasurementSetRevisionTest {
         .hasMessage("corrected measurement revision requires a correction reason");
   }
 
+  @Test
+  void exposesInitialRevisionNumberFactory() {
+    final var revisionId = MeasurementSetRevisionId.of(newUuid());
+
+    assertThat(MeasurementSetRevisionNumber.initial())
+        .isEqualTo(MeasurementSetRevisionNumber.of(1))
+        .matches(MeasurementSetRevisionNumber::isInitial);
+    assertThat(revisionId.value()).isNotNull();
+  }
+
+  @Test
+  void normalizesOptionalNote() {
+    final var result = result(MeasurementCharacteristic.PH);
+
+    assertThat(revisionWithNote("  Verified by second reading  ", List.of(result)).note())
+        .isEqualTo("Verified by second reading");
+    assertThat(revisionWithNote("   ", List.of(result)).note()).isNull();
+    assertThat(revisionWithNote(null, List.of(result)).note()).isNull();
+  }
+
+  @Test
+  void acceptsMaximumNoteLengthAndRejectsLongerValue() {
+    final var result = result(MeasurementCharacteristic.PH);
+    final var maximumLengthNote = "n".repeat(2_000);
+    final var excessiveNote = "n".repeat(2_001);
+
+    assertThat(revisionWithNote(maximumLengthNote, List.of(result)).note())
+        .hasSize(2_000);
+    assertThatThrownBy(() -> revisionWithNote(excessiveNote, List.of(result)))
+        .isInstanceOf(DomainRuleViolationException.class)
+        .hasMessage("measurement set note length must not exceed 2000 characters");
+  }
+
   private static MeasurementSetRevision revision(List<MeasurementRecord> records) {
     return revision(1, null, records);
   }
@@ -209,6 +242,23 @@ class MeasurementSetRevisionTest {
         MeasurementSetName.of("Laboratory result"),
         null,
         correctionReason == null ? null : MeasurementCorrectionReason.of(correctionReason),
+        MEASURED_AT,
+        ActorReference.accountUser(newUuid()),
+        records
+    );
+  }
+
+  private static MeasurementSetRevision revisionWithNote(
+      String note,
+      List<MeasurementRecord> records
+  ) {
+    return new MeasurementSetRevision(
+        MeasurementSetRevisionId.newId(),
+        MeasurementSetRevisionNumber.initial(),
+        MaterialStateId.newId(),
+        MeasurementSetName.of("Laboratory result"),
+        note,
+        null,
         MEASURED_AT,
         ActorReference.accountUser(newUuid()),
         records

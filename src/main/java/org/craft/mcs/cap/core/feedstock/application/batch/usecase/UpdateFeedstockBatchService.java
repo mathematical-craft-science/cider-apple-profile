@@ -129,6 +129,7 @@ public final class UpdateFeedstockBatchService
         batch.source(),
         batch.lifecycle(),
         batch.availableVolume(),
+        batch.currentMaterialStateId(),
         batch.note()
     );
   }

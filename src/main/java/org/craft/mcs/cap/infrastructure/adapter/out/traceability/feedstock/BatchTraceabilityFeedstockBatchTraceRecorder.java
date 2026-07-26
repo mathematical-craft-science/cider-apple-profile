@@ -4,17 +4,16 @@ import java.time.Instant;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.account.user.application.port.in.GetCurrentAccountProfileUseCase;
-import org.craft.mcs.cap.core.batchtraceability.application.port.in.InitializeMaterialStateUseCase;
-import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceActorReference;
-import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceMaterialSnapshot;
-import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStepType;
-import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStep;
-import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceStepSubject;
-import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceSubject;
-import org.craft.mcs.cap.core.batchtraceability.domain.model.BatchTraceSubjectType;
+import org.craft.mcs.cap.core.traceability.application.port.in.AppendBatchTraceStepUseCase;
+import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceActorReference;
+import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceMaterialSnapshot;
+import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceStepType;
+import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceStep;
+import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceStepSubject;
+import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceSubject;
+import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceSubjectType;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchTraceRecorder;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
-import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 
@@ -26,7 +25,7 @@ import static java.util.Objects.requireNonNull;
 @RequiredArgsConstructor
 final class BatchTraceabilityFeedstockBatchTraceRecorder implements FeedstockBatchTraceRecorder {
 
-  private final @NonNull InitializeMaterialStateUseCase initializeMaterialStateUseCase;
+  private final @NonNull AppendBatchTraceStepUseCase appendBatchTraceStepUseCase;
   private final @NonNull GetCurrentAccountProfileUseCase getCurrentAccountProfileUseCase;
 
   @Override
@@ -41,7 +40,7 @@ final class BatchTraceabilityFeedstockBatchTraceRecorder implements FeedstockBat
         batch.batchId().value(),
         batch.name().value()
     );
-    final var stateId = MaterialStateId.newId();
+    final var stateId = batch.currentMaterialStateId();
     final var output = new BatchTraceStepSubject(
         stateId,
         subject,
@@ -59,6 +58,6 @@ final class BatchTraceabilityFeedstockBatchTraceRecorder implements FeedstockBat
         ),
         batch.note()
     );
-    initializeMaterialStateUseCase.initialize(step, subject, stateId);
+    appendBatchTraceStepUseCase.append(step);
   }
 }
