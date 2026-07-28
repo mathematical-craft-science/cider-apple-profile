@@ -8,23 +8,24 @@ import org.jspecify.annotations.Nullable;
  * Compact current chemical profile projection for feedstock planning board rows.
  *
  * <p>This response is optimized for the operational board table. It gives the frontend stable,
- * flat, unit-aware values without forcing it to interpret the full measurement tree. It must not be
- * used as an edit model or as a replacement for the original current measurement payload.
+ * flat, unit-aware values without forcing it to interpret the full measurement tree. Values are
+ * independently selected from current evidence and may belong to different measurement sets.
  */
 @Schema(
     description = """
-        Compact current chemical profile projection for feedstock planning board rows. This is a
-        board read model, not an edit model and not a replacement for currentMeasurement. It gives
-        stable, flat, unit-aware values derived from the current measurement.
+        Compact composite current-profile projection for feedstock planning board rows. Each
+        characteristic is independently selected from applicable current evidence and may come from
+        a different MeasurementSet. Use profileEvidence to identify the selected sources. This is a
+        read model, not an edit model.
         """
 )
 public record FeedstockWorkspaceProfileSummaryResponse(
     @Schema(
-        description = "Sugar in canonical SG units.",
+        description = "Specific Gravity in canonical SG units.",
         nullable = true,
         requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )
-    @Nullable FeedstockWorkspaceProfileValueResponse sugar,
+    @Nullable FeedstockWorkspaceProfileValueResponse specificGravity,
     @Schema(
         description = "Titratable acidity in canonical g/L as malic acid units.",
         nullable = true,

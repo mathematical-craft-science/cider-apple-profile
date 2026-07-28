@@ -2,10 +2,10 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.sugaracidity.
 
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.model.FeedstockMeasurementSugarAcidityPagePosition;
-import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockMeasurementPointFilters;
-import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityCriteria;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.application.model.SugarAcidityZoneCriteria;
+import org.craft.mcs.cap.core.feedstock.application.analysis.common.model.FeedstockAnalysisCandidatePagePosition;
+import org.craft.mcs.cap.core.feedstock.application.analysis.common.model.FeedstockAnalysisCandidateFilters;
+import org.craft.mcs.cap.core.profileanalysis.profileaxis.application.model.ChemicalProfileCapabilityCriteria;
+import org.craft.mcs.cap.core.profileanalysis.graph.application.model.JolicoeurSugarAcidityZoneCriteria;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.infrastructure.query.cursor.CursorBinding;
 import org.craft.mcs.cap.shared.infrastructure.query.cursor.CursorScope;
@@ -31,43 +31,43 @@ public final class FeedstockSugarAcidityCursorAdapter {
 
   private final @NonNull CursorTokenCodec cursorTokenCodec;
 
-  public @Nullable FeedstockMeasurementSugarAcidityPagePosition decodeHistorical(
+  public @Nullable FeedstockAnalysisCandidatePagePosition decodeHistorical(
       @Nullable String cursor,
       @NonNull WorkspaceId workspaceId,
-      @NonNull FeedstockMeasurementPointFilters filters
+      @NonNull FeedstockAnalysisCandidateFilters filters
   ) {
     return decode(cursor, HISTORICAL_SCOPE, workspaceId, filters);
   }
 
   public @Nullable String encodeHistorical(
-      @Nullable FeedstockMeasurementSugarAcidityPagePosition position,
+      @Nullable FeedstockAnalysisCandidatePagePosition position,
       @NonNull WorkspaceId workspaceId,
-      @NonNull FeedstockMeasurementPointFilters filters
+      @NonNull FeedstockAnalysisCandidateFilters filters
   ) {
     return encode(position, HISTORICAL_SCOPE, workspaceId, filters);
   }
 
-  public @Nullable FeedstockMeasurementSugarAcidityPagePosition decodeCurrent(
+  public @Nullable FeedstockAnalysisCandidatePagePosition decodeCurrent(
       @Nullable String cursor,
       @NonNull WorkspaceId workspaceId,
-      @NonNull FeedstockMeasurementPointFilters filters
+      @NonNull FeedstockAnalysisCandidateFilters filters
   ) {
     return decode(cursor, CURRENT_SCOPE, workspaceId, filters);
   }
 
   public @Nullable String encodeCurrent(
-      @Nullable FeedstockMeasurementSugarAcidityPagePosition position,
+      @Nullable FeedstockAnalysisCandidatePagePosition position,
       @NonNull WorkspaceId workspaceId,
-      @NonNull FeedstockMeasurementPointFilters filters
+      @NonNull FeedstockAnalysisCandidateFilters filters
   ) {
     return encode(position, CURRENT_SCOPE, workspaceId, filters);
   }
 
-  private @Nullable FeedstockMeasurementSugarAcidityPagePosition decode(
+  private @Nullable FeedstockAnalysisCandidatePagePosition decode(
       @Nullable String cursor,
       @NonNull CursorScope scope,
       @NonNull WorkspaceId workspaceId,
-      @NonNull FeedstockMeasurementPointFilters filters
+      @NonNull FeedstockAnalysisCandidateFilters filters
   ) {
     requireNonNull(scope, "cursor scope cannot be null");
     requireNonNull(workspaceId, "workspace id cannot be null");
@@ -79,15 +79,15 @@ public final class FeedstockSugarAcidityCursorAdapter {
     return cursorTokenCodec.decode(
         cursor.strip(),
         binding(scope, workspaceId, filters),
-        FeedstockMeasurementSugarAcidityPagePosition.class
+        FeedstockAnalysisCandidatePagePosition.class
     );
   }
 
   private @Nullable String encode(
-      @Nullable FeedstockMeasurementSugarAcidityPagePosition position,
+      @Nullable FeedstockAnalysisCandidatePagePosition position,
       @NonNull CursorScope scope,
       @NonNull WorkspaceId workspaceId,
-      @NonNull FeedstockMeasurementPointFilters filters
+      @NonNull FeedstockAnalysisCandidateFilters filters
   ) {
     requireNonNull(scope, "cursor scope cannot be null");
     requireNonNull(workspaceId, "workspace id cannot be null");
@@ -100,7 +100,7 @@ public final class FeedstockSugarAcidityCursorAdapter {
   private static @NonNull CursorBinding binding(
       @NonNull CursorScope scope,
       @NonNull WorkspaceId workspaceId,
-      @NonNull FeedstockMeasurementPointFilters filters
+      @NonNull FeedstockAnalysisCandidateFilters filters
   ) {
     return CursorBinding.boundTo(
         scope,
@@ -112,7 +112,7 @@ public final class FeedstockSugarAcidityCursorAdapter {
     );
   }
 
-  private static @NonNull String batches(@NonNull FeedstockMeasurementPointFilters filters) {
+  private static @NonNull String batches(@NonNull FeedstockAnalysisCandidateFilters filters) {
     return filters.batch() == null
         ? ""
         : filters.batch().batchIds().stream() // NOSONAR
@@ -121,13 +121,13 @@ public final class FeedstockSugarAcidityCursorAdapter {
             .collect(Collectors.joining(","));
   }
 
-  private static @NonNull String season(@NonNull FeedstockMeasurementPointFilters filters) {
+  private static @NonNull String season(@NonNull FeedstockAnalysisCandidateFilters filters) {
     return filters.season() == null
         ? ""
         : filters.season().startsOn() + ":" + filters.season().endsOn(); // NOSONAR
   }
 
-  private static @NonNull String zones(@Nullable SugarAcidityZoneCriteria criteria) {
+  private static @NonNull String zones(@Nullable JolicoeurSugarAcidityZoneCriteria criteria) {
     return criteria == null
         ? ""
         : criteria.zones().stream()

@@ -3,7 +3,7 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.abv;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.feedstock.application.analysis.abv.port.in.PredictFeedstockBatchCurrentPotentialAbvUseCase;
-import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.abv.dto.FeedstockBatchCurrentPotentialAbvResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.abv.mapper.FeedstockBatchPotentialAbvRestMapper;
 import org.jspecify.annotations.NonNull;

@@ -2,8 +2,8 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.production.mapper;
 
 import java.util.List;
 import org.craft.mcs.cap.core.production.application.model.ProductionBatchDetailsView;
-import org.craft.mcs.cap.core.production.application.port.in.CreateProductionBatchCommand;
-import org.craft.mcs.cap.core.production.application.port.in.ProductionBatchCreated;
+import org.craft.mcs.cap.core.production.candidate.application.confirmation.port.in.CreateProductionBatchCommand;
+import org.craft.mcs.cap.core.production.candidate.application.confirmation.port.in.ProductionBatchCreated;
 import org.craft.mcs.cap.core.production.candidate.domain.model.ProductionBatchCandidateId;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
@@ -11,7 +11,7 @@ import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.abv.mapper.PotentialAbvPredictionRestMapper;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.mapper.ChemicalProfileRestMapper;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.mapper.ChemicalProfileResponseRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement.MeasurementEvidenceRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.CreateProductionBatchRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.ProductionBatchDetailsResponse;
@@ -74,14 +74,16 @@ public final class ProductionBatchRestMapper {
     return new ProductionBatchDetailsResponse(
         batch.batchId().value(),
         batch.workspaceId().value(),
-        details.currentMaterialStateId().value(),
+        batch.currentMaterialStateId().value(),
         batch.name().value(),
         batch.vessel().name(),
         batch.lifecycle(),
         batch.alcoholicFermentationState(),
         new DecimalQuantityResponse(batch.currentVolume().liters(), CanonicalUnitLabels.VOLUME),
-        ProductionBatchCompositionRestMapper.toProfilePointResponse(batch.initialProfileSnapshot()),
-        ChemicalProfileRestMapper.toResponse(details.currentProfile().chemicalProfile()),
+        ProductionBatchCompositionRestMapper.toCharacteristicsResponse(
+            batch.initialProfileSnapshot()
+        ),
+        ChemicalProfileResponseRestMapper.toResponse(details.currentProfile().chemicalProfile()),
         details.currentProfile().evidence().stream()
             .map(MeasurementEvidenceRestMapper::toResponse)
             .toList(),

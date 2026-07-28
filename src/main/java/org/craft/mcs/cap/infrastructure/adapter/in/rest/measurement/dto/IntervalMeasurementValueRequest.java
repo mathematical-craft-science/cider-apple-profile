@@ -15,6 +15,7 @@ import org.jspecify.annotations.NonNull;
 public record IntervalMeasurementValueRequest(
     @Schema(
         description = "Polymorphic value discriminator; must be INTERVAL.",
+        type = "string",
         allowableValues = "INTERVAL",
         requiredMode = Schema.RequiredMode.REQUIRED
     )

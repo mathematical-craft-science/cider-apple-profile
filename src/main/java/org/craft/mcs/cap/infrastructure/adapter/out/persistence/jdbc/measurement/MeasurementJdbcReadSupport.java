@@ -19,7 +19,7 @@ import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenVa
 import org.craft.mcs.cap.shared.kernel.measurement.MeasuredValue;
 import org.craft.mcs.cap.shared.kernel.measurement.value.TemperatureValue;
 import org.craft.mcs.cap.shared.kernel.measurement.value.TurbidityValue;
-import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

@@ -6,6 +6,7 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import static java.util.Objects.requireNonNull;
+import static org.craft.mcs.cap.shared.kernel.measurement.MeasurementValueMath.midpoint;
 
 
 /** Immutable scalar projection of one chemical characteristic onto an analysis axis. */
@@ -16,8 +17,6 @@ public record AxisValue(
     @Nullable BigDecimal min,
     @Nullable BigDecimal max
 ) {
-
-  private static final BigDecimal ONE_HALF = new BigDecimal("0.5");
 
   public AxisValue {
     requireNonNull(axis, "chemical axis cannot be null");
@@ -94,12 +93,5 @@ public record AxisValue(
     if (value.compareTo(midpoint(min, max)) != 0) {
       throw new DomainRuleViolationException("axis interval value must equal the interval midpoint");
     }
-  }
-
-  private static @NonNull BigDecimal midpoint(
-      @NonNull BigDecimal min,
-      @NonNull BigDecimal max
-  ) {
-    return min.add(max).multiply(ONE_HALF);
   }
 }

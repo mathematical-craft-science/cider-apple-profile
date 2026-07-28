@@ -1,6 +1,8 @@
 package org.craft.mcs.cap.core.profileanalysis.classification.domain.profile.longashton;
 
 import java.util.List;
+import java.util.Set;
+import org.craft.mcs.cap.core.profileanalysis.classification.domain.engine.ClassificationCharacteristic;
 import org.craft.mcs.cap.core.profileanalysis.classification.domain.engine.ClassificationStrategy;
 import org.craft.mcs.cap.core.profileanalysis.classification.domain.rule.ClassificationProfile;
 import org.craft.mcs.cap.core.profileanalysis.classification.domain.rule.ClassificationRule;
@@ -28,6 +30,14 @@ public final class LongAshton7ClassificationStrategy
   @Override
   public @NonNull String code() {
     return "LONG_ASHTON_7";
+  }
+
+  @Override
+  public @NonNull Set<@NonNull ClassificationCharacteristic> requiredCharacteristics() {
+    return Set.of(
+        ClassificationCharacteristic.ACIDITY,
+        ClassificationCharacteristic.TANNIN
+    );
   }
 
   @Override

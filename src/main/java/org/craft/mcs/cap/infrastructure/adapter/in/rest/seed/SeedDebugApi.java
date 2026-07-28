@@ -17,17 +17,26 @@ public interface SeedDebugApi {
 
   @Operation(
       summary = "Import apple variety seed",
-      description = "Imports apple variety seed data from the bundled JSON resource. Available in dev/local profiles only."
+      description = """
+          Imports apple variety seed data from the bundled JSON resource. Available in dev/local
+          profiles only.
+          """
   )
   @ApiResponse(
       responseCode = "200",
       description = "Seed imported.",
-      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = SeedImportResponse.class))
+      content = @Content(
+          mediaType = APPLICATION_JSON_VALUE,
+          schema = @Schema(implementation = SeedImportResponse.class)
+      )
   )
   @ApiResponse(
       responseCode = "400",
       description = "Seed resource not found.",
-      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = SeedImportResponse.class))
+      content = @Content(
+          mediaType = APPLICATION_JSON_VALUE,
+          schema = @Schema(implementation = SeedImportResponse.class)
+      )
   )
   @NonNull ResponseEntity<@NonNull SeedImportResponse> importAppleVarieties();
 }

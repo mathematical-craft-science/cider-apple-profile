@@ -4,23 +4,23 @@ import org.craft.mcs.cap.core.profileanalysis.composition.calculation.applicatio
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.application.port.in.CalculateChemicalProfileCompositionResult;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionCalculatorCode;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionTanninPolicy;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.port.in.ProfileTargetScoringPurpose;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.SugarAcidityTargetResolver;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetScoringConfiguration;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.SugarAcidityTargetResolver;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.abv.mapper.PotentialAbvPredictionRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.calculation.dto.CalculateChemicalProfileCompositionRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.calculation.dto.ChemicalProfileCompositionResponse;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.common.mapper.ChemicalProfileCompositionCommonRestMapper;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.common.mapper.ChemicalProfileCompositionCommonRequestMapper;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.common.mapper.ChemicalProfileCompositionCommonResponseMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.composition.mapper.CompositionPlanningRestDefaults;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.sugaracidity.mapper.SugarAcidityZoneRestMapper;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
 import static java.util.Objects.requireNonNullElse;
-import static org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.common.mapper.ChemicalProfileCompositionCommonRestMapper.toTargetObjective;
-import static org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.common.mapper.ChemicalProfileCompositionCommonRestMapper.toTargetDistanceResponse;
-import static org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.common.mapper.ChemicalProfileCompositionCommonRestMapper.toVolumeResponse;
-import static org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.common.mapper.ChemicalProfileCompositionCommonRestMapper.toWeights;
-import static org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.common.mapper.ChemicalProfileCompositionCommonRestMapper.toYeastAssimilableNitrogenResponse;
+import static org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.common.mapper.ChemicalProfileCompositionCommonRequestMapper.toTargetObjective;
+import static org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.common.mapper.ChemicalProfileCompositionCommonRequestMapper.toWeights;
+import static org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.common.mapper.ChemicalProfileCompositionCommonResponseMapper.toCharacteristicsResponse;
+import static org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.common.mapper.ChemicalProfileCompositionCommonResponseMapper.toTargetDistanceResponse;
+import static org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.common.mapper.ChemicalProfileCompositionCommonResponseMapper.toVolumeResponse;
 
 
 public final class ChemicalProfileCompositionCalculationRestMapper {
@@ -39,7 +39,6 @@ public final class ChemicalProfileCompositionCalculationRestMapper {
         request.tanninPolicy(),
         ChemicalProfileCompositionTanninPolicy.CALCULATE_WHEN_COMPLETE
     );
-    final ProfileTargetScoringPurpose scoringPurpose = scoringPurpose(request);
     final var calculator = requireNonNullElse(
         request.calculator(),
         ChemicalProfileCompositionCalculatorCode.MASS_BALANCE
@@ -56,26 +55,20 @@ public final class ChemicalProfileCompositionCalculationRestMapper {
         request.sources(),
         "chemical profile composition sources cannot be null"
     ).stream()
-        .map(ChemicalProfileCompositionCommonRestMapper::toSource)
+        .map(ChemicalProfileCompositionCommonRequestMapper::toSource)
         .toList();
 
     return new CalculateChemicalProfileCompositionCommand( // NOSONAR
         sources,
         tanninPolicy,
         toTargetObjective(request.target(), request.tanninTarget(), targetResolver),
-        toWeights(request.weights()),
-        scoringPurpose,
-        calculator,
-        normalizer,
-        objectiveFunction
+        new ProfileTargetScoringConfiguration(
+            requireNonNull(normalizer, "profile target normalizer cannot be null"),
+            requireNonNull(objectiveFunction, "profile target objective function cannot be null"),
+            toWeights(request.weights())
+        ),
+        calculator
     );
-  }
-
-  private static @NonNull ProfileTargetScoringPurpose scoringPurpose(
-      @NonNull CalculateChemicalProfileCompositionRequest request
-  ) {
-    final var scoringPurpose = request.scoringPurpose();
-    return requireNonNullElse(scoringPurpose, ProfileTargetScoringPurpose.BLENDING_PLANNING);  // NOSONAR
   }
 
   public static @NonNull ChemicalProfileCompositionResponse toResponse(
@@ -86,11 +79,10 @@ public final class ChemicalProfileCompositionCalculationRestMapper {
 
     return new ChemicalProfileCompositionResponse(
         composition.sources().stream()
-            .map(ChemicalProfileCompositionCommonRestMapper::toResponse)
+            .map(ChemicalProfileCompositionCommonResponseMapper::toResponse)
             .toList(),
-        SugarAcidityZoneRestMapper.toResponse(composition.profile()),
+        toCharacteristicsResponse(composition.characteristics()),
         PotentialAbvPredictionRestMapper.toResponse(result.potentialAbv()),
-        toYeastAssimilableNitrogenResponse(composition.yeastAssimilableNitrogen()),
         toVolumeResponse(composition.totalVolume()),
         composition.warnings(),
         result.normalizerCode(),

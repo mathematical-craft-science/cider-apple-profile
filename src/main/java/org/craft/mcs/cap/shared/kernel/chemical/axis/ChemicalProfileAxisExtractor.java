@@ -40,14 +40,14 @@ public class ChemicalProfileAxisExtractor {
     return ChemicalProfileAxes.of(
         profile.sugar()
             .map(characteristic -> toAxisValue(
-                ChemicalAxis.SUGAR,
+                ChemicalAxis.SPECIFIC_GRAVITY,
                 characteristic,
                 value -> value.specificGravity().asBigDecimal()
             ))
             .orElse(null),
         profile.titratableAcidity()
             .map(characteristic -> toAxisValue(
-                ChemicalAxis.ACIDITY,
+                ChemicalAxis.TITRATABLE_ACIDITY,
                 characteristic,
                 TitratableAcidityValue::asBigDecimal
             ))

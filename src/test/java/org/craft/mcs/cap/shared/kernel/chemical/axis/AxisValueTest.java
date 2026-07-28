@@ -12,8 +12,8 @@ class AxisValueTest {
 
   @Test
   void createsPointAndCalculatedValuesWithoutBounds() {
-    final var point = AxisValue.point(ChemicalAxis.SUGAR, new BigDecimal("1.050"));
-    final var calculated = AxisValue.calculated(ChemicalAxis.ACIDITY, new BigDecimal("6.2"));
+    final var point = AxisValue.point(ChemicalAxis.SPECIFIC_GRAVITY, new BigDecimal("1.050"));
+    final var calculated = AxisValue.calculated(ChemicalAxis.TITRATABLE_ACIDITY, new BigDecimal("6.2"));
 
     assertThat(point)
         .returns(AxisValueKind.POINT, AxisValue::valueKind)
@@ -28,13 +28,13 @@ class AxisValueTest {
   @Test
   void createsExactIntervalMidpointWithItsBounds() {
     final var value = AxisValue.intervalMidpoint(
-        ChemicalAxis.ACIDITY,
+        ChemicalAxis.TITRATABLE_ACIDITY,
         new BigDecimal("4.1"),
         new BigDecimal("5.2")
     );
 
     assertThat(value)
-        .returns(ChemicalAxis.ACIDITY, AxisValue::axis)
+        .returns(ChemicalAxis.TITRATABLE_ACIDITY, AxisValue::axis)
         .returns(new BigDecimal("4.65"), AxisValue::value)
         .returns(AxisValueKind.INTERVAL_MIDPOINT, AxisValue::valueKind)
         .returns(new BigDecimal("4.1"), AxisValue::min)
@@ -44,7 +44,7 @@ class AxisValueTest {
   @Test
   void rejectsIntervalCoordinateThatIsNotItsMidpoint() {
     assertThatThrownBy(() -> new AxisValue(
-        ChemicalAxis.ACIDITY,
+        ChemicalAxis.TITRATABLE_ACIDITY,
         new BigDecimal("4.7"),
         AxisValueKind.INTERVAL_MIDPOINT,
         new BigDecimal("4.1"),
@@ -57,7 +57,7 @@ class AxisValueTest {
   @Test
   void rejectsBoundsForPointValue() {
     assertThatThrownBy(() -> new AxisValue(
-        ChemicalAxis.SUGAR,
+        ChemicalAxis.SPECIFIC_GRAVITY,
         new BigDecimal("1.050"),
         AxisValueKind.POINT,
         new BigDecimal("1.040"),
@@ -70,7 +70,7 @@ class AxisValueTest {
   @Test
   void rejectsMissingOrReversedIntervalBounds() {
     assertThatThrownBy(() -> new AxisValue(
-        ChemicalAxis.ACIDITY,
+        ChemicalAxis.TITRATABLE_ACIDITY,
         new BigDecimal("4.5"),
         AxisValueKind.INTERVAL_MIDPOINT,
         null,
@@ -80,7 +80,7 @@ class AxisValueTest {
         .hasMessage("interval midpoint axis value requires both bounds");
 
     assertThatThrownBy(() -> AxisValue.intervalMidpoint(
-        ChemicalAxis.ACIDITY,
+        ChemicalAxis.TITRATABLE_ACIDITY,
         new BigDecimal("5.0"),
         new BigDecimal("4.0")
     ))

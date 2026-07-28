@@ -4,10 +4,11 @@ import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.appleprofile.application.AppleVarietyNotFoundException;
 import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.in.AppleVarietySugarAcidityZoneResult;
 import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.in.AssessAppleVarietySugarAcidityZoneUseCase;
-import org.craft.mcs.cap.core.appleprofile.application.port.out.AppleVarietyRepository;
+import org.craft.mcs.cap.core.appleprofile.application.catalog.port.out.AppleVarietyRepository;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyId;
 import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPredictor;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileProjector;
+import org.craft.mcs.cap.core.profileanalysis.abv.application.compatibility.ChemicalProfileAxesPotentialAbvAdapter;
+import org.craft.mcs.cap.core.profileanalysis.compatibility.application.ChemicalProfileAssessmentAdapter;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 
@@ -15,12 +16,12 @@ import static java.util.Objects.requireNonNull;
 
 
 /**
- * Application service for projecting one apple variety onto the sugar-acidity graph zones.
+ * Application service for interpreting one apple variety in sugar-acidity graph zones.
  *
  * <p>The service deliberately returns an unplottable result when sugar or acidity is missing. That
  * keeps incomplete catalog data visible to admin/catalog workflows instead of turning partial
  * profiles into server errors. Zone math and capability checks are delegated to
- * {@link SugarAcidityProfileProjector}.
+ * {@link ChemicalProfileAssessmentAdapter}.
  */
 @Component
 @RequiredArgsConstructor
@@ -28,7 +29,7 @@ public final class AssessAppleVarietySugarAcidityZoneService
     implements AssessAppleVarietySugarAcidityZoneUseCase {
 
   private final @NonNull AppleVarietyRepository appleVarietyRepository;
-  private final @NonNull SugarAcidityProfileProjector sugarAcidityProfileProjector;
+  private final @NonNull ChemicalProfileAssessmentAdapter chemicalProfileAssessmentAdapter;
   private final @NonNull PotentialAbvPredictor potentialAbvPredictor;
 
   @Override
@@ -39,13 +40,16 @@ public final class AssessAppleVarietySugarAcidityZoneService
 
     final var variety = appleVarietyRepository.findById(varietyId)
         .orElseThrow(() -> new AppleVarietyNotFoundException(varietyId));
-    final var evaluation = sugarAcidityProfileProjector.project(variety.chemicalProfile());
+    final var evaluation = chemicalProfileAssessmentAdapter.project(variety.chemicalProfile());
 
     return new AppleVarietySugarAcidityZoneResult(
         variety.varietyId(),
         variety.name(),
         evaluation,
-        potentialAbvPredictor.predictIfSugarPresent(evaluation.axes()).orElse(null) // NOSONAR
+        ChemicalProfileAxesPotentialAbvAdapter.predict(
+            evaluation.axes(),
+            potentialAbvPredictor
+        ).orElse(null) // NOSONAR
     );
   }
 }

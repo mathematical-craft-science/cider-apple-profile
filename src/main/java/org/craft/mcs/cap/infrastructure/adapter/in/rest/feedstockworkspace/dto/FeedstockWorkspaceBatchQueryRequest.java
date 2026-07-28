@@ -1,8 +1,9 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstockworkspace.dto;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.UUID;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.port.in.ProfileTargetScoringPurpose;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.model.ProfileTargetAnalysisScenario;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.common.dto.FeedstockSeasonRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.ProfileTargetObjectiveWeightsRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.ProfileTargetRequest;
@@ -39,13 +40,14 @@ public record FeedstockWorkspaceBatchQueryRequest(
     @Schema(description = "Optional axis weights.", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @Nullable ProfileTargetObjectiveWeightsRequest weights,
     @Schema(
-        description = "Scoring purpose used when target is present.",
-        implementation = ProfileTargetScoringPurpose.class,
+        description = "Analysis scenario used to select scoring defaults when a target is present.",
+        implementation = ProfileTargetAnalysisScenario.class,
         example = "BLENDING_PLANNING",
         nullable = true,
         requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )
-    @Nullable ProfileTargetScoringPurpose purpose,
+    @JsonAlias("purpose")
+    @Nullable ProfileTargetAnalysisScenario analysisScenario,
     @Schema(
         description = "Maximum target candidates evaluated when target is present.",
         minimum = "1",

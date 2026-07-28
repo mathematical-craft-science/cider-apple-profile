@@ -11,7 +11,7 @@ import static java.util.Objects.requireNonNull;
  * One optimized candidate returned by an optimization strategy.
  *
  * <p>The candidate contains the calculated composition, pure target distance and full objective
- * assessment. The distance explains sugar/acidity/tannin target fit. The objective assessment adds
+ * assessment. The distance explains SG/TA/tannin target fit. The objective assessment adds
  * optional production-readiness penalties such as YAN and is used for ranking.
  */
 public record ChemicalProfileCompositionOptimizationCandidate(

@@ -4,12 +4,12 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.UUID;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.abv.dto.PotentialAbvPredictionResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.dto.ChemicalProfileCapabilityAssessmentResponse;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.sugaracidity.dto.SugarAcidityZoneAssessmentResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.dto.SugarAcidityGraphAssessmentResponse;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 
-@Schema(description = "Sugar-acidity graph assessment for an apple variety.")
+@Schema(description = "Sugar-acidity assessment for an apple variety, backed by SG and TA evidence.")
 public record AppleVarietySugarAcidityZoneResponse(
     @Schema(
         description = "Apple variety identifier.",
@@ -34,7 +34,7 @@ public record AppleVarietySugarAcidityZoneResponse(
         nullable = true,
         requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )
-    @Nullable SugarAcidityZoneAssessmentResponse assessment,
+    @Nullable SugarAcidityGraphAssessmentResponse assessment,
     @Schema(
         description = "Potential ABV predicted from the variety sugar profile, when sugar is available.",
         nullable = true,

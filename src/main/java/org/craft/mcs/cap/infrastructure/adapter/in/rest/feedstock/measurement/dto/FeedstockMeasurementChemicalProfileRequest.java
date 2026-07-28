@@ -12,7 +12,7 @@ import org.jspecify.annotations.Nullable;
 @Schema(description = "Deprecated Feedstock chemical profile request with profile-wide provenance.")
 public record FeedstockMeasurementChemicalProfileRequest(
     @Schema(
-        description = "Sugar measurement.",
+        description = "Deprecated sugar field converted to canonical Specific Gravity.",
         nullable = true,
         requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )

@@ -15,7 +15,7 @@ import org.craft.mcs.cap.core.measurement.application.port.in.CreateMeasurementS
 import org.craft.mcs.cap.core.measurement.application.port.in.PatchMeasurementSetCommand;
 import org.craft.mcs.cap.core.measurement.application.port.in.RetractMeasurementSetCommand;
 import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementActorProvider;
-import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementMaterialStateProvider;
+import org.craft.mcs.cap.core.measurement.application.port.out.ObservedMaterialStateValidator;
 import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementSetRepository;
 import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementSubjectAccessControl;
 import org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic;
@@ -75,7 +75,7 @@ class MeasurementSetCommandServicesTest {
   void createAttachesEvidenceToObservedMaterialState() {
     final var repository = mock(MeasurementSetRepository.class);
     final var subjectAccessControl = mock(MeasurementSubjectAccessControl.class);
-    final var materialStateProvider = mock(MeasurementMaterialStateProvider.class);
+    final var materialStateValidator = mock(ObservedMaterialStateValidator.class);
     final var workspaceId = WorkspaceId.newId();
     final var subject = new MeasurementSubjectReference(
         MeasurementSubjectType.FEEDSTOCK_BATCH,
@@ -83,7 +83,7 @@ class MeasurementSetCommandServicesTest {
     );
     final var observedStateId = MaterialStateId.newId();
     when(subjectAccessControl.requireWriteAccess(subject)).thenReturn(workspaceId);
-    when(materialStateProvider.requireObservedState(subject, observedStateId)).thenReturn(observedStateId);
+    when(materialStateValidator.requireObservedState(subject, observedStateId)).thenReturn(observedStateId);
     when(repository.create(any())).thenAnswer(invocation -> new VersionedAggregate<>(
         invocation.getArgument(0),
         AggregateRevision.of(0)
@@ -91,7 +91,7 @@ class MeasurementSetCommandServicesTest {
     final var service = createService(
         repository,
         subjectAccessControl,
-        materialStateProvider
+        materialStateValidator
     );
 
     final var result = service.create(command(subject, observedStateId));
@@ -107,7 +107,7 @@ class MeasurementSetCommandServicesTest {
   void createRejectsStateThatDoesNotBelongToSubjectBeforePersistingEvidence() {
     final var repository = mock(MeasurementSetRepository.class);
     final var subjectAccessControl = mock(MeasurementSubjectAccessControl.class);
-    final var materialStateProvider = mock(MeasurementMaterialStateProvider.class);
+    final var materialStateValidator = mock(ObservedMaterialStateValidator.class);
     final var workspaceId = WorkspaceId.newId();
     final var subject = new MeasurementSubjectReference(
         MeasurementSubjectType.FEEDSTOCK_BATCH,
@@ -115,14 +115,14 @@ class MeasurementSetCommandServicesTest {
     );
     final var observedStateId = MaterialStateId.newId();
     when(subjectAccessControl.requireWriteAccess(subject)).thenReturn(workspaceId);
-    when(materialStateProvider.requireObservedState(subject, observedStateId))
+    when(materialStateValidator.requireObservedState(subject, observedStateId))
         .thenThrow(new ApplicationValidationException(
             "observed material state does not belong to the measurement subject"
         ));
     final var service = createService(
         repository,
         subjectAccessControl,
-        materialStateProvider
+        materialStateValidator
     );
 
     assertThatThrownBy(() -> service.create(command(subject, observedStateId)))
@@ -247,7 +247,7 @@ class MeasurementSetCommandServicesTest {
   private static CreateMeasurementSetService createService(
       MeasurementSetRepository repository,
       MeasurementSubjectAccessControl subjectAccessControl,
-      MeasurementMaterialStateProvider materialStateProvider
+      ObservedMaterialStateValidator observedMaterialStateValidator
   ) {
     final MeasurementActorProvider actorProvider = () -> ActorReference.accountUser(newUuid());
     return new CreateMeasurementSetService(
@@ -256,7 +256,7 @@ class MeasurementSetCommandServicesTest {
         (subject, measurements) -> {
         },
         actorProvider,
-        materialStateProvider,
+        observedMaterialStateValidator,
         new MeasurementSetRevisionFactory(),
         new DirectTransactionHelper(),
         Clock.fixed(CORRECTION_TIME, ZoneOffset.UTC)

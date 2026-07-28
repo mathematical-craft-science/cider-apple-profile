@@ -14,12 +14,13 @@ import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceStep;
 import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceStepSubject;
 import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceStepType;
 import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceSubjectType;
-import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchFeedstockTraceSource;
+import org.craft.mcs.cap.core.production.application.port.out.ConsumedProductionSource;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionSourceDisplayName;
+import org.craft.mcs.cap.core.production.domain.model.ProductionSourceEvidenceReference;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatch;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatchId;
+import org.craft.mcs.cap.core.production.domain.model.ProductionSourceReference;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
-import org.craft.mcs.cap.shared.application.ApplicationValidationException;
 import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValueKind;
@@ -28,18 +29,18 @@ import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
-import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
+import org.craft.mcs.cap.shared.kernel.material.value.MaterialConsumption;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
-import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 
 class BatchTraceabilityProductionBatchTraceRecorderTest {
@@ -62,16 +63,19 @@ class BatchTraceabilityProductionBatchTraceRecorderTest {
 
     recorder.recordCreated(
         productionBatch,
-        List.of(new ProductionBatchFeedstockTraceSource(
-            sourceId,
-            sourceStateId,
-            remainingSourceStateId,
+        List.of(new ConsumedProductionSource(
+            ProductionSourceReference.feedstockBatch(sourceId.value()),
             ProductionSourceDisplayName.of("Late juice"),
-            VolumeValue.ofLiters("250"),
-            VolumeValue.ofLiters("100"),
-            VolumeValue.ofLiters("150"),
+            new MaterialConsumption(
+                VolumeValue.ofLiters("250"),
+                VolumeValue.ofLiters("100"),
+                VolumeValue.ofLiters("150"),
+                sourceStateId,
+                remainingSourceStateId
+            ),
             sourceAxes(),
-            ConfidenceLevel.LAB_VERIFIED
+            ConfidenceLevel.LAB_VERIFIED,
+            ProductionSourceEvidenceReference.of("measurement-set")
         )),
         occurredAt,
         "accepted input"
@@ -106,33 +110,10 @@ class BatchTraceabilityProductionBatchTraceRecorderTest {
         .returns(productionBatch.currentMaterialStateId(), BatchTraceStepSubject::materialStateId)
         .satisfies(output -> assertThat(output.snapshot().volume().liters())
             .isEqualByComparingTo("100"))
-        .satisfies(output -> assertThat(output.snapshot().profile().valueOf(ChemicalAxis.SUGAR))
+        .satisfies(output -> assertThat(output.snapshot().profile().valueOf(ChemicalAxis.SPECIFIC_GRAVITY))
             .get()
             .returns(AxisValueKind.CALCULATED, AxisValue::valueKind));
 
-  }
-
-  @Test
-  void rejectsTraceSourceWithoutMaterialStateTransition() {
-    final var batchId = FeedstockBatchId.newId();
-    final var materialStateId = MaterialStateId.newId();
-    final var availableBefore = VolumeValue.ofLiters("250");
-    final var consumed = VolumeValue.ofLiters("100");
-    final var remaining = VolumeValue.ofLiters("150");
-
-    assertThatThrownBy(() -> new ProductionBatchFeedstockTraceSource(
-        batchId,
-        materialStateId,
-        materialStateId,
-        null,
-        availableBefore,
-        consumed,
-        remaining,
-        null,
-        null
-    ))
-        .isInstanceOf(ApplicationValidationException.class)
-        .hasMessage("production trace source must describe a material state transition");
   }
 
   private static @NonNull BatchTraceStepSubject outputOfType(
@@ -147,8 +128,8 @@ class BatchTraceabilityProductionBatchTraceRecorderTest {
 
   private static @NonNull ChemicalProfileAxes sourceAxes() {
     return ChemicalProfileAxes.of(
-        axis(ChemicalAxis.SUGAR, "1.050"),
-        axis(ChemicalAxis.ACIDITY, "6.1"),
+        axis(ChemicalAxis.SPECIFIC_GRAVITY, "1.050"),
+        axis(ChemicalAxis.TITRATABLE_ACIDITY, "6.1"),
         axis(ChemicalAxis.TANNIN, "1400"),
         axis(ChemicalAxis.YEAST_ASSIMILABLE_NITROGEN, "180")
     );

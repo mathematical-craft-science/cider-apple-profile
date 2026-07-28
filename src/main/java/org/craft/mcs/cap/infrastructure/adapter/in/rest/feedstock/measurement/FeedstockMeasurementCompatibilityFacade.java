@@ -37,7 +37,7 @@ public final class FeedstockMeasurementCompatibilityFacade {
   private final @NonNull QueryMeasurementSetsUseCase queryMeasurementSetsUseCase;
   private final @NonNull RetractMeasurementSetUseCase retractMeasurementSetUseCase;
   private final @NonNull GetCurrentMeasurementSubjectStateUseCase currentMeasurementSubjectStateUseCase;
-  private final @NonNull FeedstockMeasurementCompatibilityMapper compatibilityMapper;
+  private final @NonNull FeedstockMeasurementCompatibilityRequestMapper requestMapper;
 
   @NonNull FeedstockMeasurementResponse create(
       @NonNull UUID batchId,
@@ -46,9 +46,9 @@ public final class FeedstockMeasurementCompatibilityFacade {
     requireNonNull(batchId, "feedstock batch id cannot be null");
     requireNonNull(request, "create feedstock measurement request cannot be null");
     final var subject = subject(batchId);
-    return compatibilityMapper.toResponse(
+    return FeedstockMeasurementCompatibilityResponseMapper.toResponse(
         createMeasurementSetUseCase.create(
-            compatibilityMapper.toCommand(
+            requestMapper.toCommand(
                 subject,
                 currentMeasurementSubjectStateUseCase.currentStateOf(subject),
                 request
@@ -61,8 +61,8 @@ public final class FeedstockMeasurementCompatibilityFacade {
     requireNonNull(batchId, "feedstock batch id cannot be null");
     return queryMeasurementSetsUseCase.list(subject(batchId)).stream()
         .filter(view -> view.lifecycle() == MeasurementSetLifecycle.ACTIVE)
-        .filter(compatibilityMapper::supportsLegacyChemicalProfile)
-        .map(compatibilityMapper::toResponse)
+        .filter(FeedstockMeasurementCompatibilityRecords::supportsLegacyChemicalProfile)
+        .map(FeedstockMeasurementCompatibilityResponseMapper::toResponse)
         .toList();
   }
 
@@ -72,9 +72,9 @@ public final class FeedstockMeasurementCompatibilityFacade {
       @NonNull UpdateFeedstockMeasurementRequest request
   ) {
     final var current = requireMeasurement(batchId, measurementId);
-    return compatibilityMapper.toResponse(
+    return FeedstockMeasurementCompatibilityResponseMapper.toResponse(
         correctMeasurementSetUseCase.replace(
-            compatibilityMapper.toCommand(current, request)
+            requestMapper.toCommand(current, request)
         )
     );
   }
@@ -85,9 +85,9 @@ public final class FeedstockMeasurementCompatibilityFacade {
       @NonNull PatchFeedstockMeasurementRequest request
   ) {
     final var current = requireMeasurement(batchId, measurementId);
-    return compatibilityMapper.toResponse(
+    return FeedstockMeasurementCompatibilityResponseMapper.toResponse(
         correctMeasurementSetUseCase.patch(
-            compatibilityMapper.toCommand(current, request)
+            requestMapper.toCommand(current, request)
         )
     );
   }
@@ -113,7 +113,7 @@ public final class FeedstockMeasurementCompatibilityFacade {
     final var expectedSubject = subject(batchId);
     if (!view.subject().equals(expectedSubject)
         || view.lifecycle() != MeasurementSetLifecycle.ACTIVE
-        || !compatibilityMapper.supportsLegacyChemicalProfile(view)) {
+        || !FeedstockMeasurementCompatibilityRecords.supportsLegacyChemicalProfile(view)) {
       throw new MeasurementSetNotFoundException(view.measurementSetId());
     }
     return view;

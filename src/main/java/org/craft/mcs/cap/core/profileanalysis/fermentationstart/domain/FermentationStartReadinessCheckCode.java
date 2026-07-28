@@ -3,11 +3,11 @@ package org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain;
 /** Stable machine-readable outcomes of fermentation-start readiness checks. */
 public enum FermentationStartReadinessCheckCode {
 
-  /** Sugar is missing, so fermentation potential cannot be assessed. */
-  SUGAR_MISSING,
+  /** Specific Gravity is missing, so fermentation potential cannot be assessed. */
+  SPECIFIC_GRAVITY_MISSING,
 
-  /** Sugar is available for fermentation planning. */
-  SUGAR_PRESENT,
+  /** Specific Gravity is available for fermentation planning. */
+  SPECIFIC_GRAVITY_PRESENT,
 
   /** pH is missing, so yeast-stress and microbial risks cannot be assessed. */
   PH_MISSING,

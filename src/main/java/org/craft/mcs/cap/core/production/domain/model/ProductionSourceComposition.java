@@ -10,15 +10,18 @@ import org.jspecify.annotations.NonNull;
 import static java.util.Objects.requireNonNull;
 
 
+/**
+ * Confirmed source components that define the initial material of a ProductionBatch.
+ *
+ * <p>The component list is the only source of truth; total volume is always derived from it.</p>
+ */
 @ValueObject
 public record ProductionSourceComposition(
-    @NonNull List<@NonNull ProductionSourceComponent> sources,
-    @NonNull VolumeValue totalVolume
+    @NonNull List<@NonNull ProductionSourceComponent> sources
 ) {
 
   public ProductionSourceComposition {
     sources = List.copyOf(requireNonNull(sources, "production source composition cannot be null"));
-    requireNonNull(totalVolume, "production source composition total volume cannot be null");
 
     if (sources.isEmpty()) {
       throw new DomainRuleViolationException("production source composition must contain at least one source");
@@ -32,18 +35,19 @@ public record ProductionSourceComposition(
           "production source composition must contain each source exactly once"
       );
     }
-    if (totalVolume.liters().compareTo(totalVolumeOf(sources).liters()) != 0) {
-      throw new DomainRuleViolationException(
-          "production source composition total volume must equal the sum of source volumes"
-      );
-    }
   }
 
   public static @NonNull ProductionSourceComposition of(
       @NonNull List<@NonNull ProductionSourceComponent> sources
   ) {
-    requireNonNull(sources, "production source composition cannot be null");
-    return new ProductionSourceComposition(sources, totalVolumeOf(sources));
+    return new ProductionSourceComposition(sources);
+  }
+
+  /**
+   * Returns the authoritative total derived from all source components.
+   */
+  public @NonNull VolumeValue totalVolume() {
+    return totalVolumeOf(sources);
   }
 
   private static @NonNull VolumeValue totalVolumeOf(

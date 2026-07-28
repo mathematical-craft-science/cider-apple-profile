@@ -16,11 +16,11 @@ import org.jspecify.annotations.Nullable;
 )
 public record FeedstockBatchDetailProfileSummaryResponse(
     @Schema(
-        description = "Sugar in canonical SG units.",
+        description = "Specific Gravity in canonical SG units.",
         nullable = true,
         requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )
-    @Nullable FeedstockBatchDetailProfileValueResponse sugar,
+    @Nullable FeedstockBatchDetailProfileValueResponse specificGravity,
     @Schema(
         description = "Titratable acidity in canonical g/L as malic acid units.",
         nullable = true,

@@ -3,15 +3,17 @@ package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.production
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.craft.mcs.cap.core.production.candidate.application.model.ProductionBatchCandidateSnapshot;
 import org.craft.mcs.cap.core.production.candidate.domain.model.ProductionBatchCandidate;
 import org.craft.mcs.cap.core.production.candidate.domain.model.ProductionBatchCandidateId;
 import org.craft.mcs.cap.core.production.candidate.domain.model.ProductionBatchCandidateStatus;
-import org.craft.mcs.cap.core.production.candidate.domain.model.ProductionSourceEvidenceReference;
+import org.craft.mcs.cap.core.production.domain.model.ProductionSourceEvidenceReference;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatchId;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceComponent;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceComposition;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceReference;
+import org.craft.mcs.cap.core.production.candidate.domain.model.ProductionCandidateSourceEvidence;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionWarning;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.normalization.ProfileAxisNormalizerCode;
@@ -20,17 +22,17 @@ import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.asses
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.assessment.ProfileTargetDistanceStatus;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.objective.ProfileTargetObjectiveFunctionCode;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetObjectiveWeights;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.SugarAcidityCoordinates;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.SugarAcidityTargetGeometryShape;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.SugarAcidityTargetKind;
+import org.craft.mcs.cap.core.profileanalysis.graph.domain.SugarAcidityGraphPoint;
+import org.craft.mcs.cap.core.profileanalysis.graph.domain.SugarAcidityGeometryShape;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.SugarAcidityTargetKind;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
-import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
-import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.craft.mcs.cap.shared.application.ConcurrentResourceModificationException;
 import org.craft.mcs.cap.shared.testing.jdbc.PostgresDataJdbcTestConfiguration;
 import org.jspecify.annotations.NonNull;
@@ -143,8 +145,13 @@ class ProductionBatchCandidatePersistenceDataJdbcTest {
             ProductionBatchCandidateId.newId(),
             workspaceId,
             composition,
-            Map.of(sourceReference, ProductionSourceEvidenceReference.of("measurement-2026-07-16")),
-            Map.of(sourceReference, MaterialStateId.newId()),
+            Map.of(
+                sourceReference,
+                new ProductionCandidateSourceEvidence(
+                    ProductionSourceEvidenceReference.of("measurement-2026-07-16"),
+                    MaterialStateId.newId()
+                )
+            ),
             productionProfile()
         ),
         prediction(productionProfile().specificGravity()),
@@ -164,13 +171,19 @@ class ProductionBatchCandidatePersistenceDataJdbcTest {
   }
 
   private static @NonNull ProfileTargetDistance targetDistance() {
-    final var point = new SugarAcidityCoordinates(new BigDecimal("1.052"), new BigDecimal("6.2"));
+    final var point = new SugarAcidityGraphPoint(
+        SpecificGravityValue.of("1.052"),
+        TitratableAcidityValue.of("6.2")
+    );
     return new ProfileTargetDistance(
         ProfileTargetDistanceStatus.SCORED,
         point,
-        new SugarAcidityCoordinates(new BigDecimal("1.050"), new BigDecimal("6.0")),
-        new BigDecimal("1200"),
-        new BigDecimal("1200"),
+        new SugarAcidityGraphPoint(
+            SpecificGravityValue.of("1.050"),
+            TitratableAcidityValue.of("6.0")
+        ),
+        TanninValue.of("1200"),
+        TanninValue.of("1200"),
         new BigDecimal("0.15"),
         false,
         false,
@@ -178,8 +191,8 @@ class ProductionBatchCandidatePersistenceDataJdbcTest {
         ProfileDistanceMetric.NORMALIZED_WEIGHTED_MANHATTAN,
         ProfileTargetObjectiveWeights.balanced(),
         SugarAcidityTargetKind.PREDEFINED_ZONE,
-        SugarAcidityTargetGeometryShape.RECTANGLE,
-        List.of()
+        SugarAcidityGeometryShape.RECTANGLE,
+        Set.of()
     );
   }
 

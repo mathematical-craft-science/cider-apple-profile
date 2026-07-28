@@ -1,12 +1,10 @@
 package org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.objective;
 
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.assessment.ProfileTargetDistance;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetIntervalPolicy;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetObjective;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.point.domain.SugarAcidityProfilePoint;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.SugarAcidityCoordinates;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.SugarAcidityTarget;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetScoringInput;
 import org.jspecify.annotations.NonNull;
-import static java.util.Objects.requireNonNull;
 
 
 /**
@@ -24,21 +22,8 @@ public interface ProfileTargetObjectiveFunction {
 
   @NonNull
   ProfileTargetDistance distanceTo(
-      @NonNull SugarAcidityCoordinates point,
-      @NonNull SugarAcidityTarget target
-  );
-
-  @NonNull
-  ProfileTargetDistance distanceTo(
-      @NonNull SugarAcidityProfilePoint point,
+      @NonNull ProfileTargetScoringInput input,
+      @NonNull ProfileTargetIntervalPolicy intervalPolicy,
       @NonNull ProfileTargetObjective objective
   );
-
-  default @NonNull ProfileTargetDistance distanceTo(
-      @NonNull SugarAcidityProfilePoint point,
-      @NonNull SugarAcidityTarget target
-  ) {
-    requireNonNull(point, "sugar-acidity profile point cannot be null");
-    return distanceTo(point, ProfileTargetObjective.of(target));
-  }
 }

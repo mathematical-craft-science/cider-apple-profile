@@ -8,6 +8,7 @@ import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.composition.dt
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.composition.dto.OptimizeFeedstockBatchCompositionRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.composition.dto.OptimizeFeedstockBatchCompositionResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.composition.dto.ScoreFeedstockBatchProfileTargetRequest;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.composition.mapper.FeedstockBatchCompositionOptimizationRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.composition.mapper.FeedstockBatchProfileTargetScoreRestMapper;
 import org.jspecify.annotations.NonNull;
 import org.springframework.http.ResponseEntity;
@@ -54,11 +55,11 @@ public final class FeedstockBatchCompositionPlanningController implements Feedst
       @RequestBody @NonNull OptimizeFeedstockBatchCompositionRequest request
   ) {
     final var result = optimizeFeedstockBatchCompositionUseCase.optimize(
-        FeedstockBatchProfileTargetScoreRestMapper.toOptimizationCommand(request)
+        FeedstockBatchCompositionOptimizationRestMapper.toCommand(request)
     );
 
     return ResponseEntity.ok(
-        FeedstockBatchProfileTargetScoreRestMapper.toResponse(result, stepPercent(request))
+        FeedstockBatchCompositionOptimizationRestMapper.toResponse(result, stepPercent(request))
     );
   }
 

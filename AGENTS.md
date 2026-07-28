@@ -85,7 +85,8 @@ Act as a senior Java architect and production-grade software engineer for the Ci
 - Do not let one aggregate own another aggregate's lifecycle unless that is a deliberate domain decision.
 - Keep cross-aggregate history and tracing in a separate traceability context.
 - Current important contexts:
-  - `core.feedstock`: feedstock batches, measurements, source material state;
+  - `core.feedstock`: feedstock batches and source material state;
+  - `core.measurement`: immutable measurement evidence and state-aware current-value projections;
   - `core.production`: production batches and production lifecycle;
   - `core.traceability`: material traceability across feedstock and production;
   - `core.appleprofile`: base apple variety catalog/reference profile;
@@ -145,13 +146,16 @@ Act as a senior Java architect and production-grade software engineer for the Ci
 
 ## Measurements And Units
 
-- Inside core, use canonical domain units:
-  - sugar: SG;
-  - acidity: g/L as malic acid;
+- In measurement evidence and low-level calculations, use chemical characteristic terminology:
+  - Specific Gravity (SG);
+  - Titratable Acidity (TA) in g/L as malic acid;
   - tannin: mg/L TAE;
   - YAN: mg N/L;
   - volume: L;
   - turbidity: NTU.
+- In cider-making interpretation models, SG may be interpreted as sugar potential and TA as acidity.
+  Keep the typed SG/TA evidence in the model and use sugar/acidity terms only for derived levels,
+  zones, contribution roles, and other explicit interpretations.
 - Measurement records store characteristic-specific `MeasuredValue` value objects, not generic decimal/unit pairs.
 - Do not persist unit labels for measurement records: the concrete value object defines the canonical unit.
 - At API boundaries, accept and return explicit units.
@@ -162,6 +166,9 @@ Act as a senior Java architect and production-grade software engineer for the Ci
 - YAN is used for fermentation-start/readiness assessment and composition calculation, but it must
   not participate in target distance or optimization target axes.
 - Target/distance/blending axes are sugar, acidity, and optional tannin.
+- Sugar-acidity graph coordinates and zone geometry use SG and TA only.
+- Tannin may define an optional graph-point color category, but it must not alter graph coordinates
+  or sugar-acidity zone classification.
 
 ## REST And API
 

@@ -8,11 +8,8 @@ import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.Co
 import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.ChemicalProfileCompositionOptimizationSource;
 import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.objective.CompositionOptimizationCriterion;
 import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.strategy.DiscretizedCompositionOptimizationSettings;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.port.in.ProfileTargetScoringPurpose;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.normalization.ProfileAxisNormalizerCode;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetObjective;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.objective.ProfileTargetObjectiveFunctionCode;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetObjectiveWeights;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetScoringConfiguration;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -24,15 +21,12 @@ public record OptimizeChemicalProfileCompositionCommand(
     @NonNull List<@NonNull ChemicalProfileCompositionOptimizationSource> sources,
     @NonNull ChemicalProfileCompositionTanninPolicy tanninPolicy,
     @NonNull ProfileTargetObjective targetObjective,
-    @NonNull ProfileTargetObjectiveWeights targetWeights,
-    @NonNull ProfileTargetScoringPurpose scoringPurpose,
+    @NonNull ProfileTargetScoringConfiguration scoringConfiguration,
     @NonNull List<@NonNull CompositionOptimizationCriterion> criteria,
     @NonNull DiscretizedCompositionOptimizationSettings settings,
     @NonNull CompositionOptimizationMode mode,
     @NonNull CompositionOptimizationAlgorithm algorithm,
     @NonNull ChemicalProfileCompositionCalculatorCode calculatorCode,
-    @NonNull ProfileAxisNormalizerCode normalizerCode,
-    @NonNull ProfileTargetObjectiveFunctionCode objectiveFunctionCode,
     @Nullable VolumeValue targetTotalVolume
 ) {
 
@@ -40,14 +34,11 @@ public record OptimizeChemicalProfileCompositionCommand(
     sources = List.copyOf(requireNonNull(sources, "chemical profile composition optimization sources cannot be null"));
     requireNonNull(tanninPolicy, "chemical profile composition tannin policy cannot be null");
     requireNonNull(targetObjective, "profile target objective cannot be null");
-    requireNonNull(targetWeights, "profile target objective weights cannot be null");
-    requireNonNull(scoringPurpose, "profile target scoring purpose cannot be null");
+    requireNonNull(scoringConfiguration, "profile target scoring configuration cannot be null");
     criteria = List.copyOf(requireNonNull(criteria, "composition optimization criteria cannot be null"));
     requireNonNull(settings, "discretized composition optimization settings cannot be null");
     requireNonNull(mode, "composition optimization mode cannot be null");
     requireNonNull(algorithm, "composition optimization algorithm cannot be null");
     requireNonNull(calculatorCode, "chemical profile composition calculator code cannot be null");
-    requireNonNull(normalizerCode, "profile axis normalizer code cannot be null");
-    requireNonNull(objectiveFunctionCode, "profile target objective function code cannot be null");
   }
 }

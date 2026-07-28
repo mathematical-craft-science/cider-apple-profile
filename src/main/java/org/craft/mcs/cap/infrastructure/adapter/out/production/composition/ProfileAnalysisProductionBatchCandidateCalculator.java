@@ -13,13 +13,14 @@ import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.Abs
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileComposition;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionSource;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionSourceReference;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
+import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionSourceCharacteristics;
+import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
-import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
 
 import static java.util.Objects.requireNonNull;
@@ -46,11 +47,8 @@ public final class ProfileAnalysisProductionBatchCandidateCalculator
             .toList(),
         request.tanninPolicy(),
         request.targetObjective(),
-        request.targetWeights(),
-        request.scoringPurpose(),
-        request.calculatorCode(),
-        request.normalizerCode(),
-        request.objectiveFunctionCode()
+        request.scoringConfiguration(),
+        request.calculatorCode()
     ));
     return new ProductionBatchCandidateCalculation(
         toProductionProfile(result.composition()),
@@ -69,7 +67,28 @@ public final class ProfileAnalysisProductionBatchCandidateCalculator
             source.reference().type().name(),
             source.reference().id().toString()
         ),
-        source.profile(),
+        new CompositionSourceCharacteristics(
+            PointCharacteristicValue.of(
+                SpecificGravityValue.of(
+                    source.profile().requireValueOf(ChemicalAxis.SPECIFIC_GRAVITY).value()
+                )
+            ),
+            PointCharacteristicValue.of(
+                TitratableAcidityValue.of(
+                    source.profile().requireValueOf(ChemicalAxis.TITRATABLE_ACIDITY).value()
+                )
+            ),
+            source.profile().valueOf(ChemicalAxis.TANNIN)
+                .map(value -> PointCharacteristicValue.of(
+                    TanninValue.of(value.value())
+                ))
+                .orElse(null), // NOSONAR
+            source.profile().valueOf(ChemicalAxis.YEAST_ASSIMILABLE_NITROGEN)
+                .map(value -> PointCharacteristicValue.of(
+                    YeastAssimilableNitrogenValue.of(value.value())
+                ))
+                .orElse(null) // NOSONAR
+        ),
         new AbsoluteCompositionVolume(source.selectedVolume()),
         source.availableVolume()
     );
@@ -78,24 +97,12 @@ public final class ProfileAnalysisProductionBatchCandidateCalculator
   private static @NonNull ProductionProfileSnapshot toProductionProfile(
       @NonNull ChemicalProfileComposition composition
   ) {
-    final var profile = composition.profile();
+    final var characteristics = composition.characteristics();
     return new ProductionProfileSnapshot(
-        SpecificGravityValue.of(profile.sugar().value()),
-        TitratableAcidityValue.of(profile.acidity().value()),
-        toTannin(profile.tannin()),
-        toYeastAssimilableNitrogen(composition.yeastAssimilableNitrogen())
+        characteristics.specificGravity(),
+        characteristics.titratableAcidity(),
+        characteristics.tannin(),
+        characteristics.yeastAssimilableNitrogen()
     );
-  }
-
-  private static @Nullable TanninValue toTannin(@Nullable AxisValue tannin) {
-    return tannin == null ? null : TanninValue.of(tannin.value());
-  }
-
-  private static @Nullable YeastAssimilableNitrogenValue toYeastAssimilableNitrogen(
-      @Nullable AxisValue yeastAssimilableNitrogen
-  ) {
-    return yeastAssimilableNitrogen == null
-        ? null
-        : YeastAssimilableNitrogenValue.of(yeastAssimilableNitrogen.value());
   }
 }

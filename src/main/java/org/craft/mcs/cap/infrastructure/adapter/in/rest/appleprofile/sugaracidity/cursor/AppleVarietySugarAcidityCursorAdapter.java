@@ -3,11 +3,11 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.sugaracidi
 import java.util.Locale;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.model.AppleVarietySugarAcidityPagePosition;
-import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.in.AppleVarietyPointFilters;
-import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityCriteria;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.application.model.SugarAcidityZoneCriteria;
-import org.craft.mcs.cap.shared.platform.query.TextSearchCriteria;
+import org.craft.mcs.cap.core.appleprofile.application.catalog.model.AppleVarietyCatalogPagePosition;
+import org.craft.mcs.cap.core.appleprofile.application.analysis.common.model.AppleVarietyAnalysisFilters;
+import org.craft.mcs.cap.core.profileanalysis.profileaxis.application.model.ChemicalProfileCapabilityCriteria;
+import org.craft.mcs.cap.core.profileanalysis.graph.application.model.JolicoeurSugarAcidityZoneCriteria;
+import org.craft.mcs.cap.shared.application.query.TextSearchCriteria;
 import org.craft.mcs.cap.shared.infrastructure.query.cursor.CursorBinding;
 import org.craft.mcs.cap.shared.infrastructure.query.cursor.CursorScope;
 import org.craft.mcs.cap.shared.infrastructure.query.cursor.CursorTokenCodec;
@@ -29,9 +29,9 @@ public final class AppleVarietySugarAcidityCursorAdapter {
 
   private final @NonNull CursorTokenCodec cursorTokenCodec;
 
-  public @Nullable AppleVarietySugarAcidityPagePosition decode(
+  public @Nullable AppleVarietyCatalogPagePosition decode(
       @Nullable String cursor,
-      @NonNull AppleVarietyPointFilters filters
+      @NonNull AppleVarietyAnalysisFilters filters
   ) {
     requireNonNull(filters, "apple variety point filters cannot be null");
     if (cursor == null || cursor.isBlank()) {
@@ -41,19 +41,19 @@ public final class AppleVarietySugarAcidityCursorAdapter {
     return cursorTokenCodec.decode(
         cursor.strip(),
         binding(filters),
-        AppleVarietySugarAcidityPagePosition.class
+        AppleVarietyCatalogPagePosition.class
     );
   }
 
   public @Nullable String encode(
-      @Nullable AppleVarietySugarAcidityPagePosition position,
-      @NonNull AppleVarietyPointFilters filters
+      @Nullable AppleVarietyCatalogPagePosition position,
+      @NonNull AppleVarietyAnalysisFilters filters
   ) {
     requireNonNull(filters, "apple variety point filters cannot be null");
     return position == null ? null : cursorTokenCodec.encode(binding(filters), position);
   }
 
-  private static @NonNull CursorBinding binding(@NonNull AppleVarietyPointFilters filters) {
+  private static @NonNull CursorBinding binding(@NonNull AppleVarietyAnalysisFilters filters) {
     return CursorBinding.boundTo(
         CURSOR_SCOPE,
         "name=" + nameContains(filters.nameContains()),
@@ -66,7 +66,7 @@ public final class AppleVarietySugarAcidityCursorAdapter {
     return criteria == null ? "" : criteria.query().toLowerCase(Locale.ROOT);
   }
 
-  private static @NonNull String zones(@Nullable SugarAcidityZoneCriteria criteria) {
+  private static @NonNull String zones(@Nullable JolicoeurSugarAcidityZoneCriteria criteria) {
     return criteria == null
         ? ""
         : criteria.zones().stream()

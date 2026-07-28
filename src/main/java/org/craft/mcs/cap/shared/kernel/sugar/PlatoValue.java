@@ -13,8 +13,7 @@ import tech.units.indriya.quantity.Quantities;
 
 @ValueObject
 public final class PlatoValue
-    extends AbstractMeasuredValue<Plato, PlatoValue>
-    implements SugarValue {
+    extends AbstractMeasuredValue<Plato, PlatoValue> {
 
   private static final BigDecimal MIN = BigDecimal.ZERO;
   private static final BigDecimal MAX = new BigDecimal("32.0");

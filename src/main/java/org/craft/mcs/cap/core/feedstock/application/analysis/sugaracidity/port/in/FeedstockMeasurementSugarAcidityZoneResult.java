@@ -1,10 +1,10 @@
 package org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in;
 
 import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementId;
-import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementName;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileEvaluation;
+import org.craft.mcs.cap.core.profileanalysis.compatibility.application.ChemicalProfileAssessment;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
@@ -18,7 +18,7 @@ public record FeedstockMeasurementSugarAcidityZoneResult(
     @NonNull WorkspaceId workspaceId,
     @NonNull FeedstockBatchId batchId,
     @NonNull FeedstockMeasurementName measurementName,
-    @NonNull SugarAcidityProfileEvaluation evaluation
+    @NonNull ChemicalProfileAssessment evaluation
 ) {
 
   public FeedstockMeasurementSugarAcidityZoneResult {

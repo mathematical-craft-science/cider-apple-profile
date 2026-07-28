@@ -23,12 +23,18 @@ public interface AppleVarietyPotentialAbvApi {
 
   @Operation(
       summary = "Predict apple variety potential ABV",
-      description = "Predicts potential ABV from the apple variety reference sugar value using the configured ABV prediction strategy."
+      description = """
+          Predicts potential ABV from the apple variety reference SG using the configured ABV
+          prediction strategy.
+          """
   )
   @ApiResponse(
       responseCode = "200",
       description = "Potential ABV prediction.",
-      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = AppleVarietyPotentialAbvResponse.class))
+      content = @Content(
+          mediaType = APPLICATION_JSON_VALUE,
+          schema = @Schema(implementation = AppleVarietyPotentialAbvResponse.class)
+      )
   )
   @ApiResponse(
       responseCode = "422",

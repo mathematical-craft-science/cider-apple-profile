@@ -3,9 +3,9 @@ package org.craft.mcs.cap.core.feedstock.application.measurement.model;
 import java.time.Instant;
 import java.util.List;
 import org.craft.mcs.cap.shared.application.ApplicationValidationException;
+import org.craft.mcs.cap.shared.application.measurement.MeasurementEvidenceSnapshot;
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
-import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
-import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -22,7 +22,7 @@ public record FeedstockMeasurementView(
     @NonNull ChemicalProfile chemicalProfile,
     @NonNull Instant measuredAt,
     long evidenceVersion,
-    @NonNull List<@NonNull FeedstockProfileAxisEvidence> axisEvidence,
+    @NonNull List<@NonNull MeasurementEvidenceSnapshot> axisEvidence,
     @Nullable String note
 ) {
 
@@ -62,25 +62,4 @@ public record FeedstockMeasurementView(
     );
   }
 
-  /**
-   * Returns the weakest declared confidence across selected axes, or no aggregate confidence when
-   * any selected axis has no explicit confidence.
-   */
-  public @Nullable ConfidenceLevel aggregateConfidence() {
-    if (axisEvidence.isEmpty()) {
-      return null;
-    }
-
-    var weakest = ConfidenceLevel.LAB_VERIFIED;
-    for (final var evidence : axisEvidence) {
-      final var confidence = evidence.confidence();
-      if (confidence == null) {
-        return null;
-      }
-      if (confidence.compareTo(weakest) < 0) {
-        weakest = confidence;
-      }
-    }
-    return weakest;
-  }
 }

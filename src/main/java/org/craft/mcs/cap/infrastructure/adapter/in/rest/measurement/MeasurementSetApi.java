@@ -132,6 +132,14 @@ public interface MeasurementSetApi {
           schema = @Schema(implementation = ProblemDetail.class)
       )
   )
+  @ApiResponse(
+      responseCode = "404",
+      description = "The measurement set was not found.",
+      content = @Content(
+          mediaType = APPLICATION_JSON_VALUE,
+          schema = @Schema(implementation = ProblemDetail.class)
+      )
+  )
   @NonNull ResponseEntity<@NonNull MeasurementSetResponse> replace(
       @Parameter(required = true, schema = @Schema(format = "uuid"))
       @NonNull UUID measurementSetId,
@@ -164,6 +172,14 @@ public interface MeasurementSetApi {
           schema = @Schema(implementation = ProblemDetail.class)
       )
   )
+  @ApiResponse(
+      responseCode = "404",
+      description = "The measurement set was not found.",
+      content = @Content(
+          mediaType = APPLICATION_JSON_VALUE,
+          schema = @Schema(implementation = ProblemDetail.class)
+      )
+  )
   @NonNull ResponseEntity<@NonNull MeasurementSetResponse> patch(
       @Parameter(required = true, schema = @Schema(format = "uuid"))
       @NonNull UUID measurementSetId,
@@ -175,13 +191,29 @@ public interface MeasurementSetApi {
       description = "Marks the logical set as retracted without physically deleting revisions or records."
   )
   @ApiResponse(responseCode = "204", description = "Measurement set retracted.")
+  @ApiResponse(
+      responseCode = "404",
+      description = "The measurement set was not found.",
+      content = @Content(
+          mediaType = APPLICATION_JSON_VALUE,
+          schema = @Schema(implementation = ProblemDetail.class)
+      )
+  )
+  @ApiResponse(
+      responseCode = "409",
+      description = "The expected version is stale or the measurement set is already retracted.",
+      content = @Content(
+          mediaType = APPLICATION_JSON_VALUE,
+          schema = @Schema(implementation = ProblemDetail.class)
+      )
+  )
   @NonNull ResponseEntity<Void> retract(
       @Parameter(required = true, schema = @Schema(format = "uuid"))
       @NonNull UUID measurementSetId,
       @Parameter(
           description = "Optimistic-locking version observed by the caller.",
           required = true,
-          schema = @Schema(minimum = "0")
+          schema = @Schema(type = "integer", format = "int64", minimum = "0")
       )
       long expectedVersion
   );

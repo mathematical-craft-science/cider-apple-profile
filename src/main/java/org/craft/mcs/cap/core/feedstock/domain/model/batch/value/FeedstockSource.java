@@ -8,6 +8,12 @@ import org.jspecify.annotations.NonNull;
 import static java.util.Objects.requireNonNull;
 
 
+/**
+ * Human-readable origin reference supplied for a FeedstockBatch.
+ *
+ * <p>Structured provenance and regional source profiles belong to their dedicated contexts. This
+ * value preserves the concise operational source description used by the current Feedstock model.</p>
+ */
 @ValueObject
 public record FeedstockSource(@NonNull String value) {
 

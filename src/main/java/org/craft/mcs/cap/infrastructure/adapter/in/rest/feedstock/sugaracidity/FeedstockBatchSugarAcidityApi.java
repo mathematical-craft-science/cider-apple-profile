@@ -26,7 +26,7 @@ public interface FeedstockBatchSugarAcidityApi {
 
   @Operation(
       summary = "Assess current feedstock batch sugar-acidity zone",
-      description = "Maps the state-aware current batch profile to a sugar-acidity graph zone when possible."
+      description = "Maps current SG and TA evidence to a sugar-acidity graph zone when possible."
   )
   @ApiResponse(
       responseCode = "200",

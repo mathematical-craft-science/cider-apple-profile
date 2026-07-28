@@ -5,8 +5,9 @@ import java.util.Base64;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
-import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockProfileAxisEvidence;
 import org.craft.mcs.cap.shared.application.ApplicationValidationException;
+import org.craft.mcs.cap.shared.application.measurement.MeasurementEvidenceReference;
+import org.craft.mcs.cap.shared.application.measurement.MeasurementEvidenceSnapshot;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
@@ -36,14 +37,14 @@ public record FeedstockBatchMaterialEvidenceReference(@NonNull String value) {
   }
 
   public static @NonNull FeedstockBatchMaterialEvidenceReference from(
-      @NonNull List<@NonNull FeedstockProfileAxisEvidence> evidence
+      @NonNull List<@NonNull MeasurementEvidenceSnapshot> evidence
   ) {
     evidence = List.copyOf(requireNonNull(evidence, "feedstock profile evidence cannot be null"));
     if (evidence.isEmpty()) {
       throw new ApplicationValidationException("feedstock material profile must reference measurement evidence");
     }
     final var distinctCharacteristicCount = evidence.stream()
-        .map(FeedstockProfileAxisEvidence::characteristic)
+        .map(MeasurementEvidenceSnapshot::characteristic)
         .distinct()
         .count();
     if (distinctCharacteristicCount != evidence.size()) {
@@ -52,8 +53,9 @@ public record FeedstockBatchMaterialEvidenceReference(@NonNull String value) {
       );
     }
     final var encodedRecordIds = evidence.stream()
-        .sorted(Comparator.comparing(FeedstockProfileAxisEvidence::characteristic))
-        .map(FeedstockProfileAxisEvidence::recordId)
+        .sorted(Comparator.comparing(MeasurementEvidenceSnapshot::characteristic))
+        .map(MeasurementEvidenceSnapshot::evidenceReference)
+        .map(MeasurementEvidenceReference::recordId)
         .map(FeedstockBatchMaterialEvidenceReference::encode)
         .collect(joining(","));
     return new FeedstockBatchMaterialEvidenceReference(FORMAT_PREFIX + encodedRecordIds);

@@ -1,8 +1,9 @@
 package org.craft.mcs.cap.core.feedstock.application.measurement.model;
 
 import java.time.Instant;
+import org.craft.mcs.cap.shared.application.ApplicationValidationException;
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
-import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -16,6 +17,7 @@ public record FeedstockMeasurementSummary(
     @NonNull FeedstockBatchId batchId,
     @NonNull FeedstockMeasurementName name,
     @NonNull Instant measuredAt,
+    long version,
     @NonNull ChemicalProfile chemicalProfile,
     @Nullable String note
 ) {
@@ -27,5 +29,8 @@ public record FeedstockMeasurementSummary(
     requireNonNull(name, "feedstock measurement name cannot be null");
     requireNonNull(measuredAt, "measured at cannot be null");
     requireNonNull(chemicalProfile, "chemical profile cannot be null");
+    if (version < 0) {
+      throw new ApplicationValidationException("feedstock measurement version cannot be negative");
+    }
   }
 }

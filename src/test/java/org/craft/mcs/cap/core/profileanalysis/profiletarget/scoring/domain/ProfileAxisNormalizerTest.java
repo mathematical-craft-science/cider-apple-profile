@@ -5,9 +5,9 @@ import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.norma
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.normalization.EffectiveRangeProfileAxisNormalizer;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.normalization.MinMaxProfileAxisNormalizer;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.normalization.ProfileAxisNormalizerCode;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.normalization.ProfileAxisSensitivityUnits;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.normalization.SensitivityUnitProfileAxisNormalizer;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.normalization.ThresholdSegmentProfileAxisNormalizer;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.BuiltInSugarAcidityZoneProfiles;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -21,11 +21,11 @@ class ProfileAxisNormalizerTest {
   @Test
   void normalizesGraphMinimumToZero() {
     assertThat(normalizer.normalize(
-        ProfileEvaluationAxis.SUGAR,
+        ProfileEvaluationAxis.SPECIFIC_GRAVITY,
         new BigDecimal("1.020")
     )).isEqualByComparingTo("0");
     assertThat(normalizer.normalize(
-        ProfileEvaluationAxis.ACIDITY,
+        ProfileEvaluationAxis.TITRATABLE_ACIDITY,
         new BigDecimal("0")
     )).isEqualByComparingTo("0");
   }
@@ -33,11 +33,11 @@ class ProfileAxisNormalizerTest {
   @Test
   void normalizesGraphMaximumToOne() {
     assertThat(normalizer.normalize(
-        ProfileEvaluationAxis.SUGAR,
+        ProfileEvaluationAxis.SPECIFIC_GRAVITY,
         new BigDecimal("1.080")
     )).isEqualByComparingTo("1");
     assertThat(normalizer.normalize(
-        ProfileEvaluationAxis.ACIDITY,
+        ProfileEvaluationAxis.TITRATABLE_ACIDITY,
         new BigDecimal("10")
     )).isEqualByComparingTo("1");
   }
@@ -59,17 +59,19 @@ class ProfileAxisNormalizerTest {
         new BigDecimal("2000")
     )).isEqualByComparingTo("0.5");
     assertThat(effectiveRangeNormalizer.normalize(
-        ProfileEvaluationAxis.ACIDITY,
+        ProfileEvaluationAxis.TITRATABLE_ACIDITY,
         new BigDecimal("5.5")
     )).isEqualByComparingTo("0.5");
   }
 
   @Test
   void sensitivityUnitNormalizerMeasuresDistanceInMeaningfulAxisUnits() {
-    final var sensitivityNormalizer = SensitivityUnitProfileAxisNormalizer.ciderBlendingDefaults();
+    final var sensitivityNormalizer = new SensitivityUnitProfileAxisNormalizer(
+        ProfileAxisSensitivityUnits.ciderBlendingV1()
+    );
 
     assertThat(sensitivityNormalizer.normalize(
-        ProfileEvaluationAxis.SUGAR,
+        ProfileEvaluationAxis.SPECIFIC_GRAVITY,
         new BigDecimal("0.010")
     )).isEqualByComparingTo("2");
     assertThat(sensitivityNormalizer.normalize(
@@ -80,14 +82,14 @@ class ProfileAxisNormalizerTest {
 
   @Test
   void thresholdSegmentNormalizerMapsThresholdBoundariesToEqualSegments() {
-    final var thresholdNormalizer = ThresholdSegmentProfileAxisNormalizer.from(BuiltInSugarAcidityZoneProfiles.thresholds());
+    final var thresholdNormalizer = ThresholdSegmentProfileAxisNormalizer.defaultScoringCalibration();
 
     assertThat(thresholdNormalizer.normalize(
-        ProfileEvaluationAxis.SUGAR,
+        ProfileEvaluationAxis.SPECIFIC_GRAVITY,
         new BigDecimal("1.045")
     )).isEqualByComparingTo("0.3333333333333333");
     assertThat(thresholdNormalizer.normalize(
-        ProfileEvaluationAxis.SUGAR,
+        ProfileEvaluationAxis.SPECIFIC_GRAVITY,
         new BigDecimal("1.060")
     )).isEqualByComparingTo("0.6666666666666667");
     assertThat(thresholdNormalizer.normalize(
@@ -98,7 +100,7 @@ class ProfileAxisNormalizerTest {
 
   @Test
   void selectorReturnsRequestedBuiltInNormalizerStrategy() {
-    final var selector = new BuiltInProfileAxisNormalizerSelector(BuiltInSugarAcidityZoneProfiles.thresholds());
+    final var selector = new BuiltInProfileAxisNormalizerSelector();
 
     assertThat(selector.select(ProfileAxisNormalizerCode.MIN_MAX))
         .isInstanceOf(MinMaxProfileAxisNormalizer.class);

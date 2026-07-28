@@ -1,18 +1,18 @@
 package org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain;
 
-import java.math.BigDecimal;
 import java.util.List;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValueKind;
+import org.craft.mcs.cap.shared.kernel.characteristic.IntervalCharacteristicValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.craft.mcs.cap.core.profileanalysis.testing.ProfileAnalysisTestFixtures
+    .compositionSourceCharacteristics;
 
 
 class MassBalanceChemicalProfileCompositionStrategyTest {
@@ -23,130 +23,137 @@ class MassBalanceChemicalProfileCompositionStrategyTest {
   @Test
   void calculatesCompositionFromAbsoluteVolumes() {
     final var result = calculator.calculate(ChemicalProfileCompositionRequest.calculateTanninWhenComplete(List.of(
-        source("a", axes("1.060", "5.0", "1000", "120"), volume("10"), volume("20")),
-        source("b", axes("1.045", "8.0", "2500", "210"), volume("20"), volume("30"))
+        source("a", characteristics("1.060", "5.0", "1000", "120"), volume("10"), volume("20")),
+        source("b", characteristics("1.045", "8.0", "2500", "210"), volume("20"), volume("30"))
     )));
 
-    assertThat(result.profile().sugar().value()).isEqualByComparingTo("1.050000000");
-    assertThat(result.profile().acidity().value()).isEqualByComparingTo("7.000000000");
-    assertThat(result.profile().tannin()).isNotNull();
-    assertThat(result.profile().tannin().value()).isEqualByComparingTo("2000.000000000");
-    assertThat(result.yeastAssimilableNitrogen()).isNotNull();
-    assertThat(result.yeastAssimilableNitrogen().value()).isEqualByComparingTo("180.000000000");
-    assertThat(result.profile().sugar().valueKind()).isEqualTo(AxisValueKind.CALCULATED);
-    assertThat(result.totalVolume()).isNotNull();
-    assertThat(result.totalVolume().liters()).isEqualByComparingTo("30");
-    assertThat(result.warnings()).isEmpty();
+    assertThat(result.characteristics())
+        .satisfies(value -> assertThat(value.specificGravity().asBigDecimal())
+            .isEqualByComparingTo("1.050000000"))
+        .satisfies(value -> assertThat(value.titratableAcidity().asBigDecimal())
+            .isEqualByComparingTo("7.000000000"))
+        .satisfies(value -> assertThat(value.tannin())
+            .isNotNull()
+            .satisfies(tannin -> assertThat(tannin.asBigDecimal())
+                .isEqualByComparingTo("2000.000000000")))
+        .satisfies(value -> assertThat(value.yeastAssimilableNitrogen())
+            .isNotNull()
+            .satisfies(yan -> assertThat(yan.asBigDecimal())
+                .isEqualByComparingTo("180.000000000")));
+    assertThat(result)
+        .satisfies(value -> assertThat(value.totalVolume())
+            .isEqualTo(VolumeValue.ofLiters("30")))
+        .satisfies(value -> assertThat(value.warnings()).isEmpty());
   }
 
   @Test
   void calculatesCompositionFromProportions() {
     final var result = calculator.calculate(ChemicalProfileCompositionRequest.calculateTanninWhenComplete(List.of(
-        source("a", axes("1.060", "5.0", null), CompositionProportion.of("0.25")),
-        source("b", axes("1.040", "9.0", null), CompositionProportion.of("0.75"))
+        source("a", characteristics("1.060", "5.0", null, null), CompositionProportion.of("0.25")),
+        source("b", characteristics("1.040", "9.0", null, null), CompositionProportion.of("0.75"))
     )));
 
-    assertThat(result.profile().sugar().value()).isEqualByComparingTo("1.045000000");
-    assertThat(result.profile().acidity().value()).isEqualByComparingTo("8.000000000");
-    assertThat(result.profile().tannin()).isNull();
-    assertThat(result.totalVolume()).isNull();
-    assertThat(result.warnings()).isEmpty();
+    assertThat(result.characteristics())
+        .satisfies(value -> assertThat(value.specificGravity().asBigDecimal())
+            .isEqualByComparingTo("1.045000000"))
+        .satisfies(value -> assertThat(value.titratableAcidity().asBigDecimal())
+            .isEqualByComparingTo("8.000000000"))
+        .satisfies(value -> assertThat(value.tannin()).isNull());
+    assertThat(result)
+        .satisfies(value -> assertThat(value.totalVolume()).isNull())
+        .satisfies(value -> assertThat(value.warnings()).isEmpty());
+  }
+
+  @Test
+  void usesIntervalMidpointsAccordingToExplicitPolicy() {
+    final var interval = new CompositionSourceCharacteristics(
+        IntervalCharacteristicValue.of(
+            SpecificGravityValue.of("1.040"),
+            SpecificGravityValue.of("1.060")
+        ),
+        IntervalCharacteristicValue.of(
+            TitratableAcidityValue.of("4.0"),
+            TitratableAcidityValue.of("8.0")
+        ),
+        null,
+        null
+    );
+
+    final var result = calculator.calculate(new ChemicalProfileCompositionRequest(
+        List.of(source("interval", interval, CompositionProportion.of("1"))),
+        ChemicalProfileCompositionTanninPolicy.CALCULATE_WHEN_COMPLETE,
+        CompositionIntervalPolicy.MIDPOINT
+    ));
+
+    assertThat(result.characteristics())
+        .satisfies(value -> assertThat(value.specificGravity().asBigDecimal())
+            .isEqualByComparingTo("1.050000000"))
+        .satisfies(value -> assertThat(value.titratableAcidity().asBigDecimal())
+            .isEqualByComparingTo("6.000000000"));
   }
 
   @Test
   void ignoresTanninWhenRequested() {
     final var result = calculator.calculate(new ChemicalProfileCompositionRequest(
         List.of(
-            source("a", axes("1.060", "5.0", "1000"), CompositionProportion.of("1")),
-            source("b", axes("1.040", "9.0", "2000"), CompositionProportion.of("1"))
+            source("a", characteristics("1.060", "5.0", "1000", null), CompositionProportion.of("1")),
+            source("b", characteristics("1.040", "9.0", "2000", null), CompositionProportion.of("1"))
         ),
         ChemicalProfileCompositionTanninPolicy.IGNORE_TANNIN
     ));
 
-    assertThat(result.profile().tannin()).isNull();
+    assertThat(result.characteristics().tannin()).isNull();
     assertThat(result.warnings()).containsExactly(ChemicalProfileCompositionWarning.TANNIN_IGNORED);
   }
 
   @Test
-  void warnsWhenTanninIsOnlyPartiallyAvailable() {
+  void warnsWhenOptionalCharacteristicsAreOnlyPartiallyAvailable() {
     final var result = calculator.calculate(ChemicalProfileCompositionRequest.calculateTanninWhenComplete(List.of(
-        source("a", axes("1.060", "5.0", "1000"), CompositionProportion.of("1")),
-        source("b", axes("1.040", "9.0", null), CompositionProportion.of("1"))
+        source("a", characteristics("1.060", "5.0", "1000", "120"), CompositionProportion.of("1")),
+        source("b", characteristics("1.040", "9.0", null, null), CompositionProportion.of("1"))
     )));
 
-    assertThat(result.profile().tannin()).isNull();
-    assertThat(result.warnings()).containsExactly(ChemicalProfileCompositionWarning.TANNIN_INCOMPLETE);
-  }
-
-  @Test
-  void warnsWhenYanIsOnlyPartiallyAvailable() {
-    final var result = calculator.calculate(ChemicalProfileCompositionRequest.calculateTanninWhenComplete(List.of(
-        source("a", axes("1.060", "5.0", null, "120"), CompositionProportion.of("1")),
-        source("b", axes("1.040", "9.0", null, null), CompositionProportion.of("1"))
-    )));
-
-    assertThat(result.yeastAssimilableNitrogen()).isNull();
-    assertThat(result.warnings())
-        .containsExactly(ChemicalProfileCompositionWarning.YEAST_ASSIMILABLE_NITROGEN_INCOMPLETE);
-  }
-
-  @Test
-  void rejectsMissingRequiredSugarOrAcidity() {
-    assertThatThrownBy(() -> calculator.calculate(ChemicalProfileCompositionRequest.calculateTanninWhenComplete(List.of(
-        source(
-            "missing-sugar",
-            ChemicalProfileAxes.of(null, axis(ChemicalAxis.ACIDITY, "5.0"), null),
-            CompositionProportion.of("1")
-        ),
-        source("complete", axes("1.040", "9.0", null), CompositionProportion.of("1"))
-    ))))
-        .isInstanceOf(InvalidChemicalProfileCompositionException.class)
-        .hasMessageContaining("missing required axis SUGAR")
-        .hasMessageContaining("missing-sugar");
-
-    assertThatThrownBy(() -> calculator.calculate(ChemicalProfileCompositionRequest.calculateTanninWhenComplete(List.of(
-        source(
-            "missing-acidity",
-            ChemicalProfileAxes.of(axis(ChemicalAxis.SUGAR, "1.050"), null, null),
-            CompositionProportion.of("1")
-        ),
-        source("complete", axes("1.040", "9.0", null), CompositionProportion.of("1"))
-    ))))
-        .isInstanceOf(InvalidChemicalProfileCompositionException.class)
-        .hasMessageContaining("missing required axis ACIDITY")
-        .hasMessageContaining("missing-acidity");
+    assertThat(result.characteristics())
+        .satisfies(value -> assertThat(value.tannin()).isNull())
+        .satisfies(value -> assertThat(value.yeastAssimilableNitrogen()).isNull());
+    assertThat(result.warnings()).containsExactly(
+        ChemicalProfileCompositionWarning.TANNIN_INCOMPLETE,
+        ChemicalProfileCompositionWarning.YEAST_ASSIMILABLE_NITROGEN_INCOMPLETE
+    );
   }
 
   @Test
   void rejectsRequiredTanninWhenAnySourceIsMissingTannin() {
     assertThatThrownBy(() -> calculator.calculate(new ChemicalProfileCompositionRequest(
         List.of(
-            source("a", axes("1.060", "5.0", "1000"), CompositionProportion.of("1")),
-            source("b", axes("1.040", "9.0", null), CompositionProportion.of("1"))
+            source("a", characteristics("1.060", "5.0", "1000", null), CompositionProportion.of("1")),
+            source("b", characteristics("1.040", "9.0", null, null), CompositionProportion.of("1"))
         ),
         ChemicalProfileCompositionTanninPolicy.REQUIRE_TANNIN
     )))
         .isInstanceOf(InvalidChemicalProfileCompositionException.class)
-        .hasMessageContaining("missing required axis TANNIN")
+        .hasMessageContaining("missing required tannin")
         .hasMessageContaining("b");
   }
 
   @Test
   void rejectsMixedWeightModes() {
-    assertThatThrownBy(() -> calculator.calculate(ChemicalProfileCompositionRequest.calculateTanninWhenComplete(List.of(
-        source("a", axes("1.060", "5.0", null), CompositionProportion.of("1")),
-        source("b", axes("1.040", "9.0", null), volume("10"), null)
-    ))))
+    assertThatThrownBy(() -> ChemicalProfileCompositionRequest.calculateTanninWhenComplete(List.of(
+        source("a", characteristics("1.060", "5.0", null, null), CompositionProportion.of("1")),
+        source("b", characteristics("1.040", "9.0", null, null), volume("10"), null)
+    )))
         .isInstanceOf(InvalidChemicalProfileCompositionException.class)
         .hasMessageContaining("cannot mix absolute volumes and proportions");
   }
 
   @Test
   void rejectsAbsoluteVolumeAboveAvailableVolume() {
-    assertThatThrownBy(() -> calculator.calculate(ChemicalProfileCompositionRequest.calculateTanninWhenComplete(List.of(
-        source("a", axes("1.060", "5.0", null), volume("25"), volume("20")),
-        source("b", axes("1.040", "9.0", null), volume("10"), volume("30"))
-    ))))
+    assertThatThrownBy(() -> source(
+        "a",
+        characteristics("1.060", "5.0", null, null),
+        volume("25"),
+        volume("20")
+    ))
         .isInstanceOf(InvalidChemicalProfileCompositionException.class)
         .hasMessageContaining("requested volume exceeds available volume")
         .hasMessageContaining("a");
@@ -156,8 +163,8 @@ class MassBalanceChemicalProfileCompositionStrategyTest {
   void rejectsDuplicateSourceReferences() {
     assertThatThrownBy(() -> new ChemicalProfileCompositionRequest(
         List.of(
-            source("same", axes("1.060", "5.0", null), CompositionProportion.of("0.5")),
-            source("same", axes("1.040", "9.0", null), CompositionProportion.of("0.5"))
+            source("same", characteristics("1.060", "5.0", null, null), CompositionProportion.of("0.5")),
+            source("same", characteristics("1.040", "9.0", null, null), CompositionProportion.of("0.5"))
         ),
         ChemicalProfileCompositionTanninPolicy.CALCULATE_WHEN_COMPLETE
     ))
@@ -165,15 +172,24 @@ class MassBalanceChemicalProfileCompositionStrategyTest {
         .hasMessageContaining("each source exactly once");
   }
 
+  private static @NonNull CompositionSourceCharacteristics characteristics(
+      @NonNull String specificGravity,
+      @NonNull String titratableAcidity,
+      @Nullable String tannin,
+      @Nullable String yan
+  ) {
+    return compositionSourceCharacteristics(specificGravity, titratableAcidity, tannin, yan);
+  }
+
   private static @NonNull ChemicalProfileCompositionSource source(
       @NonNull String id,
-      @NonNull ChemicalProfileAxes axes,
+      @NonNull CompositionSourceCharacteristics characteristics,
       @NonNull VolumeValue volume,
       @Nullable VolumeValue availableVolume
   ) {
     return new ChemicalProfileCompositionSource(
         reference(id),
-        axes,
+        characteristics,
         new AbsoluteCompositionVolume(volume),
         availableVolume
     );
@@ -181,51 +197,14 @@ class MassBalanceChemicalProfileCompositionStrategyTest {
 
   private static @NonNull ChemicalProfileCompositionSource source(
       @NonNull String id,
-      @NonNull ChemicalProfileAxes axes,
+      @NonNull CompositionSourceCharacteristics characteristics,
       @NonNull ChemicalProfileCompositionSourceWeight weight
   ) {
-    return new ChemicalProfileCompositionSource(reference(id), axes, weight, null);
+    return new ChemicalProfileCompositionSource(reference(id), characteristics, weight, null);
   }
 
   private static @NonNull ChemicalProfileCompositionSourceReference reference(@NonNull String id) {
     return new ChemicalProfileCompositionSourceReference("FEEDSTOCK_BATCH", id);
-  }
-
-  private static @NonNull ChemicalProfileAxes axes(
-      @NonNull String sugar,
-      @NonNull String acidity,
-      @Nullable String tannin
-  ) {
-    return axes(sugar, acidity, tannin, null);
-  }
-
-  private static @NonNull ChemicalProfileAxes axes(
-      @NonNull String sugar,
-      @NonNull String acidity,
-      @Nullable String tannin,
-      @Nullable String yeastAssimilableNitrogen
-  ) {
-    return ChemicalProfileAxes.of(
-        axis(ChemicalAxis.SUGAR, sugar),
-        axis(ChemicalAxis.ACIDITY, acidity),
-        tannin == null ? null : axis(ChemicalAxis.TANNIN, tannin),
-        yeastAssimilableNitrogen == null
-            ? null
-            : axis(ChemicalAxis.YEAST_ASSIMILABLE_NITROGEN, yeastAssimilableNitrogen)
-    );
-  }
-
-  private static @NonNull AxisValue axis(
-      @NonNull ChemicalAxis axis,
-      @NonNull String value
-  ) {
-    return new AxisValue(
-        axis,
-        new BigDecimal(value),
-        AxisValueKind.POINT,
-        null,
-        null
-    );
   }
 
   private static @NonNull VolumeValue volume(@NonNull String liters) {

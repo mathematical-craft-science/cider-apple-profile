@@ -7,11 +7,11 @@ import org.jspecify.annotations.Nullable;
 @Schema(description = "Chemical profile response in canonical service units.")
 public record ChemicalProfileResponse(
     @Schema(
-        description = "Sugar measurement in SG.",
+        description = "Specific Gravity (SG) in the canonical service unit.",
         nullable = true,
         requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )
-    @Nullable ChemicalMeasurementResponse sugar,
+    @Nullable ChemicalMeasurementResponse specificGravity,
     @Schema(
         description = "pH measurement.",
         nullable = true,

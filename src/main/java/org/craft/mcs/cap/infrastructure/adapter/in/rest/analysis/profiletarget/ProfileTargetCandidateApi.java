@@ -25,12 +25,18 @@ public interface ProfileTargetCandidateApi {
 
   @Operation(
       summary = "Search apple variety profile-target candidates",
-      description = "Returns apple varieties scored against a selected profile target, including target distance and contribution role."
+      description = """
+          Returns apple varieties scored against a selected profile target, including target
+          distance and contribution role.
+          """
   )
   @ApiResponse(
       responseCode = "200",
       description = "Apple variety candidates.",
-      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = AppleVarietyProfileTargetCandidatesResponse.class))
+      content = @Content(
+          mediaType = APPLICATION_JSON_VALUE,
+          schema = @Schema(implementation = AppleVarietyProfileTargetCandidatesResponse.class)
+      )
   )
   @ApiResponse(
       responseCode = "400",
@@ -41,19 +47,28 @@ public interface ProfileTargetCandidateApi {
       @RequestBody(
           description = "Apple variety target-aware candidate search request.",
           required = true,
-          content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = AppleVarietyProfileTargetCandidateSearchRequest.class))
+          content = @Content(
+              mediaType = APPLICATION_JSON_VALUE,
+              schema = @Schema(implementation = AppleVarietyProfileTargetCandidateSearchRequest.class)
+          )
       )
       @NonNull AppleVarietyProfileTargetCandidateSearchRequest request
   );
 
   @Operation(
       summary = "Search feedstock batch profile-target candidates",
-      description = "Returns current feedstock batch profiles scored against a selected target, including target distance and contribution role."
+      description = """
+          Returns current feedstock batch profiles scored against a selected target, including
+          target distance and contribution role.
+          """
   )
   @ApiResponse(
       responseCode = "200",
       description = "Feedstock batch candidates.",
-      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = FeedstockBatchProfileTargetCandidatesResponse.class))
+      content = @Content(
+          mediaType = APPLICATION_JSON_VALUE,
+          schema = @Schema(implementation = FeedstockBatchProfileTargetCandidatesResponse.class)
+      )
   )
   @ApiResponse(
       responseCode = "400",
@@ -64,7 +79,10 @@ public interface ProfileTargetCandidateApi {
       @RequestBody(
           description = "Current feedstock batch target-aware candidate search request.",
           required = true,
-          content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = FeedstockBatchProfileTargetCandidateSearchRequest.class))
+          content = @Content(
+              mediaType = APPLICATION_JSON_VALUE,
+              schema = @Schema(implementation = FeedstockBatchProfileTargetCandidateSearchRequest.class)
+          )
       )
       @NonNull FeedstockBatchProfileTargetCandidateSearchRequest request
   );

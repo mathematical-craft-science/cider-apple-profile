@@ -6,10 +6,9 @@ import java.util.List;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionWarning;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.abv.dto.PotentialAbvPredictionResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.common.dto.ChemicalProfileCompositionSourceResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.composition.dto.CalculatedCompositionCharacteristicsResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.composition.dto.CompositionOptimizationObjectiveAssessmentResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.ProfileTargetDistanceResponse;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.sugaracidity.dto.SugarAcidityAxisPointResponse;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.sugaracidity.dto.SugarAcidityProfilePointResponse;
 import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -22,20 +21,14 @@ public record ChemicalProfileCompositionOptimizationCandidateResponse(
         schema = @Schema(implementation = ChemicalProfileCompositionSourceResponse.class)
     )
     @NonNull List<@NonNull ChemicalProfileCompositionSourceResponse> sources,
-    @Schema(description = "Calculated profile point.", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NonNull SugarAcidityProfilePointResponse profile,
+    @Schema(description = "Calculated composition characteristics.", requiredMode = Schema.RequiredMode.REQUIRED)
+    @NonNull CalculatedCompositionCharacteristicsResponse characteristics,
     @Schema(
-        description = "Potential ABV predicted from the candidate sugar value.",
+        description = "Potential ABV predicted from the candidate SG.",
         nullable = true,
         requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )
     @Nullable PotentialAbvPredictionResponse potentialAbv,
-    @Schema(
-        description = "Calculated yeast-assimilable nitrogen in mg N/L, when every source contains YAN.",
-        nullable = true,
-        requiredMode = Schema.RequiredMode.NOT_REQUIRED
-    )
-    @Nullable SugarAcidityAxisPointResponse yeastAssimilableNitrogen,
     @Schema(
         description = "Total candidate volume, when known.",
         nullable = true,

@@ -5,13 +5,13 @@ import org.craft.mcs.cap.core.production.domain.model.ProductionSourceComponent;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceComposition;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceReference;
 import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
-import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.craft.mcs.cap.shared.kernel.identity.UuidV7Generator.newUuid;
 
 
 class ProductionSourceCompositionTest {
@@ -30,7 +30,7 @@ class ProductionSourceCompositionTest {
   @Test
   void rejectsDuplicateSourceReferences() {
     final var sourceReference = ProductionSourceReference.feedstockBatch(
-        FeedstockBatchId.newId().value()
+        newUuid()
     );
 
     assertThatThrownBy(() -> ProductionSourceComposition.of(List.of(
@@ -39,20 +39,6 @@ class ProductionSourceCompositionTest {
     )))
         .isInstanceOf(DomainRuleViolationException.class)
         .hasMessageContaining("each source exactly once");
-  }
-
-  @Test
-  void rejectsTotalVolumeThatDiffersFromSourceVolumes() {
-    final var sourceReference = ProductionSourceReference.feedstockBatch(
-        FeedstockBatchId.newId().value()
-    );
-
-    assertThatThrownBy(() -> new ProductionSourceComposition(
-        List.of(component(sourceReference, "40")),
-        VolumeValue.ofLiters("60")
-    ))
-        .isInstanceOf(DomainRuleViolationException.class)
-        .hasMessageContaining("sum of source volumes");
   }
 
   @Test
@@ -70,7 +56,7 @@ class ProductionSourceCompositionTest {
   }
 
   private static @NonNull ProductionSourceReference reference() {
-    return ProductionSourceReference.feedstockBatch(FeedstockBatchId.newId().value());
+    return ProductionSourceReference.feedstockBatch(newUuid());
   }
 
   private static @NonNull ProductionSourceComponent component(

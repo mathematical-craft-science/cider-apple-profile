@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import org.craft.mcs.cap.shared.kernel.sugar.SugarValue;
+import org.craft.mcs.cap.shared.kernel.measurement.MeasuredValue;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
@@ -25,7 +25,7 @@ public final class SugarConversionRegistry {
 
   @SuppressWarnings("unchecked")
   @NonNull
-  public <F extends SugarValue, T extends SugarValue> Optional<SugarConversionStrategy<F, T>> find(
+  public <F extends MeasuredValue, T extends MeasuredValue> Optional<SugarConversionStrategy<F, T>> find(
       @NonNull Class<F> sourceType,
       @NonNull Class<T> targetType
   ) {

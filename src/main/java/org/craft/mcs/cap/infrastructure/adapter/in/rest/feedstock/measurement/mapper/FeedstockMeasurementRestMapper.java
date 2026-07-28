@@ -1,7 +1,7 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.measurement.mapper;
 
 import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementSummary;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.mapper.ChemicalProfileRestMapper;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.mapper.ChemicalProfileResponseRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.measurement.dto.FeedstockMeasurementChemicalProfileResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.measurement.dto.FeedstockMeasurementResponse;
 import org.jspecify.annotations.NonNull;
@@ -19,7 +19,7 @@ public final class FeedstockMeasurementRestMapper {
       @NonNull FeedstockMeasurementSummary measurement
   ) {
     requireNonNull(measurement, "feedstock measurement summary cannot be null");
-    final var profile = ChemicalProfileRestMapper.toResponse(measurement.chemicalProfile());
+    final var profile = ChemicalProfileResponseRestMapper.toResponse(measurement.chemicalProfile());
     return new FeedstockMeasurementResponse(
         measurement.measurementId().value(),
         measurement.workspaceId().value(),
@@ -27,7 +27,7 @@ public final class FeedstockMeasurementRestMapper {
         measurement.name().value(),
         measurement.measuredAt(),
         new FeedstockMeasurementChemicalProfileResponse(
-            profile.sugar(),
+            profile.specificGravity(),
             profile.ph(),
             profile.titratableAcidity(),
             profile.tannin(),

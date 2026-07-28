@@ -4,19 +4,19 @@ import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
 import java.util.List;
+import org.craft.mcs.cap.core.profileanalysis.graph.domain.SugarAcidityGeometryShape;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.objective.ProfileDistanceMetric;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileEvaluationAxis;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.assessment.ProfileTargetDistanceStatus;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.assessment.ProfileTargetFitStatus;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.objective.ProfileTargetObjectiveFunctionCode;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.SugarAcidityTargetGeometryShape;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.SugarAcidityTargetKind;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.SugarAcidityTargetKind;
 import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 
-@Schema(description = "Distance from a chemical profile point to a profile target.")
+@Schema(description = "Distance from a typed characteristic point to a profile target.")
 public record ProfileTargetDistanceResponse(
     @Schema(
         description = "Distance status.",
@@ -50,7 +50,7 @@ public record ProfileTargetDistanceResponse(
     )
     @NonNull ProfileTargetFitStatus fitStatus,
     @Schema(
-        description = "Whether the point is inside the sugar-acidity target geometry.",
+        description = "Whether the point is inside the two-dimensional SG/TA target.",
         example = "true",
         requiredMode = Schema.RequiredMode.REQUIRED
     )
@@ -61,8 +61,8 @@ public record ProfileTargetDistanceResponse(
         requiredMode = Schema.RequiredMode.REQUIRED
     )
     boolean insideTarget,
-    @Schema(description = "Nearest target point in sugar-acidity space.", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NonNull SugarAcidityCoordinatesResponse nearestTargetPoint,
+    @Schema(description = "Nearest target point in SG/TA space.", requiredMode = Schema.RequiredMode.REQUIRED)
+    @NonNull ProfileTargetCoordinatesResponse nearestTargetPoint,
     @Schema(
         description = "Measured tannin, when available.",
         nullable = true,
@@ -94,15 +94,15 @@ public record ProfileTargetDistanceResponse(
     )
     @NonNull SugarAcidityTargetKind targetKind,
     @Schema(
-        description = "Sugar-acidity target geometry shape.",
-        implementation = SugarAcidityTargetGeometryShape.class,
+        description = "SG/TA target geometry shape.",
+        implementation = SugarAcidityGeometryShape.class,
         requiredMode = Schema.RequiredMode.REQUIRED
     )
-    @NonNull SugarAcidityTargetGeometryShape targetShape,
+    @NonNull SugarAcidityGeometryShape targetShape,
     @ArraySchema(
         arraySchema = @Schema(description = "Missing profile axes.", requiredMode = Schema.RequiredMode.REQUIRED),
         schema = @Schema(implementation = ProfileEvaluationAxis.class)
     )
-    @NonNull List<@NonNull ProfileEvaluationAxis> missingMeasurements
+    @NonNull List<@NonNull ProfileEvaluationAxis> missingAxes
 ) {
 }

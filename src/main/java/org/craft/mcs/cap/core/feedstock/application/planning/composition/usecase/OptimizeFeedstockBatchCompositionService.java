@@ -10,33 +10,30 @@ import org.craft.mcs.cap.core.profileanalysis.composition.optimization.applicati
 import org.craft.mcs.cap.core.profileanalysis.composition.optimization.application.port.in.OptimizeChemicalProfileCompositionUseCase;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionSourceReference;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionTanninPolicy;
+import org.craft.mcs.cap.core.profileanalysis.composition.calculation.application.compatibility.ChemicalProfileCompositionSourceAdapter;
 import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.ChemicalProfileCompositionOptimizationSource;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetObjective;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileEvaluation;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileProjector;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.CustomRectangleSugarAcidityTarget;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.RectangleSugarAcidityTargetGeometry;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.SugarAcidityTarget;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.SugarAcidityTargetResolver;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.SugarAcidityZoneAssessment;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.SugarAcidityZone;
+import org.craft.mcs.cap.core.profileanalysis.compatibility.application.ChemicalProfileAssessmentAdapter;
+import org.craft.mcs.cap.core.profileanalysis.compatibility.application.ChemicalProfileAssessmentMatcher;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.CustomRectangleSugarAcidityTarget;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.RectangleSugarAcidityTargetGeometry;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.SugarAcidityTarget;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.SugarAcidityTargetResolver;
+import org.craft.mcs.cap.core.profileanalysis.graph.zone.domain.JolicoeurSugarAcidityZone;
 import org.craft.mcs.cap.core.feedstock.application.planning.composition.InsufficientFeedstockCompositionSourcesException;
-import org.craft.mcs.cap.core.feedstock.application.measurement.query.FeedstockBatchCurrentMeasurementQueryService;
-import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementView;
+import org.craft.mcs.cap.core.feedstock.application.analysis.common.port.out.FeedstockCurrentProfileAnalysisCandidateRepository;
+import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentProfileView;
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.CustomRectangleFeedstockProfileTargetSelection;
-import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockMeasurementPointFilters;
+import org.craft.mcs.cap.core.feedstock.application.analysis.common.model.FeedstockAnalysisCandidateFilters;
 import org.craft.mcs.cap.core.feedstock.application.planning.composition.port.in.OptimizeFeedstockBatchCompositionCommand;
 import org.craft.mcs.cap.core.feedstock.application.planning.composition.port.in.OptimizeFeedstockBatchCompositionResult;
 import org.craft.mcs.cap.core.feedstock.application.planning.composition.port.in.OptimizeFeedstockBatchCompositionUseCase;
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.PredefinedFeedstockProfileTargetSelection;
 import org.craft.mcs.cap.core.feedstock.application.batch.model.FeedstockBatchSummary;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchSummaryQueryRepository;
-import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.out.CurrentFeedstockBatchSugarAcidityPointCandidateQuery;
-import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
-import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityCriteria;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.application.model.SugarAcidityZoneCriteria;
+import org.craft.mcs.cap.core.feedstock.application.analysis.common.port.out.CurrentFeedstockBatchAnalysisCandidateQuery;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
 
 import static java.util.Objects.requireNonNull;
@@ -56,9 +53,10 @@ public final class OptimizeFeedstockBatchCompositionService implements OptimizeF
   private static final int MINIMUM_SOURCE_COUNT = 2;
   private static final @NonNull String SOURCE_TYPE = "FEEDSTOCK_BATCH";
 
-  private final @NonNull FeedstockBatchCurrentMeasurementQueryService currentMeasurementQueryService;
+  private final @NonNull FeedstockCurrentProfileAnalysisCandidateRepository candidateRepository;
   private final @NonNull FeedstockBatchSummaryQueryRepository feedstockBatchQueryRepository;
-  private final @NonNull SugarAcidityProfileProjector sugarAcidityProfileProjector;
+  private final @NonNull ChemicalProfileAssessmentAdapter chemicalProfileAssessmentAdapter;
+  private final @NonNull ChemicalProfileAssessmentMatcher chemicalProfileAssessmentMatcher;
   private final @NonNull SugarAcidityTargetResolver targetResolver;
   private final @NonNull OptimizeChemicalProfileCompositionUseCase optimizeChemicalProfileCompositionUseCase;
   private final @NonNull FeedstockAccessControl feedstockAccessControl;
@@ -73,8 +71,8 @@ public final class OptimizeFeedstockBatchCompositionService implements OptimizeF
     final var batchesById = feedstockBatchQueryRepository.findAllByWorkspaceId(command.workspaceId())
         .stream()
         .collect(Collectors.toMap(FeedstockBatchSummary::batchId, Function.identity()));
-    final var sources = currentMeasurementQueryService.findCurrentSugarAcidityPointCandidates(
-            new CurrentFeedstockBatchSugarAcidityPointCandidateQuery(
+    final var sources = candidateRepository.findCandidates(
+            new CurrentFeedstockBatchAnalysisCandidateQuery(
                 command.workspaceId(),
                 command.filters().batch(),
                 command.filters().season(),
@@ -97,15 +95,12 @@ public final class OptimizeFeedstockBatchCompositionService implements OptimizeF
                 ? ChemicalProfileCompositionTanninPolicy.CALCULATE_WHEN_COMPLETE
                 : ChemicalProfileCompositionTanninPolicy.REQUIRE_TANNIN,
             objective(command),
-            command.weights(),
-            command.purpose(),
+            command.scoringConfiguration(),
             command.criteria(),
             command.settings(),
             command.mode(),
             command.algorithm(),
             command.calculatorCode(),
-            command.normalizerCode(),
-            command.objectiveFunctionCode(),
             command.targetTotalVolume()
         )
     );
@@ -114,48 +109,38 @@ public final class OptimizeFeedstockBatchCompositionService implements OptimizeF
   }
 
   private @NonNull Optional<@NonNull ChemicalProfileCompositionOptimizationSource> toOptimizationSourceIfUsable(
-      @NonNull FeedstockMeasurementView measurement,
-      @NonNull FeedstockMeasurementPointFilters filters,
+      @NonNull FeedstockCurrentProfileView currentProfile,
+      @NonNull FeedstockAnalysisCandidateFilters filters,
       @NonNull Map<@NonNull FeedstockBatchId, @NonNull FeedstockBatchSummary> batchesById
   ) {
-    requireNonNull(measurement, "feedstock measurement cannot be null");
-    final var evaluation = sugarAcidityProfileProjector.project(measurement.chemicalProfile());
+    requireNonNull(currentProfile, "feedstock current profile cannot be null");
+    final var evaluation = chemicalProfileAssessmentAdapter.project(currentProfile.chemicalProfile());
     if (!evaluation.plottable()) {
       return Optional.empty();
     }
-    if (!matchesCapability(evaluation, filters.capability())) {
+    if (!chemicalProfileAssessmentMatcher.matches(
+        evaluation,
+        filters.capability(),
+        filters.sugarAcidityZone()
+    )) {
       return Optional.empty();
     }
 
     final var assessment = evaluation.assessment();
-    if (assessment == null || !matchesSugarAcidityZone(assessment, filters.sugarAcidityZone())) {
+    if (assessment == null) {
       return Optional.empty();
     }
 
-    return Optional.ofNullable(batchesById.get(measurement.batchId()))
-        .map(batch -> new ChemicalProfileCompositionOptimizationSource(
-            new ChemicalProfileCompositionSourceReference(SOURCE_TYPE, measurement.batchId().value().toString()),
-            evaluation.axes(),
-            batch.availableVolume()
-        ));
-  }
-
-  private boolean matchesCapability(
-      @NonNull SugarAcidityProfileEvaluation evaluation,
-      @Nullable ChemicalProfileCapabilityCriteria criteria
-  ) {
-    if (criteria == null || criteria.capable() == null) {
-      return true;
-    }
-    return sugarAcidityProfileProjector.assessCapability(evaluation, criteria.capability()).capable()
-        == criteria.capable(); // NOSONAR
-  }
-
-  private static boolean matchesSugarAcidityZone(
-      @NonNull SugarAcidityZoneAssessment assessment,
-      @Nullable SugarAcidityZoneCriteria criteria
-  ) {
-    return criteria == null || criteria.zones().contains(assessment.zone());
+    return Optional.ofNullable(batchesById.get(currentProfile.batchId()))
+        .flatMap(batch -> ChemicalProfileCompositionSourceAdapter.adapt(currentProfile.chemicalProfile())
+            .map(characteristics -> new ChemicalProfileCompositionOptimizationSource(
+                new ChemicalProfileCompositionSourceReference(
+                    SOURCE_TYPE,
+                    currentProfile.batchId().value().toString()
+                ),
+                characteristics,
+                batch.availableVolume()
+            )));
   }
 
   private @NonNull ProfileTargetObjective objective(
@@ -170,11 +155,15 @@ public final class OptimizeFeedstockBatchCompositionService implements OptimizeF
     return ProfileTargetObjective.withTanninTarget(target, tanninTarget);
   }
 
-  private @NonNull SugarAcidityTarget target(@NonNull OptimizeFeedstockBatchCompositionCommand command) {
+  private @NonNull SugarAcidityTarget target(
+      @NonNull OptimizeFeedstockBatchCompositionCommand command
+  ) {
     return switch (command.target()) {
-      case PredefinedFeedstockProfileTargetSelection(SugarAcidityZone zone) ->
+      case PredefinedFeedstockProfileTargetSelection(JolicoeurSugarAcidityZone zone) ->
           targetResolver.resolvePredefinedZone(zone);
-      case CustomRectangleFeedstockProfileTargetSelection(RectangleSugarAcidityTargetGeometry geometry) ->
+      case CustomRectangleFeedstockProfileTargetSelection(
+          RectangleSugarAcidityTargetGeometry geometry
+      ) ->
           new CustomRectangleSugarAcidityTarget(geometry);
     };
   }

@@ -3,9 +3,9 @@ package org.craft.mcs.cap.infrastructure.adapter.out.production.measurement;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
-import org.craft.mcs.cap.core.measurement.application.model.CurrentMeasurementProfileView;
-import org.craft.mcs.cap.core.measurement.application.port.in.ProjectCurrentMeasurementProfileUseCase;
-import org.craft.mcs.cap.core.production.application.model.ProductionMeasurementProfileView;
+import org.craft.mcs.cap.core.measurement.application.compatibility.CurrentMeasurementProfileView;
+import org.craft.mcs.cap.core.measurement.application.compatibility.ProjectCurrentMeasurementProfileUseCase;
+import org.craft.mcs.cap.core.production.application.model.ProductionMeasuredProfileView;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatchId;
 import org.craft.mcs.cap.shared.application.measurement.MeasurementEvidenceReference;
 import org.craft.mcs.cap.shared.application.measurement.MeasurementEvidenceValidity;
@@ -19,7 +19,7 @@ import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic;
 import org.craft.mcs.cap.shared.kernel.measurement.MeasurementSourceType;
-import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.junit.jupiter.api.Test;
 
@@ -69,7 +69,7 @@ class MeasurementProductionProfileProviderTest {
         .orElseThrow();
 
     assertThat(result)
-        .returns(measurementProfile.chemicalProfile(), ProductionMeasurementProfileView::chemicalProfile)
-        .returns(List.of(evidence), ProductionMeasurementProfileView::evidence);
+        .returns(measurementProfile.chemicalProfile(), ProductionMeasuredProfileView::chemicalProfile)
+        .returns(List.of(evidence), ProductionMeasuredProfileView::evidence);
   }
 }

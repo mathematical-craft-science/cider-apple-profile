@@ -1,12 +1,9 @@
 package org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain;
 
-import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.craft.mcs.cap.shared.kernel.chemical.value.PhValue;
-import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
 import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
-import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
-import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
+import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -25,7 +22,7 @@ class FermentationStartReadinessAssessorTest {
     assertThat(assessment.checks())
         .extracting(FermentationStartReadinessCheck::code)
         .containsExactly(
-            FermentationStartReadinessCheckCode.SUGAR_PRESENT,
+            FermentationStartReadinessCheckCode.SPECIFIC_GRAVITY_PRESENT,
             FermentationStartReadinessCheckCode.PH_ACCEPTABLE,
             FermentationStartReadinessCheckCode.YAN_ACCEPTABLE
         );
@@ -47,10 +44,11 @@ class FermentationStartReadinessAssessorTest {
 
   @Test
   void returnsAttentionWhenYanIsMissing() {
-    final var assessment = assessor.assess(ChemicalProfile.builder()
-        .sugar(PointCharacteristicValue.of(SugarConcentration.ofSpecificGravity(SpecificGravityValue.of("1.052"))))
-        .ph(PointCharacteristicValue.of(PhValue.of("3.45")))
-        .build());
+    final var assessment = assessor.assess(new FermentationStartProfile(
+        PointCharacteristicValue.of(SpecificGravityValue.of("1.052")),
+        PointCharacteristicValue.of(PhValue.of("3.45")),
+        null
+    ));
 
     assertThat(assessment)
         .returns(FermentationStartReadinessStatus.NEEDS_ATTENTION, FermentationStartReadinessAssessment::status);
@@ -62,16 +60,17 @@ class FermentationStartReadinessAssessorTest {
 
   @Test
   void returnsNotReadyWhenSugarIsMissing() {
-    final var assessment = assessor.assess(ChemicalProfile.builder()
-        .titratableAcidity(PointCharacteristicValue.of(TitratableAcidityValue.of("5.2")))
-        .yeastAssimilableNitrogen(PointCharacteristicValue.of(YeastAssimilableNitrogenValue.of("180")))
-        .build());
+    final var assessment = assessor.assess(new FermentationStartProfile(
+        null,
+        null,
+        PointCharacteristicValue.of(YeastAssimilableNitrogenValue.of("180"))
+    ));
 
     assertThat(assessment)
         .returns(FermentationStartReadinessStatus.NOT_READY, FermentationStartReadinessAssessment::status);
     assertThat(assessment.checks())
         .anySatisfy(check -> assertThat(check.code())
-            .isEqualTo(FermentationStartReadinessCheckCode.SUGAR_MISSING));
+            .isEqualTo(FermentationStartReadinessCheckCode.SPECIFIC_GRAVITY_MISSING));
   }
 
   @Test
@@ -107,15 +106,15 @@ class FermentationStartReadinessAssessorTest {
             .returns("pH", FermentationStartReadinessCheck::unit));
   }
 
-  private static ChemicalProfile profile(
-      String sugar,
+  private static FermentationStartProfile profile(
+      String specificGravity,
       String ph,
       String yan
   ) {
-    return ChemicalProfile.builder()
-        .sugar(PointCharacteristicValue.of(SugarConcentration.ofSpecificGravity(SpecificGravityValue.of(sugar))))
-        .ph(PointCharacteristicValue.of(PhValue.of(ph)))
-        .yeastAssimilableNitrogen(PointCharacteristicValue.of(YeastAssimilableNitrogenValue.of(yan)))
-        .build();
+    return new FermentationStartProfile(
+        PointCharacteristicValue.of(SpecificGravityValue.of(specificGravity)),
+        PointCharacteristicValue.of(PhValue.of(ph)),
+        PointCharacteristicValue.of(YeastAssimilableNitrogenValue.of(yan))
+    );
   }
 }

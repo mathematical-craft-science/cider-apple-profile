@@ -17,8 +17,8 @@ import static java.util.Objects.requireNonNull;
  */
 public final class CanonicalUnitLabels {
 
-  public static final @NonNull String SUGAR = BeverageUnits.label(BeverageUnits.SG);
-  public static final @NonNull String SUGAR_SHORT = "SG";
+  public static final @NonNull String SPECIFIC_GRAVITY = BeverageUnits.label(BeverageUnits.SG);
+  public static final @NonNull String SPECIFIC_GRAVITY_SHORT = "SG";
   public static final @NonNull String PH = BeverageUnits.label(BeverageUnits.PH);
   public static final @NonNull String PH_SHORT = "pH";
   public static final @NonNull String TITRATABLE_ACIDITY =
@@ -46,8 +46,8 @@ public final class CanonicalUnitLabels {
     requireNonNull(axis, "chemical axis cannot be null");
 
     return switch (axis) {
-      case ChemicalAxis.SUGAR -> SUGAR;
-      case ChemicalAxis.ACIDITY -> TITRATABLE_ACIDITY;
+      case ChemicalAxis.SPECIFIC_GRAVITY -> SPECIFIC_GRAVITY;
+      case ChemicalAxis.TITRATABLE_ACIDITY -> TITRATABLE_ACIDITY;
       case ChemicalAxis.TANNIN -> TANNIN;
       case ChemicalAxis.YEAST_ASSIMILABLE_NITROGEN -> YEAST_ASSIMILABLE_NITROGEN;
     };
@@ -57,8 +57,8 @@ public final class CanonicalUnitLabels {
     requireNonNull(axis, "profile evaluation axis cannot be null");
 
     return switch (axis) {
-      case ProfileEvaluationAxis.SUGAR -> SUGAR;
-      case ProfileEvaluationAxis.ACIDITY -> TITRATABLE_ACIDITY;
+      case ProfileEvaluationAxis.SPECIFIC_GRAVITY -> SPECIFIC_GRAVITY;
+      case ProfileEvaluationAxis.TITRATABLE_ACIDITY -> TITRATABLE_ACIDITY;
       case ProfileEvaluationAxis.TANNIN -> TANNIN;
     };
   }
@@ -68,7 +68,7 @@ public final class CanonicalUnitLabels {
   ) {
     requireNonNull(characteristic, "measurement characteristic cannot be null");
     return switch (characteristic) {
-      case SPECIFIC_GRAVITY -> SUGAR;
+      case SPECIFIC_GRAVITY -> SPECIFIC_GRAVITY;
       case PH -> PH;
       case TITRATABLE_ACIDITY -> TITRATABLE_ACIDITY;
       case TANNIN -> TANNIN;

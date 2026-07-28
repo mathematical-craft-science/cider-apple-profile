@@ -1,10 +1,10 @@
 package org.craft.mcs.cap.infrastructure.configuration;
 
 import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.FermentationStartReadinessAssessor;
-import org.craft.mcs.cap.core.profileanalysis.ph.domain.PhFermentationStartPolicy;
+import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.ph.PhFermentationStartPolicy;
+import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.yan.YanFermentationStartPolicy;
 import org.craft.mcs.cap.core.profileanalysis.ph.domain.PhPlanningGuidancePolicy;
 import org.craft.mcs.cap.core.profileanalysis.ph.domain.PhRuleSource;
-import org.craft.mcs.cap.core.profileanalysis.yan.domain.YanFermentationStartPolicy;
 import org.craft.mcs.cap.core.profileanalysis.yan.domain.YanRuleSource;
 import org.jspecify.annotations.NonNull;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;

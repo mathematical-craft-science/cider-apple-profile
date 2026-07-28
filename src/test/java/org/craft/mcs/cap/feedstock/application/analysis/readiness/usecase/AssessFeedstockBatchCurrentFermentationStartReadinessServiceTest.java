@@ -2,37 +2,40 @@ package org.craft.mcs.cap.feedstock.application.analysis.readiness.usecase;
 
 import java.time.LocalDate;
 import java.util.Optional;
+import org.craft.mcs.cap.core.feedstock.application.analysis.readiness.port.in.FeedstockBatchCurrentFermentationStartReadinessResult;
+import org.craft.mcs.cap.core.feedstock.application.analysis.readiness.usecase.AssessFeedstockBatchCurrentFermentationStartReadinessService;
 import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
-import org.craft.mcs.cap.core.feedstock.application.analysis.readiness.usecase.*;
-import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.FermentationStartReadinessAssessor;
-import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.FermentationStartReadinessStatus;
-import org.craft.mcs.cap.core.feedstock.application.measurement.query.FeedstockBatchCurrentMeasurementQueryService;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchRepository;
-import org.craft.mcs.cap.core.feedstock.application.measurement.port.out.FeedstockMeasurementQueryRepository;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
-import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
-import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
-import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
-import org.craft.mcs.cap.shared.testing.FeedstockMeasurementFixture;
+import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.out.FeedstockCurrentProfileQueryRepository;
+import org.craft.mcs.cap.core.feedstock.application.currentprofile.query.FeedstockCurrentProfileQueryService;
 import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementId;
 import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementName;
-import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
+import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.FermentationStartReadinessAssessment;
+import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.FermentationStartReadinessAssessor;
+import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.FermentationStartReadinessStatus;
+import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.craft.mcs.cap.shared.kernel.chemical.value.PhValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
-import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
+import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
+import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
-import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
+import org.craft.mcs.cap.shared.testing.FeedstockMeasurementFixture;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
 import static org.craft.mcs.cap.shared.kernel.identity.UuidV7Generator.newUuid;
 import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementInstant;
 import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementRecordedAt;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.craft.mcs.cap.shared.testing.FeedstockMeasurementViews.view;
+import static org.craft.mcs.cap.shared.testing.FeedstockMeasurementViews.currentProfile;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -40,31 +43,43 @@ import static org.mockito.Mockito.when;
 class AssessFeedstockBatchCurrentFermentationStartReadinessServiceTest {
 
   @Test
-  void assessesLatestMeasurementForBatch() {
+  void assessesCurrentMaterialStateProfileForBatch() {
     final var batchRepository = mock(FeedstockBatchRepository.class);
-    final var measurementQueryRepository = mock(FeedstockMeasurementQueryRepository.class);
+    final var currentProfileRepository = mock(FeedstockCurrentProfileQueryRepository.class);
     final var service = new AssessFeedstockBatchCurrentFermentationStartReadinessService(
         batchRepository,
         mock(FeedstockAccessControl.class),
-        new FeedstockBatchCurrentMeasurementQueryService(measurementQueryRepository),
+        new FeedstockCurrentProfileQueryService(currentProfileRepository),
         new FermentationStartReadinessAssessor()
     );
     final var batchId = FeedstockBatchId.newId();
     final var workspaceId = WorkspaceId.of(newUuid());
     final var measurement = measurement(batchId);
+    final var currentProfile = currentProfile(measurement);
 
     when(batchRepository.findById(batchId)).thenReturn(Optional.of(batch(batchId, workspaceId)));
-    when(measurementQueryRepository.findCurrentByBatchId(batchId)).thenReturn(Optional.of(view(measurement)));
+    when(currentProfileRepository.findByBatchId(batchId)).thenReturn(Optional.of(currentProfile));
 
     final var result = service.assess(batchId);
 
-    assertThat(result.batchId()).isEqualTo(batchId);
-    assertThat(result.workspaceId()).isEqualTo(workspaceId);
-    assertThat(result.currentMeasurementId()).isEqualTo(measurement.measurementId());
-    assertThat(result.assessment().status()).isEqualTo(FermentationStartReadinessStatus.READY);
+    assertThat(result)
+        .returns(batchId, FeedstockBatchCurrentFermentationStartReadinessResult::batchId)
+        .returns(workspaceId, FeedstockBatchCurrentFermentationStartReadinessResult::workspaceId)
+        .returns(
+            currentProfile.currentMaterialStateId(),
+            FeedstockBatchCurrentFermentationStartReadinessResult::currentMaterialStateId
+        )
+        .returns(
+            measurement.measurementId(),
+            FeedstockBatchCurrentFermentationStartReadinessResult::currentMeasurementId
+        );
+    assertThat(result.assessment())
+        .returns(FermentationStartReadinessStatus.READY, FermentationStartReadinessAssessment::status);
   }
 
-  private static FeedstockMeasurementFixture measurement(FeedstockBatchId batchId) {
+  private static @NonNull FeedstockMeasurementFixture measurement(
+      @NonNull FeedstockBatchId batchId
+  ) {
     return FeedstockMeasurementFixture.create(
         FeedstockMeasurementId.newId(),
         batchId,
@@ -79,9 +94,9 @@ class AssessFeedstockBatchCurrentFermentationStartReadinessServiceTest {
     );
   }
 
-  private static FeedstockBatch batch(
-      FeedstockBatchId batchId,
-      WorkspaceId workspaceId
+  private static @NonNull FeedstockBatch batch(
+      @NonNull FeedstockBatchId batchId,
+      @NonNull WorkspaceId workspaceId
   ) {
     return FeedstockBatch.create(
         batchId,

@@ -61,7 +61,6 @@ CREATE TABLE IF NOT EXISTS measurement_sets
     subject_type       VARCHAR(32)              NOT NULL,
     subject_id         UUID                     NOT NULL,
     lifecycle          VARCHAR(16)              NOT NULL,
-    current_revision_id UUID                    NOT NULL,
     version            BIGINT                   NOT NULL DEFAULT 0,
     created_at         TIMESTAMP WITH TIME ZONE NOT NULL,
     updated_at         TIMESTAMP WITH TIME ZONE NOT NULL,
@@ -88,6 +87,8 @@ CREATE TABLE IF NOT EXISTS measurement_set_revisions
 
     CONSTRAINT ux_measurement_revisions_set_number
         UNIQUE (measurement_set_id, revision_number),
+    CONSTRAINT ux_measurement_revisions_set_identity
+        UNIQUE (measurement_set_id, revision_id),
     CONSTRAINT chk_measurement_revisions_number
         CHECK (revision_number > 0),
     CONSTRAINT chk_measurement_revisions_correction_reason
@@ -101,6 +102,18 @@ CREATE TABLE IF NOT EXISTS measurement_set_revisions
         ),
     CONSTRAINT fk_measurement_revisions_set
         FOREIGN KEY (measurement_set_id) REFERENCES measurement_sets (measurement_set_id)
+);
+
+CREATE TABLE IF NOT EXISTS measurement_set_heads
+(
+    measurement_set_id UUID NOT NULL PRIMARY KEY,
+    revision_id        UUID NOT NULL,
+
+    CONSTRAINT fk_measurement_set_heads_set
+        FOREIGN KEY (measurement_set_id) REFERENCES measurement_sets (measurement_set_id),
+    CONSTRAINT fk_measurement_set_heads_revision
+        FOREIGN KEY (measurement_set_id, revision_id)
+            REFERENCES measurement_set_revisions (measurement_set_id, revision_id)
 );
 
 CREATE TABLE IF NOT EXISTS measurement_records
@@ -240,11 +253,11 @@ CREATE TABLE IF NOT EXISTS measurement_derivation_inputs
 CREATE INDEX IF NOT EXISTS idx_measurement_sets_subject
     ON measurement_sets (workspace_id, subject_type, subject_id, lifecycle);
 
-CREATE INDEX IF NOT EXISTS idx_measurement_sets_current_revision
-    ON measurement_sets (current_revision_id);
-
 CREATE INDEX IF NOT EXISTS idx_measurement_set_revisions_set
     ON measurement_set_revisions (measurement_set_id, revision_number DESC);
+
+CREATE INDEX IF NOT EXISTS idx_measurement_set_heads_revision
+    ON measurement_set_heads (revision_id);
 
 CREATE INDEX IF NOT EXISTS idx_measurement_set_revisions_material_state
     ON measurement_set_revisions (material_state_id, measurement_set_id, revision_number DESC);

@@ -22,7 +22,7 @@ import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.batch.mapper.F
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.detail.dto.FeedstockBatchDetailResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.detail.mapper.FeedstockBatchDetailRestMapper;
 import org.craft.mcs.cap.shared.application.ApplicationValidationException;
-import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;

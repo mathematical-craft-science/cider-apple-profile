@@ -1,8 +1,8 @@
 package org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in;
 
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.port.in.ProfileTargetScoringPurpose;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.model.ProfileTargetAnalysisScenario;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetObjectiveWeights;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.TanninTargetRange;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.TanninTargetRange;
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.FeedstockProfileTargetSelection;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
@@ -20,14 +20,14 @@ public record FeedstockPlanningBatchViewQuery(
     @Nullable FeedstockProfileTargetSelection target,
     @Nullable TanninTargetRange tanninTarget,
     @NonNull ProfileTargetObjectiveWeights weights,
-    @NonNull ProfileTargetScoringPurpose purpose,
+    @NonNull ProfileTargetAnalysisScenario analysisScenario,
     int targetCandidateLimit
 ) {
 
   public FeedstockPlanningBatchViewQuery {
     requireNonNull(workspaceId, "workspace id cannot be null");
     requireNonNull(weights, "profile target objective weights cannot be null");
-    requireNonNull(purpose, "profile target scoring purpose cannot be null");
+    requireNonNull(analysisScenario, "profile target analysis scenario cannot be null");
     if (targetCandidateLimit < 1 || targetCandidateLimit > QueryLimits.MAXIMUM) {
       throw new ApplicationValidationException(
           "feedstock planning target candidate limit must be between 1 and " + QueryLimits.MAXIMUM

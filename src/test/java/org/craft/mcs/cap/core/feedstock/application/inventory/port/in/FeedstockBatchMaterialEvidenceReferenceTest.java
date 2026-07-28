@@ -3,12 +3,15 @@ package org.craft.mcs.cap.core.feedstock.application.inventory.port.in;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
-import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockProfileAxisEvidence;
 import org.craft.mcs.cap.shared.application.ApplicationValidationException;
+import org.craft.mcs.cap.shared.application.measurement.MeasurementEvidenceReference;
+import org.craft.mcs.cap.shared.application.measurement.MeasurementEvidenceSnapshot;
 import org.craft.mcs.cap.shared.application.measurement.MeasurementEvidenceValidity;
+import org.craft.mcs.cap.shared.application.measurement.MeasurementProvenanceView;
 import org.craft.mcs.cap.shared.application.measurement.MeasurementValueOrigin;
 import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic;
+import org.craft.mcs.cap.shared.kernel.measurement.MeasurementSourceType;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -51,19 +54,26 @@ class FeedstockBatchMaterialEvidenceReferenceTest {
         .hasMessageContaining("one evidence record per characteristic");
   }
 
-  private static FeedstockProfileAxisEvidence evidence(
+  private static MeasurementEvidenceSnapshot evidence(
       MeasurementCharacteristic characteristic,
       String recordId
   ) {
-    return new FeedstockProfileAxisEvidence(
+    return new MeasurementEvidenceSnapshot(
         characteristic,
         MeasurementValueOrigin.MEASURED,
         MaterialStateId.newId(),
-        UUID.fromString("019f9e1b-d2de-7000-8000-000000000010"),
-        UUID.fromString(recordId),
+        new MeasurementEvidenceReference(
+            UUID.fromString("019f9e1b-d2de-7000-8000-000000000010"),
+            UUID.fromString(recordId)
+        ),
         MEASURED_AT,
-        null,
-        null,
+        new MeasurementProvenanceView(
+            MeasurementSourceType.USER,
+            null,
+            null,
+            null,
+            null
+        ),
         MeasurementEvidenceValidity.VALID
     );
   }

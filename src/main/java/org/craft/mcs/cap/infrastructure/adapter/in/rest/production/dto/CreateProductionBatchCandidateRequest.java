@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.UUID;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionCalculatorCode;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionTanninPolicy;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.port.in.ProfileTargetScoringPurpose;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.normalization.ProfileAxisNormalizerCode;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.objective.ProfileTargetObjectiveFunctionCode;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.ProfileTargetObjectiveWeightsRequest;
@@ -57,13 +56,6 @@ public record CreateProductionBatchCandidateRequest(
         requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )
     @Nullable ProfileTargetObjectiveWeightsRequest weights,
-    @Schema(
-        description = "Scoring purpose used to select calculation semantics.",
-        implementation = ProfileTargetScoringPurpose.class,
-        nullable = true,
-        requiredMode = Schema.RequiredMode.NOT_REQUIRED
-    )
-    @Nullable ProfileTargetScoringPurpose scoringPurpose,
     @Schema(
         description = "Composition calculator.",
         implementation = ChemicalProfileCompositionCalculatorCode.class,

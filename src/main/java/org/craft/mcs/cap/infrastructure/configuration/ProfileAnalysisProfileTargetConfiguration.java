@@ -4,7 +4,6 @@ import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.norma
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.objective.BuiltInProfileTargetObjectiveFunctionFactory;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.normalization.ProfileAxisNormalizerSelector;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.objective.ProfileTargetObjectiveFunctionFactory;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.BuiltInSugarAcidityZoneProfiles;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -14,9 +13,7 @@ class ProfileAnalysisProfileTargetConfiguration {
 
   @Bean
   ProfileAxisNormalizerSelector profileAxisNormalizerSelector() {
-    return new BuiltInProfileAxisNormalizerSelector(
-        BuiltInSugarAcidityZoneProfiles.thresholds()
-    );
+    return new BuiltInProfileAxisNormalizerSelector();
   }
 
   @Bean

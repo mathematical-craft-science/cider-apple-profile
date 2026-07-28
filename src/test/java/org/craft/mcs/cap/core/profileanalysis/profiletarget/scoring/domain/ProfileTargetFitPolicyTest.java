@@ -1,7 +1,7 @@
 package org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain;
 
 import java.math.BigDecimal;
-import java.util.List;
+import java.util.Set;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.assessment.ProfileTargetDistance;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.assessment.ProfileTargetDistanceStatus;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.assessment.ProfileTargetFitAssessment;
@@ -9,10 +9,12 @@ import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.asses
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.assessment.ProfileTargetFitStatus;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.objective.ProfileDistanceMetric;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.objective.ProfileTargetObjectiveFunctionCode;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.SugarAcidityCoordinates;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.SugarAcidityTargetGeometryShape;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.SugarAcidityTargetKind;
+import org.craft.mcs.cap.core.profileanalysis.graph.domain.SugarAcidityGraphPoint;
+import org.craft.mcs.cap.core.profileanalysis.graph.domain.SugarAcidityGeometryShape;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.SugarAcidityTargetKind;
 import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
+import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
@@ -63,19 +65,22 @@ class ProfileTargetFitPolicyTest {
   }
 
   private static @NonNull ProfileTargetDistance scoredDistance(@NonNull String value) {
-    return distance(ProfileTargetDistanceStatus.SCORED, new BigDecimal(value), List.of());
+    return distance(ProfileTargetDistanceStatus.SCORED, new BigDecimal(value), Set.of());
   }
 
   private static @NonNull ProfileTargetDistance unscorableDistance() {
-    return distance(ProfileTargetDistanceStatus.UNSCORABLE, null, List.of(ProfileEvaluationAxis.SUGAR));
+    return distance(ProfileTargetDistanceStatus.UNSCORABLE, null, Set.of(ProfileEvaluationAxis.SPECIFIC_GRAVITY));
   }
 
   private static @NonNull ProfileTargetDistance distance(
       @NonNull ProfileTargetDistanceStatus status,
       @Nullable BigDecimal value,
-      @NonNull List<@NonNull ProfileEvaluationAxis> missingMeasurements
+      @NonNull Set<@NonNull ProfileEvaluationAxis> missingAxes
   ) {
-    final var point = new SugarAcidityCoordinates(new BigDecimal("1.050"), new BigDecimal("6.0"));
+    final var point = new SugarAcidityGraphPoint(
+        SpecificGravityValue.of("1.050"),
+        TitratableAcidityValue.of("6.0")
+    );
     return new ProfileTargetDistance(
         status,
         point,
@@ -89,8 +94,8 @@ class ProfileTargetFitPolicyTest {
         ProfileDistanceMetric.NORMALIZED_WEIGHTED_EUCLIDEAN,
         ProfileTargetObjectiveWeights.balanced(),
         SugarAcidityTargetKind.CUSTOM_RECTANGLE,
-        SugarAcidityTargetGeometryShape.RECTANGLE,
-        missingMeasurements
+        SugarAcidityGeometryShape.RECTANGLE,
+        missingAxes
     );
   }
 }

@@ -1,7 +1,6 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.common.mapper;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.function.Function;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.measurement.CanonicalUnitLabels;
 import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
@@ -19,6 +18,7 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import static java.util.Objects.requireNonNull;
+import static org.craft.mcs.cap.shared.kernel.measurement.MeasurementValueMath.midpoint;
 
 
 /**
@@ -44,7 +44,7 @@ public final class FeedstockProfileSummaryRestMapper {
             .map(measurement -> toProfileValue(
                 measurement,
                 FeedstockProfileSummaryRestMapper::specificGravity,
-                CanonicalUnitLabels.SUGAR,
+                CanonicalUnitLabels.SPECIFIC_GRAVITY,
                 factory
             ))
             .orElse(null), // NOSONAR
@@ -126,7 +126,7 @@ public final class FeedstockProfileSummaryRestMapper {
     final var min = extractor.apply(minimum);
     final var max = extractor.apply(maximum);
     return factory.create(
-        quantity(intervalMidpoint(min, max), unit),
+        quantity(midpoint(min, max), unit),
         AxisValueKind.INTERVAL_MIDPOINT,
         quantity(min, unit),
         quantity(max, unit)
@@ -138,13 +138,6 @@ public final class FeedstockProfileSummaryRestMapper {
     return concentration.specificGravity().asBigDecimal();
   }
 
-  private static @NonNull BigDecimal intervalMidpoint(
-      @NonNull BigDecimal min,
-      @NonNull BigDecimal max
-  ) {
-    return min.add(max).divide(BigDecimal.valueOf(2), RoundingMode.UNNECESSARY);
-  }
-
   private static @NonNull DecimalQuantityResponse quantity(
       @NonNull BigDecimal value,
       @NonNull String unit
@@ -153,7 +146,7 @@ public final class FeedstockProfileSummaryRestMapper {
   }
 
   public record ProfileSummary<T>(
-      @Nullable T sugar,
+      @Nullable T specificGravity,
       @Nullable T titratableAcidity,
       @Nullable T ph,
       @Nullable T tannin,

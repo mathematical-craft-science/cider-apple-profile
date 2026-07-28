@@ -4,30 +4,35 @@ import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 import org.craft.mcs.cap.core.profileanalysis.composition.contribution.domain.CompositionContributionRole;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileEvaluationAxis;
 import org.jspecify.annotations.NonNull;
 
 
 @Schema(description = "Target-aware role of a profile source in a possible composition.")
 public record CompositionContributionRoleAssessmentResponse(
     @ArraySchema(
-        arraySchema = @Schema(description = "All roles assigned to the source.", requiredMode = Schema.RequiredMode.REQUIRED),
+        arraySchema = @Schema(
+            description = "Roles assigned to the source in priority order; the first role is primary.",
+            requiredMode = Schema.RequiredMode.REQUIRED
+        ),
         schema = @Schema(implementation = CompositionContributionRole.class)
     )
     @NonNull List<@NonNull CompositionContributionRole> roles,
-    @Schema(description = "Primary role shown first to the user.", implementation = CompositionContributionRole.class, requiredMode = Schema.RequiredMode.REQUIRED)
-    @NonNull CompositionContributionRole primaryRole,
     @ArraySchema(
-        arraySchema = @Schema(description = "Per-axis explanation for assigned roles.", requiredMode = Schema.RequiredMode.REQUIRED),
+        arraySchema = @Schema(
+            description = "Per-axis explanation for assigned roles.",
+            requiredMode = Schema.RequiredMode.REQUIRED
+        ),
         schema = @Schema(implementation = CompositionContributionEvidenceResponse.class)
     )
     @NonNull List<@NonNull CompositionContributionEvidenceResponse> evidence,
     @ArraySchema(
-        arraySchema = @Schema(description = "Axes missing for role assessment.", requiredMode = Schema.RequiredMode.REQUIRED),
-        schema = @Schema(implementation = ChemicalAxis.class)
+        arraySchema = @Schema(
+            description = "Axes missing for role assessment.",
+            requiredMode = Schema.RequiredMode.REQUIRED
+        ),
+        schema = @Schema(implementation = ProfileEvaluationAxis.class)
     )
-    @NonNull List<@NonNull ChemicalAxis> missingAxes,
-    @Schema(description = "Whether contribution role could be assessed.", example = "true", requiredMode = Schema.RequiredMode.REQUIRED)
-    boolean assessable
+    @NonNull List<@NonNull ProfileEvaluationAxis> missingAxes
 ) {
 }

@@ -20,18 +20,21 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @Tag(
     name = "Feedstock measurement sugar-acidity analysis",
-    description = "Sugar-acidity graph endpoints for historical feedstock measurements."
+    description = "Sugar-acidity graph endpoints backed by historical feedstock SG and TA measurements."
 )
 public interface FeedstockMeasurementSugarAcidityApi {
 
   @Operation(
       summary = "Assess feedstock measurement sugar-acidity zone",
-      description = "Maps one historical feedstock measurement to a sugar-acidity graph zone when possible."
+      description = "Maps one historical SG and TA measurement to a sugar-acidity graph zone when possible."
   )
   @ApiResponse(
       responseCode = "200",
       description = "Sugar-acidity assessment or unplottable result.",
-      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = FeedstockMeasurementSugarAcidityZoneResponse.class))
+      content = @Content(
+          mediaType = APPLICATION_JSON_VALUE,
+          schema = @Schema(implementation = FeedstockMeasurementSugarAcidityZoneResponse.class)
+      )
   )
   @ApiResponse(
       responseCode = "404",
@@ -50,7 +53,10 @@ public interface FeedstockMeasurementSugarAcidityApi {
   @ApiResponse(
       responseCode = "200",
       description = "Batch of measurement graph points.",
-      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = FeedstockMeasurementSugarAcidityZonePointBatchResponse.class))
+      content = @Content(
+          mediaType = APPLICATION_JSON_VALUE,
+          schema = @Schema(implementation = FeedstockMeasurementSugarAcidityZonePointBatchResponse.class)
+      )
   )
   @ApiResponse(
       responseCode = "400",
@@ -61,7 +67,10 @@ public interface FeedstockMeasurementSugarAcidityApi {
       @RequestBody(
           description = "Historical measurement graph point query.",
           required = true,
-          content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = FeedstockMeasurementSugarAcidityZonePointQueryRequest.class))
+          content = @Content(
+              mediaType = APPLICATION_JSON_VALUE,
+              schema = @Schema(implementation = FeedstockMeasurementSugarAcidityZonePointQueryRequest.class)
+          )
       )
       @NonNull FeedstockMeasurementSugarAcidityZonePointQueryRequest request
   );

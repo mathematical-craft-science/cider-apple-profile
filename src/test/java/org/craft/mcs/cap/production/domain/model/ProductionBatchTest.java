@@ -16,7 +16,7 @@ import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
-import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -90,7 +90,7 @@ class ProductionBatchTest {
 
     assertThatThrownBy(() -> productionBatch(zeroVolume))
         .isInstanceOf(DomainRuleViolationException.class)
-        .hasMessage("production batch volume must be greater than zero");
+        .hasMessage("active batch material volume must be greater than zero");
   }
 
   @Test
@@ -192,13 +192,13 @@ class ProductionBatchTest {
 
     assertThatThrownBy(() -> batch.reduceCurrentVolumeTo(excessiveVolume))
         .isInstanceOf(DomainConflictException.class)
-        .hasMessage("remaining production volume cannot exceed current volume");
+        .hasMessage("remaining material volume cannot exceed current volume");
     assertThatThrownBy(() -> batch.reduceCurrentVolumeTo(zeroVolume))
         .isInstanceOf(DomainRuleViolationException.class)
-        .hasMessage("production batch volume must be greater than zero");
+        .hasMessage("remaining material volume must be greater than zero");
     assertThatThrownBy(() -> batch.reduceCurrentVolumeTo(unchangedVolume))
         .isInstanceOf(DomainConflictException.class)
-        .hasMessage("remaining production volume must be less than current volume");
+        .hasMessage("remaining material volume must be less than current volume");
 
     assertThat(batch.reduceCurrentVolumeTo(VolumeValue.ofLiters("92")))
         .returns(VolumeValue.ofLiters("92"), ProductionBatch::currentVolume)
@@ -265,7 +265,7 @@ class ProductionBatchTest {
         zeroVolume
     ))
         .isInstanceOf(DomainRuleViolationException.class)
-        .hasMessage("active production batch volume must be greater than zero");
+        .hasMessage("active batch material volume must be greater than zero");
   }
 
   @Test
@@ -278,7 +278,7 @@ class ProductionBatchTest {
         remainingVolume
     ))
         .isInstanceOf(DomainRuleViolationException.class)
-        .hasMessage("inactive production batch volume must be zero");
+        .hasMessage("inactive batch material volume must be zero");
   }
 
   private static ProductionBatch productionBatch() {

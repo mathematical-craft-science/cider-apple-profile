@@ -4,8 +4,9 @@ import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.appleprofile.application.AppleVarietyNotFoundException;
 import org.craft.mcs.cap.core.appleprofile.application.classification.port.in.AppleVarietyNorthAmericanClassification;
 import org.craft.mcs.cap.core.appleprofile.application.classification.port.in.ClassifyAppleVarietyNorthAmericanUseCase;
-import org.craft.mcs.cap.core.appleprofile.application.port.out.AppleVarietyRepository;
+import org.craft.mcs.cap.core.appleprofile.application.catalog.port.out.AppleVarietyRepository;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyId;
+import org.craft.mcs.cap.core.profileanalysis.classification.application.compatibility.ChemicalProfileClassificationInputAdapter;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
 import org.craft.mcs.cap.core.profileanalysis.classification.domain.profile.northamerican.NorthAmericanProfileCalculator;
 import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapability;
@@ -54,7 +55,9 @@ public final class ClassifyAppleVarietyNorthAmericanService
       throw new ChemicalProfileCapabilityNotMetException(capabilityAssessment);
     }
 
-    final var profile = calculator.calculate(axes);
+    final var profile = calculator.calculate(
+        ChemicalProfileClassificationInputAdapter.adapt(variety.chemicalProfile())
+    );
 
     return new AppleVarietyNorthAmericanClassification(
         variety.varietyId(),

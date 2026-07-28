@@ -1,5 +1,6 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.dto;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.jspecify.annotations.Nullable;
 
@@ -7,11 +8,12 @@ import org.jspecify.annotations.Nullable;
 @Schema(description = "Chemical profile request with optional measurements. At least one measurement must be present.")
 public record ChemicalProfileRequest(
     @Schema(
-        description = "Sugar measurement. Supported units: SG, °Bx, Brix, °P, Plato.",
+        description = "Specific Gravity (SG). Brix or Plato input is converted to canonical SG at the API boundary.",
         nullable = true,
         requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )
-    @Nullable ChemicalMeasurementRequest sugar,
+    @JsonAlias("sugar")
+    @Nullable ChemicalMeasurementRequest specificGravity,
     @Schema(
         description = "pH measurement.",
         nullable = true,

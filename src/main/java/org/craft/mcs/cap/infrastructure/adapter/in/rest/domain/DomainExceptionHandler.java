@@ -5,7 +5,7 @@ import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.Inv
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.UnsupportedChemicalProfileCompositionCalculatorException;
 import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.InvalidChemicalProfileCompositionOptimizationException;
 import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.strategy.UnsupportedCompositionOptimizationStrategyException;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.SugarAcidityTargetResolutionException;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.SugarAcidityTargetResolutionException;
 import org.craft.mcs.cap.shared.kernel.DomainConflictException;
 import org.craft.mcs.cap.shared.kernel.DomainException;
 import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;

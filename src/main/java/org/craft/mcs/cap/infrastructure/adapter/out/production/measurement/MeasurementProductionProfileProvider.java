@@ -5,11 +5,11 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.measurement.application.model.CurrentMeasurementProfileView;
-import org.craft.mcs.cap.core.measurement.application.port.in.ProjectCurrentMeasurementProfileUseCase;
+import org.craft.mcs.cap.core.measurement.application.compatibility.CurrentMeasurementProfileView;
+import org.craft.mcs.cap.core.measurement.application.compatibility.ProjectCurrentMeasurementProfileUseCase;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSubjectReference;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSubjectType;
-import org.craft.mcs.cap.core.production.application.model.ProductionMeasurementProfileView;
+import org.craft.mcs.cap.core.production.application.model.ProductionMeasuredProfileView;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionMeasurementProfileProvider;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatchId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
@@ -27,7 +27,7 @@ final class MeasurementProductionProfileProvider implements ProductionMeasuremen
   private final @NonNull ProjectCurrentMeasurementProfileUseCase measurementProfileProjector;
 
   @Override
-  public @NonNull Optional<@NonNull ProductionMeasurementProfileView> findCurrent(
+  public @NonNull Optional<@NonNull ProductionMeasuredProfileView> findCurrent(
       @NonNull ProductionBatchId batchId
   ) {
     requireNonNull(batchId, "production batch id cannot be null");
@@ -36,7 +36,7 @@ final class MeasurementProductionProfileProvider implements ProductionMeasuremen
   }
 
   @Override
-  public @NonNull Map<@NonNull ProductionBatchId, @NonNull ProductionMeasurementProfileView> findAllCurrent(
+  public @NonNull Map<@NonNull ProductionBatchId, @NonNull ProductionMeasuredProfileView> findAllCurrent(
       @NonNull WorkspaceId workspaceId,
       @NonNull Set<@NonNull ProductionBatchId> batchIds
   ) {
@@ -64,10 +64,10 @@ final class MeasurementProductionProfileProvider implements ProductionMeasuremen
     );
   }
 
-  private static @NonNull ProductionMeasurementProfileView toProductionProfile(
+  private static @NonNull ProductionMeasuredProfileView toProductionProfile(
       @NonNull CurrentMeasurementProfileView profile
   ) {
-    return new ProductionMeasurementProfileView(
+    return new ProductionMeasuredProfileView(
         profile.chemicalProfile(),
         profile.evidence()
     );

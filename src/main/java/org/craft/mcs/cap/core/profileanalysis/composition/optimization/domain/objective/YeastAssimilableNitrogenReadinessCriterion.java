@@ -18,7 +18,7 @@ import static org.craft.mcs.cap.shared.kernel.math.DecimalComparisons.isPositive
  * Adds a fermentation-start readiness penalty when blended YAN is missing or outside the configured
  * range.
  *
- * <p>YAN is not part of profile-target distance because it is not a sugar/acidity/tannin target
+ * <p>YAN is not part of profile-target distance because it is not a SG/TA/tannin target
  * axis. It is a readiness criterion: a candidate can be close to the desired target profile but
  * still rank lower if YAN suggests a risky fermentation start.
  */
@@ -69,12 +69,12 @@ public record YeastAssimilableNitrogenReadinessCriterion(
   ) {
     requireNonNull(composition, "chemical profile composition cannot be null");
 
-    final var yan = composition.yeastAssimilableNitrogen();
+    final var yan = composition.characteristics().yeastAssimilableNitrogen();
     if (yan == null) {
       return missingAssessment();
     }
 
-    final var value = yan.value();
+    final var value = yan.asBigDecimal();
     final var minimumValue = minimumValue();
     if (minimumValue != null && isLessThan(value, minimumValue)) {
       return CompositionOptimizationCriterionAssessment.withPenalty(new CompositionOptimizationPenalty(

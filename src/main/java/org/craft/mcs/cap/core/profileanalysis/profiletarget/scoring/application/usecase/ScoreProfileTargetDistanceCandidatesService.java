@@ -6,7 +6,6 @@ import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.port.in.ScoreProfileTargetDistanceCandidatesCommand;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.port.in.ScoreProfileTargetDistanceCandidatesUseCase;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.normalization.ProfileAxisNormalizerSelector;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.objective.ProfileTargetObjectiveFunctionCode;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.objective.ProfileTargetObjectiveFunctionFactory;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
@@ -27,7 +26,6 @@ public final class ScoreProfileTargetDistanceCandidatesService
     implements ScoreProfileTargetDistanceCandidatesUseCase {
 
   private final @NonNull ProfileAxisNormalizerSelector normalizerSelector;
-  private final @NonNull ProfileTargetScoringPurposeNormalizerPolicy normalizerPolicy;
   private final @NonNull ProfileTargetObjectiveFunctionFactory objectiveFunctionFactory;
 
   @Override
@@ -35,22 +33,26 @@ public final class ScoreProfileTargetDistanceCandidatesService
       @NonNull ScoreProfileTargetDistanceCandidatesCommand command
   ) {
     requireNonNull(command, "score profile target distance candidates command cannot be null");
-    final var normalizerCode = normalizerPolicy.normalizerFor(command.purpose());
-    final var normalizer = normalizerSelector.select(normalizerCode);
+    final var configuration = command.configuration();
+    final var normalizer = normalizerSelector.select(configuration.normalizerCode());
     final var objectiveFunction = objectiveFunctionFactory.create(
-        ProfileTargetObjectiveFunctionCode.DISTANCE_TO_TARGET_AREA,
+        configuration.objectiveFunctionCode(),
         normalizer,
-        command.weights()
+        configuration.weights()
     );
     final var scores = command.candidates().stream()
         .map(candidate -> new ProfileTargetDistanceCandidateScore(
             candidate.reference(),
-            objectiveFunction.distanceTo(candidate.point(), command.objective())
+            objectiveFunction.distanceTo(
+                candidate.input(),
+                command.intervalPolicy(),
+                command.objective()
+            )
         ))
         .sorted(ScoreProfileTargetDistanceCandidatesService::compareByDistance)
         .toList();
 
-    return new ProfileTargetDistanceCandidateScores(command.purpose(), normalizerCode, scores);
+    return new ProfileTargetDistanceCandidateScores(configuration, scores);
   }
 
   private static int compareByDistance(

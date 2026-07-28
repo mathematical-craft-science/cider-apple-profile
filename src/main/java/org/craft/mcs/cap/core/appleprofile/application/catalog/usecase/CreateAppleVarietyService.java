@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.appleprofile.application.catalog.port.in.AppleVarietyCreated;
 import org.craft.mcs.cap.core.appleprofile.application.catalog.port.in.CreateAppleVarietyCommand;
 import org.craft.mcs.cap.core.appleprofile.application.catalog.port.in.CreateAppleVarietyUseCase;
-import org.craft.mcs.cap.core.appleprofile.application.port.out.AppleVarietyRepository;
+import org.craft.mcs.cap.core.appleprofile.application.catalog.port.out.AppleVarietyRepository;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVariety;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyId;
 import org.craft.mcs.cap.shared.platform.TransactionHelper;

@@ -4,7 +4,7 @@ import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.characteristic.IntervalCharacteristicValue;
-import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.junit.jupiter.api.Test;
 
@@ -23,11 +23,11 @@ class ChemicalProfileAxisExtractorTest {
         )))
         .build());
 
-    final var sugar = axes.valueOf(ChemicalAxis.SUGAR).orElseThrow();
+    final var sugar = axes.valueOf(ChemicalAxis.SPECIFIC_GRAVITY).orElseThrow();
 
     assertThat(sugar.value()).isEqualByComparingTo("1.052");
     assertThat(sugar.valueKind()).isEqualTo(AxisValueKind.POINT);
-    assertThat(axes.has(ChemicalAxis.ACIDITY)).isFalse();
+    assertThat(axes.has(ChemicalAxis.TITRATABLE_ACIDITY)).isFalse();
   }
 
   @Test
@@ -39,7 +39,7 @@ class ChemicalProfileAxisExtractorTest {
         ))
         .build());
 
-    final var acidity = axes.valueOf(ChemicalAxis.ACIDITY).orElseThrow();
+    final var acidity = axes.valueOf(ChemicalAxis.TITRATABLE_ACIDITY).orElseThrow();
 
     assertThat(acidity.value()).isEqualByComparingTo("5.000000");
     assertThat(acidity.min()).isEqualByComparingTo("4.0");

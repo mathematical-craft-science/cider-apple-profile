@@ -35,7 +35,7 @@ public interface FeedstockBatchPotentialAbvApi {
   )
   @ApiResponse(
       responseCode = "422",
-      description = "Current profile has no sugar measurement.",
+      description = "Current profile has no Specific Gravity measurement.",
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
   )
   @NonNull ResponseEntity<@NonNull FeedstockBatchCurrentPotentialAbvResponse> predictPotentialAbv(

@@ -86,7 +86,7 @@ class CreateFeedstockBatchServiceTest {
 
     assertThatThrownBy(() -> service.create(command))
         .isInstanceOf(DomainRuleViolationException.class)
-        .hasMessageContaining("available volume must be greater than zero");
+        .hasMessage("active batch material volume must be greater than zero");
     verify(repository, never()).create(any(FeedstockBatch.class));
   }
 

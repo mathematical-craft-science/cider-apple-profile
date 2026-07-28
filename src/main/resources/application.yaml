@@ -83,7 +83,7 @@ cap:
       debug: false
   profile-analysis:
     sugar-acidity:
-      assessor: RECTANGLE # или ellipse
+      geometry: RECTANGLE # or ELLIPSE
     readiness:
       ph:
         generic-yeast-tolerance-min: 2.8

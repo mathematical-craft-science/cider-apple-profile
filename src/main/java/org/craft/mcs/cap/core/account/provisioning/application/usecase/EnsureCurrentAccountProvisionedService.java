@@ -1,8 +1,10 @@
 package org.craft.mcs.cap.core.account.provisioning.application.usecase;
 
+import java.time.Clock;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.account.shared.application.AccountAccessDeniedException;
 import org.craft.mcs.cap.core.account.membership.application.port.out.WorkspaceMembershipRepository;
+import org.craft.mcs.cap.core.account.invitation.application.port.out.WorkspaceInvitationRepository;
 import org.craft.mcs.cap.core.account.membership.domain.model.WorkspaceMembership;
 import org.craft.mcs.cap.core.account.provisioning.application.model.WorkspaceProvisioningDefaults;
 import org.craft.mcs.cap.core.account.provisioning.application.port.in.EnsureCurrentAccountProvisionedUseCase;
@@ -24,11 +26,14 @@ import org.craft.mcs.cap.shared.application.persistence.VersionedAggregate;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 
+import static org.craft.mcs.cap.core.account.invitation.domain.model.WorkspaceInvitationStatus.PENDING;
+
 /**
  * Atomically provisions a new CAP account or synchronizes an existing provider identity.
  *
- * <p>Default workspace creation belongs only to initial account onboarding. Existing accounts
- * remain valid without active memberships so personal account and recovery flows stay available.
+ * <p>Default workspace creation belongs to initial account onboarding only when the account has no pending workspace
+ * invitations. Existing accounts remain valid without active memberships so personal account and recovery flows stay
+ * available.
  */
 @Component
 @RequiredArgsConstructor
@@ -41,10 +46,12 @@ public final class EnsureCurrentAccountProvisionedService
   private final @NonNull CurrentAccountUserRequestCache currentAccountUserRequestCache;
   private final @NonNull WorkspaceRepository workspaceRepository;
   private final @NonNull WorkspaceMembershipRepository membershipRepository;
+  private final @NonNull WorkspaceInvitationRepository invitationRepository;
   private final @NonNull WorkspaceSettingsRepository workspaceSettingsRepository;
   private final @NonNull UserPreferencesRepository userPreferencesRepository;
   private final @NonNull WorkspaceProvisioningDefaults workspaceProvisioningDefaults;
   private final @NonNull TransactionHelper transactionHelper;
+  private final @NonNull Clock clock;
 
   @Override
   public void ensureProvisioned() {
@@ -110,9 +117,17 @@ public final class EnsureCurrentAccountProvisionedService
         actor.displayName(),
         actor.avatarUrl()
     ));
-    provisionDefaultWorkspace(user, actor);
+    if (!hasPendingWorkspaceInvitation(user)) {
+      provisionDefaultWorkspace(user, actor);
+    }
     userPreferencesRepository.create(UserPreferences.defaults(user.userId()));
     return user;
+  }
+
+  private boolean hasPendingWorkspaceInvitation(@NonNull AccountUser user) {
+    final var now = clock.instant();
+    return invitationRepository.findAllByInvitedEmail(user.email()).stream()
+        .anyMatch(invitation -> invitation.effectiveStatus(now) == PENDING);
   }
 
   private @NonNull AccountUser synchronizeProviderEmail(

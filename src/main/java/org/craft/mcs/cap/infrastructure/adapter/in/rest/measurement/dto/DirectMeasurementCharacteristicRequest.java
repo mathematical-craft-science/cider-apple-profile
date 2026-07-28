@@ -13,7 +13,7 @@ import org.jspecify.annotations.NonNull;
 public record DirectMeasurementCharacteristicRequest(
     @Schema(
         description = "Polymorphic input discriminator; must be DIRECT.",
-        implementation = MeasurementInputKind.class,
+        type = "string",
         allowableValues = "DIRECT",
         requiredMode = Schema.RequiredMode.REQUIRED
     )

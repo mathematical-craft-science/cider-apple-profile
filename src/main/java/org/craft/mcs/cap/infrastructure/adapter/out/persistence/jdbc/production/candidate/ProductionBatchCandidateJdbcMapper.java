@@ -12,7 +12,7 @@ import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.measurement.value.AbvValue;
-import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -72,8 +72,8 @@ final class ProductionBatchCandidateJdbcMapper {
     entity.status = candidate.status();
     entity.sourcesJson = codec.encodeSources(candidate);
     entity.totalVolumeLiters = candidate.sourceComposition().totalVolume().liters();
-    entity.sugarSpecificGravity = profile.specificGravity().asBigDecimal();
-    entity.acidityGLAsMalic = profile.titratableAcidity().asBigDecimal();
+    entity.specificGravity = profile.specificGravity().asBigDecimal();
+    entity.titratableAcidityGLAsMalic = profile.titratableAcidity().asBigDecimal();
     entity.tanninMgLTae = tannin(profile);
     entity.yeastAssimilableNitrogenMgNL = yeastAssimilableNitrogen(profile);
     entity.predictedFinalGravity = snapshot.potentialAbv().predictedFinalGravity().asBigDecimal();
@@ -101,11 +101,10 @@ final class ProductionBatchCandidateJdbcMapper {
         ProductionBatchCandidateId.of(entity.candidateId),
         WorkspaceId.of(entity.workspaceId),
         sources.composition(),
-        sources.evidence(),
-        sources.materialStates(),
+        sources.stateEvidence(),
         new ProductionProfileSnapshot(
-            SpecificGravityValue.of(entity.sugarSpecificGravity),
-            TitratableAcidityValue.of(entity.acidityGLAsMalic),
+            SpecificGravityValue.of(entity.specificGravity),
+            TitratableAcidityValue.of(entity.titratableAcidityGLAsMalic),
             entity.tanninMgLTae == null ? null : TanninValue.of(entity.tanninMgLTae),
             entity.yeastAssimilableNitrogenMgNL == null
                 ? null

@@ -11,9 +11,18 @@ import org.jspecify.annotations.Nullable;
 public record ChemicalProfileCompositionSourceResponse(
     @Schema(description = "Source reference.", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull ChemicalProfileCompositionSourceReferenceRequest reference,
-    @Schema(description = "Requested source volume, when absolute volume was used.", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @Schema(
+        description = "Requested source volume, when absolute volume was used.",
+        nullable = true,
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     @Nullable DecimalQuantityResponse requestedVolume,
-    @Schema(description = "Relative source proportion, when proportion was used or calculated.", example = "0.25", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @Schema(
+        description = "Relative source proportion, when proportion was used or calculated.",
+        example = "0.25",
+        nullable = true,
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     @Nullable BigDecimal proportion
 ) {
 }

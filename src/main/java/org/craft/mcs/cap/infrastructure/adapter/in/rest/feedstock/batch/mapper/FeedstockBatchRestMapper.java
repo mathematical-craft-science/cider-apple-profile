@@ -4,7 +4,7 @@ import org.craft.mcs.cap.core.feedstock.application.batch.port.in.CreateFeedstoc
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.FeedstockBatchCreated;
 import org.craft.mcs.cap.core.feedstock.application.batch.model.FeedstockBatchSummary;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.UpdateFeedstockBatchCommand;
-import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSource;
@@ -13,7 +13,6 @@ import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.batch.dto.CreateFeedstockBatchRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.batch.dto.FeedstockBatchResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.common.dto.FeedstockSeasonResponse;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.common.dto.FeedstockSeasonRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.batch.dto.PatchFeedstockBatchRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.batch.dto.UpdateFeedstockBatchRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.measurement.CanonicalUnitLabels;
@@ -23,6 +22,7 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import static java.util.Objects.requireNonNull;
+import static org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.common.mapper.FeedstockCriteriaRestMapper.toSeason;
 
 
 public final class FeedstockBatchRestMapper {
@@ -121,7 +121,7 @@ public final class FeedstockBatchRestMapper {
         WorkspaceId.of(requireNonNull(request.workspaceId(), WORKSPACE_ID_REQUIRED)),
         nameOf(request.name()),
         request.type(),
-        seasonOf(request.season()),
+        toSeason(request.season()),
         sourceOf(request.source()),
         isPresentBlank(request.source()),
         request.note(),
@@ -147,10 +147,6 @@ public final class FeedstockBatchRestMapper {
 
   private static @Nullable Vessel vesselOf(@Nullable String vessel) {
     return isBlank(vessel) ? null : Vessel.named(vessel);
-  }
-
-  private static @Nullable FeedstockSeason seasonOf(@Nullable FeedstockSeasonRequest request) {
-    return request == null ? null : FeedstockSeason.of(request.startsOn(), request.endsOn());
   }
 
   private static @Nullable FeedstockSource sourceOf(@Nullable String source) {

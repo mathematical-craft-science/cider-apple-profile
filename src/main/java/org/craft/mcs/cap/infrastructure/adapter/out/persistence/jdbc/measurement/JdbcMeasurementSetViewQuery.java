@@ -61,8 +61,11 @@ class JdbcMeasurementSetViewQuery implements MeasurementSetViewQuery {
              revision.created_at AS revision_created_at,
              revision.actor_reference
         FROM measurement_sets s
+        JOIN measurement_set_heads head
+          ON head.measurement_set_id = s.measurement_set_id
         JOIN measurement_set_revisions revision
-          ON revision.revision_id = s.current_revision_id
+          ON revision.measurement_set_id = head.measurement_set_id
+         AND revision.revision_id = head.revision_id
       """;
 
   private static final String SELECT_RECORDS = """

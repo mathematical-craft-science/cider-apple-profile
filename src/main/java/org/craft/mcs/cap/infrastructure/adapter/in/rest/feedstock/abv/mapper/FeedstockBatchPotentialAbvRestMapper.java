@@ -21,6 +21,7 @@ public final class FeedstockBatchPotentialAbvRestMapper {
     return new FeedstockBatchCurrentPotentialAbvResponse(
         prediction.batchId().value(),
         prediction.workspaceId().value(),
+        prediction.currentMaterialStateId().value(),
         prediction.currentMeasurementId().value(),
         prediction.currentMeasurementName().value(),
         prediction.originalGravityValueKind(),

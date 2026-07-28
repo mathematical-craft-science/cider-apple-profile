@@ -1,7 +1,7 @@
 package org.craft.mcs.cap.core.feedstock.application.analysis.abv.port.in;
 
 import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementId;
-import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementName;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValueKind;

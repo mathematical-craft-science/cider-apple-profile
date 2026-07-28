@@ -21,6 +21,8 @@ import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.Che
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionSourceWeight;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionProportion;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.assessment.ProfileTargetDistance;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetIntervalPolicy;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetScoringInput;
 import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.jspecify.annotations.NonNull;
@@ -113,7 +115,16 @@ public final class DiscretizedBoundedChemicalProfileCompositionOptimizationStrat
         sources,
         request.tanninPolicy()
     ));
-    final var distance = request.objectiveFunction().distanceTo(composition.profile(), request.targetObjective());
+    final var characteristics = composition.characteristics();
+    final var distance = request.objectiveFunction().distanceTo(
+        ProfileTargetScoringInput.point(
+            characteristics.specificGravity(),
+            characteristics.titratableAcidity(),
+            characteristics.tannin()
+        ),
+        ProfileTargetIntervalPolicy.MIDPOINT,
+        request.targetObjective()
+    );
     objectiveAssessment(request, composition, distance)
         .map(assessment -> new ChemicalProfileCompositionOptimizationCandidate(
             composition,
@@ -168,7 +179,7 @@ public final class DiscretizedBoundedChemicalProfileCompositionOptimizationStrat
       }
       sources.add(new ChemicalProfileCompositionSource(
           source.reference(),
-          source.axes(),
+          source.characteristics(),
           weight,
           source.availableVolume()
       ));

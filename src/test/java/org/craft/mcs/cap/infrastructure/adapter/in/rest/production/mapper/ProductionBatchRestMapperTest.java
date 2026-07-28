@@ -7,10 +7,9 @@ import org.craft.mcs.cap.core.profileanalysis.abv.domain.FixedFinalGravityPredic
 import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPredictor;
 import org.craft.mcs.cap.core.profileanalysis.abv.domain.PredictionConfidence;
 import org.craft.mcs.cap.core.profileanalysis.abv.domain.StandardGravityDropAbvPredictionStrategy;
-import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
-import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
-import org.craft.mcs.cap.core.production.application.port.in.ProductionBatchCreated;
+import org.craft.mcs.cap.core.production.candidate.application.confirmation.port.in.ProductionBatchCreated;
 import org.craft.mcs.cap.core.production.application.model.ProductionBatchDetailsView;
 import org.craft.mcs.cap.core.production.application.model.ProductionCurrentProfileView;
 import org.craft.mcs.cap.core.production.application.model.ProductionBatchView;
@@ -34,7 +33,7 @@ import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
-import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -56,7 +55,6 @@ class ProductionBatchRestMapperTest {
     final var response = ProductionBatchRestMapper.toDetailsResponse(
         new ProductionBatchDetailsView(
             view,
-            MaterialStateId.newId(),
             currentProfile(view),
             potentialAbvPredictor.predict(view.initialProfileSnapshot().specificGravity())
         )
@@ -68,13 +66,13 @@ class ProductionBatchRestMapperTest {
             .returns("mg N/L", DecimalQuantityResponse::unit)
             .satisfies(quantity -> assertThat(quantity.value()).isEqualByComparingTo("180")))
         .satisfies(details -> assertThat(details.currentVolume().unit()).isEqualTo("L"))
-        .satisfies(details -> assertThat(details.initialProfileSnapshot().sugar().value().unit())
+        .satisfies(details -> assertThat(details.initialProfileSnapshot().specificGravity().unit())
             .isEqualTo("SG"))
-        .satisfies(details -> assertThat(details.initialProfileSnapshot().acidity().value().unit())
+        .satisfies(details -> assertThat(details.initialProfileSnapshot().titratableAcidity().unit())
             .isEqualTo("g/L as malic acid"))
         .satisfies(details -> assertThat(details.initialProfileSnapshot().tannin())
             .isNotNull()
-            .satisfies(tannin -> assertThat(tannin.value().unit()).isEqualTo("mg/L TAE")))
+            .returns("mg/L TAE", DecimalQuantityResponse::unit))
         .satisfies(details -> assertThat(details.potentialAbv().originalGravity().value())
             .isEqualByComparingTo("1.052"))
         .satisfies(details -> assertThat(details.potentialAbv().predictedFinalGravity().value())
@@ -101,7 +99,9 @@ class ProductionBatchRestMapperTest {
 
     assertThat(response)
         .returns(candidate.candidateId().value(), ProductionBatchResponse::candidateId)
-        .satisfies(result -> assertThat(result.composition().yeastAssimilableNitrogen())
+        .satisfies(result -> assertThat(
+            result.composition().characteristics().yeastAssimilableNitrogen()
+        )
             .isNotNull()
             .returns("mg N/L", DecimalQuantityResponse::unit)
             .satisfies(quantity -> assertThat(quantity.value()).isEqualByComparingTo("180")))
@@ -119,7 +119,6 @@ class ProductionBatchRestMapperTest {
     final var response = ProductionBatchRestMapper.toListResponse(
         List.of(new ProductionBatchDetailsView(
             view,
-            MaterialStateId.newId(),
             currentProfile(view),
             potentialAbvPredictor.predict(view.initialProfileSnapshot().specificGravity())
         ))

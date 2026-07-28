@@ -9,22 +9,24 @@ import java.util.Map;
 import java.util.Optional;
 import org.craft.mcs.cap.core.production.application.authorization.port.out.ProductionAccessControl;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
-import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
-import org.craft.mcs.cap.core.production.application.port.in.CreateProductionBatchCommand;
+import org.craft.mcs.cap.shared.kernel.material.value.MaterialConsumption;
+import org.craft.mcs.cap.core.production.candidate.application.confirmation.port.in.CreateProductionBatchCommand;
 import org.craft.mcs.cap.core.production.application.port.out.ConsumedProductionSource;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionSourceDisplayName;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchTraceRecorder;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionSourceInventory;
-import org.craft.mcs.cap.core.production.application.usecase.CreateProductionBatchService;
+import org.craft.mcs.cap.core.production.candidate.application.confirmation.usecase.CreateProductionBatchService;
 import org.craft.mcs.cap.core.production.candidate.application.model.ProductionBatchCandidateSnapshot;
 import org.craft.mcs.cap.core.production.candidate.application.port.out.ProductionBatchCandidateStore;
 import org.craft.mcs.cap.core.production.candidate.domain.model.ProductionBatchCandidate;
 import org.craft.mcs.cap.core.production.candidate.domain.model.ProductionBatchCandidateId;
-import org.craft.mcs.cap.core.production.candidate.domain.model.ProductionSourceEvidenceReference;
+import org.craft.mcs.cap.core.production.domain.model.ProductionSourceEvidenceReference;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceComponent;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceComposition;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceReference;
+import org.craft.mcs.cap.core.production.candidate.domain.model.ProductionCandidateSourceEvidence;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
 import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
@@ -36,7 +38,7 @@ import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
-import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.craft.mcs.cap.shared.platform.persistence.SpringTransactionHelper;
 import org.craft.mcs.cap.shared.testing.jdbc.PostgresDataJdbcTestConfiguration;
 import org.jspecify.annotations.NonNull;
@@ -167,8 +169,10 @@ class CreateProductionBatchRollbackDataJdbcTest {
             ProductionBatchCandidateId.newId(),
             workspaceId,
             composition,
-            Map.of(sourceReference, evidenceReference()),
-            Map.of(sourceReference, SOURCE_STATE_ID),
+            Map.of(
+                sourceReference,
+                new ProductionCandidateSourceEvidence(evidenceReference(), SOURCE_STATE_ID)
+            ),
             productionProfile()
         ),
         prediction(productionProfile().specificGravity()),
@@ -211,17 +215,19 @@ class CreateProductionBatchRollbackDataJdbcTest {
         return new ConsumedProductionSource(
             source.reference(),
             ProductionSourceDisplayName.of("Late juice"),
-            VolumeValue.ofLiters("250"),
-            source.volume(),
-            VolumeValue.ofLiters("150"),
+            new MaterialConsumption(
+                VolumeValue.ofLiters("250"),
+                source.volume(),
+                VolumeValue.ofLiters("150"),
+                SOURCE_STATE_ID,
+                MaterialStateId.newId()
+            ),
             ChemicalProfileAxes.of(
-                axis(ChemicalAxis.SUGAR, "1.050"),
-                axis(ChemicalAxis.ACIDITY, "6.1"),
+                axis(ChemicalAxis.SPECIFIC_GRAVITY, "1.050"),
+                axis(ChemicalAxis.TITRATABLE_ACIDITY, "6.1"),
                 axis(ChemicalAxis.TANNIN, "1400")
             ),
             ConfidenceLevel.LAB_VERIFIED,
-            SOURCE_STATE_ID,
-            MaterialStateId.newId(),
             evidenceReference()
         );
       };

@@ -4,9 +4,11 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.point.domain.SugarAcidityProfilePoint;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
+import org.craft.mcs.cap.shared.kernel.characteristic.CharacteristicValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -14,28 +16,11 @@ import static java.util.Objects.requireNonNull;
 
 
 /**
- * Calculates a chemical profile composition by mass balance over source weights.
+ * Calculates composition characteristics by mass balance over source weights.
  *
- * <p>This is the default calculator for juice/feedstock composition. It assumes that every source is
- * already normalized to the common axes used by the profile analysis domain:
- * sugar as specific gravity, acidity as titratable acidity, and tannin as tannin concentration.
- *
- * <p>Formulae:
- * <ul>
- *   <li>Sugar: specific gravity is converted to gravity points, composed by weighted average, then
- *       converted back to SG: {@code SG = 1 + weightedAverage((SG_i - 1) * 1000) / 1000}.</li>
- *   <li>Acidity: concentration mass balance, {@code sum(acidity_i * weight_i) / sum(weight_i)}.</li>
- *   <li>Tannin: same concentration mass balance when the selected tannin policy allows it.</li>
- *   <li>YAN: same concentration mass balance when every source has YAN. Partial YAN data is not
- *       extrapolated, because that would make fermentation-start readiness look more precise than it is.</li>
- * </ul>
- *
- * <p>The strategy does not decide which source weights to use. It is called by fixed composition
- * calculations and by optimization algorithms after they generate a candidate set of weights.
- *
- * Sugar is composed through gravity points: gp = (SG - 1.000) * 1000.
- * Acidity, tannin, and YAN are composed as concentration mass balance:
- * blended = sum(value_i * weight_i) / sum(weight_i).
+ * <p>Specific Gravity (SG) is composed through gravity points. Titratable Acidity (TA), tannin,
+ * and YAN are composed as concentration mass balances. Source intervals are interpreted only
+ * through the interval policy carried by the request.
  */
 public final class MassBalanceChemicalProfileCompositionStrategy
     implements ChemicalProfileCompositionCalculator {
@@ -49,46 +34,50 @@ public final class MassBalanceChemicalProfileCompositionStrategy
     requireNonNull(request, "chemical profile composition request cannot be null");
 
     final var warnings = new ArrayList<ChemicalProfileCompositionWarning>();
-    final var sugar = calculateSugar(request.sources());
-    final var acidity = calculateAxis(request.sources(), ChemicalAxis.ACIDITY);
     final var tannin = calculateTannin(request, warnings);
-    final var yeastAssimilableNitrogen = calculateYeastAssimilableNitrogen(request.sources(), warnings);
-
-    return ChemicalProfileComposition.of(
-        request.sources(),
-        new SugarAcidityProfilePoint(
-            calculatedPoint(ChemicalAxis.SUGAR, sugar),
-            calculatedPoint(ChemicalAxis.ACIDITY, acidity),
-            tannin == null ? null : calculatedPoint(ChemicalAxis.TANNIN, tannin)
-        ),
-        yeastAssimilableNitrogen == null
-            ? null
-            : calculatedPoint(ChemicalAxis.YEAST_ASSIMILABLE_NITROGEN, yeastAssimilableNitrogen),
-        warnings
+    final var yan = calculateYeastAssimilableNitrogen(request, warnings);
+    final var characteristics = new CalculatedCompositionCharacteristics(
+        SpecificGravityValue.of(calculateSpecificGravity(request)),
+        TitratableAcidityValue.of(calculateTitratableAcidity(request)),
+        tannin == null ? null : TanninValue.of(tannin),
+        yan == null ? null : YeastAssimilableNitrogenValue.of(yan)
     );
+
+    return ChemicalProfileComposition.of(request.sources(), characteristics, warnings);
   }
 
-  private static @NonNull BigDecimal calculateSugar(
-      @NonNull List<@NonNull ChemicalProfileCompositionSource> sources
+  private static @NonNull BigDecimal calculateSpecificGravity(
+      @NonNull ChemicalProfileCompositionRequest request
   ) {
     final var blendedGravityPoints = weightedAverage(
-        sources,
-        source -> {
-          final var sg = requiredAxis(source, ChemicalAxis.SUGAR).value();
-          return sg.subtract(ONE).multiply(GRAVITY_POINTS_FACTOR);
-        }
+        request.sources(),
+        source -> representativeSpecificGravity(request, source)
+            .subtract(ONE)
+            .multiply(GRAVITY_POINTS_FACTOR)
     );
 
-    return ONE.add(blendedGravityPoints.divide(GRAVITY_POINTS_FACTOR, CALCULATION_SCALE, RoundingMode.HALF_UP));
+    return ONE.add(
+        blendedGravityPoints.divide(GRAVITY_POINTS_FACTOR, CALCULATION_SCALE, RoundingMode.HALF_UP)
+    );
   }
 
-  private static @NonNull BigDecimal calculateAxis(
-      @NonNull List<@NonNull ChemicalProfileCompositionSource> sources,
-      @NonNull ChemicalAxis axis
+  private static @NonNull BigDecimal representativeSpecificGravity(
+      @NonNull ChemicalProfileCompositionRequest request,
+      @NonNull ChemicalProfileCompositionSource source
+  ) {
+    return request.intervalPolicy().representativeValue(
+        source.characteristics().specificGravity()
+    );
+  }
+
+  private static @NonNull BigDecimal calculateTitratableAcidity(
+      @NonNull ChemicalProfileCompositionRequest request
   ) {
     return weightedAverage(
-        sources,
-        source -> requiredAxis(source, axis).value()
+        request.sources(),
+        source -> request.intervalPolicy().representativeValue(
+            source.characteristics().titratableAcidity()
+        )
     );
   }
 
@@ -98,65 +87,104 @@ public final class MassBalanceChemicalProfileCompositionStrategy
   ) {
     return switch (request.tanninPolicy()) {
       case IGNORE_TANNIN -> {
-        if (request.sources().stream().anyMatch(source -> source.axes().has(ChemicalAxis.TANNIN))) {
+        if (request.sources().stream().anyMatch(MassBalanceChemicalProfileCompositionStrategy::hasTannin)) {
           warnings.add(ChemicalProfileCompositionWarning.TANNIN_IGNORED);
         }
         yield null;
       }
-      case REQUIRE_TANNIN -> calculateAxis(request.sources(), ChemicalAxis.TANNIN);
-      case CALCULATE_WHEN_COMPLETE -> calculateTanninWhenComplete(request.sources(), warnings);
+      case REQUIRE_TANNIN -> calculateRequiredTannin(request);
+      case CALCULATE_WHEN_COMPLETE -> calculateTanninWhenComplete(request, warnings);
     };
   }
 
+  private static boolean hasTannin(@NonNull ChemicalProfileCompositionSource source) {
+    return source.characteristics().tannin() != null;
+  }
+
+  private static @NonNull BigDecimal calculateRequiredTannin(
+      @NonNull ChemicalProfileCompositionRequest request
+  ) {
+    return weightedAverage(
+        request.sources(),
+        source -> request.intervalPolicy().representativeValue(
+            requireTannin(source)
+        )
+    );
+  }
+
   private static @Nullable BigDecimal calculateTanninWhenComplete(
-      @NonNull List<@NonNull ChemicalProfileCompositionSource> sources,
+      @NonNull ChemicalProfileCompositionRequest request,
       @NonNull List<@NonNull ChemicalProfileCompositionWarning> warnings
   ) {
-    final var tanninCount = sources.stream()
-        .filter(source -> source.axes().has(ChemicalAxis.TANNIN))
+    final var tanninCount = request.sources().stream()
+        .filter(MassBalanceChemicalProfileCompositionStrategy::hasTannin)
         .count();
 
-    if (tanninCount == sources.size()) {
-      return calculateAxis(sources, ChemicalAxis.TANNIN);
+    if (tanninCount == request.sources().size()) {
+      return calculateRequiredTannin(request);
     }
     if (tanninCount > 0) {
       warnings.add(ChemicalProfileCompositionWarning.TANNIN_INCOMPLETE);
     }
-
     return null;
   }
 
   private static @Nullable BigDecimal calculateYeastAssimilableNitrogen(
-      @NonNull List<@NonNull ChemicalProfileCompositionSource> sources,
+      @NonNull ChemicalProfileCompositionRequest request,
       @NonNull List<@NonNull ChemicalProfileCompositionWarning> warnings
   ) {
-    final var yanCount = sources.stream()
-        .filter(source -> source.axes().has(ChemicalAxis.YEAST_ASSIMILABLE_NITROGEN))
+    final var yanCount = request.sources().stream()
+        .filter(MassBalanceChemicalProfileCompositionStrategy::hasYeastAssimilableNitrogen)
         .count();
 
-    if (yanCount == sources.size()) {
-      return calculateAxis(sources, ChemicalAxis.YEAST_ASSIMILABLE_NITROGEN);
+    if (yanCount == request.sources().size()) {
+      return weightedAverage(
+          request.sources(),
+          source -> request.intervalPolicy().representativeValue(
+              requireYeastAssimilableNitrogen(source)
+          )
+      );
     }
     if (yanCount > 0) {
       warnings.add(ChemicalProfileCompositionWarning.YEAST_ASSIMILABLE_NITROGEN_INCOMPLETE);
     }
-
     return null;
   }
 
-  private static @NonNull AxisValue requiredAxis(
-      @NonNull ChemicalProfileCompositionSource source,
-      @NonNull ChemicalAxis axis
+  private static boolean hasYeastAssimilableNitrogen(
+      @NonNull ChemicalProfileCompositionSource source
   ) {
-    return source.axes().valueOf(axis)
-        .orElseThrow(() -> new InvalidChemicalProfileCompositionException(
-            "composition source is missing required axis %s: %s".formatted(axis, sourceReference(source))
-        ));
+    return source.characteristics().yeastAssimilableNitrogen() != null;
   }
 
-  private static @NonNull String sourceReference(@NonNull ChemicalProfileCompositionSource source) {
+  private static @NonNull CharacteristicValue<TanninValue> requireTannin(
+      @NonNull ChemicalProfileCompositionSource source
+  ) {
+    final var tannin = source.characteristics().tannin();
+    if (tannin == null) {
+      throw missingCharacteristic(source, "tannin");
+    }
+    return tannin;
+  }
+
+  private static @NonNull CharacteristicValue<YeastAssimilableNitrogenValue>
+      requireYeastAssimilableNitrogen(@NonNull ChemicalProfileCompositionSource source) {
+    final var yan = source.characteristics().yeastAssimilableNitrogen();
+    if (yan == null) {
+      throw missingCharacteristic(source, "YAN");
+    }
+    return yan;
+  }
+
+  private static @NonNull InvalidChemicalProfileCompositionException missingCharacteristic(
+      @NonNull ChemicalProfileCompositionSource source,
+      @NonNull String characteristic
+  ) {
     final var reference = source.reference();
-    return reference.type() + ":" + reference.id();
+    return new InvalidChemicalProfileCompositionException(
+        "composition source is missing required %s: %s:%s"
+            .formatted(characteristic, reference.type(), reference.id())
+    );
   }
 
   private static @NonNull BigDecimal weightedAverage(
@@ -173,13 +201,6 @@ public final class MassBalanceChemicalProfileCompositionStrategy
     }
 
     return weightedSum.divide(totalWeight, CALCULATION_SCALE, RoundingMode.HALF_UP);
-  }
-
-  private static @NonNull AxisValue calculatedPoint(
-      @NonNull ChemicalAxis axis,
-      @NonNull BigDecimal value
-  ) {
-    return AxisValue.calculated(axis, value);
   }
 
   @FunctionalInterface

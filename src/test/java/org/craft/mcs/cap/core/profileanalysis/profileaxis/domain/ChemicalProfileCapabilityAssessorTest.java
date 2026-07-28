@@ -1,12 +1,11 @@
 package org.craft.mcs.cap.core.profileanalysis.profileaxis.domain;
 
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
-import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
 import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
-import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.junit.jupiter.api.Test;
 
@@ -26,16 +25,16 @@ class ChemicalProfileCapabilityAssessorTest {
                 SpecificGravityValue.of("1.052")
             )))
             .build()),
-        ChemicalProfileCapability.SUGAR_ACIDITY_PLOT
+        ChemicalProfileCapability.SUGAR_ACIDITY_GRAPH
     );
 
     assertThat(assessment.capable()).isFalse();
     assertThat(assessment.requiredAxes()).containsExactlyInAnyOrder(
-        ChemicalAxis.SUGAR,
-        ChemicalAxis.ACIDITY
+        ChemicalAxis.SPECIFIC_GRAVITY,
+        ChemicalAxis.TITRATABLE_ACIDITY
     );
-    assertThat(assessment.presentAxes()).containsExactly(ChemicalAxis.SUGAR);
-    assertThat(assessment.missingAxes()).containsExactly(ChemicalAxis.ACIDITY);
+    assertThat(assessment.presentAxes()).containsExactly(ChemicalAxis.SPECIFIC_GRAVITY);
+    assertThat(assessment.missingAxes()).containsExactly(ChemicalAxis.TITRATABLE_ACIDITY);
   }
 
   @Test
@@ -47,7 +46,7 @@ class ChemicalProfileCapabilityAssessorTest {
             )))
             .titratableAcidity(PointCharacteristicValue.of(TitratableAcidityValue.of("5.2")))
             .build()),
-        ChemicalProfileCapability.SUGAR_ACIDITY_PLOT
+        ChemicalProfileCapability.SUGAR_ACIDITY_GRAPH
     );
 
     assertThat(assessment.capable()).isTrue();
@@ -66,7 +65,7 @@ class ChemicalProfileCapabilityAssessorTest {
     );
 
     assertThat(assessment.capable()).isTrue();
-    assertThat(assessment.requiredAxes()).containsExactly(ChemicalAxis.SUGAR);
+    assertThat(assessment.requiredAxes()).containsExactly(ChemicalAxis.SPECIFIC_GRAVITY);
     assertThat(assessment.missingAxes()).isEmpty();
   }
 
@@ -79,31 +78,15 @@ class ChemicalProfileCapabilityAssessorTest {
 
     assertThat(assessment.capable()).isFalse();
     assertThat(assessment.requiredAxes()).containsExactlyInAnyOrder(
-        ChemicalAxis.SUGAR,
-        ChemicalAxis.ACIDITY,
+        ChemicalAxis.SPECIFIC_GRAVITY,
+        ChemicalAxis.TITRATABLE_ACIDITY,
         ChemicalAxis.TANNIN
     );
     assertThat(assessment.presentAxes()).containsExactlyInAnyOrder(
-        ChemicalAxis.SUGAR,
-        ChemicalAxis.ACIDITY
+        ChemicalAxis.SPECIFIC_GRAVITY,
+        ChemicalAxis.TITRATABLE_ACIDITY
     );
     assertThat(assessment.missingAxes()).containsExactly(ChemicalAxis.TANNIN);
-  }
-
-  @Test
-  void singleVarietyCiderAssessmentRequiresSugarAcidityAndTannin() {
-    final var assessment = assessor.assess(
-        axisExtractor.extract(sugarAcidityAndTanninProfile()),
-        ChemicalProfileCapability.SINGLE_VARIETY_CIDER_ASSESSMENT
-    );
-
-    assertThat(assessment.capable()).isTrue();
-    assertThat(assessment.requiredAxes()).containsExactlyInAnyOrder(
-        ChemicalAxis.SUGAR,
-        ChemicalAxis.ACIDITY,
-        ChemicalAxis.TANNIN
-    );
-    assertThat(assessment.missingAxes()).isEmpty();
   }
 
   private static ChemicalProfile sugarAndAcidityProfile() {
@@ -112,16 +95,6 @@ class ChemicalProfileCapabilityAssessorTest {
             SpecificGravityValue.of("1.052")
         )))
         .titratableAcidity(PointCharacteristicValue.of(TitratableAcidityValue.of("5.2")))
-        .build();
-  }
-
-  private static ChemicalProfile sugarAcidityAndTanninProfile() {
-    return ChemicalProfile.builder()
-        .sugar(PointCharacteristicValue.of(SugarConcentration.ofSpecificGravity(
-            SpecificGravityValue.of("1.052")
-        )))
-        .titratableAcidity(PointCharacteristicValue.of(TitratableAcidityValue.of("5.2")))
-        .tannin(PointCharacteristicValue.of(TanninValue.of("1500")))
         .build();
   }
 }

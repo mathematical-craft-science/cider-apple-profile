@@ -1,8 +1,14 @@
 package org.craft.mcs.cap.shared.kernel.sugar.converter;
 
-import org.craft.mcs.cap.shared.kernel.sugar.SugarValue;
+import org.craft.mcs.cap.shared.kernel.measurement.MeasuredValue;
 
-public interface SugarConversionStrategy<F extends SugarValue, T extends SugarValue> {
+/**
+ * Converts between analytical scales used to estimate sugar in unfermented juice or must.
+ *
+ * <p>Implementations define the scientific assumptions of each conversion. The source and target
+ * measurement values themselves remain neutral and do not imply sugar semantics.</p>
+ */
+public interface SugarConversionStrategy<F extends MeasuredValue, T extends MeasuredValue> {
 
   Class<F> sourceType();
 

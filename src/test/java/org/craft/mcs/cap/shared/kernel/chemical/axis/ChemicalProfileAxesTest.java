@@ -13,7 +13,7 @@ class ChemicalProfileAxesTest {
   @Test
   void returnsRequiredAxisValue() {
     final var sugar = new AxisValue(
-        ChemicalAxis.SUGAR,
+        ChemicalAxis.SPECIFIC_GRAVITY,
         BigDecimal.valueOf(1.055),
         AxisValueKind.POINT,
         null,
@@ -21,7 +21,7 @@ class ChemicalProfileAxesTest {
     );
     final var axes = ChemicalProfileAxes.of(sugar, null, null);
 
-    assertThat(axes.requireValueOf(ChemicalAxis.SUGAR))
+    assertThat(axes.requireValueOf(ChemicalAxis.SPECIFIC_GRAVITY))
         .isSameAs(sugar);
   }
 
@@ -29,17 +29,19 @@ class ChemicalProfileAxesTest {
   void rejectsMissingRequiredAxis() {
     final var axes = ChemicalProfileAxes.of(null, null, null);
 
-    assertThatThrownBy(() -> axes.requireValueOf(ChemicalAxis.SUGAR))
+    assertThatThrownBy(() -> axes.requireValueOf(ChemicalAxis.SPECIFIC_GRAVITY))
         .isInstanceOf(DomainRuleViolationException.class)
-        .hasMessage("required chemical axis is missing: SUGAR");
+        .hasMessage("required chemical axis is missing: SPECIFIC_GRAVITY");
   }
 
   @Test
   void rejectsAxisValuePlacedIntoAnotherCharacteristicSlot() {
-    final var acidity = AxisValue.point(ChemicalAxis.ACIDITY, BigDecimal.valueOf(5.2));
+    final var acidity = AxisValue.point(ChemicalAxis.TITRATABLE_ACIDITY, BigDecimal.valueOf(5.2));
 
     assertThatThrownBy(() -> ChemicalProfileAxes.of(acidity, null, null))
         .isInstanceOf(DomainRuleViolationException.class)
-        .hasMessage("chemical profile axis slot SUGAR cannot contain ACIDITY");
+        .hasMessage(
+            "chemical profile axis slot SPECIFIC_GRAVITY cannot contain TITRATABLE_ACIDITY"
+        );
   }
 }

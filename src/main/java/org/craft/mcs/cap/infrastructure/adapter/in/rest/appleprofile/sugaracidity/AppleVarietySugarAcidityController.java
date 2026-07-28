@@ -8,7 +8,7 @@ import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyId;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.sugaracidity.dto.AppleVarietySugarAcidityZonePointBatchResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.sugaracidity.dto.AppleVarietySugarAcidityZonePointQueryRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.sugaracidity.dto.AppleVarietySugarAcidityZoneResponse;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.sugaracidity.mapper.AppleVarietySugarAcidityZoneRestMapper;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.sugaracidity.mapper.AppleVarietyProfileGraphRestMapper;
 import org.jspecify.annotations.NonNull;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,7 +26,7 @@ public final class AppleVarietySugarAcidityController implements AppleVarietySug
 
   private final @NonNull AssessAppleVarietySugarAcidityZoneUseCase assessAppleVarietySugarAcidityZoneUseCase;
   private final @NonNull QueryAppleVarietySugarAcidityZonePointsUseCase queryAppleVarietySugarAcidityZonePointsUseCase;
-  private final @NonNull AppleVarietySugarAcidityZoneRestMapper restMapper;
+  private final @NonNull AppleVarietyProfileGraphRestMapper restMapper;
 
   @Override
   @GetMapping(value = "/apple-varieties/{varietyId}/sugar-acidity-zone", produces = APPLICATION_JSON_VALUE)
@@ -38,7 +38,7 @@ public final class AppleVarietySugarAcidityController implements AppleVarietySug
     );
 
     return ResponseEntity.ok(
-        AppleVarietySugarAcidityZoneRestMapper.toResponse(result)
+        AppleVarietyProfileGraphRestMapper.toResponse(result)
     );
   }
 

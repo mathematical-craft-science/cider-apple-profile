@@ -6,7 +6,7 @@ import org.craft.mcs.cap.shared.kernel.characteristic.IntervalCharacteristicValu
 import org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic;
 import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.craft.mcs.cap.infrastructure.adapter.shared.measurement.conversion.PhQuantityConverter;
-import org.craft.mcs.cap.infrastructure.adapter.shared.measurement.conversion.SugarQuantityConverter;
+import org.craft.mcs.cap.infrastructure.adapter.shared.measurement.conversion.SpecificGravityQuantityConverter;
 import org.craft.mcs.cap.infrastructure.adapter.shared.measurement.conversion.TanninQuantityConverter;
 import org.craft.mcs.cap.infrastructure.adapter.shared.measurement.conversion.TitratableAcidityQuantityConverter;
 import org.craft.mcs.cap.infrastructure.adapter.shared.measurement.conversion.YeastAssimilableNitrogenQuantityConverter;
@@ -25,7 +25,8 @@ import static java.util.Objects.requireNonNull;
 @Component
 public final class MeasurementValueInputAcl {
 
-  private final SugarQuantityConverter sugarConverter = new SugarQuantityConverter();
+  private final SpecificGravityQuantityConverter specificGravityConverter =
+      new SpecificGravityQuantityConverter();
   private final PhQuantityConverter phConverter = new PhQuantityConverter();
   private final TitratableAcidityQuantityConverter acidityConverter =
       new TitratableAcidityQuantityConverter();
@@ -62,7 +63,7 @@ public final class MeasurementValueInputAcl {
     requireNonNull(value, "measurement value cannot be null");
     requireNonNull(unit, "measurement unit cannot be null");
     return switch (characteristic) {
-      case SPECIFIC_GRAVITY -> sugarConverter.convertValue(value, unit).specificGravity();
+      case SPECIFIC_GRAVITY -> specificGravityConverter.convertValue(value, unit);
       case PH -> phConverter.convertValue(value, unit);
       case TITRATABLE_ACIDITY -> acidityConverter.convertValue(value, unit);
       case TANNIN -> tanninConverter.convertValue(value, unit);

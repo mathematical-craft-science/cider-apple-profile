@@ -22,10 +22,8 @@ class ChemicalProfileExceptionHandlerTest {
         new ChemicalProfileCapabilityNotMetException(
             new ChemicalProfileCapabilityAssessment(
                 ChemicalProfileCapability.NORTH_AMERICAN_PROFILE,
-                false,
-                Set.of(ChemicalAxis.SUGAR, ChemicalAxis.ACIDITY, ChemicalAxis.TANNIN),
-                Set.of(ChemicalAxis.SUGAR),
-                Set.of(ChemicalAxis.ACIDITY, ChemicalAxis.TANNIN)
+                Set.of(ChemicalAxis.SPECIFIC_GRAVITY, ChemicalAxis.TITRATABLE_ACIDITY, ChemicalAxis.TANNIN),
+                Set.of(ChemicalAxis.SPECIFIC_GRAVITY)
             )
         )
     );
@@ -38,8 +36,11 @@ class ChemicalProfileExceptionHandlerTest {
     assertThat(problem.getDetail()).contains("NORTH_AMERICAN_PROFILE");
     assertThat(problem.getProperties())
         .containsEntry("capability", "NORTH_AMERICAN_PROFILE")
-        .containsEntry("requiredAxes", List.of("SUGAR", "ACIDITY", "TANNIN"))
-        .containsEntry("presentAxes", List.of("SUGAR"))
-        .containsEntry("missingAxes", List.of("ACIDITY", "TANNIN"));
+        .containsEntry(
+            "requiredAxes",
+            List.of("SPECIFIC_GRAVITY", "TITRATABLE_ACIDITY", "TANNIN")
+        )
+        .containsEntry("presentAxes", List.of("SPECIFIC_GRAVITY"))
+        .containsEntry("missingAxes", List.of("TITRATABLE_ACIDITY", "TANNIN"));
   }
 }

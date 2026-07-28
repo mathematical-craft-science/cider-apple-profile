@@ -124,8 +124,8 @@ public final class BatchTraceStepJdbcRowMapper {
 
     row.snapshotVolumeLiters = volumeLiters(snapshot.volume());
     row.snapshotConfidence = confidenceName(snapshot.confidence());
-    applyAxis(row, ChemicalAxis.SUGAR, axisValue(snapshot.profile(), ChemicalAxis.SUGAR));
-    applyAxis(row, ChemicalAxis.ACIDITY, axisValue(snapshot.profile(), ChemicalAxis.ACIDITY));
+    applyAxis(row, ChemicalAxis.SPECIFIC_GRAVITY, axisValue(snapshot.profile(), ChemicalAxis.SPECIFIC_GRAVITY));
+    applyAxis(row, ChemicalAxis.TITRATABLE_ACIDITY, axisValue(snapshot.profile(), ChemicalAxis.TITRATABLE_ACIDITY));
     applyAxis(row, ChemicalAxis.TANNIN, axisValue(snapshot.profile(), ChemicalAxis.TANNIN));
     applyAxis(
         row,
@@ -144,17 +144,17 @@ public final class BatchTraceStepJdbcRowMapper {
     }
 
     switch (axis) {
-      case SUGAR -> {
-        row.sugarValue = value.value();
-        row.sugarValueKind = value.valueKind();
-        row.sugarMin = value.min();
-        row.sugarMax = value.max();
+      case SPECIFIC_GRAVITY -> {
+        row.specificGravityValue = value.value();
+        row.specificGravityValueKind = value.valueKind();
+        row.specificGravityMin = value.min();
+        row.specificGravityMax = value.max();
       }
-      case ACIDITY -> {
-        row.acidityValue = value.value();
-        row.acidityValueKind = value.valueKind();
-        row.acidityMin = value.min();
-        row.acidityMax = value.max();
+      case TITRATABLE_ACIDITY -> {
+        row.titratableAcidityValue = value.value();
+        row.titratableAcidityValueKind = value.valueKind();
+        row.titratableAcidityMin = value.min();
+        row.titratableAcidityMax = value.max();
       }
       case TANNIN -> {
         row.tanninValue = value.value();
@@ -189,19 +189,19 @@ public final class BatchTraceStepJdbcRowMapper {
   }
 
   private static @Nullable ChemicalProfileAxes toProfile(@NonNull BatchTraceStepSubjectJdbcRow row) {
-    final var sugar = toAxisValue(
-        ChemicalAxis.SUGAR,
-        row.sugarValue,
-        row.sugarValueKind,
-        row.sugarMin,
-        row.sugarMax
+    final var specificGravity = toAxisValue(
+        ChemicalAxis.SPECIFIC_GRAVITY,
+        row.specificGravityValue,
+        row.specificGravityValueKind,
+        row.specificGravityMin,
+        row.specificGravityMax
     );
-    final var acidity = toAxisValue(
-        ChemicalAxis.ACIDITY,
-        row.acidityValue,
-        row.acidityValueKind,
-        row.acidityMin,
-        row.acidityMax
+    final var titratableAcidity = toAxisValue(
+        ChemicalAxis.TITRATABLE_ACIDITY,
+        row.titratableAcidityValue,
+        row.titratableAcidityValueKind,
+        row.titratableAcidityMin,
+        row.titratableAcidityMax
     );
     final var tannin = toAxisValue(
         ChemicalAxis.TANNIN,
@@ -218,9 +218,12 @@ public final class BatchTraceStepJdbcRowMapper {
         row.yeastAssimilableNitrogenMax
     );
 
-    return sugar == null && acidity == null && tannin == null && yeastAssimilableNitrogen == null
+    return specificGravity == null
+        && titratableAcidity == null
+        && tannin == null
+        && yeastAssimilableNitrogen == null
         ? null
-        : ChemicalProfileAxes.of(sugar, acidity, tannin, yeastAssimilableNitrogen);
+        : ChemicalProfileAxes.of(specificGravity, titratableAcidity, tannin, yeastAssimilableNitrogen);
   }
 
   private static @Nullable AxisValue toAxisValue(

@@ -5,20 +5,21 @@ import java.util.Map;
 import org.craft.mcs.cap.core.production.candidate.domain.model.ProductionBatchCandidate;
 import org.craft.mcs.cap.core.production.candidate.domain.model.ProductionBatchCandidateId;
 import org.craft.mcs.cap.core.production.candidate.domain.model.ProductionBatchCandidateStatus;
-import org.craft.mcs.cap.core.production.candidate.domain.model.ProductionSourceEvidenceReference;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatchId;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceComponent;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceComposition;
+import org.craft.mcs.cap.core.production.domain.model.ProductionSourceEvidenceReference;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceReference;
+import org.craft.mcs.cap.core.production.candidate.domain.model.ProductionCandidateSourceEvidence;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
 import org.craft.mcs.cap.shared.kernel.DomainConflictException;
 import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
-import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
-import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -37,6 +38,8 @@ class ProductionBatchCandidateTest {
   private static final ProductionSourceEvidenceReference EVIDENCE =
       ProductionSourceEvidenceReference.of("measurement-set-7");
   private static final MaterialStateId MATERIAL_STATE_ID = MaterialStateId.newId();
+  private static final ProductionCandidateSourceEvidence STATE_EVIDENCE =
+      new ProductionCandidateSourceEvidence(EVIDENCE, MATERIAL_STATE_ID);
   private static final ProductionProfileSnapshot PROFILE = new ProductionProfileSnapshot(
       SpecificGravityValue.of("1.052"),
       TitratableAcidityValue.of("6.2"),
@@ -48,15 +51,13 @@ class ProductionBatchCandidateTest {
   void createsAvailableCandidateWithAuthoritativeSourceFacts() {
     final var candidateId = ProductionBatchCandidateId.of(newUuid());
     final var workspaceId = WorkspaceId.newId();
-    final var evidence = Map.of(SOURCE_REFERENCE, EVIDENCE);
-    final var materialStates = Map.of(SOURCE_REFERENCE, MATERIAL_STATE_ID);
+    final var sourceStateEvidence = Map.of(SOURCE_REFERENCE, STATE_EVIDENCE);
 
     final var candidate = ProductionBatchCandidate.create(
         candidateId,
         workspaceId,
         COMPOSITION,
-        evidence,
-        materialStates,
+        sourceStateEvidence,
         PROFILE
     );
 
@@ -64,8 +65,7 @@ class ProductionBatchCandidateTest {
         .returns(candidateId, ProductionBatchCandidate::candidateId)
         .returns(workspaceId, ProductionBatchCandidate::workspaceId)
         .returns(COMPOSITION, ProductionBatchCandidate::sourceComposition)
-        .returns(evidence, ProductionBatchCandidate::sourceEvidence)
-        .returns(materialStates, ProductionBatchCandidate::sourceMaterialStates)
+        .returns(sourceStateEvidence, ProductionBatchCandidate::sourceStateEvidence)
         .returns(PROFILE, ProductionBatchCandidate::profile)
         .returns(ProductionBatchCandidateStatus.AVAILABLE, ProductionBatchCandidate::status)
         .returns(null, ProductionBatchCandidate::confirmedProductionBatchId)
@@ -74,57 +74,34 @@ class ProductionBatchCandidateTest {
   }
 
   @Test
-  void rejectsCandidateWhoseEvidenceDoesNotMatchItsSources() {
+  void rejectsCandidateWhoseStateEvidenceDoesNotMatchItsSources() {
     final var candidateId = ProductionBatchCandidateId.newId();
     final var workspaceId = WorkspaceId.newId();
-    final var materialStates = Map.of(SOURCE_REFERENCE, MATERIAL_STATE_ID);
-    final Map<ProductionSourceReference, ProductionSourceEvidenceReference> missingEvidence = Map.of();
+    final Map<ProductionSourceReference, ProductionCandidateSourceEvidence> missingStateEvidence = Map.of();
 
     assertThatThrownBy(() -> ProductionBatchCandidate.create(
         candidateId,
         workspaceId,
         COMPOSITION,
-        missingEvidence,
-        materialStates,
+        missingStateEvidence,
         PROFILE
     ))
         .isInstanceOf(DomainRuleViolationException.class)
-        .hasMessage("production source evidence must match candidate sources");
-  }
-
-  @Test
-  void rejectsCandidateWhoseMaterialStatesDoNotMatchItsSources() {
-    final var candidateId = ProductionBatchCandidateId.newId();
-    final var workspaceId = WorkspaceId.newId();
-    final var evidence = Map.of(SOURCE_REFERENCE, EVIDENCE);
-    final Map<ProductionSourceReference, MaterialStateId> missingMaterialStates = Map.of();
-
-    assertThatThrownBy(() -> ProductionBatchCandidate.create(
-        candidateId,
-        workspaceId,
-        COMPOSITION,
-        evidence,
-        missingMaterialStates,
-        PROFILE
-    ))
-        .isInstanceOf(DomainRuleViolationException.class)
-        .hasMessage("production source material states must match candidate sources");
+        .hasMessage("production source state evidence must match candidate sources");
   }
 
   @Test
   void validatesRestoredConfirmationState() {
     final var candidateId = ProductionBatchCandidateId.newId();
     final var workspaceId = WorkspaceId.newId();
-    final var evidence = Map.of(SOURCE_REFERENCE, EVIDENCE);
-    final var materialStates = Map.of(SOURCE_REFERENCE, MATERIAL_STATE_ID);
+    final var sourceStateEvidence = Map.of(SOURCE_REFERENCE, STATE_EVIDENCE);
     final var productionBatchId = ProductionBatchId.newId();
 
     assertThatThrownBy(() -> ProductionBatchCandidate.restore(
         candidateId,
         workspaceId,
         COMPOSITION,
-        evidence,
-        materialStates,
+        sourceStateEvidence,
         PROFILE,
         ProductionBatchCandidateStatus.AVAILABLE,
         productionBatchId
@@ -135,8 +112,7 @@ class ProductionBatchCandidateTest {
         candidateId,
         workspaceId,
         COMPOSITION,
-        evidence,
-        materialStates,
+        sourceStateEvidence,
         PROFILE,
         ProductionBatchCandidateStatus.CONFIRMED,
         null
@@ -149,15 +125,13 @@ class ProductionBatchCandidateTest {
   void restoresAndConfirmsCandidateOnlyOnce() {
     final var candidateId = ProductionBatchCandidateId.newId();
     final var workspaceId = WorkspaceId.newId();
-    final var evidence = Map.of(SOURCE_REFERENCE, EVIDENCE);
-    final var materialStates = Map.of(SOURCE_REFERENCE, MATERIAL_STATE_ID);
+    final var sourceStateEvidence = Map.of(SOURCE_REFERENCE, STATE_EVIDENCE);
     final var productionBatchId = ProductionBatchId.newId();
     final var restored = ProductionBatchCandidate.restore(
         candidateId,
         workspaceId,
         COMPOSITION,
-        evidence,
-        materialStates,
+        sourceStateEvidence,
         PROFILE,
         ProductionBatchCandidateStatus.AVAILABLE,
         null
@@ -180,10 +154,10 @@ class ProductionBatchCandidateTest {
 
     assertThatThrownBy(() -> candidate.evidenceFor(unrelatedSource))
         .isInstanceOf(DomainRuleViolationException.class)
-        .hasMessage("production source evidence is missing");
+        .hasMessage("production source state evidence is missing");
     assertThatThrownBy(() -> candidate.materialStateFor(unrelatedSource))
         .isInstanceOf(DomainRuleViolationException.class)
-        .hasMessage("production source material state is missing");
+        .hasMessage("production source state evidence is missing");
   }
 
   private static ProductionBatchCandidate candidate() {
@@ -191,8 +165,7 @@ class ProductionBatchCandidateTest {
         ProductionBatchCandidateId.newId(),
         WorkspaceId.newId(),
         COMPOSITION,
-        Map.of(SOURCE_REFERENCE, EVIDENCE),
-        Map.of(SOURCE_REFERENCE, MATERIAL_STATE_ID),
+        Map.of(SOURCE_REFERENCE, STATE_EVIDENCE),
         PROFILE
     );
   }

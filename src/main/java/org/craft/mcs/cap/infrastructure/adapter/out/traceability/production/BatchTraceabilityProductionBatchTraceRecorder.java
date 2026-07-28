@@ -13,9 +13,10 @@ import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceStep;
 import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceStepSubject;
 import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceSubject;
 import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceSubjectType;
+import org.craft.mcs.cap.core.production.application.port.out.ConsumedProductionSource;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchTraceRecorder;
-import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchTraceSource;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatch;
+import org.craft.mcs.cap.core.production.domain.model.ProductionSourceType;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValueKind;
@@ -46,7 +47,7 @@ class BatchTraceabilityProductionBatchTraceRecorder implements ProductionBatchTr
   @Override
   public void recordCreated(
       @NonNull ProductionBatch productionBatch,
-      @NonNull List<@NonNull ProductionBatchTraceSource> sources,
+      @NonNull List<@NonNull ConsumedProductionSource> sources,
       @NonNull Instant occurredAt,
       @Nullable String note
   ) {
@@ -85,13 +86,13 @@ class BatchTraceabilityProductionBatchTraceRecorder implements ProductionBatchTr
   }
 
   private static @NonNull SourceTransition sourceTransition(
-      @NonNull ProductionBatchTraceSource source
+      @NonNull ConsumedProductionSource source
   ) {
     requireNonNull(source, "production trace source cannot be null");
     final var displayName = source.displayName();
     final var subject = new BatchTraceSubject(
-        BatchTraceSubjectType.FEEDSTOCK_BATCH,
-        source.id(),
+        toTraceSubjectType(source.reference().type()),
+        source.reference().id(),
         displayName == null ? null : displayName.value()
     );
     final var remainingSourceStateId = source.remainingSourceStateId();
@@ -117,6 +118,14 @@ class BatchTraceabilityProductionBatchTraceRecorder implements ProductionBatchTr
         input,
         output
     );
+  }
+
+  private static @NonNull BatchTraceSubjectType toTraceSubjectType(
+      @NonNull ProductionSourceType sourceType
+  ) {
+    return switch (requireNonNull(sourceType, "production source type cannot be null")) {
+      case FEEDSTOCK_BATCH -> BatchTraceSubjectType.FEEDSTOCK_BATCH;
+    };
   }
 
   private static @NonNull List<@NonNull BatchTraceStepSubject> outputs(
@@ -150,14 +159,14 @@ class BatchTraceabilityProductionBatchTraceRecorder implements ProductionBatchTr
   private static @NonNull ChemicalProfileAxes toAxes(@NonNull ProductionProfileSnapshot profile) {
     return ChemicalProfileAxes.of(
         new AxisValue(
-            ChemicalAxis.SUGAR,
+            ChemicalAxis.SPECIFIC_GRAVITY,
             profile.specificGravity().asBigDecimal(),
             AxisValueKind.CALCULATED,
             null,
             null
         ),
         new AxisValue(
-            ChemicalAxis.ACIDITY,
+            ChemicalAxis.TITRATABLE_ACIDITY,
             profile.titratableAcidity().asBigDecimal(),
             AxisValueKind.CALCULATED,
             null,

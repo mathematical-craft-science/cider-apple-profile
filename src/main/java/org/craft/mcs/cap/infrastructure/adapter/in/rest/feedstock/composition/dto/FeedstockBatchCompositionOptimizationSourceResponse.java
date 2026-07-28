@@ -12,9 +12,18 @@ import org.jspecify.annotations.Nullable;
 public record FeedstockBatchCompositionOptimizationSourceResponse(
     @Schema(description = "Feedstock batch identifier.", format = "uuid", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull UUID batchId,
-    @Schema(description = "Requested volume, when absolute-volume optimization is used.", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @Schema(
+        description = "Requested volume, when absolute-volume optimization is used.",
+        nullable = true,
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     @Nullable DecimalQuantityResponse requestedVolume,
-    @Schema(description = "Relative source proportion.", example = "0.25", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @Schema(
+        description = "Relative source proportion.",
+        example = "0.25",
+        nullable = true,
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     @Nullable BigDecimal proportion
 ) {
 }

@@ -1,47 +1,45 @@
 package org.craft.mcs.cap.feedstock.application.analysis.sugaracidity.usecase;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.craft.mcs.cap.core.profileanalysis.testing.ProfileAnalysisTestFixtures
+    .chemicalProfileAssessmentAdapter;
+import static org.craft.mcs.cap.shared.kernel.identity.UuidV7Generator.newUuid;
+import static org.craft.mcs.cap.shared.testing.FeedstockMeasurementViews.view;
+import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementInstant;
+import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementRecordedAt;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import java.time.LocalDate;
 import java.util.Optional;
 import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchNotFoundException;
+import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.usecase.AssessFeedstockMeasurementSugarAcidityZoneService;
 import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
-import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.usecase.*;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchRepository;
-import org.craft.mcs.cap.core.feedstock.application.measurement.port.out.FeedstockMeasurementQueryRepository;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
-import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
-import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
-import org.craft.mcs.cap.shared.testing.FeedstockMeasurementFixture;
 import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementId;
 import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementName;
+import org.craft.mcs.cap.core.feedstock.application.measurement.port.out.FeedstockMeasurementQueryRepository;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
+import org.craft.mcs.cap.core.profileanalysis.compatibility.application.ChemicalProfileAssessment;
+import org.craft.mcs.cap.core.profileanalysis.compatibility.application.ChemicalProfileAssessmentAdapter;
 import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapability;
 import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityAssessment;
-import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityAssessor;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileEvaluation;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileProjector;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.BuiltInSugarAcidityZoneProfiles;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.RectangleSugarAcidityZoneAssessor;
+import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
+import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
-import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
-import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
+import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
+import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
-import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
+import org.craft.mcs.cap.shared.testing.FeedstockMeasurementFixture;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
-
-import static org.craft.mcs.cap.shared.kernel.identity.UuidV7Generator.newUuid;
-import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementInstant;
-import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementRecordedAt;
-import static org.craft.mcs.cap.shared.testing.FeedstockMeasurementViews.view;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 
 class AssessFeedstockMeasurementSugarAcidityZoneServiceTest {
@@ -71,14 +69,14 @@ class AssessFeedstockMeasurementSugarAcidityZoneServiceTest {
     final var result = service.assess(sample.measurementId());
 
     assertThat(result.evaluation())
-        .returns(false, SugarAcidityProfileEvaluation::plottable)
-        .returns(null, SugarAcidityProfileEvaluation::assessment)
-        .extracting(SugarAcidityProfileEvaluation::capabilityAssessment)
+        .returns(false, ChemicalProfileAssessment::plottable)
+        .returns(null, ChemicalProfileAssessment::assessment)
+        .extracting(ChemicalProfileAssessment::capabilityAssessment)
         .returns(
-            ChemicalProfileCapability.SUGAR_ACIDITY_PLOT,
+            ChemicalProfileCapability.SUGAR_ACIDITY_GRAPH,
             ChemicalProfileCapabilityAssessment::capability
         ).satisfies(assessment ->
-            assertThat(assessment.missingAxes()).containsExactly(ChemicalAxis.ACIDITY)
+            assertThat(assessment.missingAxes()).containsExactly(ChemicalAxis.TITRATABLE_ACIDITY)
         );
   }
 
@@ -116,15 +114,8 @@ class AssessFeedstockMeasurementSugarAcidityZoneServiceTest {
         .build();
   }
 
-  private static @NonNull SugarAcidityProfileProjector projector() {
-    return new SugarAcidityProfileProjector(
-        new ChemicalProfileAxisExtractor(),
-        new ChemicalProfileCapabilityAssessor(),
-        new RectangleSugarAcidityZoneAssessor(
-            BuiltInSugarAcidityZoneProfiles.thresholds(),
-            BuiltInSugarAcidityZoneProfiles.rectangularZoneGeometryProfile()
-        )
-    );
+  private static @NonNull ChemicalProfileAssessmentAdapter projector() {
+    return chemicalProfileAssessmentAdapter();
   }
 
   private static @NonNull FeedstockBatch batch(

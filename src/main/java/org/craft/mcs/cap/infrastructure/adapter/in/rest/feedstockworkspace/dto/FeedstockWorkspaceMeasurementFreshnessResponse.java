@@ -6,7 +6,7 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 
-@Schema(description = "Freshness assessment for the current feedstock measurement.")
+@Schema(description = "Aggregate freshness assessment of evidence selected for the current feedstock profile.")
 public record FeedstockWorkspaceMeasurementFreshnessResponse(
     @Schema(
         description = "Freshness status.",
@@ -14,10 +14,13 @@ public record FeedstockWorkspaceMeasurementFreshnessResponse(
         requiredMode = Schema.RequiredMode.REQUIRED
     )
     @NonNull MeasurementFreshnessStatus status,
-    @Schema(description = "Whether the current measurement is stale.", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(
+        description = "Whether any planning-required selected evidence is stale.",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
     boolean stale,
     @Schema(
-        description = "Reason when the measurement is stale.",
+        description = "Reason when selected profile evidence is stale.",
         nullable = true,
         requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )

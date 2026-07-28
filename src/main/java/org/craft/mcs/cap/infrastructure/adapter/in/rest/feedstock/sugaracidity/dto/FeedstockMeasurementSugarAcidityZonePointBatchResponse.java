@@ -15,11 +15,18 @@ public record FeedstockMeasurementSugarAcidityZonePointBatchResponse(
     )
     @NonNull List<@NonNull FeedstockMeasurementSugarAcidityZoneResponse> points,
     @ArraySchema(
-        arraySchema = @Schema(description = "Measurements that cannot be plotted because required measurements are missing.", requiredMode = Schema.RequiredMode.REQUIRED),
+        arraySchema = @Schema(
+            description = "Measurements that cannot be plotted because required measurements are missing.",
+            requiredMode = Schema.RequiredMode.REQUIRED
+        ),
         schema = @Schema(implementation = UnplottableFeedstockMeasurementSugarAcidityZonePointResponse.class)
     )
     @NonNull List<@NonNull UnplottableFeedstockMeasurementSugarAcidityZonePointResponse> unplottable,
-    @Schema(description = "Opaque cursor for the next page. Omitted when the current page is the last one.", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @Schema(
+        description = "Opaque cursor for the next page. Omitted when the current page is the last one.",
+        nullable = true,
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     @Nullable String nextCursor
 ) {
 }

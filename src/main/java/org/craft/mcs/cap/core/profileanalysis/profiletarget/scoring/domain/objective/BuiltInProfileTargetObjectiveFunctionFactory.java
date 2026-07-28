@@ -26,8 +26,9 @@ public final class BuiltInProfileTargetObjectiveFunctionFactory implements Profi
     requireNonNull(weights, "profile target objective weights cannot be null");
 
     return switch (code) {
-      case DISTANCE_TO_TARGET_AREA -> new DistanceToTargetAreaObjectiveFunction(normalizer, weights);
-      case MANHATTAN_DISTANCE_TO_TARGET_AREA -> new ManhattanDistanceToTargetAreaObjectiveFunction(normalizer, weights);
+      case DISTANCE_TO_TARGET_AREA -> TargetAreaProfileTargetObjectiveFunction.euclidean(normalizer, weights);
+      case MANHATTAN_DISTANCE_TO_TARGET_AREA ->
+          TargetAreaProfileTargetObjectiveFunction.manhattan(normalizer, weights);
     };
   }
 }

@@ -4,11 +4,8 @@ import java.util.List;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionCalculatorCode;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionSource;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionTanninPolicy;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.port.in.ProfileTargetScoringPurpose;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.normalization.ProfileAxisNormalizerCode;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetObjective;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.objective.ProfileTargetObjectiveFunctionCode;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetObjectiveWeights;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetScoringConfiguration;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -19,55 +16,15 @@ public record CalculateChemicalProfileCompositionCommand(
     @NonNull List<@NonNull ChemicalProfileCompositionSource> sources,
     @NonNull ChemicalProfileCompositionTanninPolicy tanninPolicy,
     @Nullable ProfileTargetObjective targetObjective,
-    @NonNull ProfileTargetObjectiveWeights targetWeights,
-    @NonNull ProfileTargetScoringPurpose scoringPurpose,
-    @NonNull ChemicalProfileCompositionCalculatorCode calculatorCode,
-    @NonNull ProfileAxisNormalizerCode normalizerCode,
-    @NonNull ProfileTargetObjectiveFunctionCode objectiveFunctionCode
+    @NonNull ProfileTargetScoringConfiguration scoringConfiguration,
+    @NonNull ChemicalProfileCompositionCalculatorCode calculatorCode
 ) {
 
   public CalculateChemicalProfileCompositionCommand {
     sources = List.copyOf(requireNonNull(sources, "chemical profile composition sources cannot be null"));
     requireNonNull(tanninPolicy, "chemical profile composition tannin policy cannot be null");
-    requireNonNull(targetWeights, "profile target objective weights cannot be null");
-    requireNonNull(scoringPurpose, "profile target scoring purpose cannot be null");
+    requireNonNull(scoringConfiguration, "profile target scoring configuration cannot be null");
     requireNonNull(calculatorCode, "chemical profile composition calculator code cannot be null");
-    requireNonNull(normalizerCode, "profile axis normalizer code cannot be null");
-    requireNonNull(objectiveFunctionCode, "profile target objective function code cannot be null");
   }
 
-  public CalculateChemicalProfileCompositionCommand(
-      @NonNull List<@NonNull ChemicalProfileCompositionSource> sources,
-      @NonNull ChemicalProfileCompositionTanninPolicy tanninPolicy
-  ) {
-    this(
-        sources,
-        tanninPolicy,
-        null,
-        ProfileTargetObjectiveWeights.balanced(),
-        ProfileTargetScoringPurpose.BLENDING_PLANNING,
-        ChemicalProfileCompositionCalculatorCode.MASS_BALANCE,
-        ProfileAxisNormalizerCode.EFFECTIVE_RANGE,
-        ProfileTargetObjectiveFunctionCode.DISTANCE_TO_TARGET_AREA
-    );
-  }
-
-  public CalculateChemicalProfileCompositionCommand(
-      @NonNull List<@NonNull ChemicalProfileCompositionSource> sources,
-      @NonNull ChemicalProfileCompositionTanninPolicy tanninPolicy,
-      @Nullable ProfileTargetObjective targetObjective,
-      @NonNull ProfileTargetObjectiveWeights targetWeights,
-      @NonNull ProfileTargetScoringPurpose scoringPurpose
-  ) {
-    this(
-        sources,
-        tanninPolicy,
-        targetObjective,
-        targetWeights,
-        scoringPurpose,
-        ChemicalProfileCompositionCalculatorCode.MASS_BALANCE,
-        ProfileAxisNormalizerCode.EFFECTIVE_RANGE,
-        ProfileTargetObjectiveFunctionCode.DISTANCE_TO_TARGET_AREA
-    );
-  }
 }

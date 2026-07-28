@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.appleprofile.application.AppleVarietyNotFoundException;
 import org.craft.mcs.cap.core.appleprofile.application.abv.port.in.AppleVarietyPotentialAbvPrediction;
 import org.craft.mcs.cap.core.appleprofile.application.abv.port.in.PredictAppleVarietyPotentialAbvUseCase;
-import org.craft.mcs.cap.core.appleprofile.application.port.out.AppleVarietyRepository;
+import org.craft.mcs.cap.core.appleprofile.application.catalog.port.out.AppleVarietyRepository;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyId;
 import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPredictor;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
@@ -12,7 +12,7 @@ import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtracto
 import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapability;
 import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityAssessor;
 import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityNotMetException;
-import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 
@@ -49,14 +49,14 @@ public final class PredictAppleVarietyPotentialAbvService
       throw new ChemicalProfileCapabilityNotMetException(capability);
     }
 
-    final var sugar = axes.valueOf(ChemicalAxis.SUGAR)
+    final var specificGravity = axes.valueOf(ChemicalAxis.SPECIFIC_GRAVITY)
         .orElseThrow(() -> new ChemicalProfileCapabilityNotMetException(capability));
 
     return new AppleVarietyPotentialAbvPrediction(
         variety.varietyId(),
         variety.name(),
-        sugar.valueKind(),
-        predictor.predict(SpecificGravityValue.of(sugar.value()))
+        specificGravity.valueKind(),
+        predictor.predict(SpecificGravityValue.of(specificGravity.value()))
     );
   }
 }

@@ -1,7 +1,9 @@
 package org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain;
 
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.SugarAcidityTarget;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.TanninTargetRange;
+import java.util.Set;
+import org.craft.mcs.cap.core.profileanalysis.graph.domain.SugarAcidityPointDistance;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.SugarAcidityTarget;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.TanninTargetRange;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import static java.util.Objects.requireNonNull;
@@ -10,9 +12,8 @@ import static java.util.Objects.requireNonNull;
 /**
  * Target definition used by profile distance and optimization.
  *
- * <p>The sugar-acidity target is mandatory because every graph/optimization target lives in that
- * two-dimensional space. Tannin is optional; when present, objective functions require candidate
- * tannin and return an unscorable distance if it is missing.
+ * <p>The two-dimensional SG/TA target is mandatory. Tannin is optional; when present,
+ * objective functions require candidate tannin and return an unscorable distance if it is missing.
  */
 public record ProfileTargetObjective(
     @NonNull SugarAcidityTarget sugarAcidityTarget,
@@ -20,7 +21,7 @@ public record ProfileTargetObjective(
 ) {
 
   public ProfileTargetObjective {
-    requireNonNull(sugarAcidityTarget, "sugar-acidity target cannot be null");
+    requireNonNull(sugarAcidityTarget, "SG/TA target cannot be null");
   }
 
   public static @NonNull ProfileTargetObjective of(
@@ -41,5 +42,56 @@ public record ProfileTargetObjective(
 
   public boolean requiresTannin() {
     return tanninTarget != null;
+  }
+
+  /** Compares one representative profile point using the caller's authoritative distance policy. */
+  public @NonNull ProfileTargetComparison compare(
+      @NonNull ProfileTargetScoringPoint source,
+      @NonNull SugarAcidityPointDistance distance
+  ) {
+    requireNonNull(source, "profile target source point cannot be null");
+    requireNonNull(distance, "SG/TA point distance cannot be null");
+    final var point = source.sugarAcidityPoint();
+    final var geometry = sugarAcidityTarget.geometry();
+    final var insideSugarAcidityTarget = geometry.contains(point);
+    final var nearestTargetPoint = insideSugarAcidityTarget
+        ? point
+        : geometry.nearestPointTo(point, distance);
+
+    if (tanninTarget == null) {
+      return new ProfileTargetComparison(
+          point,
+          nearestTargetPoint,
+          null,
+          null,
+          insideSugarAcidityTarget,
+          insideSugarAcidityTarget,
+          Set.of()
+      );
+    }
+
+    final var tannin = source.tannin();
+    if (tannin == null) {
+      return new ProfileTargetComparison(
+          point,
+          nearestTargetPoint,
+          null,
+          null,
+          insideSugarAcidityTarget,
+          false,
+          Set.of(ProfileEvaluationAxis.TANNIN)
+      );
+    }
+
+    final var nearestTargetTannin = tanninTarget.nearestValueTo(tannin);
+    return new ProfileTargetComparison(
+        point,
+        nearestTargetPoint,
+        tannin,
+        nearestTargetTannin,
+        insideSugarAcidityTarget,
+        insideSugarAcidityTarget && tanninTarget.contains(tannin),
+        Set.of()
+    );
   }
 }

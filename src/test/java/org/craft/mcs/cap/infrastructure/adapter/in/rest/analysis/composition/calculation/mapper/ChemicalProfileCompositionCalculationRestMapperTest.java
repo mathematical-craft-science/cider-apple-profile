@@ -12,15 +12,18 @@ import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.cal
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.calculation.dto.ChemicalProfileCompositionSourceRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.calculation.dto.ChemicalProfileCompositionSourceWeightKind;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.calculation.dto.ChemicalProfileCompositionSourceWeightRequest;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.common.dto.ChemicalProfileCompositionAxesRequest;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.common.dto.CompositionSourceCharacteristicsRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.common.dto.ChemicalProfileCompositionSourceReferenceRequest;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
-import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
+import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
+import org.craft.mcs.cap.shared.kernel.characteristic.CharacteristicValue;
+import org.craft.mcs.cap.shared.kernel.characteristic.IntervalCharacteristicValue;
+import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static java.util.Objects.requireNonNull;
 
 
 class ChemicalProfileCompositionCalculationRestMapperTest {
@@ -46,19 +49,16 @@ class ChemicalProfileCompositionCalculationRestMapperTest {
             null,
             null,
             null,
-            null,
             null
         ),
-        zone -> {
+        _ -> {
           throw new AssertionError("target resolver should not be used without predefined target");
         }
     );
 
-    assertThat(command.sources().getFirst().axes().valueOf(ChemicalAxis.YEAST_ASSIMILABLE_NITROGEN))
-        .isPresent()
-        .get()
-        .extracting(AxisValue::value)
-        .isEqualTo(new BigDecimal("120"));
+    assertThat(yanPointValue(
+        requireNonNull(command.sources().getFirst().characteristics().yeastAssimilableNitrogen())
+    ).asBigDecimal()).isEqualByComparingTo("120");
 
     final var composition = CALCULATOR.calculate(new ChemicalProfileCompositionRequest(
         command.sources(),
@@ -67,21 +67,26 @@ class ChemicalProfileCompositionCalculationRestMapperTest {
     final var response = ChemicalProfileCompositionCalculationRestMapper.toResponse(
         CalculateChemicalProfileCompositionResult.withoutTargetDistance(
             composition,
-            POTENTIAL_ABV_PREDICTOR.predict(
-                SpecificGravityValue.of(composition.profile().sugar().value())
-            )
+            POTENTIAL_ABV_PREDICTOR.predict(composition.characteristics().specificGravity())
         )
     );
 
-    assertThat(response.yeastAssimilableNitrogen()).isNotNull();
-    assertThat(response.yeastAssimilableNitrogen().value().value()).isEqualByComparingTo("210.000000000");
-    assertThat(response.yeastAssimilableNitrogen().value().unit()).isEqualTo("mg N/L");
-    assertThat(response.totalVolume()).isNotNull();
-    assertThat(response.totalVolume().unit()).isEqualTo("L");
-    assertThat(response.profile().sugar().value().unit()).isEqualTo("SG");
-    assertThat(response.profile().acidity().value().unit()).isEqualTo("g/L as malic acid");
-    assertThat(response.profile().tannin()).isNotNull();
-    assertThat(response.profile().tannin().value().unit()).isEqualTo("mg/L TAE");
+    assertThat(response.characteristics())
+        .satisfies(characteristics -> assertThat(characteristics.specificGravity())
+            .returns("SG", DecimalQuantityResponse::unit))
+        .satisfies(characteristics -> assertThat(characteristics.titratableAcidity())
+            .returns("g/L as malic acid", DecimalQuantityResponse::unit))
+        .satisfies(characteristics -> assertThat(characteristics.tannin())
+            .isNotNull()
+            .returns("mg/L TAE", DecimalQuantityResponse::unit))
+        .satisfies(characteristics -> assertThat(characteristics.yeastAssimilableNitrogen())
+            .isNotNull()
+            .returns("mg N/L", DecimalQuantityResponse::unit)
+            .satisfies(quantity -> assertThat(quantity.value())
+                .isEqualByComparingTo("210.000000000")));
+    assertThat(response.totalVolume())
+        .isNotNull()
+        .returns("L", DecimalQuantityResponse::unit);
     assertThat(response.potentialAbv())
         .satisfies(prediction -> assertThat(prediction.originalGravity().value())
             .isEqualByComparingTo("1.045000000"))
@@ -103,7 +108,7 @@ class ChemicalProfileCompositionCalculationRestMapperTest {
   ) {
     return new ChemicalProfileCompositionSourceRequest(
         new ChemicalProfileCompositionSourceReferenceRequest("FEEDSTOCK_BATCH", id),
-        new ChemicalProfileCompositionAxesRequest(
+        new CompositionSourceCharacteristicsRequest(
             new BigDecimal(sugar),
             new BigDecimal(acidity),
             new BigDecimal(tannin),
@@ -115,5 +120,15 @@ class ChemicalProfileCompositionCalculationRestMapperTest {
         ),
         null
     );
+  }
+
+  private static @NonNull YeastAssimilableNitrogenValue yanPointValue(
+      @NonNull CharacteristicValue<YeastAssimilableNitrogenValue> value
+  ) {
+    return switch (value) {
+      case PointCharacteristicValue<YeastAssimilableNitrogenValue>(var point) -> point;
+      case IntervalCharacteristicValue<YeastAssimilableNitrogenValue> _ ->
+          throw new AssertionError("expected point YAN characteristic");
+    };
   }
 }

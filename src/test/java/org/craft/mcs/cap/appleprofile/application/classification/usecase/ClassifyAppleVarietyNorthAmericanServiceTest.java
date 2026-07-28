@@ -1,7 +1,7 @@
 package org.craft.mcs.cap.appleprofile.application.classification.usecase;
 
 import java.util.Optional;
-import org.craft.mcs.cap.core.appleprofile.application.port.out.AppleVarietyRepository;
+import org.craft.mcs.cap.core.appleprofile.application.catalog.port.out.AppleVarietyRepository;
 import org.craft.mcs.cap.core.appleprofile.application.classification.usecase.ClassifyAppleVarietyNorthAmericanService;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVariety;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyId;
@@ -14,7 +14,7 @@ import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
 import org.craft.mcs.cap.core.profileanalysis.classification.domain.profile.northamerican.NorthAmericanProfileCalculator;
 import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
-import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.junit.jupiter.api.Test;
 
@@ -55,7 +55,7 @@ class ClassifyAppleVarietyNorthAmericanServiceTest {
               assertThat(exception.assessment().capability())
                   .isEqualTo(ChemicalProfileCapability.NORTH_AMERICAN_PROFILE);
               assertThat(exception.assessment().missingAxes())
-                  .containsExactlyInAnyOrder(ChemicalAxis.ACIDITY, ChemicalAxis.TANNIN);
+                  .containsExactlyInAnyOrder(ChemicalAxis.TITRATABLE_ACIDITY, ChemicalAxis.TANNIN);
             }
         );
     verifyNoInteractions(calculator);

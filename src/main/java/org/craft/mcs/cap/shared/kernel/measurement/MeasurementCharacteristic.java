@@ -1,12 +1,12 @@
 package org.craft.mcs.cap.shared.kernel.measurement;
 
 import org.craft.mcs.cap.shared.kernel.chemical.value.PhValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
 import org.craft.mcs.cap.shared.kernel.measurement.value.TemperatureValue;
 import org.craft.mcs.cap.shared.kernel.measurement.value.TurbidityValue;
-import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
@@ -20,7 +20,7 @@ import static java.util.Objects.requireNonNull;
  */
 public enum MeasurementCharacteristic {
 
-  /** Relative density used as the sugar and gravity characteristic. */
+  /** Relative density measurement; analysis may interpret it as sugar potential for unfermented material. */
   SPECIFIC_GRAVITY,
 
   /** Acidity activity measured on the pH scale. */

@@ -12,7 +12,6 @@ import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.Ch
 import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.strategy.CompositionOptimizationStrategySelector;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.normalization.ProfileAxisNormalizerSelector;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.objective.ProfileTargetObjectiveFunctionFactory;
-import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 
@@ -25,8 +24,8 @@ import static java.util.Objects.requireNonNull;
  * <p>The service wires together four independently selectable concerns:
  * <ol>
  *   <li>composition calculator, selected by {@code calculatorCode};</li>
- *   <li>axis normalizer, selected by {@code normalizerCode};</li>
- *   <li>objective function, selected by {@code objectiveFunctionCode};</li>
+ *   <li>axis normalizer, selected by the explicit scoring configuration;</li>
+ *   <li>objective function and axis weights from the same scoring configuration;</li>
  *   <li>optimization algorithm, selected by {@code algorithm}.</li>
  * </ol>
  *
@@ -52,10 +51,11 @@ public final class OptimizeChemicalProfileCompositionService
     requireNonNull(command, "optimize chemical profile composition command cannot be null");
 
     final var calculator = calculatorSelector.select(command.calculatorCode());
+    final var scoringConfiguration = command.scoringConfiguration();
     final var objectiveFunction = objectiveFunctionFactory.create(
-        command.objectiveFunctionCode(),
-        normalizerSelector.select(command.normalizerCode()),
-        command.targetWeights()
+        scoringConfiguration.objectiveFunctionCode(),
+        normalizerSelector.select(scoringConfiguration.normalizerCode()),
+        scoringConfiguration.weights()
     );
     final var optimizationStrategy = optimizationStrategySelector.select(command.algorithm());
     final var optimizationResult = optimizationStrategy.optimize(
@@ -76,8 +76,8 @@ public final class OptimizeChemicalProfileCompositionService
         command.mode(),
         command.algorithm(),
         command.calculatorCode(),
-        command.normalizerCode(),
-        command.objectiveFunctionCode(),
+        scoringConfiguration.normalizerCode(),
+        scoringConfiguration.objectiveFunctionCode(),
         optimizationResult.evaluatedCandidates(),
         optimizationResult.candidates().stream()
             .map(this::toCandidateView)
@@ -90,9 +90,7 @@ public final class OptimizeChemicalProfileCompositionService
   ) {
     return new ChemicalProfileCompositionOptimizationCandidateView(
         candidate,
-        potentialAbvPredictor.predict(
-            SpecificGravityValue.of(candidate.composition().profile().sugar().value())
-        )
+        potentialAbvPredictor.predict(candidate.composition().characteristics().specificGravity())
     );
   }
 }

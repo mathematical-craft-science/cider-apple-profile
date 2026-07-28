@@ -11,7 +11,7 @@ package org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain;
 public enum ChemicalProfileCompositionCalculatorCode {
 
   /**
-   * Calculates sugar, acidity and tannin by concentration mass balance.
+   * Calculates SG, TA, tannin, and other supported characteristics by mass balance.
    */
   MASS_BALANCE
 }

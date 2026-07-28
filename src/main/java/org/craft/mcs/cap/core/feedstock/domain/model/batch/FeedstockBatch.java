@@ -6,10 +6,9 @@ import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSource;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchLifecycle;
+import org.craft.mcs.cap.shared.kernel.material.value.BatchMaterialState;
 import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
 import org.craft.mcs.cap.shared.kernel.DomainConflictException;
-import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
-import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
 import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
@@ -51,11 +50,7 @@ public final class FeedstockBatch {
 
   private @Nullable FeedstockSource source;
 
-  private @NonNull BatchLifecycle lifecycle;
-
-  private @NonNull VolumeValue availableVolume;
-
-  private @NonNull MaterialStateId currentMaterialStateId;
+  private @NonNull BatchMaterialState materialState;
 
   private @Nullable String note;
 
@@ -70,9 +65,7 @@ public final class FeedstockBatch {
       @NonNull FeedstockType type,
       @NonNull FeedstockSeason season,
       @Nullable FeedstockSource source,
-      @NonNull BatchLifecycle lifecycle,
-      @NonNull VolumeValue availableVolume,
-      @NonNull MaterialStateId currentMaterialStateId,
+      @NonNull BatchMaterialState materialState,
       @Nullable String note,
       @Nullable Instant deletedAt
   ) {
@@ -83,15 +76,9 @@ public final class FeedstockBatch {
     this.type = requireNonNull(type, "feedstock type cannot be null");
     this.season = requireNonNull(season, "feedstock season cannot be null");
     this.source = source;
-    this.lifecycle = requireNonNull(lifecycle, "feedstock batch lifecycle cannot be null");
-    this.availableVolume = requireNonNull(availableVolume, "available volume cannot be null");
-    this.currentMaterialStateId = requireNonNull(
-        currentMaterialStateId,
-        "feedstock current material state id cannot be null"
-    );
+    this.materialState = requireNonNull(materialState, "feedstock material state cannot be null");
     this.note = normalize(note);
     this.deletedAt = deletedAt;
-    validateMaterialState(lifecycle, availableVolume);
   }
 
   public static @NonNull FeedstockBatch create(
@@ -103,7 +90,6 @@ public final class FeedstockBatch {
       @NonNull FeedstockSeason season,
       @NonNull VolumeValue availableVolume
   ) {
-    requirePositiveAvailableVolume(availableVolume);
     return new FeedstockBatch(
         batchId,
         workspaceId,
@@ -112,9 +98,7 @@ public final class FeedstockBatch {
         type,
         season,
         null,
-        BatchLifecycle.ACTIVE,
-        availableVolume,
-        MaterialStateId.newId(),
+        BatchMaterialState.active(availableVolume),
         null,
         null
     );
@@ -143,9 +127,7 @@ public final class FeedstockBatch {
         type,
         season,
         source,
-        lifecycle,
-        availableVolume,
-        currentMaterialStateId,
+        BatchMaterialState.restore(lifecycle, availableVolume, currentMaterialStateId),
         note,
         deletedAt
     );
@@ -180,15 +162,15 @@ public final class FeedstockBatch {
   }
 
   public @NonNull BatchLifecycle lifecycle() {
-    return lifecycle;
+    return materialState.lifecycle();
   }
 
   public @NonNull VolumeValue availableVolume() {
-    return availableVolume;
+    return materialState.volume();
   }
 
   public @NonNull MaterialStateId currentMaterialStateId() {
-    return currentMaterialStateId;
+    return materialState.stateId();
   }
 
   public @Nullable String note() {
@@ -229,20 +211,10 @@ public final class FeedstockBatch {
   }
 
   public @NonNull FeedstockBatch consumeAvailableVolume(@NonNull VolumeValue volume) {
-    requireActive();
-    requireNonNull(volume, "consumed feedstock volume cannot be null");
-    if (volume.isZero()) {
-      throw new DomainRuleViolationException("consumed feedstock volume must be positive");
+    if (deleted()) {
+      throw new DomainConflictException("cannot consume deleted feedstock batch");
     }
-    if (volume.exceeds(availableVolume)) {
-      throw new DomainConflictException("consumed feedstock volume exceeds available volume");
-    }
-
-    this.availableVolume = availableVolume.subtract(volume);
-    currentMaterialStateId = MaterialStateId.newId();
-    if (availableVolume.isZero()) {
-      lifecycle = BatchLifecycle.DEPLETED;
-    }
+    materialState = materialState.consume(volume);
     return this;
   }
 
@@ -270,33 +242,4 @@ public final class FeedstockBatch {
     return normalized.isEmpty() ? null : normalized;
   }
 
-  private static void requirePositiveAvailableVolume(@NonNull VolumeValue availableVolume) {
-    requireNonNull(availableVolume, "available volume cannot be null");
-    if (availableVolume.isZero()) {
-      throw new DomainRuleViolationException("feedstock batch available volume must be greater than zero");
-    }
-  }
-
-  private void requireActive() {
-    if (deleted()) {
-      throw new DomainConflictException("cannot consume deleted feedstock batch");
-    }
-    if (lifecycle != BatchLifecycle.ACTIVE) {
-      throw new DomainConflictException(
-          "cannot consume feedstock batch when lifecycle is " + lifecycle
-      );
-    }
-  }
-
-  private static void validateMaterialState(
-      @NonNull BatchLifecycle lifecycle,
-      @NonNull VolumeValue availableVolume
-  ) {
-    if (lifecycle == BatchLifecycle.ACTIVE && availableVolume.isZero()) {
-      throw new DomainRuleViolationException("active feedstock batch volume must be greater than zero");
-    }
-    if (lifecycle != BatchLifecycle.ACTIVE && !availableVolume.isZero()) {
-      throw new DomainRuleViolationException("inactive feedstock batch volume must be zero");
-    }
-  }
 }

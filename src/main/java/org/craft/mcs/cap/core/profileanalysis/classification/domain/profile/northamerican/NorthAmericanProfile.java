@@ -5,10 +5,15 @@ import org.jspecify.annotations.NonNull;
 import static java.util.Objects.requireNonNull;
 
 
+/**
+ * North American cider-apple interpretation of sugar, acidity, and tannin levels.
+ *
+ * <p>Sugar and acidity are classification concepts derived from canonical SG and TA evidence.</p>
+ */
 public record NorthAmericanProfile(
-    @NonNull NorthAmericanLevel sugar,
-    @NonNull NorthAmericanLevel acidity,
-    @NonNull NorthAmericanLevel tannin
+    @NonNull NorthAmericanSugarLevel sugar,
+    @NonNull NorthAmericanAcidityLevel acidity,
+    @NonNull NorthAmericanTanninLevel tannin
 ) {
 
   public NorthAmericanProfile {

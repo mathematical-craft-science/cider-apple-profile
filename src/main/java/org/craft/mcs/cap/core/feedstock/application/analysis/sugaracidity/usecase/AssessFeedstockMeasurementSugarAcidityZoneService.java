@@ -9,7 +9,7 @@ import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.i
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchRepository;
 import org.craft.mcs.cap.core.feedstock.application.measurement.port.out.FeedstockMeasurementQueryRepository;
 import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementId;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileProjector;
+import org.craft.mcs.cap.core.profileanalysis.compatibility.application.ChemicalProfileAssessmentAdapter;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 
@@ -18,7 +18,7 @@ import static java.util.Objects.requireNonNull;
 
 /**
  * Application service for assessing one historical feedstock measurement on the sugar-acidity
- * graph.
+ * graph backed by SG/TA evidence.
  *
  * <p>This use case exists beside the batch-current assessment because users may need to inspect or
  * correct past measurements. It does not apply the latest-measurement rule; it evaluates the exact
@@ -32,7 +32,7 @@ public final class AssessFeedstockMeasurementSugarAcidityZoneService
   private final @NonNull FeedstockMeasurementQueryRepository feedstockMeasurementQueryRepository;
   private final @NonNull FeedstockBatchRepository feedstockBatchRepository;
   private final @NonNull FeedstockAccessControl feedstockAccessControl;
-  private final @NonNull SugarAcidityProfileProjector sugarAcidityProfileProjector;
+  private final @NonNull ChemicalProfileAssessmentAdapter chemicalProfileAssessmentAdapter;
 
   @Override
   public @NonNull FeedstockMeasurementSugarAcidityZoneResult assess(
@@ -45,7 +45,7 @@ public final class AssessFeedstockMeasurementSugarAcidityZoneService
     final var batch = feedstockBatchRepository.findById(sample.batchId())
         .orElseThrow(() -> new FeedstockBatchNotFoundException(sample.batchId()));
     feedstockAccessControl.requireReadAccess(batch.workspaceId());
-    final var evaluation = sugarAcidityProfileProjector.project(sample.chemicalProfile());
+    final var evaluation = chemicalProfileAssessmentAdapter.project(sample.chemicalProfile());
 
     return new FeedstockMeasurementSugarAcidityZoneResult(
         sample.measurementId(),

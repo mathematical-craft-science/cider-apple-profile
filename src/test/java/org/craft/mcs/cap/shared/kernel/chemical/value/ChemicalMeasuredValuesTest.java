@@ -1,13 +1,11 @@
 package org.craft.mcs.cap.shared.kernel.chemical.value;
 
-import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
-
-import org.craft.mcs.cap.shared.kernel.sugar.BrixValue;
-import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
-import org.junit.jupiter.api.Test;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
+import org.craft.mcs.cap.shared.kernel.sugar.BrixValue;
+import org.junit.jupiter.api.Test;
 
 
 class ChemicalMeasuredValuesTest {

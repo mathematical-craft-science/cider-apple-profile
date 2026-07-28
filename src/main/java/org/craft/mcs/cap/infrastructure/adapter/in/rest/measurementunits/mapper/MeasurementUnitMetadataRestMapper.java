@@ -15,7 +15,7 @@ import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
 import org.craft.mcs.cap.shared.kernel.measurement.value.AbvValue;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
-import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
@@ -40,8 +40,8 @@ public final class MeasurementUnitMetadataRestMapper {
         List.of(
             unit(
                 MeasurementUnitCode.SG,
-                CanonicalUnitLabels.SUGAR_SHORT,
-                CanonicalUnitLabels.SUGAR,
+                CanonicalUnitLabels.SPECIFIC_GRAVITY_SHORT,
+                CanonicalUnitLabels.SPECIFIC_GRAVITY,
                 SpecificGravityValue.minValue(),
                 SpecificGravityValue.maxValue(),
                 SpecificGravityValue.stepValue()

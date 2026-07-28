@@ -13,6 +13,7 @@ import org.jspecify.annotations.NonNull;
 public record PointMeasurementValueRequest(
     @Schema(
         description = "Polymorphic value discriminator; must be POINT.",
+        type = "string",
         allowableValues = "POINT",
         requiredMode = Schema.RequiredMode.REQUIRED
     )

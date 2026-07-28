@@ -1,7 +1,7 @@
 package org.craft.mcs.cap.core.production.application.usecase;
 
 import java.util.List;
-import org.craft.mcs.cap.core.production.application.model.ProductionMeasurementProfileView;
+import org.craft.mcs.cap.core.production.application.model.ProductionMeasuredProfileView;
 import org.craft.mcs.cap.core.production.application.model.ProductionCurrentProfileView;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
@@ -20,7 +20,7 @@ public final class ProductionCurrentProfileProjector {
 
   public @NonNull ProductionCurrentProfileView project(
       @NonNull ProductionProfileSnapshot initialProfile,
-      @Nullable ProductionMeasurementProfileView measuredProfile
+      @Nullable ProductionMeasuredProfileView measuredProfile
   ) {
     requireNonNull(initialProfile, "production initial profile cannot be null");
     final var initial = toChemicalProfile(initialProfile);

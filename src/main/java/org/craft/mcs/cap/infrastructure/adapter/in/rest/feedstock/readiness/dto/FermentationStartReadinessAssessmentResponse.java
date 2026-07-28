@@ -9,7 +9,11 @@ import org.jspecify.annotations.NonNull;
 
 @Schema(description = "Fermentation-start readiness assessment.")
 public record FermentationStartReadinessAssessmentResponse(
-    @Schema(description = "Overall readiness status.", implementation = FermentationStartReadinessStatus.class, requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(
+        description = "Overall readiness status.",
+        implementation = FermentationStartReadinessStatus.class,
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
     @NonNull FermentationStartReadinessStatus status,
     @Schema(description = "Assessment method code.", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull String method,

@@ -3,18 +3,18 @@ package org.craft.mcs.cap.core.feedstock.application.analysis.abv.usecase;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
 import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchNotFoundException;
-import org.craft.mcs.cap.core.feedstock.application.measurement.query.FeedstockBatchCurrentMeasurementQueryService;
+import org.craft.mcs.cap.core.feedstock.application.currentprofile.query.FeedstockCurrentProfileQueryService;
 import org.craft.mcs.cap.core.feedstock.application.analysis.abv.port.in.FeedstockBatchCurrentPotentialAbvPrediction;
 import org.craft.mcs.cap.core.feedstock.application.analysis.abv.port.in.PredictFeedstockBatchCurrentPotentialAbvUseCase;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchRepository;
-import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPredictor;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
 import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapability;
 import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityAssessor;
 import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityNotMetException;
-import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 
@@ -36,7 +36,7 @@ public final class PredictFeedstockBatchCurrentPotentialAbvService
 
   private final @NonNull FeedstockBatchRepository feedstockBatchRepository;
   private final @NonNull FeedstockAccessControl feedstockAccessControl;
-  private final @NonNull FeedstockBatchCurrentMeasurementQueryService currentMeasurementQueryService;
+  private final @NonNull FeedstockCurrentProfileQueryService currentProfileQueryService;
   private final @NonNull ChemicalProfileAxisExtractor axisExtractor;
   private final @NonNull ChemicalProfileCapabilityAssessor capabilityAssessor;
   private final @NonNull PotentialAbvPredictor predictor;
@@ -48,7 +48,7 @@ public final class PredictFeedstockBatchCurrentPotentialAbvService
     final var batch = feedstockBatchRepository.findById(batchId)
         .orElseThrow(() -> new FeedstockBatchNotFoundException(batchId));
     feedstockAccessControl.requireReadAccess(batch.workspaceId());
-    final var currentMeasurement = currentMeasurementQueryService.requireCurrentMeasurement(batchId);
+    final var currentMeasurement = currentProfileQueryService.requireCurrentProfile(batchId);
     final var axes = axisExtractor.extract(currentMeasurement.chemicalProfile());
     final var capability = capabilityAssessor.assess(axes, ChemicalProfileCapability.ABV_PREDICTION);
 
@@ -56,15 +56,17 @@ public final class PredictFeedstockBatchCurrentPotentialAbvService
       throw new ChemicalProfileCapabilityNotMetException(capability);
     }
 
-    final var sugar = axes.requireValueOf(ChemicalAxis.SUGAR);
+    final var specificGravity = axes.requireValueOf(ChemicalAxis.SPECIFIC_GRAVITY);
+    final var latestMeasurement = currentMeasurement.latestMeasurement();
 
     return new FeedstockBatchCurrentPotentialAbvPrediction(
         currentMeasurement.batchId(),
         batch.workspaceId(),
-        currentMeasurement.measurementId(),
-        currentMeasurement.name(),
-        sugar.valueKind(),
-        predictor.predict(SpecificGravityValue.of(sugar.value()))
+        currentMeasurement.currentMaterialStateId(),
+        latestMeasurement.measurementId(),
+        latestMeasurement.name(),
+        specificGravity.valueKind(),
+        predictor.predict(SpecificGravityValue.of(specificGravity.value()))
     );
   }
 }

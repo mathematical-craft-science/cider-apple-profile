@@ -15,8 +15,7 @@ import tech.units.indriya.quantity.Quantities;
  */
 @ValueObject
 public final class BrixValue
-    extends AbstractMeasuredValue<Brix, BrixValue>
-    implements SugarValue {
+    extends AbstractMeasuredValue<Brix, BrixValue> {
 
   private static final BigDecimal MIN = BigDecimal.ZERO;
   private static final BigDecimal MAX = new BigDecimal("32.0");

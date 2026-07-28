@@ -4,9 +4,9 @@ import org.craft.mcs.cap.core.production.domain.model.value.AlcoholicFermentatio
 import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchLifecycle;
+import org.craft.mcs.cap.shared.kernel.material.value.BatchMaterialState;
 import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
 import org.craft.mcs.cap.shared.kernel.DomainConflictException;
-import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
 import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
@@ -38,13 +38,9 @@ public final class ProductionBatch {
 
   private @NonNull Vessel vessel;
 
-  private @NonNull BatchLifecycle lifecycle;
-
   private @NonNull AlcoholicFermentationState alcoholicFermentationState;
 
-  private @NonNull VolumeValue currentVolume;
-
-  private @NonNull MaterialStateId currentMaterialStateId;
+  private @NonNull BatchMaterialState materialState;
 
   private final @NonNull ProductionProfileSnapshot initialProfileSnapshot;
 
@@ -56,10 +52,8 @@ public final class ProductionBatch {
       @NonNull WorkspaceId workspaceId,
       @NonNull BatchName name,
       @NonNull Vessel vessel,
-      @NonNull BatchLifecycle lifecycle,
       @NonNull AlcoholicFermentationState alcoholicFermentationState,
-      @NonNull VolumeValue currentVolume,
-      @NonNull MaterialStateId currentMaterialStateId,
+      @NonNull BatchMaterialState materialState,
       @NonNull ProductionProfileSnapshot initialProfileSnapshot,
       @Nullable String note
   ) {
@@ -67,22 +61,16 @@ public final class ProductionBatch {
     this.workspaceId = requireNonNull(workspaceId, "workspace id cannot be null");
     this.name = requireNonNull(name, "production batch name cannot be null");
     this.vessel = requireNonNull(vessel, "production vessel cannot be null");
-    this.lifecycle = requireNonNull(lifecycle, "production batch lifecycle cannot be null");
     this.alcoholicFermentationState = requireNonNull(
         alcoholicFermentationState,
         "alcoholic fermentation state cannot be null"
     );
-    this.currentVolume = requireNonNull(currentVolume, "production current volume cannot be null");
-    this.currentMaterialStateId = requireNonNull(
-        currentMaterialStateId,
-        "production current material state id cannot be null"
-    );
+    this.materialState = requireNonNull(materialState, "production material state cannot be null");
     this.initialProfileSnapshot = requireNonNull(
         initialProfileSnapshot,
         "production initial profile snapshot cannot be null"
     );
     this.note = normalize(note);
-    validateMaterialState(lifecycle, currentVolume);
   }
 
   public static @NonNull ProductionBatch create(
@@ -94,16 +82,13 @@ public final class ProductionBatch {
       @NonNull ProductionProfileSnapshot initialProfileSnapshot,
       @Nullable String note
   ) {
-    requirePositiveVolume(initialVolume);
     return new ProductionBatch(
         batchId,
         workspaceId,
         name,
         vessel,
-        BatchLifecycle.ACTIVE,
         AlcoholicFermentationState.NOT_STARTED,
-        initialVolume,
-        MaterialStateId.newId(),
+        BatchMaterialState.active(initialVolume),
         initialProfileSnapshot,
         note
     );
@@ -127,10 +112,8 @@ public final class ProductionBatch {
         workspaceId,
         name,
         vessel,
-        lifecycle,
         alcoholicFermentationState,
-        currentVolume,
-        currentMaterialStateId,
+        BatchMaterialState.restore(lifecycle, currentVolume, currentMaterialStateId),
         initialProfileSnapshot,
         note
     );
@@ -153,7 +136,7 @@ public final class ProductionBatch {
   }
 
   public @NonNull BatchLifecycle lifecycle() {
-    return lifecycle;
+    return materialState.lifecycle();
   }
 
   public @NonNull AlcoholicFermentationState alcoholicFermentationState() {
@@ -161,11 +144,11 @@ public final class ProductionBatch {
   }
 
   public @NonNull VolumeValue currentVolume() {
-    return currentVolume;
+    return materialState.volume();
   }
 
   public @NonNull MaterialStateId currentMaterialStateId() {
-    return currentMaterialStateId;
+    return materialState.stateId();
   }
 
   public @NonNull ProductionProfileSnapshot initialProfileSnapshot() {
@@ -186,7 +169,7 @@ public final class ProductionBatch {
       throw new DomainConflictException("target production vessel must differ from current vessel");
     }
     this.vessel = targetVessel;
-    advanceMaterialState();
+    materialState = materialState.advance();
     return this;
   }
 
@@ -195,15 +178,7 @@ public final class ProductionBatch {
    */
   public @NonNull ProductionBatch reduceCurrentVolumeTo(@NonNull VolumeValue remainingVolume) {
     requireActive("reduce volume");
-    requirePositiveVolume(remainingVolume);
-    if (remainingVolume.exceeds(currentVolume)) {
-      throw new DomainConflictException("remaining production volume cannot exceed current volume");
-    }
-    if (remainingVolume.equals(currentVolume)) {
-      throw new DomainConflictException("remaining production volume must be less than current volume");
-    }
-    currentVolume = remainingVolume;
-    advanceMaterialState();
+    materialState = materialState.reduceTo(remainingVolume);
     return this;
   }
 
@@ -212,9 +187,7 @@ public final class ProductionBatch {
    */
   public @NonNull ProductionBatch deplete() {
     requireActive("deplete");
-    lifecycle = BatchLifecycle.DEPLETED;
-    currentVolume = VolumeValue.ofLiters("0");
-    advanceMaterialState();
+    materialState = materialState.deplete();
     return this;
   }
 
@@ -223,9 +196,7 @@ public final class ProductionBatch {
    */
   public @NonNull ProductionBatch discard() {
     requireActive("discard");
-    lifecycle = BatchLifecycle.DISCARDED;
-    currentVolume = VolumeValue.ofLiters("0");
-    advanceMaterialState();
+    materialState = materialState.discard();
     return this;
   }
 
@@ -236,7 +207,7 @@ public final class ProductionBatch {
     requireActive("start alcoholic fermentation");
     requireFermentationState(AlcoholicFermentationState.NOT_STARTED, "start alcoholic fermentation");
     alcoholicFermentationState = AlcoholicFermentationState.ACTIVE;
-    advanceMaterialState();
+    materialState = materialState.advance();
     return this;
   }
 
@@ -247,7 +218,7 @@ public final class ProductionBatch {
     requireActive("arrest alcoholic fermentation");
     requireFermentationState(AlcoholicFermentationState.ACTIVE, "arrest alcoholic fermentation");
     alcoholicFermentationState = AlcoholicFermentationState.ARRESTED;
-    advanceMaterialState();
+    materialState = materialState.advance();
     return this;
   }
 
@@ -258,7 +229,7 @@ public final class ProductionBatch {
     requireActive("resume alcoholic fermentation");
     requireFermentationState(AlcoholicFermentationState.ARRESTED, "resume alcoholic fermentation");
     alcoholicFermentationState = AlcoholicFermentationState.ACTIVE;
-    advanceMaterialState();
+    materialState = materialState.advance();
     return this;
   }
 
@@ -273,18 +244,14 @@ public final class ProductionBatch {
       throw invalidFermentationTransition("complete alcoholic fermentation");
     }
     alcoholicFermentationState = AlcoholicFermentationState.COMPLETED;
-    advanceMaterialState();
+    materialState = materialState.advance();
     return this;
   }
 
-  private void advanceMaterialState() {
-    currentMaterialStateId = MaterialStateId.newId();
-  }
-
   private void requireActive(@NonNull String action) {
-    if (lifecycle != BatchLifecycle.ACTIVE) {
+    if (materialState.lifecycle() != BatchLifecycle.ACTIVE) {
       throw new DomainConflictException(
-          "cannot " + action + " when production batch lifecycle is " + lifecycle
+          "cannot " + action + " when production batch lifecycle is " + materialState.lifecycle()
       );
     }
   }
@@ -302,25 +269,6 @@ public final class ProductionBatch {
     return new DomainConflictException(
         "cannot " + action + " when alcoholic fermentation state is " + alcoholicFermentationState
     );
-  }
-
-  private static void validateMaterialState(
-      @NonNull BatchLifecycle lifecycle,
-      @NonNull VolumeValue currentVolume
-  ) {
-    if (lifecycle == BatchLifecycle.ACTIVE && currentVolume.isZero()) {
-      throw new DomainRuleViolationException("active production batch volume must be greater than zero");
-    }
-    if (lifecycle != BatchLifecycle.ACTIVE && !currentVolume.isZero()) {
-      throw new DomainRuleViolationException("inactive production batch volume must be zero");
-    }
-  }
-
-  private static void requirePositiveVolume(@NonNull VolumeValue volume) {
-    requireNonNull(volume, "production volume cannot be null");
-    if (volume.isZero()) {
-      throw new DomainRuleViolationException("production batch volume must be greater than zero");
-    }
   }
 
   private static @Nullable String normalize(@Nullable String value) {

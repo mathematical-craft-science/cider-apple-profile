@@ -10,9 +10,10 @@ import org.craft.mcs.cap.core.feedstock.application.inventory.port.in.ConsumeFee
 import org.craft.mcs.cap.core.feedstock.application.inventory.port.in.ConsumeFeedstockBatchMaterialUseCase;
 import org.craft.mcs.cap.core.feedstock.application.inventory.port.in.ConsumedFeedstockBatchMaterial;
 import org.craft.mcs.cap.core.feedstock.application.inventory.port.in.FeedstockBatchMaterialEvidenceReference;
-import org.craft.mcs.cap.core.feedstock.application.inventory.port.in.FeedstockBatchMaterialName;
-import org.craft.mcs.cap.core.feedstock.application.measurement.query.FeedstockBatchCurrentMeasurementQueryService;
+import org.craft.mcs.cap.core.feedstock.application.currentprofile.query.FeedstockCurrentProfileQueryService;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
+import org.craft.mcs.cap.shared.application.measurement.MeasurementEvidenceView;
+import org.craft.mcs.cap.shared.kernel.material.value.MaterialConsumption;
 import org.craft.mcs.cap.shared.platform.TransactionHelper;
 import org.craft.mcs.cap.shared.application.persistence.VersionedAggregate;
 import org.jspecify.annotations.NonNull;
@@ -34,7 +35,7 @@ public final class ConsumeFeedstockBatchMaterialService
     implements ConsumeFeedstockBatchMaterialUseCase {
 
   private final @NonNull FeedstockBatchRepository feedstockBatchRepository;
-  private final @NonNull FeedstockBatchCurrentMeasurementQueryService currentMeasurementQueryService;
+  private final @NonNull FeedstockCurrentProfileQueryService currentProfileQueryService;
   private final @NonNull FeedstockAccessControl feedstockAccessControl;
   private final @NonNull TransactionHelper transactionHelper;
 
@@ -54,7 +55,7 @@ public final class ConsumeFeedstockBatchMaterialService
     final var batch = state.aggregate();
     requireAvailableVolume(batch, command);
     final var sourceStateId = batch.currentMaterialStateId();
-    final var measurement = currentMeasurementQueryService.requireCurrentMeasurement(batch.batchId());
+    final var measurement = currentProfileQueryService.requireCurrentProfile(batch.batchId());
     final var availableBefore = batch.availableVolume();
 
     batch.consumeAvailableVolume(command.volume());
@@ -62,13 +63,17 @@ public final class ConsumeFeedstockBatchMaterialService
 
     return new ConsumedFeedstockBatchMaterial(
         batch.batchId(),
-        FeedstockBatchMaterialName.of(batch.name().value()),
-        availableBefore,
-        command.volume(),
-        batch.availableVolume(),
-        sourceStateId,
-        batch.currentMaterialStateId(),
-        FeedstockBatchMaterialEvidenceReference.from(measurement.axisEvidence()),
+        batch.name(),
+        new MaterialConsumption(
+            availableBefore,
+            command.volume(),
+            batch.availableVolume(),
+            sourceStateId,
+            batch.currentMaterialStateId()
+        ),
+        FeedstockBatchMaterialEvidenceReference.from(measurement.evidence().stream()
+            .map(MeasurementEvidenceView::snapshot)
+            .toList()),
         measurement.chemicalProfile(),
         measurement.aggregateConfidence()
     );

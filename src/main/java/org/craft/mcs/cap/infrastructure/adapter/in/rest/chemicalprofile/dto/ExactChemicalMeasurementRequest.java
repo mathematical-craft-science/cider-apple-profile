@@ -10,9 +10,27 @@ import static java.util.Objects.requireNonNull;
 
 @Schema(description = "Exact chemical measurement request.")
 public record ExactChemicalMeasurementRequest(
-    @Schema(description = "Measurement shape.", example = "EXACT", requiredMode = Schema.RequiredMode.REQUIRED) @NonNull String kind,
-    @Schema(description = "External measurement unit.", example = "SG", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED) @Nullable String unit,
-    @Schema(description = "Measured value.", example = "1.052", requiredMode = Schema.RequiredMode.REQUIRED) @NonNull BigDecimal value
+    @Schema(
+        description = "Measurement shape.",
+        type = "string",
+        allowableValues = "EXACT",
+        example = "EXACT",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
+    @NonNull String kind,
+    @Schema(
+        description = "External measurement unit.",
+        example = "SG",
+        nullable = true,
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
+    @Nullable String unit,
+    @Schema(
+        description = "Measured value.",
+        example = "1.052",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
+    @NonNull BigDecimal value
 ) implements ChemicalMeasurementRequest {
 
   public ExactChemicalMeasurementRequest {

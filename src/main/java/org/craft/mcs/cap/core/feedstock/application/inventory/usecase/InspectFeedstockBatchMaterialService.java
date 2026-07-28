@@ -6,12 +6,13 @@ import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchNotFoundExcept
 import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchOwnershipMismatchException;
 import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchRepository;
-import org.craft.mcs.cap.core.feedstock.application.inventory.port.in.FeedstockBatchMaterialName;
 import org.craft.mcs.cap.core.feedstock.application.inventory.port.in.FeedstockBatchMaterialEvidenceReference;
 import org.craft.mcs.cap.core.feedstock.application.inventory.port.in.FeedstockBatchMaterialSnapshot;
 import org.craft.mcs.cap.core.feedstock.application.inventory.port.in.InspectFeedstockBatchMaterialCommand;
 import org.craft.mcs.cap.core.feedstock.application.inventory.port.in.InspectFeedstockBatchMaterialUseCase;
-import org.craft.mcs.cap.core.feedstock.application.measurement.query.FeedstockBatchCurrentMeasurementQueryService;
+import org.craft.mcs.cap.core.feedstock.application.currentprofile.query.FeedstockCurrentProfileQueryService;
+import org.craft.mcs.cap.shared.application.measurement.MeasurementEvidenceView;
+import org.craft.mcs.cap.shared.kernel.material.value.MaterialAvailability;
 import org.craft.mcs.cap.shared.platform.TransactionHelper;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
@@ -25,7 +26,7 @@ import static java.util.Objects.requireNonNull;
 public final class InspectFeedstockBatchMaterialService implements InspectFeedstockBatchMaterialUseCase {
 
   private final @NonNull FeedstockBatchRepository feedstockBatchRepository;
-  private final @NonNull FeedstockBatchCurrentMeasurementQueryService currentMeasurementQueryService;
+  private final @NonNull FeedstockCurrentProfileQueryService currentProfileQueryService;
   private final @NonNull FeedstockAccessControl feedstockAccessControl;
   private final @NonNull TransactionHelper transactionHelper;
 
@@ -57,14 +58,18 @@ public final class InspectFeedstockBatchMaterialService implements InspectFeedst
           batch.availableVolume()
       );
     }
-    final var measurement = currentMeasurementQueryService.requireCurrentMeasurement(batch.batchId());
+    final var measurement = currentProfileQueryService.requireCurrentProfile(batch.batchId());
     return new FeedstockBatchMaterialSnapshot(
         batch.batchId(),
-        FeedstockBatchMaterialName.of(batch.name().value()),
-        command.requestedVolume(),
-        batch.availableVolume(),
-        batch.currentMaterialStateId(),
-        FeedstockBatchMaterialEvidenceReference.from(measurement.axisEvidence()),
+        batch.name(),
+        new MaterialAvailability(
+            command.requestedVolume(),
+            batch.availableVolume(),
+            batch.currentMaterialStateId()
+        ),
+        FeedstockBatchMaterialEvidenceReference.from(measurement.evidence().stream()
+            .map(MeasurementEvidenceView::snapshot)
+            .toList()),
         measurement.chemicalProfile(),
         measurement.aggregateConfidence()
     );

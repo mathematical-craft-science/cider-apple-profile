@@ -1,48 +1,49 @@
 package org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.usecase;
 
-import java.math.BigDecimal;
+import static java.util.Objects.requireNonNull;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.craft.mcs.cap.shared.kernel.measurement.MeasuredValueRange.closed;
+
 import java.util.List;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.port.in.ProfileTargetDistanceCandidate;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.port.in.ProfileTargetDistanceCandidateReference;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.port.in.ProfileTargetDistanceCandidateScore;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.port.in.ProfileTargetDistanceCandidateScores;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.port.in.ProfileTargetScoringPurpose;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.port.in.ScoreProfileTargetDistanceCandidatesCommand;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.BuiltInSugarAcidityZoneProfiles;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileEvaluationAxis;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.objective.BuiltInProfileTargetObjectiveFunctionFactory;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.normalization.ProfileAxisNormalizerCode;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.normalization.BuiltInProfileAxisNormalizerSelector;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetObjective;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetObjectiveWeights;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetScoringConfiguration;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetScoringInput;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.assessment.ProfileTargetDistanceStatus;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.point.domain.SugarAcidityProfilePoint;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.CustomRectangleSugarAcidityTarget;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.RectangleSugarAcidityTargetGeometry;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.TanninTargetRange;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.normalization.BuiltInProfileAxisNormalizerSelector;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.normalization.ProfileAxisNormalizerCode;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.objective.BuiltInProfileTargetObjectiveFunctionFactory;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.objective.ProfileTargetObjectiveFunctionCode;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.CustomRectangleSugarAcidityTarget;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.RectangleSugarAcidityTargetGeometry;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.TanninTargetRange;
+import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
-
-import static java.util.Objects.requireNonNull;
-import static org.assertj.core.api.Assertions.assertThat;
 
 
 class ScoreProfileTargetDistanceCandidatesServiceTest {
 
   private final ScoreProfileTargetDistanceCandidatesService service =
       new ScoreProfileTargetDistanceCandidatesService(
-          new BuiltInProfileAxisNormalizerSelector(BuiltInSugarAcidityZoneProfiles.thresholds()),
-          new BuiltInProfileTargetScoringPurposeNormalizerPolicy(),
+          new BuiltInProfileAxisNormalizerSelector(),
           new BuiltInProfileTargetObjectiveFunctionFactory()
       );
 
   @Test
-  void scoresCandidatesWithPurposeSelectedNormalizerAndSortsByDistance() {
-    final var command = ScoreProfileTargetDistanceCandidatesCommand.withEqualWeights(
-        ProfileTargetScoringPurpose.GRAPH_EXPLORATION,
+  void scoresCandidatesWithExplicitConfigurationAndSortsByDistance() {
+    final var command = new ScoreProfileTargetDistanceCandidatesCommand(
         ProfileTargetObjective.of(target()),
+        configuration(ProfileAxisNormalizerCode.MIN_MAX),
         List.of(
             candidate("far", point("1.040", "9.0", null)),
             candidate("inside", point("1.070", "6.0", null)),
@@ -53,8 +54,10 @@ class ScoreProfileTargetDistanceCandidatesServiceTest {
     final var result = service.score(command);
 
     assertThat(result)
-        .returns(ProfileTargetScoringPurpose.GRAPH_EXPLORATION, ProfileTargetDistanceCandidateScores::purpose)
-        .returns(ProfileAxisNormalizerCode.MIN_MAX, ProfileTargetDistanceCandidateScores::normalizerCode)
+        .returns(
+            ProfileAxisNormalizerCode.MIN_MAX,
+            scored -> scored.configuration().normalizerCode()
+        )
         .satisfies(scored -> assertThat(scored.scores())
             .extracting(ScoreProfileTargetDistanceCandidatesServiceTest::candidateId)
             .containsExactly("inside", "near", "far"))
@@ -64,12 +67,12 @@ class ScoreProfileTargetDistanceCandidatesServiceTest {
 
   @Test
   void placesUnscorableCandidatesAfterScoredCandidates() {
-    final var command = ScoreProfileTargetDistanceCandidatesCommand.withEqualWeights(
-        ProfileTargetScoringPurpose.GRAPH_EXPLORATION,
+    final var command = new ScoreProfileTargetDistanceCandidatesCommand(
         ProfileTargetObjective.withTanninTarget(
             target(),
-            new TanninTargetRange(new BigDecimal("1500"), new BigDecimal("2500"))
+            new TanninTargetRange(TanninValue.of("1500"), TanninValue.of("2500"))
         ),
+        configuration(ProfileAxisNormalizerCode.MIN_MAX),
         List.of(
             candidate("missing-tannin", point("1.070", "6.0", null)),
             candidate("with-tannin", point("1.070", "6.0", "1800"))
@@ -84,20 +87,20 @@ class ScoreProfileTargetDistanceCandidatesServiceTest {
             .containsExactly("with-tannin", "missing-tannin"))
         .satisfies(scored -> assertThat(scored.scores().get(1).distance().status())
             .isEqualTo(ProfileTargetDistanceStatus.UNSCORABLE))
-        .satisfies(scored -> assertThat(scored.scores().get(1).distance().missingMeasurements())
+        .satisfies(scored -> assertThat(scored.scores().get(1).distance().missingAxes())
             .containsExactly(ProfileEvaluationAxis.TANNIN));
   }
 
   @Test
   void selectedNormalizerChangesCalculatedDistance() {
-    final var minMaxCommand = ScoreProfileTargetDistanceCandidatesCommand.withEqualWeights(
-        ProfileTargetScoringPurpose.GRAPH_EXPLORATION,
+    final var minMaxCommand = new ScoreProfileTargetDistanceCandidatesCommand(
         ProfileTargetObjective.of(target()),
+        configuration(ProfileAxisNormalizerCode.MIN_MAX),
         List.of(candidate("candidate", point("1.055", "6.0", null)))
     );
-    final var sensitivityCommand = ScoreProfileTargetDistanceCandidatesCommand.withEqualWeights(
-        ProfileTargetScoringPurpose.EXPERT_CALIBRATION,
+    final var sensitivityCommand = new ScoreProfileTargetDistanceCandidatesCommand(
         ProfileTargetObjective.of(target()),
+        configuration(ProfileAxisNormalizerCode.SENSITIVITY_UNIT),
         List.of(candidate("candidate", point("1.055", "6.0", null)))
     );
 
@@ -110,38 +113,56 @@ class ScoreProfileTargetDistanceCandidatesServiceTest {
   }
 
   @Test
-  void blendingPlanningPurposeUsesEffectiveRangeNormalizer() {
-    final var command = ScoreProfileTargetDistanceCandidatesCommand.withEqualWeights(
-        ProfileTargetScoringPurpose.BLENDING_PLANNING,
+  void preservesResolvedConfigurationInResult() {
+    final var command = new ScoreProfileTargetDistanceCandidatesCommand(
         ProfileTargetObjective.of(target()),
+        configuration(ProfileAxisNormalizerCode.EFFECTIVE_RANGE),
         List.of(candidate("candidate", point("1.055", "6.0", null)))
     );
 
     final var result = service.score(command);
 
     assertThat(result)
-        .returns(ProfileTargetScoringPurpose.BLENDING_PLANNING, ProfileTargetDistanceCandidateScores::purpose)
-        .returns(ProfileAxisNormalizerCode.EFFECTIVE_RANGE, ProfileTargetDistanceCandidateScores::normalizerCode);
+        .returns(
+            ProfileAxisNormalizerCode.EFFECTIVE_RANGE,
+            scored -> scored.configuration().normalizerCode()
+        );
+  }
+
+  private static @NonNull ProfileTargetScoringConfiguration configuration(
+      @NonNull ProfileAxisNormalizerCode normalizerCode
+  ) {
+    return new ProfileTargetScoringConfiguration(
+        normalizerCode,
+        ProfileTargetObjectiveFunctionCode.DISTANCE_TO_TARGET_AREA,
+        ProfileTargetObjectiveWeights.balanced()
+    );
   }
 
   @NonNull
   private static CustomRectangleSugarAcidityTarget target() {
-    return new CustomRectangleSugarAcidityTarget(new RectangleSugarAcidityTargetGeometry(
-        new BigDecimal("1.060"),
-        new BigDecimal("1.080"),
-        new BigDecimal("4.5"),
-        new BigDecimal("7.5")
-    ));
+    return new CustomRectangleSugarAcidityTarget(
+        new RectangleSugarAcidityTargetGeometry(
+            closed(
+                SpecificGravityValue.of("1.060"),
+                SpecificGravityValue.of("1.080")
+            ),
+            closed(
+                TitratableAcidityValue.of("4.5"),
+                TitratableAcidityValue.of("7.5")
+            )
+        )
+    );
   }
 
   @NonNull
   private static ProfileTargetDistanceCandidate candidate(
       @NonNull String id,
-      @NonNull SugarAcidityProfilePoint point
+      @NonNull ProfileTargetScoringInput input
   ) {
     return new ProfileTargetDistanceCandidate(
         new ProfileTargetDistanceCandidateReference("test", id),
-        point
+        input
     );
   }
 
@@ -151,23 +172,15 @@ class ScoreProfileTargetDistanceCandidatesServiceTest {
   }
 
   @NonNull
-  private static SugarAcidityProfilePoint point(
-      @NonNull String sugar,
-      @NonNull String acidity,
+  private static ProfileTargetScoringInput point(
+      @NonNull String specificGravity,
+      @NonNull String titratableAcidity,
       @Nullable String tannin
   ) {
-    return new SugarAcidityProfilePoint(
-        axis(ChemicalAxis.SUGAR, sugar),
-        axis(ChemicalAxis.ACIDITY, acidity),
-        tannin == null ? null : axis(ChemicalAxis.TANNIN, tannin)
+    return new ProfileTargetScoringInput(
+        PointCharacteristicValue.of(SpecificGravityValue.of(specificGravity)),
+        PointCharacteristicValue.of(TitratableAcidityValue.of(titratableAcidity)),
+        tannin == null ? null : PointCharacteristicValue.of(TanninValue.of(tannin))
     );
-  }
-
-  @NonNull
-  private static AxisValue axis(
-      @NonNull ChemicalAxis chemicalAxis,
-      @NonNull String value
-  ) {
-    return AxisValue.point(chemicalAxis, new BigDecimal(value));
   }
 }

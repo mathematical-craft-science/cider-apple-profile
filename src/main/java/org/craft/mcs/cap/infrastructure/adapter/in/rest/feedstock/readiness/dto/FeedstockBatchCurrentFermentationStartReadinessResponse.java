@@ -7,11 +7,31 @@ import org.jspecify.annotations.NonNull;
 
 @Schema(description = "Current feedstock batch fermentation-start readiness response.")
 public record FeedstockBatchCurrentFermentationStartReadinessResponse(
-    @Schema(description = "Feedstock batch identifier.", format = "uuid", requiredMode = Schema.RequiredMode.REQUIRED) @NonNull UUID batchId,
+    @Schema(
+        description = "Feedstock batch identifier.",
+        format = "uuid",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
+    @NonNull UUID batchId,
     @Schema(description = "Workspace identifier.", format = "uuid", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull UUID workspaceId,
-    @Schema(description = "Current feedstock measurement identifier.", format = "uuid", requiredMode = Schema.RequiredMode.REQUIRED) @NonNull UUID currentMeasurementId,
-    @Schema(description = "Current measurement name.", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(
+        description = "Material state whose composite current profile was assessed.",
+        format = "uuid",
+        example = "019fb533-6d2e-7000-8f1c-b64f74d52079",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
+    @NonNull UUID currentMaterialStateId,
+    @Schema(
+        description = "Latest measurement set contributing to the composite current profile.",
+        format = "uuid",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
+    @NonNull UUID currentMeasurementId,
+    @Schema(
+        description = "Name of the latest measurement set contributing to the composite current profile.",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
     @NonNull String currentMeasurementName,
     @Schema(description = "Readiness assessment.", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull FermentationStartReadinessAssessmentResponse assessment

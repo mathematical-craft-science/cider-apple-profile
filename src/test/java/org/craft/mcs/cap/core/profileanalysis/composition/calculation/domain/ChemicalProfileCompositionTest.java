@@ -1,37 +1,28 @@
 package org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain;
 
-import java.math.BigDecimal;
 import java.util.List;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.point.domain.SugarAcidityProfilePoint;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.craft.mcs.cap.core.profileanalysis.testing.ProfileAnalysisTestFixtures
+    .calculatedCompositionCharacteristics;
+import static org.craft.mcs.cap.core.profileanalysis.testing.ProfileAnalysisTestFixtures
+    .compositionSourceCharacteristics;
 
 
 class ChemicalProfileCompositionTest {
-
-  private static final SugarAcidityProfilePoint PROFILE = new SugarAcidityProfilePoint(
-      AxisValue.calculated(ChemicalAxis.SUGAR, new BigDecimal("1.050")),
-      AxisValue.calculated(ChemicalAxis.ACIDITY, new BigDecimal("6.0")),
-      null
-  );
 
   @Test
   void derivesConcreteTotalVolumeFromAbsoluteSourceWeights() {
     final var composition = ChemicalProfileComposition.of(
         List.of(absoluteSource("a", "10"), absoluteSource("b", "20")),
-        PROFILE,
-        null,
+        calculatedCompositionCharacteristics(),
         List.of()
     );
 
-    assertThat(composition.totalVolume())
-        .isEqualTo(VolumeValue.ofLiters("30"));
+    assertThat(composition.totalVolume()).isEqualTo(VolumeValue.ofLiters("30"));
   }
 
   @Test
@@ -40,8 +31,7 @@ class ChemicalProfileCompositionTest {
 
     assertThatThrownBy(() -> new ChemicalProfileComposition(
         sources,
-        PROFILE,
-        null,
+        calculatedCompositionCharacteristics(),
         VolumeValue.ofLiters("31"),
         List.of()
     ))
@@ -58,8 +48,7 @@ class ChemicalProfileCompositionTest {
 
     assertThatThrownBy(() -> new ChemicalProfileComposition(
         sources,
-        PROFILE,
-        null,
+        calculatedCompositionCharacteristics(),
         VolumeValue.ofLiters("100"),
         List.of()
     ))
@@ -76,8 +65,7 @@ class ChemicalProfileCompositionTest {
 
     assertThatThrownBy(() -> new ChemicalProfileComposition(
         sources,
-        PROFILE,
-        null,
+        calculatedCompositionCharacteristics(),
         null,
         List.of()
     ))
@@ -89,8 +77,7 @@ class ChemicalProfileCompositionTest {
   void rejectsEmptyCalculatedComposition() {
     assertThatThrownBy(() -> new ChemicalProfileComposition(
         List.of(),
-        PROFILE,
-        null,
+        calculatedCompositionCharacteristics(),
         null,
         List.of()
     ))
@@ -99,25 +86,10 @@ class ChemicalProfileCompositionTest {
   }
 
   @Test
-  void rejectsNonYanAxisInYeastAssimilableNitrogenField() {
-    final var sources = List.of(absoluteSource("a", "10"));
-    final var tannin = AxisValue.calculated(ChemicalAxis.TANNIN, new BigDecimal("1200"));
-
-    assertThatThrownBy(() -> ChemicalProfileComposition.of(
-        sources,
-        PROFILE,
-        tannin,
-        List.of()
-    ))
-        .isInstanceOf(InvalidChemicalProfileCompositionException.class)
-        .hasMessage("composition yeast assimilable nitrogen must use YEAST_ASSIMILABLE_NITROGEN axis");
-  }
-
-  @Test
   void sourceCannotRequestMoreThanItsAvailableVolume() {
     assertThatThrownBy(() -> new ChemicalProfileCompositionSource(
         new ChemicalProfileCompositionSourceReference("FEEDSTOCK_BATCH", "a"),
-        axes(),
+        compositionSourceCharacteristics("1.050", "6.0", null, null),
         new AbsoluteCompositionVolume(VolumeValue.ofLiters("11")),
         VolumeValue.ofLiters("10")
     ))
@@ -145,16 +117,8 @@ class ChemicalProfileCompositionTest {
   ) {
     return new ChemicalProfileCompositionSource(
         new ChemicalProfileCompositionSourceReference("FEEDSTOCK_BATCH", id),
-        axes(),
+        compositionSourceCharacteristics("1.050", "6.0", null, null),
         weight,
-        null
-    );
-  }
-
-  private static ChemicalProfileAxes axes() {
-    return ChemicalProfileAxes.of(
-        AxisValue.point(ChemicalAxis.SUGAR, new BigDecimal("1.050")),
-        AxisValue.point(ChemicalAxis.ACIDITY, new BigDecimal("6.0")),
         null
     );
   }

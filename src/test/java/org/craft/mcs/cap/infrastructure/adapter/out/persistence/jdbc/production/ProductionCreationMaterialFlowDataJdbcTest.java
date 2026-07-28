@@ -23,20 +23,20 @@ import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceSubjectType;
 import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
 import org.craft.mcs.cap.core.feedstock.application.inventory.usecase.ConsumeFeedstockBatchMaterialService;
 import org.craft.mcs.cap.core.feedstock.application.inventory.usecase.InspectFeedstockBatchMaterialService;
-import org.craft.mcs.cap.core.feedstock.application.measurement.query.FeedstockBatchCurrentMeasurementQueryService;
+import org.craft.mcs.cap.core.feedstock.application.currentprofile.query.FeedstockCurrentProfileQueryService;
 import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementFreshnessThresholdProvider;
 import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementSubjectAccessControl;
 import org.craft.mcs.cap.core.measurement.application.usecase.CurrentMaterialStateProjector;
-import org.craft.mcs.cap.core.measurement.application.usecase.CurrentMeasurementProfileProjector;
+import org.craft.mcs.cap.core.measurement.application.compatibility.CurrentMeasurementProfileProjector;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSubjectReference;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSubjectType;
 import org.craft.mcs.cap.core.production.application.authorization.port.out.ProductionAccessControl;
 import org.craft.mcs.cap.core.production.application.model.ProductionBatchView;
-import org.craft.mcs.cap.core.production.application.port.in.CreateProductionBatchCommand;
+import org.craft.mcs.cap.core.production.candidate.application.confirmation.port.in.CreateProductionBatchCommand;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchRepository;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchTraceRecorder;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionSourceInventory;
-import org.craft.mcs.cap.core.production.application.usecase.CreateProductionBatchService;
+import org.craft.mcs.cap.core.production.candidate.application.confirmation.usecase.CreateProductionBatchService;
 import org.craft.mcs.cap.core.production.candidate.application.model.ProductionBatchCandidateSnapshot;
 import org.craft.mcs.cap.core.production.candidate.application.port.out.ProductionBatchCandidateStore;
 import org.craft.mcs.cap.core.production.candidate.application.port.out.ProductionSourceInspector;
@@ -46,18 +46,19 @@ import org.craft.mcs.cap.core.production.candidate.domain.model.ProductionBatchC
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceComponent;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceComposition;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceReference;
+import org.craft.mcs.cap.core.production.candidate.domain.model.ProductionCandidateSourceEvidence;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
 import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPrediction;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
-import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
-import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.craft.mcs.cap.shared.platform.TransactionHelper;
 import org.craft.mcs.cap.shared.platform.persistence.SpringTransactionHelper;
 import org.craft.mcs.cap.shared.testing.jdbc.PostgresDataJdbcTestConfiguration;
@@ -94,7 +95,7 @@ import static org.craft.mcs.cap.shared.kernel.identity.UuidV7Generator.newUuid;
         SpringTransactionHelper.class,
         CurrentMaterialStateProjector.class,
         CurrentMeasurementProfileProjector.class,
-        FeedstockBatchCurrentMeasurementQueryService.class,
+        FeedstockCurrentProfileQueryService.class,
         InspectFeedstockBatchMaterialService.class,
         ConsumeFeedstockBatchMaterialService.class,
         AppendBatchTraceStepService.class,
@@ -259,8 +260,13 @@ class ProductionCreationMaterialFlowDataJdbcTest {
             ProductionBatchCandidateId.newId(),
             workspaceId,
             composition,
-            Map.of(source.reference(), inspected.evidenceReference()),
-            Map.of(source.reference(), inspected.materialStateId()),
+            Map.of(
+                source.reference(),
+                new ProductionCandidateSourceEvidence(
+                    inspected.evidenceReference(),
+                    inspected.materialStateId()
+                )
+            ),
             profile
         ),
         potentialAbv(profile),
@@ -367,16 +373,14 @@ class ProductionCreationMaterialFlowDataJdbcTest {
                 subject_type,
                 subject_id,
                 lifecycle,
-                current_revision_id,
                 version,
                 created_at,
                 updated_at
-            ) VALUES (?, ?, 'FEEDSTOCK_BATCH', ?, 'ACTIVE', ?, 0, ?, ?)
+            ) VALUES (?, ?, 'FEEDSTOCK_BATCH', ?, 'ACTIVE', 0, ?, ?)
             """,
         measurementSetId,
         workspaceId.value(),
         feedstockBatchId.value(),
-        revisionId,
         OffsetDateTime.parse("2026-07-25T10:00:00Z"),
         OffsetDateTime.parse("2026-07-25T10:00:00Z")
     );
@@ -397,6 +401,16 @@ class ProductionCreationMaterialFlowDataJdbcTest {
         initialFeedstockStateId.value(),
         OffsetDateTime.parse("2026-07-25T10:00:00Z"),
         "ACCOUNT_USER:" + AccountUserId.newId().value()
+    );
+    jdbcTemplate.update(
+        """
+            INSERT INTO measurement_set_heads (
+                measurement_set_id,
+                revision_id
+            ) VALUES (?, ?)
+            """,
+        measurementSetId,
+        revisionId
     );
     insertMeasurementRecord(revisionId, "SPECIFIC_GRAVITY", "1.052");
     insertMeasurementRecord(revisionId, "TITRATABLE_ACIDITY", "6.2");

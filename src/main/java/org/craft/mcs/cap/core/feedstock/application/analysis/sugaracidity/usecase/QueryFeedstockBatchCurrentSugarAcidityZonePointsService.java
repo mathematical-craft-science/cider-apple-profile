@@ -4,26 +4,23 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.model.FeedstockMeasurementSugarAcidityPagePosition;
+import org.craft.mcs.cap.core.feedstock.application.analysis.common.model.FeedstockAnalysisCandidatePagePosition;
 import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileEvaluation;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileProjector;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.SugarAcidityZoneAssessment;
-import org.craft.mcs.cap.core.feedstock.application.measurement.query.FeedstockBatchCurrentMeasurementQueryService;
-import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementView;
+import org.craft.mcs.cap.core.profileanalysis.compatibility.application.ChemicalProfileAssessment;
+import org.craft.mcs.cap.core.profileanalysis.compatibility.application.ChemicalProfileAssessmentAdapter;
+import org.craft.mcs.cap.core.profileanalysis.compatibility.application.ChemicalProfileAssessmentMatcher;
+import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentProfileView;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockBatchCurrentSugarAcidityZonePointQuery;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockBatchCurrentSugarAcidityZoneResult;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.QueryFeedstockBatchCurrentSugarAcidityZonePointsUseCase;
 import org.craft.mcs.cap.core.feedstock.application.batch.model.FeedstockBatchSummary;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchSummaryQueryRepository;
-import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.out.CurrentFeedstockBatchSugarAcidityPointCandidateQuery;
-import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
-import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityCriteria;
+import org.craft.mcs.cap.core.feedstock.application.analysis.common.port.out.CurrentFeedstockBatchAnalysisCandidateQuery;
+import org.craft.mcs.cap.core.feedstock.application.analysis.common.port.out.FeedstockCurrentProfileAnalysisCandidateRepository;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.shared.application.query.pagination.ChunkedCursorPageCollector;
 import org.craft.mcs.cap.shared.application.query.pagination.CursorPage;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.application.model.SugarAcidityZoneCriteria;
 import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
 
 import static java.util.Objects.requireNonNull;
@@ -43,13 +40,14 @@ public final class QueryFeedstockBatchCurrentSugarAcidityZonePointsService
 
   private final @NonNull FeedstockBatchSummaryQueryRepository feedstockBatchQueryRepository;
   private final @NonNull FeedstockAccessControl feedstockAccessControl;
-  private final @NonNull FeedstockBatchCurrentMeasurementQueryService currentMeasurementQueryService;
-  private final @NonNull SugarAcidityProfileProjector sugarAcidityProfileProjector;
+  private final @NonNull FeedstockCurrentProfileAnalysisCandidateRepository candidateRepository;
+  private final @NonNull ChemicalProfileAssessmentAdapter chemicalProfileAssessmentAdapter;
+  private final @NonNull ChemicalProfileAssessmentMatcher chemicalProfileAssessmentMatcher;
 
   @Override
   public @NonNull CursorPage<
       @NonNull FeedstockBatchCurrentSugarAcidityZoneResult,
-      @NonNull FeedstockMeasurementSugarAcidityPagePosition
+      @NonNull FeedstockAnalysisCandidatePagePosition
   > query(
       @NonNull FeedstockBatchCurrentSugarAcidityZonePointQuery query
   ) {
@@ -61,8 +59,8 @@ public final class QueryFeedstockBatchCurrentSugarAcidityZonePointsService
 
     return ChunkedCursorPageCollector.collect(
         query.page(),
-        (afterPosition, limit) -> currentMeasurementQueryService.findCurrentSugarAcidityPointCandidates(
-            new CurrentFeedstockBatchSugarAcidityPointCandidateQuery(
+        (afterPosition, limit) -> candidateRepository.findCandidates(
+            new CurrentFeedstockBatchAnalysisCandidateQuery(
                 query.workspaceId(),
                 query.filters().batch(),
                 query.filters().season(),
@@ -76,75 +74,53 @@ public final class QueryFeedstockBatchCurrentSugarAcidityZonePointsService
   }
 
   private @NonNull FeedstockBatchCurrentSugarAcidityZoneResult toResult(
-      @NonNull FeedstockMeasurementView measurement,
+      @NonNull FeedstockCurrentProfileView currentProfile,
       @NonNull FeedstockBatchCurrentSugarAcidityZonePointQuery query,
       @NonNull FeedstockBatchSummary batch,
-      @NonNull SugarAcidityProfileEvaluation evaluation
+      @NonNull ChemicalProfileAssessment evaluation
   ) {
+    final var latestMeasurement = currentProfile.latestMeasurement();
     return new FeedstockBatchCurrentSugarAcidityZoneResult(
-        measurement.batchId(),
+        currentProfile.batchId(),
         batch.name(),
         query.workspaceId(),
-        measurement.measurementId(),
-        measurement.measuredAt(),
+        currentProfile.currentMaterialStateId(),
+        latestMeasurement.measurementId(),
+        latestMeasurement.measuredAt(),
         evaluation
     );
   }
 
   private @NonNull Optional<@NonNull FeedstockBatchCurrentSugarAcidityZoneResult> toResultIfMatches(
-      @NonNull FeedstockMeasurementView measurement,
+      @NonNull FeedstockCurrentProfileView currentProfile,
       @NonNull FeedstockBatchCurrentSugarAcidityZonePointQuery query,
       @NonNull Map<@NonNull FeedstockBatchId, @NonNull FeedstockBatchSummary> batchesById
   ) {
-    final var batch = batchesById.get(measurement.batchId());
+    final var batch = batchesById.get(currentProfile.batchId());
     if (batch == null) {
       return Optional.empty();
     }
 
-    final var evaluation = sugarAcidityProfileProjector.project(measurement.chemicalProfile());
-    if (!matchesCapability(evaluation, query.filters().capability())) {
+    final var evaluation = chemicalProfileAssessmentAdapter.project(currentProfile.chemicalProfile());
+    if (!chemicalProfileAssessmentMatcher.matches(
+        evaluation,
+        query.filters().capability(),
+        query.filters().sugarAcidityZone()
+    )) {
       return Optional.empty();
     }
 
-    final var result = toResult(measurement, query, batch, evaluation);
-    return matchesSugarAcidityZone(result, query.filters().sugarAcidityZone())
-        ? Optional.of(result)
-        : Optional.empty();
+    return Optional.of(toResult(currentProfile, query, batch, evaluation));
   }
 
-  private boolean matchesCapability(
-      @NonNull SugarAcidityProfileEvaluation evaluation,
-      @Nullable ChemicalProfileCapabilityCriteria criteria
+  private static @NonNull FeedstockAnalysisCandidatePagePosition toPagePosition(
+      @NonNull FeedstockCurrentProfileView currentProfile
   ) {
-    if (criteria == null || criteria.capable() == null) {
-      return true;
-    }
-
-    final var assessment = sugarAcidityProfileProjector.assessCapability(evaluation, criteria.capability());
-
-    return assessment.capable() == criteria.capable(); // NOSONAR
-  }
-
-  private static boolean matchesSugarAcidityZone(
-      @NonNull FeedstockBatchCurrentSugarAcidityZoneResult result,
-      @Nullable SugarAcidityZoneCriteria criteria
-  ) {
-    if (criteria == null) {
-      return true;
-    }
-
-    final SugarAcidityZoneAssessment assessment = result.evaluation().assessment();
-    return assessment != null
-        && criteria.zones().contains(assessment.zone());
-  }
-
-  private static @NonNull FeedstockMeasurementSugarAcidityPagePosition toPagePosition(
-      @NonNull FeedstockMeasurementView measurement
-  ) {
-    requireNonNull(measurement, "feedstock measurement cannot be null");
-    return new FeedstockMeasurementSugarAcidityPagePosition(
-        measurement.measuredAt(),
-        measurement.measurementId().value()
+    requireNonNull(currentProfile, "feedstock current profile cannot be null");
+    final var latestMeasurement = currentProfile.latestMeasurement();
+    return new FeedstockAnalysisCandidatePagePosition(
+        latestMeasurement.measuredAt(),
+        latestMeasurement.measurementId().value()
     );
   }
 }

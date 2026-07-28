@@ -23,16 +23,19 @@ public interface FeedstockMeasurementPotentialAbvApi {
 
   @Operation(
       summary = "Predict feedstock measurement potential ABV",
-      description = "Predicts potential ABV from one historical measurement sugar value."
+      description = "Predicts potential ABV from one historical Specific Gravity measurement."
   )
   @ApiResponse(
       responseCode = "200",
       description = "Potential ABV prediction.",
-      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = FeedstockMeasurementPotentialAbvResponse.class))
+      content = @Content(
+          mediaType = APPLICATION_JSON_VALUE,
+          schema = @Schema(implementation = FeedstockMeasurementPotentialAbvResponse.class)
+      )
   )
   @ApiResponse(
       responseCode = "422",
-      description = "Measurement profile has no sugar measurement.",
+      description = "Measurement profile has no Specific Gravity measurement.",
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
   )
   @NonNull ResponseEntity<@NonNull FeedstockMeasurementPotentialAbvResponse> predictPotentialAbv(

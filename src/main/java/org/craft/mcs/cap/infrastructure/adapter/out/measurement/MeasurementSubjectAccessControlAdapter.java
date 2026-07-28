@@ -7,7 +7,7 @@ import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSubjectReferen
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSubjectType;
 import org.craft.mcs.cap.core.production.application.port.in.ProductionBatchAccessUseCase;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatchId;
-import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;

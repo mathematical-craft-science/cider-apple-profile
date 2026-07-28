@@ -29,7 +29,7 @@ public final class AppleVarietyClassificationRestMapper {
         classification.borderlineEvidence()
             .stream()
             .map(evidence -> new BorderlineEvidenceResponse(
-                evidence.axis().name(),
+                evidence.characteristic().name(),
                 evidence.reason().name()
             ))
             .toList()

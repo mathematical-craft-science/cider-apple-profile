@@ -28,8 +28,8 @@ public class ProductionBatchJdbcEntity {
   @NonNull @Column("alcoholic_fermentation_state") AlcoholicFermentationState alcoholicFermentationState;
   @NonNull @Column("current_volume_liters") BigDecimal currentVolumeLiters;
   @NonNull @Column("current_material_state_id") UUID currentMaterialStateId;
-  @NonNull @Column("initial_sugar_specific_gravity") BigDecimal initialSugarSpecificGravity;
-  @NonNull @Column("initial_acidity_g_l_as_malic") BigDecimal initialAcidityGLAsMalic;
+  @NonNull @Column("initial_sugar_specific_gravity") BigDecimal initialSpecificGravity;
+  @NonNull @Column("initial_acidity_g_l_as_malic") BigDecimal initialTitratableAcidityGLAsMalic;
   @Nullable @Column("initial_tannin_mg_l_tae") BigDecimal initialTanninMgLTae;
   @Nullable @Column("initial_yan_mg_n_l") BigDecimal initialYeastAssimilableNitrogenMgNL;
   @Nullable @Column("note") String note;
@@ -51,8 +51,8 @@ public class ProductionBatchJdbcEntity {
       @NonNull AlcoholicFermentationState alcoholicFermentationState,
       @NonNull BigDecimal currentVolumeLiters,
       @NonNull UUID currentMaterialStateId,
-      @NonNull BigDecimal initialSugarSpecificGravity,
-      @NonNull BigDecimal initialAcidityGLAsMalic,
+      @NonNull BigDecimal initialSpecificGravity,
+      @NonNull BigDecimal initialTitratableAcidityGLAsMalic,
       @Nullable BigDecimal initialTanninMgLTae,
       @Nullable BigDecimal initialYeastAssimilableNitrogenMgNL,
       @Nullable String note
@@ -71,13 +71,13 @@ public class ProductionBatchJdbcEntity {
         currentMaterialStateId,
         "production current material state id cannot be null"
     );
-    this.initialSugarSpecificGravity = requireNonNull(
-        initialSugarSpecificGravity,
-        "production initial sugar specific gravity cannot be null"
+    this.initialSpecificGravity = requireNonNull(
+        initialSpecificGravity,
+        "production initial specific gravity cannot be null"
     );
-    this.initialAcidityGLAsMalic = requireNonNull(
-        initialAcidityGLAsMalic,
-        "production initial acidity cannot be null"
+    this.initialTitratableAcidityGLAsMalic = requireNonNull(
+        initialTitratableAcidityGLAsMalic,
+        "production initial titratable acidity cannot be null"
     );
     this.initialTanninMgLTae = initialTanninMgLTae;
     this.initialYeastAssimilableNitrogenMgNL = initialYeastAssimilableNitrogenMgNL;

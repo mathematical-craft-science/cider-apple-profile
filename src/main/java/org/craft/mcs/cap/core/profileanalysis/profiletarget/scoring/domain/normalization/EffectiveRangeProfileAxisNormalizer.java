@@ -1,14 +1,15 @@
 package org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.normalization;
 
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileEvaluationAxis;
-import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileEvaluationAxis;
+import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
 import org.jspecify.annotations.NonNull;
+
 import static java.util.Objects.requireNonNull;
 
 
@@ -38,23 +39,9 @@ public final class EffectiveRangeProfileAxisNormalizer implements ProfileAxisNor
   }
 
   public static @NonNull EffectiveRangeProfileAxisNormalizer ciderBlendingDefaults() {
-    return new EffectiveRangeProfileAxisNormalizer(List.of(
-        new ProfileAxisNormalizationRange(
-            ProfileEvaluationAxis.SUGAR,
-            new BigDecimal("1.035"),
-            new BigDecimal("1.075")
-        ),
-        new ProfileAxisNormalizationRange(
-            ProfileEvaluationAxis.ACIDITY,
-            new BigDecimal("2.0"),
-            new BigDecimal("9.0")
-        ),
-        new ProfileAxisNormalizationRange(
-            ProfileEvaluationAxis.TANNIN,
-            new BigDecimal("500"),
-            new BigDecimal("3500")
-        )
-    ));
+    return new EffectiveRangeProfileAxisNormalizer(
+        BuiltInProfileAxisRanges.ciderBlendingEffectiveRangesV1()
+    );
   }
 
   @Override

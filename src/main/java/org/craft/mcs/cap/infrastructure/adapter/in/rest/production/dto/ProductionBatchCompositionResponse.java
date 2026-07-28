@@ -6,8 +6,8 @@ import java.util.List;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionWarning;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.normalization.ProfileAxisNormalizerCode;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.abv.dto.PotentialAbvPredictionResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.composition.dto.CalculatedCompositionCharacteristicsResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.ProfileTargetDistanceResponse;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.sugaracidity.dto.SugarAcidityProfilePointResponse;
 import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -23,20 +23,14 @@ public record ProductionBatchCompositionResponse(
         schema = @Schema(implementation = ProductionBatchSourceResponse.class)
     )
     @NonNull List<@NonNull ProductionBatchSourceResponse> sources,
-    @Schema(description = "Calculated production profile point.", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NonNull SugarAcidityProfilePointResponse profile,
+    @Schema(description = "Calculated production characteristics.", requiredMode = Schema.RequiredMode.REQUIRED)
+    @NonNull CalculatedCompositionCharacteristicsResponse characteristics,
     @Schema(
         description = "Potential ABV prediction saved with the authoritative production candidate snapshot.",
         nullable = true,
         requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )
     @Nullable PotentialAbvPredictionResponse potentialAbv,
-    @Schema(
-        description = "Yeast-assimilable nitrogen from the accepted production profile, when available.",
-        nullable = true,
-        requiredMode = Schema.RequiredMode.NOT_REQUIRED
-    )
-    @Nullable DecimalQuantityResponse yeastAssimilableNitrogen,
     @Schema(description = "Total production volume.", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull DecimalQuantityResponse totalVolume,
     @ArraySchema(

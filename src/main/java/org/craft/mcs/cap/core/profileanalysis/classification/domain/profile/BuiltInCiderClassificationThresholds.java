@@ -9,7 +9,13 @@ import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisRange;
 import org.jspecify.annotations.NonNull;
 
 
-public class BuiltInCiderClassificationThresholds {
+/**
+ * Built-in thresholds owned by explicitly named cider-apple classification systems.
+ *
+ * <p>Values from one returned profile must not be treated as canonical characteristic levels or
+ * reused as graph geometry and target-scoring calibration.</p>
+ */
+public final class BuiltInCiderClassificationThresholds {
 
   private BuiltInCiderClassificationThresholds() {
   }
@@ -97,7 +103,7 @@ public class BuiltInCiderClassificationThresholds {
     return new SpanishThresholds(
         AxisRange.lessThan("4.9"), // 4.9 g/L malic acid
         AxisRange.between("4.9", "6.6"), // 4.9-6.6 g/L malic acid
-        AxisRange.atLeast("6.6"), // 6.6.5 g/L malic acid
+        AxisRange.atLeast("6.6"), // 6.6 g/L malic acid
 
         AxisRange.lessThan("1450"), // 1450 mg/L TAE
         AxisRange.between("1450", "2000"), // 1450-2000 mg/L TAE

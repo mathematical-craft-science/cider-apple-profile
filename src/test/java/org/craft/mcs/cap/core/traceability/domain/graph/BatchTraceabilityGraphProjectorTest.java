@@ -343,7 +343,7 @@ class BatchTraceabilityGraphProjectorTest {
             VolumeValue.ofLiters(volume),
             ChemicalProfileAxes.of(
                 new AxisValue(
-                    ChemicalAxis.SUGAR,
+                    ChemicalAxis.SPECIFIC_GRAVITY,
                     new BigDecimal(sugar),
                     AxisValueKind.POINT,
                     null,

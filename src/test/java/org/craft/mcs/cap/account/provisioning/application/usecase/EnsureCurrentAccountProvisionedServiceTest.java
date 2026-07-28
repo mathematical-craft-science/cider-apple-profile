@@ -1,14 +1,21 @@
 package org.craft.mcs.cap.account.provisioning.application.usecase;
 
+import java.time.Clock;
 import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
+import org.craft.mcs.cap.core.account.invitation.application.port.out.WorkspaceInvitationRepository;
+import org.craft.mcs.cap.core.account.invitation.domain.model.WorkspaceInvitation;
 import org.craft.mcs.cap.core.account.membership.application.port.out.WorkspaceMembershipRepository;
 import org.craft.mcs.cap.core.account.membership.domain.model.AccountRole;
 import org.craft.mcs.cap.core.account.membership.domain.model.WorkspaceMembership;
 import org.craft.mcs.cap.core.account.provisioning.application.model.WorkspaceProvisioningDefaults;
 import org.craft.mcs.cap.core.account.provisioning.application.port.out.AccountProvisioningLock;
 import org.craft.mcs.cap.core.account.provisioning.application.usecase.EnsureCurrentAccountProvisionedService;
+import org.craft.mcs.cap.core.account.shared.domain.value.AccountUserId;
 import org.craft.mcs.cap.core.account.shared.domain.value.DisplayName;
 import org.craft.mcs.cap.core.account.shared.domain.value.EmailAddress;
 import org.craft.mcs.cap.core.account.shared.domain.value.HttpUrl;
@@ -29,6 +36,7 @@ import org.craft.mcs.cap.core.account.workspace.domain.model.WorkspaceSettings;
 import org.craft.mcs.cap.core.account.workspace.domain.model.WorkspaceType;
 import org.craft.mcs.cap.core.account.shared.domain.value.ExternalOrganizationSubject;
 import org.craft.mcs.cap.shared.application.ConcurrentResourceModificationException;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.measurement.unit.TitratableAcidityBasis;
 import org.craft.mcs.cap.shared.application.persistence.VersionedAggregate;
 import org.jspecify.annotations.NonNull;
@@ -48,6 +56,9 @@ import static org.craft.mcs.cap.support.VersionedAggregateFixtures.versioned;
 
 class EnsureCurrentAccountProvisionedServiceTest {
 
+  private static final Instant NOW = Instant.parse("2026-01-15T10:15:30Z");
+  private static final Clock CLOCK = Clock.fixed(NOW, ZoneOffset.UTC);
+
   @Test
   void provisionsDefaultAccountWorkspaceMembershipSettingsAndPreferences() {
     final var currentActorProvider = mock(CurrentActorProvider.class);
@@ -56,6 +67,7 @@ class EnsureCurrentAccountProvisionedServiceTest {
     final var accountRequestCache = mock(CurrentAccountUserRequestCache.class);
     final var workspaceRepository = mock(WorkspaceRepository.class);
     final var membershipRepository = mock(WorkspaceMembershipRepository.class);
+    final var invitationRepository = mock(WorkspaceInvitationRepository.class);
     final var settingsRepository = mock(WorkspaceSettingsRepository.class);
     final var preferencesRepository = mock(UserPreferencesRepository.class);
     final var persistedWorkspace = new AtomicReference<Workspace>();
@@ -65,6 +77,7 @@ class EnsureCurrentAccountProvisionedServiceTest {
     when(userRepository.findVersionedByExternalIdentity(actor.identityProvider(), actor.externalSubject()))
         .thenReturn(Optional.empty());
     when(userRepository.create(any())).thenAnswer(invocation -> invocation.getArgument(0, AccountUser.class));
+    when(invitationRepository.findAllByInvitedEmail(actor.email())).thenReturn(List.of());
     when(workspaceRepository.create(any())).thenAnswer(invocation -> {
       final Workspace workspace = invocation.getArgument(0);
       persistedWorkspace.set(workspace);
@@ -82,10 +95,12 @@ class EnsureCurrentAccountProvisionedServiceTest {
         accountRequestCache,
         workspaceRepository,
         membershipRepository,
+        invitationRepository,
         settingsRepository,
         preferencesRepository,
         workspaceProvisioningDefaults(),
-        INSTANCE
+        INSTANCE,
+        CLOCK
     );
 
     service.ensureProvisioned();
@@ -103,6 +118,59 @@ class EnsureCurrentAccountProvisionedServiceTest {
         TitratableAcidityBasis.MALIC_ACID
     ));
     verify(preferencesRepository).create(any(UserPreferences.class));
+    verify(provisioningLock).acquire(actor.identityProvider(), actor.externalSubject());
+    verify(accountRequestCache).remember(any(AccountUser.class));
+  }
+
+  @Test
+  void skipsDefaultWorkspaceWhenNewAccountHasPendingWorkspaceInvitation() {
+    final var currentActorProvider = mock(CurrentActorProvider.class);
+    final var provisioningLock = mock(AccountProvisioningLock.class);
+    final var userRepository = mock(AccountUserRepository.class);
+    final var accountRequestCache = mock(CurrentAccountUserRequestCache.class);
+    final var workspaceRepository = mock(WorkspaceRepository.class);
+    final var membershipRepository = mock(WorkspaceMembershipRepository.class);
+    final var invitationRepository = mock(WorkspaceInvitationRepository.class);
+    final var settingsRepository = mock(WorkspaceSettingsRepository.class);
+    final var preferencesRepository = mock(UserPreferencesRepository.class);
+    final var actor = actor();
+    final var invitation = WorkspaceInvitation.create(
+        WorkspaceId.newId(),
+        actor.email(),
+        AccountRole.ADMIN,
+        AccountUserId.newId(),
+        NOW,
+        Duration.ofDays(7)
+    );
+
+    when(currentActorProvider.currentActor()).thenReturn(Optional.of(actor));
+    when(userRepository.findVersionedByExternalIdentity(actor.identityProvider(), actor.externalSubject()))
+        .thenReturn(Optional.empty());
+    when(userRepository.create(any())).thenAnswer(invocation -> invocation.getArgument(0, AccountUser.class));
+    when(invitationRepository.findAllByInvitedEmail(actor.email())).thenReturn(List.of(invitation));
+    when(preferencesRepository.create(any()))
+        .thenAnswer(invocation -> invocation.getArgument(0, UserPreferences.class));
+
+    final var service = new EnsureCurrentAccountProvisionedService(
+        currentActorProvider,
+        provisioningLock,
+        userRepository,
+        accountRequestCache,
+        workspaceRepository,
+        membershipRepository,
+        invitationRepository,
+        settingsRepository,
+        preferencesRepository,
+        workspaceProvisioningDefaults(),
+        INSTANCE,
+        CLOCK
+    );
+
+    service.ensureProvisioned();
+
+    verify(userRepository).create(any(AccountUser.class));
+    verify(preferencesRepository).create(any(UserPreferences.class));
+    verifyNoInteractions(workspaceRepository, membershipRepository, settingsRepository);
     verify(provisioningLock).acquire(actor.identityProvider(), actor.externalSubject());
     verify(accountRequestCache).remember(any(AccountUser.class));
   }
@@ -146,10 +214,12 @@ class EnsureCurrentAccountProvisionedServiceTest {
         accountRequestCache,
         workspaceRepository,
         membershipRepository,
+        mock(WorkspaceInvitationRepository.class),
         settingsRepository,
         preferencesRepository,
         workspaceProvisioningDefaults(),
-        INSTANCE
+        INSTANCE,
+        CLOCK
     );
 
     service.ensureProvisioned();
@@ -196,10 +266,12 @@ class EnsureCurrentAccountProvisionedServiceTest {
         accountRequestCache,
         mock(WorkspaceRepository.class),
         mock(WorkspaceMembershipRepository.class),
+        mock(WorkspaceInvitationRepository.class),
         mock(WorkspaceSettingsRepository.class),
         mock(UserPreferencesRepository.class),
         workspaceProvisioningDefaults(),
-        INSTANCE
+        INSTANCE,
+        CLOCK
     );
 
     service.ensureProvisioned();
@@ -237,10 +309,12 @@ class EnsureCurrentAccountProvisionedServiceTest {
         accountRequestCache,
         workspaceRepository,
         membershipRepository,
+        mock(WorkspaceInvitationRepository.class),
         settingsRepository,
         preferencesRepository,
         workspaceProvisioningDefaults(),
-        INSTANCE
+        INSTANCE,
+        CLOCK
     );
 
     service.ensureProvisioned();
@@ -282,10 +356,12 @@ class EnsureCurrentAccountProvisionedServiceTest {
         accountRequestCache,
         workspaceRepository,
         membershipRepository,
+        mock(WorkspaceInvitationRepository.class),
         settingsRepository,
         preferencesRepository,
         workspaceProvisioningDefaults(),
-        INSTANCE
+        INSTANCE,
+        CLOCK
     );
 
     service.ensureProvisioned();

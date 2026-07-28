@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import org.craft.mcs.cap.shared.kernel.DomainConflictException;
+import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
 import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.identity.ActorReference;
 import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
@@ -104,7 +105,7 @@ class MeasurementSetTest {
     final var nonInitialRevision = revision(2, INITIAL_TIME);
 
     assertThatThrownBy(() -> createSet(nonInitialRevision))
-        .isInstanceOf(DomainConflictException.class)
+        .isInstanceOf(DomainRuleViolationException.class)
         .hasMessage("initial measurement revision number must be one");
   }
 
@@ -154,7 +155,7 @@ class MeasurementSetTest {
         INITIAL_TIME,
         INITIAL_TIME.plusSeconds(60)
     ))
-        .isInstanceOf(DomainConflictException.class)
+        .isInstanceOf(DomainRuleViolationException.class)
         .hasMessage("current measurement revision time must belong to the aggregate lifetime");
   }
 
@@ -171,7 +172,7 @@ class MeasurementSetTest {
         INITIAL_TIME.plusSeconds(1),
         INITIAL_TIME
     ))
-        .isInstanceOf(DomainConflictException.class)
+        .isInstanceOf(DomainRuleViolationException.class)
         .hasMessage("measurement set creation time cannot follow its update time");
   }
 

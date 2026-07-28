@@ -1,20 +1,14 @@
 package org.craft.mcs.cap.core.profileanalysis.classification.domain.engine;
 
-
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisRange;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
 import org.craft.mcs.cap.core.profileanalysis.classification.domain.result.BorderlineEvidence;
 import org.craft.mcs.cap.core.profileanalysis.classification.domain.result.BorderlineReason;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
 import org.craft.mcs.cap.core.profileanalysis.classification.domain.result.ClassificationAssessment;
 import org.craft.mcs.cap.core.profileanalysis.classification.domain.result.ClassificationConfidence;
 import org.craft.mcs.cap.core.profileanalysis.classification.domain.rule.ClassificationRule;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValueKind;
+import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisRange;
 import org.jmolecules.ddd.annotation.Service;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -23,36 +17,65 @@ import static java.util.Objects.requireNonNull;
 import static org.craft.mcs.cap.shared.kernel.math.DecimalComparisons.isAtMost;
 
 
+/** Assesses confidence from typed input shape and proximity to classification thresholds. */
 @Service
 public class ClassificationConfidencePolicy {
 
   private static final BigDecimal DEFAULT_BOUNDARY_MARGIN_RATIO = new BigDecimal("0.05");
 
+  public <C extends Enum<C>> @NonNull ClassificationAssessment assess(
+      @NonNull ClassificationRule<C> matchedRule,
+      @NonNull CiderAppleClassificationInput input,
+      @NonNull ClassificationIntervalPolicy intervalPolicy
+  ) {
+    requireNonNull(matchedRule, "matched classification rule cannot be null");
+    requireNonNull(input, "cider apple classification input cannot be null");
+    requireNonNull(intervalPolicy, "classification interval policy cannot be null");
+
+    final var evidence = new ArrayList<BorderlineEvidence>();
+    for (final var entry : matchedRule.ranges().entrySet()) {
+      final var characteristic = entry.getKey();
+      final var range = entry.getValue();
+      if (!input.has(characteristic)) {
+        evidence.add(new BorderlineEvidence(characteristic, BorderlineReason.MISSING_AXIS));
+        continue;
+      }
+      detectCloseToBoundary(
+          characteristic,
+          input.representativeValue(characteristic, intervalPolicy),
+          range,
+          evidence
+      );
+      input.interval(characteristic)
+          .ifPresent(interval -> detectRangeOverlap(characteristic, interval, range, evidence));
+    }
+
+    final var confidence = confidenceFrom(evidence, matchedRule, input);
+    return new ClassificationAssessment(
+        confidence,
+        evidence
+    );
+  }
+
   private static void detectCloseToBoundary(
-      @NonNull AxisValue axisValue,
+      @NonNull ClassificationCharacteristic characteristic,
+      @NonNull BigDecimal value,
       @NonNull AxisRange range,
       @NonNull List<@NonNull BorderlineEvidence> evidence
   ) {
-    final var value = axisValue.value();
-
     if (isCloseTo(value, range.lowerBoundary()) || isCloseTo(value, range.upperBoundary())) {
-      evidence.add(new BorderlineEvidence(axisValue.axis(), BorderlineReason.CLOSE_TO_BOUNDARY));
+      evidence.add(new BorderlineEvidence(characteristic, BorderlineReason.CLOSE_TO_BOUNDARY));
     }
   }
 
   private static void detectRangeOverlap(
-      @NonNull AxisValue axisValue,
+      @NonNull ClassificationCharacteristic characteristic,
+      @NonNull ClassificationInterval interval,
       @NonNull AxisRange range,
       @NonNull List<@NonNull BorderlineEvidence> evidence
   ) {
-    final var min = axisValue.min();
-    final var max = axisValue.max();
-    if (min == null || max == null) {
-      return;
-    }
-
-    if (!range.contains(min) || !range.contains(max)) {
-      evidence.add(new BorderlineEvidence(axisValue.axis(), BorderlineReason.RANGE_OVERLAPS_BOUNDARY));
+    if (!range.contains(interval.lower()) || !range.contains(interval.upper())) {
+      evidence.add(new BorderlineEvidence(characteristic, BorderlineReason.RANGE_OVERLAPS_BOUNDARY));
     }
   }
 
@@ -63,61 +86,22 @@ public class ClassificationConfidencePolicy {
     if (boundary == null || boundary.signum() == 0) {
       return false;
     }
-
     final var margin = boundary.abs().multiply(DEFAULT_BOUNDARY_MARGIN_RATIO);
     return isAtMost(value.subtract(boundary).abs(), margin);
   }
 
-  private static @NonNull ClassificationConfidence confidenceFrom(
+  private static <C extends Enum<C>> @NonNull ClassificationConfidence confidenceFrom(
       @NonNull List<@NonNull BorderlineEvidence> evidence,
-      @NonNull ChemicalProfileAxes axes
+      @NonNull ClassificationRule<C> matchedRule,
+      @NonNull CiderAppleClassificationInput input
   ) {
     if (!evidence.isEmpty()) {
       return ClassificationConfidence.LOW;
     }
-
-    final var hasOnlyPointValues = Stream.of(
-            ChemicalAxis.SUGAR,
-            ChemicalAxis.ACIDITY,
-            ChemicalAxis.TANNIN
-        )
-        .flatMap(axis -> axes.valueOf(axis).stream())
-        .allMatch(value -> value.valueKind() == AxisValueKind.POINT);
-
-    return hasOnlyPointValues
-           ? ClassificationConfidence.HIGH
-           : ClassificationConfidence.MEDIUM;
-  }
-
-  public @NonNull ClassificationAssessment assess(
-      @NonNull ClassificationRule<?> matchedRule,
-      @NonNull ChemicalProfileAxes axes
-  ) {
-    requireNonNull(matchedRule, "matched classification rule cannot be null");
-    requireNonNull(axes, "chemical profile axes cannot be null");
-
-    final var evidence = new ArrayList<BorderlineEvidence>();
-
-    for (final var entry : matchedRule.ranges().entrySet()) {
-      final var axis = entry.getKey();
-      final var range = entry.getValue();
-      final var value = axes.valueOf(axis);
-
-      if (value.isEmpty()) {
-        evidence.add(new BorderlineEvidence(axis, BorderlineReason.MISSING_AXIS));
-        continue;
-      }
-
-      detectCloseToBoundary(value.orElseThrow(), range, evidence);
-      detectRangeOverlap(value.orElseThrow(), range, evidence);
-    }
-
-    final var confidence = confidenceFrom(evidence, axes);
-
-    return new ClassificationAssessment(
-        confidence,
-        !evidence.isEmpty(),
-        evidence
-    );
+    final var hasOnlyPointValues = matchedRule.ranges()
+        .keySet()
+        .stream()
+        .allMatch(input::isPoint);
+    return hasOnlyPointValues ? ClassificationConfidence.HIGH : ClassificationConfidence.MEDIUM;
   }
 }

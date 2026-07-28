@@ -3,7 +3,7 @@ package org.craft.mcs.cap.feedstock.domain.model.batch;
 import java.time.LocalDate;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchLifecycle;
-import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
@@ -157,7 +157,7 @@ class FeedstockBatchTest {
         VolumeValue.ofLiters("0")
     ))
         .isInstanceOf(DomainRuleViolationException.class)
-        .hasMessageContaining("available volume must be greater than zero");
+        .hasMessage("active batch material volume must be greater than zero");
   }
 
   @ParameterizedTest
@@ -205,7 +205,7 @@ class FeedstockBatchTest {
 
     assertThatThrownBy(() -> batch.consumeAvailableVolume(VolumeValue.ofLiters("1")))
         .isInstanceOf(DomainConflictException.class)
-        .hasMessage("cannot consume feedstock batch when lifecycle is " + lifecycle);
+        .hasMessage("cannot consume material when batch lifecycle is " + lifecycle);
   }
 
   @Test
@@ -225,7 +225,7 @@ class FeedstockBatchTest {
         VolumeValue.ofLiters("0")
     ))
         .isInstanceOf(DomainRuleViolationException.class)
-        .hasMessageContaining("active feedstock batch volume");
+        .hasMessage("active batch material volume must be greater than zero");
   }
 
   @ParameterizedTest
@@ -236,7 +236,7 @@ class FeedstockBatchTest {
         VolumeValue.ofLiters("1")
     ))
         .isInstanceOf(DomainRuleViolationException.class)
-        .hasMessage("inactive feedstock batch volume must be zero");
+        .hasMessage("inactive batch material volume must be zero");
   }
 
   private static @NonNull FeedstockBatch activeBatch(@NonNull VolumeValue availableVolume) {

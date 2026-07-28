@@ -1,8 +1,12 @@
 package org.craft.mcs.cap.core.profileanalysis.composition.contribution.domain;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileEvaluationAxis;
+import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
@@ -16,19 +20,41 @@ import static java.util.Objects.requireNonNull;
  */
 public record CompositionContributionRoleAssessment(
     @NonNull List<@NonNull CompositionContributionRole> roles,
-    @NonNull CompositionContributionRole primaryRole,
     @NonNull List<@NonNull CompositionContributionEvidence> evidence,
-    @NonNull Set<@NonNull ChemicalAxis> missingAxes
+    @NonNull Set<@NonNull ProfileEvaluationAxis> missingAxes
 ) {
 
   public CompositionContributionRoleAssessment {
     roles = List.copyOf(requireNonNull(roles, "composition contribution roles cannot be null"));
     evidence = List.copyOf(requireNonNull(evidence, "composition contribution evidence cannot be null"));
     missingAxes = Set.copyOf(requireNonNull(missingAxes, "composition contribution missing axes cannot be null"));
-    requireNonNull(primaryRole, "primary composition contribution role cannot be null");
+    if (roles.isEmpty()) {
+      throw new DomainRuleViolationException("composition contribution assessment requires at least one role");
+    }
+    if (new HashSet<>(roles).size() != roles.size()) {
+      throw new DomainRuleViolationException("composition contribution roles must be unique");
+    }
+    final var evidenceAxes = evidence.stream()
+        .map(CompositionContributionEvidence::axis)
+        .collect(Collectors.toSet());
+    if (evidenceAxes.size() != evidence.size()) {
+      throw new DomainRuleViolationException("composition contribution evidence axes must be unique");
+    }
+    if (missingAxes.stream().anyMatch(evidenceAxes::contains)) {
+      throw new DomainRuleViolationException(
+          "missing composition contribution axes cannot also have evidence"
+      );
+    }
+    roles = Stream.of(CompositionContributionRole.values())
+        .filter(roles::contains)
+        .toList();
   }
 
-  public boolean assessable() {
-    return !roles.contains(CompositionContributionRole.UNASSESSABLE);
+  /**
+   * Returns the highest-priority role without storing a second, potentially inconsistent value.
+   */
+  public @NonNull CompositionContributionRole primaryRole() {
+    return roles.getFirst();
   }
+
 }

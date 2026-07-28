@@ -111,8 +111,11 @@ class JdbcCurrentMeasurementResultQuery implements CurrentMeasurementResultQuery
              AND measurement_set.subject_type = lineage.subject_type
              AND measurement_set.subject_id = lineage.subject_id
              AND measurement_set.lifecycle = 'ACTIVE'
+            JOIN measurement_set_heads head
+              ON head.measurement_set_id = measurement_set.measurement_set_id
             JOIN measurement_set_revisions revision
-              ON revision.revision_id = measurement_set.current_revision_id
+              ON revision.measurement_set_id = head.measurement_set_id
+             AND revision.revision_id = head.revision_id
              AND revision.material_state_id = lineage.material_state_id
             JOIN measurement_revision_records revision_record
               ON revision_record.revision_id = revision.revision_id

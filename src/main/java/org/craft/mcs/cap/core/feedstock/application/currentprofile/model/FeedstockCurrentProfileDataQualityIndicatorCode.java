@@ -7,24 +7,22 @@ package org.craft.mcs.cap.core.feedstock.application.currentprofile.model;
 public enum FeedstockCurrentProfileDataQualityIndicatorCode {
 
   /**
-   * The batch has no current measurement, so planning cannot use a reliable current chemical state.
+   * The batch has no current profile evidence, so planning cannot use a reliable current chemical state.
    */
-  CURRENT_MEASUREMENT_MISSING,
+  CURRENT_PROFILE_MISSING,
 
   /**
-   * The current profile has enough sugar and titratable acidity evidence to be plotted on the
-   * sugar-acidity graph.
+   * The current profile has enough SG and TA evidence for the sugar-acidity graph.
    */
-  SUGAR_ACIDITY_PLOTTABLE,
+  SUGAR_ACIDITY_GRAPH_PLOTTABLE,
 
   /**
-   * Sugar is missing from the current profile, so sugar-acidity plotting and composition planning are blocked.
+   * Specific Gravity is missing, so sugar-acidity projection and composition planning are blocked.
    */
-  SUGAR_MISSING,
+  SPECIFIC_GRAVITY_MISSING,
 
   /**
-   * Titratable acidity is missing from the current profile, so sugar-acidity plotting and composition planning
-   * are blocked.
+   * Titratable Acidity is missing, so sugar-acidity projection and composition planning are blocked.
    */
   TITRATABLE_ACIDITY_MISSING,
 
@@ -46,14 +44,10 @@ public enum FeedstockCurrentProfileDataQualityIndicatorCode {
   YAN_MISSING,
 
   /**
-   * The current measurement is old enough that the profile may no longer describe the current feedstock state.
+   * At least one required current-profile evidence item is old enough that the profile may no longer
+   * describe the current feedstock state.
    */
   MEASUREMENT_STALE,
-
-  /**
-   * Measurement provenance/source is missing, so the user cannot understand where the chemical data came from.
-   */
-  SOURCE_MISSING,
 
   /**
    * Measurement confidence is missing, so the user cannot judge trust level explicitly.

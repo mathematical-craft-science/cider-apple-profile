@@ -9,7 +9,7 @@ import org.craft.mcs.cap.core.feedstock.application.analysis.abv.usecase.Predict
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
 import org.craft.mcs.cap.shared.testing.FeedstockMeasurementFixture;
 import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementId;
-import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
@@ -29,7 +29,7 @@ import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPredictor;
 import org.craft.mcs.cap.core.profileanalysis.abv.domain.StandardGravityDropAbvPredictionStrategy;
 import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
-import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.junit.jupiter.api.Test;
 
@@ -84,7 +84,7 @@ class PredictFeedstockMeasurementPotentialAbvServiceTest {
             exception -> {
               assertThat(exception.assessment().capability())
                   .isEqualTo(ChemicalProfileCapability.ABV_PREDICTION);
-              assertThat(exception.assessment().missingAxes()).containsExactly(ChemicalAxis.SUGAR);
+              assertThat(exception.assessment().missingAxes()).containsExactly(ChemicalAxis.SPECIFIC_GRAVITY);
             }
         );
   }

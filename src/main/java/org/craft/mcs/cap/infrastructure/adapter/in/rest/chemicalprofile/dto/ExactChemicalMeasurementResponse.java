@@ -9,7 +9,13 @@ import static java.util.Objects.requireNonNull;
 
 @Schema(description = "Exact chemical measurement response.")
 public record ExactChemicalMeasurementResponse(
-    @Schema(description = "Measurement shape.", example = "EXACT", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(
+        description = "Measurement shape.",
+        type = "string",
+        allowableValues = "EXACT",
+        example = "EXACT",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
     @NonNull String kind,
     @Schema(description = "Canonical measured value.", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull DecimalQuantityResponse value

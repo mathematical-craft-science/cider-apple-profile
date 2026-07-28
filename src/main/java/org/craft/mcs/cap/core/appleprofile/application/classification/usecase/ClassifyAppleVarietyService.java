@@ -5,12 +5,13 @@ import org.craft.mcs.cap.core.appleprofile.application.AppleVarietyNotFoundExcep
 import org.craft.mcs.cap.core.appleprofile.application.classification.port.in.AppleVarietyClassification;
 import org.craft.mcs.cap.core.appleprofile.application.classification.port.in.AppleVarietyClassificationSystem;
 import org.craft.mcs.cap.core.appleprofile.application.classification.port.in.ClassifyAppleVarietyUseCase;
-import org.craft.mcs.cap.core.appleprofile.application.port.out.AppleVarietyRepository;
+import org.craft.mcs.cap.core.appleprofile.application.catalog.port.out.AppleVarietyRepository;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyId;
-import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
+import org.craft.mcs.cap.core.profileanalysis.classification.application.compatibility.ChemicalProfileClassificationInputAdapter;
+import org.craft.mcs.cap.core.profileanalysis.classification.domain.engine.CiderAppleClassificationInput;
 import org.craft.mcs.cap.core.profileanalysis.classification.domain.result.ClassificationResult;
 import org.craft.mcs.cap.core.profileanalysis.classification.domain.engine.ClassificationStrategy;
-import org.craft.mcs.cap.core.profileanalysis.classification.domain.engine.ChemicalProfileClassifier;
+import org.craft.mcs.cap.core.profileanalysis.classification.domain.engine.CiderAppleClassifier;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
@@ -24,7 +25,7 @@ import static java.util.Objects.requireNonNull;
  *
  * <p>This use case loads the catalog aggregate, resolves the selected strategy through
  * {@link AppleVarietyClassificationStrategyRegistry}, delegates the actual domain classification to
- * {@link ChemicalProfileClassifier}, and maps the result to an application read model. It is the
+ * {@link CiderAppleClassifier}, and maps the result to an application read model. It is the
  * boundary where REST/API system names become domain strategy selection.
  */
 @Component
@@ -33,7 +34,7 @@ public final class ClassifyAppleVarietyService
     implements ClassifyAppleVarietyUseCase {
 
   private final @NonNull AppleVarietyRepository appleVarietyRepository;
-  private final @NonNull ChemicalProfileClassifier classifier;
+  private final @NonNull CiderAppleClassifier classifier;
   private final @NonNull AppleVarietyClassificationStrategyRegistry strategyRegistry;
 
   @Override
@@ -47,7 +48,10 @@ public final class ClassifyAppleVarietyService
     final var variety = appleVarietyRepository.findById(varietyId)
         .orElseThrow(() -> new AppleVarietyNotFoundException(varietyId));
 
-    final var result = classifyResolved(variety.chemicalProfile(), system);
+    final var result = classifyResolved(
+        ChemicalProfileClassificationInputAdapter.adapt(variety.chemicalProfile()),
+        system
+    );
 
     return new AppleVarietyClassification(
         variety.varietyId(),
@@ -62,11 +66,11 @@ public final class ClassifyAppleVarietyService
   }
 
   private <C extends Enum<C>> @NonNull ClassificationResult<C> classifyResolved(
-      @NonNull ChemicalProfile profile,
+      @NonNull CiderAppleClassificationInput input,
       @NonNull AppleVarietyClassificationSystem system
   ) {
     final ClassificationStrategy<C> strategy = strategyRegistry.get(system);
-    return classifier.classify(profile, strategy);
+    return classifier.classify(input, strategy);
   }
 
   private static <C extends Enum<C>> @Nullable String appleClassName(

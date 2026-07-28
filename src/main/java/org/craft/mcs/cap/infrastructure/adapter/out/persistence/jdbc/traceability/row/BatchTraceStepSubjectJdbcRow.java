@@ -42,28 +42,28 @@ public class BatchTraceStepSubjectJdbcRow {
   public String snapshotConfidence;
 
   @Nullable
-  public BigDecimal sugarValue;
+  public BigDecimal specificGravityValue;
 
   @Nullable
-  public AxisValueKind sugarValueKind;
+  public AxisValueKind specificGravityValueKind;
 
   @Nullable
-  public BigDecimal sugarMin;
+  public BigDecimal specificGravityMin;
 
   @Nullable
-  public BigDecimal sugarMax;
+  public BigDecimal specificGravityMax;
 
   @Nullable
-  public BigDecimal acidityValue;
+  public BigDecimal titratableAcidityValue;
 
   @Nullable
-  public AxisValueKind acidityValueKind;
+  public AxisValueKind titratableAcidityValueKind;
 
   @Nullable
-  public BigDecimal acidityMin;
+  public BigDecimal titratableAcidityMin;
 
   @Nullable
-  public BigDecimal acidityMax;
+  public BigDecimal titratableAcidityMax;
 
   @Nullable
   public BigDecimal tanninValue;

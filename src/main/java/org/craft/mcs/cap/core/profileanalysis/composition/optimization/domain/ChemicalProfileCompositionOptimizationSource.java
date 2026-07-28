@@ -1,7 +1,7 @@
 package org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain;
 
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionSourceReference;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
+import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionSourceCharacteristics;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -17,12 +17,12 @@ import static java.util.Objects.requireNonNull;
  */
 public record ChemicalProfileCompositionOptimizationSource(
     @NonNull ChemicalProfileCompositionSourceReference reference,
-    @NonNull ChemicalProfileAxes axes,
+    @NonNull CompositionSourceCharacteristics characteristics,
     @Nullable VolumeValue availableVolume
 ) {
 
   public ChemicalProfileCompositionOptimizationSource {
     requireNonNull(reference, "chemical profile composition optimization source reference cannot be null");
-    requireNonNull(axes, "chemical profile composition optimization source axes cannot be null");
+    requireNonNull(characteristics, "composition optimization source characteristics cannot be null");
   }
 }

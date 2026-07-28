@@ -6,7 +6,7 @@ import java.util.UUID;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.batch.dto.FeedstockBatchResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.common.dto.FeedstockProfileEvidenceResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.readiness.dto.FermentationStartReadinessAssessmentResponse;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.sugaracidity.dto.SugarAcidityAxisPointResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profilecharacteristic.dto.ProfileCharacteristicValueResponse;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -51,13 +51,13 @@ public record FeedstockWorkspaceBatchResponse(
     )
     @Nullable FeedstockWorkspaceMeasurementFreshnessResponse measurementFreshness,
     @Schema(
-        description = "Sugar-acidity graph projection of the current measurement.",
+        description = "Sugar-acidity graph projection of the current SG and TA evidence.",
         nullable = true,
         requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )
     @Nullable FeedstockWorkspaceSugarAcidityResponse sugarAcidity,
     @Schema(
-        description = "Potential ABV prediction from current sugar measurement.",
+        description = "Potential ABV prediction from current Specific Gravity evidence.",
         nullable = true,
         requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )
@@ -67,7 +67,7 @@ public record FeedstockWorkspaceBatchResponse(
         nullable = true,
         requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )
-    @Nullable SugarAcidityAxisPointResponse yeastAssimilableNitrogen,
+    @Nullable ProfileCharacteristicValueResponse yeastAssimilableNitrogen,
     @Schema(
         description = "Readiness assessment for using the batch in composition planning.",
         requiredMode = Schema.RequiredMode.REQUIRED

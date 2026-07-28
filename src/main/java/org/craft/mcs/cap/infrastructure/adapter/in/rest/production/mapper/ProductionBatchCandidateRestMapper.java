@@ -10,8 +10,8 @@ import org.craft.mcs.cap.core.production.domain.model.ProductionSourceCompositio
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceReference;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionCalculatorCode;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionTanninPolicy;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.port.in.ProfileTargetScoringPurpose;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.SugarAcidityTargetResolver;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetScoringConfiguration;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.SugarAcidityTargetResolver;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.CreateProductionBatchCandidateRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.ProductionBatchCandidateResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.ProductionBatchCandidateSourceRequest;
@@ -48,28 +48,44 @@ public final class ProductionBatchCandidateRestMapper {
         ),
         "production candidate objective function cannot be null"
     );
+    final var tanninPolicy = requireNonNull(
+        requireNonNullElse(
+            request.tanninPolicy(),
+            ChemicalProfileCompositionTanninPolicy.CALCULATE_WHEN_COMPLETE
+        ),
+        "production candidate tannin policy cannot be null"
+    );
+    final var normalizer = requireNonNull(
+        requireNonNullElse(
+            request.normalizer(),
+            CompositionPlanningRestDefaults.profileTargetNormalizer()
+        ),
+        "production candidate profile target normalizer cannot be null"
+    );
+    final var calculator = requireNonNull(
+        requireNonNullElse(
+            request.calculator(),
+            ChemicalProfileCompositionCalculatorCode.MASS_BALANCE
+        ),
+        "production candidate calculator cannot be null"
+    );
 
     return new CreateProductionBatchCandidateCommand(
         WorkspaceId.of(requireNonNull(request.workspaceId(), "workspace id cannot be null")),
         ProductionSourceComposition.of(sources),
         new ProductionBatchCandidateCalculationRequest(
-            requireNonNullElse(
-                request.tanninPolicy(),
-                ChemicalProfileCompositionTanninPolicy.CALCULATE_WHEN_COMPLETE
-            ),
+            tanninPolicy,
             ProfileTargetRestMapper.toTargetObjective(
                 request.target(),
                 request.tanninTarget(),
                 targetResolver
             ),
-            ProfileTargetRestMapper.toWeights(request.weights()),
-            requireNonNullElse(request.scoringPurpose(), ProfileTargetScoringPurpose.BLENDING_PLANNING),
-            requireNonNullElse(request.calculator(), ChemicalProfileCompositionCalculatorCode.MASS_BALANCE),
-            requireNonNullElse(
-                request.normalizer(),
-                CompositionPlanningRestDefaults.profileTargetNormalizer()
+            new ProfileTargetScoringConfiguration(
+                normalizer,
+                objectiveFunction,
+                ProfileTargetRestMapper.toWeights(request.weights())
             ),
-            objectiveFunction
+            calculator
         )
     );
   }

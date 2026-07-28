@@ -132,14 +132,14 @@ class JdbcBatchTraceabilityStore implements BatchTraceabilityStore {
               ),
               :snapshotVolumeLiters,
               :snapshotConfidence,
-              :sugarValue,
-              :sugarValueKind,
-              :sugarMin,
-              :sugarMax,
-              :acidityValue,
-              :acidityValueKind,
-              :acidityMin,
-              :acidityMax,
+              :specificGravityValue,
+              :specificGravityValueKind,
+              :specificGravityMin,
+              :specificGravityMax,
+              :titratableAcidityValue,
+              :titratableAcidityValueKind,
+              :titratableAcidityMin,
+              :titratableAcidityMax,
               :tanninValue,
               :tanninValueKind,
               :tanninMin,
@@ -175,14 +175,14 @@ class JdbcBatchTraceabilityStore implements BatchTraceabilityStore {
         )
         .addValue("snapshotVolumeLiters", subject.snapshotVolumeLiters)
         .addValue("snapshotConfidence", subject.snapshotConfidence)
-        .addValue("sugarValue", subject.sugarValue)
-        .addValue("sugarValueKind", enumName(subject.sugarValueKind))
-        .addValue("sugarMin", subject.sugarMin)
-        .addValue("sugarMax", subject.sugarMax)
-        .addValue("acidityValue", subject.acidityValue)
-        .addValue("acidityValueKind", enumName(subject.acidityValueKind))
-        .addValue("acidityMin", subject.acidityMin)
-        .addValue("acidityMax", subject.acidityMax)
+        .addValue("specificGravityValue", subject.specificGravityValue)
+        .addValue("specificGravityValueKind", enumName(subject.specificGravityValueKind))
+        .addValue("specificGravityMin", subject.specificGravityMin)
+        .addValue("specificGravityMax", subject.specificGravityMax)
+        .addValue("titratableAcidityValue", subject.titratableAcidityValue)
+        .addValue("titratableAcidityValueKind", enumName(subject.titratableAcidityValueKind))
+        .addValue("titratableAcidityMin", subject.titratableAcidityMin)
+        .addValue("titratableAcidityMax", subject.titratableAcidityMax)
         .addValue("tanninValue", subject.tanninValue)
         .addValue("tanninValueKind", enumName(subject.tanninValueKind))
         .addValue("tanninMin", subject.tanninMin)

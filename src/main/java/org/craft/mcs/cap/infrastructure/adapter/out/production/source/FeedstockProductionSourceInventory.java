@@ -7,10 +7,10 @@ import org.craft.mcs.cap.core.feedstock.application.inventory.port.in.ConsumedFe
 import org.craft.mcs.cap.core.production.application.port.out.ConsumedProductionSource;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionSourceDisplayName;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionSourceInventory;
-import org.craft.mcs.cap.core.production.candidate.domain.model.ProductionSourceEvidenceReference;
+import org.craft.mcs.cap.core.production.domain.model.ProductionSourceEvidenceReference;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceComponent;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
-import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
@@ -58,13 +58,9 @@ public final class FeedstockProductionSourceInventory implements ProductionSourc
     return new ConsumedProductionSource(
         reference,
         ProductionSourceDisplayName.of(consumed.batchName().value()),
-        consumed.availableBefore(),
-        consumed.consumed(),
-        consumed.remaining(),
+        consumed.consumption(),
         axisExtractor.extract(profile),
         consumed.profileConfidence(),
-        consumed.sourceStateId(),
-        consumed.remainingStateId(),
         ProductionSourceEvidenceReference.of(consumed.evidenceReference().externalValue())
     );
   }

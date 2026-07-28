@@ -8,7 +8,7 @@ import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPredictor;
 import org.craft.mcs.cap.core.production.application.ProductionBatchNotFoundException;
 import org.craft.mcs.cap.core.production.application.model.ProductionBatchDetailsView;
 import org.craft.mcs.cap.core.production.application.model.ProductionBatchView;
-import org.craft.mcs.cap.core.production.application.model.ProductionMeasurementProfileView;
+import org.craft.mcs.cap.core.production.application.model.ProductionMeasuredProfileView;
 import org.craft.mcs.cap.core.production.application.authorization.port.out.ProductionAccessControl;
 import org.craft.mcs.cap.core.production.application.port.in.GetProductionBatchUseCase;
 import org.craft.mcs.cap.core.production.application.port.in.ListProductionBatchesQuery;
@@ -18,8 +18,7 @@ import org.craft.mcs.cap.core.production.application.port.out.ProductionMeasurem
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatchId;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
-import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
-import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
+import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
@@ -54,7 +53,6 @@ public final class QueryProductionBatchesService
     productionAccessControl.requireReadAccess(batch.workspaceId());
     return toDetailsView(
         batch,
-        batch.currentMaterialStateId(),
         measurementProfileProvider.findCurrent(batch.batchId()).orElse(null) // NOSONAR
     );
   }
@@ -72,7 +70,6 @@ public final class QueryProductionBatchesService
     return batches.stream()
         .map(batch -> toDetailsView(
             batch,
-            batch.currentMaterialStateId(),
             measuredProfiles.get(batch.batchId())
         ))
         .toList();
@@ -80,8 +77,7 @@ public final class QueryProductionBatchesService
 
   private @NonNull ProductionBatchDetailsView toDetailsView(
       @NonNull ProductionBatchView batch,
-      @NonNull MaterialStateId currentMaterialStateId,
-      @Nullable ProductionMeasurementProfileView measuredProfile
+      @Nullable ProductionMeasuredProfileView measuredProfile
   ) {
     final var currentProfile = productionCurrentProfileProjector.project(
         batch.initialProfileSnapshot(),
@@ -89,12 +85,11 @@ public final class QueryProductionBatchesService
     );
     return new ProductionBatchDetailsView(
         batch,
-        currentMaterialStateId,
         currentProfile,
         potentialAbvPredictor.predict(
             SpecificGravityValue.of(
                 chemicalProfileAxisExtractor.extract(currentProfile.chemicalProfile())
-                    .requireValueOf(ChemicalAxis.SUGAR)
+                    .requireValueOf(ChemicalAxis.SPECIFIC_GRAVITY)
                     .value()
             )
         )

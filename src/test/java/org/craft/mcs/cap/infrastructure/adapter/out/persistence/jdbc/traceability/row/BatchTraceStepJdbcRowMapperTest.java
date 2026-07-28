@@ -64,14 +64,14 @@ class BatchTraceStepJdbcRowMapperTest {
   void mapsSubjectMaterialSnapshot() {
     final var profile = ChemicalProfileAxes.of(
         new AxisValue(
-            ChemicalAxis.SUGAR,
+            ChemicalAxis.SPECIFIC_GRAVITY,
             new BigDecimal("1.052"),
             AxisValueKind.POINT,
             null,
             null
         ),
         new AxisValue(
-            ChemicalAxis.ACIDITY,
+            ChemicalAxis.TITRATABLE_ACIDITY,
             new BigDecimal("5.7"),
             AxisValueKind.INTERVAL_MIDPOINT,
             new BigDecimal("5.2"),
@@ -116,11 +116,11 @@ class BatchTraceStepJdbcRowMapperTest {
     assertThat(snapshot).isNotNull();
     assertThat(snapshot.volume().liters()).isEqualByComparingTo("120.5");
     assertThat(snapshot.confidence()).isEqualTo(ConfidenceLevel.LAB_VERIFIED);
-    assertThat(snapshot.profile().valueOf(ChemicalAxis.SUGAR))
+    assertThat(snapshot.profile().valueOf(ChemicalAxis.SPECIFIC_GRAVITY))
         .get()
         .extracting(AxisValue::value, AxisValue::valueKind)
         .containsExactly(new BigDecimal("1.052"), AxisValueKind.POINT);
-    assertThat(snapshot.profile().valueOf(ChemicalAxis.ACIDITY))
+    assertThat(snapshot.profile().valueOf(ChemicalAxis.TITRATABLE_ACIDITY))
         .get()
         .extracting(AxisValue::min, AxisValue::max)
         .containsExactly(new BigDecimal("5.2"), new BigDecimal("6.2"));

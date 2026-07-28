@@ -8,14 +8,13 @@ import org.craft.mcs.cap.core.profileanalysis.composition.calculation.applicatio
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionCalculatorSelector;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionRequest;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileComposition;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.normalization.ProfileAxisNormalizerCode;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.normalization.ProfileAxisNormalizerSelector;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.assessment.ProfileTargetDistance;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetObjective;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.objective.ProfileTargetObjectiveFunctionCode;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetScoringConfiguration;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.objective.ProfileTargetObjectiveFunctionFactory;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetObjectiveWeights;
-import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetIntervalPolicy;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetScoringInput;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 
@@ -26,7 +25,7 @@ import static java.util.Objects.requireNonNull;
  * Application service for calculating one explicitly provided chemical profile composition.
  *
  * <p>This use case differs from optimization: source weights are already known. The service selects
- * the requested calculator, predicts potential ABV from the resulting sugar value and, when a target
+ * the requested calculator, predicts potential ABV from the resulting SG and, when a target
  * is provided, also builds the configured normalizer and objective function to explain distance from
  * the calculated composition to the target.
  */
@@ -49,9 +48,7 @@ public final class CalculateChemicalProfileCompositionService implements Calcula
         command.sources(),
         command.tanninPolicy()
     ));
-    final var potentialAbv = potentialAbvPredictor.predict(
-        SpecificGravityValue.of(composition.profile().sugar().value())
-    );
+    final var potentialAbv = potentialAbvPredictor.predict(composition.characteristics().specificGravity());
     final var targetObjective = command.targetObjective();
     if (targetObjective == null) {
       return CalculateChemicalProfileCompositionResult.withoutTargetDistance(composition, potentialAbv);
@@ -60,14 +57,12 @@ public final class CalculateChemicalProfileCompositionService implements Calcula
     final var targetDistance = distanceToTarget(
         composition,
         targetObjective,
-        command.targetWeights(),
-        command.normalizerCode(),
-        command.objectiveFunctionCode()
+        command.scoringConfiguration()
     );
     return new CalculateChemicalProfileCompositionResult(
         composition,
         potentialAbv,
-        command.normalizerCode(),
+        command.scoringConfiguration().normalizerCode(),
         targetDistance
     );
   }
@@ -75,15 +70,22 @@ public final class CalculateChemicalProfileCompositionService implements Calcula
   private @NonNull ProfileTargetDistance distanceToTarget(
       @NonNull ChemicalProfileComposition composition,
       @NonNull ProfileTargetObjective targetObjective,
-      @NonNull ProfileTargetObjectiveWeights targetWeights,
-      @NonNull ProfileAxisNormalizerCode normalizerCode,
-      @NonNull ProfileTargetObjectiveFunctionCode objectiveFunctionCode
+      @NonNull ProfileTargetScoringConfiguration scoringConfiguration
   ) {
     final var objectiveFunction = objectiveFunctionFactory.create(
-        objectiveFunctionCode,
-        normalizerSelector.select(normalizerCode),
-        targetWeights
+        scoringConfiguration.objectiveFunctionCode(),
+        normalizerSelector.select(scoringConfiguration.normalizerCode()),
+        scoringConfiguration.weights()
     );
-    return objectiveFunction.distanceTo(composition.profile(), targetObjective);
+    final var characteristics = composition.characteristics();
+    return objectiveFunction.distanceTo(
+        ProfileTargetScoringInput.point(
+            characteristics.specificGravity(),
+            characteristics.titratableAcidity(),
+            characteristics.tannin()
+        ),
+        ProfileTargetIntervalPolicy.MIDPOINT,
+        targetObjective
+    );
   }
 }

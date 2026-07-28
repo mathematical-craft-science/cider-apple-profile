@@ -22,8 +22,8 @@ public final class ProfileTargetCandidateCommonRestMapper {
     }
 
     return new ProfileTargetObjectiveWeights(
-        weightOrDefault(request.sugar()),
-        weightOrDefault(request.acidity()),
+        weightOrDefault(request.specificGravity()),
+        weightOrDefault(request.titratableAcidity()),
         request.tannin()
     );
   }

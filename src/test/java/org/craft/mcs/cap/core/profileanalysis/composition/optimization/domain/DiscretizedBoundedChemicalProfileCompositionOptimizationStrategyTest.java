@@ -12,14 +12,12 @@ import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.st
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetObjective;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetObjectiveWeights;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.normalization.EffectiveRangeProfileAxisNormalizer;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.objective.DistanceToTargetAreaObjectiveFunction;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.CustomRectangleSugarAcidityTarget;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.RectangleSugarAcidityTargetGeometry;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValueKind;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.objective.TargetAreaProfileTargetObjectiveFunction;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.CustomRectangleSugarAcidityTarget;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.RectangleSugarAcidityTargetGeometry;
 import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -27,6 +25,9 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.craft.mcs.cap.shared.kernel.measurement.MeasuredValueRange.closed;
+import static org.craft.mcs.cap.core.profileanalysis.testing.ProfileAnalysisTestFixtures
+    .compositionSourceCharacteristics;
 
 
 class DiscretizedBoundedChemicalProfileCompositionOptimizationStrategyTest {
@@ -46,7 +47,7 @@ class DiscretizedBoundedChemicalProfileCompositionOptimizationStrategyTest {
         ),
         ChemicalProfileCompositionTanninPolicy.CALCULATE_WHEN_COMPLETE,
         target("1.049", "1.051", "5.9", "6.1"),
-        new DistanceToTargetAreaObjectiveFunction(
+        TargetAreaProfileTargetObjectiveFunction.euclidean(
             EffectiveRangeProfileAxisNormalizer.ciderBlendingDefaults(),
             ProfileTargetObjectiveWeights.balanced()
         ),
@@ -71,7 +72,7 @@ class DiscretizedBoundedChemicalProfileCompositionOptimizationStrategyTest {
         ),
         ChemicalProfileCompositionTanninPolicy.CALCULATE_WHEN_COMPLETE,
         target("1.045", "1.055", "6.0", "8.0"),
-        new DistanceToTargetAreaObjectiveFunction(
+        TargetAreaProfileTargetObjectiveFunction.euclidean(
             EffectiveRangeProfileAxisNormalizer.ciderBlendingDefaults(),
             ProfileTargetObjectiveWeights.balanced()
         ),
@@ -96,7 +97,7 @@ class DiscretizedBoundedChemicalProfileCompositionOptimizationStrategyTest {
         ),
         ChemicalProfileCompositionTanninPolicy.CALCULATE_WHEN_COMPLETE,
         target("1.049", "1.051", "5.9", "6.1"),
-        new DistanceToTargetAreaObjectiveFunction(
+        TargetAreaProfileTargetObjectiveFunction.euclidean(
             EffectiveRangeProfileAxisNormalizer.ciderBlendingDefaults(),
             ProfileTargetObjectiveWeights.balanced()
         ),
@@ -127,7 +128,7 @@ class DiscretizedBoundedChemicalProfileCompositionOptimizationStrategyTest {
         ),
         ChemicalProfileCompositionTanninPolicy.CALCULATE_WHEN_COMPLETE,
         target("1.049", "1.051", "5.9", "6.1"),
-        new DistanceToTargetAreaObjectiveFunction(
+        TargetAreaProfileTargetObjectiveFunction.euclidean(
             EffectiveRangeProfileAxisNormalizer.ciderBlendingDefaults(),
             ProfileTargetObjectiveWeights.balanced()
         ),
@@ -156,7 +157,7 @@ class DiscretizedBoundedChemicalProfileCompositionOptimizationStrategyTest {
         ),
         ChemicalProfileCompositionTanninPolicy.CALCULATE_WHEN_COMPLETE,
         target("1.049", "1.051", "5.9", "6.1"),
-        new DistanceToTargetAreaObjectiveFunction(
+        TargetAreaProfileTargetObjectiveFunction.euclidean(
             EffectiveRangeProfileAxisNormalizer.ciderBlendingDefaults(),
             ProfileTargetObjectiveWeights.balanced()
         ),
@@ -170,17 +171,21 @@ class DiscretizedBoundedChemicalProfileCompositionOptimizationStrategyTest {
   }
 
   private static @NonNull ProfileTargetObjective target(
-      @NonNull String sugarMin,
-      @NonNull String sugarMax,
-      @NonNull String acidityMin,
-      @NonNull String acidityMax
+      @NonNull String specificGravityMin,
+      @NonNull String specificGravityMax,
+      @NonNull String titratableAcidityMin,
+      @NonNull String titratableAcidityMax
   ) {
     return ProfileTargetObjective.of(new CustomRectangleSugarAcidityTarget(
         new RectangleSugarAcidityTargetGeometry(
-            new BigDecimal(sugarMin),
-            new BigDecimal(sugarMax),
-            new BigDecimal(acidityMin),
-            new BigDecimal(acidityMax)
+            closed(
+                SpecificGravityValue.of(specificGravityMin),
+                SpecificGravityValue.of(specificGravityMax)
+            ),
+            closed(
+                TitratableAcidityValue.of(titratableAcidityMin),
+                TitratableAcidityValue.of(titratableAcidityMax)
+            )
         )
     ));
   }
@@ -203,28 +208,9 @@ class DiscretizedBoundedChemicalProfileCompositionOptimizationStrategyTest {
   ) {
     return new ChemicalProfileCompositionOptimizationSource(
         new ChemicalProfileCompositionSourceReference("FEEDSTOCK_BATCH", id),
-        ChemicalProfileAxes.of(
-            axis(ChemicalAxis.SUGAR, sugar),
-            axis(ChemicalAxis.ACIDITY, acidity),
-            null,
-            yeastAssimilableNitrogen == null
-                ? null
-                : axis(ChemicalAxis.YEAST_ASSIMILABLE_NITROGEN, yeastAssimilableNitrogen)
-        ),
+        compositionSourceCharacteristics(sugar, acidity, null, yeastAssimilableNitrogen),
         availableVolume
     );
   }
 
-  private static @NonNull AxisValue axis(
-      @NonNull ChemicalAxis axis,
-      @NonNull String value
-  ) {
-    return new AxisValue(
-        axis,
-        new BigDecimal(value),
-        AxisValueKind.POINT,
-        null,
-        null
-    );
-  }
 }

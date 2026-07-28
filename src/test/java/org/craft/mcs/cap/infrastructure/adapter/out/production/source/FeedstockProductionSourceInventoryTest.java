@@ -6,7 +6,6 @@ import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchNotFoundExcept
 import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchOwnershipMismatchException;
 import org.craft.mcs.cap.core.feedstock.application.inventory.port.in.ConsumeFeedstockBatchMaterialUseCase;
 import org.craft.mcs.cap.core.feedstock.application.inventory.port.in.ConsumedFeedstockBatchMaterial;
-import org.craft.mcs.cap.core.feedstock.application.inventory.port.in.FeedstockBatchMaterialName;
 import org.craft.mcs.cap.core.feedstock.application.inventory.port.in.FeedstockBatchMaterialEvidenceReference;
 import org.craft.mcs.cap.core.production.application.ProductionSourceInsufficientAvailableVolumeException;
 import org.craft.mcs.cap.core.production.application.ProductionSourceNotFoundException;
@@ -14,21 +13,22 @@ import org.craft.mcs.cap.core.production.application.ProductionSourceOwnershipMi
 import org.craft.mcs.cap.core.production.application.ProductionSourceProfileUnavailableException;
 import org.craft.mcs.cap.core.production.application.port.out.ConsumedProductionSource;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionSourceDisplayName;
-import org.craft.mcs.cap.core.production.candidate.domain.model.ProductionSourceEvidenceReference;
+import org.craft.mcs.cap.core.production.domain.model.ProductionSourceEvidenceReference;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceComponent;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceReference;
-import org.craft.mcs.cap.shared.application.ApplicationValidationException;
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
-import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
+import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
+import org.craft.mcs.cap.shared.kernel.material.value.MaterialConsumption;
 import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
-import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
@@ -53,12 +53,14 @@ class FeedstockProductionSourceInventoryTest {
     final var remainingStateId = MaterialStateId.newId();
     when(useCase.consume(any())).thenReturn(new ConsumedFeedstockBatchMaterial(
         batchId,
-        FeedstockBatchMaterialName.of("Late juice"),
-        VolumeValue.ofLiters("250"),
-        source.volume(),
-        VolumeValue.ofLiters("150"),
-        sourceStateId,
-        remainingStateId,
+        BatchName.of("Late juice"),
+        new MaterialConsumption(
+            VolumeValue.ofLiters("250"),
+            source.volume(),
+            VolumeValue.ofLiters("150"),
+            sourceStateId,
+            remainingStateId
+        ),
         new FeedstockBatchMaterialEvidenceReference("feedstock-profile-v1:measurement-evidence"),
         profile,
         ConfidenceLevel.LAB_VERIFIED
@@ -82,66 +84,7 @@ class FeedstockProductionSourceInventoryTest {
         )
         .satisfies(result -> assertThat(result.profile())
             .isNotNull()
-            .satisfies(axes -> assertThat(axes.valueOf(ChemicalAxis.SUGAR)).isPresent()));
-  }
-
-  @Test
-  void rejectsZeroVolumeFeedstockConsumptionSnapshot() {
-    final var batchId = FeedstockBatchId.newId();
-    final var batchName = FeedstockBatchMaterialName.of("Late juice");
-    final var availableBefore = VolumeValue.ofLiters("100");
-    final var consumed = VolumeValue.ofLiters("0");
-    final var remaining = VolumeValue.ofLiters("100");
-    final var stateId = MaterialStateId.newId();
-    final var resultingStateId = MaterialStateId.newId();
-    final var evidenceReference = new FeedstockBatchMaterialEvidenceReference(
-        "feedstock-profile-v1:measurement-evidence"
-    );
-    final var chemicalProfile = profile();
-
-    assertThatThrownBy(() -> new ConsumedFeedstockBatchMaterial(
-        batchId,
-        batchName,
-        availableBefore,
-        consumed,
-        remaining,
-        stateId,
-        resultingStateId,
-        evidenceReference,
-        chemicalProfile,
-        ConfidenceLevel.HIGH
-    ))
-        .isInstanceOf(ApplicationValidationException.class)
-        .hasMessage("consumed feedstock material volume must be positive");
-  }
-
-  @Test
-  void rejectsZeroVolumeProductionSourceSnapshot() {
-    final var source = source(FeedstockBatchId.newId(), "100");
-    final var sourceReference = source.reference();
-    final var availableBefore = VolumeValue.ofLiters("100");
-    final var consumed = VolumeValue.ofLiters("0");
-    final var remaining = VolumeValue.ofLiters("100");
-    final var stateId = MaterialStateId.newId();
-    final var resultingStateId = MaterialStateId.newId();
-    final var evidenceReference = ProductionSourceEvidenceReference.of(
-        "feedstock-profile-v1:measurement-evidence"
-    );
-
-    assertThatThrownBy(() -> new ConsumedProductionSource(
-        sourceReference,
-        null,
-        availableBefore,
-        consumed,
-        remaining,
-        null,
-        null,
-        stateId,
-        resultingStateId,
-        evidenceReference
-    ))
-        .isInstanceOf(ApplicationValidationException.class)
-        .hasMessage("consumed production source volume must be positive");
+            .satisfies(axes -> assertThat(axes.valueOf(ChemicalAxis.SPECIFIC_GRAVITY)).isPresent()));
   }
 
   @Test

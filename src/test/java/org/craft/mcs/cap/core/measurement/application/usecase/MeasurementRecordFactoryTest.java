@@ -15,7 +15,7 @@ import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSourceName;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSourceReference;
 import org.craft.mcs.cap.shared.kernel.measurement.MeasurementSourceType;
 import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
-import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;

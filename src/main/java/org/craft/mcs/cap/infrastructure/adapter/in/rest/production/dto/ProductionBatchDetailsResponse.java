@@ -8,7 +8,7 @@ import org.craft.mcs.cap.shared.kernel.material.value.BatchLifecycle;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.abv.dto.PotentialAbvPredictionResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.dto.ChemicalProfileResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement.dto.MeasurementEvidenceResponse;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.sugaracidity.dto.SugarAcidityProfilePointResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.composition.dto.CalculatedCompositionCharacteristicsResponse;
 import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -48,10 +48,10 @@ public record ProductionBatchDetailsResponse(
     @Schema(description = "Current production volume.", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull DecimalQuantityResponse currentVolume,
     @Schema(
-        description = "Chemical profile snapshot accepted at batch creation.",
+        description = "Calculated characteristic snapshot accepted at batch creation.",
         requiredMode = Schema.RequiredMode.REQUIRED
     )
-    @NonNull SugarAcidityProfilePointResponse initialProfileSnapshot,
+    @NonNull CalculatedCompositionCharacteristicsResponse initialProfileSnapshot,
     @Schema(
         description = "Current profile with measured axes overlaid on the immutable initial snapshot.",
         requiredMode = Schema.RequiredMode.REQUIRED
@@ -69,7 +69,7 @@ public record ProductionBatchDetailsResponse(
     )
     @Nullable DecimalQuantityResponse yeastAssimilableNitrogen,
     @Schema(
-        description = "Potential ABV prediction calculated from current production profile sugar.",
+        description = "Potential ABV prediction calculated from current production profile SG.",
         requiredMode = Schema.RequiredMode.REQUIRED
     )
     @NonNull PotentialAbvPredictionResponse potentialAbv,

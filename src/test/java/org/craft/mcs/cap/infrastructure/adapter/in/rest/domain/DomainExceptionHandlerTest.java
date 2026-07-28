@@ -3,11 +3,12 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.domain;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.InvalidChemicalProfileCompositionException;
 import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.strategy.CompositionOptimizationAlgorithm;
 import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.strategy.UnsupportedCompositionOptimizationStrategyException;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.SugarAcidityTargetResolutionException;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.SugarAcidityTargetResolutionException;
 import org.craft.mcs.cap.shared.kernel.DomainConflictException;
 import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
 import org.craft.mcs.cap.shared.kernel.sugar.converter.UnsupportedSugarConversionException;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.ProblemDetail;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -79,8 +80,9 @@ class DomainExceptionHandlerTest {
     );
 
     assertThat(response.getStatusCode().value()).isEqualTo(422);
-    assertThat(response.getBody()).isNotNull();
-    assertThat(response.getBody().getTitle()).isEqualTo("Sugar-acidity target cannot be resolved");
-    assertThat(response.getBody().getDetail()).isEqualTo("target is unknown");
+    assertThat(response.getBody())
+        .isNotNull()
+        .returns("Sugar-acidity target cannot be resolved", ProblemDetail::getTitle)
+        .returns("target is unknown", ProblemDetail::getDetail);
   }
 }

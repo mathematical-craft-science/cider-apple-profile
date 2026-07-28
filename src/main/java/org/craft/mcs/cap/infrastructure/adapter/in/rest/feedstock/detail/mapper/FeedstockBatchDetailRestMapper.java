@@ -1,15 +1,14 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.detail.mapper;
 
-import org.craft.mcs.cap.core.feedstock.application.detail.model.FeedstockBatchCurrentProfileOperationView;
 import org.craft.mcs.cap.core.feedstock.application.detail.model.FeedstockBatchCurrentProfileView;
 import org.craft.mcs.cap.core.feedstock.application.detail.model.FeedstockBatchDetailView;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentProfileDataQualityIndicator;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentProfileDataQualityView;
-import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentMeasurementFreshnessView;
+import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentProfileFreshnessView;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentProfilePotentialAbvView;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockPlanningReadinessCheck;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockPlanningReadinessView;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileEvaluation;
+import org.craft.mcs.cap.core.profileanalysis.compatibility.application.ChemicalProfileAssessment;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.abv.mapper.PotentialAbvPredictionRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.mapper.ChemicalProfileCapabilityRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.batch.mapper.FeedstockBatchRestMapper;
@@ -18,7 +17,6 @@ import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.common.mapper.
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.detail.dto.FeedstockBatchCurrentProfileResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.detail.dto.FeedstockBatchDetailDataQualityIndicatorResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.detail.dto.FeedstockBatchDetailDataQualityResponse;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.detail.dto.FeedstockBatchDetailLastOperationResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.detail.dto.FeedstockBatchDetailMeasurementFreshnessResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.detail.dto.FeedstockBatchDetailPlanningReadinessCheckResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.detail.dto.FeedstockBatchDetailPlanningReadinessResponse;
@@ -30,8 +28,9 @@ import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.detail.dto.Fee
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.measurement.mapper.FeedstockMeasurementRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.readiness.mapper.FeedstockBatchReadinessRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.measurement.CanonicalUnitLabels;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.sugaracidity.dto.SugarAcidityAxisPointResponse;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.sugaracidity.mapper.SugarAcidityZoneRestMapper;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profilecharacteristic.dto.ProfileCharacteristicValueResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profilecharacteristic.mapper.ProfileCharacteristicRestMapper;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.mapper.ProfileGraphRestMapper;
 import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
 import org.jspecify.annotations.NonNull;
@@ -55,7 +54,7 @@ public final class FeedstockBatchDetailRestMapper {
     requireNonNull(view, "feedstock batch detail view cannot be null");
     return new FeedstockBatchDetailResponse(
         FeedstockBatchRestMapper.toResponse(view.batch()),
-        view.currentMaterialStateId().value(),
+        view.batch().currentMaterialStateId().value(),
         toResponse(view.currentProfile()),
         view.measurements().stream()
             .map(FeedstockMeasurementRestMapper::toResponse)
@@ -68,27 +67,32 @@ public final class FeedstockBatchDetailRestMapper {
   ) {
     requireNonNull(view, "feedstock batch current profile view cannot be null");
     final var latestMeasurement = view.latestMeasurement();
+    final var currentProfileSummary = view.currentProfileSummary();
+    final var assessment = view.currentProfileAssessment();
+    final var fermentationReadiness = assessment.fermentationStartReadiness();
     return new FeedstockBatchCurrentProfileResponse(
         latestMeasurement == null ? null : FeedstockMeasurementRestMapper.toResponse(latestMeasurement),
-        latestMeasurement == null ? null : toProfileSummaryResponse(latestMeasurement.chemicalProfile()),
-        view.profileEvidence().stream()
+        currentProfileSummary == null
+            ? null
+            : toProfileSummaryResponse(currentProfileSummary.chemicalProfile()),
+        assessment.profileEvidence().stream()
             .map(FeedstockProfileEvidenceRestMapper::toResponse)
             .toList(),
-        toSugarAcidityResponse(view.sugarAcidity()),
-        toPotentialAbvResponse(view.potentialAbv()),
-        toYeastAssimilableNitrogenResponse(view.yeastAssimilableNitrogen()),
-        toMeasurementFreshnessResponse(view.measurementFreshness()),
-        toResponse(view.planningReadiness()),
-        toResponse(view.dataQuality()),
-        view.fermentationStartReadiness() == null
+        toSugarAcidityResponse(assessment.profileAssessment()),
+        toPotentialAbvResponse(assessment.potentialAbv()),
+        toYeastAssimilableNitrogenResponse(assessment.yeastAssimilableNitrogen()),
+        toMeasurementFreshnessResponse(assessment.freshness()),
+        toResponse(assessment.planningReadiness()),
+        toResponse(assessment.dataQuality()),
+        fermentationReadiness == null
             ? null
-            : FeedstockBatchReadinessRestMapper.toResponse(view.fermentationStartReadiness()), // NOSONAR
-        toLastOperationResponse(view.lastOperation())
+            : FeedstockBatchReadinessRestMapper.toResponse(fermentationReadiness),
+        null
     );
   }
 
   private static @Nullable FeedstockBatchDetailSugarAcidityResponse toSugarAcidityResponse(
-      @Nullable SugarAcidityProfileEvaluation evaluation
+      @Nullable ChemicalProfileAssessment evaluation
   ) {
     if (evaluation == null) {
       return null;
@@ -97,10 +101,8 @@ public final class FeedstockBatchDetailRestMapper {
     final var assessment = evaluation.assessment();
     return new FeedstockBatchDetailSugarAcidityResponse(
         evaluation.plottable(),
-        evaluation.point()
-            .map(SugarAcidityZoneRestMapper::toResponse)
-            .orElse(null), // NOSONAR
-        assessment == null ? null : SugarAcidityZoneRestMapper.toResponse(assessment),
+        assessment == null ? null : ProfileGraphRestMapper.toResponse(evaluation.axes()),
+        assessment == null ? null : ProfileGraphRestMapper.toResponse(evaluation),
         ChemicalProfileCapabilityRestMapper.toResponse(evaluation.capabilityAssessment())
     );
   }
@@ -118,21 +120,21 @@ public final class FeedstockBatchDetailRestMapper {
     );
   }
 
-  private static @Nullable SugarAcidityAxisPointResponse toYeastAssimilableNitrogenResponse(
+  private static @Nullable ProfileCharacteristicValueResponse toYeastAssimilableNitrogenResponse(
       @Nullable AxisValue axisValue
   ) {
     if (axisValue == null) {
       return null;
     }
 
-    return SugarAcidityZoneRestMapper.toResponse(
+    return ProfileCharacteristicRestMapper.toResponse(
         axisValue,
         CanonicalUnitLabels.YEAST_ASSIMILABLE_NITROGEN
     );
   }
 
   private static @Nullable FeedstockBatchDetailMeasurementFreshnessResponse toMeasurementFreshnessResponse(
-      @Nullable FeedstockCurrentMeasurementFreshnessView view
+      @Nullable FeedstockCurrentProfileFreshnessView view
   ) {
     return view == null
         ? null
@@ -186,12 +188,6 @@ public final class FeedstockBatchDetailRestMapper {
     );
   }
 
-  private static @Nullable FeedstockBatchDetailLastOperationResponse toLastOperationResponse(
-      @Nullable FeedstockBatchCurrentProfileOperationView view
-  ) {
-    return view == null ? null : new FeedstockBatchDetailLastOperationResponse(view.type(), view.occurredAt());
-  }
-
   private static @NonNull FeedstockBatchDetailProfileSummaryResponse toProfileSummaryResponse(
       @NonNull ChemicalProfile profile
   ) {
@@ -201,7 +197,7 @@ public final class FeedstockBatchDetailRestMapper {
         FeedstockBatchDetailProfileValueResponse::new
     );
     return new FeedstockBatchDetailProfileSummaryResponse(
-        summary.sugar(),
+        summary.specificGravity(),
         summary.titratableAcidity(),
         summary.ph(),
         summary.tannin(),

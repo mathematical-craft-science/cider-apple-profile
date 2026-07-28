@@ -3,7 +3,7 @@ package org.craft.mcs.cap.core.measurement.application.usecase;
 import java.util.List;
 import java.util.Optional;
 import org.craft.mcs.cap.core.measurement.application.model.MeasurementSetView;
-import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementMaterialStateProvider;
+import org.craft.mcs.cap.core.measurement.application.port.out.CurrentMaterialStateProvider;
 import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementSetViewQuery;
 import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementSubjectAccessControl;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetId;
@@ -54,7 +54,7 @@ class MeasurementSetQueryServicesTest {
   @Test
   void currentStateChecksReadAccessBeforeReadingMaterialState() {
     final var accessControl = mock(MeasurementSubjectAccessControl.class);
-    final var materialStateProvider = mock(MeasurementMaterialStateProvider.class);
+    final var materialStateProvider = mock(CurrentMaterialStateProvider.class);
     final var subject = subject();
     final var materialStateId = MaterialStateId.newId();
     when(materialStateProvider.currentStateOf(subject)).thenReturn(materialStateId);

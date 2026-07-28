@@ -14,18 +14,17 @@ public enum FeedstockPlanningReadinessFactor {
    * Current measurement evidence is available for the batch. Without it, planning cannot reason
    * about the current material profile.
    */
-  CURRENT_MEASUREMENT,
+  CURRENT_PROFILE,
 
   /**
-   * Specific gravity is available in the current material profile. It is the measured
-   * characteristic used as the sugar axis for sugar-acidity analysis, ABV prediction, and
-   * composition planning.
+   * Specific Gravity is available in the current material profile. It supports sugar-acidity
+   * analysis, potential ABV prediction and composition planning.
    */
   SPECIFIC_GRAVITY,
 
   /**
-   * Titratable acidity is available in the current chemical profile. This is a required input for
-   * sugar-acidity analysis and composition planning.
+   * Titratable Acidity is available in the current profile. It is required for sugar-acidity
+   * analysis and composition planning.
    */
   TITRATABLE_ACIDITY,
 

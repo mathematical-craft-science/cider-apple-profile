@@ -9,7 +9,13 @@ import static java.util.Objects.requireNonNull;
 
 @Schema(description = "Range chemical measurement response.")
 public record RangeChemicalMeasurementResponse(
-    @Schema(description = "Measurement shape.", example = "RANGE", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(
+        description = "Measurement shape.",
+        type = "string",
+        allowableValues = "RANGE",
+        example = "RANGE",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
     @NonNull String kind,
     @Schema(description = "Minimum canonical value.", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull DecimalQuantityResponse min,

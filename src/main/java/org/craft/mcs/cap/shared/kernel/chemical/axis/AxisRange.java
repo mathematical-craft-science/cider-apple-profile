@@ -1,6 +1,7 @@
 package org.craft.mcs.cap.shared.kernel.chemical.axis;
 
 import java.math.BigDecimal;
+import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -9,10 +10,26 @@ import static org.craft.mcs.cap.shared.kernel.math.DecimalComparisons.isAtLeast;
 import static org.craft.mcs.cap.shared.kernel.math.DecimalComparisons.isLessThan;
 
 
+/**
+ * Unit-neutral, optionally unbounded decimal predicate used by classification rule tables.
+ *
+ * <p>The owning classification characteristic supplies the meaning and unit. Graph and target
+ * geometry use typed measured-value ranges instead.</p>
+ */
 public record AxisRange(
     @Nullable BigDecimal minInclusive,
     @Nullable BigDecimal maxExclusive
 ) {
+
+  public AxisRange {
+    if (minInclusive != null
+        && maxExclusive != null
+        && minInclusive.compareTo(maxExclusive) >= 0) {
+      throw new DomainRuleViolationException(
+          "axis range minimum must be less than its maximum"
+      );
+    }
+  }
 
   public static @NonNull AxisRange all() {
     return new AxisRange(null, null);

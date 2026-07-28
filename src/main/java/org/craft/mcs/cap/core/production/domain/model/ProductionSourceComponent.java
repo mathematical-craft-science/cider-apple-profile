@@ -1,7 +1,6 @@
 package org.craft.mcs.cap.core.production.domain.model;
 
 import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
-
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.jmolecules.ddd.annotation.ValueObject;
 import org.jspecify.annotations.NonNull;
@@ -9,6 +8,7 @@ import org.jspecify.annotations.NonNull;
 import static java.util.Objects.requireNonNull;
 
 
+/** One positive-volume material source selected for a production composition. */
 @ValueObject
 public record ProductionSourceComponent(
     @NonNull ProductionSourceReference reference,

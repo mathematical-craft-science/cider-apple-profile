@@ -18,7 +18,7 @@ import org.jspecify.annotations.NonNull;
 public record RepeatedMeasurementCharacteristicRequest(
     @Schema(
         description = "Polymorphic input discriminator; must be REPEATED.",
-        implementation = MeasurementInputKind.class,
+        type = "string",
         allowableValues = "REPEATED",
         requiredMode = Schema.RequiredMode.REQUIRED
     )

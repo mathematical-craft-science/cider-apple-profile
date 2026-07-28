@@ -1,6 +1,8 @@
 package org.craft.mcs.cap.core.profileanalysis.classification.domain.profile.spanish;
 
 import java.util.List;
+import java.util.Set;
+import org.craft.mcs.cap.core.profileanalysis.classification.domain.engine.ClassificationCharacteristic;
 import org.craft.mcs.cap.core.profileanalysis.classification.domain.engine.ClassificationStrategy;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisRange;
 import org.craft.mcs.cap.core.profileanalysis.classification.domain.rule.ClassificationProfile;
@@ -30,6 +32,14 @@ public final class SpanishClassificationStrategy
   @Override
   public @NonNull String code() {
     return "SPANISH";
+  }
+
+  @Override
+  public @NonNull Set<@NonNull ClassificationCharacteristic> requiredCharacteristics() {
+    return Set.of(
+        ClassificationCharacteristic.ACIDITY,
+        ClassificationCharacteristic.TANNIN
+    );
   }
 
   @Override

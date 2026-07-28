@@ -1,6 +1,6 @@
 package org.craft.mcs.cap.core.feedstock.application.measurement.port.in;
 
-import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.jspecify.annotations.NonNull;
 
 

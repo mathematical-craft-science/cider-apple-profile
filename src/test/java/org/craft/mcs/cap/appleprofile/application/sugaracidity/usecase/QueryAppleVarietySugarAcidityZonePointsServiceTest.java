@@ -1,46 +1,46 @@
 package org.craft.mcs.cap.appleprofile.application.sugaracidity.usecase;
 
-import java.util.List;
-import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.in.AppleVarietyPointFilters;
-import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.in.AppleVarietySugarAcidityZonePointQuery;
-import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.in.AppleVarietySugarAcidityZoneResult;
-import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.out.AppleVarietySugarAcidityPointCandidateRepository;
-import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.out.AppleVarietySugarAcidityPointCandidateView;
-import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.usecase.QueryAppleVarietySugarAcidityZonePointsService;
-import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVariety;
-import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyId;
-import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyName;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileProjector;
-import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityCriteria;
-import org.craft.mcs.cap.shared.application.query.pagination.CursorPageRequest;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.application.model.SugarAcidityZoneCriteria;
-import org.craft.mcs.cap.shared.platform.query.TextSearchCriteria;
-import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
-import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapability;
-import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityAssessor;
-import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
-import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
-import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
-import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
-import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.BuiltInSugarAcidityZoneProfiles;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.RectangleSugarAcidityZoneAssessor;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.SugarAcidityZone;
-import org.junit.jupiter.api.Test;
-
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.craft.mcs.cap.core.profileanalysis.testing.ProfileAnalysisTestFixtures
+    .chemicalProfileAssessmentAdapter;
+import static org.craft.mcs.cap.core.profileanalysis.testing.ProfileAnalysisTestFixtures
+    .chemicalProfileAssessmentMatcher;
 import static org.craft.mcs.cap.support.PotentialAbvPredictionFixtures.predictor;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import java.util.List;
+import org.craft.mcs.cap.core.appleprofile.application.analysis.common.model.AppleVarietyAnalysisFilters;
+import org.craft.mcs.cap.core.appleprofile.application.catalog.port.out.AppleVarietyAnalysisCandidateQuery;
+import org.craft.mcs.cap.core.appleprofile.application.catalog.port.out.AppleVarietyAnalysisCandidateView;
+import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.in.AppleVarietySugarAcidityZonePointQuery;
+import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.in.AppleVarietySugarAcidityZoneResult;
+import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.usecase.QueryAppleVarietySugarAcidityZonePointsService;
+import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVariety;
+import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyId;
+import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyName;
+import org.craft.mcs.cap.core.profileanalysis.compatibility.application.ChemicalProfileAssessmentAdapter;
+import org.craft.mcs.cap.core.profileanalysis.graph.application.model.JolicoeurSugarAcidityZoneCriteria;
+import org.craft.mcs.cap.core.profileanalysis.graph.zone.domain.JolicoeurSugarAcidityZone;
+import org.craft.mcs.cap.core.profileanalysis.profileaxis.application.model.ChemicalProfileCapabilityCriteria;
+import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapability;
+import org.craft.mcs.cap.shared.application.query.TextSearchCriteria;
+import org.craft.mcs.cap.shared.application.query.pagination.CursorPageRequest;
+import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
+import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
+import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
+import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
+import org.junit.jupiter.api.Test;
 
 
 class QueryAppleVarietySugarAcidityZonePointsServiceTest {
 
   @Test
   void filtersByTextCapabilityZoneAndLimitInStableOrder() {
-    final var repository = mock(AppleVarietySugarAcidityPointCandidateRepository.class);
+    final var repository = mock(AppleVarietyAnalysisCandidateQuery.class);
     final var service = service(repository);
     final var beta = variety("Kingston Beta", profile("1.064", "5.8", "1800"));
     final var alpha = variety("Kingston Alpha", profile("1.066", "5.7", "1700"));
@@ -53,9 +53,9 @@ class QueryAppleVarietySugarAcidityZonePointsServiceTest {
     ));
 
     final var result = service.query(new AppleVarietySugarAcidityZonePointQuery(
-        new AppleVarietyPointFilters(
+        new AppleVarietyAnalysisFilters(
             new TextSearchCriteria("kingston"),
-            SugarAcidityZoneCriteria.of(SugarAcidityZone.PERFECT_APPLES),
+            JolicoeurSugarAcidityZoneCriteria.of(JolicoeurSugarAcidityZone.PERFECT_APPLES),
             ChemicalProfileCapabilityCriteria.capable(ChemicalProfileCapability.NORTH_AMERICAN_PROFILE)
         ),
         CursorPageRequest.firstPage(1)
@@ -65,7 +65,8 @@ class QueryAppleVarietySugarAcidityZonePointsServiceTest {
     assertThat(result.items()).hasSize(1);
     assertThat(result.items().getFirst().varietyId()).isEqualTo(alpha.varietyId());
     assertThat(result.items().getFirst().evaluation().plottable()).isTrue();
-    assertThat(result.items().getFirst().evaluation().assessment().zone()).isEqualTo(SugarAcidityZone.PERFECT_APPLES);
+    assertThat(result.items().getFirst().evaluation().assessment().zone())
+        .isEqualTo(JolicoeurSugarAcidityZone.PERFECT_APPLES);
     assertThat(result.items().getFirst().potentialAbv())
         .isNotNull()
         .satisfies(prediction -> assertThat(prediction.potentialAbv().percent())
@@ -74,7 +75,7 @@ class QueryAppleVarietySugarAcidityZonePointsServiceTest {
 
   @Test
   void returnsNextPageUsingCursorWithoutDuplicatingVarieties() {
-    final var repository = mock(AppleVarietySugarAcidityPointCandidateRepository.class);
+    final var repository = mock(AppleVarietyAnalysisCandidateQuery.class);
     final var service = service(repository);
     final var first = variety("A First", profile("1.066", "5.7", null));
     final var second = variety("B Second", profile("1.066", "5.7", null));
@@ -85,11 +86,11 @@ class QueryAppleVarietySugarAcidityZonePointsServiceTest {
         .thenReturn(List.of(candidate(third)));
 
     final var firstPage = service.query(new AppleVarietySugarAcidityZonePointQuery(
-        new AppleVarietyPointFilters(null, null, null),
+        new AppleVarietyAnalysisFilters(null, null, null),
         CursorPageRequest.firstPage(2)
     ));
     final var secondPage = service.query(new AppleVarietySugarAcidityZonePointQuery(
-        new AppleVarietyPointFilters(null, null, null),
+        new AppleVarietyAnalysisFilters(null, null, null),
         new CursorPageRequest<>(firstPage.nextPosition(), 2)
     ));
 
@@ -105,17 +106,19 @@ class QueryAppleVarietySugarAcidityZonePointsServiceTest {
 
   @Test
   void canReturnVarietiesNotCapableForSugarAcidityPlot() {
-    final var repository = mock(AppleVarietySugarAcidityPointCandidateRepository.class);
+    final var repository = mock(AppleVarietyAnalysisCandidateQuery.class);
     final var service = service(repository);
     final var partial = variety("Partial", partialProfile());
 
     when(repository.findCandidates(any())).thenReturn(List.of(candidate(partial)));
 
     final var result = service.query(new AppleVarietySugarAcidityZonePointQuery(
-        new AppleVarietyPointFilters(
+        new AppleVarietyAnalysisFilters(
             null,
             null,
-            ChemicalProfileCapabilityCriteria.notCapable(ChemicalProfileCapability.SUGAR_ACIDITY_PLOT)
+            ChemicalProfileCapabilityCriteria.notCapable(
+                ChemicalProfileCapability.SUGAR_ACIDITY_GRAPH
+            )
         ),
         CursorPageRequest.firstPage()
     ));
@@ -127,24 +130,18 @@ class QueryAppleVarietySugarAcidityZonePointsServiceTest {
   }
 
   private static QueryAppleVarietySugarAcidityZonePointsService service(
-      AppleVarietySugarAcidityPointCandidateRepository repository
+      AppleVarietyAnalysisCandidateQuery repository
   ) {
     return new QueryAppleVarietySugarAcidityZonePointsService(
         repository,
         projector(),
+        chemicalProfileAssessmentMatcher(),
         predictor()
     );
   }
 
-  private static SugarAcidityProfileProjector projector() {
-    return new SugarAcidityProfileProjector(
-        new ChemicalProfileAxisExtractor(),
-        new ChemicalProfileCapabilityAssessor(),
-        new RectangleSugarAcidityZoneAssessor(
-            BuiltInSugarAcidityZoneProfiles.thresholds(),
-            BuiltInSugarAcidityZoneProfiles.rectangularZoneGeometryProfile()
-        )
-    );
+  private static ChemicalProfileAssessmentAdapter projector() {
+    return chemicalProfileAssessmentAdapter();
   }
 
   private static AppleVariety variety(
@@ -158,8 +155,8 @@ class QueryAppleVarietySugarAcidityZonePointsServiceTest {
     );
   }
 
-  private static AppleVarietySugarAcidityPointCandidateView candidate(AppleVariety variety) {
-    return new AppleVarietySugarAcidityPointCandidateView(
+  private static AppleVarietyAnalysisCandidateView candidate(AppleVariety variety) {
+    return new AppleVarietyAnalysisCandidateView(
         variety.varietyId(),
         variety.name(),
         variety.chemicalProfile()

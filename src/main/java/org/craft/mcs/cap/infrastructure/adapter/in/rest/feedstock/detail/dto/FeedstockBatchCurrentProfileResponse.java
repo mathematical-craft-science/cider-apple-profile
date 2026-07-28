@@ -5,7 +5,7 @@ import java.util.List;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.common.dto.FeedstockProfileEvidenceResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.measurement.dto.FeedstockMeasurementResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.readiness.dto.FermentationStartReadinessAssessmentResponse;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.sugaracidity.dto.SugarAcidityAxisPointResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profilecharacteristic.dto.ProfileCharacteristicValueResponse;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -55,7 +55,7 @@ public record FeedstockBatchCurrentProfileResponse(
         nullable = true,
         requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )
-    @Nullable SugarAcidityAxisPointResponse yeastAssimilableNitrogen,
+    @Nullable ProfileCharacteristicValueResponse yeastAssimilableNitrogen,
     @Schema(
         description = "Worst freshness status among the planning-required SG and TA evidence.",
         nullable = true,
@@ -73,7 +73,11 @@ public record FeedstockBatchCurrentProfileResponse(
     )
     @Nullable FermentationStartReadinessAssessmentResponse fermentationStartReadiness,
     @Schema(
-        description = "Last operation reflected by the current profile.",
+        description = """
+            Reserved for a future Feedstock operation projection. Measurements are evidence and are
+            not emitted as production operations.
+            """,
+        deprecated = true,
         nullable = true,
         requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )

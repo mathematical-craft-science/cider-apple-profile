@@ -1,7 +1,8 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.common.mapper;
 
-import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentProfileEvidenceView;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.common.dto.FeedstockProfileEvidenceResponse;
+import org.craft.mcs.cap.shared.application.measurement.MeasurementEvidenceView;
+import org.craft.mcs.cap.shared.application.measurement.MeasurementFreshnessStatus;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
@@ -14,21 +15,23 @@ public final class FeedstockProfileEvidenceRestMapper {
   }
 
   public static @NonNull FeedstockProfileEvidenceResponse toResponse(
-      @NonNull FeedstockCurrentProfileEvidenceView evidence
+      @NonNull MeasurementEvidenceView evidence
   ) {
     requireNonNull(evidence, "feedstock profile evidence cannot be null");
+    final var reference = evidence.evidenceReference();
+    final var provenance = evidence.provenance();
     return new FeedstockProfileEvidenceResponse(
         evidence.characteristic(),
         evidence.origin(),
         evidence.materialStateId().value(),
-        evidence.measurementSetId(),
-        evidence.recordId(),
+        reference.measurementSetId(),
+        reference.recordId(),
         evidence.measuredAt(),
-        evidence.source(),
-        evidence.confidence(),
+        provenance.sourceName(),
+        provenance.confidence(),
         evidence.validity(),
         evidence.freshnessStatus(),
-        evidence.stale()
+        evidence.freshnessStatus() == MeasurementFreshnessStatus.STALE
     );
   }
 }

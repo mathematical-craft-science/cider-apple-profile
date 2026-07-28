@@ -6,10 +6,10 @@ import org.craft.mcs.cap.core.feedstock.application.inventory.port.in.InspectFee
 import org.craft.mcs.cap.core.production.application.port.out.ProductionSourceDisplayName;
 import org.craft.mcs.cap.core.production.candidate.application.model.AvailableProductionSource;
 import org.craft.mcs.cap.core.production.candidate.application.port.out.ProductionSourceInspector;
-import org.craft.mcs.cap.core.production.candidate.domain.model.ProductionSourceEvidenceReference;
+import org.craft.mcs.cap.core.production.domain.model.ProductionSourceEvidenceReference;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceComponent;
 import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
-import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
@@ -52,11 +52,9 @@ public final class FeedstockProductionSourceInspector implements ProductionSourc
     return new AvailableProductionSource(
         source.reference(),
         ProductionSourceDisplayName.of(snapshot.batchName().value()),
-        snapshot.requestedVolume(),
-        snapshot.availableVolume(),
+        snapshot.availability(),
         axisExtractor.extract(snapshot.chemicalProfile()),
         snapshot.profileConfidence(),
-        snapshot.materialStateId(),
         ProductionSourceEvidenceReference.of(snapshot.evidenceReference().externalValue())
     );
   }

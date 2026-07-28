@@ -8,7 +8,6 @@ import java.util.EnumMap;
 import java.util.Map;
 import java.util.List;
 import java.util.Optional;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.SugarAcidityZoneThresholds;
 import org.jspecify.annotations.NonNull;
 import static java.util.Objects.requireNonNull;
 import static org.craft.mcs.cap.shared.kernel.math.DecimalComparisons.isAtLeast;
@@ -16,12 +15,12 @@ import static org.craft.mcs.cap.shared.kernel.math.DecimalComparisons.isLessThan
 
 
 /**
- * Normalizes axes piecewise by classification thresholds:
+ * Normalizes axes piecewise by scoring-calibration breakpoints:
  * normalized(x) = (segmentIndex + (x - segmentMin) / (segmentMax - segmentMin)) / segmentCount.
  *
  * <p>This normalizer is useful for target-zone matching. It makes movement across domain
- * classification thresholds more explicit than raw min-max scaling, so candidates near different
- * low/medium/high bands can be compared in terms of classification semantics.
+ * calibrated breakpoints more explicit than raw min-max scaling. The breakpoints belong to this
+ * distance policy and must not be interpreted as a selected cider-apple classification system.
  */
 public final class ThresholdSegmentProfileAxisNormalizer implements ProfileAxisNormalizer {
 
@@ -41,17 +40,14 @@ public final class ThresholdSegmentProfileAxisNormalizer implements ProfileAxisN
     this.breakpoints = Map.copyOf(breakpointMap);
   }
 
-  public static @NonNull ThresholdSegmentProfileAxisNormalizer from(
-      @NonNull SugarAcidityZoneThresholds thresholds
-  ) {
-    requireNonNull(thresholds, "sugar-acidity zone thresholds cannot be null");
+  public static @NonNull ThresholdSegmentProfileAxisNormalizer defaultScoringCalibration() {
     return new ThresholdSegmentProfileAxisNormalizer(Map.of(
-        ProfileEvaluationAxis.SUGAR,
-        BuiltInProfileAxisRanges.sugarThresholdBreakpoints(),
-        ProfileEvaluationAxis.ACIDITY,
-        BuiltInProfileAxisRanges.acidityThresholdBreakpoints(),
+        ProfileEvaluationAxis.SPECIFIC_GRAVITY,
+        BuiltInProfileAxisRanges.specificGravityScoringBreakpoints(),
+        ProfileEvaluationAxis.TITRATABLE_ACIDITY,
+        BuiltInProfileAxisRanges.titratableAcidityScoringBreakpoints(),
         ProfileEvaluationAxis.TANNIN,
-        BuiltInProfileAxisRanges.tanninThresholdBreakpoints(thresholds)
+        BuiltInProfileAxisRanges.tanninScoringBreakpoints()
     ));
   }
 

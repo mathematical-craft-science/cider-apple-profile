@@ -1,53 +1,55 @@
 package org.craft.mcs.cap.feedstock.application.analysis.sugaracidity.usecase;
 
-import java.time.Instant;
-import java.time.LocalDate;
-import java.util.List;
-import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileProjector;
-import org.craft.mcs.cap.core.feedstock.application.batch.model.FeedstockBatchCriteria;
-import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.*;
-import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.usecase.*;
-import org.craft.mcs.cap.core.feedstock.application.measurement.port.out.FeedstockMeasurementQueryRepository;
-import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
-import org.craft.mcs.cap.shared.testing.FeedstockMeasurementFixture;
-import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementId;
-import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementName;
-import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
-import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityCriteria;
-import org.craft.mcs.cap.shared.application.query.pagination.CursorPageRequest;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.application.model.SugarAcidityZoneCriteria;
-import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
-import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapability;
-import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityAssessor;
-import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
-import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
-import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
-import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
-import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.BuiltInSugarAcidityZoneProfiles;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.RectangleSugarAcidityZoneAssessor;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.SugarAcidityZone;
-import org.junit.jupiter.api.Test;
-
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.craft.mcs.cap.core.profileanalysis.testing.ProfileAnalysisTestFixtures
+    .chemicalProfileAssessmentAdapter;
+import static org.craft.mcs.cap.core.profileanalysis.testing.ProfileAnalysisTestFixtures
+    .chemicalProfileAssessmentMatcher;
 import static org.craft.mcs.cap.shared.kernel.identity.UuidV7Generator.newUuid;
 import static org.craft.mcs.cap.shared.testing.FeedstockMeasurementViews.view;
 import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementInstant;
-import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementRecordedAt;
 import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementInstantPlusSeconds;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementRecordedAt;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import java.time.Instant;
+import java.time.LocalDate;
+import java.util.List;
+import org.craft.mcs.cap.core.feedstock.application.analysis.common.model.FeedstockAnalysisCandidateFilters;
+import org.craft.mcs.cap.core.feedstock.application.analysis.common.port.out.FeedstockMeasurementAnalysisCandidateRepository;
+import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockMeasurementSugarAcidityZonePointQuery;
+import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockMeasurementSugarAcidityZoneResult;
+import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.usecase.QueryFeedstockMeasurementSugarAcidityZonePointsService;
+import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
+import org.craft.mcs.cap.core.feedstock.application.batch.model.FeedstockBatchCriteria;
+import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementId;
+import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementName;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
+import org.craft.mcs.cap.core.profileanalysis.compatibility.application.ChemicalProfileAssessmentAdapter;
+import org.craft.mcs.cap.core.profileanalysis.graph.application.model.JolicoeurSugarAcidityZoneCriteria;
+import org.craft.mcs.cap.core.profileanalysis.graph.zone.domain.JolicoeurSugarAcidityZone;
+import org.craft.mcs.cap.core.profileanalysis.profileaxis.application.model.ChemicalProfileCapabilityCriteria;
+import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapability;
+import org.craft.mcs.cap.shared.application.query.pagination.CursorPageRequest;
+import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
+import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
+import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
+import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
+import org.craft.mcs.cap.shared.testing.FeedstockMeasurementFixture;
+import org.junit.jupiter.api.Test;
 
 
 class QueryFeedstockMeasurementSugarAcidityZonePointsServiceTest {
 
   @Test
   void filtersByBatchCapabilityZoneAndLimitInStableOrder() {
-    final var repository = mock(FeedstockMeasurementQueryRepository.class);
+    final var repository = mock(FeedstockMeasurementAnalysisCandidateRepository.class);
     final var service = service(repository);
     final var workspaceId = WorkspaceId.of(newUuid());
     final var matchingBatchId = FeedstockBatchId.newId();
@@ -76,16 +78,16 @@ class QueryFeedstockMeasurementSugarAcidityZonePointsServiceTest {
         feedstockMeasurementInstantPlusSeconds(180)
     );
 
-    when(repository.findSugarAcidityPointCandidates(any()))
+    when(repository.findCandidates(any()))
         .thenReturn(List.of(view(wrongZone), view(alpha)))
         .thenReturn(List.of(view(beta), view(missingTannin)));
 
     final var result = service.query(new FeedstockMeasurementSugarAcidityZonePointQuery(
         workspaceId,
-        new FeedstockMeasurementPointFilters(
+        new FeedstockAnalysisCandidateFilters(
             FeedstockBatchCriteria.of(matchingBatchId),
             null,
-            SugarAcidityZoneCriteria.of(SugarAcidityZone.PERFECT_APPLES),
+            JolicoeurSugarAcidityZoneCriteria.of(JolicoeurSugarAcidityZone.PERFECT_APPLES),
             ChemicalProfileCapabilityCriteria.capable(ChemicalProfileCapability.NORTH_AMERICAN_PROFILE)
         ),
         CursorPageRequest.firstPage(1)
@@ -95,12 +97,13 @@ class QueryFeedstockMeasurementSugarAcidityZonePointsServiceTest {
     assertThat(result.items()).hasSize(1);
     assertThat(result.items().getFirst().measurementId()).isEqualTo(alpha.measurementId());
     assertThat(result.items().getFirst().evaluation().plottable()).isTrue();
-    assertThat(result.items().getFirst().evaluation().assessment().zone()).isEqualTo(SugarAcidityZone.PERFECT_APPLES);
+    assertThat(result.items().getFirst().evaluation().assessment().zone())
+        .isEqualTo(JolicoeurSugarAcidityZone.PERFECT_APPLES);
   }
 
   @Test
   void returnsNextPageUsingCursorWithoutDuplicatingSamples() {
-    final var repository = mock(FeedstockMeasurementQueryRepository.class);
+    final var repository = mock(FeedstockMeasurementAnalysisCandidateRepository.class);
     final var service = service(repository);
     final var workspaceId = WorkspaceId.of(newUuid());
     final var batchId = FeedstockBatchId.newId();
@@ -118,18 +121,18 @@ class QueryFeedstockMeasurementSugarAcidityZonePointsServiceTest {
         feedstockMeasurementInstantPlusSeconds(120)
     );
 
-    when(repository.findSugarAcidityPointCandidates(any()))
+    when(repository.findCandidates(any()))
         .thenReturn(List.of(view(first), view(second), view(third)))
         .thenReturn(List.of(view(third)));
 
     final var firstPage = service.query(new FeedstockMeasurementSugarAcidityZonePointQuery(
         workspaceId,
-        new FeedstockMeasurementPointFilters(null, null, null, null),
+        new FeedstockAnalysisCandidateFilters(null, null, null, null),
         CursorPageRequest.firstPage(2)
     ));
     final var secondPage = service.query(new FeedstockMeasurementSugarAcidityZonePointQuery(
         workspaceId,
-        new FeedstockMeasurementPointFilters(null, null, null, null),
+        new FeedstockAnalysisCandidateFilters(null, null, null, null),
         new CursorPageRequest<>(firstPage.nextPosition(), 2)
     ));
 
@@ -145,20 +148,22 @@ class QueryFeedstockMeasurementSugarAcidityZonePointsServiceTest {
 
   @Test
   void canReturnSamplesNotCapableForSugarAcidityPlot() {
-    final var repository = mock(FeedstockMeasurementQueryRepository.class);
+    final var repository = mock(FeedstockMeasurementAnalysisCandidateRepository.class);
     final var service = service(repository);
     final var workspaceId = WorkspaceId.of(newUuid());
     final var partial = sample("Partial", FeedstockBatchId.newId(), partialProfile());
 
-    when(repository.findSugarAcidityPointCandidates(any())).thenReturn(List.of(view(partial)));
+    when(repository.findCandidates(any())).thenReturn(List.of(view(partial)));
 
     final var result = service.query(new FeedstockMeasurementSugarAcidityZonePointQuery(
         workspaceId,
-        new FeedstockMeasurementPointFilters(
+        new FeedstockAnalysisCandidateFilters(
             null,
             null,
             null,
-            ChemicalProfileCapabilityCriteria.notCapable(ChemicalProfileCapability.SUGAR_ACIDITY_PLOT)
+            ChemicalProfileCapabilityCriteria.notCapable(
+                ChemicalProfileCapability.SUGAR_ACIDITY_GRAPH
+            )
         ),
         CursorPageRequest.firstPage()
     ));
@@ -167,22 +172,22 @@ class QueryFeedstockMeasurementSugarAcidityZonePointsServiceTest {
     assertThat(result.items().getFirst().evaluation().plottable()).isFalse();
     assertThat(result.items().getFirst().evaluation().assessment()).isNull();
     assertThat(result.items().getFirst().evaluation().capabilityAssessment().capability())
-        .isEqualTo(ChemicalProfileCapability.SUGAR_ACIDITY_PLOT);
+        .isEqualTo(ChemicalProfileCapability.SUGAR_ACIDITY_GRAPH);
   }
 
   @Test
   void usesSeasonAwareRepositoryWhenSeasonFilterIsPresent() {
-    final var repository = mock(FeedstockMeasurementQueryRepository.class);
+    final var repository = mock(FeedstockMeasurementAnalysisCandidateRepository.class);
     final var service = service(repository);
     final var workspaceId = WorkspaceId.of(newUuid());
     final var season = FeedstockSeason.of(LocalDate.parse("2026-09-01"), LocalDate.parse("2026-12-01"));
     final var sample = sample("Season sample", FeedstockBatchId.newId(), profile("1.066", "5.7", null));
 
-    when(repository.findSugarAcidityPointCandidates(any())).thenReturn(List.of(view(sample)));
+    when(repository.findCandidates(any())).thenReturn(List.of(view(sample)));
 
     final var result = service.query(new FeedstockMeasurementSugarAcidityZonePointQuery(
         workspaceId,
-        new FeedstockMeasurementPointFilters(
+        new FeedstockAnalysisCandidateFilters(
             null,
             season,
             null,
@@ -196,24 +201,18 @@ class QueryFeedstockMeasurementSugarAcidityZonePointsServiceTest {
   }
 
   private static QueryFeedstockMeasurementSugarAcidityZonePointsService service(
-      FeedstockMeasurementQueryRepository repository
+      FeedstockMeasurementAnalysisCandidateRepository repository
   ) {
     return new QueryFeedstockMeasurementSugarAcidityZonePointsService(
         repository,
         mock(FeedstockAccessControl.class),
-        projector()
+        projector(),
+        chemicalProfileAssessmentMatcher()
     );
   }
 
-  private static SugarAcidityProfileProjector projector() {
-    return new SugarAcidityProfileProjector(
-        new ChemicalProfileAxisExtractor(),
-        new ChemicalProfileCapabilityAssessor(),
-        new RectangleSugarAcidityZoneAssessor(
-            BuiltInSugarAcidityZoneProfiles.thresholds(),
-            BuiltInSugarAcidityZoneProfiles.rectangularZoneGeometryProfile()
-        )
-    );
+  private static ChemicalProfileAssessmentAdapter projector() {
+    return chemicalProfileAssessmentAdapter();
   }
 
   private static FeedstockMeasurementFixture sample(

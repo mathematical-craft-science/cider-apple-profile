@@ -4,7 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.QueryFeedstockPlanningBatchesUseCase;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstockworkspace.dto.FeedstockWorkspaceBatchQueryRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstockworkspace.dto.FeedstockWorkspaceResponse;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstockworkspace.mapper.FeedstockWorkspaceRestMapper;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstockworkspace.mapper.FeedstockWorkspaceQueryRestMapper;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstockworkspace.mapper.FeedstockWorkspaceResponseRestMapper;
 import org.jspecify.annotations.NonNull;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -30,9 +31,9 @@ public final class FeedstockWorkspaceController implements FeedstockWorkspaceApi
       @RequestBody @NonNull FeedstockWorkspaceBatchQueryRequest request
   ) {
     final var view = queryFeedstockPlanningBatchesUseCase.query(
-        FeedstockWorkspaceRestMapper.toQuery(request)
+        FeedstockWorkspaceQueryRestMapper.toQuery(request)
     );
 
-    return ResponseEntity.ok(FeedstockWorkspaceRestMapper.toResponse(view));
+    return ResponseEntity.ok(FeedstockWorkspaceResponseRestMapper.toResponse(view));
   }
 }

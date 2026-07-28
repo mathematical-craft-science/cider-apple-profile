@@ -2,7 +2,7 @@ package org.craft.mcs.cap.feedstock.domain.measurement;
 
 import org.craft.mcs.cap.core.feedstock.domain.measurement.FeedstockSpecificGravityPolicy;
 import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
-import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThatCode;

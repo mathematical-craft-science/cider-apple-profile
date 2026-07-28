@@ -2,6 +2,7 @@ package org.craft.mcs.cap.core.measurement.domain.model;
 
 import java.time.Instant;
 import org.craft.mcs.cap.shared.kernel.DomainConflictException;
+import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jmolecules.ddd.annotation.AggregateRoot;
 import org.jmolecules.ddd.annotation.Identity;
@@ -52,7 +53,7 @@ public final class MeasurementSet {
   ) {
     requireNonNull(initialRevision, "initial measurement revision cannot be null");
     if (!initialRevision.revisionNumber().isInitial()) {
-      throw new DomainConflictException("initial measurement revision number must be one");
+      throw new DomainRuleViolationException("initial measurement revision number must be one");
     }
     final var createdAt = initialRevision.createdAt();
     return new MeasurementSet(
@@ -124,11 +125,11 @@ public final class MeasurementSet {
       @NonNull Instant updatedAt
   ) {
     if (createdAt.isAfter(updatedAt)) {
-      throw new DomainConflictException("measurement set creation time cannot follow its update time");
+      throw new DomainRuleViolationException("measurement set creation time cannot follow its update time");
     }
     if (currentRevision.createdAt().isBefore(createdAt)
         || currentRevision.createdAt().isAfter(updatedAt)) {
-      throw new DomainConflictException(
+      throw new DomainRuleViolationException(
           "current measurement revision time must belong to the aggregate lifetime"
       );
     }

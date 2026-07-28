@@ -13,7 +13,7 @@ import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
-import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.jspecify.annotations.NonNull;
 import org.craft.mcs.cap.shared.application.persistence.AggregateRevision;
 import org.craft.mcs.cap.shared.application.persistence.VersionedAggregate;
@@ -64,8 +64,8 @@ public final class ProductionBatchJdbcMapper {
     entity.alcoholicFermentationState = updated.alcoholicFermentationState;
     entity.currentVolumeLiters = updated.currentVolumeLiters;
     entity.currentMaterialStateId = updated.currentMaterialStateId;
-    entity.initialSugarSpecificGravity = updated.initialSugarSpecificGravity;
-    entity.initialAcidityGLAsMalic = updated.initialAcidityGLAsMalic;
+    entity.initialSpecificGravity = updated.initialSpecificGravity;
+    entity.initialTitratableAcidityGLAsMalic = updated.initialTitratableAcidityGLAsMalic;
     entity.initialTanninMgLTae = updated.initialTanninMgLTae;
     entity.initialYeastAssimilableNitrogenMgNL = updated.initialYeastAssimilableNitrogenMgNL;
     entity.note = updated.note;
@@ -126,10 +126,13 @@ public final class ProductionBatchJdbcMapper {
   ) {
     return new ProductionProfileSnapshot(
         SpecificGravityValue.of(
-            requireNonNull(entity.initialSugarSpecificGravity, "production initial sugar cannot be null")
+            requireNonNull(entity.initialSpecificGravity, "production initial specific gravity cannot be null")
         ),
         TitratableAcidityValue.of(
-            requireNonNull(entity.initialAcidityGLAsMalic, "production initial acidity cannot be null")
+            requireNonNull(
+                entity.initialTitratableAcidityGLAsMalic,
+                "production initial titratable acidity cannot be null"
+            )
         ),
         toTanninValue(entity.initialTanninMgLTae),
         toYeastAssimilableNitrogenValue(entity.initialYeastAssimilableNitrogenMgNL)

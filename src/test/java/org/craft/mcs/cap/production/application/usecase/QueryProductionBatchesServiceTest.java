@@ -9,7 +9,7 @@ import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPredictor;
 import org.craft.mcs.cap.core.profileanalysis.abv.domain.StandardGravityDropAbvPredictionStrategy;
 import org.craft.mcs.cap.core.production.application.authorization.port.out.ProductionAccessControl;
 import org.craft.mcs.cap.core.production.application.model.ProductionBatchView;
-import org.craft.mcs.cap.core.production.application.model.ProductionMeasurementProfileView;
+import org.craft.mcs.cap.core.production.application.model.ProductionMeasuredProfileView;
 import org.craft.mcs.cap.core.production.application.port.in.ListProductionBatchesQuery;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchQueryRepository;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionMeasurementProfileProvider;
@@ -37,7 +37,7 @@ import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic;
 import org.craft.mcs.cap.shared.kernel.measurement.MeasurementSourceType;
-import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.junit.jupiter.api.Test;
 
@@ -118,7 +118,7 @@ class QueryProductionBatchesServiceTest {
         MeasurementFreshnessStatus.CURRENT,
         MeasurementEvidenceValidity.VALID
     );
-    final var measuredProfile = new ProductionMeasurementProfileView(
+    final var measuredProfile = new ProductionMeasuredProfileView(
         ChemicalProfile.builder()
             .sugar(PointCharacteristicValue.of(SugarConcentration.ofSpecificGravity(
                 SpecificGravityValue.of("1.035")
@@ -136,10 +136,10 @@ class QueryProductionBatchesServiceTest {
 
     assertThat(axes)
         .satisfies(profileAxes -> assertThat(
-            profileAxes.requireValueOf(ChemicalAxis.SUGAR).value()
+            profileAxes.requireValueOf(ChemicalAxis.SPECIFIC_GRAVITY).value()
         ).isEqualByComparingTo("1.035"))
         .satisfies(profileAxes -> assertThat(
-            profileAxes.requireValueOf(ChemicalAxis.ACIDITY).value()
+            profileAxes.requireValueOf(ChemicalAxis.TITRATABLE_ACIDITY).value()
         ).isEqualByComparingTo("6.2"));
     assertThat(details)
         .satisfies(value -> assertThat(value.currentProfile().evidence()).containsExactly(evidence))

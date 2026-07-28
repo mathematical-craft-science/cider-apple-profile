@@ -22,14 +22,11 @@ public final class ChemicalProfileCapabilityAssessor {
 
     final var requiredAxes = requiredAxes(capability);
     final var presentAxes = presentAxes(axes, requiredAxes);
-    final var missingAxes = missingAxes(requiredAxes, presentAxes);
 
     return new ChemicalProfileCapabilityAssessment(
         capability,
-        missingAxes.isEmpty(),
         requiredAxes,
-        presentAxes,
-        missingAxes
+        presentAxes
     );
   }
 
@@ -37,11 +34,11 @@ public final class ChemicalProfileCapabilityAssessor {
       @NonNull ChemicalProfileCapability capability
   ) {
     return switch (capability) {
-      case ABV_PREDICTION -> Set.of(ChemicalAxis.SUGAR);
-      case SUGAR_ACIDITY_PLOT -> Set.of(ChemicalAxis.SUGAR, ChemicalAxis.ACIDITY);
-      case NORTH_AMERICAN_PROFILE, SINGLE_VARIETY_CIDER_ASSESSMENT -> Set.of(
-          ChemicalAxis.SUGAR,
-          ChemicalAxis.ACIDITY,
+      case ABV_PREDICTION -> Set.of(ChemicalAxis.SPECIFIC_GRAVITY);
+      case SUGAR_ACIDITY_GRAPH -> Set.of(ChemicalAxis.SPECIFIC_GRAVITY, ChemicalAxis.TITRATABLE_ACIDITY);
+      case NORTH_AMERICAN_PROFILE -> Set.of(
+          ChemicalAxis.SPECIFIC_GRAVITY,
+          ChemicalAxis.TITRATABLE_ACIDITY,
           ChemicalAxis.TANNIN
       );
     };
@@ -60,14 +57,5 @@ public final class ChemicalProfileCapabilityAssessor {
     }
 
     return presentAxes;
-  }
-
-  private static @NonNull Set<@NonNull ChemicalAxis> missingAxes(
-      @NonNull Set<@NonNull ChemicalAxis> requiredAxes,
-      @NonNull Set<@NonNull ChemicalAxis> presentAxes
-  ) {
-    final var missingAxes = EnumSet.copyOf(requiredAxes);
-    missingAxes.removeAll(presentAxes);
-    return missingAxes;
   }
 }

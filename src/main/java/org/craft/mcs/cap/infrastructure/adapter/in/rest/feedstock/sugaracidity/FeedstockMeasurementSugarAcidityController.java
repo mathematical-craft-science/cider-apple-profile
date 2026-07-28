@@ -8,7 +8,7 @@ import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockM
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.sugaracidity.dto.FeedstockMeasurementSugarAcidityZonePointBatchResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.sugaracidity.dto.FeedstockMeasurementSugarAcidityZonePointQueryRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.sugaracidity.dto.FeedstockMeasurementSugarAcidityZoneResponse;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.sugaracidity.mapper.FeedstockMeasurementSugarAcidityZoneRestMapper;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.sugaracidity.mapper.FeedstockMeasurementProfileGraphRestMapper;
 import org.jspecify.annotations.NonNull;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,7 +26,7 @@ public final class FeedstockMeasurementSugarAcidityController implements Feedsto
 
   private final @NonNull AssessFeedstockMeasurementSugarAcidityZoneUseCase assessSugarAcidityZoneUseCase;
   private final @NonNull QueryFeedstockMeasurementSugarAcidityZonePointsUseCase querySugarAcidityZonePointsUseCase;
-  private final @NonNull FeedstockMeasurementSugarAcidityZoneRestMapper restMapper;
+  private final @NonNull FeedstockMeasurementProfileGraphRestMapper restMapper;
 
   @Override
   @GetMapping(value = "/feedstock-measurements/{measurementId}/sugar-acidity-zone", produces = APPLICATION_JSON_VALUE)
@@ -38,7 +38,7 @@ public final class FeedstockMeasurementSugarAcidityController implements Feedsto
     );
 
     return ResponseEntity.ok(
-        FeedstockMeasurementSugarAcidityZoneRestMapper.toResponse(assessment)
+        FeedstockMeasurementProfileGraphRestMapper.toResponse(assessment)
     );
   }
 

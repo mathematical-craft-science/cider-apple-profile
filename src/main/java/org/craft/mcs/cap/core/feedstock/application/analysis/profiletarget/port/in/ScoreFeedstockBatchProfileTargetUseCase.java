@@ -7,6 +7,6 @@ public interface ScoreFeedstockBatchProfileTargetUseCase {
 
   @NonNull
   FeedstockBatchProfileTargetScores score(
-      @NonNull ScoreFeedstockBatchProfileTargetCommand command
+      @NonNull FeedstockBatchProfileTargetQuery query
   );
 }

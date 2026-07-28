@@ -1,19 +1,33 @@
 package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.production.candidate;
 
 import java.math.BigDecimal;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.production.candidate.domain.model.ProductionBatchCandidate;
-import org.craft.mcs.cap.core.production.candidate.domain.model.ProductionSourceEvidenceReference;
+import org.craft.mcs.cap.core.production.candidate.domain.model.ProductionCandidateSourceEvidence;
+import org.craft.mcs.cap.core.production.domain.model.ProductionSourceEvidenceReference;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceComponent;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceComposition;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceReference;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceType;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionWarning;
+import org.craft.mcs.cap.core.profileanalysis.graph.domain.SugarAcidityGraphPoint;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileEvaluationAxis;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetObjectiveWeights;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.assessment.ProfileTargetDistance;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.assessment.ProfileTargetDistanceStatus;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.objective.ProfileDistanceMetric;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.objective.ProfileTargetObjectiveFunctionCode;
+import org.craft.mcs.cap.core.profileanalysis.graph.domain.SugarAcidityGeometryShape;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.SugarAcidityTargetKind;
+import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.jspecify.annotations.NonNull;
@@ -61,25 +75,23 @@ final class ProductionBatchCandidateJsonCodec {
             VolumeValue.ofLiters(source.volumeLiters())
         ))
         .toList();
-    final Map<ProductionSourceReference, ProductionSourceEvidenceReference> evidence = payload.stream()
+    final Map<ProductionSourceReference, ProductionCandidateSourceEvidence> stateEvidence = payload.stream()
         .collect(Collectors.toUnmodifiableMap(
             source -> new ProductionSourceReference(source.type(), source.id()),
-            source -> ProductionSourceEvidenceReference.of(source.evidenceReference())
+            source -> new ProductionCandidateSourceEvidence(
+                ProductionSourceEvidenceReference.of(source.evidenceReference()),
+                MaterialStateId.of(source.materialStateId())
+            )
         ));
-    final Map<ProductionSourceReference, MaterialStateId> materialStates = payload.stream()
-        .collect(Collectors.toUnmodifiableMap(
-            source -> new ProductionSourceReference(source.type(), source.id()),
-            source -> MaterialStateId.of(source.materialStateId())
-        ));
-    return new DecodedSources(ProductionSourceComposition.of(components), evidence, materialStates);
+    return new DecodedSources(ProductionSourceComposition.of(components), stateEvidence);
   }
 
   @Nullable String encodeTargetDistance(@Nullable ProfileTargetDistance targetDistance) {
-    return targetDistance == null ? null : write(targetDistance);
+    return targetDistance == null ? null : write(TargetDistancePayload.from(targetDistance));
   }
 
   @Nullable ProfileTargetDistance decodeTargetDistance(@Nullable String value) {
-    return value == null ? null : read(value, ProfileTargetDistance.class);
+    return value == null ? null : read(value, TargetDistancePayload.class).toDomain();
   }
 
   @NonNull String encodeWarnings(@NonNull List<@NonNull ChemicalProfileCompositionWarning> warnings) {
@@ -129,10 +141,121 @@ final class ProductionBatchCandidateJsonCodec {
   ) {
   }
 
+  private record TargetDistancePayload(
+      @NonNull ProfileTargetDistanceStatus status,
+      @NonNull CoordinatePayload point,
+      @NonNull CoordinatePayload nearestTargetPoint,
+      @Nullable BigDecimal tannin,
+      @Nullable BigDecimal nearestTargetTannin,
+      @Nullable BigDecimal value,
+      boolean insideSugarAcidityTarget,
+      boolean insideTarget,
+      @NonNull ProfileTargetObjectiveFunctionCode objectiveFunction,
+      @NonNull ProfileDistanceMetric metric,
+      @NonNull WeightsPayload weights,
+      @NonNull SugarAcidityTargetKind targetKind,
+      @NonNull SugarAcidityGeometryShape targetShape,
+      @NonNull List<@NonNull ProfileEvaluationAxis> missingAxes
+  ) {
+
+    private static @NonNull TargetDistancePayload from(
+        @NonNull ProfileTargetDistance distance
+    ) {
+      return new TargetDistancePayload(
+          distance.status(),
+          CoordinatePayload.from(distance.point()),
+          CoordinatePayload.from(distance.nearestTargetPoint()),
+          decimal(distance.tannin()),
+          decimal(distance.nearestTargetTannin()),
+          distance.value(),
+          distance.insideSugarAcidityTarget(),
+          distance.insideTarget(),
+          distance.objectiveFunction(),
+          distance.metric(),
+          WeightsPayload.from(distance.weights()),
+          distance.targetKind(),
+          distance.targetShape(),
+          distance.missingAxes().stream()
+              .sorted(Comparator.comparing(Enum::name))
+              .toList()
+      );
+    }
+
+    private @NonNull ProfileTargetDistance toDomain() {
+      return new ProfileTargetDistance(
+          status,
+          point.toDomain(),
+          nearestTargetPoint.toDomain(),
+          tannin(tannin),
+          tannin(nearestTargetTannin),
+          value,
+          insideSugarAcidityTarget,
+          insideTarget,
+          objectiveFunction,
+          metric,
+          weights.toDomain(),
+          targetKind,
+          targetShape,
+          Set.copyOf(missingAxes)
+      );
+    }
+
+    private static @Nullable BigDecimal decimal(@Nullable TanninValue value) {
+      return value == null ? null : value.asBigDecimal();
+    }
+
+    private static @Nullable TanninValue tannin(@Nullable BigDecimal value) {
+      return value == null ? null : TanninValue.of(value);
+    }
+  }
+
+  private record CoordinatePayload(
+      @NonNull BigDecimal specificGravity,
+      @NonNull BigDecimal titratableAcidity
+  ) {
+
+    private static @NonNull CoordinatePayload from(
+        @NonNull SugarAcidityGraphPoint point
+    ) {
+      return new CoordinatePayload(
+          point.specificGravity().asBigDecimal(),
+          point.titratableAcidity().asBigDecimal()
+      );
+    }
+
+    private @NonNull SugarAcidityGraphPoint toDomain() {
+      return new SugarAcidityGraphPoint(
+          SpecificGravityValue.of(specificGravity),
+          TitratableAcidityValue.of(titratableAcidity)
+      );
+    }
+  }
+
+  private record WeightsPayload(
+      @NonNull BigDecimal specificGravity,
+      @NonNull BigDecimal titratableAcidity,
+      @Nullable BigDecimal tannin
+  ) {
+
+    private static @NonNull WeightsPayload from(
+        @NonNull ProfileTargetObjectiveWeights weights
+    ) {
+      return new WeightsPayload(
+          weights.specificGravity(),
+          weights.titratableAcidity(),
+          weights.tannin()
+      );
+    }
+
+    private @NonNull ProfileTargetObjectiveWeights toDomain() {
+      return new ProfileTargetObjectiveWeights(specificGravity, titratableAcidity, tannin);
+    }
+  }
+
   record DecodedSources(
       @NonNull ProductionSourceComposition composition,
-      @NonNull Map<@NonNull ProductionSourceReference, @NonNull ProductionSourceEvidenceReference> evidence,
-      @NonNull Map<@NonNull ProductionSourceReference, @NonNull MaterialStateId> materialStates
+      @NonNull Map<@NonNull ProductionSourceReference, @NonNull ProductionCandidateSourceEvidence>
+          stateEvidence
   ) {
   }
 }

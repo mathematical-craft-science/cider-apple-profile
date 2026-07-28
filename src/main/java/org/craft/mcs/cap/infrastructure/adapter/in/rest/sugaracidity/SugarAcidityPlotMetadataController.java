@@ -1,7 +1,7 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.sugaracidity;
 
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.sugaracidity.dto.SugarAcidityGraphMetadataResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.dto.SugarAcidityGraphMetadataResponse;
 import org.jspecify.annotations.NonNull;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,7 +18,8 @@ public final class SugarAcidityPlotMetadataController implements SugarAcidityPlo
 
   @Override
   @GetMapping(value = "/chemical-profiles/sugar-acidity-zone/plot-metadata", produces = APPLICATION_JSON_VALUE)
-  public @NonNull ResponseEntity<@NonNull SugarAcidityGraphMetadataResponse> sugarAcidityPlotMetadata() {
+  public @NonNull ResponseEntity<@NonNull SugarAcidityGraphMetadataResponse>
+      sugarAcidityPlotMetadata() {
     return ResponseEntity.ok(responseProvider.get());
   }
 }

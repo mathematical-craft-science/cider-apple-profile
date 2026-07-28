@@ -6,7 +6,7 @@ import org.craft.mcs.cap.core.measurement.application.model.MeasurementSetView;
 import org.craft.mcs.cap.core.measurement.application.port.in.CreateMeasurementSetCommand;
 import org.craft.mcs.cap.core.measurement.application.port.in.CreateMeasurementSetUseCase;
 import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementActorProvider;
-import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementMaterialStateProvider;
+import org.craft.mcs.cap.core.measurement.application.port.out.ObservedMaterialStateValidator;
 import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementSetRepository;
 import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementSubjectAccessControl;
 import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementSubjectMeasurementPolicy;
@@ -29,7 +29,7 @@ public final class CreateMeasurementSetService implements CreateMeasurementSetUs
   private final @NonNull MeasurementSubjectAccessControl subjectAccessControl;
   private final @NonNull MeasurementSubjectMeasurementPolicy subjectMeasurementPolicy;
   private final @NonNull MeasurementActorProvider actorProvider;
-  private final @NonNull MeasurementMaterialStateProvider materialStateProvider;
+  private final @NonNull ObservedMaterialStateValidator observedMaterialStateValidator;
   private final @NonNull MeasurementSetRevisionFactory revisionFactory;
   private final @NonNull TransactionHelper transactionHelper;
   private final @NonNull Clock clock;
@@ -40,7 +40,7 @@ public final class CreateMeasurementSetService implements CreateMeasurementSetUs
     return transactionHelper.callInTransactionNonNull(() -> {
       final var workspaceId = subjectAccessControl.requireWriteAccess(command.subject());
       subjectMeasurementPolicy.validate(command.subject(), command.measurements());
-      final var observedStateId = materialStateProvider.requireObservedState(
+      final var observedStateId = observedMaterialStateValidator.requireObservedState(
           command.subject(),
           command.observedMaterialStateId()
       );

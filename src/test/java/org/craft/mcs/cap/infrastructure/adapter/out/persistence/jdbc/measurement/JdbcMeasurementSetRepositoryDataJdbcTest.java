@@ -6,7 +6,6 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import org.craft.mcs.cap.core.traceability.application.port.in.GetMaterialStateUseCase;
 import org.craft.mcs.cap.core.measurement.application.MeasurementSetAlreadyExistsException;
 import org.craft.mcs.cap.core.measurement.application.model.CurrentMeasurementResultView;
 import org.craft.mcs.cap.core.measurement.application.model.MeasurementRecordView;
@@ -43,7 +42,7 @@ import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.measurement.MeasuredValue;
 import org.craft.mcs.cap.shared.kernel.measurement.unit.BeverageUnits;
-import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.craft.mcs.cap.shared.testing.jdbc.PostgresDataJdbcTestConfiguration;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.BeforeEach;
@@ -52,7 +51,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jdbc.test.autoconfigure.DataJdbcTest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -231,7 +229,7 @@ class JdbcMeasurementSetRepositoryDataJdbcTest {
                 result.recordId()
             ))
         .satisfies(revision -> assertThat(revision.records())
-            .filteredOn(record -> record.role() == MeasurementRecordRole.RESULT)
+            .filteredOn(measurementRecord -> measurementRecord.role() == MeasurementRecordRole.RESULT)
             .singleElement()
             .returns(
                 List.of(firstObservation.recordId(), secondObservation.recordId()),
@@ -694,7 +692,6 @@ class JdbcMeasurementSetRepositoryDataJdbcTest {
                 subject_type,
                 subject_id,
                 lifecycle,
-                current_revision_id,
                 version,
                 created_at,
                 updated_at
@@ -704,7 +701,6 @@ class JdbcMeasurementSetRepositoryDataJdbcTest {
                 'PRODUCTION_BATCH',
                 :subjectId,
                 'ACTIVE',
-                :revisionId,
                 0,
                 :createdAt,
                 :updatedAt
@@ -714,7 +710,6 @@ class JdbcMeasurementSetRepositoryDataJdbcTest {
             .addValue("measurementSetId", measurementSetId)
             .addValue("workspaceId", workspaceId.value())
             .addValue("subjectId", subjectId)
-            .addValue("revisionId", revisionId)
             .addValue("createdAt", OffsetDateTime.parse("2026-07-20T10:00:00Z"))
             .addValue("updatedAt", OffsetDateTime.parse("2026-07-20T10:00:00Z"))
     );
@@ -772,6 +767,81 @@ class JdbcMeasurementSetRepositoryDataJdbcTest {
     ))
         .isInstanceOf(DataIntegrityViolationException.class)
         .hasMessageContaining("chk_measurement_records_specific_gravity_range");
+  }
+
+  @Test
+  void databaseRejectsCurrentRevisionOwnedByAnotherMeasurementSet() {
+    final var firstSetId = newUuid();
+    final var secondSetId = newUuid();
+    final var secondRevisionId = newUuid();
+    final var createdAt = OffsetDateTime.parse("2026-07-20T10:00:00Z");
+    jdbcTemplate.update(
+        """
+            INSERT INTO measurement_sets (
+                measurement_set_id,
+                workspace_id,
+                subject_type,
+                subject_id,
+                lifecycle,
+                version,
+                created_at,
+                updated_at
+            ) VALUES
+                (:firstSetId, :workspaceId, 'PRODUCTION_BATCH', :firstSubjectId, 'ACTIVE', 0, :createdAt, :createdAt),
+                (:secondSetId, :workspaceId, 'PRODUCTION_BATCH', :secondSubjectId, 'ACTIVE', 0, :createdAt, :createdAt)
+            """,
+        new MapSqlParameterSource()
+            .addValue("firstSetId", firstSetId)
+            .addValue("secondSetId", secondSetId)
+            .addValue("workspaceId", workspaceId.value())
+            .addValue("firstSubjectId", newUuid())
+            .addValue("secondSubjectId", newUuid())
+            .addValue("createdAt", createdAt)
+    );
+    jdbcTemplate.update(
+        """
+            INSERT INTO measurement_set_revisions (
+                revision_id,
+                measurement_set_id,
+                revision_number,
+                material_state_id,
+                name,
+                created_at,
+                actor_reference
+            ) VALUES (
+                :revisionId,
+                :measurementSetId,
+                1,
+                :materialStateId,
+                'Second set revision',
+                :createdAt,
+                :actorReference
+            )
+            """,
+        new MapSqlParameterSource()
+            .addValue("revisionId", secondRevisionId)
+            .addValue("measurementSetId", secondSetId)
+            .addValue("materialStateId", newUuid())
+            .addValue("createdAt", createdAt)
+            .addValue("actorReference", "ACCOUNT_USER:" + newUuid())
+    );
+
+    assertThatThrownBy(() -> jdbcTemplate.update(
+        """
+            INSERT INTO measurement_set_heads (
+                measurement_set_id,
+                revision_id
+            ) VALUES (
+                :measurementSetId,
+                :revisionId
+            )
+            """,
+        new MapSqlParameterSource()
+            .addValue("measurementSetId", firstSetId)
+            .addValue("revisionId", secondRevisionId)
+    ))
+        .isInstanceOf(DataIntegrityViolationException.class)
+        .hasMessageContaining("fk_measurement_set_heads_revision");
   }
 
   private static MeasurementSetRevision revision(
@@ -884,12 +954,5 @@ class JdbcMeasurementSetRepositoryDataJdbcTest {
   @TestConfiguration(proxyBeanMethods = false)
   @ComponentScan("org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.measurement")
   static class MeasurementJdbcAdaptersTestConfiguration {
-
-    @Bean
-    GetMaterialStateUseCase getMaterialStateUseCase() {
-      return materialStateId -> {
-        throw new UnsupportedOperationException("historical state lookup is outside this persistence test");
-      };
-    }
   }
 }

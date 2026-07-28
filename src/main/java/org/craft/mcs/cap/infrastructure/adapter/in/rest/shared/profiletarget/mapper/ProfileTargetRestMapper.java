@@ -1,26 +1,29 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.mapper;
 
 import java.math.BigDecimal;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.port.in.ProfileTargetScoringPurpose;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.normalization.ProfileAxisNormalizerCode;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.assessment.ProfileTargetDistance;
+import java.util.Comparator;
+import org.craft.mcs.cap.core.profileanalysis.graph.domain.SugarAcidityGraphPoint;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetObjective;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetObjectiveWeights;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.CustomRectangleSugarAcidityTarget;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.RectangleSugarAcidityTargetGeometry;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.SugarAcidityCoordinates;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.SugarAcidityTarget;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.SugarAcidityTargetResolver;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.TanninTargetRange;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.assessment.ProfileTargetDistance;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.CustomRectangleSugarAcidityTarget;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.RectangleSugarAcidityTargetGeometry;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.SugarAcidityTarget;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.SugarAcidityTargetResolver;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.TanninTargetRange;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.CustomRectangleProfileTargetRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.PredefinedZoneProfileTargetRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.ProfileTargetDistanceResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.ProfileTargetObjectiveWeightsRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.ProfileTargetRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.ProfileTargetTanninRangeRequest;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.SugarAcidityCoordinatesResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.ProfileTargetCoordinatesResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.measurement.CanonicalUnitLabels;
 import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
+import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
+import org.craft.mcs.cap.shared.kernel.measurement.MeasuredValueRange;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -60,22 +63,10 @@ public final class ProfileTargetRestMapper {
     }
 
     return new ProfileTargetObjectiveWeights(
-        weightOrDefault(request.sugar()),
-        weightOrDefault(request.acidity()),
+        weightOrDefault(request.specificGravity()),
+        weightOrDefault(request.titratableAcidity()),
         request.tannin()
     );
-  }
-
-  public static @NonNull ProfileAxisNormalizerCode normalizerFor(
-      @NonNull ProfileTargetScoringPurpose scoringPurpose
-  ) {
-    requireNonNull(scoringPurpose, "profile target scoring purpose cannot be null");
-    return switch (scoringPurpose) {
-      case GRAPH_EXPLORATION -> ProfileAxisNormalizerCode.MIN_MAX;
-      case BLENDING_PLANNING -> ProfileAxisNormalizerCode.EFFECTIVE_RANGE;
-      case TARGET_ZONE_MATCHING -> ProfileAxisNormalizerCode.THRESHOLD_SEGMENT;
-      case EXPERT_CALIBRATION -> ProfileAxisNormalizerCode.SENSITIVITY_UNIT;
-    };
   }
 
   public static @NonNull ProfileTargetDistanceResponse toResponse(
@@ -92,13 +83,15 @@ public final class ProfileTargetRestMapper {
         distance.insideSugarAcidityTarget(),
         distance.insideTarget(),
         toResponse(distance.nearestTargetPoint()),
-        quantity(distance.tannin(), CanonicalUnitLabels.TANNIN),
-        quantity(distance.nearestTargetTannin(), CanonicalUnitLabels.TANNIN),
+        tanninQuantity(distance.tannin()),
+        tanninQuantity(distance.nearestTargetTannin()),
         distance.objectiveFunction(),
         distance.metric(),
         distance.targetKind(),
         distance.targetShape(),
-        distance.missingMeasurements()
+        distance.missingAxes().stream()
+            .sorted(Comparator.comparing(Enum::name))
+            .toList()
     );
   }
 
@@ -111,40 +104,61 @@ public final class ProfileTargetRestMapper {
 
     return switch (request) {
       case PredefinedZoneProfileTargetRequest(_, var zone) -> targetResolver.resolvePredefinedZone(zone);
-      case CustomRectangleProfileTargetRequest(_, var sugarMin, var sugarMax, var acidityMin, var acidityMax) ->
+      case CustomRectangleProfileTargetRequest customRectangle ->
           new CustomRectangleSugarAcidityTarget(
-              new RectangleSugarAcidityTargetGeometry(
-                  sugarMin,
-                  sugarMax,
-                  acidityMin,
-                  acidityMax
-              )
+              toRectangleGeometry(customRectangle)
           );
     };
   }
 
-  private static @NonNull TanninTargetRange toTanninTarget(
-      @NonNull ProfileTargetTanninRangeRequest request
+  public static @NonNull RectangleSugarAcidityTargetGeometry toRectangleGeometry(
+      @NonNull CustomRectangleProfileTargetRequest request
   ) {
-    requireNonNull(request, "profile target tannin range request cannot be null");
-    return new TanninTargetRange(request.min(), request.max());
-  }
-
-  private static @NonNull SugarAcidityCoordinatesResponse toResponse(
-      @NonNull SugarAcidityCoordinates coordinates
-  ) {
-    requireNonNull(coordinates, "sugar-acidity coordinates cannot be null");
-    return new SugarAcidityCoordinatesResponse(
-        new DecimalQuantityResponse(coordinates.sugar(), CanonicalUnitLabels.SUGAR),
-        new DecimalQuantityResponse(coordinates.acidity(), CanonicalUnitLabels.TITRATABLE_ACIDITY)
+    requireNonNull(request, "custom rectangle profile target request cannot be null");
+    return new RectangleSugarAcidityTargetGeometry(
+        MeasuredValueRange.closed(
+            SpecificGravityValue.of(request.specificGravityMin()),
+            SpecificGravityValue.of(request.specificGravityMax())
+        ),
+        MeasuredValueRange.closed(
+            TitratableAcidityValue.of(request.titratableAcidityMin()),
+            TitratableAcidityValue.of(request.titratableAcidityMax())
+        )
     );
   }
 
-  private static @Nullable DecimalQuantityResponse quantity(
-      @Nullable BigDecimal value,
-      @NonNull String unit
+  public static @NonNull TanninTargetRange toTanninTarget(
+      @NonNull ProfileTargetTanninRangeRequest request
   ) {
-    return value == null ? null : new DecimalQuantityResponse(value, unit);
+    requireNonNull(request, "profile target tannin range request cannot be null");
+    return new TanninTargetRange(
+        TanninValue.of(request.min()),
+        TanninValue.of(request.max())
+    );
+  }
+
+  private static @NonNull ProfileTargetCoordinatesResponse toResponse(
+      @NonNull SugarAcidityGraphPoint point
+  ) {
+    requireNonNull(point, "SG/TA graph point cannot be null");
+    return new ProfileTargetCoordinatesResponse(
+        new DecimalQuantityResponse(
+            point.specificGravity().asBigDecimal(),
+            CanonicalUnitLabels.SPECIFIC_GRAVITY
+        ),
+        new DecimalQuantityResponse(
+            point.titratableAcidity().asBigDecimal(),
+            CanonicalUnitLabels.TITRATABLE_ACIDITY
+        )
+    );
+  }
+
+  private static @Nullable DecimalQuantityResponse tanninQuantity(
+      @Nullable TanninValue value
+  ) {
+    return value == null
+        ? null
+        : new DecimalQuantityResponse(value.asBigDecimal(), CanonicalUnitLabels.TANNIN);
   }
 
   private static @NonNull BigDecimal weightOrDefault(@Nullable BigDecimal value) {

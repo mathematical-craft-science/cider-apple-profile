@@ -19,23 +19,23 @@ public final class ChemicalProfileAxes {
   }
 
   public static @NonNull ChemicalProfileAxes of(
-      @Nullable AxisValue sugar,
-      @Nullable AxisValue acidity,
+      @Nullable AxisValue specificGravity,
+      @Nullable AxisValue titratableAcidity,
       @Nullable AxisValue tannin
   ) {
-    return of(sugar, acidity, tannin, null);
+    return of(specificGravity, titratableAcidity, tannin, null);
   }
 
   public static @NonNull ChemicalProfileAxes of(
-      @Nullable AxisValue sugar,
-      @Nullable AxisValue acidity,
+      @Nullable AxisValue specificGravity,
+      @Nullable AxisValue titratableAcidity,
       @Nullable AxisValue tannin,
       @Nullable AxisValue yeastAssimilableNitrogen
   ) {
     final var values = new EnumMap<ChemicalAxis, AxisValue>(ChemicalAxis.class);
 
-    add(values, ChemicalAxis.SUGAR, sugar);
-    add(values, ChemicalAxis.ACIDITY, acidity);
+    add(values, ChemicalAxis.SPECIFIC_GRAVITY, specificGravity);
+    add(values, ChemicalAxis.TITRATABLE_ACIDITY, titratableAcidity);
     add(values, ChemicalAxis.TANNIN, tannin);
     add(values, ChemicalAxis.YEAST_ASSIMILABLE_NITROGEN, yeastAssimilableNitrogen);
 
