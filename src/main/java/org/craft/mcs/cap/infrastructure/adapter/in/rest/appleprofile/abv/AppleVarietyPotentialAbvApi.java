@@ -38,7 +38,7 @@ public interface AppleVarietyPotentialAbvApi {
   )
   @ApiResponse(
       responseCode = "422",
-      description = "Chemical profile does not contain sugar.",
+      description = "Apple variety reference profile has no Specific Gravity value.",
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
   )
   @ApiResponse(

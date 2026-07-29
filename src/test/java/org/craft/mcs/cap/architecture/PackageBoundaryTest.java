@@ -100,7 +100,7 @@ class PackageBoundaryTest {
   @Test
   void profileAnalysisSupportContextsDoNotDependOnClassificationContext() throws IOException {
     assertNoImportsUnder(
-        "org/craft/mcs/cap/core/profileanalysis/profileaxis",
+        "org/craft/mcs/cap/core/profileanalysis/capability",
         List.of("org.craft.mcs.cap.core.profileanalysis.classification.")
     );
     assertNoImportsUnder(
@@ -120,7 +120,7 @@ class PackageBoundaryTest {
   @Test
   void lowerLevelProfileAnalysisContextsDoNotDependOnCompositionContexts() throws IOException {
     assertNoImportsUnder(
-        "org/craft/mcs/cap/core/profileanalysis/profileaxis",
+        "org/craft/mcs/cap/core/profileanalysis/capability",
         List.of(
             "org.craft.mcs.cap.core.profileanalysis.graph.",
             "org.craft.mcs.cap.core.profileanalysis.profiletarget.",
@@ -145,6 +145,26 @@ class PackageBoundaryTest {
     assertNoImportsUnder(
         "org/craft/mcs/cap/core/profileanalysis/composition/calculation",
         List.of("org.craft.mcs.cap.core.profileanalysis.composition.optimization.")
+    );
+  }
+
+  @Test
+  void jdbcContextsDoNotReadTablesOwnedByPeerContexts() throws IOException {
+    assertNoTextUnder(
+        "org/craft/mcs/cap/infrastructure/adapter/out/persistence/jdbc/measurement",
+        List.of("feedstock_batches", "production_batches", "batch_trace_")
+    );
+    assertNoTextUnder(
+        "org/craft/mcs/cap/infrastructure/adapter/out/persistence/jdbc/feedstock",
+        List.of("measurement_", "production_batches", "batch_trace_")
+    );
+    assertNoTextUnder(
+        "org/craft/mcs/cap/infrastructure/adapter/out/persistence/jdbc/production",
+        List.of("measurement_", "feedstock_batches", "batch_trace_")
+    );
+    assertNoTextUnder(
+        "org/craft/mcs/cap/infrastructure/adapter/out/persistence/jdbc/traceability",
+        List.of("measurement_", "feedstock_batches", "production_batches")
     );
   }
 
@@ -207,6 +227,22 @@ class PackageBoundaryTest {
                 source.path(),
                 forbiddenImport
             )))
+        .toList();
+
+    assertThat(violations)
+        .withFailMessage(() -> String.join(System.lineSeparator(), violations))
+        .isEmpty();
+  }
+
+  private static void assertNoTextUnder(
+      @NonNull String relativePackagePath,
+      @NonNull List<@NonNull String> forbiddenText
+  ) throws IOException {
+    final var violations = sourceFilesUnder(relativePackagePath)
+        .stream()
+        .flatMap(source -> forbiddenText.stream()
+            .filter(source.content()::contains)
+            .map(text -> "%s contains foreign schema reference %s".formatted(source.path(), text)))
         .toList();
 
     assertThat(violations)

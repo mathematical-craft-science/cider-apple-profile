@@ -1,8 +1,10 @@
 package org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.usecase;
 
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
-import org.craft.mcs.cap.core.profileanalysis.compatibility.application.ChemicalProfileAssessmentAdapter;
+import org.craft.mcs.cap.core.profileanalysis.classification.domain.profile.northamerican.NorthAmericanProfileCalculator;
+import org.craft.mcs.cap.core.profileanalysis.graph.application.port.in.EvaluateJolicoeurSugarAcidityGraphUseCase;
 import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchNotFoundException;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.query.FeedstockCurrentProfileQueryService;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.AssessFeedstockBatchCurrentSugarAcidityZoneUseCase;
@@ -13,6 +15,8 @@ import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 
 import static java.util.Objects.requireNonNull;
+import static org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic.SPECIFIC_GRAVITY;
+import static org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic.TITRATABLE_ACIDITY;
 
 
 /**
@@ -32,7 +36,8 @@ public final class AssessFeedstockBatchCurrentSugarAcidityZoneService
   private final @NonNull FeedstockBatchRepository feedstockBatchRepository;
   private final @NonNull FeedstockAccessControl feedstockAccessControl;
   private final @NonNull FeedstockCurrentProfileQueryService currentProfileQueryService;
-  private final @NonNull ChemicalProfileAssessmentAdapter chemicalProfileAssessmentAdapter;
+  private final @NonNull EvaluateJolicoeurSugarAcidityGraphUseCase graphEvaluator;
+  private final @NonNull NorthAmericanProfileCalculator northAmericanProfileCalculator;
 
   @Override
   public @NonNull FeedstockBatchCurrentSugarAcidityZoneResult assess(@NonNull FeedstockBatchId batchId) {
@@ -42,17 +47,23 @@ public final class AssessFeedstockBatchCurrentSugarAcidityZoneService
         .orElseThrow(() -> new FeedstockBatchNotFoundException(batchId));
     feedstockAccessControl.requireReadAccess(batch.workspaceId());
     final var currentMeasurement = currentProfileQueryService.requireCurrentProfile(batchId);
-    final var evaluation = chemicalProfileAssessmentAdapter.project(currentMeasurement.chemicalProfile());
-    final var latestMeasurement = currentMeasurement.latestMeasurement();
-
+    final var graphEvaluation = graphEvaluator.evaluate(
+        currentMeasurement.specificGravity(),
+        currentMeasurement.titratableAcidity()
+    );
     return new FeedstockBatchCurrentSugarAcidityZoneResult(
         currentMeasurement.batchId(),
         batch.name(),
         batch.workspaceId(),
         currentMeasurement.currentMaterialStateId(),
-        latestMeasurement.measurementId(),
-        latestMeasurement.measuredAt(),
-        evaluation
+        currentMeasurement.latestMeasurementSet(),
+        currentMeasurement.evidenceFor(Set.of(SPECIFIC_GRAVITY, TITRATABLE_ACIDITY)),
+        currentMeasurement.specificGravity(),
+        currentMeasurement.titratableAcidity(),
+        graphEvaluation,
+        graphEvaluation.plottable() && currentMeasurement.tannin() != null
+            ? northAmericanProfileCalculator.assessTannin(currentMeasurement.tannin()) // NOSONAR
+            : null
     );
   }
 }

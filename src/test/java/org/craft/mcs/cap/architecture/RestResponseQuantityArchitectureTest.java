@@ -33,7 +33,7 @@ class RestResponseQuantityArchitectureTest {
       REST_PACKAGE + "shared.composition.dto.CompositionOptimizationObjectiveAssessmentResponse.score",
       REST_PACKAGE + "shared.composition.dto.CompositionOptimizationPenaltyResponse.value",
       REST_PACKAGE + "shared.profiletarget.dto.ProfileTargetDistanceResponse.value",
-      REST_PACKAGE + "analysis.composition.common.dto.ChemicalProfileCompositionSourceResponse.proportion",
+      REST_PACKAGE + "analysis.composition.common.dto.CompositionSourceResponse.proportion",
       REST_PACKAGE + "feedstock.composition.dto.FeedstockBatchCompositionOptimizationSourceResponse.proportion"
   );
 

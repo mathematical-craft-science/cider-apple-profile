@@ -1,10 +1,10 @@
 package org.craft.mcs.cap.core.feedstock.application.currentprofile.model;
 
 import java.util.List;
-import org.craft.mcs.cap.core.profileanalysis.compatibility.application.ChemicalProfileAssessment;
+import org.craft.mcs.cap.core.profileanalysis.classification.domain.profile.northamerican.NorthAmericanTanninLevel;
 import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.FermentationStartReadinessAssessment;
+import org.craft.mcs.cap.core.profileanalysis.graph.application.model.JolicoeurSugarAcidityGraphEvaluation;
 import org.craft.mcs.cap.shared.application.measurement.MeasurementEvidenceView;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -19,9 +19,9 @@ import static java.util.Objects.requireNonNull;
 public record FeedstockCurrentProfileAssessmentView(
     @NonNull List<@NonNull MeasurementEvidenceView> profileEvidence,
     @Nullable FeedstockCurrentProfileFreshnessView freshness,
-    @Nullable ChemicalProfileAssessment profileAssessment,
+    @Nullable JolicoeurSugarAcidityGraphEvaluation graphEvaluation,
+    @Nullable NorthAmericanTanninLevel northAmericanTanninLevel,
     @Nullable FeedstockCurrentProfilePotentialAbvView potentialAbv,
-    @Nullable AxisValue yeastAssimilableNitrogen,
     @NonNull FeedstockPlanningReadinessView planningReadiness,
     @NonNull FeedstockCurrentProfileDataQualityView dataQuality,
     @Nullable FermentationStartReadinessAssessment fermentationStartReadiness

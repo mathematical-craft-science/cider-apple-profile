@@ -1,5 +1,6 @@
 package org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.usecase;
 
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,9 @@ import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 
 import static java.util.Objects.requireNonNull;
+import static org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic.SPECIFIC_GRAVITY;
+import static org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic.TANNIN;
+import static org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic.TITRATABLE_ACIDITY;
 
 
 /**
@@ -69,13 +73,15 @@ public final class ScoreFeedstockBatchProfileTargetService
                   "feedstock current profile candidate is missing for score"
               );
               final var currentProfile = candidate.currentProfile();
-              final var latestMeasurement = currentProfile.latestMeasurement();
               return new FeedstockBatchProfileTargetScore(
                   currentProfile.batchId(),
                   query.workspaceId(),
                   currentProfile.currentMaterialStateId(),
-                  latestMeasurement.measurementId(),
-                  latestMeasurement.name(),
+                  currentProfile.evidenceFor(Set.of(
+                      SPECIFIC_GRAVITY,
+                      TITRATABLE_ACIDITY,
+                      TANNIN
+                  )),
                   candidate.candidate().input(),
                   score.distance()
               );

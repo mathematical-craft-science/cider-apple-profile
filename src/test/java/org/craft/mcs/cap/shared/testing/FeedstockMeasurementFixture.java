@@ -1,29 +1,28 @@
 package org.craft.mcs.cap.shared.testing;
 
 import java.time.Instant;
-import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementId;
-import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementName;
-import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
+import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetId;
+import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetName;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 
-/** Immutable fixture matching the legacy Feedstock measurement read projection used by existing tests. */
+/** Immutable MeasurementSet fixture used to build Feedstock current-profile test projections. */
 public record FeedstockMeasurementFixture(
-    @NonNull FeedstockMeasurementId measurementId,
+    @NonNull MeasurementSetId measurementId,
     @NonNull FeedstockBatchId batchId,
-    @NonNull FeedstockMeasurementName name,
-    @NonNull ChemicalProfile chemicalProfile,
+    @NonNull MeasurementSetName name,
+    @NonNull ProfileCharacteristicsFixture characteristics,
     @NonNull Instant measuredAt,
     @Nullable String note
 ) {
 
   public static @NonNull FeedstockMeasurementFixture create(
-      @NonNull FeedstockMeasurementId measurementId,
+      @NonNull MeasurementSetId measurementId,
       @NonNull FeedstockBatchId batchId,
-      @NonNull FeedstockMeasurementName name,
-      @NonNull ChemicalProfile chemicalProfile,
+      @NonNull MeasurementSetName name,
+      @NonNull ProfileCharacteristicsFixture characteristics,
       @NonNull Instant measuredAt,
       @NonNull Instant recordedAt
   ) {
@@ -31,7 +30,7 @@ public record FeedstockMeasurementFixture(
         measurementId,
         batchId,
         name,
-        chemicalProfile,
+        characteristics,
         measuredAt,
         null
     );
@@ -42,7 +41,7 @@ public record FeedstockMeasurementFixture(
         measurementId,
         batchId,
         name,
-        chemicalProfile,
+        characteristics,
         measuredAt,
         note
     );

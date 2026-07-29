@@ -1,9 +1,9 @@
 package org.craft.mcs.cap.core.production.application.port.out;
 
+import org.craft.mcs.cap.core.production.application.model.ProductionSourceCharacteristics;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceEvidenceReference;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceReference;
 import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
 import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.shared.kernel.material.value.MaterialConsumption;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
@@ -24,7 +24,7 @@ public record ConsumedProductionSource(
     @NonNull ProductionSourceReference reference,
     @Nullable ProductionSourceDisplayName displayName,
     @NonNull MaterialConsumption consumption,
-    @NonNull ChemicalProfileAxes profile,
+    @NonNull ProductionSourceCharacteristics characteristics,
     @Nullable ConfidenceLevel confidence,
     @NonNull ProductionSourceEvidenceReference evidenceReference
 ) {
@@ -32,7 +32,7 @@ public record ConsumedProductionSource(
   public ConsumedProductionSource {
     requireNonNull(reference, "production source reference cannot be null");
     requireNonNull(consumption, "production source material consumption cannot be null");
-    requireNonNull(profile, "consumed production source profile cannot be null");
+    requireNonNull(characteristics, "consumed production source characteristics cannot be null");
     requireNonNull(evidenceReference, "production source evidence reference cannot be null");
   }
 

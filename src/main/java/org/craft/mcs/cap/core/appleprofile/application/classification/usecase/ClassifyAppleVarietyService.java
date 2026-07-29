@@ -7,7 +7,6 @@ import org.craft.mcs.cap.core.appleprofile.application.classification.port.in.Ap
 import org.craft.mcs.cap.core.appleprofile.application.classification.port.in.ClassifyAppleVarietyUseCase;
 import org.craft.mcs.cap.core.appleprofile.application.catalog.port.out.AppleVarietyRepository;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyId;
-import org.craft.mcs.cap.core.profileanalysis.classification.application.compatibility.ChemicalProfileClassificationInputAdapter;
 import org.craft.mcs.cap.core.profileanalysis.classification.domain.engine.CiderAppleClassificationInput;
 import org.craft.mcs.cap.core.profileanalysis.classification.domain.result.ClassificationResult;
 import org.craft.mcs.cap.core.profileanalysis.classification.domain.engine.ClassificationStrategy;
@@ -47,9 +46,14 @@ public final class ClassifyAppleVarietyService
 
     final var variety = appleVarietyRepository.findById(varietyId)
         .orElseThrow(() -> new AppleVarietyNotFoundException(varietyId));
+    final var referenceProfile = variety.referenceProfile();
 
     final var result = classifyResolved(
-        ChemicalProfileClassificationInputAdapter.adapt(variety.chemicalProfile()),
+        new CiderAppleClassificationInput(
+            referenceProfile.specificGravity(),
+            referenceProfile.titratableAcidity(),
+            referenceProfile.tannin()
+        ),
         system
     );
 

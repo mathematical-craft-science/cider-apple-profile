@@ -8,7 +8,7 @@ import org.craft.mcs.cap.core.profileanalysis.classification.domain.result.Borde
 import org.craft.mcs.cap.core.profileanalysis.classification.domain.result.ClassificationAssessment;
 import org.craft.mcs.cap.core.profileanalysis.classification.domain.result.ClassificationConfidence;
 import org.craft.mcs.cap.core.profileanalysis.classification.domain.rule.ClassificationRule;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisRange;
+import org.craft.mcs.cap.core.profileanalysis.classification.domain.rule.ClassificationValueRange;
 import org.jmolecules.ddd.annotation.Service;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -60,7 +60,7 @@ public class ClassificationConfidencePolicy {
   private static void detectCloseToBoundary(
       @NonNull ClassificationCharacteristic characteristic,
       @NonNull BigDecimal value,
-      @NonNull AxisRange range,
+      @NonNull ClassificationValueRange range,
       @NonNull List<@NonNull BorderlineEvidence> evidence
   ) {
     if (isCloseTo(value, range.lowerBoundary()) || isCloseTo(value, range.upperBoundary())) {
@@ -71,7 +71,7 @@ public class ClassificationConfidencePolicy {
   private static void detectRangeOverlap(
       @NonNull ClassificationCharacteristic characteristic,
       @NonNull ClassificationInterval interval,
-      @NonNull AxisRange range,
+      @NonNull ClassificationValueRange range,
       @NonNull List<@NonNull BorderlineEvidence> evidence
   ) {
     if (!range.contains(interval.lower()) || !range.contains(interval.upper())) {

@@ -7,6 +7,7 @@ import org.craft.mcs.cap.core.feedstock.application.analysis.readiness.port.in.F
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.readiness.dto.FeedstockBatchCurrentFermentationStartReadinessResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.readiness.dto.FermentationStartReadinessAssessmentResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.readiness.dto.FermentationStartReadinessCheckResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.common.mapper.FeedstockProfileEvidenceRestMapper;
 import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -28,8 +29,9 @@ public final class FeedstockBatchReadinessRestMapper {
         result.batchId().value(),
         result.workspaceId().value(),
         result.currentMaterialStateId().value(),
-        result.currentMeasurementId().value(),
-        result.currentMeasurementName().value(),
+        result.profileEvidence().stream()
+            .map(FeedstockProfileEvidenceRestMapper::toResponse)
+            .toList(),
         toResponse(result.assessment())
     );
   }

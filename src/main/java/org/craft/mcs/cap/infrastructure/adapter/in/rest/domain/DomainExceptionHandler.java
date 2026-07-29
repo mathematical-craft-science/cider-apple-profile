@@ -1,9 +1,9 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.domain;
 
 import java.net.URI;
-import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.InvalidChemicalProfileCompositionException;
-import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.UnsupportedChemicalProfileCompositionCalculatorException;
-import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.InvalidChemicalProfileCompositionOptimizationException;
+import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.InvalidCompositionException;
+import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.UnsupportedCompositionCalculatorException;
+import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.InvalidCompositionOptimizationException;
 import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.strategy.UnsupportedCompositionOptimizationStrategyException;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.SugarAcidityTargetResolutionException;
 import org.craft.mcs.cap.shared.kernel.DomainConflictException;
@@ -31,8 +31,8 @@ public final class DomainExceptionHandler {
       URI.create("urn:problem-type:domain-conflict");
   private static final @NonNull URI UNSUPPORTED_SUGAR_CONVERSION =
       URI.create("urn:problem-type:unsupported-sugar-conversion");
-  private static final @NonNull URI INVALID_CHEMICAL_PROFILE_COMPOSITION =
-      URI.create("urn:problem-type:invalid-chemical-profile-composition");
+  private static final @NonNull URI INVALID_COMPOSITION =
+      URI.create("urn:problem-type:invalid-composition");
   private static final @NonNull URI UNSUPPORTED_COMPOSITION_STRATEGY =
       URI.create("urn:problem-type:unsupported-composition-strategy");
   private static final @NonNull URI SUGAR_ACIDITY_TARGET_NOT_RESOLVED =
@@ -66,22 +66,22 @@ public final class DomainExceptionHandler {
   }
 
   @ExceptionHandler({
-      InvalidChemicalProfileCompositionException.class,
-      InvalidChemicalProfileCompositionOptimizationException.class
+      InvalidCompositionException.class,
+      InvalidCompositionOptimizationException.class
   })
-  public @NonNull ResponseEntity<@NonNull ProblemDetail> handleInvalidChemicalProfileComposition(
+  public @NonNull ResponseEntity<@NonNull ProblemDetail> handleInvalidComposition(
       @NonNull DomainException exception
   ) {
     return response(
         UNPROCESSABLE_ENTITY,
-        INVALID_CHEMICAL_PROFILE_COMPOSITION,
-        "Invalid chemical profile composition",
+        INVALID_COMPOSITION,
+        "Invalid composition",
         exception.getMessage()
     );
   }
 
   @ExceptionHandler({
-      UnsupportedChemicalProfileCompositionCalculatorException.class,
+      UnsupportedCompositionCalculatorException.class,
       UnsupportedCompositionOptimizationStrategyException.class
   })
   public @NonNull ResponseEntity<@NonNull ProblemDetail> handleUnsupportedCompositionStrategy(

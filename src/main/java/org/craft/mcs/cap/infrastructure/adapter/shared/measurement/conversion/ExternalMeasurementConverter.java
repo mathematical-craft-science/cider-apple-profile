@@ -7,7 +7,7 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * REST anti-corruption layer contract for converting external API measurement units
- * into the service canonical chemical-profile value objects.
+ * into the service canonical measurement value objects.
  */
 public interface ExternalMeasurementConverter<T extends Comparable<? super T>> {
 

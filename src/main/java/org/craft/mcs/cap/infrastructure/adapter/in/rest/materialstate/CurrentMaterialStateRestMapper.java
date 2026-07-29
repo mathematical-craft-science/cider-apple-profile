@@ -46,8 +46,7 @@ final class CurrentMaterialStateRestMapper {
                       referenceValue(provenance.reference()),
                       provenance.confidence()
                   ),
-                  characteristic.freshnessStatus(),
-                  characteristic.validity()
+                  characteristic.freshnessStatus()
               );
             })
             .toList()

@@ -6,19 +6,18 @@ import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.out.Feed
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.query.FeedstockCurrentProfileQueryService;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.shared.testing.FeedstockMeasurementFixture;
-import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementId;
-import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementName;
-import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
+import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetId;
+import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetName;
+import org.craft.mcs.cap.shared.testing.ProfileCharacteristicsFixture;
 import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
-import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.junit.jupiter.api.Test;
 
 import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementInstant;
 import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementRecordedAt;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.craft.mcs.cap.shared.testing.FeedstockMeasurementViews.currentProfile;
+import static org.craft.mcs.cap.shared.testing.FeedstockCurrentProfileViews.currentProfile;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -52,13 +51,11 @@ class FeedstockCurrentProfileQueryServiceTest {
 
   private static FeedstockMeasurementFixture measurement(FeedstockBatchId batchId) {
     return FeedstockMeasurementFixture.create(
-        FeedstockMeasurementId.newId(),
+        MeasurementSetId.newId(),
         batchId,
-        FeedstockMeasurementName.of("Current measurement"),
-        ChemicalProfile.builder()
-            .sugar(PointCharacteristicValue.of(SugarConcentration.ofSpecificGravity(
-                SpecificGravityValue.of("1.050")
-            )))
+        MeasurementSetName.of("Current measurement"),
+        ProfileCharacteristicsFixture.builder()
+            .specificGravity(PointCharacteristicValue.of(SpecificGravityValue.of("1.050")))
             .build(),
         feedstockMeasurementInstant(),
         feedstockMeasurementRecordedAt()

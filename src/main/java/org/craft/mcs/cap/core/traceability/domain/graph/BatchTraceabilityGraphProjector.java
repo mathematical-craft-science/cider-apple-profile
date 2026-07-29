@@ -18,7 +18,7 @@ import static java.util.Objects.requireNonNull;
  *
  * <p>The projector derives nodes and edges from append-only facts and keys nodes by historical
  * state identity. Several states can therefore refer to the same business batch without replacing
- * earlier volume or chemical-profile snapshots.</p>
+ * earlier volume or characteristic snapshots.</p>
  */
 public final class BatchTraceabilityGraphProjector {
 

@@ -3,12 +3,6 @@ package org.craft.mcs.cap.core.feedstock.application.currentprofile.model;
 /** Stable machine-readable outcomes of feedstock planning-readiness checks. */
 public enum FeedstockPlanningReadinessCheckCode {
 
-  /** No measurement evidence contributes to a current profile for the batch. */
-  CURRENT_PROFILE_MISSING,
-
-  /** Measurement evidence contributes to a current profile for the batch. */
-  CURRENT_PROFILE_PRESENT,
-
   /** Available volume is zero and cannot be allocated to a production candidate. */
   AVAILABLE_VOLUME_EMPTY,
 

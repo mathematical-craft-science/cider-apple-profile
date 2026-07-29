@@ -3,7 +3,7 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.sugaracidi
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.UUID;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.abv.dto.PotentialAbvPredictionResponse;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.dto.ChemicalProfileCapabilityAssessmentResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.capability.dto.ProfileAnalysisCapabilityAssessmentResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.dto.SugarAcidityGraphAssessmentResponse;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -46,6 +46,6 @@ public record AppleVarietySugarAcidityZoneResponse(
         nullable = true,
         requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )
-    @Nullable ChemicalProfileCapabilityAssessmentResponse capabilityAssessment
+    @Nullable ProfileAnalysisCapabilityAssessmentResponse capabilityAssessment
 ) {
 }

@@ -52,11 +52,11 @@ public class AppleVarietyJdbcEntity {
 
   @Nullable
   @Column("chemical_profile_source")
-  String chemicalProfileSource;
+  String referenceProfileSource;
 
   @Nullable
   @Column("chemical_profile_confidence")
-  ConfidenceLevel chemicalProfileConfidence;
+  ConfidenceLevel referenceProfileConfidence;
 
   @CreatedDate
   @Nullable
@@ -83,13 +83,13 @@ public class AppleVarietyJdbcEntity {
       @Nullable MeasurementJdbcColumns ph,
       @Nullable MeasurementJdbcColumns titratableAcidity,
       @Nullable MeasurementJdbcColumns tannin,
-      @Nullable String chemicalProfileSource,
-      @Nullable ConfidenceLevel chemicalProfileConfidence
+      @Nullable String referenceProfileSource,
+      @Nullable ConfidenceLevel referenceProfileConfidence
   ) {
     this.varietyId = requireNonNull(varietyId, "variety id cannot be null");
     this.name = requireNonNull(name, "apple variety name cannot be null");
-    this.chemicalProfileSource = normalize(chemicalProfileSource);
-    this.chemicalProfileConfidence = chemicalProfileConfidence;
+    this.referenceProfileSource = normalize(referenceProfileSource);
+    this.referenceProfileConfidence = referenceProfileConfidence;
     applySugar(sugar);
     applyPh(ph);
     applyTitratableAcidity(titratableAcidity);

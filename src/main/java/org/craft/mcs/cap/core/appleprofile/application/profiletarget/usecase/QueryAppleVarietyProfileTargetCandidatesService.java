@@ -5,6 +5,8 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.craft.mcs.cap.core.appleprofile.application.analysis.common.service.AppleVarietyGraphCandidateMatcher;
+import org.craft.mcs.cap.core.appleprofile.application.catalog.model.AppleVarietyCatalogPagePosition;
 import org.craft.mcs.cap.core.appleprofile.application.profiletarget.port.in.AppleVarietyProfileTargetCandidate;
 import org.craft.mcs.cap.core.appleprofile.application.profiletarget.port.in.AppleVarietyProfileTargetCandidateQuery;
 import org.craft.mcs.cap.core.appleprofile.application.profiletarget.port.in.AppleVarietyProfileTargetCandidates;
@@ -16,12 +18,13 @@ import org.craft.mcs.cap.core.profileanalysis.composition.contribution.domain.Co
 import org.craft.mcs.cap.core.profileanalysis.composition.contribution.domain.CompositionContributionRoleAssessor;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.port.in.ProfileTargetDistanceCandidate;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.port.in.ProfileTargetDistanceCandidateReference;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.compatibility.ChemicalProfileTargetScoringInputAdapter;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.port.in.ScoreProfileTargetDistanceCandidatesCommand;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.port.in.ScoreProfileTargetDistanceCandidatesUseCase;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.usecase.ProfileTargetAnalysisScenarioResolver;
-import org.craft.mcs.cap.core.profileanalysis.compatibility.application.ChemicalProfileAssessmentAdapter;
-import org.craft.mcs.cap.core.profileanalysis.compatibility.application.ChemicalProfileAssessmentMatcher;
+import org.craft.mcs.cap.core.profileanalysis.graph.application.port.in.EvaluateJolicoeurSugarAcidityGraphUseCase;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetScoringInput;
+import org.craft.mcs.cap.shared.application.query.pagination.ChunkedCursorPageCollector;
+import org.craft.mcs.cap.shared.application.query.pagination.CursorPageRequest;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 
@@ -44,8 +47,8 @@ public final class QueryAppleVarietyProfileTargetCandidatesService
   private static final @NonNull String APPLE_VARIETY_REQUIRED = "apple variety cannot be null";
 
   private final @NonNull AppleVarietyAnalysisCandidateQuery candidateQuery;
-  private final @NonNull ChemicalProfileAssessmentAdapter chemicalProfileAssessmentAdapter;
-  private final @NonNull ChemicalProfileAssessmentMatcher chemicalProfileAssessmentMatcher;
+  private final @NonNull EvaluateJolicoeurSugarAcidityGraphUseCase graphEvaluator;
+  private final @NonNull AppleVarietyGraphCandidateMatcher graphCandidateMatcher;
   private final @NonNull ScoreProfileTargetDistanceCandidatesUseCase scoreProfileTargetDistanceCandidatesUseCase;
   private final @NonNull ProfileTargetAnalysisScenarioResolver scoringConfigurationResolver;
   private final @NonNull CompositionContributionRoleAssessor contributionRoleAssessor;
@@ -56,17 +59,18 @@ public final class QueryAppleVarietyProfileTargetCandidatesService
   ) {
     requireNonNull(query, "apple variety profile target candidate query cannot be null");
 
-    final var candidates = candidateQuery.findCandidates(
+    final var candidates = ChunkedCursorPageCollector.collect(
+        CursorPageRequest.firstPage(query.limit()),
+        (afterPosition, limit) -> candidateQuery.findCandidates(
             new AppleVarietyAnalysisCandidateCriteria(
                 query.filters().nameContains(),
-                null,
-                query.limit()
+                afterPosition,
+                limit
             )
-        )
-        .stream()
-        .map(variety -> toCandidateIfScorable(variety, query))
-        .flatMap(Optional::stream)
-        .toList();
+        ),
+        QueryAppleVarietyProfileTargetCandidatesService::toPagePosition,
+        variety -> toCandidateIfScorable(variety, query)
+    ).items();
 
     final Map<@NonNull String, @NonNull ScorableAppleVarietyCandidate> candidatesByReference = candidates.stream()
         .collect(Collectors.toMap(
@@ -113,30 +117,32 @@ public final class QueryAppleVarietyProfileTargetCandidatesService
       @NonNull AppleVarietyProfileTargetCandidateQuery query
   ) {
     requireNonNull(variety, APPLE_VARIETY_REQUIRED);
-    final var evaluation = chemicalProfileAssessmentAdapter.project(variety.chemicalProfile());
-    if (!evaluation.plottable()) {
+    final var referenceProfile = variety.referenceProfile();
+    final var graphEvaluation = graphEvaluator.evaluate(
+        referenceProfile.specificGravity(),
+        referenceProfile.titratableAcidity()
+    );
+    if (!graphEvaluation.plottable()) {
       return Optional.empty();
     }
-    if (!chemicalProfileAssessmentMatcher.matches(
-        evaluation,
-        query.filters().capability(),
-        query.filters().sugarAcidityZone()
-    )) {
+    if (!graphCandidateMatcher.matches(referenceProfile, graphEvaluation, query.filters())) {
       return Optional.empty();
     }
-
-    final var assessment = evaluation.assessment();
-    if (assessment == null) {
+    final var specificGravity = referenceProfile.specificGravity();
+    final var titratableAcidity = referenceProfile.titratableAcidity();
+    if (specificGravity == null || titratableAcidity == null) {
       return Optional.empty();
     }
-    final var input = ChemicalProfileTargetScoringInputAdapter.adapt(variety.chemicalProfile())
-        .orElseThrow();
 
     return Optional.of(new ScorableAppleVarietyCandidate(
         variety,
         new ProfileTargetDistanceCandidate(
             referenceId(variety),
-            input
+            new ProfileTargetScoringInput(
+                specificGravity,
+                titratableAcidity,
+                referenceProfile.tannin()
+            )
         )
     ));
   }
@@ -148,6 +154,16 @@ public final class QueryAppleVarietyProfileTargetCandidatesService
     return new ProfileTargetDistanceCandidateReference(
         REFERENCE_TYPE,
         variety.varietyId().value().toString()
+    );
+  }
+
+  private static @NonNull AppleVarietyCatalogPagePosition toPagePosition(
+      @NonNull AppleVarietyAnalysisCandidateView variety
+  ) {
+    requireNonNull(variety, APPLE_VARIETY_REQUIRED);
+    return new AppleVarietyCatalogPagePosition(
+        variety.name().value(),
+        variety.varietyId().value()
     );
   }
 

@@ -3,7 +3,8 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.abv.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.UUID;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.abv.dto.PotentialAbvPredictionResponse;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValueKind;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.common.dto.FeedstockProfileEvidenceResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profilecharacteristic.dto.ProfileCharacteristicValueKind;
 import org.jspecify.annotations.NonNull;
 
 
@@ -31,25 +32,17 @@ public record FeedstockBatchCurrentPotentialAbvResponse(
     )
     @NonNull UUID currentMaterialStateId,
     @Schema(
-        description = "Latest measurement set contributing to the composite current profile.",
-        format = "uuid",
-        example = "ed7c0818-aad9-47dd-97c0-d1d37561ca18",
+        description = "Specific Gravity evidence used for the prediction.",
         requiredMode = Schema.RequiredMode.REQUIRED
     )
-    @NonNull UUID currentMeasurementId,
-    @Schema(
-        description = "Name of the latest measurement set contributing to the composite current profile.",
-        example = "Pressing measurement #1",
-        requiredMode = Schema.RequiredMode.REQUIRED
-    )
-    @NonNull String currentMeasurementName,
+    @NonNull FeedstockProfileEvidenceResponse specificGravityEvidence,
     @Schema(
         description = "Source value kind used for original gravity.",
-        implementation = AxisValueKind.class,
+        implementation = ProfileCharacteristicValueKind.class,
         example = "POINT",
         requiredMode = Schema.RequiredMode.REQUIRED
     )
-    @NonNull AxisValueKind originalGravityValueKind,
+    @NonNull ProfileCharacteristicValueKind originalGravityValueKind,
     @Schema(description = "Potential ABV prediction.", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull PotentialAbvPredictionResponse prediction
 ) {

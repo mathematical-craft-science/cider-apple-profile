@@ -4,24 +4,31 @@ import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Function;
 import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceActorReference;
+import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceCharacteristicSnapshot;
+import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceMaterialCharacteristics;
 import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceMaterialSnapshot;
 import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceStep;
 import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceStepId;
 import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceStepSubject;
 import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceSubject;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
-import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValueKind;
+import org.craft.mcs.cap.shared.kernel.characteristic.IntervalCharacteristicValue;
+import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
-import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
+import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
+import org.craft.mcs.cap.shared.kernel.measurement.MeasuredValue;
+import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import static java.util.Objects.requireNonNull;
+import static org.craft.mcs.cap.shared.kernel.measurement.MeasurementValueMath.midpoint;
 
 
 public final class BatchTraceStepJdbcRowMapper {
@@ -124,50 +131,38 @@ public final class BatchTraceStepJdbcRowMapper {
 
     row.snapshotVolumeLiters = volumeLiters(snapshot.volume());
     row.snapshotConfidence = confidenceName(snapshot.confidence());
-    applyAxis(row, ChemicalAxis.SPECIFIC_GRAVITY, axisValue(snapshot.profile(), ChemicalAxis.SPECIFIC_GRAVITY));
-    applyAxis(row, ChemicalAxis.TITRATABLE_ACIDITY, axisValue(snapshot.profile(), ChemicalAxis.TITRATABLE_ACIDITY));
-    applyAxis(row, ChemicalAxis.TANNIN, axisValue(snapshot.profile(), ChemicalAxis.TANNIN));
-    applyAxis(
-        row,
-        ChemicalAxis.YEAST_ASSIMILABLE_NITROGEN,
-        axisValue(snapshot.profile(), ChemicalAxis.YEAST_ASSIMILABLE_NITROGEN)
-    );
-  }
-
-  private static void applyAxis(
-      @NonNull BatchTraceStepSubjectJdbcRow row,
-      @NonNull ChemicalAxis axis,
-      @Nullable AxisValue value
-  ) {
-    if (value == null) {
+    final var characteristics = snapshot.characteristics();
+    if (characteristics == null) {
       return;
     }
 
-    switch (axis) {
-      case SPECIFIC_GRAVITY -> {
-        row.specificGravityValue = value.value();
-        row.specificGravityValueKind = value.valueKind();
-        row.specificGravityMin = value.min();
-        row.specificGravityMax = value.max();
-      }
-      case TITRATABLE_ACIDITY -> {
-        row.titratableAcidityValue = value.value();
-        row.titratableAcidityValueKind = value.valueKind();
-        row.titratableAcidityMin = value.min();
-        row.titratableAcidityMax = value.max();
-      }
-      case TANNIN -> {
-        row.tanninValue = value.value();
-        row.tanninValueKind = value.valueKind();
-        row.tanninMin = value.min();
-        row.tanninMax = value.max();
-      }
-      case YEAST_ASSIMILABLE_NITROGEN -> {
-        row.yeastAssimilableNitrogenValue = value.value();
-        row.yeastAssimilableNitrogenValueKind = value.valueKind();
-        row.yeastAssimilableNitrogenMin = value.min();
-        row.yeastAssimilableNitrogenMax = value.max();
-      }
+    final var specificGravity = stored(characteristics.specificGravity());
+    if (specificGravity != null) {
+      row.specificGravityValue = specificGravity.value();
+      row.specificGravityValueKind = specificGravity.kind();
+      row.specificGravityMin = specificGravity.min();
+      row.specificGravityMax = specificGravity.max();
+    }
+    final var titratableAcidity = stored(characteristics.titratableAcidity());
+    if (titratableAcidity != null) {
+      row.titratableAcidityValue = titratableAcidity.value();
+      row.titratableAcidityValueKind = titratableAcidity.kind();
+      row.titratableAcidityMin = titratableAcidity.min();
+      row.titratableAcidityMax = titratableAcidity.max();
+    }
+    final var tannin = stored(characteristics.tannin());
+    if (tannin != null) {
+      row.tanninValue = tannin.value();
+      row.tanninValueKind = tannin.kind();
+      row.tanninMin = tannin.min();
+      row.tanninMax = tannin.max();
+    }
+    final var yan = stored(characteristics.yeastAssimilableNitrogen());
+    if (yan != null) {
+      row.yeastAssimilableNitrogenValue = yan.value();
+      row.yeastAssimilableNitrogenValueKind = yan.kind();
+      row.yeastAssimilableNitrogenMin = yan.min();
+      row.yeastAssimilableNitrogenMax = yan.max();
     }
   }
 
@@ -175,47 +170,53 @@ public final class BatchTraceStepJdbcRowMapper {
       @NonNull BatchTraceStepSubjectJdbcRow row
   ) {
     final var volume = volumeValue(row.snapshotVolumeLiters);
-    final var profile = toProfile(row);
+    final var characteristics = toCharacteristics(row);
 
-    if (volume == null && profile == null && row.snapshotConfidence == null) {
+    if (volume == null && characteristics == null && row.snapshotConfidence == null) {
       return null;
     }
 
-    return new BatchTraceMaterialSnapshot(volume, profile, confidenceLevel(row.snapshotConfidence));
+    return new BatchTraceMaterialSnapshot(
+        volume,
+        characteristics,
+        confidenceLevel(row.snapshotConfidence)
+    );
   }
 
   private static @Nullable ConfidenceLevel confidenceLevel(@Nullable String value) {
     return value == null ? null : ConfidenceLevel.valueOf(value);
   }
 
-  private static @Nullable ChemicalProfileAxes toProfile(@NonNull BatchTraceStepSubjectJdbcRow row) {
-    final var specificGravity = toAxisValue(
-        ChemicalAxis.SPECIFIC_GRAVITY,
+  private static @Nullable BatchTraceMaterialCharacteristics toCharacteristics(
+      @NonNull BatchTraceStepSubjectJdbcRow row
+  ) {
+    final var specificGravity = toCharacteristic(
         row.specificGravityValue,
         row.specificGravityValueKind,
         row.specificGravityMin,
-        row.specificGravityMax
+        row.specificGravityMax,
+        SpecificGravityValue::of
     );
-    final var titratableAcidity = toAxisValue(
-        ChemicalAxis.TITRATABLE_ACIDITY,
+    final var titratableAcidity = toCharacteristic(
         row.titratableAcidityValue,
         row.titratableAcidityValueKind,
         row.titratableAcidityMin,
-        row.titratableAcidityMax
+        row.titratableAcidityMax,
+        TitratableAcidityValue::of
     );
-    final var tannin = toAxisValue(
-        ChemicalAxis.TANNIN,
+    final var tannin = toCharacteristic(
         row.tanninValue,
         row.tanninValueKind,
         row.tanninMin,
-        row.tanninMax
+        row.tanninMax,
+        TanninValue::of
     );
-    final var yeastAssimilableNitrogen = toAxisValue(
-        ChemicalAxis.YEAST_ASSIMILABLE_NITROGEN,
+    final var yeastAssimilableNitrogen = toCharacteristic(
         row.yeastAssimilableNitrogenValue,
         row.yeastAssimilableNitrogenValueKind,
         row.yeastAssimilableNitrogenMin,
-        row.yeastAssimilableNitrogenMax
+        row.yeastAssimilableNitrogenMax,
+        YeastAssimilableNitrogenValue::of
     );
 
     return specificGravity == null
@@ -223,27 +224,40 @@ public final class BatchTraceStepJdbcRowMapper {
         && tannin == null
         && yeastAssimilableNitrogen == null
         ? null
-        : ChemicalProfileAxes.of(specificGravity, titratableAcidity, tannin, yeastAssimilableNitrogen);
+        : new BatchTraceMaterialCharacteristics(
+            specificGravity,
+            titratableAcidity,
+            tannin,
+            yeastAssimilableNitrogen
+        );
   }
 
-  private static @Nullable AxisValue toAxisValue(
-      @NonNull ChemicalAxis axis,
+  private static <T extends MeasuredValue> @Nullable BatchTraceCharacteristicSnapshot<T> toCharacteristic(
       @Nullable BigDecimal value,
-      @Nullable AxisValueKind valueKind,
+      @Nullable BatchTraceCharacteristicStorageKind storageKind,
       @Nullable BigDecimal min,
-      @Nullable BigDecimal max
+      @Nullable BigDecimal max,
+      @NonNull Function<@NonNull BigDecimal, @NonNull T> valueFactory
   ) {
     if (value == null) {
       return null;
     }
 
-    return new AxisValue(
-        axis,
-        value,
-        requireNonNull(valueKind, "batch trace axis value kind cannot be null"),
-        min,
-        max
-    );
+    return switch (requireNonNull(
+        storageKind,
+        "batch trace characteristic storage kind cannot be null"
+    )) {
+      case POINT -> BatchTraceCharacteristicSnapshot.direct(
+          PointCharacteristicValue.of(valueFactory.apply(value))
+      );
+      case CALCULATED -> BatchTraceCharacteristicSnapshot.calculated(valueFactory.apply(value));
+      case INTERVAL_MIDPOINT -> BatchTraceCharacteristicSnapshot.direct(
+          IntervalCharacteristicValue.of(
+              valueFactory.apply(requireNonNull(min, "batch trace interval minimum cannot be null")),
+              valueFactory.apply(requireNonNull(max, "batch trace interval maximum cannot be null"))
+          )
+      );
+    };
   }
 
   private static @Nullable UUID stepIdValue(@Nullable BatchTraceStepId stepId) {
@@ -266,15 +280,46 @@ public final class BatchTraceStepJdbcRowMapper {
     return confidence == null ? null : confidence.name();
   }
 
-  private static @Nullable AxisValue axisValue(
-      @Nullable ChemicalProfileAxes profile,
-      @NonNull ChemicalAxis axis
+  private static <T extends MeasuredValue> @Nullable StoredTraceCharacteristic stored(
+      @Nullable BatchTraceCharacteristicSnapshot<T> characteristic
   ) {
-    if (profile == null) {
+    if (characteristic == null) {
       return null;
     }
 
-    final var value = profile.valueOf(axis);
-    return value.orElse(null); // NOSONAR
+    return switch (characteristic) {
+      case BatchTraceCharacteristicSnapshot.Calculated<T>(var value) -> new StoredTraceCharacteristic(
+          value.asBigDecimal(),
+          BatchTraceCharacteristicStorageKind.CALCULATED,
+          null,
+          null
+      );
+      case BatchTraceCharacteristicSnapshot.Direct<T>(var value) -> switch (value) {
+        case PointCharacteristicValue<T>(var point) -> new StoredTraceCharacteristic(
+            point.asBigDecimal(),
+            BatchTraceCharacteristicStorageKind.POINT,
+            null,
+            null
+        );
+        case IntervalCharacteristicValue<T>(var lower, var upper) -> {
+          final var minimum = lower.asBigDecimal();
+          final var maximum = upper.asBigDecimal();
+          yield new StoredTraceCharacteristic(
+              midpoint(minimum, maximum),
+              BatchTraceCharacteristicStorageKind.INTERVAL_MIDPOINT,
+              minimum,
+              maximum
+          );
+        }
+      };
+    };
+  }
+
+  private record StoredTraceCharacteristic(
+      @NonNull BigDecimal value,
+      @NonNull BatchTraceCharacteristicStorageKind kind,
+      @Nullable BigDecimal min,
+      @Nullable BigDecimal max
+  ) {
   }
 }

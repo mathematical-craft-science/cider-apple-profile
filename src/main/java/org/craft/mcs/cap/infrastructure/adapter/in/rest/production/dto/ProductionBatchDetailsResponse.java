@@ -1,13 +1,10 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import java.util.List;
 import java.util.UUID;
 import org.craft.mcs.cap.core.production.domain.model.value.AlcoholicFermentationState;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchLifecycle;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.abv.dto.PotentialAbvPredictionResponse;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.dto.ChemicalProfileResponse;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement.dto.MeasurementEvidenceResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.composition.dto.CalculatedCompositionCharacteristicsResponse;
 import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
 import org.jspecify.annotations.NonNull;
@@ -53,21 +50,10 @@ public record ProductionBatchDetailsResponse(
     )
     @NonNull CalculatedCompositionCharacteristicsResponse initialProfileSnapshot,
     @Schema(
-        description = "Current profile with measured axes overlaid on the immutable initial snapshot.",
+        description = "Current typed characteristics with per-characteristic origin and evidence.",
         requiredMode = Schema.RequiredMode.REQUIRED
     )
-    @NonNull ChemicalProfileResponse currentChemicalProfile,
-    @Schema(
-        description = "Measurement records supplying axes of the current profile.",
-        requiredMode = Schema.RequiredMode.REQUIRED
-    )
-    @NonNull List<@NonNull MeasurementEvidenceResponse> measurementEvidence,
-    @Schema(
-        description = "Current yeast-assimilable nitrogen after applying measurement evidence.",
-        nullable = true,
-        requiredMode = Schema.RequiredMode.NOT_REQUIRED
-    )
-    @Nullable DecimalQuantityResponse yeastAssimilableNitrogen,
+    @NonNull ProductionCurrentProfileResponse currentProfile,
     @Schema(
         description = "Potential ABV prediction calculated from current production profile SG.",
         requiredMode = Schema.RequiredMode.REQUIRED

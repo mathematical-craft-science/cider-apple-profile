@@ -1,6 +1,5 @@
 package org.craft.mcs.cap.core.feedstock.application.detail.model;
 
-import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementSummary;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentProfileAssessmentView;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentProfileSummaryView;
 import org.jspecify.annotations.NonNull;
@@ -16,7 +15,6 @@ import static java.util.Objects.requireNonNull;
  * an edit model and does not change feedstock aggregate state.
  */
 public record FeedstockBatchCurrentProfileView(
-    @Nullable FeedstockMeasurementSummary latestMeasurement,
     @Nullable FeedstockCurrentProfileSummaryView currentProfileSummary,
     @NonNull FeedstockCurrentProfileAssessmentView currentProfileAssessment
 ) {

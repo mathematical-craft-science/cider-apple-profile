@@ -1,15 +1,17 @@
 package org.craft.mcs.cap.core.measurement.application.usecase;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import org.craft.mcs.cap.core.measurement.application.model.MeasurementSetMetadataView;
 import org.craft.mcs.cap.core.measurement.application.model.MeasurementSetView;
-import org.craft.mcs.cap.core.measurement.application.port.out.CurrentMaterialStateProvider;
+import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementSetMetadataQuery;
 import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementSetViewQuery;
 import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementSubjectAccessControl;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetId;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSubjectReference;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSubjectType;
-import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.junit.jupiter.api.Test;
 
@@ -52,19 +54,17 @@ class MeasurementSetQueryServicesTest {
   }
 
   @Test
-  void currentStateChecksReadAccessBeforeReadingMaterialState() {
-    final var accessControl = mock(MeasurementSubjectAccessControl.class);
-    final var materialStateProvider = mock(CurrentMaterialStateProvider.class);
-    final var subject = subject();
-    final var materialStateId = MaterialStateId.newId();
-    when(materialStateProvider.currentStateOf(subject)).thenReturn(materialStateId);
-    final var service = new GetCurrentMeasurementSubjectStateService(
-        accessControl,
-        materialStateProvider
-    );
+  void measurementSetMetadataQueryRemainsWorkspaceScopedAndSetBased() {
+    final var metadataQuery = mock(MeasurementSetMetadataQuery.class);
+    final var workspaceId = WorkspaceId.newId();
+    final var measurementSetId = MeasurementSetId.newId();
+    final var metadata = mock(MeasurementSetMetadataView.class);
+    when(metadataQuery.findAll(workspaceId, Set.of(measurementSetId)))
+        .thenReturn(Map.of(measurementSetId, metadata));
+    final var service = new QueryMeasurementSetMetadataService(metadataQuery);
 
-    assertThat(service.currentStateOf(subject)).isEqualTo(materialStateId);
-    verify(accessControl).requireReadAccess(subject);
+    assertThat(service.findAll(workspaceId, Set.of(measurementSetId)))
+        .containsExactlyEntriesOf(Map.of(measurementSetId, metadata));
   }
 
   private static MeasurementSubjectReference subject() {

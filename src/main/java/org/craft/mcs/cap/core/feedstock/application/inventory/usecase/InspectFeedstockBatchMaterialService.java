@@ -18,6 +18,8 @@ import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 
 import static java.util.Objects.requireNonNull;
+import static org.craft.mcs.cap.core.feedstock.application.inventory.usecase
+    .FeedstockMaterialCharacteristicsProjector.project;
 
 
 /** Reads current feedstock stock and measurement evidence without changing available volume. */
@@ -70,7 +72,7 @@ public final class InspectFeedstockBatchMaterialService implements InspectFeedst
         FeedstockBatchMaterialEvidenceReference.from(measurement.evidence().stream()
             .map(MeasurementEvidenceView::snapshot)
             .toList()),
-        measurement.chemicalProfile(),
+        project(measurement),
         measurement.aggregateConfidence()
     );
   }

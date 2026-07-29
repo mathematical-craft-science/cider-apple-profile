@@ -2,14 +2,13 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profilecharacter
 
 import java.math.BigDecimal;
 import java.util.function.Function;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profilecharacteristic.dto.CalculatedProfileCharacteristicValueResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profilecharacteristic.dto.IntervalProfileCharacteristicValueResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profilecharacteristic.dto.PointProfileCharacteristicValueResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profilecharacteristic.dto.ProfileCharacteristicValueResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profilecharacteristic.dto.ProfileCharacteristicValueKind;
 import org.craft.mcs.cap.shared.kernel.characteristic.CharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.characteristic.IntervalCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
@@ -21,25 +20,6 @@ public final class ProfileCharacteristicRestMapper {
   private static final BigDecimal ONE_HALF = new BigDecimal("0.5");
 
   private ProfileCharacteristicRestMapper() {
-  }
-
-  public static @NonNull ProfileCharacteristicValueResponse toResponse(
-      @NonNull AxisValue value,
-      @NonNull String unit
-  ) {
-    requireNonNull(value, "profile axis value cannot be null");
-    requireNonNull(unit, "profile axis value unit cannot be null");
-
-    return switch (value.valueKind()) {
-      case POINT -> new PointProfileCharacteristicValueResponse(value.value(), unit);
-      case INTERVAL_MIDPOINT -> new IntervalProfileCharacteristicValueResponse(
-          value.value(),
-          requireNonNull(value.min(), "interval axis value minimum cannot be null"),
-          requireNonNull(value.max(), "interval axis value maximum cannot be null"),
-          unit
-      );
-      case CALCULATED -> new CalculatedProfileCharacteristicValueResponse(value.value(), unit);
-    };
   }
 
   public static <T extends Comparable<? super T>> @NonNull ProfileCharacteristicValueResponse toResponse(
@@ -63,6 +43,17 @@ public final class ProfileCharacteristicRestMapper {
             unit
         );
       }
+    };
+  }
+
+  /** Returns the transport value kind represented by a typed characteristic value. */
+  public static <T extends Comparable<? super T>> @NonNull ProfileCharacteristicValueKind valueKind(
+      @NonNull CharacteristicValue<T> value
+  ) {
+    requireNonNull(value, "profile characteristic cannot be null");
+    return switch (value) {
+      case PointCharacteristicValue<T> _ -> ProfileCharacteristicValueKind.POINT;
+      case IntervalCharacteristicValue<T> _ -> ProfileCharacteristicValueKind.INTERVAL_MIDPOINT;
     };
   }
 }

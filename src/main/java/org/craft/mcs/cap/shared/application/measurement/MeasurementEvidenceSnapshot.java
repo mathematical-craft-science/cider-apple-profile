@@ -20,8 +20,7 @@ public record MeasurementEvidenceSnapshot(
     @NonNull MaterialStateId materialStateId,
     @NonNull MeasurementEvidenceReference evidenceReference,
     @NonNull Instant measuredAt,
-    @NonNull MeasurementProvenanceView provenance,
-    @NonNull MeasurementEvidenceValidity validity
+    @NonNull MeasurementProvenanceView provenance
 ) {
 
   public MeasurementEvidenceSnapshot {
@@ -31,6 +30,5 @@ public record MeasurementEvidenceSnapshot(
     requireNonNull(evidenceReference, "measurement evidence reference cannot be null");
     requireNonNull(measuredAt, "measurement evidence time cannot be null");
     requireNonNull(provenance, "measurement evidence provenance cannot be null");
-    requireNonNull(validity, "measurement evidence validity cannot be null");
   }
 }

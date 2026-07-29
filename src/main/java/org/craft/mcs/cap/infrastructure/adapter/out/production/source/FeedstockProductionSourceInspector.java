@@ -3,12 +3,13 @@ package org.craft.mcs.cap.infrastructure.adapter.out.production.source;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.feedstock.application.inventory.port.in.InspectFeedstockBatchMaterialCommand;
 import org.craft.mcs.cap.core.feedstock.application.inventory.port.in.InspectFeedstockBatchMaterialUseCase;
+import org.craft.mcs.cap.core.feedstock.application.inventory.port.in.FeedstockMaterialCharacteristics;
+import org.craft.mcs.cap.core.production.application.model.ProductionSourceCharacteristics;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionSourceDisplayName;
 import org.craft.mcs.cap.core.production.candidate.application.model.AvailableProductionSource;
 import org.craft.mcs.cap.core.production.candidate.application.port.out.ProductionSourceInspector;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceEvidenceReference;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceComponent;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;
@@ -24,7 +25,6 @@ import static org.craft.mcs.cap.infrastructure.adapter.out.production.source.Fee
 public final class FeedstockProductionSourceInspector implements ProductionSourceInspector {
 
   private final @NonNull InspectFeedstockBatchMaterialUseCase inspectFeedstockBatchMaterialUseCase;
-  private final @NonNull ChemicalProfileAxisExtractor axisExtractor;
 
   @Override
   public @NonNull AvailableProductionSource inspect(
@@ -53,9 +53,20 @@ public final class FeedstockProductionSourceInspector implements ProductionSourc
         source.reference(),
         ProductionSourceDisplayName.of(snapshot.batchName().value()),
         snapshot.availability(),
-        axisExtractor.extract(snapshot.chemicalProfile()),
+        toProductionSourceCharacteristics(snapshot.characteristics()),
         snapshot.profileConfidence(),
         ProductionSourceEvidenceReference.of(snapshot.evidenceReference().externalValue())
+    );
+  }
+
+  private static @NonNull ProductionSourceCharacteristics toProductionSourceCharacteristics(
+      @NonNull FeedstockMaterialCharacteristics characteristics
+  ) {
+    return new ProductionSourceCharacteristics(
+        characteristics.specificGravity(),
+        characteristics.titratableAcidity(),
+        characteristics.tannin(),
+        characteristics.yeastAssimilableNitrogen()
     );
   }
 }

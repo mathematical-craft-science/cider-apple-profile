@@ -8,14 +8,14 @@ import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.Feedsto
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentProfileDataQualityStatus;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentProfileDataQualityView;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentProfileSignalSeverity;
-import org.craft.mcs.cap.core.profileanalysis.compatibility.application.ChemicalProfileAssessment;
+import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentProfileView;
+import org.craft.mcs.cap.core.profileanalysis.graph.application.model.JolicoeurSugarAcidityGraphEvaluation;
+import org.craft.mcs.cap.core.profileanalysis.graph.domain.GraphMissingCharacteristic;
 import org.craft.mcs.cap.shared.application.measurement.MeasurementEvidenceView;
 import org.craft.mcs.cap.shared.kernel.characteristic.CharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.characteristic.IntervalCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
-import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 
@@ -41,21 +41,21 @@ public final class FeedstockProfileDataQualityAssessor {
   }
 
   public @NonNull FeedstockCurrentProfileDataQualityView assess(
-      @NonNull ChemicalProfile profile,
-      @NonNull ChemicalProfileAssessment evaluation,
+      @NonNull FeedstockCurrentProfileView currentProfile,
+      @NonNull JolicoeurSugarAcidityGraphEvaluation graphEvaluation,
       @NonNull FeedstockCurrentProfileFreshnessView freshness,
       @NonNull List<@NonNull MeasurementEvidenceView> evidence
   ) {
-    requireNonNull(profile, "chemical profile cannot be null");
-    requireNonNull(evaluation, "sugar-acidity profile evaluation cannot be null");
+    requireNonNull(currentProfile, "feedstock current profile cannot be null");
+    requireNonNull(graphEvaluation, "sugar-acidity graph evaluation cannot be null");
     requireNonNull(freshness, "feedstock measurement freshness cannot be null");
     requireNonNull(evidence, "feedstock profile evidence cannot be null");
 
     final var indicators = new ArrayList<FeedstockCurrentProfileDataQualityIndicator>();
-    addGraphQuality(indicators, evaluation);
-    addOptionalCharacteristicQuality(indicators, profile);
+    addGraphQuality(indicators, graphEvaluation);
+    addOptionalCharacteristicQuality(indicators, currentProfile);
     addConfidenceQuality(indicators, evidence);
-    addValueShapeQuality(indicators, profile);
+    addValueShapeQuality(indicators, currentProfile);
     if (freshness.stale()) {
       indicators.add(indicator(
           FeedstockCurrentProfileDataQualityIndicatorCode.MEASUREMENT_STALE,
@@ -68,9 +68,9 @@ public final class FeedstockProfileDataQualityAssessor {
 
   private static void addGraphQuality(
       @NonNull List<FeedstockCurrentProfileDataQualityIndicator> indicators,
-      @NonNull ChemicalProfileAssessment evaluation
+      @NonNull JolicoeurSugarAcidityGraphEvaluation graphEvaluation
   ) {
-    if (evaluation.plottable()) {
+    if (graphEvaluation.plottable()) {
       indicators.add(indicator(
           FeedstockCurrentProfileDataQualityIndicatorCode.SUGAR_ACIDITY_GRAPH_PLOTTABLE,
           FeedstockCurrentProfileSignalSeverity.INFO,
@@ -78,14 +78,14 @@ public final class FeedstockProfileDataQualityAssessor {
       ));
       return;
     }
-    if (evaluation.capabilityAssessment().missingAxes().contains(ChemicalAxis.SPECIFIC_GRAVITY)) {
+    if (graphEvaluation.missingCharacteristics().contains(GraphMissingCharacteristic.SPECIFIC_GRAVITY)) {
       indicators.add(indicator(
           FeedstockCurrentProfileDataQualityIndicatorCode.SPECIFIC_GRAVITY_MISSING,
           FeedstockCurrentProfileSignalSeverity.BLOCKING,
           "Specific gravity is missing"
       ));
     }
-    if (evaluation.capabilityAssessment().missingAxes().contains(ChemicalAxis.TITRATABLE_ACIDITY)) {
+    if (graphEvaluation.missingCharacteristics().contains(GraphMissingCharacteristic.TITRATABLE_ACIDITY)) {
       indicators.add(indicator(
           FeedstockCurrentProfileDataQualityIndicatorCode.TITRATABLE_ACIDITY_MISSING,
           FeedstockCurrentProfileSignalSeverity.BLOCKING,
@@ -96,23 +96,23 @@ public final class FeedstockProfileDataQualityAssessor {
 
   private static void addOptionalCharacteristicQuality(
       @NonNull List<FeedstockCurrentProfileDataQualityIndicator> indicators,
-      @NonNull ChemicalProfile profile
+      @NonNull FeedstockCurrentProfileView currentProfile
   ) {
-    if (profile.tannin().isEmpty()) {
+    if (currentProfile.tannin() == null) {
       indicators.add(indicator(
           FeedstockCurrentProfileDataQualityIndicatorCode.TANNIN_MISSING,
           FeedstockCurrentProfileSignalSeverity.WARNING,
           "Tannin is missing"
       ));
     }
-    if (profile.ph().isEmpty()) {
+    if (currentProfile.ph() == null) {
       indicators.add(indicator(
           FeedstockCurrentProfileDataQualityIndicatorCode.PH_MISSING,
           FeedstockCurrentProfileSignalSeverity.WARNING,
           "pH is missing"
       ));
     }
-    if (profile.yeastAssimilableNitrogen().isEmpty()) {
+    if (currentProfile.yeastAssimilableNitrogen() == null) {
       indicators.add(indicator(
           FeedstockCurrentProfileDataQualityIndicatorCode.YAN_MISSING,
           FeedstockCurrentProfileSignalSeverity.WARNING,
@@ -144,9 +144,9 @@ public final class FeedstockProfileDataQualityAssessor {
 
   private static void addValueShapeQuality(
       @NonNull List<FeedstockCurrentProfileDataQualityIndicator> indicators,
-      @NonNull ChemicalProfile profile
+      @NonNull FeedstockCurrentProfileView currentProfile
   ) {
-    if (hasIntervalValues(profile)) {
+    if (hasIntervalValues(currentProfile)) {
       indicators.add(indicator(
           FeedstockCurrentProfileDataQualityIndicatorCode.NON_POINT_VALUES,
           FeedstockCurrentProfileSignalSeverity.INFO,
@@ -155,22 +155,19 @@ public final class FeedstockProfileDataQualityAssessor {
     }
   }
 
-  private static boolean hasIntervalValues(@NonNull ChemicalProfile profile) {
-    return profile.sugar().map(FeedstockProfileDataQualityAssessor::isInterval).orElse(false)
-        || profile.ph().map(FeedstockProfileDataQualityAssessor::isInterval).orElse(false)
-        || profile.titratableAcidity()
-            .map(FeedstockProfileDataQualityAssessor::isInterval)
-            .orElse(false)
-        || profile.tannin().map(FeedstockProfileDataQualityAssessor::isInterval).orElse(false)
-        || profile.yeastAssimilableNitrogen()
-            .map(FeedstockProfileDataQualityAssessor::isInterval)
-            .orElse(false);
+  private static boolean hasIntervalValues(@NonNull FeedstockCurrentProfileView currentProfile) {
+    return isInterval(currentProfile.specificGravity())
+        || isInterval(currentProfile.titratableAcidity())
+        || isInterval(currentProfile.ph())
+        || isInterval(currentProfile.tannin())
+        || isInterval(currentProfile.yeastAssimilableNitrogen());
   }
 
   private static <T extends Comparable<? super T>> boolean isInterval(
-      @NonNull CharacteristicValue<T> value
+      CharacteristicValue<T> value
   ) {
     return switch (value) {
+      case null -> false;
       case PointCharacteristicValue<T> _ -> false;
       case IntervalCharacteristicValue<T> _ -> true;
     };

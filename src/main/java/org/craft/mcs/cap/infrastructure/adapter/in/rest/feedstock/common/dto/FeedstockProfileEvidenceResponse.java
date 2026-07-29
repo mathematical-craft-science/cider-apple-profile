@@ -3,7 +3,6 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.common.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Instant;
 import java.util.UUID;
-import org.craft.mcs.cap.shared.application.measurement.MeasurementEvidenceValidity;
 import org.craft.mcs.cap.shared.application.measurement.MeasurementFreshnessStatus;
 import org.craft.mcs.cap.shared.application.measurement.MeasurementValueOrigin;
 import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
@@ -15,8 +14,8 @@ import org.jspecify.annotations.Nullable;
 @Schema(
     description = """
         Evidence selected for one characteristic of the composite current Feedstock profile. The response identifies
-        the immutable measurement result supporting the value and describes its origin, provenance, applicability,
-        and freshness. It does not contain the characteristic value itself.
+        the immutable measurement result supporting the value and describes its origin, provenance, and freshness.
+        It does not contain the characteristic value itself.
         """
 )
 public record FeedstockProfileEvidenceResponse(
@@ -82,13 +81,6 @@ public record FeedstockProfileEvidenceResponse(
         requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )
     @Nullable ConfidenceLevel confidence,
-    @Schema(
-        description = "Whether the selected evidence remains applicable to the current material-state lineage.",
-        implementation = MeasurementEvidenceValidity.class,
-        example = "VALID",
-        requiredMode = Schema.RequiredMode.REQUIRED
-    )
-    @NonNull MeasurementEvidenceValidity validity,
     @Schema(
         description = "Freshness of this characteristic relative to the active workspace freshness policy.",
         implementation = MeasurementFreshnessStatus.class,

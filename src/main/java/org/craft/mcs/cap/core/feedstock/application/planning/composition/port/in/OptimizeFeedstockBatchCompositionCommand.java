@@ -1,7 +1,7 @@
 package org.craft.mcs.cap.core.feedstock.application.planning.composition.port.in;
 
 import java.util.List;
-import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionCalculatorCode;
+import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionCalculatorCode;
 import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.strategy.CompositionOptimizationAlgorithm;
 import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.objective.CompositionOptimizationCriterion;
 import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.CompositionOptimizationMode;
@@ -30,7 +30,7 @@ public record OptimizeFeedstockBatchCompositionCommand(
     @NonNull DiscretizedCompositionOptimizationSettings settings,
     @NonNull CompositionOptimizationMode mode,
     @NonNull CompositionOptimizationAlgorithm algorithm,
-    @NonNull ChemicalProfileCompositionCalculatorCode calculatorCode,
+    @NonNull CompositionCalculatorCode calculatorCode,
     @Nullable VolumeValue targetTotalVolume,
     int sourceLimit
 ) {
@@ -44,7 +44,7 @@ public record OptimizeFeedstockBatchCompositionCommand(
     requireNonNull(settings, "discretized composition optimization settings cannot be null");
     requireNonNull(mode, "composition optimization mode cannot be null");
     requireNonNull(algorithm, "composition optimization algorithm cannot be null");
-    requireNonNull(calculatorCode, "chemical profile composition calculator code cannot be null");
+    requireNonNull(calculatorCode, "composition calculator code cannot be null");
 
     if (sourceLimit < 2 || sourceLimit > QueryLimits.MAXIMUM) {
       throw new ApplicationValidationException(

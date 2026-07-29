@@ -12,10 +12,9 @@ import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.sugaracidit
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.sugaracidity.cursor.AppleVarietySugarAcidityCursorAdapter;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.abv.dto.PotentialAbvPredictionResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.abv.mapper.PotentialAbvPredictionRestMapper;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.mapper.ChemicalProfileCapabilityRestMapper;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.capability.mapper.ProfileAnalysisCapabilityRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.mapper.ProfileGraphRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.dto.SugarAcidityGraphAssessmentResponse;
-import org.craft.mcs.cap.core.profileanalysis.compatibility.application.ChemicalProfileAssessment;
 import org.craft.mcs.cap.shared.application.query.pagination.CursorPage;
 import org.craft.mcs.cap.shared.application.query.pagination.CursorPageRequest;
 import org.craft.mcs.cap.shared.application.query.QueryLimits;
@@ -61,15 +60,15 @@ public final class AppleVarietyProfileGraphRestMapper {
       @NonNull AppleVarietySugarAcidityZoneResult result
   ) {
     requireNonNull(result, "apple variety sugar-acidity zone result cannot be null");
-    final var evaluation = result.evaluation();
+    final var graphEvaluation = result.graphEvaluation();
 
     return new AppleVarietySugarAcidityZoneResponse(
         result.varietyId().value(),
         result.varietyName().value(),
-        evaluation.plottable(),
-        toAssessmentResponse(evaluation),
+        graphEvaluation.plottable(),
+        toAssessmentResponse(result),
         toPotentialAbvResponse(result),
-        ChemicalProfileCapabilityRestMapper.toResponse(evaluation.capabilityAssessment())
+        ProfileAnalysisCapabilityRestMapper.toResponse(graphEvaluation)
     );
   }
 
@@ -85,11 +84,11 @@ public final class AppleVarietyProfileGraphRestMapper {
 
     return new AppleVarietySugarAcidityZonePointBatchResponse(
         page.items().stream()
-            .filter(result -> result.evaluation().plottable())
+            .filter(result -> result.graphEvaluation().plottable())
             .map(AppleVarietyProfileGraphRestMapper::toResponse)
             .toList(),
         page.items().stream()
-            .filter(result -> !result.evaluation().plottable())
+            .filter(result -> !result.graphEvaluation().plottable())
             .map(AppleVarietyProfileGraphRestMapper::toUnplottableResponse)
             .toList(),
         cursorAdapter.encode(page.nextPosition(), query.filters())
@@ -104,7 +103,7 @@ public final class AppleVarietyProfileGraphRestMapper {
     return new UnplottableAppleVarietySugarAcidityZonePointResponse(
         result.varietyId().value(),
         result.varietyName().value(),
-        ChemicalProfileCapabilityRestMapper.toResponse(result.evaluation().capabilityAssessment())
+        ProfileAnalysisCapabilityRestMapper.toResponse(result.graphEvaluation())
     );
   }
 
@@ -113,9 +112,17 @@ public final class AppleVarietyProfileGraphRestMapper {
   }
 
   private static @Nullable SugarAcidityGraphAssessmentResponse toAssessmentResponse(
-      @NonNull ChemicalProfileAssessment evaluation
+      @NonNull AppleVarietySugarAcidityZoneResult result
   ) {
-    return evaluation.assessment() == null ? null : ProfileGraphRestMapper.toResponse(evaluation);
+    if (!result.graphEvaluation().plottable()) {
+      return null;
+    }
+    return ProfileGraphRestMapper.toResponse(
+        result.graphEvaluation(),
+        result.northAmericanTanninLevel(),
+        requireNonNull(result.specificGravity()),
+        requireNonNull(result.titratableAcidity())
+    );
   }
 
   private static @Nullable PotentialAbvPredictionResponse toPotentialAbvResponse(

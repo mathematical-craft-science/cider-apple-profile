@@ -12,6 +12,7 @@ import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.profiletarget.f
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.common.mapper.FeedstockProfileTargetRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.mapper.ProfileTargetRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.mapper.ProfileTargetScoringCharacteristicsRestMapper;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.common.mapper.FeedstockProfileEvidenceRestMapper;
 import org.craft.mcs.cap.shared.application.query.QueryLimits;
 import org.jspecify.annotations.NonNull;
 
@@ -72,8 +73,9 @@ public final class FeedstockBatchProfileTargetCandidateRestMapper {
     return new FeedstockBatchProfileTargetCandidateResponse(
         candidate.batchId().value(),
         candidate.currentMaterialStateId().value(),
-        candidate.currentMeasurementId().value(),
-        candidate.currentMeasurementName().value(),
+        candidate.profileEvidence().stream()
+            .map(FeedstockProfileEvidenceRestMapper::toResponse)
+            .toList(),
         ProfileTargetScoringCharacteristicsRestMapper.toResponse(candidate.characteristics()),
         ProfileTargetRestMapper.toResponse(candidate.distance()),
         requireNonNull(

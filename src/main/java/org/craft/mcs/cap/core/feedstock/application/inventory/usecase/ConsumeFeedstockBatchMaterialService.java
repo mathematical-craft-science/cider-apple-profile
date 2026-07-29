@@ -20,6 +20,8 @@ import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 
 import static java.util.Objects.requireNonNull;
+import static org.craft.mcs.cap.core.feedstock.application.inventory.usecase
+    .FeedstockMaterialCharacteristicsProjector.project;
 
 
 /**
@@ -56,6 +58,7 @@ public final class ConsumeFeedstockBatchMaterialService
     requireAvailableVolume(batch, command);
     final var sourceStateId = batch.currentMaterialStateId();
     final var measurement = currentProfileQueryService.requireCurrentProfile(batch.batchId());
+    final var characteristics = project(measurement);
     final var availableBefore = batch.availableVolume();
 
     batch.consumeAvailableVolume(command.volume());
@@ -74,7 +77,7 @@ public final class ConsumeFeedstockBatchMaterialService
         FeedstockBatchMaterialEvidenceReference.from(measurement.evidence().stream()
             .map(MeasurementEvidenceView::snapshot)
             .toList()),
-        measurement.chemicalProfile(),
+        characteristics,
         measurement.aggregateConfidence()
     );
   }
@@ -108,4 +111,5 @@ public final class ConsumeFeedstockBatchMaterialService
       );
     }
   }
+
 }

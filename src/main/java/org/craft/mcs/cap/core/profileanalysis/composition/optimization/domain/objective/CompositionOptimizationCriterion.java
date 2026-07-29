@@ -1,6 +1,6 @@
 package org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.objective;
 
-import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileComposition;
+import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CalculatedComposition;
 import org.jspecify.annotations.NonNull;
 
 
@@ -17,5 +17,5 @@ import org.jspecify.annotations.NonNull;
 public interface CompositionOptimizationCriterion {
 
   @NonNull
-  CompositionOptimizationCriterionAssessment assess(@NonNull ChemicalProfileComposition composition);
+  CompositionOptimizationCriterionAssessment assess(@NonNull CalculatedComposition composition);
 }

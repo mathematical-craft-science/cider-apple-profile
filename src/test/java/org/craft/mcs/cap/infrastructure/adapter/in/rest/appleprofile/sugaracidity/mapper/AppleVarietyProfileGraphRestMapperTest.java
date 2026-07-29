@@ -4,19 +4,21 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.in.AppleVarietySugarAcidityZoneResult;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyId;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyName;
-import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
+import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPrediction;
+import org.craft.mcs.cap.shared.testing.ProfileCharacteristicsFixture;
+import org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.characteristic.IntervalCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
-import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.craft.mcs.cap.core.profileanalysis.testing.ProfileAnalysisTestFixtures.graphEvaluator;
 import static org.craft.mcs.cap.core.profileanalysis.testing.ProfileAnalysisTestFixtures
-    .chemicalProfileAssessmentAdapter;
+    .northAmericanProfileCalculator;
+import static org.craft.mcs.cap.shared.testing.AppleVarietyReferenceProfiles.from;
 import static org.craft.mcs.cap.support.PotentialAbvPredictionFixtures.prediction;
 
 
@@ -26,20 +28,16 @@ class AppleVarietyProfileGraphRestMapperTest {
 
   @Test
   void serializesAxisPointDiscriminatorForPlottableSingleResult() throws Exception {
-    final var profile = ChemicalProfile.builder()
-        .sugar(PointCharacteristicValue.of(SugarConcentration.ofSpecificGravity(
-            SpecificGravityValue.of("1.066")
-        )))
+    final var profile = ProfileCharacteristicsFixture.builder()
+        .specificGravity(PointCharacteristicValue.of(SpecificGravityValue.of("1.066")))
         .titratableAcidity(PointCharacteristicValue.of(TitratableAcidityValue.of("5.7")))
         .tannin(PointCharacteristicValue.of(TanninValue.of("2000")))
         .build();
-    final var evaluation = chemicalProfileAssessmentAdapter().project(profile);
-
     final var response = AppleVarietyProfileGraphRestMapper.toResponse(
-        new AppleVarietySugarAcidityZoneResult(
+        result(
             AppleVarietyId.of("00000000-0000-0000-0000-000000000001"),
             AppleVarietyName.of("Kingston Black"),
-            evaluation,
+            profile,
             prediction(SpecificGravityValue.of("1.066"))
         )
     );
@@ -56,10 +54,10 @@ class AppleVarietyProfileGraphRestMapperTest {
 
   @Test
   void preservesIntervalShapeInCompatibilityResponse() {
-    final var profile = ChemicalProfile.builder()
-        .sugar(IntervalCharacteristicValue.of(
-            SugarConcentration.ofSpecificGravity(SpecificGravityValue.of("1.060")),
-            SugarConcentration.ofSpecificGravity(SpecificGravityValue.of("1.070"))
+    final var profile = ProfileCharacteristicsFixture.builder()
+        .specificGravity(IntervalCharacteristicValue.of(
+            SpecificGravityValue.of("1.060"),
+            SpecificGravityValue.of("1.070")
         ))
         .titratableAcidity(IntervalCharacteristicValue.of(
             TitratableAcidityValue.of("5.0"),
@@ -68,10 +66,10 @@ class AppleVarietyProfileGraphRestMapperTest {
         .build();
 
     final var response = AppleVarietyProfileGraphRestMapper.toResponse(
-        new AppleVarietySugarAcidityZoneResult(
+        result(
             AppleVarietyId.of("00000000-0000-0000-0000-000000000001"),
             AppleVarietyName.of("Interval Profile"),
-            chemicalProfileAssessmentAdapter().project(profile),
+            profile,
             prediction(SpecificGravityValue.of("1.065"))
         )
     );
@@ -85,17 +83,15 @@ class AppleVarietyProfileGraphRestMapperTest {
 
   @Test
   void mapsUnplottableSingleResultWithCapabilityAssessment() {
-    final var profile = ChemicalProfile.builder()
-        .sugar(PointCharacteristicValue.of(SugarConcentration.ofSpecificGravity(
-            SpecificGravityValue.of("1.050")
-        )))
+    final var profile = ProfileCharacteristicsFixture.builder()
+        .specificGravity(PointCharacteristicValue.of(SpecificGravityValue.of("1.050")))
         .build();
 
     final var response = AppleVarietyProfileGraphRestMapper.toResponse(
-        new AppleVarietySugarAcidityZoneResult(
+        result(
             AppleVarietyId.of("00000000-0000-0000-0000-000000000001"),
             AppleVarietyName.of("Partial Profile"),
-            chemicalProfileAssessmentAdapter().project(profile),
+            profile,
             prediction(SpecificGravityValue.of("1.050"))
         )
     );
@@ -105,7 +101,34 @@ class AppleVarietyProfileGraphRestMapperTest {
     assertThat(response.plottable()).isFalse();
     assertThat(response.assessment()).isNull();
     assertThat(response.capabilityAssessment()).isNotNull();
-    assertThat(response.capabilityAssessment().missingAxes()).containsExactly(ChemicalAxis.TITRATABLE_ACIDITY);
+    assertThat(response.capabilityAssessment().missingCharacteristics()).containsExactly(
+        MeasurementCharacteristic.TITRATABLE_ACIDITY
+    );
     assertThat(response.potentialAbv()).isNotNull();
+  }
+
+  private static AppleVarietySugarAcidityZoneResult result(
+      AppleVarietyId varietyId,
+      AppleVarietyName varietyName,
+      ProfileCharacteristicsFixture profile,
+      PotentialAbvPrediction potentialAbv
+  ) {
+    final var referenceProfile = from(profile);
+    final var graphEvaluation = graphEvaluator().evaluate(
+        referenceProfile.specificGravity(),
+        referenceProfile.titratableAcidity()
+    );
+    final var tanninLevel = referenceProfile.tannin() == null
+        ? null
+        : northAmericanProfileCalculator().assessTannin(referenceProfile.tannin());
+    return new AppleVarietySugarAcidityZoneResult(
+        varietyId,
+        varietyName,
+        referenceProfile.specificGravity(),
+        referenceProfile.titratableAcidity(),
+        graphEvaluation,
+        tanninLevel,
+        potentialAbv
+    );
   }
 }

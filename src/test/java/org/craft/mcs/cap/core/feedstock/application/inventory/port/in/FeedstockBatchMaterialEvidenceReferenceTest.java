@@ -6,7 +6,6 @@ import java.util.UUID;
 import org.craft.mcs.cap.shared.application.ApplicationValidationException;
 import org.craft.mcs.cap.shared.application.measurement.MeasurementEvidenceReference;
 import org.craft.mcs.cap.shared.application.measurement.MeasurementEvidenceSnapshot;
-import org.craft.mcs.cap.shared.application.measurement.MeasurementEvidenceValidity;
 import org.craft.mcs.cap.shared.application.measurement.MeasurementProvenanceView;
 import org.craft.mcs.cap.shared.application.measurement.MeasurementValueOrigin;
 import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
@@ -73,8 +72,7 @@ class FeedstockBatchMaterialEvidenceReferenceTest {
             null,
             null,
             null
-        ),
-        MeasurementEvidenceValidity.VALID
+        )
     );
   }
 }

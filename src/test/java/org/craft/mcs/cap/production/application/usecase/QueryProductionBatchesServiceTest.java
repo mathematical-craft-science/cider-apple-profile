@@ -10,6 +10,7 @@ import org.craft.mcs.cap.core.profileanalysis.abv.domain.StandardGravityDropAbvP
 import org.craft.mcs.cap.core.production.application.authorization.port.out.ProductionAccessControl;
 import org.craft.mcs.cap.core.production.application.model.ProductionBatchView;
 import org.craft.mcs.cap.core.production.application.model.ProductionMeasuredProfileView;
+import org.craft.mcs.cap.core.production.application.model.ProductionCurrentCharacteristicView;
 import org.craft.mcs.cap.core.production.application.port.in.ListProductionBatchesQuery;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchQueryRepository;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionMeasurementProfileProvider;
@@ -20,15 +21,11 @@ import org.craft.mcs.cap.core.production.domain.model.value.AlcoholicFermentatio
 import org.craft.mcs.cap.shared.kernel.material.value.BatchLifecycle;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
 import org.craft.mcs.cap.shared.application.measurement.MeasurementEvidenceReference;
-import org.craft.mcs.cap.shared.application.measurement.MeasurementEvidenceValidity;
 import org.craft.mcs.cap.shared.application.measurement.MeasurementEvidenceView;
 import org.craft.mcs.cap.shared.application.measurement.MeasurementFreshnessStatus;
 import org.craft.mcs.cap.shared.application.measurement.MeasurementProvenanceView;
 import org.craft.mcs.cap.shared.application.measurement.MeasurementValueOrigin;
-import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
@@ -38,7 +35,6 @@ import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic;
 import org.craft.mcs.cap.shared.kernel.measurement.MeasurementSourceType;
 import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
-import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -115,34 +111,34 @@ class QueryProductionBatchesServiceTest {
             null,
             null
         ),
-        MeasurementFreshnessStatus.CURRENT,
-        MeasurementEvidenceValidity.VALID
+        MeasurementFreshnessStatus.CURRENT
     );
     final var measuredProfile = new ProductionMeasuredProfileView(
-        ChemicalProfile.builder()
-            .sugar(PointCharacteristicValue.of(SugarConcentration.ofSpecificGravity(
-                SpecificGravityValue.of("1.035")
-            )))
-            .build(),
-        List.of(evidence)
+        ProductionCurrentCharacteristicView.fromMeasurement(
+            PointCharacteristicValue.of(SpecificGravityValue.of("1.035")),
+            evidence
+        ),
+        null,
+        null,
+        null,
+        null
     );
     when(repository.findById(batch.batchId())).thenReturn(Optional.of(batch));
     when(measurementProvider.findCurrent(batch.batchId())).thenReturn(Optional.of(measuredProfile));
 
     final var details = service.get(batch.batchId());
-    final var axes = new ChemicalProfileAxisExtractor().extract(
-        details.currentProfile().chemicalProfile()
-    );
 
-    assertThat(axes)
-        .satisfies(profileAxes -> assertThat(
-            profileAxes.requireValueOf(ChemicalAxis.SPECIFIC_GRAVITY).value()
-        ).isEqualByComparingTo("1.035"))
-        .satisfies(profileAxes -> assertThat(
-            profileAxes.requireValueOf(ChemicalAxis.TITRATABLE_ACIDITY).value()
-        ).isEqualByComparingTo("6.2"));
+    assertThat(details.currentProfile())
+        .returns(
+            PointCharacteristicValue.of(SpecificGravityValue.of("1.035")),
+            profile -> profile.specificGravity().value()
+        )
+        .returns(
+            PointCharacteristicValue.of(TitratableAcidityValue.of("6.2")),
+            profile -> profile.titratableAcidity().value()
+        );
     assertThat(details)
-        .satisfies(value -> assertThat(value.currentProfile().evidence()).containsExactly(evidence))
+        .satisfies(value -> assertThat(value.currentProfile().measurementEvidence()).containsExactly(evidence))
         .satisfies(value -> assertThat(value.batch().initialProfileSnapshot().specificGravity())
             .isEqualTo(SpecificGravityValue.of("1.052")));
   }
@@ -177,7 +173,6 @@ class QueryProductionBatchesServiceTest {
         accessControl,
         measurementProvider,
         new ProductionCurrentProfileProjector(),
-        new ChemicalProfileAxisExtractor(),
         POTENTIAL_ABV_PREDICTOR
     );
   }

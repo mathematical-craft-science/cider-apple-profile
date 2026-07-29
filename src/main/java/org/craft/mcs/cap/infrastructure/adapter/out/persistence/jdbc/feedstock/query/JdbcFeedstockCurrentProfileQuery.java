@@ -1,6 +1,7 @@
 package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.feedstock.query;
 
 import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,21 +13,27 @@ import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.feedstock.application.analysis.common.model.FeedstockAnalysisCandidatePagePosition;
 import org.craft.mcs.cap.core.feedstock.application.analysis.common.port.out.CurrentFeedstockBatchAnalysisCandidateQuery;
 import org.craft.mcs.cap.core.feedstock.application.analysis.common.port.out.FeedstockCurrentProfileAnalysisCandidateRepository;
-import org.craft.mcs.cap.core.feedstock.application.batch.model.FeedstockBatchCriteria;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentProfileView;
-import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockLatestMeasurementView;
+import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockLatestMeasurementSetView;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.out.FeedstockCurrentProfileQueryRepository;
-import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementId;
-import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementName;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
-import org.craft.mcs.cap.core.measurement.application.compatibility.CurrentMeasurementProfileView;
-import org.craft.mcs.cap.core.measurement.application.compatibility.ProjectCurrentMeasurementProfileUseCase;
+import org.craft.mcs.cap.core.measurement.application.model.CurrentMaterialStateView;
+import org.craft.mcs.cap.core.measurement.application.model.CurrentMaterialCharacteristicView;
+import org.craft.mcs.cap.core.measurement.application.model.MeasurementSetMetadataView;
+import org.craft.mcs.cap.core.measurement.application.port.in.ProjectCurrentMaterialStateUseCase;
+import org.craft.mcs.cap.core.measurement.application.port.in.QueryMeasurementSetMetadataUseCase;
+import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetId;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSubjectReference;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSubjectType;
 import org.craft.mcs.cap.shared.application.measurement.MeasurementEvidenceReference;
 import org.craft.mcs.cap.shared.application.measurement.MeasurementEvidenceView;
+import org.craft.mcs.cap.shared.kernel.chemical.value.PhValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
+import org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -42,21 +49,40 @@ import static java.util.Objects.requireNonNull;
 class JdbcFeedstockCurrentProfileQuery
     implements FeedstockCurrentProfileQueryRepository, FeedstockCurrentProfileAnalysisCandidateRepository {
 
+  private static final Set<MeasurementCharacteristic> PROFILE_CHARACTERISTICS = Set.copyOf(
+      EnumSet.of(
+          MeasurementCharacteristic.SPECIFIC_GRAVITY,
+          MeasurementCharacteristic.TITRATABLE_ACIDITY,
+          MeasurementCharacteristic.PH,
+          MeasurementCharacteristic.TANNIN,
+          MeasurementCharacteristic.YAN
+      )
+  );
+
+  private static final Comparator<FeedstockCurrentProfileView> CANDIDATE_ORDER =
+      Comparator.comparing(
+              (FeedstockCurrentProfileView view) -> view.latestMeasurementSet().measuredAt(),
+              Comparator.reverseOrder()
+          )
+          .thenComparing(
+              view -> view.latestMeasurementSet().measurementSetId().toString(),
+              Comparator.reverseOrder()
+          );
+
   private final @NonNull NamedParameterJdbcTemplate jdbcTemplate;
-  private final @NonNull ProjectCurrentMeasurementProfileUseCase currentProfileProjector;
+  private final @NonNull ProjectCurrentMaterialStateUseCase currentStateProjector;
+  private final @NonNull QueryMeasurementSetMetadataUseCase measurementSetMetadataQuery;
 
   @Override
   public @NonNull List<@NonNull FeedstockCurrentProfileView> findCandidates(
       @NonNull CurrentFeedstockBatchAnalysisCandidateQuery query
   ) {
     requireNonNull(query, "current feedstock batch analysis candidate query cannot be null");
-    return loadViews(queryBatchIds(
-        query.workspaceId(),
-        query.batch(),
-        query.season(),
-        query.after(),
-        query.limit()
-    ));
+    return loadViews(queryEligibleBatchIds(query)).stream()
+        .sorted(CANDIDATE_ORDER)
+        .filter(view -> isAfter(view, query.after()))
+        .limit(query.limit())
+        .toList();
   }
 
   @Override
@@ -75,147 +101,55 @@ class JdbcFeedstockCurrentProfileQuery
     return loadViews(List.copyOf(batchIds));
   }
 
-  private @NonNull List<@NonNull FeedstockBatchId> queryBatchIds(
-      @NonNull WorkspaceId workspaceId,
-      @Nullable FeedstockBatchCriteria batchCriteria,
-      @Nullable FeedstockSeason season,
-      @Nullable FeedstockAnalysisCandidatePagePosition cursor,
-      int limit
+  private @NonNull List<@NonNull FeedstockBatchId> queryEligibleBatchIds(
+      @NonNull CurrentFeedstockBatchAnalysisCandidateQuery query
   ) {
     final var sql = new StringBuilder("""
-        WITH RECURSIVE state_lineage AS (
-            SELECT 'FEEDSTOCK_BATCH' AS subject_type,
-                   batch.batch_id AS subject_id,
-                   batch.current_material_state_id AS material_state_id,
-                   0 AS state_depth,
-                   ARRAY[batch.current_material_state_id] AS visited_states,
-                   ARRAY[]::VARCHAR[] AS invalidated_characteristics
-              FROM feedstock_batches batch
-             WHERE batch.workspace_id = :workspaceId
-
-            UNION ALL
-
-            SELECT lineage.subject_type,
-                   lineage.subject_id,
-                   input_state.material_state_id,
-                   lineage.state_depth + 1,
-                   lineage.visited_states || input_state.material_state_id,
-                   lineage.invalidated_characteristics || output_state.invalidated_characteristics
-              FROM state_lineage lineage
-              JOIN batch_trace_step_subjects output_state
-                ON output_state.material_state_id = lineage.material_state_id
-               AND output_state.subject_role = 'OUTPUT'
-               AND output_state.subject_type = lineage.subject_type
-               AND output_state.subject_id = lineage.subject_id
-              JOIN batch_trace_step_subjects input_state
-                ON input_state.step_id = output_state.step_id
-               AND input_state.subject_role = 'INPUT'
-               AND input_state.subject_type = lineage.subject_type
-               AND input_state.subject_id = lineage.subject_id
-             WHERE NOT input_state.material_state_id = ANY(lineage.visited_states)
-        ),
-        distinct_lineage AS (
-            SELECT subject_type,
-                   subject_id,
-                   material_state_id,
-                   MIN(state_depth) AS state_depth,
-                   invalidated_characteristics
-              FROM state_lineage
-             GROUP BY subject_type,
-                      subject_id,
-                      material_state_id,
-                      invalidated_characteristics
-        ),
-        ranked_records AS (
-            SELECT s.subject_id AS batch_id,
-                   s.measurement_set_id,
-                   record.record_id,
-                   record.characteristic,
-                   record.measured_at,
-                   ROW_NUMBER() OVER (
-                       PARTITION BY s.subject_id, record.characteristic
-                       ORDER BY lineage.state_depth,
-                                record.measured_at DESC,
-                                record.record_id DESC,
-                                s.measurement_set_id DESC
-                   ) AS characteristic_rank
-              FROM distinct_lineage lineage
-              JOIN measurement_sets s
-                ON s.subject_type = lineage.subject_type
-               AND s.subject_id = lineage.subject_id
-               AND s.lifecycle = 'ACTIVE'
-              JOIN measurement_set_heads head
-                ON head.measurement_set_id = s.measurement_set_id
-              JOIN measurement_set_revisions revision
-                ON revision.measurement_set_id = head.measurement_set_id
-               AND revision.revision_id = head.revision_id
-               AND revision.material_state_id = lineage.material_state_id
-              JOIN measurement_revision_records revision_record
-                ON revision_record.revision_id = revision.revision_id
-              JOIN measurement_records record
-                ON record.record_id = revision_record.record_id
-               AND record.role = 'RESULT'
-               AND NOT record.characteristic = ANY(lineage.invalidated_characteristics)
-              JOIN feedstock_batches batch
-                ON batch.batch_id = s.subject_id
-               AND batch.deleted_at IS NULL
-             WHERE record.characteristic IN (
-                   'SPECIFIC_GRAVITY',
-                   'PH',
-                   'TITRATABLE_ACIDITY',
-                   'TANNIN',
-                   'YAN'
-               )
+        SELECT batch.batch_id
+          FROM feedstock_batches batch
+         WHERE batch.workspace_id = :workspaceId
+           AND batch.deleted_at IS NULL
         """);
-    final var parameters = new MapSqlParameterSource();
-    FeedstockMeasurementSqlFilters.append(sql, parameters, workspaceId, batchCriteria, season);
-    sql.append("""
-        ),
-        current_records AS (
-            SELECT *
-              FROM ranked_records
-             WHERE characteristic_rank = 1
-        ),
-        current_batches AS (
-            SELECT batch_id,
-                   MAX(measured_at) AS measured_at,
-                   (ARRAY_AGG(
-                       measurement_set_id
-                       ORDER BY measured_at DESC, record_id DESC, measurement_set_id DESC
-                   ))[1] AS anchor_set_id
-              FROM current_records
-             GROUP BY batch_id
-        )
-        SELECT batch_id
-          FROM current_batches
-         WHERE 1 = 1
-        """);
-    if (cursor != null) {
+    final var parameters = new MapSqlParameterSource("workspaceId", query.workspaceId().value());
+    if (query.batch() != null) {
+      sql.append(" AND batch.batch_id IN (:batchIds)");
+      parameters.addValue(
+          "batchIds",
+          query.batch().batchIds().stream().map(FeedstockBatchId::value).toList() // NOSONAR
+      );
+    }
+    if (query.season() != null) {
       sql.append("""
-           AND (
-               measured_at < :afterMeasuredAt
-               OR (
-                   measured_at = :afterMeasuredAt
-                   AND anchor_set_id < :afterMeasurementSetId
-               )
-           )
+           AND batch.season_starts_on <= :seasonEndsOn
+           AND batch.season_ends_on >= :seasonStartsOn
           """);
       parameters
-          .addValue("afterMeasuredAt", cursor.measuredAt())
-          .addValue("afterMeasurementSetId", cursor.measurementId());
+          .addValue("seasonStartsOn", query.season().startsOn()) // NOSONAR
+          .addValue("seasonEndsOn", query.season().endsOn()); // NOSONAR
     }
-    sql.append("""
-         ORDER BY measured_at DESC, anchor_set_id DESC
-         LIMIT :limit
-        """);
-    parameters.addValue("limit", limit);
-    // SQL structure consists only of internal constant fragments; external values remain named parameters.
+    sql.append(" ORDER BY batch.batch_id");
+
+    // SQL structure is composed only from internal constant fragments; values remain bound parameters.
     //noinspection SqlSourceToSinkFlow
-    return jdbcTemplate.query(
+    return jdbcTemplate.query( // NOSONAR
         sql.toString(),
         parameters,
         (resultSet, rowNumber) -> FeedstockBatchId.of(resultSet.getObject("batch_id", UUID.class))
     );
+  }
+
+  private static boolean isAfter(
+      @NonNull FeedstockCurrentProfileView view,
+      @Nullable FeedstockAnalysisCandidatePagePosition position
+  ) {
+    if (position == null) {
+      return true;
+    }
+    final var latestMeasurementSet = view.latestMeasurementSet();
+    final var timeComparison = latestMeasurementSet.measuredAt().compareTo(position.measuredAt());
+    return timeComparison < 0
+        || timeComparison == 0
+        && latestMeasurementSet.measurementSetId().toString().compareTo(position.measurementId().toString()) < 0;
   }
 
   private @NonNull List<@NonNull FeedstockCurrentProfileView> loadViews(
@@ -225,7 +159,7 @@ class JdbcFeedstockCurrentProfileQuery
       return List.of();
     }
     final var workspacesByBatch = loadWorkspaces(batchIds);
-    final Map<FeedstockBatchId, CurrentMeasurementProfileView> profilesByBatch = new LinkedHashMap<>();
+    final Map<FeedstockBatchId, CurrentMaterialStateView> statesByBatch = new LinkedHashMap<>();
     workspacesByBatch.entrySet().stream()
         .collect(Collectors.groupingBy(Map.Entry::getValue))
         .forEach((workspaceId, batchEntries) -> {
@@ -233,21 +167,30 @@ class JdbcFeedstockCurrentProfileQuery
               .map(Map.Entry::getKey)
               .map(JdbcFeedstockCurrentProfileQuery::subject)
               .collect(Collectors.toUnmodifiableSet());
-          currentProfileProjector.projectAll(workspaceId, subjects)
-              .forEach((subject, profile) -> profilesByBatch.put(
+          currentStateProjector.projectAll(workspaceId, subjects)
+              .forEach((subject, state) -> statesByBatch.put(
                   FeedstockBatchId.of(subject.id()),
-                  profile
+                  state
               ));
         });
 
-    final var metadataBySet = loadSetMetadata(profilesByBatch.values().stream()
-        .flatMap(profile -> profile.evidence().stream())
+    final var measurementSetIds = statesByBatch.values().stream()
+        .flatMap(state -> state.characteristics().stream())
+        .filter(characteristic -> PROFILE_CHARACTERISTICS.contains(characteristic.characteristic()))
+        .map(CurrentMaterialCharacteristicView::evidence)
         .map(MeasurementEvidenceView::evidenceReference)
         .map(MeasurementEvidenceReference::measurementSetId)
-        .collect(Collectors.toUnmodifiableSet()));
+        .map(MeasurementSetId::of)
+        .collect(Collectors.toUnmodifiableSet());
+    final var metadataBySet = workspacesByBatch.values().stream()
+        .distinct()
+        .flatMap(workspaceId -> measurementSetMetadataQuery.findAll(workspaceId, measurementSetIds)
+            .entrySet()
+            .stream())
+        .collect(Collectors.toUnmodifiableMap(Map.Entry::getKey, Map.Entry::getValue));
 
     return batchIds.stream()
-        .map(batchId -> toView(batchId, profilesByBatch.get(batchId), metadataBySet))
+        .map(batchId -> toView(batchId, statesByBatch.get(batchId), metadataBySet))
         .flatMap(Optional::stream)
         .toList();
   }
@@ -276,65 +219,45 @@ class JdbcFeedstockCurrentProfileQuery
         .collect(Collectors.toUnmodifiableMap(Map.Entry::getKey, Map.Entry::getValue));
   }
 
-  private @NonNull Map<@NonNull UUID, @NonNull SetMetadata> loadSetMetadata(
-      @NonNull Set<@NonNull UUID> measurementSetIds
-  ) {
-    if (measurementSetIds.isEmpty()) {
-      return Map.of();
-    }
-    return jdbcTemplate.query(
-            """
-                SELECT measurement_set.measurement_set_id,
-                       measurement_set.version,
-                       revision.name,
-                       revision.note
-                  FROM measurement_sets measurement_set
-                  JOIN measurement_set_heads head
-                    ON head.measurement_set_id = measurement_set.measurement_set_id
-                  JOIN measurement_set_revisions revision
-                    ON revision.measurement_set_id = head.measurement_set_id
-                   AND revision.revision_id = head.revision_id
-                 WHERE measurement_set.measurement_set_id IN (:measurementSetIds)
-                """,
-            new MapSqlParameterSource("measurementSetIds", measurementSetIds),
-            (resultSet, rowNumber) -> new SetMetadata(
-                resultSet.getObject("measurement_set_id", UUID.class),
-                resultSet.getString("name"),
-                resultSet.getString("note"),
-                resultSet.getLong("version")
-            )
-        )
-        .stream()
-        .collect(Collectors.toUnmodifiableMap(SetMetadata::measurementSetId, value -> value));
-  }
-
   private static @NonNull Optional<@NonNull FeedstockCurrentProfileView> toView(
       @NonNull FeedstockBatchId batchId,
-      @Nullable CurrentMeasurementProfileView profile,
-      @NonNull Map<@NonNull UUID, @NonNull SetMetadata> metadataBySet
+      @Nullable CurrentMaterialStateView state,
+      @NonNull Map<@NonNull MeasurementSetId, @NonNull MeasurementSetMetadataView> metadataBySet
   ) {
-    if (profile == null) {
+    if (state == null || state.characteristics().isEmpty()) {
       return Optional.empty();
     }
-    final var anchor = profile.evidence().stream()
+    final var evidence = state.characteristics().stream()
+        .filter(characteristic -> PROFILE_CHARACTERISTICS.contains(characteristic.characteristic()))
+        .map(CurrentMaterialCharacteristicView::evidence)
+        .toList();
+    if (evidence.isEmpty()) {
+      return Optional.empty();
+    }
+    final var anchor = evidence.stream()
         .max(Comparator
             .comparing(MeasurementEvidenceView::measuredAt)
-            .thenComparing(evidence -> evidence.evidenceReference().recordId())
-            .thenComparing(evidence -> evidence.evidenceReference().measurementSetId()))
+            .thenComparing(item -> item.evidenceReference().recordId())
+            .thenComparing(item -> item.evidenceReference().measurementSetId()))
         .orElseThrow();
     final var anchorReference = anchor.evidenceReference();
     final var metadata = requireNonNull(
-        metadataBySet.get(anchorReference.measurementSetId()),
+        metadataBySet.get(MeasurementSetId.of(anchorReference.measurementSetId())),
         "measurement set metadata cannot be null"
     );
     return Optional.of(new FeedstockCurrentProfileView(
         batchId,
-        profile.currentMaterialStateId(),
-        profile.chemicalProfile(),
-        profile.evidence(),
-        new FeedstockLatestMeasurementView(
-            FeedstockMeasurementId.of(anchorReference.measurementSetId()),
-            FeedstockMeasurementName.of(metadata.name()),
+        state.currentMaterialStateId(),
+        state.value(MeasurementCharacteristic.SPECIFIC_GRAVITY, SpecificGravityValue.class).orElse(null), // NOSONAR
+        state.value(MeasurementCharacteristic.TITRATABLE_ACIDITY, TitratableAcidityValue.class)
+            .orElse(null), // NOSONAR
+        state.value(MeasurementCharacteristic.PH, PhValue.class).orElse(null), // NOSONAR
+        state.value(MeasurementCharacteristic.TANNIN, TanninValue.class).orElse(null), // NOSONAR
+        state.value(MeasurementCharacteristic.YAN, YeastAssimilableNitrogenValue.class).orElse(null), // NOSONAR
+        evidence,
+        new FeedstockLatestMeasurementSetView(
+            anchorReference.measurementSetId(),
+            metadata.name().value(),
             anchor.measuredAt(),
             metadata.version(),
             metadata.note()
@@ -346,11 +269,4 @@ class JdbcFeedstockCurrentProfileQuery
     return new MeasurementSubjectReference(MeasurementSubjectType.FEEDSTOCK_BATCH, batchId.value());
   }
 
-  private record SetMetadata(
-      @NonNull UUID measurementSetId,
-      @NonNull String name,
-      @Nullable String note,
-      long version
-  ) {
-  }
 }

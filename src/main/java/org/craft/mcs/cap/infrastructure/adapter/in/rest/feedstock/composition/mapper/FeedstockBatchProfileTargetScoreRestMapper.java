@@ -10,6 +10,7 @@ import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.composition.dt
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.composition.dto.ScoreFeedstockBatchProfileTargetRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.mapper.ProfileTargetRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.mapper.ProfileTargetScoringCharacteristicsRestMapper;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.common.mapper.FeedstockProfileEvidenceRestMapper;
 import org.craft.mcs.cap.shared.application.query.QueryLimits;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;
@@ -81,8 +82,9 @@ public final class FeedstockBatchProfileTargetScoreRestMapper {
         score.batchId().value(),
         score.workspaceId().value(),
         score.currentMaterialStateId().value(),
-        score.currentMeasurementId().value(),
-        score.currentMeasurementName().value(),
+        score.profileEvidence().stream()
+            .map(FeedstockProfileEvidenceRestMapper::toResponse)
+            .toList(),
         ProfileTargetScoringCharacteristicsRestMapper.toResponse(score.characteristics()),
         ProfileTargetRestMapper.toResponse(score.distance())
     );

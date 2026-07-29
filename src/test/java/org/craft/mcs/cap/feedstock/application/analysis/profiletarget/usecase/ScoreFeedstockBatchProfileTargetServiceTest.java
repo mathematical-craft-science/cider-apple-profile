@@ -2,11 +2,9 @@ package org.craft.mcs.cap.feedstock.application.analysis.profiletarget.usecase;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.craft.mcs.cap.core.profileanalysis.testing.ProfileAnalysisTestFixtures
-    .chemicalProfileAssessmentAdapter;
-import static org.craft.mcs.cap.core.profileanalysis.testing.ProfileAnalysisTestFixtures
-    .chemicalProfileAssessmentMatcher;
+    .graphEvaluator;
 import static org.craft.mcs.cap.shared.kernel.identity.UuidV7Generator.newUuid;
-import static org.craft.mcs.cap.shared.testing.FeedstockMeasurementViews.currentProfile;
+import static org.craft.mcs.cap.shared.testing.FeedstockCurrentProfileViews.currentProfile;
 import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementInstant;
 import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementRecordedAt;
 import static org.mockito.ArgumentMatchers.any;
@@ -19,6 +17,7 @@ import java.util.List;
 import org.craft.mcs.cap.core.feedstock.application.analysis.common.model.FeedstockAnalysisCandidateFilters;
 import org.craft.mcs.cap.core.feedstock.application.analysis.common.port.out.CurrentFeedstockBatchAnalysisCandidateQuery;
 import org.craft.mcs.cap.core.feedstock.application.analysis.common.port.out.FeedstockCurrentProfileAnalysisCandidateRepository;
+import org.craft.mcs.cap.core.feedstock.application.analysis.common.service.FeedstockGraphCandidateMatcher;
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.FeedstockBatchProfileTargetQuery;
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.FeedstockBatchProfileTargetScore;
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.PredefinedFeedstockProfileTargetSelection;
@@ -26,8 +25,8 @@ import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.useca
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.usecase.FeedstockProfileTargetObjectiveResolver;
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.usecase.ScoreFeedstockBatchProfileTargetService;
 import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
-import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementId;
-import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementName;
+import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetId;
+import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetName;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.core.profileanalysis.graph.zone.domain.BuiltInJolicoeurSugarAcidityZoneProfiles;
 import org.craft.mcs.cap.core.profileanalysis.graph.zone.domain.JolicoeurSugarAcidityZone;
@@ -40,11 +39,10 @@ import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.objec
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.ZoneGeometrySugarAcidityTargetResolver;
 import org.craft.mcs.cap.shared.application.query.QueryLimits;
 import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
-import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
+import org.craft.mcs.cap.shared.testing.ProfileCharacteristicsFixture;
 import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
-import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.craft.mcs.cap.shared.testing.FeedstockMeasurementFixture;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -77,8 +75,8 @@ class ScoreFeedstockBatchProfileTargetServiceTest {
         .extracting(FeedstockBatchProfileTargetScore::batchId)
         .containsExactly(near.batchId(), far.batchId());
     assertThat(result.scores())
-        .extracting(FeedstockBatchProfileTargetScore::currentMeasurementId)
-        .containsExactly(near.measurementId(), far.measurementId());
+        .extracting(score -> score.profileEvidence().getFirst().evidenceReference().measurementSetId())
+        .containsExactly(near.measurementId().value(), far.measurementId().value());
     assertThat(result.scores().getFirst().distance().value()).isEqualByComparingTo("0");
 
     final var query = ArgumentCaptor.forClass(CurrentFeedstockBatchAnalysisCandidateQuery.class);
@@ -113,8 +111,9 @@ class ScoreFeedstockBatchProfileTargetServiceTest {
 
     assertThat(result.scores())
         .singleElement()
-        .extracting(FeedstockBatchProfileTargetScore::currentMeasurementId)
-        .isEqualTo(accepted.measurementId());
+        .satisfies(score -> assertThat(score.profileEvidence())
+            .extracting(item -> item.evidenceReference().measurementSetId())
+            .containsOnly(accepted.measurementId().value()));
 
     final var queryCaptor = ArgumentCaptor.forClass(CurrentFeedstockBatchAnalysisCandidateQuery.class);
     verify(repository, times(2)).findCandidates(queryCaptor.capture());
@@ -133,8 +132,8 @@ class ScoreFeedstockBatchProfileTargetServiceTest {
     return new ScoreFeedstockBatchProfileTargetService(
         new FeedstockBatchProfileTargetScorableCandidateProvider(
             repository,
-            chemicalProfileAssessmentAdapter(geometryProfile),
-            chemicalProfileAssessmentMatcher()
+            graphEvaluator(geometryProfile),
+            new FeedstockGraphCandidateMatcher()
         ),
         new FeedstockProfileTargetObjectiveResolver(
             new ZoneGeometrySugarAcidityTargetResolver(geometryProfile)
@@ -150,40 +149,36 @@ class ScoreFeedstockBatchProfileTargetServiceTest {
 
   private static FeedstockMeasurementFixture sample(
       String name,
-      ChemicalProfile profile
+      ProfileCharacteristicsFixture profile
   ) {
     return FeedstockMeasurementFixture.create(
-        FeedstockMeasurementId.newId(),
+        MeasurementSetId.newId(),
         FeedstockBatchId.newId(),
-        FeedstockMeasurementName.of(name),
+        MeasurementSetName.of(name),
         profile,
         feedstockMeasurementInstant(),
         feedstockMeasurementRecordedAt()
     );
   }
 
-  private static ChemicalProfile profile(
+  private static ProfileCharacteristicsFixture profile(
       String sg,
       String acidity
   ) {
-    return ChemicalProfile.builder()
-        .sugar(PointCharacteristicValue.of(SugarConcentration.ofSpecificGravity(
-            SpecificGravityValue.of(sg)
-        )))
+    return ProfileCharacteristicsFixture.builder()
+        .specificGravity(PointCharacteristicValue.of(SpecificGravityValue.of(sg)))
         .titratableAcidity(PointCharacteristicValue.of(TitratableAcidityValue.of(acidity)))
         .build();
   }
 
-  private static ChemicalProfile profileWithSugarOnly(String sg) {
-    return ChemicalProfile.builder()
-        .sugar(PointCharacteristicValue.of(SugarConcentration.ofSpecificGravity(
-            SpecificGravityValue.of(sg)
-        )))
+  private static ProfileCharacteristicsFixture profileWithSugarOnly(String sg) {
+    return ProfileCharacteristicsFixture.builder()
+        .specificGravity(PointCharacteristicValue.of(SpecificGravityValue.of(sg)))
         .build();
   }
 
-  private static ChemicalProfile profileWithAcidityOnly(String acidity) {
-    return ChemicalProfile.builder()
+  private static ProfileCharacteristicsFixture profileWithAcidityOnly(String acidity) {
+    return ProfileCharacteristicsFixture.builder()
         .titratableAcidity(PointCharacteristicValue.of(TitratableAcidityValue.of(acidity)))
         .build();
   }

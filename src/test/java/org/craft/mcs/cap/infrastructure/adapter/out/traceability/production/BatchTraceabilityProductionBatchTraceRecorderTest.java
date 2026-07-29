@@ -1,6 +1,5 @@
 package org.craft.mcs.cap.infrastructure.adapter.out.traceability.production;
 
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import org.craft.mcs.cap.core.account.shared.domain.value.AccountUserId;
@@ -9,38 +8,42 @@ import org.craft.mcs.cap.core.account.shared.domain.value.EmailAddress;
 import org.craft.mcs.cap.core.account.user.application.port.in.AccountUserView;
 import org.craft.mcs.cap.core.account.user.application.port.in.GetCurrentAccountProfileUseCase;
 import org.craft.mcs.cap.core.account.user.domain.model.AccountUserStatus;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
+import org.craft.mcs.cap.core.production.application.model.ProductionSourceCharacteristics;
+import org.craft.mcs.cap.core.production.application.port.out.ConsumedProductionSource;
+import org.craft.mcs.cap.core.production.application.port.out.ProductionSourceDisplayName;
+import org.craft.mcs.cap.core.production.domain.model.ProductionBatch;
+import org.craft.mcs.cap.core.production.domain.model.ProductionBatchId;
+import org.craft.mcs.cap.core.production.domain.model.ProductionSourceEvidenceReference;
+import org.craft.mcs.cap.core.production.domain.model.ProductionSourceReference;
+import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
 import org.craft.mcs.cap.core.traceability.application.port.in.AppendBatchTraceStepUseCase;
+import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceCharacteristicSnapshot;
 import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceStep;
 import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceStepSubject;
 import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceStepType;
 import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceSubjectType;
-import org.craft.mcs.cap.core.production.application.port.out.ConsumedProductionSource;
-import org.craft.mcs.cap.core.production.application.port.out.ProductionSourceDisplayName;
-import org.craft.mcs.cap.core.production.domain.model.ProductionSourceEvidenceReference;
-import org.craft.mcs.cap.core.production.domain.model.ProductionBatch;
-import org.craft.mcs.cap.core.production.domain.model.ProductionBatchId;
-import org.craft.mcs.cap.core.production.domain.model.ProductionSourceReference;
-import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
+import org.craft.mcs.cap.shared.kernel.characteristic.CharacteristicValue;
+import org.craft.mcs.cap.shared.kernel.characteristic.IntervalCharacteristicValue;
+import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValueKind;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
+import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
-import org.craft.mcs.cap.shared.kernel.material.value.MaterialConsumption;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
+import org.craft.mcs.cap.shared.kernel.material.value.MaterialConsumption;
 import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
+import org.craft.mcs.cap.shared.kernel.measurement.MeasuredValue;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
-import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.craft.mcs.cap.production.testing.ProductionSourceCharacteristicsFixtures
+    .productionSourceCharacteristics;
 
 
 class BatchTraceabilityProductionBatchTraceRecorderTest {
@@ -73,7 +76,7 @@ class BatchTraceabilityProductionBatchTraceRecorderTest {
                 sourceStateId,
                 remainingSourceStateId
             ),
-            sourceAxes(),
+            productionSourceCharacteristics("1.050", "6.1", "1400", "180"),
             ConfidenceLevel.LAB_VERIFIED,
             ProductionSourceEvidenceReference.of("measurement-set")
         )),
@@ -102,18 +105,70 @@ class BatchTraceabilityProductionBatchTraceRecorderTest {
         .returns(remainingSourceStateId, BatchTraceStepSubject::materialStateId)
         .satisfies(output -> assertThat(output.snapshot().volume().liters())
             .isEqualByComparingTo("150"))
-        .satisfies(output -> assertThat(output.snapshot().profile()
-            .valueOf(ChemicalAxis.YEAST_ASSIMILABLE_NITROGEN))
-            .get()
-            .returns(new BigDecimal("180"), AxisValue::value));
+        .satisfies(output -> assertThat(directValue(
+            output.snapshot().characteristics().yeastAssimilableNitrogen()
+        )).isEqualTo(PointCharacteristicValue.of(YeastAssimilableNitrogenValue.of("180"))));
     assertThat(productionOutput)
         .returns(productionBatch.currentMaterialStateId(), BatchTraceStepSubject::materialStateId)
         .satisfies(output -> assertThat(output.snapshot().volume().liters())
             .isEqualByComparingTo("100"))
-        .satisfies(output -> assertThat(output.snapshot().profile().valueOf(ChemicalAxis.SPECIFIC_GRAVITY))
-            .get()
-            .returns(AxisValueKind.CALCULATED, AxisValue::valueKind));
+        .satisfies(output -> assertThat(output.snapshot().characteristics().specificGravity())
+            .isEqualTo(BatchTraceCharacteristicSnapshot.calculated(
+                productionBatch.initialProfileSnapshot().specificGravity()
+            )));
 
+  }
+
+  @Test
+  void preservesIntervalBoundsInSourceTraceSnapshot() {
+    final var workspaceId = WorkspaceId.newId();
+    final var sourceStateId = MaterialStateId.newId();
+    final var remainingSourceStateId = MaterialStateId.newId();
+    final var sourceId = FeedstockBatchId.newId();
+    final var appendUseCase = new CapturingAppendUseCase();
+    final var recorder = new BatchTraceabilityProductionBatchTraceRecorder(
+        appendUseCase,
+        currentAccountProfile()
+    );
+
+    recorder.recordCreated(
+        productionBatch(workspaceId),
+        List.of(new ConsumedProductionSource(
+            ProductionSourceReference.feedstockBatch(sourceId.value()),
+            ProductionSourceDisplayName.of("Interval source"),
+            new MaterialConsumption(
+                VolumeValue.ofLiters("100"),
+                VolumeValue.ofLiters("60"),
+                VolumeValue.ofLiters("40"),
+                sourceStateId,
+                remainingSourceStateId
+            ),
+            new ProductionSourceCharacteristics(
+                IntervalCharacteristicValue.of(
+                    SpecificGravityValue.of("1.048"),
+                    SpecificGravityValue.of("1.052")
+                ),
+                PointCharacteristicValue.of(TitratableAcidityValue.of("6.1")),
+                null,
+                null
+            ),
+            ConfidenceLevel.MEDIUM,
+            ProductionSourceEvidenceReference.of("measurement-set")
+        )),
+        Instant.parse("2026-05-18T10:15:30Z"),
+        null
+    );
+
+    final var specificGravity = appendUseCase.traceStep.inputs()
+        .getFirst()
+        .snapshot()
+        .characteristics()
+        .specificGravity();
+
+    assertThat(directValue(specificGravity)).isEqualTo(IntervalCharacteristicValue.of(
+        SpecificGravityValue.of("1.048"),
+        SpecificGravityValue.of("1.052")
+    ));
   }
 
   private static @NonNull BatchTraceStepSubject outputOfType(
@@ -126,26 +181,14 @@ class BatchTraceabilityProductionBatchTraceRecorderTest {
         .orElseThrow();
   }
 
-  private static @NonNull ChemicalProfileAxes sourceAxes() {
-    return ChemicalProfileAxes.of(
-        axis(ChemicalAxis.SPECIFIC_GRAVITY, "1.050"),
-        axis(ChemicalAxis.TITRATABLE_ACIDITY, "6.1"),
-        axis(ChemicalAxis.TANNIN, "1400"),
-        axis(ChemicalAxis.YEAST_ASSIMILABLE_NITROGEN, "180")
-    );
-  }
-
-  private static @NonNull AxisValue axis(
-      @NonNull ChemicalAxis axis,
-      @NonNull String value
+  private static <T extends MeasuredValue> @NonNull CharacteristicValue<T> directValue(
+      @NonNull BatchTraceCharacteristicSnapshot<T> snapshot
   ) {
-    return new AxisValue(
-        axis,
-        new BigDecimal(value),
-        AxisValueKind.POINT,
-        null,
-        null
-    );
+    return switch (snapshot) {
+      case BatchTraceCharacteristicSnapshot.Direct<T>(var value) -> value;
+      case BatchTraceCharacteristicSnapshot.Calculated<T> _ ->
+          throw new AssertionError("expected direct trace characteristic");
+    };
   }
 
   private static @NonNull ProductionBatch productionBatch(@NonNull WorkspaceId workspaceId) {

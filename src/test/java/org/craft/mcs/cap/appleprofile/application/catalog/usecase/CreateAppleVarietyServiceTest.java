@@ -6,9 +6,8 @@ import org.craft.mcs.cap.core.appleprofile.application.catalog.port.out.AppleVar
 import org.craft.mcs.cap.core.appleprofile.application.catalog.usecase.CreateAppleVarietyService;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVariety;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyName;
-import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
+import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyReferenceProfile;
 import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
-import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.craft.mcs.cap.shared.platform.TransactionHelper;
 import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,11 +38,12 @@ class CreateAppleVarietyServiceTest {
 
   @Test
   void createsAppleVarietyAndPassesItToRepository() {
-    final var chemicalProfile = ChemicalProfile.builder()
-        .sugar(PointCharacteristicValue.of(SugarConcentration.ofSpecificGravity(
-            SpecificGravityValue.of("1.052")
-        )))
-        .build();
+    final var referenceProfile = new AppleVarietyReferenceProfile(
+        PointCharacteristicValue.of(SpecificGravityValue.of("1.052")),
+        null,
+        null,
+        null
+    );
     when(appleVarietyRepository.create(any(AppleVariety.class)))
         .thenAnswer(invocation -> invocation.getArgument(0));
     when(transactionHelper.callInTransactionNonNull(any()))
@@ -51,7 +51,7 @@ class CreateAppleVarietyServiceTest {
 
     final var created = service.create(new CreateAppleVarietyCommand(
         AppleVarietyName.of("Yarlington Mill"),
-        chemicalProfile
+        referenceProfile
     ));
 
     verify(transactionHelper).callInTransactionNonNull(any());
@@ -60,7 +60,7 @@ class CreateAppleVarietyServiceTest {
 
     assertThat(created.varietyId()).isNotNull();
     assertThat(created.name().value()).isEqualTo("Yarlington Mill");
-    assertThat(savedCaptor.getValue().chemicalProfile()).isEqualTo(chemicalProfile);
+    assertThat(savedCaptor.getValue().referenceProfile()).isEqualTo(referenceProfile);
   }
 
   private static Object executeSupplier(Supplier<?> supplier) {

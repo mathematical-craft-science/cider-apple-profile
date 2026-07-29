@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import io.swagger.v3.oas.annotations.media.DiscriminatorMapping;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValueKind;
 import org.jspecify.annotations.NonNull;
 
 
@@ -51,9 +50,9 @@ public sealed interface ProfileCharacteristicValueResponse
   @NonNull
   @Schema(
       description = "Characteristic projection kind.",
-      implementation = AxisValueKind.class,
+      implementation = ProfileCharacteristicValueKind.class,
       example = "POINT",
       requiredMode = Schema.RequiredMode.REQUIRED
   )
-  AxisValueKind valueKind();
+  ProfileCharacteristicValueKind valueKind();
 }

@@ -5,10 +5,10 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
-import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionCalculatorCode;
+import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionCalculatorCode;
 import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.strategy.CompositionOptimizationAlgorithm;
 import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.CompositionOptimizationMode;
-import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapability;
+import org.craft.mcs.cap.core.profileanalysis.capability.domain.ProfileAnalysisCapability;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.normalization.ProfileAxisNormalizerCode;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.objective.ProfileTargetObjectiveFunctionCode;
 import org.craft.mcs.cap.core.profileanalysis.graph.zone.domain.JolicoeurSugarAcidityZone;
@@ -56,13 +56,13 @@ public record OptimizeFeedstockBatchCompositionRequest(
     )
     @Nullable JolicoeurSugarAcidityZone zone,
     @Schema(
-        description = "Optional chemical profile capability filter.",
-        implementation = ChemicalProfileCapability.class,
+        description = "Optional profile-analysis capability filter.",
+        implementation = ProfileAnalysisCapability.class,
         example = "SUGAR_ACIDITY_GRAPH",
         nullable = true,
         requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )
-    @Nullable ChemicalProfileCapability capability,
+    @Nullable ProfileAnalysisCapability capability,
     @Schema(
         description = "Whether the optional capability must be met.",
         example = "true",
@@ -95,11 +95,11 @@ public record OptimizeFeedstockBatchCompositionRequest(
     @Nullable CompositionOptimizationAlgorithm algorithm,
     @Schema(
         description = "Composition calculator code.",
-        implementation = ChemicalProfileCompositionCalculatorCode.class,
+        implementation = CompositionCalculatorCode.class,
         nullable = true,
         requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )
-    @Nullable ChemicalProfileCompositionCalculatorCode calculator,
+    @Nullable CompositionCalculatorCode calculator,
     @Schema(
         description = "Axis normalizer code.",
         implementation = ProfileAxisNormalizerCode.class,

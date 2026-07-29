@@ -1,7 +1,10 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.readiness.dto;
 
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.List;
 import java.util.UUID;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.common.dto.FeedstockProfileEvidenceResponse;
 import org.jspecify.annotations.NonNull;
 
 
@@ -22,17 +25,14 @@ public record FeedstockBatchCurrentFermentationStartReadinessResponse(
         requiredMode = Schema.RequiredMode.REQUIRED
     )
     @NonNull UUID currentMaterialStateId,
-    @Schema(
-        description = "Latest measurement set contributing to the composite current profile.",
-        format = "uuid",
-        requiredMode = Schema.RequiredMode.REQUIRED
+    @ArraySchema(
+        arraySchema = @Schema(
+            description = "Per-characteristic SG, pH and YAN evidence used for readiness assessment.",
+            requiredMode = Schema.RequiredMode.REQUIRED
+        ),
+        schema = @Schema(implementation = FeedstockProfileEvidenceResponse.class)
     )
-    @NonNull UUID currentMeasurementId,
-    @Schema(
-        description = "Name of the latest measurement set contributing to the composite current profile.",
-        requiredMode = Schema.RequiredMode.REQUIRED
-    )
-    @NonNull String currentMeasurementName,
+    @NonNull List<@NonNull FeedstockProfileEvidenceResponse> profileEvidence,
     @Schema(description = "Readiness assessment.", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull FermentationStartReadinessAssessmentResponse assessment
 ) {

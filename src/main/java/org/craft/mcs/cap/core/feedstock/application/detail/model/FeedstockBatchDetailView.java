@@ -1,8 +1,6 @@
 package org.craft.mcs.cap.core.feedstock.application.detail.model;
 
-import java.util.List;
 import org.craft.mcs.cap.core.feedstock.application.batch.model.FeedstockBatchSummary;
-import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementSummary;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
@@ -11,18 +9,16 @@ import static java.util.Objects.requireNonNull;
 /**
  * Application read model for feedstock batch details.
  *
- * <p>The view composes aggregate metadata, measurement history and current-profile analysis without
- * duplicating feedstock batch or measurement lifecycle behavior.
+ * <p>The view composes aggregate metadata and current-profile analysis without duplicating
+ * measurement history owned by the generic Measurement context.
  */
 public record FeedstockBatchDetailView(
     @NonNull FeedstockBatchSummary batch,
-    @NonNull FeedstockBatchCurrentProfileView currentProfile,
-    @NonNull List<@NonNull FeedstockMeasurementSummary> measurements
+    @NonNull FeedstockBatchCurrentProfileView currentProfile
 ) {
 
   public FeedstockBatchDetailView {
     requireNonNull(batch, "feedstock batch summary cannot be null");
     requireNonNull(currentProfile, "feedstock current profile cannot be null");
-    measurements = List.copyOf(requireNonNull(measurements, "feedstock measurements cannot be null"));
   }
 }

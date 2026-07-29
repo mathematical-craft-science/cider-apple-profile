@@ -13,13 +13,13 @@ import static java.util.Objects.requireNonNull;
  * <p>This weight mode is used when a user wants the calculation or optimization to produce concrete
  * liters that can later be committed into a production batch.
  */
-public record AbsoluteCompositionVolume(@NonNull VolumeValue volume) implements ChemicalProfileCompositionSourceWeight {
+public record AbsoluteCompositionVolume(@NonNull VolumeValue volume) implements CompositionSourceWeight {
 
   public AbsoluteCompositionVolume {
     requireNonNull(volume, "absolute composition volume cannot be null");
 
     if (volume.isZero()) {
-      throw new InvalidChemicalProfileCompositionException("absolute composition volume must be greater than zero");
+      throw new InvalidCompositionException("absolute composition volume must be greater than zero");
     }
   }
 

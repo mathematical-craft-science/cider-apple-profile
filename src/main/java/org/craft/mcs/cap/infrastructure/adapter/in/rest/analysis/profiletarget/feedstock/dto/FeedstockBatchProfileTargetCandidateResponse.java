@@ -1,10 +1,13 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.profiletarget.feedstock.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import java.util.List;
 import java.util.UUID;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.profiletarget.common.dto.CompositionContributionRoleAssessmentResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.ProfileTargetDistanceResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.ProfileTargetScoringCharacteristicsResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.common.dto.FeedstockProfileEvidenceResponse;
 import org.jspecify.annotations.NonNull;
 
 
@@ -18,18 +21,14 @@ public record FeedstockBatchProfileTargetCandidateResponse(
         requiredMode = Schema.RequiredMode.REQUIRED
     )
     @NonNull UUID currentMaterialStateId,
-    @Schema(
-        description = "Latest measurement set contributing to the composite current profile.",
-        format = "uuid",
-        requiredMode = Schema.RequiredMode.REQUIRED
+    @ArraySchema(
+        arraySchema = @Schema(
+            description = "Per-characteristic evidence used for target scoring and role assessment.",
+            requiredMode = Schema.RequiredMode.REQUIRED
+        ),
+        schema = @Schema(implementation = FeedstockProfileEvidenceResponse.class)
     )
-    @NonNull UUID currentMeasurementId,
-    @Schema(
-        description = "Name of the latest measurement set contributing to the composite current profile.",
-        example = "Pressing measurement #1",
-        requiredMode = Schema.RequiredMode.REQUIRED
-    )
-    @NonNull String currentMeasurementName,
+    @NonNull List<@NonNull FeedstockProfileEvidenceResponse> profileEvidence,
     @Schema(description = "Candidate current scoring characteristics.", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull ProfileTargetScoringCharacteristicsResponse characteristics,
     @Schema(description = "Distance to selected target.", requiredMode = Schema.RequiredMode.REQUIRED)

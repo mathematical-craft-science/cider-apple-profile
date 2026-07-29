@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.account.user.application.port.in.GetCurrentAccountProfileUseCase;
+import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceCharacteristicSnapshot;
+import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceMaterialCharacteristics;
 import org.craft.mcs.cap.core.traceability.application.port.in.AppendBatchTraceStepUseCase;
 import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceActorReference;
 import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceMaterialSnapshot;
@@ -14,14 +16,11 @@ import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceStepSubject;
 import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceSubject;
 import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceSubjectType;
 import org.craft.mcs.cap.core.production.application.port.out.ConsumedProductionSource;
+import org.craft.mcs.cap.core.production.application.model.ProductionSourceCharacteristics;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchTraceRecorder;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatch;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceType;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValueKind;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
 import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -101,7 +100,7 @@ class BatchTraceabilityProductionBatchTraceRecorder implements ProductionBatchTr
         subject,
         new BatchTraceMaterialSnapshot(
             source.availableBefore(),
-            source.profile(),
+            toTraceCharacteristics(source.characteristics()),
             source.confidence()
         )
     );
@@ -110,7 +109,7 @@ class BatchTraceabilityProductionBatchTraceRecorder implements ProductionBatchTr
         subject,
         new BatchTraceMaterialSnapshot(
             source.remaining(),
-            source.profile(),
+            toTraceCharacteristics(source.characteristics()),
             source.confidence()
         )
     );
@@ -150,46 +149,39 @@ class BatchTraceabilityProductionBatchTraceRecorder implements ProductionBatchTr
         subject,
         new BatchTraceMaterialSnapshot(
             productionBatch.currentVolume(),
-            toAxes(productionBatch.initialProfileSnapshot()),
+            toTraceCharacteristics(productionBatch.initialProfileSnapshot()),
             null
         )
     );
   }
 
-  private static @NonNull ChemicalProfileAxes toAxes(@NonNull ProductionProfileSnapshot profile) {
-    return ChemicalProfileAxes.of(
-        new AxisValue(
-            ChemicalAxis.SPECIFIC_GRAVITY,
-            profile.specificGravity().asBigDecimal(),
-            AxisValueKind.CALCULATED,
-            null,
-            null
-        ),
-        new AxisValue(
-            ChemicalAxis.TITRATABLE_ACIDITY,
-            profile.titratableAcidity().asBigDecimal(),
-            AxisValueKind.CALCULATED,
-            null,
-            null
-        ),
+  private static @NonNull BatchTraceMaterialCharacteristics toTraceCharacteristics(
+      @NonNull ProductionProfileSnapshot profile
+  ) {
+    return new BatchTraceMaterialCharacteristics(
+        BatchTraceCharacteristicSnapshot.calculated(profile.specificGravity()),
+        BatchTraceCharacteristicSnapshot.calculated(profile.titratableAcidity()),
         profile.tannin() == null
             ? null
-            : new AxisValue(
-                ChemicalAxis.TANNIN,
-                profile.tannin().asBigDecimal(),
-                AxisValueKind.CALCULATED,
-                null,
-                null
-            ),
+            : BatchTraceCharacteristicSnapshot.calculated(profile.tannin()),
         profile.yeastAssimilableNitrogen() == null
             ? null
-            : new AxisValue(
-                ChemicalAxis.YEAST_ASSIMILABLE_NITROGEN,
-                profile.yeastAssimilableNitrogen().asBigDecimal(),
-                AxisValueKind.CALCULATED,
-                null,
-                null
-            )
+            : BatchTraceCharacteristicSnapshot.calculated(profile.yeastAssimilableNitrogen())
+    );
+  }
+
+  private static @NonNull BatchTraceMaterialCharacteristics toTraceCharacteristics(
+      @NonNull ProductionSourceCharacteristics characteristics
+  ) {
+    return new BatchTraceMaterialCharacteristics(
+        BatchTraceCharacteristicSnapshot.direct(characteristics.specificGravity()),
+        BatchTraceCharacteristicSnapshot.direct(characteristics.titratableAcidity()),
+        characteristics.tannin() == null
+            ? null
+            : BatchTraceCharacteristicSnapshot.direct(characteristics.tannin()),
+        characteristics.yeastAssimilableNitrogen() == null
+            ? null
+            : BatchTraceCharacteristicSnapshot.direct(characteristics.yeastAssimilableNitrogen())
     );
   }
 

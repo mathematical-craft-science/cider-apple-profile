@@ -87,12 +87,34 @@ public interface MeasurementSetApi {
       @NonNull UUID measurementSetId
   );
 
-  @Operation(summary = "List measurement sets for one business subject")
+  @Operation(
+      summary = "List measurement sets for one business subject",
+      description = """
+          Returns current revisions of all logical sets, including RETRACTED evidence, ordered by
+          logical-set update time descending and then measurementSetId descending.
+          """
+  )
   @ApiResponse(
       responseCode = "200",
       content = @Content(
           mediaType = APPLICATION_JSON_VALUE,
           schema = @Schema(implementation = MeasurementSetListResponse.class)
+      )
+  )
+  @ApiResponse(
+      responseCode = "403",
+      description = "The authenticated actor cannot read the measured subject.",
+      content = @Content(
+          mediaType = APPLICATION_JSON_VALUE,
+          schema = @Schema(implementation = ProblemDetail.class)
+      )
+  )
+  @ApiResponse(
+      responseCode = "404",
+      description = "The measured subject was not found.",
+      content = @Content(
+          mediaType = APPLICATION_JSON_VALUE,
+          schema = @Schema(implementation = ProblemDetail.class)
       )
   )
   @NonNull ResponseEntity<@NonNull MeasurementSetListResponse> list(

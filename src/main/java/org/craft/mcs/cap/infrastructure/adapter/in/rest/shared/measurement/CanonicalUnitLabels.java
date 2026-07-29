@@ -2,7 +2,6 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.measurement;
 
 import org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileEvaluationAxis;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.craft.mcs.cap.shared.kernel.measurement.unit.BeverageUnits;
 import org.jspecify.annotations.NonNull;
 
@@ -40,17 +39,6 @@ public final class CanonicalUnitLabels {
   public static final @NonNull String TURBIDITY_SHORT = TURBIDITY;
 
   private CanonicalUnitLabels() {
-  }
-
-  public static @NonNull String forAxis(@NonNull ChemicalAxis axis) {
-    requireNonNull(axis, "chemical axis cannot be null");
-
-    return switch (axis) {
-      case ChemicalAxis.SPECIFIC_GRAVITY -> SPECIFIC_GRAVITY;
-      case ChemicalAxis.TITRATABLE_ACIDITY -> TITRATABLE_ACIDITY;
-      case ChemicalAxis.TANNIN -> TANNIN;
-      case ChemicalAxis.YEAST_ASSIMILABLE_NITROGEN -> YEAST_ASSIMILABLE_NITROGEN;
-    };
   }
 
   public static @NonNull String forAxis(@NonNull ProfileEvaluationAxis axis) {

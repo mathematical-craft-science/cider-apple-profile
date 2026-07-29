@@ -10,10 +10,10 @@ import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.Feedsto
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockPlanningReadinessFactor;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockPlanningReadinessStatus;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockPlanningReadinessView;
+import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentProfileView;
 import org.craft.mcs.cap.core.profileanalysis.ph.domain.PhPlanningGuidance;
 import org.craft.mcs.cap.core.profileanalysis.ph.domain.PhPlanningGuidanceCode;
 import org.craft.mcs.cap.core.profileanalysis.ph.domain.PhPlanningGuidancePolicy;
-import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 
@@ -33,33 +33,9 @@ public final class FeedstockPlanningReadinessAssessor {
       @NonNull FeedstockBatchSummary batch
   ) {
     final var checks = new ArrayList<FeedstockPlanningReadinessCheck>();
-    checks.add(check(
-        FeedstockPlanningReadinessFactor.CURRENT_PROFILE,
-        FeedstockCurrentProfileSignalSeverity.BLOCKING,
-        FeedstockPlanningReadinessCheckCode.CURRENT_PROFILE_MISSING,
-        "Batch has no current profile evidence"
-    ));
-    checks.add(volumeCheck(batch));
-    return new FeedstockPlanningReadinessView(status(checks), checks);
-  }
-
-  public @NonNull FeedstockPlanningReadinessView assess(
-      @NonNull FeedstockBatchSummary batch,
-      @NonNull ChemicalProfile profile
-  ) {
-    requireNonNull(batch, "feedstock batch summary cannot be null");
-    requireNonNull(profile, "chemical profile cannot be null");
-
-    final var checks = new ArrayList<FeedstockPlanningReadinessCheck>();
-    checks.add(check(
-        FeedstockPlanningReadinessFactor.CURRENT_PROFILE,
-        FeedstockCurrentProfileSignalSeverity.OK,
-        FeedstockPlanningReadinessCheckCode.CURRENT_PROFILE_PRESENT,
-        "Current profile evidence is available"
-    ));
     checks.add(volumeCheck(batch));
     checks.add(requiredProfileCheck(
-        profile.sugar().isPresent(),
+        false,
         FeedstockPlanningReadinessFactor.SPECIFIC_GRAVITY,
         FeedstockPlanningReadinessCheckCode.SPECIFIC_GRAVITY_PRESENT,
         FeedstockPlanningReadinessCheckCode.SPECIFIC_GRAVITY_MISSING,
@@ -67,27 +43,46 @@ public final class FeedstockPlanningReadinessAssessor {
         "Specific gravity is required for composition planning"
     ));
     checks.add(requiredProfileCheck(
-        profile.titratableAcidity().isPresent(),
+        false,
         FeedstockPlanningReadinessFactor.TITRATABLE_ACIDITY,
         FeedstockPlanningReadinessCheckCode.TITRATABLE_ACIDITY_PRESENT,
         FeedstockPlanningReadinessCheckCode.TITRATABLE_ACIDITY_MISSING,
         "Titratable acidity is available",
         "Titratable acidity is required for composition planning"
     ));
-    checks.add(check(
-        FeedstockPlanningReadinessFactor.TANNIN,
-        profile.tannin().isPresent()
-            ? FeedstockCurrentProfileSignalSeverity.OK
-            : FeedstockCurrentProfileSignalSeverity.WARNING,
-        profile.tannin().isPresent()
-            ? FeedstockPlanningReadinessCheckCode.TANNIN_PRESENT
-            : FeedstockPlanningReadinessCheckCode.TANNIN_MISSING,
-        profile.tannin().isPresent()
-            ? "Tannin is available"
-            : "Tannin is missing; target-aware structure assessment will be incomplete"
+    checks.add(tanninCheck(false));
+    checks.add(phGuidanceCheck(phPlanningGuidancePolicy.assess(null)));
+    return new FeedstockPlanningReadinessView(status(checks), checks);
+  }
+
+  public @NonNull FeedstockPlanningReadinessView assess(
+      @NonNull FeedstockBatchSummary batch,
+      @NonNull FeedstockCurrentProfileView currentProfile
+  ) {
+    requireNonNull(batch, "feedstock batch summary cannot be null");
+    requireNonNull(currentProfile, "feedstock current profile cannot be null");
+
+    final var checks = new ArrayList<FeedstockPlanningReadinessCheck>();
+    checks.add(volumeCheck(batch));
+    checks.add(requiredProfileCheck(
+        currentProfile.specificGravity() != null,
+        FeedstockPlanningReadinessFactor.SPECIFIC_GRAVITY,
+        FeedstockPlanningReadinessCheckCode.SPECIFIC_GRAVITY_PRESENT,
+        FeedstockPlanningReadinessCheckCode.SPECIFIC_GRAVITY_MISSING,
+        "Specific gravity is available",
+        "Specific gravity is required for composition planning"
     ));
+    checks.add(requiredProfileCheck(
+        currentProfile.titratableAcidity() != null,
+        FeedstockPlanningReadinessFactor.TITRATABLE_ACIDITY,
+        FeedstockPlanningReadinessCheckCode.TITRATABLE_ACIDITY_PRESENT,
+        FeedstockPlanningReadinessCheckCode.TITRATABLE_ACIDITY_MISSING,
+        "Titratable acidity is available",
+        "Titratable acidity is required for composition planning"
+    ));
+    checks.add(tanninCheck(currentProfile.tannin() != null));
     checks.add(phGuidanceCheck(
-        phPlanningGuidancePolicy.assess(profile.ph().orElse(null)) // NOSONAR
+        phPlanningGuidancePolicy.assess(currentProfile.ph())
     ));
     return new FeedstockPlanningReadinessView(status(checks), checks);
   }
@@ -107,6 +102,21 @@ public final class FeedstockPlanningReadinessAssessor {
         batch.availableVolume().isZero()
             ? "Available volume is zero"
             : "Available volume is present"
+    );
+  }
+
+  private static @NonNull FeedstockPlanningReadinessCheck tanninCheck(boolean present) {
+    return check(
+        FeedstockPlanningReadinessFactor.TANNIN,
+        present
+            ? FeedstockCurrentProfileSignalSeverity.OK
+            : FeedstockCurrentProfileSignalSeverity.WARNING,
+        present
+            ? FeedstockPlanningReadinessCheckCode.TANNIN_PRESENT
+            : FeedstockPlanningReadinessCheckCode.TANNIN_MISSING,
+        present
+            ? "Tannin is available"
+            : "Tannin is missing; target-aware structure assessment will be incomplete"
     );
   }
 

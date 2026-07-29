@@ -6,14 +6,10 @@ import org.craft.mcs.cap.core.profileanalysis.graph.domain.MidpointGraphRepresen
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CalculatedCompositionCharacteristics;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionSourceCharacteristics;
 import org.craft.mcs.cap.core.profileanalysis.graph.application.service.JolicoeurSugarAcidityGraphEvaluator;
-import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityAssessor;
-import org.craft.mcs.cap.core.profileanalysis.compatibility.application.ChemicalProfileAssessmentAdapter;
-import org.craft.mcs.cap.core.profileanalysis.compatibility.application.ChemicalProfileAssessmentMatcher;
 import org.craft.mcs.cap.core.profileanalysis.graph.zone.domain.BuiltInJolicoeurSugarAcidityZoneProfiles;
 import org.craft.mcs.cap.core.profileanalysis.graph.zone.domain.GeometryJolicoeurSugarAcidityZoneAssessor;
 import org.craft.mcs.cap.core.profileanalysis.graph.zone.domain.JolicoeurSugarAcidityZoneAssessor;
 import org.craft.mcs.cap.core.profileanalysis.graph.zone.domain.JolicoeurSugarAcidityZoneGeometryProfile;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
 import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
@@ -29,32 +25,25 @@ public final class ProfileAnalysisTestFixtures {
   private ProfileAnalysisTestFixtures() {
   }
 
-  public static @NonNull ChemicalProfileAssessmentAdapter chemicalProfileAssessmentAdapter() {
-    return chemicalProfileAssessmentAdapter(
-        BuiltInJolicoeurSugarAcidityZoneProfiles.rectangularZoneGeometryProfile()
-    );
+  public static @NonNull JolicoeurSugarAcidityGraphEvaluator graphEvaluator() {
+    return graphEvaluator(BuiltInJolicoeurSugarAcidityZoneProfiles.rectangularZoneGeometryProfile());
   }
 
-  public static @NonNull ChemicalProfileAssessmentAdapter chemicalProfileAssessmentAdapter(
+  public static @NonNull JolicoeurSugarAcidityGraphEvaluator graphEvaluator(
       @NonNull JolicoeurSugarAcidityZoneGeometryProfile geometryProfile
   ) {
     final JolicoeurSugarAcidityZoneAssessor zoneAssessor =
         new GeometryJolicoeurSugarAcidityZoneAssessor(geometryProfile);
-    return new ChemicalProfileAssessmentAdapter(
-        new ChemicalProfileAxisExtractor(),
-        new JolicoeurSugarAcidityGraphEvaluator(
-            new MidpointGraphRepresentativeValuePolicy(),
-            zoneAssessor
-        ),
-        new NorthAmericanProfileCalculator(
-            BuiltInCiderClassificationThresholds.northAmerican()
-        ),
-        new ChemicalProfileCapabilityAssessor()
+    return new JolicoeurSugarAcidityGraphEvaluator(
+        new MidpointGraphRepresentativeValuePolicy(),
+        zoneAssessor
     );
   }
 
-  public static @NonNull ChemicalProfileAssessmentMatcher chemicalProfileAssessmentMatcher() {
-    return new ChemicalProfileAssessmentMatcher(new ChemicalProfileCapabilityAssessor());
+  public static @NonNull NorthAmericanProfileCalculator northAmericanProfileCalculator() {
+    return new NorthAmericanProfileCalculator(
+        BuiltInCiderClassificationThresholds.northAmerican()
+    );
   }
 
   public static @NonNull CompositionSourceCharacteristics compositionSourceCharacteristics(

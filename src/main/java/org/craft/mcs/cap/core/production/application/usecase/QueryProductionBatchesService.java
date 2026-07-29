@@ -16,14 +16,13 @@ import org.craft.mcs.cap.core.production.application.port.in.ListProductionBatch
 import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchQueryRepository;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionMeasurementProfileProvider;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatchId;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
 import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
 
 import static java.util.Objects.requireNonNull;
+import static org.craft.mcs.cap.shared.kernel.measurement.MeasurementValueMath.midpoint;
 
 
 /**
@@ -41,7 +40,6 @@ public final class QueryProductionBatchesService
   private final @NonNull ProductionAccessControl productionAccessControl;
   private final @NonNull ProductionMeasurementProfileProvider measurementProfileProvider;
   private final @NonNull ProductionCurrentProfileProjector productionCurrentProfileProjector;
-  private final @NonNull ChemicalProfileAxisExtractor chemicalProfileAxisExtractor;
   private final @NonNull PotentialAbvPredictor potentialAbvPredictor;
 
   @Override
@@ -87,11 +85,7 @@ public final class QueryProductionBatchesService
         batch,
         currentProfile,
         potentialAbvPredictor.predict(
-            SpecificGravityValue.of(
-                chemicalProfileAxisExtractor.extract(currentProfile.chemicalProfile())
-                    .requireValueOf(ChemicalAxis.SPECIFIC_GRAVITY)
-                    .value()
-            )
+            SpecificGravityValue.of(midpoint(currentProfile.specificGravity().value()))
         )
     );
   }

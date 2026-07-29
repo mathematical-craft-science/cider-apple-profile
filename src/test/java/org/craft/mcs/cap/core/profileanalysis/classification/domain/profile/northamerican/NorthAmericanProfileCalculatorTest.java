@@ -4,7 +4,7 @@ import org.craft.mcs.cap.core.profileanalysis.classification.domain.engine.Cider
 import org.craft.mcs.cap.core.profileanalysis.classification.domain.profile.BuiltInCiderClassificationThresholds;
 import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
 import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisRange;
+import org.craft.mcs.cap.core.profileanalysis.classification.domain.rule.ClassificationValueRange;
 import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
@@ -24,11 +24,11 @@ class NorthAmericanProfileCalculatorTest {
   void assessesEachCharacteristicUsingNorthAmericanRanges() {
     final var input = input("1.070", "11.0", "2500");
 
-    assertThat(calculator.assessSugar(input))
+    assertThat(calculator.assessSugar(input.sugarContent()))
         .isEqualTo(NorthAmericanSugarLevel.VERY_HIGH);
-    assertThat(calculator.assessAcidity(input))
+    assertThat(calculator.assessAcidity(input.acidity()))
         .isEqualTo(NorthAmericanAcidityLevel.VERY_HIGH);
-    assertThat(calculator.assessTannin(input))
+    assertThat(calculator.assessTannin(input.tannin()))
         .isEqualTo(NorthAmericanTanninLevel.HIGH);
   }
 
@@ -45,8 +45,8 @@ class NorthAmericanProfileCalculatorTest {
     final var builtIn = BuiltInCiderClassificationThresholds.northAmerican();
 
     assertThatThrownBy(() -> new NorthAmericanThresholds(
-        AxisRange.lessThan("1.045"),
-        AxisRange.between("1.050", "1.060"),
+        ClassificationValueRange.lessThan("1.045"),
+        ClassificationValueRange.between("1.050", "1.060"),
         builtIn.highSugar(),
         builtIn.veryHighSugar(),
         builtIn.lowAcidity(),

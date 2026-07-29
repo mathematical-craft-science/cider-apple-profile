@@ -1,6 +1,6 @@
 package org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.strategy;
 
-import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionCalculatorCode;
+import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionCalculatorCode;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.normalization.ProfileAxisNormalizerCode;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.objective.ProfileTargetObjectiveFunctionCode;
 
@@ -10,7 +10,7 @@ import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.objec
  *
  * <p>The algorithm is only one part of optimization. A complete optimization run also selects:
  * <ul>
- *   <li>a {@link ChemicalProfileCompositionCalculatorCode}
+ *   <li>a {@link CompositionCalculatorCode}
  *       to calculate each candidate profile;</li>
  *   <li>a {@link ProfileAxisNormalizerCode}
  *       to normalize axes before distance calculation;</li>

@@ -5,15 +5,24 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.measurement.application.compatibility.CurrentMeasurementProfileView;
-import org.craft.mcs.cap.core.measurement.application.compatibility.ProjectCurrentMeasurementProfileUseCase;
+import org.craft.mcs.cap.core.measurement.application.model.CurrentMaterialStateView;
+import org.craft.mcs.cap.core.measurement.application.port.in.ProjectCurrentMaterialStateUseCase;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSubjectReference;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSubjectType;
 import org.craft.mcs.cap.core.production.application.model.ProductionMeasuredProfileView;
+import org.craft.mcs.cap.core.production.application.model.ProductionCurrentCharacteristicView;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionMeasurementProfileProvider;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatchId;
+import org.craft.mcs.cap.shared.kernel.chemical.value.PhValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
+import org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic;
+import org.craft.mcs.cap.shared.kernel.measurement.MeasuredValue;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
 
 import static java.util.Objects.requireNonNull;
@@ -24,15 +33,14 @@ import static java.util.Objects.requireNonNull;
 @RequiredArgsConstructor
 final class MeasurementProductionProfileProvider implements ProductionMeasurementProfileProvider {
 
-  private final @NonNull ProjectCurrentMeasurementProfileUseCase measurementProfileProjector;
+  private final @NonNull ProjectCurrentMaterialStateUseCase currentMaterialStateProjector;
 
   @Override
   public @NonNull Optional<@NonNull ProductionMeasuredProfileView> findCurrent(
       @NonNull ProductionBatchId batchId
   ) {
     requireNonNull(batchId, "production batch id cannot be null");
-    return measurementProfileProjector.project(subject(batchId))
-        .map(MeasurementProductionProfileProvider::toProductionProfile);
+    return toProductionProfile(currentMaterialStateProjector.project(subject(batchId)));
   }
 
   @Override
@@ -48,13 +56,13 @@ final class MeasurementProductionProfileProvider implements ProductionMeasuremen
     final var subjects = batchIds.stream()
         .map(MeasurementProductionProfileProvider::subject)
         .collect(Collectors.toUnmodifiableSet());
-    return measurementProfileProjector.projectAll(workspaceId, subjects)
+    return currentMaterialStateProjector.projectAll(workspaceId, subjects)
         .entrySet()
         .stream()
-        .collect(Collectors.toUnmodifiableMap(
-            entry -> ProductionBatchId.of(entry.getKey().id()),
-            entry -> toProductionProfile(entry.getValue())
-        ));
+        .map(entry -> toProductionProfile(entry.getValue())
+            .map(profile -> Map.entry(ProductionBatchId.of(entry.getKey().id()), profile)))
+        .flatMap(Optional::stream)
+        .collect(Collectors.toUnmodifiableMap(Map.Entry::getKey, Map.Entry::getValue));
   }
 
   private static @NonNull MeasurementSubjectReference subject(@NonNull ProductionBatchId batchId) {
@@ -64,12 +72,37 @@ final class MeasurementProductionProfileProvider implements ProductionMeasuremen
     );
   }
 
-  private static @NonNull ProductionMeasuredProfileView toProductionProfile(
-      @NonNull CurrentMeasurementProfileView profile
+  private static @NonNull Optional<@NonNull ProductionMeasuredProfileView> toProductionProfile(
+      @NonNull CurrentMaterialStateView currentState
   ) {
-    return new ProductionMeasuredProfileView(
-        profile.chemicalProfile(),
-        profile.evidence()
-    );
+    final var chemicalEvidence = currentState.characteristics().stream()
+        .filter(characteristic -> switch (characteristic.characteristic()) {
+          case SPECIFIC_GRAVITY, PH, TITRATABLE_ACIDITY, TANNIN, YAN -> true;
+          case TEMPERATURE, TURBIDITY -> false;
+        })
+        .toList();
+    if (chemicalEvidence.isEmpty()) {
+      return Optional.empty();
+    }
+    return Optional.of(new ProductionMeasuredProfileView(
+        measured(currentState, MeasurementCharacteristic.SPECIFIC_GRAVITY, SpecificGravityValue.class),
+        measured(currentState, MeasurementCharacteristic.TITRATABLE_ACIDITY, TitratableAcidityValue.class),
+        measured(currentState, MeasurementCharacteristic.PH, PhValue.class),
+        measured(currentState, MeasurementCharacteristic.TANNIN, TanninValue.class),
+        measured(currentState, MeasurementCharacteristic.YAN, YeastAssimilableNitrogenValue.class)
+    ));
+  }
+
+  private static <T extends MeasuredValue> @Nullable ProductionCurrentCharacteristicView<T> measured(
+      @NonNull CurrentMaterialStateView currentState,
+      @NonNull MeasurementCharacteristic characteristic,
+      @NonNull Class<T> valueType
+  ) {
+    final var evidence = currentState.characteristic(characteristic).orElse(null); // NOSONAR
+    if (evidence == null) {
+      return null;
+    }
+    final var value = currentState.value(characteristic, valueType).orElseThrow();
+    return ProductionCurrentCharacteristicView.fromMeasurement(value, evidence.evidence());
   }
 }

@@ -1,11 +1,13 @@
 package org.craft.mcs.cap.core.production.application.model;
 
-import java.util.List;
-import org.craft.mcs.cap.shared.application.measurement.MeasurementEvidenceView;
-import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
-import org.jspecify.annotations.NonNull;
-
-import static java.util.Objects.requireNonNull;
+import org.craft.mcs.cap.shared.application.ApplicationValidationException;
+import org.craft.mcs.cap.shared.kernel.chemical.value.PhValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
+import org.craft.mcs.cap.shared.kernel.measurement.MeasuredValue;
+import org.jspecify.annotations.Nullable;
 
 
 /**
@@ -16,12 +18,28 @@ import static java.util.Objects.requireNonNull;
  * profile.</p>
  */
 public record ProductionMeasuredProfileView(
-    @NonNull ChemicalProfile chemicalProfile,
-    @NonNull List<@NonNull MeasurementEvidenceView> evidence
+    @Nullable ProductionCurrentCharacteristicView<SpecificGravityValue> specificGravity,
+    @Nullable ProductionCurrentCharacteristicView<TitratableAcidityValue> titratableAcidity,
+    @Nullable ProductionCurrentCharacteristicView<PhValue> ph,
+    @Nullable ProductionCurrentCharacteristicView<TanninValue> tannin,
+    @Nullable ProductionCurrentCharacteristicView<YeastAssimilableNitrogenValue> yeastAssimilableNitrogen
 ) {
 
   public ProductionMeasuredProfileView {
-    requireNonNull(chemicalProfile, "production measured chemical profile cannot be null");
-    evidence = List.copyOf(requireNonNull(evidence, "production measurement evidence cannot be null"));
+    requireMeasured(specificGravity);
+    requireMeasured(titratableAcidity);
+    requireMeasured(ph);
+    requireMeasured(tannin);
+    requireMeasured(yeastAssimilableNitrogen);
+  }
+
+  private static <T extends MeasuredValue> void requireMeasured(
+      @Nullable ProductionCurrentCharacteristicView<T> characteristic
+  ) {
+    if (characteristic != null && characteristic.origin() != ProductionCharacteristicOrigin.MEASUREMENT) {
+      throw new ApplicationValidationException(
+          "production measured profile accepts only measurement-backed characteristics"
+      );
+    }
   }
 }

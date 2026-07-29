@@ -1,10 +1,10 @@
 package org.craft.mcs.cap.core.production.candidate.application.model;
 
+import org.craft.mcs.cap.core.production.application.model.ProductionSourceCharacteristics;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionSourceDisplayName;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceEvidenceReference;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceReference;
 import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
 import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.shared.kernel.material.value.MaterialAvailability;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
@@ -19,7 +19,7 @@ public record AvailableProductionSource(
     @NonNull ProductionSourceReference reference,
     @Nullable ProductionSourceDisplayName displayName,
     @NonNull MaterialAvailability availability,
-    @NonNull ChemicalProfileAxes profile,
+    @NonNull ProductionSourceCharacteristics characteristics,
     @Nullable ConfidenceLevel confidence,
     @NonNull ProductionSourceEvidenceReference evidenceReference
 ) {
@@ -27,7 +27,7 @@ public record AvailableProductionSource(
   public AvailableProductionSource {
     requireNonNull(reference, "production source reference cannot be null");
     requireNonNull(availability, "production source material availability cannot be null");
-    requireNonNull(profile, "available production source profile cannot be null");
+    requireNonNull(characteristics, "available production source characteristics cannot be null");
     requireNonNull(evidenceReference, "production source evidence reference cannot be null");
   }
 

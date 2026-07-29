@@ -4,7 +4,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Instant;
 import java.util.UUID;
 import org.craft.mcs.cap.shared.application.measurement.MeasurementValueOrigin;
-import org.craft.mcs.cap.shared.application.measurement.MeasurementEvidenceValidity;
 import org.craft.mcs.cap.shared.application.measurement.MeasurementFreshnessStatus;
 import org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement.dto.MeasurementProvenanceResponse;
@@ -62,13 +61,6 @@ public record CurrentMaterialCharacteristicResponse(
         example = "CURRENT",
         requiredMode = Schema.RequiredMode.REQUIRED
     )
-    @NonNull MeasurementFreshnessStatus freshnessStatus,
-    @Schema(
-        description = "Whether this evidence remains applicable.",
-        implementation = MeasurementEvidenceValidity.class,
-        example = "VALID",
-        requiredMode = Schema.RequiredMode.REQUIRED
-    )
-    @NonNull MeasurementEvidenceValidity validity
+    @NonNull MeasurementFreshnessStatus freshnessStatus
 ) {
 }

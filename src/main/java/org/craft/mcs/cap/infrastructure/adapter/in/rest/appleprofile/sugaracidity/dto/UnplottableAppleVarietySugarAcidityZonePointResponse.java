@@ -2,7 +2,7 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.sugaracidi
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.UUID;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.dto.ChemicalProfileCapabilityAssessmentResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.capability.dto.ProfileAnalysisCapabilityAssessmentResponse;
 import org.jspecify.annotations.NonNull;
 
 
@@ -23,6 +23,6 @@ public record UnplottableAppleVarietySugarAcidityZonePointResponse(
         description = "Capability assessment explaining missing characteristics.",
         requiredMode = Schema.RequiredMode.REQUIRED
     )
-    @NonNull ChemicalProfileCapabilityAssessmentResponse capabilityAssessment
+    @NonNull ProfileAnalysisCapabilityAssessmentResponse capabilityAssessment
 ) {
 }

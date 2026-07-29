@@ -19,12 +19,12 @@ public record BatchTraceMaterialSnapshotResponse(
     @Nullable DecimalQuantityResponse volume,
     @ArraySchema(
         arraySchema = @Schema(
-            description = "Chemical profile axes captured in CAP canonical units.",
+            description = "Typed material characteristics captured in CAP canonical units.",
             requiredMode = Schema.RequiredMode.REQUIRED
         ),
-        schema = @Schema(implementation = BatchTraceAxisValueResponse.class)
+        schema = @Schema(implementation = BatchTraceCharacteristicResponse.class)
     )
-    @NonNull List<@NonNull BatchTraceAxisValueResponse> axes,
+    @NonNull List<@NonNull BatchTraceCharacteristicResponse> characteristics,
     @Schema(
         description = "Confidence level of captured profile data.",
         implementation = ConfidenceLevel.class,
@@ -35,6 +35,6 @@ public record BatchTraceMaterialSnapshotResponse(
 ) {
 
   public BatchTraceMaterialSnapshotResponse {
-    axes = List.copyOf(axes);
+    characteristics = List.copyOf(characteristics);
   }
 }

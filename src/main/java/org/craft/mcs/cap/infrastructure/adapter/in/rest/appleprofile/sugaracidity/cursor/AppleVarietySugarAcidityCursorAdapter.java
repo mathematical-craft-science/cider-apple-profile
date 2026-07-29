@@ -5,7 +5,7 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.appleprofile.application.catalog.model.AppleVarietyCatalogPagePosition;
 import org.craft.mcs.cap.core.appleprofile.application.analysis.common.model.AppleVarietyAnalysisFilters;
-import org.craft.mcs.cap.core.profileanalysis.profileaxis.application.model.ChemicalProfileCapabilityCriteria;
+import org.craft.mcs.cap.core.profileanalysis.capability.application.model.ProfileAnalysisCapabilityCriteria;
 import org.craft.mcs.cap.core.profileanalysis.graph.application.model.JolicoeurSugarAcidityZoneCriteria;
 import org.craft.mcs.cap.shared.application.query.TextSearchCriteria;
 import org.craft.mcs.cap.shared.infrastructure.query.cursor.CursorBinding;
@@ -75,7 +75,7 @@ public final class AppleVarietySugarAcidityCursorAdapter {
             .collect(Collectors.joining(","));
   }
 
-  private static @NonNull String capability(@Nullable ChemicalProfileCapabilityCriteria criteria) {
+  private static @NonNull String capability(@Nullable ProfileAnalysisCapabilityCriteria criteria) {
     return criteria == null || criteria.capable() == null
         ? ""
         : criteria.capability().name() + ":" + criteria.capable();

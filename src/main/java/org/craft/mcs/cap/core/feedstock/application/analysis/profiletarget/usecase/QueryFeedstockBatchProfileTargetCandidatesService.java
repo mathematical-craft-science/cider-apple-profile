@@ -48,8 +48,7 @@ public final class QueryFeedstockBatchProfileTargetCandidatesService
               return new FeedstockBatchProfileTargetCandidate(
                   score.batchId(),
                   score.currentMaterialStateId(),
-                  score.currentMeasurementId(),
-                  score.currentMeasurementName(),
+                  score.profileEvidence(),
                   score.characteristics(),
                   score.distance(),
                   contributionRoleAssessor.assess(roleAssessmentRequest)

@@ -12,7 +12,7 @@ import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceSubjectType;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.traceability.row.BatchTraceStepJdbcRowMapper;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.traceability.row.BatchTraceStepSubjectJdbcRow;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.traceability.row.BatchTraceStepSubjectRole;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValueKind;
+import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.traceability.row.BatchTraceCharacteristicStorageKind;
 import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic;
@@ -73,20 +73,29 @@ class JdbcMaterialStateHistoryStore implements MaterialStateHistoryStore {
     row.snapshotVolumeLiters = resultSet.getBigDecimal("snapshot_volume_liters");
     row.snapshotConfidence = resultSet.getString("snapshot_confidence");
     row.specificGravityValue = resultSet.getBigDecimal("sugar_value");
-    row.specificGravityValueKind = enumValue(AxisValueKind.class, resultSet.getString("sugar_value_kind"));
+    row.specificGravityValueKind = enumValue(
+        BatchTraceCharacteristicStorageKind.class,
+        resultSet.getString("sugar_value_kind")
+    );
     row.specificGravityMin = resultSet.getBigDecimal("sugar_min");
     row.specificGravityMax = resultSet.getBigDecimal("sugar_max");
     row.titratableAcidityValue = resultSet.getBigDecimal("acidity_value");
-    row.titratableAcidityValueKind = enumValue(AxisValueKind.class, resultSet.getString("acidity_value_kind"));
+    row.titratableAcidityValueKind = enumValue(
+        BatchTraceCharacteristicStorageKind.class,
+        resultSet.getString("acidity_value_kind")
+    );
     row.titratableAcidityMin = resultSet.getBigDecimal("acidity_min");
     row.titratableAcidityMax = resultSet.getBigDecimal("acidity_max");
     row.tanninValue = resultSet.getBigDecimal("tannin_value");
-    row.tanninValueKind = enumValue(AxisValueKind.class, resultSet.getString("tannin_value_kind"));
+    row.tanninValueKind = enumValue(
+        BatchTraceCharacteristicStorageKind.class,
+        resultSet.getString("tannin_value_kind")
+    );
     row.tanninMin = resultSet.getBigDecimal("tannin_min");
     row.tanninMax = resultSet.getBigDecimal("tannin_max");
     row.yeastAssimilableNitrogenValue = resultSet.getBigDecimal("yan_value");
     row.yeastAssimilableNitrogenValueKind = enumValue(
-        AxisValueKind.class,
+        BatchTraceCharacteristicStorageKind.class,
         resultSet.getString("yan_value_kind")
     );
     row.yeastAssimilableNitrogenMin = resultSet.getBigDecimal("yan_min");

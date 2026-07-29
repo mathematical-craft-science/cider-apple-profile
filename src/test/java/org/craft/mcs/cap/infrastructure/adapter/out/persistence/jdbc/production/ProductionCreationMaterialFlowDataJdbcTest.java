@@ -5,6 +5,7 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.OffsetDateTime;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -17,17 +18,20 @@ import org.craft.mcs.cap.core.account.user.application.port.in.AccountUserView;
 import org.craft.mcs.cap.core.account.user.application.port.in.GetCurrentAccountProfileUseCase;
 import org.craft.mcs.cap.core.account.user.domain.model.AccountUserStatus;
 import org.craft.mcs.cap.core.traceability.application.port.out.BatchTraceabilityAccessControl;
+import org.craft.mcs.cap.core.traceability.application.port.out.MaterialStateLineageStore;
 import org.craft.mcs.cap.core.traceability.application.usecase.AppendBatchTraceStepService;
 import org.craft.mcs.cap.core.traceability.application.usecase.GetMaterialStateService;
+import org.craft.mcs.cap.core.traceability.application.usecase.QueryMaterialStateLineageService;
 import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceSubjectType;
 import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
 import org.craft.mcs.cap.core.feedstock.application.inventory.usecase.ConsumeFeedstockBatchMaterialService;
 import org.craft.mcs.cap.core.feedstock.application.inventory.usecase.InspectFeedstockBatchMaterialService;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.query.FeedstockCurrentProfileQueryService;
+import org.craft.mcs.cap.core.measurement.application.port.out.CurrentMaterialStateProvider;
 import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementFreshnessThresholdProvider;
 import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementSubjectAccessControl;
 import org.craft.mcs.cap.core.measurement.application.usecase.CurrentMaterialStateProjector;
-import org.craft.mcs.cap.core.measurement.application.compatibility.CurrentMeasurementProfileProjector;
+import org.craft.mcs.cap.core.measurement.application.usecase.QueryMeasurementSetMetadataService;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSubjectReference;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSubjectType;
 import org.craft.mcs.cap.core.production.application.authorization.port.out.ProductionAccessControl;
@@ -49,7 +53,6 @@ import org.craft.mcs.cap.core.production.domain.model.ProductionSourceReference;
 import org.craft.mcs.cap.core.production.candidate.domain.model.ProductionCandidateSourceEvidence;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
 import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPrediction;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
@@ -79,10 +82,11 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import static java.util.Objects.requireNonNull;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.craft.mcs.cap.support.PotentialAbvPredictionFixtures.prediction;
 import static org.craft.mcs.cap.shared.kernel.identity.UuidV7Generator.newUuid;
+import static org.craft.mcs.cap.support.PotentialAbvPredictionFixtures.prediction;
 
 
 @DataJdbcTest
@@ -94,14 +98,13 @@ import static org.craft.mcs.cap.shared.kernel.identity.UuidV7Generator.newUuid;
         ProductionCreationMaterialFlowDataJdbcTest.FlowTestConfiguration.class,
         SpringTransactionHelper.class,
         CurrentMaterialStateProjector.class,
-        CurrentMeasurementProfileProjector.class,
+        QueryMeasurementSetMetadataService.class,
         FeedstockCurrentProfileQueryService.class,
         InspectFeedstockBatchMaterialService.class,
         ConsumeFeedstockBatchMaterialService.class,
         AppendBatchTraceStepService.class,
         GetMaterialStateService.class,
         CreateProductionBatchService.class,
-        ChemicalProfileAxisExtractor.class,
         JdbcProductionBatchRepository.class
     }
 )
@@ -566,6 +569,57 @@ class ProductionCreationMaterialFlowDataJdbcTest {
     @Bean
     MeasurementFreshnessThresholdProvider measurementFreshnessThresholdProvider() {
       return workspaceId -> Duration.ofDays(14);
+    }
+
+    @Bean
+    CurrentMaterialStateProvider currentMaterialStateProvider(JdbcTemplate jdbcTemplate) {
+      return (workspaceId, subjects) -> {
+        final Map<MeasurementSubjectReference, MaterialStateId> states = new LinkedHashMap<>();
+        subjects.forEach(subject -> states.put(
+            subject,
+            MaterialStateId.of(requireMaterialStateId(jdbcTemplate, workspaceId, subject))
+        ));
+        return Map.copyOf(states);
+      };
+    }
+
+    private static @NonNull UUID requireMaterialStateId(
+        @NonNull JdbcTemplate jdbcTemplate,
+        @NonNull WorkspaceId workspaceId,
+        @NonNull MeasurementSubjectReference subject
+    ) {
+      return switch (subject.type()) {
+        case FEEDSTOCK_BATCH -> requireNonNull(jdbcTemplate.queryForObject(
+            """
+                SELECT current_material_state_id
+                  FROM feedstock_batches
+                 WHERE workspace_id = ?
+                   AND batch_id = ?
+                """,
+            UUID.class,
+            workspaceId.value(),
+            subject.id()
+        ));
+        case PRODUCTION_BATCH -> requireNonNull(jdbcTemplate.queryForObject(
+            """
+                SELECT current_material_state_id
+                  FROM production_batches
+                 WHERE workspace_id = ?
+                   AND batch_id = ?
+                """,
+            UUID.class,
+            workspaceId.value(),
+            subject.id()
+        ));
+      };
+    }
+
+    @Bean
+    QueryMaterialStateLineageService queryMaterialStateLineageService(
+        MaterialStateLineageStore lineageStore,
+        BatchTraceabilityAccessControl accessControl
+    ) {
+      return new QueryMaterialStateLineageService(lineageStore, accessControl);
     }
 
     @Bean

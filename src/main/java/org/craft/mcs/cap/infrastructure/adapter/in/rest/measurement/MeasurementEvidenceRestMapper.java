@@ -34,8 +34,7 @@ public final class MeasurementEvidenceRestMapper {
             provenance.method(),
             provenance.reference(),
             provenance.confidence()
-        ),
-        evidence.validity()
+        )
     );
   }
 }

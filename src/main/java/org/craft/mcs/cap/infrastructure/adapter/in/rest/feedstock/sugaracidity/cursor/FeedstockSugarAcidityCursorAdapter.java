@@ -4,7 +4,7 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.feedstock.application.analysis.common.model.FeedstockAnalysisCandidatePagePosition;
 import org.craft.mcs.cap.core.feedstock.application.analysis.common.model.FeedstockAnalysisCandidateFilters;
-import org.craft.mcs.cap.core.profileanalysis.profileaxis.application.model.ChemicalProfileCapabilityCriteria;
+import org.craft.mcs.cap.core.profileanalysis.capability.application.model.ProfileAnalysisCapabilityCriteria;
 import org.craft.mcs.cap.core.profileanalysis.graph.application.model.JolicoeurSugarAcidityZoneCriteria;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.infrastructure.query.cursor.CursorBinding;
@@ -136,7 +136,7 @@ public final class FeedstockSugarAcidityCursorAdapter {
             .collect(Collectors.joining(","));
   }
 
-  private static @NonNull String capability(@Nullable ChemicalProfileCapabilityCriteria criteria) {
+  private static @NonNull String capability(@Nullable ProfileAnalysisCapabilityCriteria criteria) {
     return criteria == null || criteria.capable() == null
         ? ""
         : criteria.capability().name() + ":" + criteria.capable();

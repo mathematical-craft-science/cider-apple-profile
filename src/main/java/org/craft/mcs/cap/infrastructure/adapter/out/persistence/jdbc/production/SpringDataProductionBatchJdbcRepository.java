@@ -14,4 +14,10 @@ interface SpringDataProductionBatchJdbcRepository
   List<@NonNull ProductionBatchJdbcEntity> findAllByWorkspaceIdOrderByCreatedAtDescBatchIdDesc(
       @NonNull UUID workspaceId
   );
+
+  @NonNull
+  List<@NonNull ProductionBatchJdbcEntity> findAllByBatchIdInAndWorkspaceId(
+      @NonNull List<@NonNull UUID> batchIds,
+      @NonNull UUID workspaceId
+  );
 }

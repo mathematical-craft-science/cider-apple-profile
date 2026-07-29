@@ -19,9 +19,8 @@ class CompositionContributionEvidenceTest {
         .returns(
             CompositionContributionEvidenceEffect.RAISES_SUGAR_POTENTIAL,
             CompositionContributionEvidence::effect
-        );
-    assertThat(evidence.severity())
-        .isEqualTo(CompositionContributionEvidenceSeverity.SUPPORTING);
+        )
+        .returns(CompositionContributionEvidenceSeverity.SUPPORTING, CompositionContributionEvidence::severity);
   }
 
   @Test

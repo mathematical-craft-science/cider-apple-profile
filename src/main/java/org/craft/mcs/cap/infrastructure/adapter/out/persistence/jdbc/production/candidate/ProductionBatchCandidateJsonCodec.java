@@ -15,7 +15,7 @@ import org.craft.mcs.cap.core.production.domain.model.ProductionSourceComponent;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceComposition;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceReference;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceType;
-import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionWarning;
+import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionWarning;
 import org.craft.mcs.cap.core.profileanalysis.graph.domain.SugarAcidityGraphPoint;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileEvaluationAxis;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetObjectiveWeights;
@@ -47,7 +47,7 @@ final class ProductionBatchCandidateJsonCodec {
 
   private static final TypeReference<List<SourcePayload>> SOURCE_LIST_TYPE = new TypeReference<>() {
   };
-  private static final TypeReference<List<ChemicalProfileCompositionWarning>> WARNING_LIST_TYPE =
+  private static final TypeReference<List<CompositionWarning>> WARNING_LIST_TYPE =
       new TypeReference<>() {
       };
 
@@ -94,11 +94,11 @@ final class ProductionBatchCandidateJsonCodec {
     return value == null ? null : read(value, TargetDistancePayload.class).toDomain();
   }
 
-  @NonNull String encodeWarnings(@NonNull List<@NonNull ChemicalProfileCompositionWarning> warnings) {
+  @NonNull String encodeWarnings(@NonNull List<@NonNull CompositionWarning> warnings) {
     return write(List.copyOf(requireNonNull(warnings, "production candidate warnings cannot be null")));
   }
 
-  @NonNull List<@NonNull ChemicalProfileCompositionWarning> decodeWarnings(@NonNull String value) {
+  @NonNull List<@NonNull CompositionWarning> decodeWarnings(@NonNull String value) {
     return List.copyOf(read(requireNonNull(value, "warnings JSON cannot be null"), WARNING_LIST_TYPE));
   }
 

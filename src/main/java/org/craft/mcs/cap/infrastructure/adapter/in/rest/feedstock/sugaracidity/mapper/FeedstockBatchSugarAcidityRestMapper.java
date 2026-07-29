@@ -2,7 +2,6 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.sugaracidity.
 
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.feedstock.application.analysis.common.model.FeedstockAnalysisCandidatePagePosition;
-import org.craft.mcs.cap.core.profileanalysis.compatibility.application.ChemicalProfileAssessment;
 import org.craft.mcs.cap.core.profileanalysis.graph.zone.domain.JolicoeurSugarAcidityZone;
 import org.craft.mcs.cap.core.profileanalysis.graph.zone.domain.JolicoeurSugarAcidityZoneAssessment;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockBatchCurrentSugarAcidityZonePointQuery;
@@ -13,6 +12,7 @@ import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.sugaracidity.d
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.sugaracidity.dto.FeedstockBatchCurrentSugarAcidityZonePointQueryRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.sugaracidity.dto.FeedstockBatchGraphPointResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.sugaracidity.cursor.FeedstockSugarAcidityCursorAdapter;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.common.mapper.FeedstockProfileEvidenceRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.dto.SugarAcidityGraphPointResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.mapper.ProfileGraphRestMapper;
 import org.craft.mcs.cap.shared.application.query.pagination.CursorPage;
@@ -63,20 +63,20 @@ public final class FeedstockBatchSugarAcidityRestMapper {
   ) {
     requireNonNull(result, "feedstock batch current sugar-acidity zone result cannot be null");
 
-    final var evaluation = result.evaluation();
-    final var assessment = evaluation.assessment();
+    final var graphEvaluation = result.graphEvaluation();
     return new FeedstockBatchGraphPointResponse(
         result.batchId().value(),
         result.batchName().value(),
         result.workspaceId().value(),
         result.currentMaterialStateId().value(),
-        result.currentMeasurementId().value(),
-        result.measuredAt(),
-        evaluation.plottable(),
-        toPointResponse(evaluation),
-        toZoneResponse(assessment),
-        evaluation.northAmericanTanninLevel(),
-        evaluation.graphEvaluation().missingCharacteristics().stream().toList()
+        result.profileEvidence().stream()
+            .map(FeedstockProfileEvidenceRestMapper::toResponse)
+            .toList(),
+        graphEvaluation.plottable(),
+        toPointResponse(result),
+        toZoneResponse(graphEvaluation.zoneAssessment()),
+        result.northAmericanTanninLevel(),
+        graphEvaluation.missingCharacteristics().stream().toList()
     );
   }
 
@@ -99,9 +99,15 @@ public final class FeedstockBatchSugarAcidityRestMapper {
   }
 
   private static @Nullable SugarAcidityGraphPointResponse toPointResponse(
-      @NonNull ChemicalProfileAssessment evaluation
+      @NonNull FeedstockBatchCurrentSugarAcidityZoneResult result
   ) {
-    return evaluation.plottable() ? ProfileGraphRestMapper.toResponse(evaluation.axes()) : null;
+    if (!result.graphEvaluation().plottable()) {
+      return null;
+    }
+    return ProfileGraphRestMapper.toResponse(
+        requireNonNull(result.specificGravity()),
+        requireNonNull(result.titratableAcidity())
+    );
   }
 
   private static @Nullable JolicoeurSugarAcidityZone toZoneResponse(

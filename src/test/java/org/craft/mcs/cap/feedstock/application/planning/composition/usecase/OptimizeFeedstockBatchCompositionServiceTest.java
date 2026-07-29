@@ -4,11 +4,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.craft.mcs.cap.core.feedstock.application.batch.usecase.FeedstockBatchSummaryMapper.toSummary;
 import static org.craft.mcs.cap.core.profileanalysis.testing.ProfileAnalysisTestFixtures
-    .chemicalProfileAssessmentAdapter;
-import static org.craft.mcs.cap.core.profileanalysis.testing.ProfileAnalysisTestFixtures
-    .chemicalProfileAssessmentMatcher;
+    .graphEvaluator;
 import static org.craft.mcs.cap.shared.kernel.identity.UuidV7Generator.newUuid;
-import static org.craft.mcs.cap.shared.testing.FeedstockMeasurementViews.currentProfile;
+import static org.craft.mcs.cap.shared.testing.FeedstockCurrentProfileViews.currentProfile;
 import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementInstant;
 import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementRecordedAt;
 import static org.mockito.ArgumentMatchers.any;
@@ -22,11 +20,12 @@ import java.util.List;
 import org.craft.mcs.cap.core.feedstock.application.analysis.common.model.FeedstockAnalysisCandidateFilters;
 import org.craft.mcs.cap.core.feedstock.application.analysis.common.port.out.CurrentFeedstockBatchAnalysisCandidateQuery;
 import org.craft.mcs.cap.core.feedstock.application.analysis.common.port.out.FeedstockCurrentProfileAnalysisCandidateRepository;
+import org.craft.mcs.cap.core.feedstock.application.analysis.common.service.FeedstockGraphCandidateMatcher;
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.PredefinedFeedstockProfileTargetSelection;
 import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchSummaryQueryRepository;
-import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementId;
-import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementName;
+import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetId;
+import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetName;
 import org.craft.mcs.cap.core.feedstock.application.planning.composition.InsufficientFeedstockCompositionSourcesException;
 import org.craft.mcs.cap.core.feedstock.application.planning.composition.port.in.OptimizeFeedstockBatchCompositionCommand;
 import org.craft.mcs.cap.core.feedstock.application.planning.composition.usecase.OptimizeFeedstockBatchCompositionService;
@@ -34,11 +33,11 @@ import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
-import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionCalculatorCode;
-import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionTanninPolicy;
-import org.craft.mcs.cap.core.profileanalysis.composition.optimization.application.port.in.OptimizeChemicalProfileCompositionCommand;
-import org.craft.mcs.cap.core.profileanalysis.composition.optimization.application.port.in.OptimizeChemicalProfileCompositionResult;
-import org.craft.mcs.cap.core.profileanalysis.composition.optimization.application.port.in.OptimizeChemicalProfileCompositionUseCase;
+import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionCalculatorCode;
+import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionTanninPolicy;
+import org.craft.mcs.cap.core.profileanalysis.composition.optimization.application.port.in.OptimizeCompositionCommand;
+import org.craft.mcs.cap.core.profileanalysis.composition.optimization.application.port.in.OptimizeCompositionResult;
+import org.craft.mcs.cap.core.profileanalysis.composition.optimization.application.port.in.OptimizeCompositionUseCase;
 import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.CompositionOptimizationMode;
 import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.strategy.CompositionOptimizationAlgorithm;
 import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.strategy.DiscretizedCompositionOptimizationSettings;
@@ -53,7 +52,7 @@ import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.ZoneGe
 import org.craft.mcs.cap.shared.kernel.characteristic.CharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.characteristic.IntervalCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
-import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
+import org.craft.mcs.cap.shared.testing.ProfileCharacteristicsFixture;
 import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
@@ -61,7 +60,6 @@ import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
-import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.craft.mcs.cap.shared.testing.FeedstockMeasurementFixture;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
@@ -109,12 +107,12 @@ class OptimizeFeedstockBatchCompositionServiceTest {
     final var optimizationCommand = genericCommandCaptor();
     verify(optimizer).optimize(optimizationCommand.capture());
     assertThat(optimizationCommand.getValue().tanninPolicy())
-        .isEqualTo(ChemicalProfileCompositionTanninPolicy.CALCULATE_WHEN_COMPLETE);
+        .isEqualTo(CompositionTanninPolicy.CALCULATE_WHEN_COMPLETE);
     assertThat(optimizationCommand.getValue().mode()).isEqualTo(CompositionOptimizationMode.PROPORTION);
     assertThat(optimizationCommand.getValue().algorithm())
         .isEqualTo(CompositionOptimizationAlgorithm.DISCRETIZED_BOUNDED_SEARCH);
     assertThat(optimizationCommand.getValue().calculatorCode())
-        .isEqualTo(ChemicalProfileCompositionCalculatorCode.MASS_BALANCE);
+        .isEqualTo(CompositionCalculatorCode.MASS_BALANCE);
     assertThat(optimizationCommand.getValue().scoringConfiguration().normalizerCode())
         .isEqualTo(ProfileAxisNormalizerCode.EFFECTIVE_RANGE);
     assertThat(optimizationCommand.getValue().sources()).hasSize(2);
@@ -166,7 +164,7 @@ class OptimizeFeedstockBatchCompositionServiceTest {
     final var optimizationCommand = genericCommandCaptor();
     verify(optimizer).optimize(optimizationCommand.capture());
     assertThat(optimizationCommand.getValue().tanninPolicy())
-        .isEqualTo(ChemicalProfileCompositionTanninPolicy.REQUIRE_TANNIN);
+        .isEqualTo(CompositionTanninPolicy.REQUIRE_TANNIN);
     assertThat(optimizationCommand.getValue().targetObjective().tanninTarget()).isNotNull();
     assertThat(optimizationCommand.getValue().sources()).hasSize(2);
   }
@@ -195,32 +193,33 @@ class OptimizeFeedstockBatchCompositionServiceTest {
   private static OptimizeFeedstockBatchCompositionService service(
       FeedstockCurrentProfileAnalysisCandidateRepository measurementRepository,
       FeedstockBatchSummaryQueryRepository batchRepository,
-      OptimizeChemicalProfileCompositionUseCase optimizer
+      OptimizeCompositionUseCase optimizer
   ) {
     final var geometryProfile = BuiltInJolicoeurSugarAcidityZoneProfiles.rectangularZoneGeometryProfile();
 
     return new OptimizeFeedstockBatchCompositionService(
         measurementRepository,
         batchRepository,
-        chemicalProfileAssessmentAdapter(geometryProfile),
-        chemicalProfileAssessmentMatcher(),
+        graphEvaluator(geometryProfile),
+        new FeedstockGraphCandidateMatcher(),
         new ZoneGeometrySugarAcidityTargetResolver(geometryProfile),
         optimizer,
         mock(FeedstockAccessControl.class)
     );
   }
 
-  private static OptimizeChemicalProfileCompositionUseCase mockOptimizer() {
-    final var optimizer = mock(OptimizeChemicalProfileCompositionUseCase.class);
+  private static OptimizeCompositionUseCase mockOptimizer() {
+    final var optimizer = mock(OptimizeCompositionUseCase.class);
     when(optimizer.optimize(any()))
         .thenAnswer(invocation -> {
-          final OptimizeChemicalProfileCompositionCommand command = invocation.getArgument(0);
-          return new OptimizeChemicalProfileCompositionResult(
+          final OptimizeCompositionCommand command = invocation.getArgument(0);
+          return new OptimizeCompositionResult(
               command.mode(),
               command.algorithm(),
               command.calculatorCode(),
               command.scoringConfiguration().normalizerCode(),
               command.scoringConfiguration().objectiveFunctionCode(),
+              command.settings(),
               0,
               List.of()
           );
@@ -228,8 +227,8 @@ class OptimizeFeedstockBatchCompositionServiceTest {
     return optimizer;
   }
 
-  private static ArgumentCaptor<OptimizeChemicalProfileCompositionCommand> genericCommandCaptor() {
-    return ArgumentCaptor.forClass(OptimizeChemicalProfileCompositionCommand.class);
+  private static ArgumentCaptor<OptimizeCompositionCommand> genericCommandCaptor() {
+    return ArgumentCaptor.forClass(OptimizeCompositionCommand.class);
   }
 
   private static OptimizeFeedstockBatchCompositionCommand command(
@@ -250,7 +249,7 @@ class OptimizeFeedstockBatchCompositionServiceTest {
         new DiscretizedCompositionOptimizationSettings(5, 3),
         CompositionOptimizationMode.PROPORTION,
         CompositionOptimizationAlgorithm.DISCRETIZED_BOUNDED_SEARCH,
-        ChemicalProfileCompositionCalculatorCode.MASS_BALANCE,
+        CompositionCalculatorCode.MASS_BALANCE,
         null,
         25
     );
@@ -273,32 +272,30 @@ class OptimizeFeedstockBatchCompositionServiceTest {
 
   private static FeedstockMeasurementFixture sample(
       FeedstockBatchId batchId,
-      ChemicalProfile profile
+      ProfileCharacteristicsFixture profile
   ) {
     return FeedstockMeasurementFixture.create(
-        FeedstockMeasurementId.newId(),
+        MeasurementSetId.newId(),
         batchId,
-        FeedstockMeasurementName.of("Current lab sample"),
+        MeasurementSetName.of("Current lab sample"),
         profile,
         feedstockMeasurementInstant(),
         feedstockMeasurementRecordedAt()
     );
   }
 
-  private static ChemicalProfile profile(
+  private static ProfileCharacteristicsFixture profile(
       String sg,
       String acidity
   ) {
-    return ChemicalProfile.builder()
-        .sugar(PointCharacteristicValue.of(SugarConcentration.ofSpecificGravity(
-            SpecificGravityValue.of(sg)
-        )))
+    return ProfileCharacteristicsFixture.builder()
+        .specificGravity(PointCharacteristicValue.of(SpecificGravityValue.of(sg)))
         .titratableAcidity(PointCharacteristicValue.of(TitratableAcidityValue.of(acidity)))
         .build();
   }
 
-  private static ChemicalProfile acidityOnlyProfile(String acidity) {
-    return ChemicalProfile.builder()
+  private static ProfileCharacteristicsFixture acidityOnlyProfile(String acidity) {
+    return ProfileCharacteristicsFixture.builder()
         .titratableAcidity(PointCharacteristicValue.of(TitratableAcidityValue.of(acidity)))
         .build();
   }

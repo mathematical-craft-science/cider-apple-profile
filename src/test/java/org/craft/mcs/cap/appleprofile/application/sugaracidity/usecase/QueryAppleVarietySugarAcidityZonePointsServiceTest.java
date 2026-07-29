@@ -2,9 +2,10 @@ package org.craft.mcs.cap.appleprofile.application.sugaracidity.usecase;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.craft.mcs.cap.core.profileanalysis.testing.ProfileAnalysisTestFixtures
-    .chemicalProfileAssessmentAdapter;
+    .graphEvaluator;
 import static org.craft.mcs.cap.core.profileanalysis.testing.ProfileAnalysisTestFixtures
-    .chemicalProfileAssessmentMatcher;
+    .northAmericanProfileCalculator;
+import static org.craft.mcs.cap.shared.testing.AppleVarietyReferenceProfiles.from;
 import static org.craft.mcs.cap.support.PotentialAbvPredictionFixtures.predictor;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -20,19 +21,19 @@ import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.usecase.Quer
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVariety;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyId;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyName;
-import org.craft.mcs.cap.core.profileanalysis.compatibility.application.ChemicalProfileAssessmentAdapter;
+import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyReferenceProfile;
+import org.craft.mcs.cap.core.appleprofile.application.analysis.common.service.AppleVarietyGraphCandidateMatcher;
 import org.craft.mcs.cap.core.profileanalysis.graph.application.model.JolicoeurSugarAcidityZoneCriteria;
 import org.craft.mcs.cap.core.profileanalysis.graph.zone.domain.JolicoeurSugarAcidityZone;
-import org.craft.mcs.cap.core.profileanalysis.profileaxis.application.model.ChemicalProfileCapabilityCriteria;
-import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapability;
+import org.craft.mcs.cap.core.profileanalysis.capability.application.model.ProfileAnalysisCapabilityCriteria;
+import org.craft.mcs.cap.core.profileanalysis.capability.domain.ProfileAnalysisCapability;
 import org.craft.mcs.cap.shared.application.query.TextSearchCriteria;
 import org.craft.mcs.cap.shared.application.query.pagination.CursorPageRequest;
 import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
-import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
+import org.craft.mcs.cap.shared.testing.ProfileCharacteristicsFixture;
 import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
-import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.junit.jupiter.api.Test;
 
 
@@ -56,7 +57,7 @@ class QueryAppleVarietySugarAcidityZonePointsServiceTest {
         new AppleVarietyAnalysisFilters(
             new TextSearchCriteria("kingston"),
             JolicoeurSugarAcidityZoneCriteria.of(JolicoeurSugarAcidityZone.PERFECT_APPLES),
-            ChemicalProfileCapabilityCriteria.capable(ChemicalProfileCapability.NORTH_AMERICAN_PROFILE)
+            ProfileAnalysisCapabilityCriteria.capable(ProfileAnalysisCapability.NORTH_AMERICAN_PROFILE)
         ),
         CursorPageRequest.firstPage(1)
     ));
@@ -64,8 +65,8 @@ class QueryAppleVarietySugarAcidityZonePointsServiceTest {
     assertThat(result.nextPosition()).isNotNull();
     assertThat(result.items()).hasSize(1);
     assertThat(result.items().getFirst().varietyId()).isEqualTo(alpha.varietyId());
-    assertThat(result.items().getFirst().evaluation().plottable()).isTrue();
-    assertThat(result.items().getFirst().evaluation().assessment().zone())
+    assertThat(result.items().getFirst().graphEvaluation().plottable()).isTrue();
+    assertThat(result.items().getFirst().graphEvaluation().zoneAssessment().zone())
         .isEqualTo(JolicoeurSugarAcidityZone.PERFECT_APPLES);
     assertThat(result.items().getFirst().potentialAbv())
         .isNotNull()
@@ -116,16 +117,16 @@ class QueryAppleVarietySugarAcidityZonePointsServiceTest {
         new AppleVarietyAnalysisFilters(
             null,
             null,
-            ChemicalProfileCapabilityCriteria.notCapable(
-                ChemicalProfileCapability.SUGAR_ACIDITY_GRAPH
+            ProfileAnalysisCapabilityCriteria.notCapable(
+                ProfileAnalysisCapability.SUGAR_ACIDITY_GRAPH
             )
         ),
         CursorPageRequest.firstPage()
     ));
 
     assertThat(result.items()).hasSize(1);
-    assertThat(result.items().getFirst().evaluation().plottable()).isFalse();
-    assertThat(result.items().getFirst().evaluation().assessment()).isNull();
+    assertThat(result.items().getFirst().graphEvaluation().plottable()).isFalse();
+    assertThat(result.items().getFirst().graphEvaluation().zoneAssessment()).isNull();
     assertThat(result.items().getFirst().potentialAbv()).isNotNull();
   }
 
@@ -134,19 +135,23 @@ class QueryAppleVarietySugarAcidityZonePointsServiceTest {
   ) {
     return new QueryAppleVarietySugarAcidityZonePointsService(
         repository,
-        projector(),
-        chemicalProfileAssessmentMatcher(),
+        graphEvaluator(),
+        northAmericanProfileCalculator(),
+        new AppleVarietyGraphCandidateMatcher(),
         predictor()
     );
   }
 
-  private static ChemicalProfileAssessmentAdapter projector() {
-    return chemicalProfileAssessmentAdapter();
+  private static AppleVariety variety(
+      String name,
+      ProfileCharacteristicsFixture profile
+  ) {
+    return variety(name, from(profile));
   }
 
   private static AppleVariety variety(
       String name,
-      ChemicalProfile profile
+      AppleVarietyReferenceProfile profile
   ) {
     return AppleVariety.create(
         AppleVarietyId.newId(),
@@ -159,19 +164,17 @@ class QueryAppleVarietySugarAcidityZonePointsServiceTest {
     return new AppleVarietyAnalysisCandidateView(
         variety.varietyId(),
         variety.name(),
-        variety.chemicalProfile()
+        variety.referenceProfile()
     );
   }
 
-  private static ChemicalProfile profile(
+  private static ProfileCharacteristicsFixture profile(
       String sg,
       String acidity,
       String tannin
   ) {
-    final var builder = ChemicalProfile.builder()
-        .sugar(PointCharacteristicValue.of(SugarConcentration.ofSpecificGravity(
-            SpecificGravityValue.of(sg)
-        )))
+    final var builder = ProfileCharacteristicsFixture.builder()
+        .specificGravity(PointCharacteristicValue.of(SpecificGravityValue.of(sg)))
         .titratableAcidity(PointCharacteristicValue.of(TitratableAcidityValue.of(acidity)));
 
     if (tannin != null) {
@@ -181,11 +184,12 @@ class QueryAppleVarietySugarAcidityZonePointsServiceTest {
     return builder.build();
   }
 
-  private static ChemicalProfile partialProfile() {
-    return ChemicalProfile.builder()
-        .sugar(PointCharacteristicValue.of(SugarConcentration.ofSpecificGravity(
-            SpecificGravityValue.of("1.050")
-        )))
-        .build();
+  private static AppleVarietyReferenceProfile partialProfile() {
+    return new AppleVarietyReferenceProfile(
+        PointCharacteristicValue.of(SpecificGravityValue.of("1.050")),
+        null,
+        null,
+        null
+    );
   }
 }

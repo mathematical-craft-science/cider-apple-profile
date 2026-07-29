@@ -6,20 +6,15 @@ import org.craft.mcs.cap.core.production.candidate.application.model.AvailablePr
 import org.craft.mcs.cap.core.production.candidate.application.model.ProductionBatchCandidateCalculation;
 import org.craft.mcs.cap.core.production.candidate.application.model.ProductionBatchCandidateCalculationRequest;
 import org.craft.mcs.cap.core.production.candidate.application.port.out.ProductionBatchCandidateCalculator;
+import org.craft.mcs.cap.core.production.application.model.ProductionSourceCharacteristics;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
-import org.craft.mcs.cap.core.profileanalysis.composition.calculation.application.port.in.CalculateChemicalProfileCompositionCommand;
-import org.craft.mcs.cap.core.profileanalysis.composition.calculation.application.port.in.CalculateChemicalProfileCompositionUseCase;
+import org.craft.mcs.cap.core.profileanalysis.composition.calculation.application.port.in.CalculateCompositionCommand;
+import org.craft.mcs.cap.core.profileanalysis.composition.calculation.application.port.in.CalculateCompositionUseCase;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.AbsoluteCompositionVolume;
-import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileComposition;
-import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionSource;
-import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionSourceReference;
+import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CalculatedComposition;
+import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionSource;
+import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionSourceReference;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionSourceCharacteristics;
-import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
-import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
-import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
-import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
-import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 
@@ -32,7 +27,7 @@ import static java.util.Objects.requireNonNull;
 public final class ProfileAnalysisProductionBatchCandidateCalculator
     implements ProductionBatchCandidateCalculator {
 
-  private final @NonNull CalculateChemicalProfileCompositionUseCase compositionCalculator;
+  private final @NonNull CalculateCompositionUseCase calculateCompositionUseCase;
 
   @Override
   public @NonNull ProductionBatchCandidateCalculation calculate(
@@ -41,7 +36,7 @@ public final class ProfileAnalysisProductionBatchCandidateCalculator
   ) {
     requireNonNull(sources, "available production sources cannot be null");
     requireNonNull(request, "production batch candidate calculation request cannot be null");
-    final var result = compositionCalculator.calculate(new CalculateChemicalProfileCompositionCommand(
+    final var result = calculateCompositionUseCase.calculate(new CalculateCompositionCommand(
         sources.stream()
             .map(ProfileAnalysisProductionBatchCandidateCalculator::toCompositionSource)
             .toList(),
@@ -59,43 +54,33 @@ public final class ProfileAnalysisProductionBatchCandidateCalculator
     );
   }
 
-  private static @NonNull ChemicalProfileCompositionSource toCompositionSource(
+  private static @NonNull CompositionSource toCompositionSource(
       @NonNull AvailableProductionSource source
   ) {
-    return new ChemicalProfileCompositionSource(
-        new ChemicalProfileCompositionSourceReference(
+    return new CompositionSource(
+        new CompositionSourceReference(
             source.reference().type().name(),
             source.reference().id().toString()
         ),
-        new CompositionSourceCharacteristics(
-            PointCharacteristicValue.of(
-                SpecificGravityValue.of(
-                    source.profile().requireValueOf(ChemicalAxis.SPECIFIC_GRAVITY).value()
-                )
-            ),
-            PointCharacteristicValue.of(
-                TitratableAcidityValue.of(
-                    source.profile().requireValueOf(ChemicalAxis.TITRATABLE_ACIDITY).value()
-                )
-            ),
-            source.profile().valueOf(ChemicalAxis.TANNIN)
-                .map(value -> PointCharacteristicValue.of(
-                    TanninValue.of(value.value())
-                ))
-                .orElse(null), // NOSONAR
-            source.profile().valueOf(ChemicalAxis.YEAST_ASSIMILABLE_NITROGEN)
-                .map(value -> PointCharacteristicValue.of(
-                    YeastAssimilableNitrogenValue.of(value.value())
-                ))
-                .orElse(null) // NOSONAR
-        ),
+        toCompositionCharacteristics(source.characteristics()),
         new AbsoluteCompositionVolume(source.selectedVolume()),
         source.availableVolume()
     );
   }
 
+  private static @NonNull CompositionSourceCharacteristics toCompositionCharacteristics(
+      @NonNull ProductionSourceCharacteristics characteristics
+  ) {
+    return new CompositionSourceCharacteristics(
+        characteristics.specificGravity(),
+        characteristics.titratableAcidity(),
+        characteristics.tannin(),
+        characteristics.yeastAssimilableNitrogen()
+    );
+  }
+
   private static @NonNull ProductionProfileSnapshot toProductionProfile(
-      @NonNull ChemicalProfileComposition composition
+      @NonNull CalculatedComposition composition
   ) {
     final var characteristics = composition.characteristics();
     return new ProductionProfileSnapshot(

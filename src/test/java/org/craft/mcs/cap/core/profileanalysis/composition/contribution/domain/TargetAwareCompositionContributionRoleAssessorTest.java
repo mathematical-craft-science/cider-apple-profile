@@ -35,19 +35,20 @@ class TargetAwareCompositionContributionRoleAssessorTest {
     ));
 
     assertThat(assessment)
-        .returns(CompositionContributionRole.BALANCED_BASE, CompositionContributionRoleAssessment::primaryRole);
-    assertThat(assessment.roles()).containsExactly(CompositionContributionRole.BALANCED_BASE);
-    assertThat(assessment.evidence())
-        .hasSize(3)
-        .allSatisfy(evidence -> assertThat(evidence)
-            .returns(
-                CompositionContributionEvidenceDirection.ON_TARGET,
-                CompositionContributionEvidence::direction
-            )
-            .returns(
-                CompositionContributionEvidenceSeverity.NEUTRAL,
-                CompositionContributionEvidence::severity
-            ));
+        .returns(CompositionContributionRole.BALANCED_BASE, CompositionContributionRoleAssessment::primaryRole)
+        .satisfies(value -> assertThat(value.roles())
+            .containsExactly(CompositionContributionRole.BALANCED_BASE))
+        .satisfies(value -> assertThat(value.evidence())
+            .hasSize(3)
+            .allSatisfy(evidence -> assertThat(evidence)
+                .returns(
+                    CompositionContributionEvidenceDirection.ON_TARGET,
+                    CompositionContributionEvidence::direction
+                )
+                .returns(
+                    CompositionContributionEvidenceSeverity.NEUTRAL,
+                    CompositionContributionEvidence::severity
+                )));
   }
 
   @Test
@@ -57,18 +58,19 @@ class TargetAwareCompositionContributionRoleAssessorTest {
         targetWithTannin()
     ));
 
-    assertThat(assessment.roles()).containsExactly(
-        CompositionContributionRole.SUGAR_CONTRIBUTOR,
-        CompositionContributionRole.ACIDITY_CONTRIBUTOR,
-        CompositionContributionRole.TANNIN_CONTRIBUTOR
-    );
-    assertThat(assessment.evidence())
-        .extracting(CompositionContributionEvidence::axis)
-        .containsExactly(
-            ProfileEvaluationAxis.SPECIFIC_GRAVITY,
-            ProfileEvaluationAxis.TITRATABLE_ACIDITY,
-            ProfileEvaluationAxis.TANNIN
-        );
+    assertThat(assessment)
+        .satisfies(value -> assertThat(value.roles()).containsExactly(
+            CompositionContributionRole.SUGAR_CONTRIBUTOR,
+            CompositionContributionRole.ACIDITY_CONTRIBUTOR,
+            CompositionContributionRole.TANNIN_CONTRIBUTOR
+        ))
+        .satisfies(value -> assertThat(value.evidence())
+            .extracting(CompositionContributionEvidence::axis)
+            .containsExactly(
+                ProfileEvaluationAxis.SPECIFIC_GRAVITY,
+                ProfileEvaluationAxis.TITRATABLE_ACIDITY,
+                ProfileEvaluationAxis.TANNIN
+            ));
   }
 
   @Test
@@ -106,8 +108,8 @@ class TargetAwareCompositionContributionRoleAssessorTest {
     ));
 
     assertThat(assessment)
-        .returns(CompositionContributionRole.BALANCED_BASE, CompositionContributionRoleAssessment::primaryRole);
-    assertThat(assessment.missingAxes()).containsExactly(ProfileEvaluationAxis.TANNIN);
+        .returns(CompositionContributionRole.BALANCED_BASE, CompositionContributionRoleAssessment::primaryRole)
+        .satisfies(value -> assertThat(value.missingAxes()).containsExactly(ProfileEvaluationAxis.TANNIN));
   }
 
   private static @NonNull CompositionContributionRoleAssessmentRequest request(

@@ -5,8 +5,13 @@ import java.util.List;
 import java.util.UUID;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.batch.dto.FeedstockBatchResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.common.dto.FeedstockProfileEvidenceResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.currentprofile.dto.FeedstockCurrentProfileFreshnessResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.currentprofile.dto.FeedstockCurrentProfileGraphResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.currentprofile.dto.FeedstockCurrentProfilePotentialAbvResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.currentprofile.dto.FeedstockCurrentProfileSummaryResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.currentprofile.dto.FeedstockDataQualityResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.currentprofile.dto.FeedstockPlanningReadinessResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.readiness.dto.FermentationStartReadinessAssessmentResponse;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profilecharacteristic.dto.ProfileCharacteristicValueResponse;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -23,8 +28,8 @@ public record FeedstockWorkspaceBatchResponse(
     @NonNull UUID currentMaterialStateId,
     @Schema(
         description = """
-            Latest contributing MeasurementSet retained as a compatibility anchor. The current
-            profile is composite and may use older evidence for other characteristics.
+            Metadata of the latest MeasurementSet contributing evidence. The current profile is
+            composite and may use older evidence for other characteristics.
             """,
         nullable = true,
         requiredMode = Schema.RequiredMode.NOT_REQUIRED
@@ -38,7 +43,7 @@ public record FeedstockWorkspaceBatchResponse(
         nullable = true,
         requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )
-    @Nullable FeedstockWorkspaceProfileSummaryResponse profileSummary,
+    @Nullable FeedstockCurrentProfileSummaryResponse profileSummary,
     @Schema(
         description = "Per-characteristic evidence selected for the composite current profile.",
         requiredMode = Schema.RequiredMode.REQUIRED
@@ -49,35 +54,29 @@ public record FeedstockWorkspaceBatchResponse(
         nullable = true,
         requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )
-    @Nullable FeedstockWorkspaceMeasurementFreshnessResponse measurementFreshness,
+    @Nullable FeedstockCurrentProfileFreshnessResponse measurementFreshness,
     @Schema(
         description = "Sugar-acidity graph projection of the current SG and TA evidence.",
         nullable = true,
         requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )
-    @Nullable FeedstockWorkspaceSugarAcidityResponse sugarAcidity,
+    @Nullable FeedstockCurrentProfileGraphResponse sugarAcidity,
     @Schema(
         description = "Potential ABV prediction from current Specific Gravity evidence.",
         nullable = true,
         requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )
-    @Nullable FeedstockWorkspacePotentialAbvResponse potentialAbv,
-    @Schema(
-        description = "Current YAN axis value in mg N/L when measured.",
-        nullable = true,
-        requiredMode = Schema.RequiredMode.NOT_REQUIRED
-    )
-    @Nullable ProfileCharacteristicValueResponse yeastAssimilableNitrogen,
+    @Nullable FeedstockCurrentProfilePotentialAbvResponse potentialAbv,
     @Schema(
         description = "Readiness assessment for using the batch in composition planning.",
         requiredMode = Schema.RequiredMode.REQUIRED
     )
-    @NonNull FeedstockWorkspacePlanningReadinessResponse planningReadiness,
+    @NonNull FeedstockPlanningReadinessResponse planningReadiness,
     @Schema(
         description = "Data quality summary for the current batch evidence.",
         requiredMode = Schema.RequiredMode.REQUIRED
     )
-    @NonNull FeedstockWorkspaceDataQualityResponse dataQuality,
+    @NonNull FeedstockDataQualityResponse dataQuality,
     @Schema(
         description = "Fermentation-start readiness assessment for current profile.",
         nullable = true,

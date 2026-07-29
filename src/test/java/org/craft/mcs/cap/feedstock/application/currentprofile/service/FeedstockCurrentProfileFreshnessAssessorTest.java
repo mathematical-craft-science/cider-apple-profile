@@ -6,7 +6,6 @@ import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.Feedsto
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentProfileView;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.service.FeedstockCurrentProfileFreshnessAssessor;
 import org.craft.mcs.cap.shared.application.measurement.MeasurementEvidenceReference;
-import org.craft.mcs.cap.shared.application.measurement.MeasurementEvidenceValidity;
 import org.craft.mcs.cap.shared.application.measurement.MeasurementEvidenceView;
 import org.craft.mcs.cap.shared.application.measurement.MeasurementFreshnessStatus;
 import org.craft.mcs.cap.shared.application.measurement.MeasurementProvenanceView;
@@ -78,8 +77,7 @@ class FeedstockCurrentProfileFreshnessAssessorTest {
             null,
             null
         ),
-        freshnessStatus,
-        MeasurementEvidenceValidity.VALID
+        freshnessStatus
     );
   }
 }

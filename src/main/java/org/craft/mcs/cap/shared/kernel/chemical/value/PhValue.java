@@ -14,7 +14,7 @@ import static java.util.Objects.requireNonNull;
 
 
 /**
- * Value object for pH measurements in chemical profiles.
+ * Value object for canonical pH measurements.
  *
  * <p>pH is a dimensionless acidity measure used as supporting fermentation and safety context.
  * The class keeps pH validation centralized and exposes bounds for generic unit metadata.

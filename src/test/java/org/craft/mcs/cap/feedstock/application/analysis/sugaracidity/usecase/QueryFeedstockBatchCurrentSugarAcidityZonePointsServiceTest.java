@@ -3,11 +3,11 @@ package org.craft.mcs.cap.feedstock.application.analysis.sugaracidity.usecase;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.craft.mcs.cap.core.feedstock.application.batch.usecase.FeedstockBatchSummaryMapper.toSummary;
 import static org.craft.mcs.cap.core.profileanalysis.testing.ProfileAnalysisTestFixtures
-    .chemicalProfileAssessmentAdapter;
+    .graphEvaluator;
 import static org.craft.mcs.cap.core.profileanalysis.testing.ProfileAnalysisTestFixtures
-    .chemicalProfileAssessmentMatcher;
+    .northAmericanProfileCalculator;
 import static org.craft.mcs.cap.shared.kernel.identity.UuidV7Generator.newUuid;
-import static org.craft.mcs.cap.shared.testing.FeedstockMeasurementViews.currentProfile;
+import static org.craft.mcs.cap.shared.testing.FeedstockCurrentProfileViews.currentProfile;
 import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementInstant;
 import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementRecordedAt;
 import static org.mockito.ArgumentMatchers.any;
@@ -21,30 +21,29 @@ import java.util.List;
 import org.craft.mcs.cap.core.feedstock.application.analysis.common.model.FeedstockAnalysisCandidateFilters;
 import org.craft.mcs.cap.core.feedstock.application.analysis.common.port.out.CurrentFeedstockBatchAnalysisCandidateQuery;
 import org.craft.mcs.cap.core.feedstock.application.analysis.common.port.out.FeedstockCurrentProfileAnalysisCandidateRepository;
+import org.craft.mcs.cap.core.feedstock.application.analysis.common.service.FeedstockGraphCandidateMatcher;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockBatchCurrentSugarAcidityZonePointQuery;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockBatchCurrentSugarAcidityZoneResult;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.usecase.QueryFeedstockBatchCurrentSugarAcidityZonePointsService;
 import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchSummaryQueryRepository;
-import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementId;
-import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementName;
+import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetId;
+import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetName;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
-import org.craft.mcs.cap.core.profileanalysis.compatibility.application.ChemicalProfileAssessmentAdapter;
 import org.craft.mcs.cap.core.profileanalysis.graph.zone.domain.JolicoeurSugarAcidityZone;
 import org.craft.mcs.cap.shared.application.query.QueryLimits;
 import org.craft.mcs.cap.shared.application.query.pagination.CursorPageRequest;
 import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
-import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
+import org.craft.mcs.cap.shared.testing.ProfileCharacteristicsFixture;
 import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
-import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.craft.mcs.cap.shared.testing.FeedstockMeasurementFixture;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -79,12 +78,13 @@ class QueryFeedstockBatchCurrentSugarAcidityZonePointsServiceTest {
         .returns(QueryLimits.MAXIMUM_PAGE_FETCH, CurrentFeedstockBatchAnalysisCandidateQuery::limit);
     assertThat(result.items())
         .singleElement()
-        .returns(current.measurementId(), FeedstockBatchCurrentSugarAcidityZoneResult::currentMeasurementId)
         .returns(batch.name(), FeedstockBatchCurrentSugarAcidityZoneResult::batchName)
-        .returns(current.measuredAt(), FeedstockBatchCurrentSugarAcidityZoneResult::measuredAt)
+        .satisfies(item -> assertThat(item.profileEvidence())
+            .extracting(evidence -> evidence.evidenceReference().measurementSetId())
+            .containsOnly(current.measurementId().value()))
         .returns(
             JolicoeurSugarAcidityZone.PERFECT_APPLES,
-            item -> item.evaluation().assessment().zone()
+            item -> item.graphEvaluation().zoneAssessment().zone()
         );
   }
 
@@ -96,13 +96,10 @@ class QueryFeedstockBatchCurrentSugarAcidityZonePointsServiceTest {
         batchRepository,
         mock(FeedstockAccessControl.class),
         repository,
-        projector(),
-        chemicalProfileAssessmentMatcher()
+        graphEvaluator(),
+        northAmericanProfileCalculator(),
+        new FeedstockGraphCandidateMatcher()
     );
-  }
-
-  private static ChemicalProfileAssessmentAdapter projector() {
-    return chemicalProfileAssessmentAdapter();
   }
 
   private static FeedstockMeasurementFixture measurement(
@@ -110,13 +107,11 @@ class QueryFeedstockBatchCurrentSugarAcidityZonePointsServiceTest {
       FeedstockBatchId batchId
   ) {
     return FeedstockMeasurementFixture.create(
-        FeedstockMeasurementId.newId(),
+        MeasurementSetId.newId(),
         batchId,
-        FeedstockMeasurementName.of(name),
-        ChemicalProfile.builder()
-            .sugar(PointCharacteristicValue.of(SugarConcentration.ofSpecificGravity(
-                SpecificGravityValue.of("1.066")
-            )))
+        MeasurementSetName.of(name),
+        ProfileCharacteristicsFixture.builder()
+            .specificGravity(PointCharacteristicValue.of(SpecificGravityValue.of("1.066")))
             .titratableAcidity(PointCharacteristicValue.of(TitratableAcidityValue.of("5.7")))
             .build(),
         feedstockMeasurementInstant(),

@@ -62,7 +62,7 @@ public interface AppleVarietyClassificationApi {
   )
   @ApiResponse(
       responseCode = "422",
-      description = "Chemical profile does not contain all required axes.",
+      description = "Apple variety reference profile lacks Specific Gravity, Titratable Acidity or tannin.",
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
   )
   @ApiResponse(

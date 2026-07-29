@@ -5,7 +5,6 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.UUID;
 import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceSubjectType;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValueKind;
 import org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -45,7 +44,7 @@ public class BatchTraceStepSubjectJdbcRow {
   public BigDecimal specificGravityValue;
 
   @Nullable
-  public AxisValueKind specificGravityValueKind;
+  public BatchTraceCharacteristicStorageKind specificGravityValueKind;
 
   @Nullable
   public BigDecimal specificGravityMin;
@@ -57,7 +56,7 @@ public class BatchTraceStepSubjectJdbcRow {
   public BigDecimal titratableAcidityValue;
 
   @Nullable
-  public AxisValueKind titratableAcidityValueKind;
+  public BatchTraceCharacteristicStorageKind titratableAcidityValueKind;
 
   @Nullable
   public BigDecimal titratableAcidityMin;
@@ -69,7 +68,7 @@ public class BatchTraceStepSubjectJdbcRow {
   public BigDecimal tanninValue;
 
   @Nullable
-  public AxisValueKind tanninValueKind;
+  public BatchTraceCharacteristicStorageKind tanninValueKind;
 
   @Nullable
   public BigDecimal tanninMin;
@@ -81,7 +80,7 @@ public class BatchTraceStepSubjectJdbcRow {
   public BigDecimal yeastAssimilableNitrogenValue;
 
   @Nullable
-  public AxisValueKind yeastAssimilableNitrogenValueKind;
+  public BatchTraceCharacteristicStorageKind yeastAssimilableNitrogenValueKind;
 
   @Nullable
   public BigDecimal yeastAssimilableNitrogenMin;

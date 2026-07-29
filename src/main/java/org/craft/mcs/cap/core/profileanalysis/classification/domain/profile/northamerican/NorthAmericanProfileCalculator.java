@@ -2,11 +2,16 @@ package org.craft.mcs.cap.core.profileanalysis.classification.domain.profile.nor
 
 import java.math.BigDecimal;
 import org.craft.mcs.cap.core.profileanalysis.classification.domain.engine.CiderAppleClassificationInput;
-import org.craft.mcs.cap.core.profileanalysis.classification.domain.engine.ClassificationCharacteristic;
 import org.craft.mcs.cap.core.profileanalysis.classification.domain.engine.ClassificationIntervalPolicy;
+import org.craft.mcs.cap.shared.kernel.characteristic.CharacteristicValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
+import org.craft.mcs.cap.shared.kernel.measurement.MeasuredValue;
 import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisRange;
+import org.craft.mcs.cap.core.profileanalysis.classification.domain.rule.ClassificationValueRange;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import static java.util.Objects.requireNonNull;
 
@@ -30,10 +35,10 @@ public final class NorthAmericanProfileCalculator {
 
   private static @NonNull NorthAmericanTier tierOf(
       @NonNull BigDecimal value,
-      @NonNull AxisRange low,
-      @NonNull AxisRange medium,
-      @NonNull AxisRange high,
-      @NonNull AxisRange veryHigh
+      @NonNull ClassificationValueRange low,
+      @NonNull ClassificationValueRange medium,
+      @NonNull ClassificationValueRange high,
+      @NonNull ClassificationValueRange veryHigh
   ) {
     requireNonNull(value, "axis value cannot be null");
     requireNonNull(low, "low range cannot be null");
@@ -57,18 +62,11 @@ public final class NorthAmericanProfileCalculator {
     throw new DomainRuleViolationException("value does not fit any North American profile range: " + value);
   }
 
-  private static @NonNull BigDecimal value(
-      @NonNull CiderAppleClassificationInput input,
-      @NonNull ClassificationCharacteristic characteristic
+  private static <T extends MeasuredValue> @NonNull BigDecimal value(
+      @NonNull CharacteristicValue<T> characteristic
   ) {
-    if (!input.has(characteristic)) {
-      throw new DomainRuleViolationException(
-          "missing North American profile characteristic: " + characteristic
-      );
-    }
-    return input.representativeValue(
-        characteristic,
-        ClassificationIntervalPolicy.MIDPOINT_WITH_BOUNDARY_EVIDENCE
+    return ClassificationIntervalPolicy.MIDPOINT_WITH_BOUNDARY_EVIDENCE.representativeValue(
+        requireNonNull(characteristic, "North American profile characteristic cannot be null")
     );
   }
 
@@ -76,11 +74,10 @@ public final class NorthAmericanProfileCalculator {
    * Assesses sugar content from SG using only the North American profile ranges.
    */
   public @NonNull NorthAmericanSugarLevel assessSugar(
-      @NonNull CiderAppleClassificationInput input
+      @NonNull CharacteristicValue<SpecificGravityValue> sugarContent
   ) {
-    requireNonNull(input, "cider apple classification input cannot be null");
     return switch (tierOf(
-        value(input, ClassificationCharacteristic.SUGAR_CONTENT),
+        value(sugarContent),
         thresholds.lowSugar(),
         thresholds.mediumSugar(),
         thresholds.highSugar(),
@@ -97,11 +94,10 @@ public final class NorthAmericanProfileCalculator {
    * Assesses acidity from TA using only the North American profile ranges.
    */
   public @NonNull NorthAmericanAcidityLevel assessAcidity(
-      @NonNull CiderAppleClassificationInput input
+      @NonNull CharacteristicValue<TitratableAcidityValue> acidity
   ) {
-    requireNonNull(input, "cider apple classification input cannot be null");
     return switch (tierOf(
-        value(input, ClassificationCharacteristic.ACIDITY),
+        value(acidity),
         thresholds.lowAcidity(),
         thresholds.mediumAcidity(),
         thresholds.highAcidity(),
@@ -118,21 +114,20 @@ public final class NorthAmericanProfileCalculator {
    * Assesses tannin using the three-level North American tannin scale.
    */
   public @NonNull NorthAmericanTanninLevel assessTannin(
-      @NonNull CiderAppleClassificationInput input
+      @NonNull CharacteristicValue<TanninValue> tannin
   ) {
-    requireNonNull(input, "cider apple classification input cannot be null");
-    final var tannin = value(input, ClassificationCharacteristic.TANNIN);
-    if (thresholds.lowTannin().contains(tannin)) {
+    final var representativeValue = value(tannin);
+    if (thresholds.lowTannin().contains(representativeValue)) {
       return NorthAmericanTanninLevel.LOW;
     }
-    if (thresholds.mediumTannin().contains(tannin)) {
+    if (thresholds.mediumTannin().contains(representativeValue)) {
       return NorthAmericanTanninLevel.MEDIUM;
     }
-    if (thresholds.highTannin().contains(tannin)) {
+    if (thresholds.highTannin().contains(representativeValue)) {
       return NorthAmericanTanninLevel.HIGH;
     }
     throw new DomainRuleViolationException(
-        "tannin does not fit any North American profile range: " + tannin
+        "tannin does not fit any North American profile range: " + representativeValue
     );
   }
 
@@ -140,10 +135,20 @@ public final class NorthAmericanProfileCalculator {
     requireNonNull(input, "cider apple classification input cannot be null");
 
     return new NorthAmericanProfile(
-        assessSugar(input),
-        assessAcidity(input),
-        assessTannin(input)
+        assessSugar(requireCharacteristic(input.sugarContent(), "sugar content")),
+        assessAcidity(requireCharacteristic(input.acidity(), "acidity")),
+        assessTannin(requireCharacteristic(input.tannin(), "tannin"))
     );
+  }
+
+  private static <T extends MeasuredValue> @NonNull CharacteristicValue<T> requireCharacteristic(
+      @Nullable CharacteristicValue<T> characteristic,
+      @NonNull String name
+  ) {
+    if (characteristic == null) {
+      throw new DomainRuleViolationException("missing North American profile characteristic: " + name);
+    }
+    return characteristic;
   }
 
   private enum NorthAmericanTier {

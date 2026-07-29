@@ -1,6 +1,5 @@
 package org.craft.mcs.cap.core.feedstock.application.inventory.port.in;
 
-import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
@@ -25,7 +24,7 @@ public record ConsumedFeedstockBatchMaterial(
     @NonNull BatchName batchName,
     @NonNull MaterialConsumption consumption,
     @NonNull FeedstockBatchMaterialEvidenceReference evidenceReference,
-    @NonNull ChemicalProfile chemicalProfile,
+    @NonNull FeedstockMaterialCharacteristics characteristics,
     @Nullable ConfidenceLevel profileConfidence
 ) {
 
@@ -34,7 +33,7 @@ public record ConsumedFeedstockBatchMaterial(
     requireNonNull(batchName, "feedstock batch name cannot be null");
     requireNonNull(consumption, "feedstock material consumption cannot be null");
     requireNonNull(evidenceReference, "feedstock material evidence reference cannot be null");
-    requireNonNull(chemicalProfile, "feedstock chemical profile cannot be null");
+    requireNonNull(characteristics, "feedstock material characteristics cannot be null");
   }
 
   public @NonNull VolumeValue availableBefore() {

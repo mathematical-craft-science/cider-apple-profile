@@ -19,7 +19,7 @@ public record FeedstockBatchCompositionOptimizationSourceResponse(
     )
     @Nullable DecimalQuantityResponse requestedVolume,
     @Schema(
-        description = "Relative source proportion.",
+        description = "Normalized source proportion in the range 0..1.",
         example = "0.25",
         nullable = true,
         requiredMode = Schema.RequiredMode.NOT_REQUIRED

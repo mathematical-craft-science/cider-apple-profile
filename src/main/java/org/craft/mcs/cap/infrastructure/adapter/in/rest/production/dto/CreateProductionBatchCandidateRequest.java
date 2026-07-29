@@ -4,8 +4,8 @@ import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 import java.util.UUID;
-import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionCalculatorCode;
-import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionTanninPolicy;
+import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionCalculatorCode;
+import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionTanninPolicy;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.normalization.ProfileAxisNormalizerCode;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.objective.ProfileTargetObjectiveFunctionCode;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.ProfileTargetObjectiveWeightsRequest;
@@ -33,11 +33,11 @@ public record CreateProductionBatchCandidateRequest(
     @NonNull List<@NonNull ProductionBatchCandidateSourceRequest> sources,
     @Schema(
         description = "Policy for optional tannin calculation.",
-        implementation = ChemicalProfileCompositionTanninPolicy.class,
+        implementation = CompositionTanninPolicy.class,
         nullable = true,
         requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )
-    @Nullable ChemicalProfileCompositionTanninPolicy tanninPolicy,
+    @Nullable CompositionTanninPolicy tanninPolicy,
     @Schema(
         description = "Optional target used to assess the candidate.",
         nullable = true,
@@ -58,11 +58,11 @@ public record CreateProductionBatchCandidateRequest(
     @Nullable ProfileTargetObjectiveWeightsRequest weights,
     @Schema(
         description = "Composition calculator.",
-        implementation = ChemicalProfileCompositionCalculatorCode.class,
+        implementation = CompositionCalculatorCode.class,
         nullable = true,
         requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )
-    @Nullable ChemicalProfileCompositionCalculatorCode calculator,
+    @Nullable CompositionCalculatorCode calculator,
     @Schema(
         description = "Target-axis normalizer.",
         implementation = ProfileAxisNormalizerCode.class,

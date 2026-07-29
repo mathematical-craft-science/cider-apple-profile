@@ -3,7 +3,7 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.composition.d
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
-import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionCalculatorCode;
+import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionCalculatorCode;
 import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.strategy.CompositionOptimizationAlgorithm;
 import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.CompositionOptimizationMode;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.normalization.ProfileAxisNormalizerCode;
@@ -33,10 +33,10 @@ public record OptimizeFeedstockBatchCompositionResponse(
     @NonNull CompositionOptimizationAlgorithm algorithm,
     @Schema(
         description = "Composition calculator used.",
-        implementation = ChemicalProfileCompositionCalculatorCode.class,
+        implementation = CompositionCalculatorCode.class,
         requiredMode = Schema.RequiredMode.REQUIRED
     )
-    @NonNull ChemicalProfileCompositionCalculatorCode calculator,
+    @NonNull CompositionCalculatorCode calculator,
     @Schema(
         description = "Axis normalizer used.",
         implementation = ProfileAxisNormalizerCode.class,

@@ -1,6 +1,5 @@
 package org.craft.mcs.cap.production.candidate.application.usecase;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.function.Supplier;
 import org.craft.mcs.cap.core.production.application.authorization.port.out.ProductionAccessControl;
@@ -21,17 +20,13 @@ import org.craft.mcs.cap.core.production.domain.model.ProductionSourceComponent;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceComposition;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceReference;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
-import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionCalculatorCode;
-import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionTanninPolicy;
+import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionCalculatorCode;
+import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionTanninPolicy;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetScoringConfiguration;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.normalization.ProfileAxisNormalizerCode;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.objective.ProfileTargetObjectiveFunctionCode;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetObjectiveWeights;
 import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValueKind;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
@@ -46,6 +41,8 @@ import org.mockito.ArgumentCaptor;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.craft.mcs.cap.support.PotentialAbvPredictionFixtures.prediction;
+import static org.craft.mcs.cap.production.testing.ProductionSourceCharacteristicsFixtures
+    .productionSourceCharacteristics;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -116,11 +113,7 @@ class CreateProductionBatchCandidateServiceTest {
             VolumeValue.ofLiters("250"),
             MaterialStateId.newId()
         ),
-        ChemicalProfileAxes.of(
-            axis(ChemicalAxis.SPECIFIC_GRAVITY, "1.052"),
-            axis(ChemicalAxis.TITRATABLE_ACIDITY, "6.2"),
-            null
-        ),
+        productionSourceCharacteristics("1.052", "6.2", null, null),
         ConfidenceLevel.LAB_VERIFIED,
         ProductionSourceEvidenceReference.of("measurement-2026-07-16")
     );
@@ -128,14 +121,14 @@ class CreateProductionBatchCandidateServiceTest {
 
   private static @NonNull ProductionBatchCandidateCalculationRequest calculationRequest() {
     return new ProductionBatchCandidateCalculationRequest(
-        ChemicalProfileCompositionTanninPolicy.CALCULATE_WHEN_COMPLETE,
+        CompositionTanninPolicy.CALCULATE_WHEN_COMPLETE,
         null,
         new ProfileTargetScoringConfiguration(
             ProfileAxisNormalizerCode.SENSITIVITY_UNIT,
             ProfileTargetObjectiveFunctionCode.MANHATTAN_DISTANCE_TO_TARGET_AREA,
             ProfileTargetObjectiveWeights.balanced()
         ),
-        ChemicalProfileCompositionCalculatorCode.MASS_BALANCE
+        CompositionCalculatorCode.MASS_BALANCE
     );
   }
 
@@ -143,19 +136,6 @@ class CreateProductionBatchCandidateServiceTest {
     return new ProductionProfileSnapshot(
         SpecificGravityValue.of("1.052"),
         TitratableAcidityValue.of("6.2"),
-        null
-    );
-  }
-
-  private static @NonNull AxisValue axis(
-      @NonNull ChemicalAxis axis,
-      @NonNull String value
-  ) {
-    return new AxisValue(
-        axis,
-        new BigDecimal(value),
-        AxisValueKind.POINT,
-        null,
         null
     );
   }

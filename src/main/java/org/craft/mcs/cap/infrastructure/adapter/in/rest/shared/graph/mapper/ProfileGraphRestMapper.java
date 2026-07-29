@@ -1,13 +1,16 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.mapper;
 
-import org.craft.mcs.cap.core.profileanalysis.compatibility.application.ChemicalProfileAssessment;
+import org.craft.mcs.cap.core.profileanalysis.classification.domain.profile.northamerican.NorthAmericanTanninLevel;
+import org.craft.mcs.cap.core.profileanalysis.graph.application.model.JolicoeurSugarAcidityGraphEvaluation;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.measurement.CanonicalUnitLabels;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profilecharacteristic.mapper.ProfileCharacteristicRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.dto.SugarAcidityGraphPointResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.dto.SugarAcidityGraphAssessmentResponse;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
+import org.craft.mcs.cap.shared.kernel.characteristic.CharacteristicValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import static java.util.Objects.requireNonNull;
 
@@ -19,32 +22,36 @@ public final class ProfileGraphRestMapper {
   }
 
   public static @NonNull SugarAcidityGraphAssessmentResponse toResponse(
-      @NonNull ChemicalProfileAssessment evaluation
+      @NonNull JolicoeurSugarAcidityGraphEvaluation graphEvaluation,
+      @Nullable NorthAmericanTanninLevel northAmericanTanninLevel,
+      @NonNull CharacteristicValue<SpecificGravityValue> specificGravity,
+      @NonNull CharacteristicValue<TitratableAcidityValue> titratableAcidity
   ) {
-    requireNonNull(evaluation, "sugar-acidity profile evaluation cannot be null");
-    final var assessment = requireNonNull(
-        evaluation.assessment(),
-        "plottable sugar-acidity evaluation must contain zone assessment"
+    requireNonNull(graphEvaluation, "sugar-acidity graph evaluation cannot be null");
+    final var zoneAssessment = requireNonNull(
+        graphEvaluation.zoneAssessment(),
+        "plottable sugar-acidity graph evaluation must contain zone assessment"
     );
     return new SugarAcidityGraphAssessmentResponse(
-        assessment.zone(),
-        evaluation.northAmericanTanninLevel(),
-        toResponse(evaluation.axes())
+        zoneAssessment.zone(),
+        northAmericanTanninLevel,
+        toResponse(specificGravity, titratableAcidity)
     );
   }
 
   public static @NonNull SugarAcidityGraphPointResponse toResponse(
-      @NonNull ChemicalProfileAxes axes
+      @NonNull CharacteristicValue<SpecificGravityValue> specificGravity,
+      @NonNull CharacteristicValue<TitratableAcidityValue> titratableAcidity
   ) {
-    requireNonNull(axes, "chemical profile axes cannot be null");
-
     return new SugarAcidityGraphPointResponse(
         ProfileCharacteristicRestMapper.toResponse(
-            axes.requireValueOf(ChemicalAxis.SPECIFIC_GRAVITY),
+            specificGravity,
+            SpecificGravityValue::asBigDecimal,
             CanonicalUnitLabels.SPECIFIC_GRAVITY
         ),
         ProfileCharacteristicRestMapper.toResponse(
-            axes.requireValueOf(ChemicalAxis.TITRATABLE_ACIDITY),
+            titratableAcidity,
+            TitratableAcidityValue::asBigDecimal,
             CanonicalUnitLabels.TITRATABLE_ACIDITY
         )
     );

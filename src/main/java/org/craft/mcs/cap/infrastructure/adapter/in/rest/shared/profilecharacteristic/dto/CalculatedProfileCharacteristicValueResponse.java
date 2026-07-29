@@ -4,7 +4,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
 import org.craft.mcs.cap.shared.application.ApplicationValidationException;
 import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValueKind;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
@@ -24,21 +23,21 @@ public record CalculatedProfileCharacteristicValueResponse(
         example = "CALCULATED",
         requiredMode = Schema.RequiredMode.REQUIRED
     )
-    @NonNull AxisValueKind valueKind
+    @NonNull ProfileCharacteristicValueKind valueKind
 ) implements ProfileCharacteristicValueResponse {
 
   public CalculatedProfileCharacteristicValueResponse(
       @NonNull BigDecimal value,
       @NonNull String unit
   ) {
-    this(new DecimalQuantityResponse(value, unit), AxisValueKind.CALCULATED);
+    this(new DecimalQuantityResponse(value, unit), ProfileCharacteristicValueKind.CALCULATED);
   }
 
   public CalculatedProfileCharacteristicValueResponse {
     requireNonNull(value, "calculated characteristic value cannot be null");
     requireNonNull(valueKind, "calculated characteristic value kind cannot be null");
 
-    if (valueKind != AxisValueKind.CALCULATED) {
+    if (valueKind != ProfileCharacteristicValueKind.CALCULATED) {
       throw new ApplicationValidationException("calculated characteristic value kind expected");
     }
   }

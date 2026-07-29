@@ -4,7 +4,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
 import org.craft.mcs.cap.shared.application.ApplicationValidationException;
 import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValueKind;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
@@ -21,21 +20,21 @@ public record PointProfileCharacteristicValueResponse(
         example = "POINT",
         requiredMode = Schema.RequiredMode.REQUIRED
     )
-    @NonNull AxisValueKind valueKind
+    @NonNull ProfileCharacteristicValueKind valueKind
 ) implements ProfileCharacteristicValueResponse {
 
   public PointProfileCharacteristicValueResponse(
       @NonNull BigDecimal value,
       @NonNull String unit
   ) {
-    this(new DecimalQuantityResponse(value, unit), AxisValueKind.POINT);
+    this(new DecimalQuantityResponse(value, unit), ProfileCharacteristicValueKind.POINT);
   }
 
   public PointProfileCharacteristicValueResponse {
     requireNonNull(value, "point characteristic value cannot be null");
     requireNonNull(valueKind, "point characteristic value kind cannot be null");
 
-    if (valueKind != AxisValueKind.POINT) {
+    if (valueKind != ProfileCharacteristicValueKind.POINT) {
       throw new ApplicationValidationException("point characteristic value kind expected");
     }
   }

@@ -1,21 +1,21 @@
 package org.craft.mcs.cap.core.profileanalysis.classification.domain.profile.longashton;
 
-import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisRange;
+import org.craft.mcs.cap.core.profileanalysis.classification.domain.rule.ClassificationValueRange;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
 
 
 public record LongAshton7Thresholds(
-    @NonNull AxisRange lowAcid,
-    @NonNull AxisRange highAcid,
-    @NonNull AxisRange veryLowTannin,
-    @NonNull AxisRange lowTannin,
-    @NonNull AxisRange mediumTannin,
-    @NonNull AxisRange highTannin,
-    @NonNull AxisRange sharpLowTannin,
-    @NonNull AxisRange sharpMediumTannin,
-    @NonNull AxisRange sharpHighTannin
+    @NonNull ClassificationValueRange lowAcid,
+    @NonNull ClassificationValueRange highAcid,
+    @NonNull ClassificationValueRange veryLowTannin,
+    @NonNull ClassificationValueRange lowTannin,
+    @NonNull ClassificationValueRange mediumTannin,
+    @NonNull ClassificationValueRange highTannin,
+    @NonNull ClassificationValueRange sharpLowTannin,
+    @NonNull ClassificationValueRange sharpMediumTannin,
+    @NonNull ClassificationValueRange sharpHighTannin
 ) {
 
   public LongAshton7Thresholds {

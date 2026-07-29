@@ -32,8 +32,7 @@ public record MeasurementEvidenceView(
       @NonNull MeasurementEvidenceReference evidenceReference,
       @NonNull Instant measuredAt,
       @NonNull MeasurementProvenanceView provenance,
-      @NonNull MeasurementFreshnessStatus freshnessStatus,
-      @NonNull MeasurementEvidenceValidity validity
+      @NonNull MeasurementFreshnessStatus freshnessStatus
   ) {
     this(
         new MeasurementEvidenceSnapshot(
@@ -42,8 +41,7 @@ public record MeasurementEvidenceView(
             materialStateId,
             evidenceReference,
             measuredAt,
-            provenance,
-            validity
+            provenance
         ),
         freshnessStatus
     );
@@ -71,9 +69,5 @@ public record MeasurementEvidenceView(
 
   public @NonNull MeasurementProvenanceView provenance() {
     return snapshot.provenance();
-  }
-
-  public @NonNull MeasurementEvidenceValidity validity() {
-    return snapshot.validity();
   }
 }

@@ -29,7 +29,6 @@ public final class FeedstockProfileEvidenceRestMapper {
         evidence.measuredAt(),
         provenance.sourceName(),
         provenance.confidence(),
-        evidence.validity(),
         evidence.freshnessStatus(),
         evidence.freshnessStatus() == MeasurementFreshnessStatus.STALE
     );

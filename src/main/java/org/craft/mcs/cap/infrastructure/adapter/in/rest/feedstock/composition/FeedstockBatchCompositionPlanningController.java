@@ -1,7 +1,6 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.composition;
 
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.strategy.DiscretizedCompositionOptimizationSettings;
 import org.craft.mcs.cap.core.feedstock.application.planning.composition.port.in.OptimizeFeedstockBatchCompositionUseCase;
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.ScoreFeedstockBatchProfileTargetUseCase;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.composition.dto.FeedstockBatchProfileTargetScoreBatchResponse;
@@ -16,7 +15,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import static java.util.Objects.requireNonNullElse;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 
@@ -59,14 +57,7 @@ public final class FeedstockBatchCompositionPlanningController implements Feedst
     );
 
     return ResponseEntity.ok(
-        FeedstockBatchCompositionOptimizationRestMapper.toResponse(result, stepPercent(request))
-    );
-  }
-
-  private static int stepPercent(@NonNull OptimizeFeedstockBatchCompositionRequest request) {
-    return requireNonNullElse( // NOSONAR
-        request.stepPercent(),
-        DiscretizedCompositionOptimizationSettings.DEFAULT_STEP_PERCENT
+        FeedstockBatchCompositionOptimizationRestMapper.toResponse(result)
     );
   }
 }

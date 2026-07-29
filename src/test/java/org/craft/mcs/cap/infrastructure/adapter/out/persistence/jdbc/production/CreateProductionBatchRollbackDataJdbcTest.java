@@ -30,10 +30,6 @@ import org.craft.mcs.cap.core.production.candidate.domain.model.ProductionCandid
 import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
 import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValueKind;
 import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
@@ -52,6 +48,9 @@ import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+
+import static org.craft.mcs.cap.production.testing.ProductionSourceCharacteristicsFixtures
+    .productionSourceCharacteristics;
 
 import static java.util.Objects.requireNonNull;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -222,11 +221,7 @@ class CreateProductionBatchRollbackDataJdbcTest {
                 SOURCE_STATE_ID,
                 MaterialStateId.newId()
             ),
-            ChemicalProfileAxes.of(
-                axis(ChemicalAxis.SPECIFIC_GRAVITY, "1.050"),
-                axis(ChemicalAxis.TITRATABLE_ACIDITY, "6.1"),
-                axis(ChemicalAxis.TANNIN, "1400")
-            ),
+            productionSourceCharacteristics("1.050", "6.1", "1400", null),
             ConfidenceLevel.LAB_VERIFIED,
             evidenceReference()
         );
@@ -256,18 +251,6 @@ class CreateProductionBatchRollbackDataJdbcTest {
       };
     }
 
-    private static @NonNull AxisValue axis(
-        @NonNull ChemicalAxis axis,
-        @NonNull String value
-    ) {
-      return new AxisValue(
-          axis,
-          new BigDecimal(value),
-          AxisValueKind.POINT,
-          null,
-          null
-      );
-    }
   }
 
   static final class TestProductionBatchCandidateStore implements ProductionBatchCandidateStore {

@@ -10,6 +10,8 @@ import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.Feeds
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchRepository;
 import org.craft.mcs.cap.core.feedstock.application.inventory.port.in.ConsumeFeedstockBatchMaterialCommand;
 import org.craft.mcs.cap.core.feedstock.application.inventory.port.in.ConsumedFeedstockBatchMaterial;
+import org.craft.mcs.cap.core.feedstock.application.inventory.FeedstockMaterialCharacteristicsUnavailableException;
+import org.craft.mcs.cap.core.feedstock.application.inventory.port.in.FeedstockMaterialCharacteristics;
 import org.craft.mcs.cap.core.feedstock.application.inventory.usecase.ConsumeFeedstockBatchMaterialService;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.query.FeedstockCurrentProfileQueryService;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
@@ -18,22 +20,22 @@ import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
 import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
 import org.craft.mcs.cap.shared.testing.FeedstockMeasurementFixture;
-import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementId;
-import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementName;
-import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
+import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetId;
+import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetName;
+import org.craft.mcs.cap.shared.testing.ProfileCharacteristicsFixture;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
-import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.platform.TransactionHelper;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
 import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementInstant;
 import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementRecordedAt;
-import static org.craft.mcs.cap.shared.testing.FeedstockMeasurementViews.currentProfile;
+import static org.craft.mcs.cap.shared.testing.FeedstockCurrentProfileViews.currentProfile;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -68,7 +70,15 @@ class ConsumeFeedstockBatchMaterialServiceTest {
         .returns(VolumeValue.ofLiters("250"), ConsumedFeedstockBatchMaterial::availableBefore)
         .returns(command.volume(), ConsumedFeedstockBatchMaterial::consumed)
         .returns(VolumeValue.ofLiters("150"), ConsumedFeedstockBatchMaterial::remaining)
-        .returns(measurement.chemicalProfile(), ConsumedFeedstockBatchMaterial::chemicalProfile)
+        .satisfies(result -> assertThat(result.characteristics())
+            .returns(
+                currentProfile(measurement).specificGravity(),
+                FeedstockMaterialCharacteristics::specificGravity
+            )
+            .returns(
+                currentProfile(measurement).titratableAcidity(),
+                FeedstockMaterialCharacteristics::titratableAcidity
+            ))
         .satisfies(result -> assertThat(result.remainingStateId())
             .isNotEqualTo(result.sourceStateId()))
         .satisfies(result -> assertThat(batch.availableVolume()).isEqualTo(VolumeValue.ofLiters("150")));
@@ -134,6 +144,26 @@ class ConsumeFeedstockBatchMaterialServiceTest {
     verify(repository, never()).update(any());
   }
 
+  @Test
+  void keepsVolumeUnchangedWhenCurrentProfileCannotSupportComposition() {
+    final var repository = mock(FeedstockBatchRepository.class);
+    final var measurementQuery = mock(FeedstockCurrentProfileQueryService.class);
+    final var accessControl = mock(FeedstockAccessControl.class);
+    final var workspaceId = WorkspaceId.newId();
+    final var batch = batch(workspaceId);
+    final var command = command(workspaceId, batch.batchId(), "100");
+    when(repository.findVersionedById(batch.batchId())).thenReturn(Optional.of(versioned(batch)));
+    when(measurementQuery.requireCurrentProfile(batch.batchId()))
+        .thenReturn(currentProfile(measurementWithoutAcidity(batch.batchId())));
+    final var service = service(repository, measurementQuery, accessControl);
+
+    assertThatThrownBy(() -> service.consume(command))
+        .isInstanceOf(FeedstockMaterialCharacteristicsUnavailableException.class)
+        .satisfies(exception -> assertThat(batch.availableVolume())
+            .isEqualTo(VolumeValue.ofLiters("250")));
+    verify(repository, never()).update(any());
+  }
+
   private static @NonNull ConsumeFeedstockBatchMaterialService service(
       @NonNull FeedstockBatchRepository repository,
       @NonNull FeedstockCurrentProfileQueryService measurementQuery,
@@ -161,13 +191,27 @@ class ConsumeFeedstockBatchMaterialServiceTest {
 
   private static @NonNull FeedstockMeasurementFixture measurement(@NonNull FeedstockBatchId batchId) {
     return FeedstockMeasurementFixture.create(
-        FeedstockMeasurementId.newId(),
+        MeasurementSetId.newId(),
         batchId,
-        FeedstockMeasurementName.of("Current profile"),
-        ChemicalProfile.builder()
-            .sugar(PointCharacteristicValue.of(SugarConcentration.ofSpecificGravity(
-                SpecificGravityValue.of("1.052")
-            )))
+        MeasurementSetName.of("Current profile"),
+        ProfileCharacteristicsFixture.builder()
+            .specificGravity(PointCharacteristicValue.of(SpecificGravityValue.of("1.052")))
+            .titratableAcidity(PointCharacteristicValue.of(TitratableAcidityValue.of("6.2")))
+            .build(),
+        feedstockMeasurementInstant(),
+        feedstockMeasurementRecordedAt()
+    );
+  }
+
+  private static @NonNull FeedstockMeasurementFixture measurementWithoutAcidity(
+      @NonNull FeedstockBatchId batchId
+  ) {
+    return FeedstockMeasurementFixture.create(
+        MeasurementSetId.newId(),
+        batchId,
+        MeasurementSetName.of("Partial profile"),
+        ProfileCharacteristicsFixture.builder()
+            .specificGravity(PointCharacteristicValue.of(SpecificGravityValue.of("1.052")))
             .build(),
         feedstockMeasurementInstant(),
         feedstockMeasurementRecordedAt()

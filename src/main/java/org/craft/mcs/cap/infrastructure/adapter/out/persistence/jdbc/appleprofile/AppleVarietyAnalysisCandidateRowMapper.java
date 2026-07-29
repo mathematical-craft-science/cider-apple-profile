@@ -3,14 +3,13 @@ package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.appleprofi
 import org.craft.mcs.cap.core.appleprofile.application.catalog.port.out.AppleVarietyAnalysisCandidateView;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyId;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyName;
+import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyReferenceProfile;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.common.MeasurementJdbcColumns;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.common.MeasurementKind;
-import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.craft.mcs.cap.shared.kernel.chemical.value.PhValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
-import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -37,35 +36,38 @@ final class AppleVarietyAnalysisCandidateRowMapper {
     return new AppleVarietyAnalysisCandidateView(
         AppleVarietyId.of(resultSet.getObject("variety_id", UUID.class)),
         AppleVarietyName.of(resultSet.getString("name")),
-        toChemicalProfile(resultSet)
+        toReferenceProfile(resultSet)
     );
   }
 
-  private static @NonNull ChemicalProfile toChemicalProfile(
+  private static @NonNull AppleVarietyReferenceProfile toReferenceProfile(
       @NonNull ResultSet resultSet
   ) throws SQLException {
-    final var builder = ChemicalProfile.builder();
-
-    toCharacteristic(
-        measurement(resultSet, "sugar_kind", "sugar_exact_sg", "sugar_min_sg", "sugar_max_sg"),
-        value -> SugarConcentration.ofSpecificGravity(SpecificGravityValue.of(value.toPlainString()))
-    ).ifPresent(builder::sugar);
-    toCharacteristic(
-        measurement(resultSet, "ph_kind", "ph_exact", "ph_min", "ph_max"),
-        value -> PhValue.of(value.toPlainString())
-    ).ifPresent(builder::ph);
-    toCharacteristic(
-        measurement(resultSet, "ta_kind", "ta_exact_g_l_as_malic", "ta_min_g_l_as_malic",
-            "ta_max_g_l_as_malic"),
-        value -> TitratableAcidityValue.of(value.toPlainString())
-    ).ifPresent(builder::titratableAcidity);
-    toCharacteristic(
-        measurement(resultSet, "tannin_kind", "tannin_exact_mg_l_tae", "tannin_min_mg_l_tae",
-            "tannin_max_mg_l_tae"),
-        value -> TanninValue.of(value.toPlainString())
-    ).ifPresent(builder::tannin);
-
-    return builder.build();
+    return new AppleVarietyReferenceProfile(
+        toCharacteristic(
+            measurement(resultSet, "sugar_kind", "sugar_exact_sg", "sugar_min_sg", "sugar_max_sg"),
+            value -> SpecificGravityValue.of(value.toPlainString())
+        ).orElse(null), // NOSONAR
+        toCharacteristic(
+            measurement(
+                resultSet,
+                "ta_kind",
+                "ta_exact_g_l_as_malic",
+                "ta_min_g_l_as_malic",
+                "ta_max_g_l_as_malic"
+            ),
+            value -> TitratableAcidityValue.of(value.toPlainString())
+        ).orElse(null), // NOSONAR
+        toCharacteristic(
+            measurement(resultSet, "ph_kind", "ph_exact", "ph_min", "ph_max"),
+            value -> PhValue.of(value.toPlainString())
+        ).orElse(null), // NOSONAR
+        toCharacteristic(
+            measurement(resultSet, "tannin_kind", "tannin_exact_mg_l_tae", "tannin_min_mg_l_tae",
+                "tannin_max_mg_l_tae"),
+            value -> TanninValue.of(value.toPlainString())
+        ).orElse(null) // NOSONAR
+    );
   }
 
   private static @Nullable MeasurementJdbcColumns measurement(

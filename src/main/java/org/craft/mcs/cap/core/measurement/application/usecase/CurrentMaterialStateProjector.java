@@ -18,7 +18,6 @@ import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementFreshn
 import org.craft.mcs.cap.core.measurement.application.port.out.CurrentMaterialStateProvider;
 import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementSubjectAccessControl;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSubjectReference;
-import org.craft.mcs.cap.shared.application.measurement.MeasurementEvidenceValidity;
 import org.craft.mcs.cap.shared.application.measurement.MeasurementFreshnessPolicy;
 import org.craft.mcs.cap.shared.application.measurement.MeasurementValueOrigin;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
@@ -125,8 +124,7 @@ public final class CurrentMaterialStateProjector implements ProjectCurrentMateri
         result.recordId(),
         result.measuredAt(),
         result.provenance(),
-        freshnessPolicy.status(result.measuredAt(), assessedAt),
-        MeasurementEvidenceValidity.VALID
+        freshnessPolicy.status(result.measuredAt(), assessedAt)
     );
   }
 }

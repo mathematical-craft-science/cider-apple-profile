@@ -28,7 +28,7 @@ public class OpenApiConfiguration {
             .title("Cider Apple Profile API")
             .version("0.0.1")
             .description(
-                "API for cider apple profiles, feedstock batches, chemical profile plotting and ABV predictions."
+                "API for cider apple profiles, feedstock batches, profile analysis and production planning."
             ));
   }
 }

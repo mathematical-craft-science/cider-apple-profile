@@ -17,7 +17,7 @@ import static java.util.Objects.requireNonNull;
  * Rule-based fermentation-start readiness assessor for feedstock juice/must.
  *
  * <p>This strategy intentionally uses conservative, explainable thresholds instead of a yeast-aware
- * fermentation model. It checks only the current chemical profile dimensions that matter before a
+ * fermentation model. It checks only the current measured characteristics that matter before a
  * cidermaker starts fermentation: Specific Gravity as evidence of fermentation potential, pH risk
  * visibility, and yeast-assimilable nitrogen. Future yeast catalog and fermentation-plan work can
  * replace this assessor through the same application boundary with a strain-aware strategy.

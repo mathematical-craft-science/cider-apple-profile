@@ -6,10 +6,8 @@ import java.util.UUID;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVariety;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyId;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyName;
-import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
-import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
+import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyReferenceProfile;
 import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
-import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.junit.jupiter.api.Test;
 
@@ -21,11 +19,7 @@ class AppleVarietyTest {
   @Test
   void createsAppleVarietyAggregate() {
     final var id = AppleVarietyId.of(UUID.fromString("00000000-0000-0000-0000-000000000001"));
-    final var profile = ChemicalProfile.builder()
-        .sugar(PointCharacteristicValue.of(SugarConcentration.ofSpecificGravity(
-            SpecificGravityValue.of("1.048")
-        )))
-        .build();
+    final var profile = profile("1.048");
 
     final var appleVariety = AppleVariety.create(
         id,
@@ -35,46 +29,27 @@ class AppleVarietyTest {
 
     assertThat(appleVariety.varietyId()).isEqualTo(id);
     assertThat(appleVariety.name().value()).isEqualTo("Kingston Black");
-    assertThat(appleVariety.chemicalProfile()).isEqualTo(profile);
+    assertThat(appleVariety.referenceProfile()).isEqualTo(profile);
   }
 
   @Test
-  void changesChemicalProfile() {
+  void changesReferenceProfile() {
     final var appleVariety = AppleVariety.create(
         AppleVarietyId.of(UUID.fromString("00000000-0000-0000-0000-000000000001")),
         AppleVarietyName.of("Dabinett"),
-        ChemicalProfile.builder()
-            .sugar(PointCharacteristicValue.of(SugarConcentration.ofSpecificGravity(
-                SpecificGravityValue.of("1.045")
-            )))
-            .build()
+        profile("1.045")
     );
-    final var updatedProfile = ChemicalProfile.builder()
-        .sugar(PointCharacteristicValue.of(SugarConcentration.ofSpecificGravity(
-            SpecificGravityValue.of("1.055")
-        )))
-        .build();
+    final var updatedProfile = profile("1.055");
 
-    final var updated = appleVariety.changeChemicalProfile(updatedProfile);
+    final var updated = appleVariety.changeReferenceProfile(updatedProfile);
 
     assertThat(updated).isSameAs(appleVariety);
-    assertThat(appleVariety.chemicalProfile()).isEqualTo(updatedProfile);
+    assertThat(appleVariety.referenceProfile()).isEqualTo(updatedProfile);
   }
 
   @Test
-  void rejectsYeastAssimilableNitrogenInCatalogProfile() {
-    final var profile = ChemicalProfile.builder()
-        .sugar(PointCharacteristicValue.of(SugarConcentration.ofSpecificGravity(
-            SpecificGravityValue.of("1.048")
-        )))
-        .yeastAssimilableNitrogen(PointCharacteristicValue.of(YeastAssimilableNitrogenValue.of("140")))
-        .build();
-
-    assertThatThrownBy(() -> AppleVariety.create(
-        AppleVarietyId.of(UUID.fromString("00000000-0000-0000-0000-000000000001")),
-        AppleVarietyName.of("Kingston Black"),
-        profile
-    ))
+  void rejectsEmptyReferenceProfile() {
+    assertThatThrownBy(() -> new AppleVarietyReferenceProfile(null, null, null, null))
         .isInstanceOf(DomainRuleViolationException.class);
   }
 
@@ -82,5 +57,14 @@ class AppleVarietyTest {
   void rejectsBlankName() {
     assertThatThrownBy(() -> AppleVarietyName.of(" "))
         .isInstanceOf(DomainRuleViolationException.class);
+  }
+
+  private static AppleVarietyReferenceProfile profile(String specificGravity) {
+    return new AppleVarietyReferenceProfile(
+        PointCharacteristicValue.of(SpecificGravityValue.of(specificGravity)),
+        null,
+        null,
+        null
+    );
   }
 }

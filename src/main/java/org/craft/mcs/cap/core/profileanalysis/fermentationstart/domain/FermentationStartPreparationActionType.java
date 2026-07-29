@@ -4,7 +4,7 @@ package org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain;
 /**
  * Preparation action that can explain a managed fermentation-start risk.
  *
- * <p>Planned actions do not change the current chemical profile. Only a confirmed operation or a
+ * <p>Planned actions do not change current measured characteristics. Only a confirmed operation or a
  * new measurement can change the values used by readiness assessment.
  */
 public enum FermentationStartPreparationActionType {

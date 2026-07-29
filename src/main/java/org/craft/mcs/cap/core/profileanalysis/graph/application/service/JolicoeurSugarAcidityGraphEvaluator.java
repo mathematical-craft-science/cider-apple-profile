@@ -2,6 +2,7 @@ package org.craft.mcs.cap.core.profileanalysis.graph.application.service;
 
 import java.util.EnumSet;
 import org.craft.mcs.cap.core.profileanalysis.graph.application.model.JolicoeurSugarAcidityGraphEvaluation;
+import org.craft.mcs.cap.core.profileanalysis.graph.application.port.in.EvaluateJolicoeurSugarAcidityGraphUseCase;
 import org.craft.mcs.cap.core.profileanalysis.graph.domain.GraphMissingCharacteristic;
 import org.craft.mcs.cap.core.profileanalysis.graph.domain.GraphRepresentativeValuePolicy;
 import org.craft.mcs.cap.core.profileanalysis.graph.domain.SugarAcidityGraphPoint;
@@ -18,7 +19,8 @@ import static java.util.Objects.requireNonNull;
 /**
  * Builds typed SG/TA graph evidence and applies the Jolicoeur zone system.
  */
-public final class JolicoeurSugarAcidityGraphEvaluator {
+public final class JolicoeurSugarAcidityGraphEvaluator
+    implements EvaluateJolicoeurSugarAcidityGraphUseCase {
 
   private final @NonNull GraphRepresentativeValuePolicy representativeValuePolicy;
   private final @NonNull JolicoeurSugarAcidityZoneAssessor zoneAssessor;
@@ -34,6 +36,7 @@ public final class JolicoeurSugarAcidityGraphEvaluator {
     this.zoneAssessor = requireNonNull(zoneAssessor, "sugar-acidity zone assessor cannot be null");
   }
 
+  @Override
   public @NonNull JolicoeurSugarAcidityGraphEvaluation evaluate(
       @Nullable CharacteristicValue<SpecificGravityValue> specificGravity,
       @Nullable CharacteristicValue<TitratableAcidityValue> titratableAcidity

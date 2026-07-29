@@ -8,8 +8,8 @@ import org.craft.mcs.cap.core.production.candidate.application.port.in.CreatePro
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceComponent;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceComposition;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceReference;
-import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionCalculatorCode;
-import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionTanninPolicy;
+import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionCalculatorCode;
+import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionTanninPolicy;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetScoringConfiguration;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.SugarAcidityTargetResolver;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.CreateProductionBatchCandidateRequest;
@@ -51,7 +51,7 @@ public final class ProductionBatchCandidateRestMapper {
     final var tanninPolicy = requireNonNull(
         requireNonNullElse(
             request.tanninPolicy(),
-            ChemicalProfileCompositionTanninPolicy.CALCULATE_WHEN_COMPLETE
+            CompositionTanninPolicy.CALCULATE_WHEN_COMPLETE
         ),
         "production candidate tannin policy cannot be null"
     );
@@ -65,7 +65,7 @@ public final class ProductionBatchCandidateRestMapper {
     final var calculator = requireNonNull(
         requireNonNullElse(
             request.calculator(),
-            ChemicalProfileCompositionCalculatorCode.MASS_BALANCE
+            CompositionCalculatorCode.MASS_BALANCE
         ),
         "production candidate calculator cannot be null"
     );

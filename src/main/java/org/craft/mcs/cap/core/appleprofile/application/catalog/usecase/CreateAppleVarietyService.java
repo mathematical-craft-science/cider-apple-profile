@@ -38,9 +38,9 @@ public final class CreateAppleVarietyService
       final var appleVariety = AppleVariety.create(
           AppleVarietyId.newId(),
           command.name(),
-          command.chemicalProfile(),
-          command.chemicalProfileSource(),
-          command.chemicalProfileConfidence()
+          command.referenceProfile(),
+          command.referenceProfileSource(),
+          command.referenceProfileConfidence()
       );
 
       final var saved = appleVarietyRepository.create(appleVariety);

@@ -5,13 +5,13 @@ import java.util.List;
 import org.craft.mcs.cap.core.appleprofile.application.catalog.port.in.CreateAppleVarietyCommand;
 import org.craft.mcs.cap.core.appleprofile.application.catalog.port.in.CreateAppleVarietyUseCase;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyName;
+import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyReferenceProfile;
 import org.craft.mcs.cap.infrastructure.adapter.in.importer.appleprofile.dto.AppleVarietySeedDto;
 import org.craft.mcs.cap.infrastructure.adapter.in.importer.appleprofile.dto.ExactMeasurementSeedDto;
 import org.craft.mcs.cap.infrastructure.adapter.in.importer.appleprofile.dto.MeasurementSeedDto;
 import org.craft.mcs.cap.infrastructure.adapter.in.importer.appleprofile.dto.RangeMeasurementSeedDto;
 import org.craft.mcs.cap.infrastructure.adapter.in.importer.appleprofile.dto.SeedMeasurementCharacteristic;
-import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
-import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfileSource;
+import org.craft.mcs.cap.core.appleprofile.domain.model.ReferenceProfileSource;
 import org.craft.mcs.cap.shared.kernel.characteristic.IntervalCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.characteristic.CharacteristicValue;
@@ -19,7 +19,6 @@ import org.craft.mcs.cap.shared.kernel.chemical.value.PhValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
-import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
@@ -74,54 +73,36 @@ public final class AppleVarietyJsonSeedImporter {
 
     return new CreateAppleVarietyCommand(
         AppleVarietyName.of(dto.name()),
-        toChemicalProfile(dto),
-        dto.source() == null ? null : ChemicalProfileSource.of(dto.source()), // NOSONAR
+        toReferenceProfile(dto),
+        dto.source() == null ? null : ReferenceProfileSource.of(dto.source()), // NOSONAR
         dto.confidence()
     );
   }
 
-  private @NonNull ChemicalProfile toChemicalProfile(@NonNull AppleVarietySeedDto dto) {
+  private @NonNull AppleVarietyReferenceProfile toReferenceProfile(@NonNull AppleVarietySeedDto dto) {
     requireNonNull(dto, "apple variety seed dto cannot be null");
-
-    final var builder = ChemicalProfile.builder();
 
     final var sugar = toMeasurement(
         dto.sugar(),
         SeedMeasurementCharacteristic.SUGAR,
-        value -> SugarConcentration.ofSpecificGravity(SpecificGravityValue.of(value))
+        SpecificGravityValue::of
     );
-    if (sugar != null) {
-      builder.sugar(sugar);
-    }
-
     final var ph = toMeasurement(
         dto.ph(),
         SeedMeasurementCharacteristic.PH,
         PhValue::of
     );
-    if (ph != null) {
-      builder.ph(ph);
-    }
-
     final var titratableAcidity = toMeasurement(
         dto.titratableAcidity(),
         SeedMeasurementCharacteristic.TITRATABLE_ACIDITY,
         TitratableAcidityValue::of
     );
-    if (titratableAcidity != null) {
-      builder.titratableAcidity(titratableAcidity);
-    }
-
     final var tannin = toMeasurement(
         dto.tannin(),
         SeedMeasurementCharacteristic.TANNIN,
         TanninValue::of
     );
-    if (tannin != null) {
-      builder.tannin(tannin);
-    }
-
-    return builder.build();
+    return new AppleVarietyReferenceProfile(sugar, titratableAcidity, ph, tannin);
   }
 
   private static <T extends Comparable<? super T>> @Nullable CharacteristicValue<T> toMeasurement(

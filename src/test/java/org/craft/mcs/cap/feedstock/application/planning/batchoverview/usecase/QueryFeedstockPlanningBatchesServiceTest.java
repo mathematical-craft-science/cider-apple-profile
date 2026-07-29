@@ -15,16 +15,14 @@ import org.craft.mcs.cap.core.profileanalysis.abv.domain.StandardGravityDropAbvP
 import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.FermentationStartReadinessAssessor;
 import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.FermentationStartReadinessAssessment;
 import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.FermentationStartReadinessStatus;
+import org.craft.mcs.cap.core.profileanalysis.graph.application.model.JolicoeurSugarAcidityGraphEvaluation;
 import org.craft.mcs.cap.core.profileanalysis.ph.domain.PhPlanningGuidancePolicy;
-import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityAssessor;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.model.ProfileTargetAnalysisScenario;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetScoringInput;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.normalization.ProfileAxisNormalizerCode;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.assessment.ProfileTargetDistance;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetObjectiveWeights;
 import org.craft.mcs.cap.core.profileanalysis.composition.contribution.domain.CompositionContributionRoleAssessment;
-import org.craft.mcs.cap.core.profileanalysis.compatibility.application.ChemicalProfileAssessmentAdapter;
-import org.craft.mcs.cap.core.profileanalysis.compatibility.application.ChemicalProfileAssessment;
 import org.craft.mcs.cap.core.profileanalysis.graph.zone.domain.JolicoeurSugarAcidityZone;
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.FeedstockBatchProfileTargetCandidate;
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.FeedstockBatchProfileTargetCandidates;
@@ -51,26 +49,25 @@ import org.craft.mcs.cap.shared.kernel.material.value.BatchLifecycle;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
 import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
 import org.craft.mcs.cap.shared.testing.FeedstockMeasurementFixture;
-import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementId;
-import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementName;
+import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetId;
+import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetName;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
-import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
+import org.craft.mcs.cap.shared.testing.ProfileCharacteristicsFixture;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
 import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
-import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.junit.jupiter.api.Test;
 
+import static java.util.Objects.requireNonNull;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.craft.mcs.cap.core.profileanalysis.testing.ProfileAnalysisTestFixtures.graphEvaluator;
 import static org.craft.mcs.cap.core.profileanalysis.testing.ProfileAnalysisTestFixtures
-    .chemicalProfileAssessmentAdapter;
+    .northAmericanProfileCalculator;
 import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementRecordedAt;
-import static org.craft.mcs.cap.shared.testing.FeedstockMeasurementViews.currentProfile;
+import static org.craft.mcs.cap.shared.testing.FeedstockCurrentProfileViews.currentProfile;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -111,17 +108,17 @@ class QueryFeedstockPlanningBatchesServiceTest {
         .isNotNull()
         .extracting(FeedstockCurrentProfileFreshnessView::status)
         .isEqualTo(MeasurementFreshnessStatus.CURRENT);
-    assertThat(assessment.profileAssessment())
+    assertThat(assessment.graphEvaluation())
         .isNotNull()
-        .returns(true, ChemicalProfileAssessment::plottable)
-        .extracting(ChemicalProfileAssessment::assessment)
+        .returns(true, JolicoeurSugarAcidityGraphEvaluation::plottable)
+        .extracting(JolicoeurSugarAcidityGraphEvaluation::zoneAssessment)
         .isNotNull();
     assertThat(assessment.potentialAbv()).isNotNull();
-    assertThat(assessment.yeastAssimilableNitrogen())
+    assertThat(requireNonNull(row.currentProfileSummary()).yeastAssimilableNitrogen())
         .isNotNull()
         .returns(
-            ChemicalAxis.YEAST_ASSIMILABLE_NITROGEN,
-            AxisValue::axis
+            YeastAssimilableNitrogenValue.of("120"),
+            value -> ((PointCharacteristicValue<?>) value).value()
         );
     assertThat(assessment.planningReadiness())
         .isNotNull()
@@ -183,8 +180,7 @@ class QueryFeedstockPlanningBatchesServiceTest {
         List.of(new FeedstockBatchProfileTargetCandidate(
             batchId,
             MaterialStateId.newId(),
-            currentProfile.latestMeasurement().measurementId(),
-            currentProfile.latestMeasurement().name(),
+            currentProfile.evidence(),
             mock(ProfileTargetScoringInput.class),
             mock(ProfileTargetDistance.class),
             mock(CompositionContributionRoleAssessment.class)
@@ -268,8 +264,8 @@ class QueryFeedstockPlanningBatchesServiceTest {
         new FeedstockCurrentProfileQueryService(currentProfileRepository),
         targetCandidates,
         new FeedstockCurrentProfileAssessmentService(
-            projector(),
-            new ChemicalProfileCapabilityAssessor(),
+            graphEvaluator(),
+            northAmericanProfileCalculator(),
             new PotentialAbvPredictor(
                 FixedFinalGravityPredictionStrategy.dryCiderDefault(),
                 new StandardGravityDropAbvPredictionStrategy()
@@ -280,10 +276,6 @@ class QueryFeedstockPlanningBatchesServiceTest {
             new FeedstockProfileDataQualityAssessor()
         )
     );
-  }
-
-  private static ChemicalProfileAssessmentAdapter projector() {
-    return chemicalProfileAssessmentAdapter();
   }
 
   private static FeedstockPlanningBatchViewQuery queryWithoutTarget() {
@@ -328,11 +320,11 @@ class QueryFeedstockPlanningBatchesServiceTest {
 
   private static FeedstockMeasurementFixture measurement(FeedstockBatchId batchId) {
     return FeedstockMeasurementFixture.create(
-        FeedstockMeasurementId.newId(),
+        MeasurementSetId.newId(),
         batchId,
-        FeedstockMeasurementName.of("Current profile"),
-        ChemicalProfile.builder()
-            .sugar(PointCharacteristicValue.of(SugarConcentration.ofSpecificGravity(SpecificGravityValue.of("1.060"))))
+        MeasurementSetName.of("Current profile"),
+        ProfileCharacteristicsFixture.builder()
+            .specificGravity(PointCharacteristicValue.of(SpecificGravityValue.of("1.060")))
             .titratableAcidity(PointCharacteristicValue.of(TitratableAcidityValue.of("5.0")))
             .yeastAssimilableNitrogen(PointCharacteristicValue.of(YeastAssimilableNitrogenValue.of("120")))
             .build(),

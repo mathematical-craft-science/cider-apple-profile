@@ -11,12 +11,6 @@ package org.craft.mcs.cap.core.feedstock.application.currentprofile.model;
 public enum FeedstockPlanningReadinessFactor {
 
   /**
-   * Current measurement evidence is available for the batch. Without it, planning cannot reason
-   * about the current material profile.
-   */
-  CURRENT_PROFILE,
-
-  /**
    * Specific Gravity is available in the current material profile. It supports sugar-acidity
    * analysis, potential ABV prediction and composition planning.
    */
@@ -29,7 +23,7 @@ public enum FeedstockPlanningReadinessFactor {
   TITRATABLE_ACIDITY,
 
   /**
-   * Tannin is available in the current chemical profile. Missing tannin does not block basic
+   * Tannin is available in the current characteristic state. Missing tannin does not block basic
    * composition planning, but makes target-aware structure assessment incomplete.
    */
   TANNIN,

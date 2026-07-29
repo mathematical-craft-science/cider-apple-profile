@@ -7,20 +7,20 @@ import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.Feedsto
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentProfileView;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentProfilePotentialAbvView;
 import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPredictor;
-import org.craft.mcs.cap.core.profileanalysis.compatibility.application.ChemicalProfileAssessment;
-import org.craft.mcs.cap.core.profileanalysis.compatibility.application.ChemicalProfileAssessmentAdapter;
-import org.craft.mcs.cap.core.profileanalysis.fermentationstart.application.compatibility.ChemicalProfileFermentationStartAdapter;
+import org.craft.mcs.cap.core.profileanalysis.classification.domain.profile.northamerican.NorthAmericanProfileCalculator;
+import org.craft.mcs.cap.core.profileanalysis.classification.domain.profile.northamerican.NorthAmericanTanninLevel;
 import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.FermentationStartReadinessAssessor;
-import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapability;
-import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityAssessor;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
+import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.FermentationStartProfile;
+import org.craft.mcs.cap.core.profileanalysis.graph.application.model.JolicoeurSugarAcidityGraphEvaluation;
+import org.craft.mcs.cap.core.profileanalysis.graph.application.port.in.EvaluateJolicoeurSugarAcidityGraphUseCase;
+import org.craft.mcs.cap.shared.kernel.characteristic.CharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
 
 import static java.util.Objects.requireNonNull;
+import static org.craft.mcs.cap.shared.kernel.measurement.MeasurementValueMath.midpoint;
 
 
 /** Composes the reusable current-profile assessments shared by Feedstock application read models. */
@@ -28,8 +28,8 @@ import static java.util.Objects.requireNonNull;
 @RequiredArgsConstructor
 public final class FeedstockCurrentProfileAssessmentService {
 
-  private final @NonNull ChemicalProfileAssessmentAdapter chemicalProfileAssessmentAdapter;
-  private final @NonNull ChemicalProfileCapabilityAssessor capabilityAssessor;
+  private final @NonNull EvaluateJolicoeurSugarAcidityGraphUseCase graphEvaluator;
+  private final @NonNull NorthAmericanProfileCalculator northAmericanProfileCalculator;
   private final @NonNull PotentialAbvPredictor potentialAbvPredictor;
   private final @NonNull FermentationStartReadinessAssessor fermentationStartReadinessAssessor;
   private final @NonNull FeedstockCurrentProfileFreshnessAssessor freshnessAssessor;
@@ -54,50 +54,54 @@ public final class FeedstockCurrentProfileAssessmentService {
       );
     }
 
-    final var profileAssessment = chemicalProfileAssessmentAdapter.project(currentProfile.chemicalProfile());
+    final var graphEvaluation = graphEvaluator.evaluate(
+        currentProfile.specificGravity(),
+        currentProfile.titratableAcidity()
+    );
     final var freshness = freshnessAssessor.assess(currentProfile);
     return new FeedstockCurrentProfileAssessmentView(
         currentProfile.evidence(),
         freshness,
-        profileAssessment,
-        potentialAbv(profileAssessment),
-        yeastAssimilableNitrogen(profileAssessment),
-        planningReadinessAssessor.assess(batch, currentProfile.chemicalProfile()),
+        graphEvaluation,
+        northAmericanTanninLevel(currentProfile, graphEvaluation),
+        potentialAbv(currentProfile.specificGravity()),
+        planningReadinessAssessor.assess(batch, currentProfile),
         dataQualityAssessor.assess(
-            currentProfile.chemicalProfile(),
-            profileAssessment,
+            currentProfile,
+            graphEvaluation,
             freshness,
             currentProfile.evidence()
         ),
         fermentationStartReadinessAssessor.assess(
-            ChemicalProfileFermentationStartAdapter.adapt(currentProfile.chemicalProfile())
+            new FermentationStartProfile(
+                currentProfile.specificGravity(),
+                currentProfile.ph(),
+                currentProfile.yeastAssimilableNitrogen()
+            )
         )
     );
   }
 
   private @Nullable FeedstockCurrentProfilePotentialAbvView potentialAbv(
-      @NonNull ChemicalProfileAssessment assessment
+      @Nullable CharacteristicValue<SpecificGravityValue> specificGravity
   ) {
-    final var capability = capabilityAssessor.assess(
-        assessment.axes(),
-        ChemicalProfileCapability.ABV_PREDICTION
-    );
-    if (!capability.capable()) {
+    if (specificGravity == null) {
       return null;
     }
-
-    final var specificGravity = assessment.axes().requireValueOf(ChemicalAxis.SPECIFIC_GRAVITY);
     return new FeedstockCurrentProfilePotentialAbvView(
-        specificGravity.valueKind(),
-        potentialAbvPredictor.predict(SpecificGravityValue.of(specificGravity.value()))
+        specificGravity,
+        potentialAbvPredictor.predict(SpecificGravityValue.of(midpoint(specificGravity)))
     );
   }
 
-  private static @Nullable AxisValue yeastAssimilableNitrogen(
-      @NonNull ChemicalProfileAssessment assessment
+  private @Nullable NorthAmericanTanninLevel northAmericanTanninLevel(
+      @NonNull FeedstockCurrentProfileView currentProfile,
+      @NonNull JolicoeurSugarAcidityGraphEvaluation graphEvaluation
   ) {
-    return assessment.axes()
-        .valueOf(ChemicalAxis.YEAST_ASSIMILABLE_NITROGEN)
-        .orElse(null); // NOSONAR
+    if (!graphEvaluation.plottable() || currentProfile.tannin() == null) {
+      return null;
+    }
+    return northAmericanProfileCalculator.assessTannin(currentProfile.tannin()); // NOSONAR
   }
+
 }

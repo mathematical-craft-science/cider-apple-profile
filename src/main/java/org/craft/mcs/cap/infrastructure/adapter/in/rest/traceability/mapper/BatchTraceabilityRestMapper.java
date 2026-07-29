@@ -1,27 +1,30 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.traceability.mapper;
 
-import java.math.BigDecimal;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Stream;
 import org.craft.mcs.cap.core.traceability.domain.graph.BatchTraceabilityGraph;
 import org.craft.mcs.cap.core.traceability.domain.graph.BatchTraceEdge;
 import org.craft.mcs.cap.core.traceability.domain.graph.BatchTraceNode;
+import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceCharacteristicSnapshot;
+import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceMaterialCharacteristics;
 import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceMaterialSnapshot;
 import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceStepSubject;
 import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceSubject;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.traceability.dto.BatchTraceAxisValueResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profilecharacteristic.dto.CalculatedProfileCharacteristicValueResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profilecharacteristic.dto.ProfileCharacteristicValueResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profilecharacteristic.mapper.ProfileCharacteristicRestMapper;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.traceability.dto.BatchTraceCharacteristicResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.traceability.dto.BatchTraceEdgeResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.traceability.dto.BatchTraceMaterialSnapshotResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.traceability.dto.BatchTraceNodeResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.traceability.dto.BatchTraceStepSubjectResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.traceability.dto.BatchTraceSubjectResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.traceability.dto.BatchTraceabilityGraphResponse;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.measurement.CanonicalUnitLabels;
 import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
+import org.craft.mcs.cap.shared.kernel.measurement.MeasuredValue;
+import org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -93,7 +96,7 @@ public final class BatchTraceabilityRestMapper {
 
     return new BatchTraceMaterialSnapshotResponse(
         volume(snapshot),
-        axes(snapshot.profile()),
+        characteristics(snapshot.characteristics()),
         snapshot.confidence()
     );
   }
@@ -103,35 +106,42 @@ public final class BatchTraceabilityRestMapper {
     return volume == null ? null : new DecimalQuantityResponse(volume.liters(), CanonicalUnitLabels.VOLUME);
   }
 
-  private static @NonNull List<@NonNull BatchTraceAxisValueResponse> axes(
-      @Nullable ChemicalProfileAxes profile
+  private static @NonNull List<@NonNull BatchTraceCharacteristicResponse> characteristics(
+      @Nullable BatchTraceMaterialCharacteristics characteristics
   ) {
-    if (profile == null) {
+    if (characteristics == null) {
       return List.of();
     }
 
-    return Arrays.stream(ChemicalAxis.values())
-        .map(axis -> profile.valueOf(axis).orElse(null))
+    return Stream.of(
+            toResponse(MeasurementCharacteristic.SPECIFIC_GRAVITY, characteristics.specificGravity()),
+            toResponse(MeasurementCharacteristic.TITRATABLE_ACIDITY, characteristics.titratableAcidity()),
+            toResponse(MeasurementCharacteristic.TANNIN, characteristics.tannin()),
+            toResponse(MeasurementCharacteristic.YAN, characteristics.yeastAssimilableNitrogen())
+        )
         .filter(Objects::nonNull)
-        .map(BatchTraceabilityRestMapper::toResponse)
         .toList();
   }
 
-  private static @NonNull BatchTraceAxisValueResponse toResponse(@NonNull AxisValue axisValue) {
-    final var unit = CanonicalUnitLabels.forAxis(axisValue.axis());
-    return new BatchTraceAxisValueResponse(
-        axisValue.axis(),
-        new DecimalQuantityResponse(axisValue.value(), unit),
-        axisValue.valueKind(),
-        quantity(axisValue.min(), unit),
-        quantity(axisValue.max(), unit)
-    );
-  }
-
-  private static @Nullable DecimalQuantityResponse quantity(
-      @Nullable BigDecimal value,
-      @NonNull String unit
+  private static <T extends MeasuredValue> @Nullable BatchTraceCharacteristicResponse toResponse(
+      @NonNull MeasurementCharacteristic characteristic,
+      @Nullable BatchTraceCharacteristicSnapshot<T> snapshot
   ) {
-    return value == null ? null : new DecimalQuantityResponse(value, unit);
+    if (snapshot == null) {
+      return null;
+    }
+
+    final var unit = CanonicalUnitLabels.forCharacteristic(characteristic);
+    final ProfileCharacteristicValueResponse value = switch (snapshot) {
+      case BatchTraceCharacteristicSnapshot.Direct<T>(var directValue) ->
+          ProfileCharacteristicRestMapper.toResponse(
+              directValue,
+              MeasuredValue::asBigDecimal,
+              unit
+          );
+      case BatchTraceCharacteristicSnapshot.Calculated<T>(var calculatedValue) ->
+          new CalculatedProfileCharacteristicValueResponse(calculatedValue.asBigDecimal(), unit);
+    };
+    return new BatchTraceCharacteristicResponse(characteristic, value);
   }
 }

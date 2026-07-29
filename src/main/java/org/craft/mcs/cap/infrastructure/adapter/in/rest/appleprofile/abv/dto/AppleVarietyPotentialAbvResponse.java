@@ -3,7 +3,7 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.abv.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.UUID;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.abv.dto.PotentialAbvPredictionResponse;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValueKind;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profilecharacteristic.dto.ProfileCharacteristicValueKind;
 import org.jspecify.annotations.NonNull;
 
 
@@ -19,11 +19,11 @@ public record AppleVarietyPotentialAbvResponse(
     @NonNull String varietyName,
     @Schema(
         description = "Source value kind used for original gravity.",
-        implementation = AxisValueKind.class,
+        implementation = ProfileCharacteristicValueKind.class,
         example = "POINT",
         requiredMode = Schema.RequiredMode.REQUIRED
     )
-    @NonNull AxisValueKind originalGravityValueKind,
+    @NonNull ProfileCharacteristicValueKind originalGravityValueKind,
     @Schema(description = "Potential ABV prediction.", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull PotentialAbvPredictionResponse prediction
 ) {

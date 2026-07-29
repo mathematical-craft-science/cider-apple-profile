@@ -1,12 +1,11 @@
 package org.craft.mcs.cap.core.production.application.usecase;
 
-import java.util.List;
 import org.craft.mcs.cap.core.production.application.model.ProductionMeasuredProfileView;
 import org.craft.mcs.cap.core.production.application.model.ProductionCurrentProfileView;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
-import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
+import org.craft.mcs.cap.core.production.application.model.ProductionCurrentCharacteristicView;
 import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
-import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
+import org.craft.mcs.cap.shared.kernel.measurement.MeasuredValue;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
@@ -23,45 +22,54 @@ public final class ProductionCurrentProfileProjector {
       @Nullable ProductionMeasuredProfileView measuredProfile
   ) {
     requireNonNull(initialProfile, "production initial profile cannot be null");
-    final var initial = toChemicalProfile(initialProfile);
     if (measuredProfile == null) {
-      return new ProductionCurrentProfileView(initial, List.of());
+      return new ProductionCurrentProfileView(
+          initial(initialProfile.specificGravity()),
+          initial(initialProfile.titratableAcidity()),
+          null,
+          initialNullable(initialProfile.tannin()),
+          initialNullable(initialProfile.yeastAssimilableNitrogen())
+      );
     }
     return new ProductionCurrentProfileView(
-        overlay(initial, measuredProfile.chemicalProfile()),
-        measuredProfile.evidence()
+        measuredOrInitial(
+            measuredProfile.specificGravity(),
+            initialProfile.specificGravity()
+        ),
+        measuredOrInitial(
+            measuredProfile.titratableAcidity(),
+            initialProfile.titratableAcidity()
+        ),
+        measuredProfile.ph(),
+        measuredProfile.tannin() == null
+            ? initialNullable(initialProfile.tannin())
+            : measuredProfile.tannin(),
+        measuredProfile.yeastAssimilableNitrogen() == null
+            ? initialNullable(initialProfile.yeastAssimilableNitrogen())
+            : measuredProfile.yeastAssimilableNitrogen()
     );
   }
 
-  private static @NonNull ChemicalProfile toChemicalProfile(
-      @NonNull ProductionProfileSnapshot snapshot
+  private static <T extends MeasuredValue> @NonNull ProductionCurrentCharacteristicView<T>
+  measuredOrInitial(
+      @Nullable ProductionCurrentCharacteristicView<T> measured,
+      @NonNull T initialValue
   ) {
-    final var builder = ChemicalProfile.builder()
-        .sugar(PointCharacteristicValue.of(SugarConcentration.ofSpecificGravity(snapshot.specificGravity())))
-        .titratableAcidity(PointCharacteristicValue.of(snapshot.titratableAcidity()));
-    if (snapshot.tannin() != null) {
-      builder.tannin(PointCharacteristicValue.of(snapshot.tannin())); // NOSONAR
-    }
-    if (snapshot.yeastAssimilableNitrogen() != null) {
-      builder.yeastAssimilableNitrogen(PointCharacteristicValue.of(snapshot.yeastAssimilableNitrogen())); // NOSONAR
-    }
-    return builder.build();
+    return measured == null
+        ? initial(initialValue)
+        : requireNonNull(measured, "measured production characteristic cannot be null");
   }
 
-  private static @NonNull ChemicalProfile overlay(
-      @NonNull ChemicalProfile initial,
-      @NonNull ChemicalProfile measured
+  private static <T extends MeasuredValue> @NonNull ProductionCurrentCharacteristicView<T> initial(
+      @NonNull T value
   ) {
-    final var builder = ChemicalProfile.builder();
-    measured.sugar().or(initial::sugar).ifPresent(builder::sugar);
-    measured.ph().or(initial::ph).ifPresent(builder::ph);
-    measured.titratableAcidity()
-        .or(initial::titratableAcidity)
-        .ifPresent(builder::titratableAcidity);
-    measured.tannin().or(initial::tannin).ifPresent(builder::tannin);
-    measured.yeastAssimilableNitrogen()
-        .or(initial::yeastAssimilableNitrogen)
-        .ifPresent(builder::yeastAssimilableNitrogen);
-    return builder.build();
+    return ProductionCurrentCharacteristicView.fromInitialSnapshot(PointCharacteristicValue.of(value));
+  }
+
+  private static <T extends MeasuredValue> @Nullable ProductionCurrentCharacteristicView<T>
+  initialNullable(
+      @Nullable T value
+  ) {
+    return value == null ? null : initial(value);
   }
 }

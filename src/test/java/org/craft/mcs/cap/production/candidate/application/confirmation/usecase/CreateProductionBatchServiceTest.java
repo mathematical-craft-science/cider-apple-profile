@@ -1,6 +1,5 @@
 package org.craft.mcs.cap.production.candidate.application.confirmation.usecase;
 
-import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -40,12 +39,9 @@ import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSna
 import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
 import org.craft.mcs.cap.shared.kernel.DomainConflictException;
 import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
+import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.craft.mcs.cap.shared.application.persistence.VersionedAggregate;
 import org.craft.mcs.cap.shared.application.persistence.AggregateRevision;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValueKind;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
@@ -60,6 +56,8 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.craft.mcs.cap.support.PotentialAbvPredictionFixtures.prediction;
+import static org.craft.mcs.cap.production.testing.ProductionSourceCharacteristicsFixtures
+    .productionSourceCharacteristics;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 
@@ -129,9 +127,8 @@ class CreateProductionBatchServiceTest {
                   .returns(VolumeValue.ofLiters("100"), ConsumedProductionSource::consumed)
                   .returns(VolumeValue.ofLiters("150"), ConsumedProductionSource::remaining)
                   .returns(ConfidenceLevel.LAB_VERIFIED, ConsumedProductionSource::confidence);
-              assertThat(source.profile().valueOf(ChemicalAxis.SPECIFIC_GRAVITY))
-                  .get()
-                  .returns(new BigDecimal("1.050"), AxisValue::value);
+              assertThat(source.characteristics().specificGravity())
+                  .isEqualTo(PointCharacteristicValue.of(SpecificGravityValue.of("1.050")));
             }))
         .returns(Instant.now(CLOCK), RecordedTrace::occurredAt)
         .returns("accepted production input", RecordedTrace::note);
@@ -328,26 +325,9 @@ class CreateProductionBatchServiceTest {
             materialStateId,
             MaterialStateId.newId()
         ),
-        ChemicalProfileAxes.of(
-            axis(ChemicalAxis.SPECIFIC_GRAVITY, "1.050"),
-            axis(ChemicalAxis.TITRATABLE_ACIDITY, "6.1"),
-            axis(ChemicalAxis.TANNIN, "1400")
-        ),
+        productionSourceCharacteristics("1.050", "6.1", "1400", null),
         ConfidenceLevel.LAB_VERIFIED,
         evidenceReference
-    );
-  }
-
-  private static @NonNull AxisValue axis(
-      @NonNull ChemicalAxis axis,
-      @NonNull String value
-  ) {
-    return new AxisValue(
-        axis,
-        new BigDecimal(value),
-        AxisValueKind.POINT,
-        null,
-        null
     );
   }
 

@@ -2,12 +2,12 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.sugaracidity.
 
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
-import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import org.craft.mcs.cap.core.profileanalysis.classification.domain.profile.northamerican.NorthAmericanTanninLevel;
 import org.craft.mcs.cap.core.profileanalysis.graph.domain.GraphMissingCharacteristic;
 import org.craft.mcs.cap.core.profileanalysis.graph.zone.domain.JolicoeurSugarAcidityZone;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.common.dto.FeedstockProfileEvidenceResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.dto.SugarAcidityGraphPointResponse;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -42,20 +42,14 @@ public record FeedstockBatchGraphPointResponse(
         requiredMode = Schema.RequiredMode.REQUIRED
     )
     @NonNull UUID currentMaterialStateId,
-    @Schema(
-        description = "Latest measurement set contributing evidence to the composite current profile.",
-        format = "uuid",
-        example = "ed7c0818-aad9-47dd-97c0-d1d37561ca18",
-        requiredMode = Schema.RequiredMode.REQUIRED
+    @ArraySchema(
+        arraySchema = @Schema(
+            description = "Per-characteristic SG/TA evidence used to build the graph result.",
+            requiredMode = Schema.RequiredMode.REQUIRED
+        ),
+        schema = @Schema(implementation = FeedstockProfileEvidenceResponse.class)
     )
-    @NonNull UUID currentMeasurementId,
-    @Schema(
-        description = "Timestamp of the latest measurement contributing evidence to the composite current profile.",
-        format = "date-time",
-        example = "2026-09-28T10:15:30Z",
-        requiredMode = Schema.RequiredMode.REQUIRED
-    )
-    @NonNull Instant measuredAt,
+    @NonNull List<@NonNull FeedstockProfileEvidenceResponse> profileEvidence,
     @Schema(
         description = "Whether the current batch profile has enough data to be plotted.",
         example = "true",

@@ -24,6 +24,12 @@ interface SpringDataFeedstockBatchJdbcRepository
       @NonNull UUID workspaceId
   );
 
+  @NonNull
+  List<@NonNull FeedstockBatchJdbcEntity> findAllByBatchIdInAndWorkspaceIdAndDeletedAtIsNull(
+      @NonNull List<@NonNull UUID> batchIds,
+      @NonNull UUID workspaceId
+  );
+
   @Modifying
   @Query("""
       UPDATE feedstock_batches

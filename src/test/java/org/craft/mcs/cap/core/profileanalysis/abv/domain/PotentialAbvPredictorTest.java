@@ -16,7 +16,7 @@ class PotentialAbvPredictorTest {
   );
 
   @Test
-  void predictsPotentialAbvFromSugarConcentrationUsingDefaultFinalGravity() {
+  void predictsPotentialAbvFromSpecificGravityUsingDefaultFinalGravity() {
     final var prediction = predictor.predict(
         SpecificGravityValue.of("1.052")
     );

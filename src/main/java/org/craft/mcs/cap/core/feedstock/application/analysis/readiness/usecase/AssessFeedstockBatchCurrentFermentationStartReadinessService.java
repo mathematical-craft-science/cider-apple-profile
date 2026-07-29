@@ -1,9 +1,10 @@
 package org.craft.mcs.cap.core.feedstock.application.analysis.readiness.usecase;
 
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
-import org.craft.mcs.cap.core.profileanalysis.fermentationstart.application.compatibility.ChemicalProfileFermentationStartAdapter;
 import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.FermentationStartReadinessAssessor;
+import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.FermentationStartProfile;
 import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchNotFoundException;
 import org.craft.mcs.cap.core.feedstock.application.analysis.readiness.port.in.AssessFeedstockBatchCurrentFermentationStartReadinessUseCase;
 import org.craft.mcs.cap.core.feedstock.application.analysis.readiness.port.in.FeedstockBatchCurrentFermentationStartReadinessResult;
@@ -14,6 +15,9 @@ import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 
 import static java.util.Objects.requireNonNull;
+import static org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic.PH;
+import static org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic.SPECIFIC_GRAVITY;
+import static org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic.YAN;
 
 
 /**
@@ -43,16 +47,17 @@ public final class AssessFeedstockBatchCurrentFermentationStartReadinessService
         .orElseThrow(() -> new FeedstockBatchNotFoundException(batchId));
     feedstockAccessControl.requireReadAccess(batch.workspaceId());
     final var measurement = currentProfileQueryService.requireCurrentProfile(batchId);
-    final var latestMeasurement = measurement.latestMeasurement();
-
     return new FeedstockBatchCurrentFermentationStartReadinessResult(
         batch.batchId(),
         batch.workspaceId(),
         measurement.currentMaterialStateId(),
-        latestMeasurement.measurementId(),
-        latestMeasurement.name(),
+        measurement.evidenceFor(Set.of(SPECIFIC_GRAVITY, PH, YAN)),
         readinessAssessor.assess(
-            ChemicalProfileFermentationStartAdapter.adapt(measurement.chemicalProfile())
+            new FermentationStartProfile(
+                measurement.specificGravity(),
+                measurement.ph(),
+                measurement.yeastAssimilableNitrogen()
+            )
         )
     );
   }

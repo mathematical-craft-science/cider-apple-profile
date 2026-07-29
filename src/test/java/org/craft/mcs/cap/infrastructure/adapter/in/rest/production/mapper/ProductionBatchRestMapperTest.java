@@ -12,6 +12,7 @@ import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.core.production.candidate.application.confirmation.port.in.ProductionBatchCreated;
 import org.craft.mcs.cap.core.production.application.model.ProductionBatchDetailsView;
 import org.craft.mcs.cap.core.production.application.model.ProductionCurrentProfileView;
+import org.craft.mcs.cap.core.production.application.model.ProductionCurrentCharacteristicView;
 import org.craft.mcs.cap.core.production.application.model.ProductionBatchView;
 import org.craft.mcs.cap.core.production.candidate.application.model.ProductionBatchCandidateView;
 import org.craft.mcs.cap.core.production.candidate.domain.model.ProductionBatchCandidateId;
@@ -29,9 +30,7 @@ import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuant
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
-import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
 import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
-import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.junit.jupiter.api.Test;
@@ -61,10 +60,11 @@ class ProductionBatchRestMapperTest {
     );
 
     assertThat(response)
-        .satisfies(details -> assertThat(details.yeastAssimilableNitrogen())
+        .satisfies(details -> assertThat(details.currentProfile().yeastAssimilableNitrogen())
             .isNotNull()
-            .returns("mg N/L", DecimalQuantityResponse::unit)
-            .satisfies(quantity -> assertThat(quantity.value()).isEqualByComparingTo("180")))
+            .satisfies(characteristic -> assertThat(characteristic.value().value())
+                .returns("mg N/L", DecimalQuantityResponse::unit)
+                .satisfies(quantity -> assertThat(quantity.value()).isEqualByComparingTo("180"))))
         .satisfies(details -> assertThat(details.currentVolume().unit()).isEqualTo("L"))
         .satisfies(details -> assertThat(details.initialProfileSnapshot().specificGravity().unit())
             .isEqualTo("SG"))
@@ -127,10 +127,11 @@ class ProductionBatchRestMapperTest {
     assertThat(response.batches())
         .singleElement()
         .satisfies(item -> assertThat(item.currentVolume().unit()).isEqualTo("L"))
-        .satisfies(item -> assertThat(item.yeastAssimilableNitrogen())
+        .satisfies(item -> assertThat(item.currentProfile().yeastAssimilableNitrogen())
             .isNotNull()
-            .returns("mg N/L", DecimalQuantityResponse::unit)
-            .satisfies(quantity -> assertThat(quantity.value()).isEqualByComparingTo("180")))
+            .satisfies(characteristic -> assertThat(characteristic.value().value())
+                .returns("mg N/L", DecimalQuantityResponse::unit)
+                .satisfies(quantity -> assertThat(quantity.value()).isEqualByComparingTo("180"))))
         .satisfies(item -> assertThat(item.potentialAbv().potentialAbv())
             .returns("% ABV", DecimalQuantityResponse::unit)
             .satisfies(quantity -> assertThat(quantity.value()).isEqualByComparingTo("6.825")));
@@ -174,13 +175,21 @@ class ProductionBatchRestMapperTest {
 
   private static ProductionCurrentProfileView currentProfile(ProductionBatchView batch) {
     final var snapshot = batch.initialProfileSnapshot();
-    final var profile = ChemicalProfile.builder()
-        .sugar(PointCharacteristicValue.of(SugarConcentration.ofSpecificGravity(snapshot.specificGravity())))
-        .titratableAcidity(PointCharacteristicValue.of(snapshot.titratableAcidity()))
-        .tannin(PointCharacteristicValue.of(snapshot.tannin()))
-        .yeastAssimilableNitrogen(PointCharacteristicValue.of(snapshot.yeastAssimilableNitrogen()))
-        .build();
-    return new ProductionCurrentProfileView(profile, List.of());
+    return new ProductionCurrentProfileView(
+        ProductionCurrentCharacteristicView.fromInitialSnapshot(
+            PointCharacteristicValue.of(snapshot.specificGravity())
+        ),
+        ProductionCurrentCharacteristicView.fromInitialSnapshot(
+            PointCharacteristicValue.of(snapshot.titratableAcidity())
+        ),
+        null,
+        ProductionCurrentCharacteristicView.fromInitialSnapshot(
+            PointCharacteristicValue.of(snapshot.tannin())
+        ),
+        ProductionCurrentCharacteristicView.fromInitialSnapshot(
+            PointCharacteristicValue.of(snapshot.yeastAssimilableNitrogen())
+        )
+    );
   }
 
   private static ProductionBatchCandidateView productionCandidateView() {

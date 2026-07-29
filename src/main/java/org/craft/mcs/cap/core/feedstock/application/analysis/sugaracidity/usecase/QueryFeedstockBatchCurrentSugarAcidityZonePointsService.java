@@ -2,13 +2,15 @@ package org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.useca
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.feedstock.application.analysis.common.model.FeedstockAnalysisCandidatePagePosition;
+import org.craft.mcs.cap.core.feedstock.application.analysis.common.service.FeedstockGraphCandidateMatcher;
 import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
-import org.craft.mcs.cap.core.profileanalysis.compatibility.application.ChemicalProfileAssessment;
-import org.craft.mcs.cap.core.profileanalysis.compatibility.application.ChemicalProfileAssessmentAdapter;
-import org.craft.mcs.cap.core.profileanalysis.compatibility.application.ChemicalProfileAssessmentMatcher;
+import org.craft.mcs.cap.core.profileanalysis.classification.domain.profile.northamerican.NorthAmericanProfileCalculator;
+import org.craft.mcs.cap.core.profileanalysis.graph.application.model.JolicoeurSugarAcidityGraphEvaluation;
+import org.craft.mcs.cap.core.profileanalysis.graph.application.port.in.EvaluateJolicoeurSugarAcidityGraphUseCase;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentProfileView;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockBatchCurrentSugarAcidityZonePointQuery;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockBatchCurrentSugarAcidityZoneResult;
@@ -24,6 +26,8 @@ import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 
 import static java.util.Objects.requireNonNull;
+import static org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic.SPECIFIC_GRAVITY;
+import static org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic.TITRATABLE_ACIDITY;
 import static java.util.stream.Collectors.toMap;
 
 
@@ -41,8 +45,9 @@ public final class QueryFeedstockBatchCurrentSugarAcidityZonePointsService
   private final @NonNull FeedstockBatchSummaryQueryRepository feedstockBatchQueryRepository;
   private final @NonNull FeedstockAccessControl feedstockAccessControl;
   private final @NonNull FeedstockCurrentProfileAnalysisCandidateRepository candidateRepository;
-  private final @NonNull ChemicalProfileAssessmentAdapter chemicalProfileAssessmentAdapter;
-  private final @NonNull ChemicalProfileAssessmentMatcher chemicalProfileAssessmentMatcher;
+  private final @NonNull EvaluateJolicoeurSugarAcidityGraphUseCase graphEvaluator;
+  private final @NonNull NorthAmericanProfileCalculator northAmericanProfileCalculator;
+  private final @NonNull FeedstockGraphCandidateMatcher graphCandidateMatcher;
 
   @Override
   public @NonNull CursorPage<
@@ -77,17 +82,21 @@ public final class QueryFeedstockBatchCurrentSugarAcidityZonePointsService
       @NonNull FeedstockCurrentProfileView currentProfile,
       @NonNull FeedstockBatchCurrentSugarAcidityZonePointQuery query,
       @NonNull FeedstockBatchSummary batch,
-      @NonNull ChemicalProfileAssessment evaluation
+      @NonNull JolicoeurSugarAcidityGraphEvaluation graphEvaluation
   ) {
-    final var latestMeasurement = currentProfile.latestMeasurement();
     return new FeedstockBatchCurrentSugarAcidityZoneResult(
         currentProfile.batchId(),
         batch.name(),
         query.workspaceId(),
         currentProfile.currentMaterialStateId(),
-        latestMeasurement.measurementId(),
-        latestMeasurement.measuredAt(),
-        evaluation
+        currentProfile.latestMeasurementSet(),
+        currentProfile.evidenceFor(Set.of(SPECIFIC_GRAVITY, TITRATABLE_ACIDITY)),
+        currentProfile.specificGravity(),
+        currentProfile.titratableAcidity(),
+        graphEvaluation,
+        graphEvaluation.plottable() && currentProfile.tannin() != null
+            ? northAmericanProfileCalculator.assessTannin(currentProfile.tannin()) // NOSONAR
+            : null
     );
   }
 
@@ -101,26 +110,25 @@ public final class QueryFeedstockBatchCurrentSugarAcidityZonePointsService
       return Optional.empty();
     }
 
-    final var evaluation = chemicalProfileAssessmentAdapter.project(currentProfile.chemicalProfile());
-    if (!chemicalProfileAssessmentMatcher.matches(
-        evaluation,
-        query.filters().capability(),
-        query.filters().sugarAcidityZone()
-    )) {
+    final var graphEvaluation = graphEvaluator.evaluate(
+        currentProfile.specificGravity(),
+        currentProfile.titratableAcidity()
+    );
+    if (!graphCandidateMatcher.matches(currentProfile, graphEvaluation, query.filters())) {
       return Optional.empty();
     }
 
-    return Optional.of(toResult(currentProfile, query, batch, evaluation));
+    return Optional.of(toResult(currentProfile, query, batch, graphEvaluation));
   }
 
   private static @NonNull FeedstockAnalysisCandidatePagePosition toPagePosition(
       @NonNull FeedstockCurrentProfileView currentProfile
   ) {
     requireNonNull(currentProfile, "feedstock current profile cannot be null");
-    final var latestMeasurement = currentProfile.latestMeasurement();
+    final var latestMeasurement = currentProfile.latestMeasurementSet();
     return new FeedstockAnalysisCandidatePagePosition(
         latestMeasurement.measuredAt(),
-        latestMeasurement.measurementId().value()
+        latestMeasurement.measurementSetId()
     );
   }
 }

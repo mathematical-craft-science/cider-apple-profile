@@ -15,7 +15,7 @@ import org.craft.mcs.cap.core.production.domain.model.ProductionSourceCompositio
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceReference;
 import org.craft.mcs.cap.core.production.candidate.domain.model.ProductionCandidateSourceEvidence;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
-import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionWarning;
+import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionWarning;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.normalization.ProfileAxisNormalizerCode;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.objective.ProfileDistanceMetric;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.assessment.ProfileTargetDistance;
@@ -90,7 +90,7 @@ class ProductionBatchCandidatePersistenceDataJdbcTest {
             .returns(ProfileAxisNormalizerCode.SENSITIVITY_UNIT, ProductionBatchCandidateSnapshot::normalizerCode)
             .satisfies(candidateSnapshot -> assertThat(candidateSnapshot.potentialAbv().potentialAbv().percent())
                 .isEqualByComparingTo("6.825"))
-            .returns(List.of(ChemicalProfileCompositionWarning.TANNIN_INCOMPLETE),
+            .returns(List.of(CompositionWarning.TANNIN_INCOMPLETE),
                 ProductionBatchCandidateSnapshot::warnings)
             .satisfies(candidateSnapshot -> assertThat(candidateSnapshot.targetDistance())
                 .isNotNull()
@@ -157,7 +157,7 @@ class ProductionBatchCandidatePersistenceDataJdbcTest {
         prediction(productionProfile().specificGravity()),
         ProfileAxisNormalizerCode.SENSITIVITY_UNIT,
         targetDistance(),
-        List.of(ChemicalProfileCompositionWarning.TANNIN_INCOMPLETE)
+        List.of(CompositionWarning.TANNIN_INCOMPLETE)
     );
   }
 

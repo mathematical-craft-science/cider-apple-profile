@@ -3,15 +3,14 @@ package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.appleprofi
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVariety;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyId;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyName;
+import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyReferenceProfile;
+import org.craft.mcs.cap.core.appleprofile.domain.model.ReferenceProfileSource;
 import org.craft.mcs.cap.shared.application.persistence.AggregateRevision;
 import org.craft.mcs.cap.shared.application.persistence.VersionedAggregate;
-import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
-import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfileSource;
 import org.craft.mcs.cap.shared.kernel.chemical.value.PhValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
-import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
@@ -26,31 +25,31 @@ public final class AppleVarietyJdbcMapper {
   public static @NonNull AppleVarietyJdbcEntity fromDomain(@NonNull AppleVariety appleVariety) {
     requireNonNull(appleVariety, "apple variety cannot be null");
 
-    final var profile = appleVariety.chemicalProfile();
+    final var profile = appleVariety.referenceProfile();
 
     return new AppleVarietyJdbcEntity(
         appleVariety.varietyId().value(),
         appleVariety.name().value(),
         fromNullableCharacteristic(
-            profile.sugar().orElse(null),
-            sugar -> sugar.specificGravity().asBigDecimal()
+            profile.specificGravity(),
+            SpecificGravityValue::asBigDecimal
         ),
         fromNullableCharacteristic(
-            profile.ph().orElse(null),
+            profile.ph(),
             PhValue::asBigDecimal
         ),
         fromNullableCharacteristic(
-            profile.titratableAcidity().orElse(null),
+            profile.titratableAcidity(),
             TitratableAcidityValue::asBigDecimal
         ),
         fromNullableCharacteristic(
-            profile.tannin().orElse(null),
+            profile.tannin(),
             TanninValue::asBigDecimal
         ),
-        appleVariety.chemicalProfileSource() == null
+        appleVariety.referenceProfileSource() == null
             ? null
-            : appleVariety.chemicalProfileSource().value(),
-        appleVariety.chemicalProfileConfidence()
+            : appleVariety.referenceProfileSource().value(),
+        appleVariety.referenceProfileConfidence()
     );
   }
 
@@ -85,8 +84,8 @@ public final class AppleVarietyJdbcMapper {
     entity.tanninMinValue = updated.tanninMinValue;
     entity.tanninMaxValue = updated.tanninMaxValue;
 
-    entity.chemicalProfileSource = updated.chemicalProfileSource;
-    entity.chemicalProfileConfidence = updated.chemicalProfileConfidence;
+    entity.referenceProfileSource = updated.referenceProfileSource;
+    entity.referenceProfileConfidence = updated.referenceProfileConfidence;
 
     return entity;
   }
@@ -97,11 +96,11 @@ public final class AppleVarietyJdbcMapper {
     return AppleVariety.create(
         AppleVarietyId.of(entity.varietyId),
         AppleVarietyName.of(entity.name),
-        toChemicalProfile(entity),
-        entity.chemicalProfileSource == null
+        toReferenceProfile(entity),
+        entity.referenceProfileSource == null
             ? null
-            : ChemicalProfileSource.of(entity.chemicalProfileSource),
-        entity.chemicalProfileConfidence
+            : ReferenceProfileSource.of(entity.referenceProfileSource),
+        entity.referenceProfileConfidence
     );
   }
 
@@ -115,32 +114,29 @@ public final class AppleVarietyJdbcMapper {
     return requireNonNull(entity, "apple variety row cannot be null").version;
   }
 
-  private static @NonNull ChemicalProfile toChemicalProfile(@NonNull AppleVarietyJdbcEntity entity) {
+  private static @NonNull AppleVarietyReferenceProfile toReferenceProfile(
+      @NonNull AppleVarietyJdbcEntity entity
+  ) {
     requireNonNull(entity, "apple variety row cannot be null");
 
-    final var builder = ChemicalProfile.builder();
-
-    toCharacteristic(
-        entity.sugar(),
-        value -> SugarConcentration.ofSpecificGravity(SpecificGravityValue.of(value.toPlainString()))
-    ).ifPresent(builder::sugar);
-
-    toCharacteristic(
-        entity.ph(),
-        value -> PhValue.of(value.toPlainString())
-    ).ifPresent(builder::ph);
-
-    toCharacteristic(
-        entity.titratableAcidity(),
-        value -> TitratableAcidityValue.of(value.toPlainString())
-    ).ifPresent(builder::titratableAcidity);
-
-    toCharacteristic(
-        entity.tannin(),
-        value -> TanninValue.of(value.toPlainString())
-    ).ifPresent(builder::tannin);
-
-    return builder.build();
+    return new AppleVarietyReferenceProfile(
+        toCharacteristic(
+            entity.sugar(),
+            value -> SpecificGravityValue.of(value.toPlainString())
+        ).orElse(null), // NOSONAR
+        toCharacteristic(
+            entity.titratableAcidity(),
+            value -> TitratableAcidityValue.of(value.toPlainString())
+        ).orElse(null), // NOSONAR
+        toCharacteristic(
+            entity.ph(),
+            value -> PhValue.of(value.toPlainString())
+        ).orElse(null), // NOSONAR
+        toCharacteristic(
+            entity.tannin(),
+            value -> TanninValue.of(value.toPlainString())
+        ).orElse(null) // NOSONAR
+    );
   }
 
 }

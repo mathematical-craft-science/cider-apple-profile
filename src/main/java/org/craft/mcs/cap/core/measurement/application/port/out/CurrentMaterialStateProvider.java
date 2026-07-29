@@ -12,8 +12,6 @@ import java.util.Set;
 /** Resolves the current state identities owned by measurable material subjects. */
 public interface CurrentMaterialStateProvider {
 
-  @NonNull MaterialStateId currentStateOf(@NonNull MeasurementSubjectReference subject);
-
   @NonNull Map<@NonNull MeasurementSubjectReference, @NonNull MaterialStateId> currentStatesOf(
       @NonNull WorkspaceId workspaceId,
       @NonNull Set<@NonNull MeasurementSubjectReference> subjects

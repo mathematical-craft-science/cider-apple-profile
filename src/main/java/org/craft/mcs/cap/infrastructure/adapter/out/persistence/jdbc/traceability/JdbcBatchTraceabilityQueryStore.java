@@ -22,7 +22,7 @@ import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.traceabilit
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.traceability.row.BatchTraceStepJdbcRowMapper;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.traceability.row.BatchTraceStepSubjectJdbcRow;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.traceability.row.BatchTraceStepSubjectRole;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValueKind;
+import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.traceability.row.BatchTraceCharacteristicStorageKind;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic;
 import org.jspecify.annotations.NonNull;
@@ -100,20 +100,29 @@ class JdbcBatchTraceabilityQueryStore implements BatchTraceabilityQueryStore {
     subject.snapshotVolumeLiters = resultSet.getBigDecimal("snapshot_volume_liters");
     subject.snapshotConfidence = resultSet.getString("snapshot_confidence");
     subject.specificGravityValue = resultSet.getBigDecimal("sugar_value");
-    subject.specificGravityValueKind = enumValue(AxisValueKind.class, resultSet.getString("sugar_value_kind"));
+    subject.specificGravityValueKind = enumValue(
+        BatchTraceCharacteristicStorageKind.class,
+        resultSet.getString("sugar_value_kind")
+    );
     subject.specificGravityMin = resultSet.getBigDecimal("sugar_min");
     subject.specificGravityMax = resultSet.getBigDecimal("sugar_max");
     subject.titratableAcidityValue = resultSet.getBigDecimal("acidity_value");
-    subject.titratableAcidityValueKind = enumValue(AxisValueKind.class, resultSet.getString("acidity_value_kind"));
+    subject.titratableAcidityValueKind = enumValue(
+        BatchTraceCharacteristicStorageKind.class,
+        resultSet.getString("acidity_value_kind")
+    );
     subject.titratableAcidityMin = resultSet.getBigDecimal("acidity_min");
     subject.titratableAcidityMax = resultSet.getBigDecimal("acidity_max");
     subject.tanninValue = resultSet.getBigDecimal("tannin_value");
-    subject.tanninValueKind = enumValue(AxisValueKind.class, resultSet.getString("tannin_value_kind"));
+    subject.tanninValueKind = enumValue(
+        BatchTraceCharacteristicStorageKind.class,
+        resultSet.getString("tannin_value_kind")
+    );
     subject.tanninMin = resultSet.getBigDecimal("tannin_min");
     subject.tanninMax = resultSet.getBigDecimal("tannin_max");
     subject.yeastAssimilableNitrogenValue = resultSet.getBigDecimal("yan_value");
     subject.yeastAssimilableNitrogenValueKind = enumValue(
-        AxisValueKind.class,
+        BatchTraceCharacteristicStorageKind.class,
         resultSet.getString("yan_value_kind")
     );
     subject.yeastAssimilableNitrogenMin = resultSet.getBigDecimal("yan_min");

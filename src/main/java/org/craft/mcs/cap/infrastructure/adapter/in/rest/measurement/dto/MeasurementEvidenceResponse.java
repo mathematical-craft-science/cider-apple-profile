@@ -4,7 +4,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Instant;
 import java.util.UUID;
 import org.craft.mcs.cap.shared.application.measurement.MeasurementValueOrigin;
-import org.craft.mcs.cap.shared.application.measurement.MeasurementEvidenceValidity;
 import org.craft.mcs.cap.shared.application.measurement.MeasurementFreshnessStatus;
 import org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic;
 import org.jspecify.annotations.NonNull;
@@ -67,13 +66,6 @@ public record MeasurementEvidenceResponse(
         description = "Source and confidence evidence of the selected result.",
         requiredMode = Schema.RequiredMode.REQUIRED
     )
-    @NonNull MeasurementProvenanceResponse provenance,
-    @Schema(
-        description = "Whether the selected evidence remains applicable to the current material lineage.",
-        implementation = MeasurementEvidenceValidity.class,
-        example = "VALID",
-        requiredMode = Schema.RequiredMode.REQUIRED
-    )
-    @NonNull MeasurementEvidenceValidity validity
+    @NonNull MeasurementProvenanceResponse provenance
 ) {
 }

@@ -5,16 +5,16 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.craft.mcs.cap.core.feedstock.application.analysis.common.service.FeedstockGraphCandidateMatcher;
 import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
-import org.craft.mcs.cap.core.profileanalysis.composition.optimization.application.port.in.OptimizeChemicalProfileCompositionCommand;
-import org.craft.mcs.cap.core.profileanalysis.composition.optimization.application.port.in.OptimizeChemicalProfileCompositionUseCase;
-import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionSourceReference;
-import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionTanninPolicy;
-import org.craft.mcs.cap.core.profileanalysis.composition.calculation.application.compatibility.ChemicalProfileCompositionSourceAdapter;
-import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.ChemicalProfileCompositionOptimizationSource;
+import org.craft.mcs.cap.core.profileanalysis.composition.optimization.application.port.in.OptimizeCompositionCommand;
+import org.craft.mcs.cap.core.profileanalysis.composition.optimization.application.port.in.OptimizeCompositionUseCase;
+import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionSourceReference;
+import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionTanninPolicy;
+import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionSourceCharacteristics;
+import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.CompositionOptimizationSource;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetObjective;
-import org.craft.mcs.cap.core.profileanalysis.compatibility.application.ChemicalProfileAssessmentAdapter;
-import org.craft.mcs.cap.core.profileanalysis.compatibility.application.ChemicalProfileAssessmentMatcher;
+import org.craft.mcs.cap.core.profileanalysis.graph.application.port.in.EvaluateJolicoeurSugarAcidityGraphUseCase;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.CustomRectangleSugarAcidityTarget;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.RectangleSugarAcidityTargetGeometry;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.SugarAcidityTarget;
@@ -55,10 +55,10 @@ public final class OptimizeFeedstockBatchCompositionService implements OptimizeF
 
   private final @NonNull FeedstockCurrentProfileAnalysisCandidateRepository candidateRepository;
   private final @NonNull FeedstockBatchSummaryQueryRepository feedstockBatchQueryRepository;
-  private final @NonNull ChemicalProfileAssessmentAdapter chemicalProfileAssessmentAdapter;
-  private final @NonNull ChemicalProfileAssessmentMatcher chemicalProfileAssessmentMatcher;
+  private final @NonNull EvaluateJolicoeurSugarAcidityGraphUseCase graphEvaluator;
+  private final @NonNull FeedstockGraphCandidateMatcher graphCandidateMatcher;
   private final @NonNull SugarAcidityTargetResolver targetResolver;
-  private final @NonNull OptimizeChemicalProfileCompositionUseCase optimizeChemicalProfileCompositionUseCase;
+  private final @NonNull OptimizeCompositionUseCase optimizeCompositionUseCase;
   private final @NonNull FeedstockAccessControl feedstockAccessControl;
 
   @Override
@@ -88,12 +88,12 @@ public final class OptimizeFeedstockBatchCompositionService implements OptimizeF
       throw new InsufficientFeedstockCompositionSourcesException(sources.size(), MINIMUM_SOURCE_COUNT);
     }
 
-    final var optimization = optimizeChemicalProfileCompositionUseCase.optimize(
-        new OptimizeChemicalProfileCompositionCommand(
+    final var optimization = optimizeCompositionUseCase.optimize(
+        new OptimizeCompositionCommand(
             sources,
             command.tanninTarget() == null
-                ? ChemicalProfileCompositionTanninPolicy.CALCULATE_WHEN_COMPLETE
-                : ChemicalProfileCompositionTanninPolicy.REQUIRE_TANNIN,
+                ? CompositionTanninPolicy.CALCULATE_WHEN_COMPLETE
+                : CompositionTanninPolicy.REQUIRE_TANNIN,
             objective(command),
             command.scoringConfiguration(),
             command.criteria(),
@@ -108,39 +108,42 @@ public final class OptimizeFeedstockBatchCompositionService implements OptimizeF
     return new OptimizeFeedstockBatchCompositionResult(sources.size(), optimization);
   }
 
-  private @NonNull Optional<@NonNull ChemicalProfileCompositionOptimizationSource> toOptimizationSourceIfUsable(
+  private @NonNull Optional<@NonNull CompositionOptimizationSource> toOptimizationSourceIfUsable(
       @NonNull FeedstockCurrentProfileView currentProfile,
       @NonNull FeedstockAnalysisCandidateFilters filters,
       @NonNull Map<@NonNull FeedstockBatchId, @NonNull FeedstockBatchSummary> batchesById
   ) {
     requireNonNull(currentProfile, "feedstock current profile cannot be null");
-    final var evaluation = chemicalProfileAssessmentAdapter.project(currentProfile.chemicalProfile());
-    if (!evaluation.plottable()) {
+    final var graphEvaluation = graphEvaluator.evaluate(
+        currentProfile.specificGravity(),
+        currentProfile.titratableAcidity()
+    );
+    if (!graphEvaluation.plottable()) {
       return Optional.empty();
     }
-    if (!chemicalProfileAssessmentMatcher.matches(
-        evaluation,
-        filters.capability(),
-        filters.sugarAcidityZone()
-    )) {
+    if (!graphCandidateMatcher.matches(currentProfile, graphEvaluation, filters)) {
       return Optional.empty();
     }
-
-    final var assessment = evaluation.assessment();
-    if (assessment == null) {
+    final var specificGravity = currentProfile.specificGravity();
+    final var titratableAcidity = currentProfile.titratableAcidity();
+    if (specificGravity == null || titratableAcidity == null) {
       return Optional.empty();
     }
 
     return Optional.ofNullable(batchesById.get(currentProfile.batchId()))
-        .flatMap(batch -> ChemicalProfileCompositionSourceAdapter.adapt(currentProfile.chemicalProfile())
-            .map(characteristics -> new ChemicalProfileCompositionOptimizationSource(
-                new ChemicalProfileCompositionSourceReference(
+        .map(batch -> new CompositionOptimizationSource(
+                new CompositionSourceReference(
                     SOURCE_TYPE,
                     currentProfile.batchId().value().toString()
                 ),
-                characteristics,
+                new CompositionSourceCharacteristics(
+                    specificGravity,
+                    titratableAcidity,
+                    currentProfile.tannin(),
+                    currentProfile.yeastAssimilableNitrogen()
+                ),
                 batch.availableVolume()
-            )));
+            ));
   }
 
   private @NonNull ProfileTargetObjective objective(
