@@ -5,11 +5,14 @@ import java.util.List;
 import org.craft.mcs.cap.core.profileanalysis.abv.domain.FixedFinalGravityPredictionStrategy;
 import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPredictor;
 import org.craft.mcs.cap.core.profileanalysis.abv.domain.StandardGravityDropAbvPredictionStrategy;
+import org.craft.mcs.cap.core.profileanalysis.classification.domain.profile.northamerican.NorthAmericanTanninLevel;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.application.port.in.CalculateCompositionResult;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionCalculationRequest;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.MassBalanceCompositionCalculator;
+import org.craft.mcs.cap.core.profileanalysis.compositiongraph.application.service.CompositionGraphInterpretationService;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.normalization.ProfileAxisNormalizerCode;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.calculation.dto.CalculateCompositionRequest;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.calculation.dto.CalculatedCompositionResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.calculation.dto.CompositionSourceRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.calculation.dto.CompositionSourceWeightKind;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.calculation.dto.CompositionSourceWeightRequest;
@@ -27,6 +30,8 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static java.util.Objects.requireNonNull;
+import static org.craft.mcs.cap.core.profileanalysis.testing.ProfileAnalysisTestFixtures
+    .northAmericanProfileCalculator;
 
 
 class CompositionCalculationRestMapperTest {
@@ -37,6 +42,8 @@ class CompositionCalculationRestMapperTest {
       FixedFinalGravityPredictionStrategy.dryCiderDefault(),
       new StandardGravityDropAbvPredictionStrategy()
   );
+  private static final CompositionGraphInterpretationService GRAPH_INTERPRETER =
+      new CompositionGraphInterpretationService(northAmericanProfileCalculator());
 
   @Test
   void mapsYanAxisForCalculationRequestAndResponse() {
@@ -67,14 +74,18 @@ class CompositionCalculationRestMapperTest {
         command.sources(),
         command.tanninPolicy()
     ));
-    final var response = CompositionCalculationRestMapper.toResponse(
+    final var response = CompositionCalculationRestMapper.toResponse(GRAPH_INTERPRETER.interpret(
         CalculateCompositionResult.withoutTargetDistance(
             composition,
             POTENTIAL_ABV_PREDICTOR.predict(composition.characteristics().specificGravity())
         )
-    );
+    ));
 
     assertThat(response)
+        .returns(
+            NorthAmericanTanninLevel.MEDIUM,
+            CalculatedCompositionResponse::northAmericanTanninLevel
+        )
         .satisfies(value -> assertThat(value.characteristics())
             .satisfies(characteristics -> assertThat(characteristics.specificGravity())
                 .returns("SG", DecimalQuantityResponse::unit))

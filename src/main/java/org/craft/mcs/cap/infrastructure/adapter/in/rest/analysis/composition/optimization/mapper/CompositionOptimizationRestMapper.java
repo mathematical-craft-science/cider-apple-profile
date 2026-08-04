@@ -3,10 +3,10 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.op
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionCalculatorCode;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionTanninPolicy;
 import org.craft.mcs.cap.core.profileanalysis.composition.optimization.application.port.in.OptimizeCompositionCommand;
-import org.craft.mcs.cap.core.profileanalysis.composition.optimization.application.port.in.OptimizeCompositionResult;
-import org.craft.mcs.cap.core.profileanalysis.composition.optimization.application.model.CompositionOptimizationCandidateView;
 import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.strategy.CompositionOptimizationAlgorithm;
 import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.strategy.DiscretizedCompositionOptimizationSettings;
+import org.craft.mcs.cap.core.profileanalysis.compositiongraph.application.model.CompositionOptimizationCandidateGraphView;
+import org.craft.mcs.cap.core.profileanalysis.compositiongraph.application.model.CompositionOptimizationGraphView;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetScoringConfiguration;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.SugarAcidityTargetResolver;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.abv.mapper.PotentialAbvPredictionRestMapper;
@@ -25,7 +25,6 @@ import static org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composit
 import static org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.common.mapper.CompositionCommonResponseMapper.toVolumeResponse;
 import static org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.mapper.ProfileTargetRestMapper.toTargetObjective;
 import static org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.mapper.ProfileTargetRestMapper.toWeights;
-
 
 public final class CompositionOptimizationRestMapper {
 
@@ -94,8 +93,10 @@ public final class CompositionOptimizationRestMapper {
   }
 
   public static @NonNull OptimizeCompositionResponse toResponse(
-      @NonNull OptimizeCompositionResult result
+      @NonNull CompositionOptimizationGraphView graphView
   ) {
+    requireNonNull(graphView, "composition optimization graph view cannot be null");
+    final var result = graphView.optimization();
     requireNonNull(result, "optimize composition result cannot be null");
 
     return new OptimizeCompositionResponse(
@@ -106,16 +107,17 @@ public final class CompositionOptimizationRestMapper {
         result.objectiveFunctionCode(),
         result.settings().stepPercent(),
         result.evaluatedCandidates(),
-        result.candidates().stream()
+        graphView.candidates().stream()
             .map(CompositionOptimizationRestMapper::toResponse)
             .toList()
     );
   }
 
   private static @NonNull CompositionOptimizationCandidateResponse toResponse(
-      @NonNull CompositionOptimizationCandidateView view
+      @NonNull CompositionOptimizationCandidateGraphView graphView
   ) {
-    requireNonNull(view, "composition optimization candidate view cannot be null");
+    requireNonNull(graphView, "composition optimization candidate graph view cannot be null");
+    final var view = graphView.candidate();
     final var candidate = view.candidate();
     final var composition = candidate.composition();
 
@@ -124,6 +126,7 @@ public final class CompositionOptimizationRestMapper {
             .map(CompositionCommonResponseMapper::toResponse)
             .toList(),
         toCharacteristicsResponse(composition.characteristics()),
+        graphView.northAmericanTanninLevel(),
         PotentialAbvPredictionRestMapper.toResponse(view.potentialAbv()),
         toVolumeResponse(composition.totalVolume()),
         composition.warnings(),

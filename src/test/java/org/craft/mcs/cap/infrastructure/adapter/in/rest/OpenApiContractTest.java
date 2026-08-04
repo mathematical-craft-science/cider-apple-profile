@@ -56,6 +56,7 @@ import org.craft.mcs.cap.core.production.candidate.application.port.in.GetProduc
 import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPredictor;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.application.port.in.*;
 import org.craft.mcs.cap.core.profileanalysis.composition.optimization.application.port.in.*;
+import org.craft.mcs.cap.core.profileanalysis.compositiongraph.application.port.in.CompositionGraphInterpretationUseCase;
 import org.craft.mcs.cap.core.profileanalysis.graph.zone.domain.JolicoeurSugarAcidityZoneGeometryProfile;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.SugarAcidityTargetResolver;
 import org.craft.mcs.cap.infrastructure.adapter.in.importer.appleprofile.AppleVarietyJsonSeedImporter;
@@ -168,6 +169,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
     PotentialAbvPredictor.class,
     CalculateCompositionUseCase.class,
     OptimizeCompositionUseCase.class,
+    CompositionGraphInterpretationUseCase.class,
     JolicoeurSugarAcidityZoneGeometryProfile.class,
     SugarAcidityTargetResolver.class,
     AppleVarietyJsonSeedImporter.class
@@ -1063,10 +1065,20 @@ class OpenApiContractTest {
         openApi,
         "CalculatedCompositionResponse",
         "totalVolume",
+        "northAmericanTanninLevel",
         "normalizerCode",
         "targetDistance"
     );
     assertNullable(schemaProperty(openApi, "CalculatedCompositionResponse", "totalVolume"));
+    assertNullable(schemaProperty(openApi, "CalculatedCompositionResponse", "northAmericanTanninLevel"));
+    assertEnumProperty(
+        openApi,
+        "CalculatedCompositionResponse",
+        "northAmericanTanninLevel",
+        "LOW"
+    );
+    assertEnumProperty(openApi, "CalculatedCompositionResponse", "northAmericanTanninLevel", "MEDIUM");
+    assertEnumProperty(openApi, "CalculatedCompositionResponse", "northAmericanTanninLevel", "HIGH");
     assertRequiredProperties(openApi, "CompositionSourceResponse", "reference");
     assertNotRequiredProperties(openApi, "CompositionSourceResponse", "requestedVolume", "proportion");
     assertNullable(schemaProperty(openApi, "CompositionSourceResponse", "requestedVolume"));
@@ -1083,9 +1095,31 @@ class OpenApiContractTest {
     assertNotRequiredProperties(
         openApi,
         "CompositionOptimizationCandidateResponse",
-        "totalVolume"
+        "totalVolume",
+        "northAmericanTanninLevel"
     );
     assertNullable(schemaProperty(openApi, "CompositionOptimizationCandidateResponse", "totalVolume"));
+    assertNullable(
+        schemaProperty(openApi, "CompositionOptimizationCandidateResponse", "northAmericanTanninLevel")
+    );
+    assertEnumProperty(
+        openApi,
+        "CompositionOptimizationCandidateResponse",
+        "northAmericanTanninLevel",
+        "LOW"
+    );
+    assertEnumProperty(
+        openApi,
+        "CompositionOptimizationCandidateResponse",
+        "northAmericanTanninLevel",
+        "MEDIUM"
+    );
+    assertEnumProperty(
+        openApi,
+        "CompositionOptimizationCandidateResponse",
+        "northAmericanTanninLevel",
+        "HIGH"
+    );
     assertRequiredProperties(
         openApi,
         "CompositionOptimizationPenaltyResponse",

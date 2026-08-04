@@ -3,6 +3,7 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.application.port.in.CalculateCompositionUseCase;
 import org.craft.mcs.cap.core.profileanalysis.composition.optimization.application.port.in.OptimizeCompositionUseCase;
+import org.craft.mcs.cap.core.profileanalysis.compositiongraph.application.port.in.CompositionGraphInterpretationUseCase;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.calculation.dto.CalculateCompositionRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.calculation.dto.CalculatedCompositionResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.calculation.mapper.CompositionCalculationRestMapper;
@@ -24,6 +25,7 @@ public final class CompositionController implements CompositionApi {
 
   private final @NonNull CalculateCompositionUseCase calculateCompositionUseCase;
   private final @NonNull OptimizeCompositionUseCase optimizeCompositionUseCase;
+  private final @NonNull CompositionGraphInterpretationUseCase graphInterpretationUseCase;
   private final @NonNull CompositionRequestMapper requestMapper;
 
   @Override
@@ -40,7 +42,7 @@ public final class CompositionController implements CompositionApi {
     );
 
     return ResponseEntity.ok(
-        CompositionCalculationRestMapper.toResponse(result)
+        CompositionCalculationRestMapper.toResponse(graphInterpretationUseCase.interpret(result))
     );
   }
 
@@ -58,7 +60,7 @@ public final class CompositionController implements CompositionApi {
     );
 
     return ResponseEntity.ok(
-        CompositionOptimizationRestMapper.toResponse(result)
+        CompositionOptimizationRestMapper.toResponse(graphInterpretationUseCase.interpret(result))
     );
   }
 }

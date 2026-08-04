@@ -1,9 +1,9 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.calculation.mapper;
 
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.application.port.in.CalculateCompositionCommand;
-import org.craft.mcs.cap.core.profileanalysis.composition.calculation.application.port.in.CalculateCompositionResult;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionCalculatorCode;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionTanninPolicy;
+import org.craft.mcs.cap.core.profileanalysis.compositiongraph.application.model.CalculatedCompositionGraphView;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetScoringConfiguration;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.SugarAcidityTargetResolver;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.abv.mapper.PotentialAbvPredictionRestMapper;
@@ -22,7 +22,6 @@ import static org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composit
 import static org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.common.mapper.CompositionCommonResponseMapper.toVolumeResponse;
 import static org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.mapper.ProfileTargetRestMapper.toTargetObjective;
 import static org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.mapper.ProfileTargetRestMapper.toWeights;
-
 
 public final class CompositionCalculationRestMapper {
 
@@ -74,8 +73,10 @@ public final class CompositionCalculationRestMapper {
   }
 
   public static @NonNull CalculatedCompositionResponse toResponse(
-      @NonNull CalculateCompositionResult result
+      @NonNull CalculatedCompositionGraphView graphView
   ) {
+    requireNonNull(graphView, "calculated composition graph view cannot be null");
+    final var result = graphView.calculation();
     requireNonNull(result, "calculate composition result cannot be null");
     final var composition = result.composition();
 
@@ -84,6 +85,7 @@ public final class CompositionCalculationRestMapper {
             .map(CompositionCommonResponseMapper::toResponse)
             .toList(),
         toCharacteristicsResponse(composition.characteristics()),
+        graphView.northAmericanTanninLevel(),
         PotentialAbvPredictionRestMapper.toResponse(result.potentialAbv()),
         toVolumeResponse(composition.totalVolume()),
         composition.warnings(),
