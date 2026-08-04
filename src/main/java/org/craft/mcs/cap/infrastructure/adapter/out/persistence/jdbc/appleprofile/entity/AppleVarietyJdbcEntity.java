@@ -34,45 +34,29 @@ public class AppleVarietyJdbcEntity {
   @Nullable @Column("sugar_exact_sg") BigDecimal sugarExactValue;
   @Nullable @Column("sugar_min_sg") BigDecimal sugarMinValue;
   @Nullable @Column("sugar_max_sg") BigDecimal sugarMaxValue;
-  @Nullable @Column("sugar_mean_sg") BigDecimal sugarMeanValue;
-  @Nullable @Column("sugar_median_sg") BigDecimal sugarMedianValue;
-  @Nullable @Column("sugar_standard_deviation") BigDecimal sugarStandardDeviation;
-  @Nullable @Column("sugar_sample_size") Integer sugarSampleSize;
 
   @Nullable @Column("ph_kind") MeasurementKind phKind;
   @Nullable @Column("ph_exact") BigDecimal phExactValue;
   @Nullable @Column("ph_min") BigDecimal phMinValue;
   @Nullable @Column("ph_max") BigDecimal phMaxValue;
-  @Nullable @Column("ph_mean") BigDecimal phMeanValue;
-  @Nullable @Column("ph_median") BigDecimal phMedianValue;
-  @Nullable @Column("ph_standard_deviation") BigDecimal phStandardDeviation;
-  @Nullable @Column("ph_sample_size") Integer phSampleSize;
 
   @Nullable @Column("ta_kind") MeasurementKind titratableAcidityKind;
   @Nullable @Column("ta_exact_g_l_as_malic") BigDecimal titratableAcidityExactValue;
   @Nullable @Column("ta_min_g_l_as_malic") BigDecimal titratableAcidityMinValue;
   @Nullable @Column("ta_max_g_l_as_malic") BigDecimal titratableAcidityMaxValue;
-  @Nullable @Column("ta_mean_g_l_as_malic") BigDecimal titratableAcidityMeanValue;
-  @Nullable @Column("ta_median_g_l_as_malic") BigDecimal titratableAcidityMedianValue;
-  @Nullable @Column("ta_standard_deviation") BigDecimal titratableAcidityStandardDeviation;
-  @Nullable @Column("ta_sample_size") Integer titratableAciditySampleSize;
 
-  @Nullable @Column("tanninity_kind") MeasurementKind tanninityKind;
-  @Nullable @Column("tanninity_exact_mg_l_tae") BigDecimal tanninityExactValue;
-  @Nullable @Column("tanninity_min_mg_l_tae") BigDecimal tanninityMinValue;
-  @Nullable @Column("tanninity_max_mg_l_tae") BigDecimal tanninityMaxValue;
-  @Nullable @Column("tanninity_mean_mg_l_tae") BigDecimal tanninityMeanValue;
-  @Nullable @Column("tanninity_median_mg_l_tae") BigDecimal tanninityMedianValue;
-  @Nullable @Column("tanninity_standard_deviation") BigDecimal tanninityStandardDeviation;
-  @Nullable @Column("tanninity_sample_size") Integer tanninitySampleSize;
+  @Nullable @Column("tannin_kind") MeasurementKind tanninKind;
+  @Nullable @Column("tannin_exact_mg_l_tae") BigDecimal tanninExactValue;
+  @Nullable @Column("tannin_min_mg_l_tae") BigDecimal tanninMinValue;
+  @Nullable @Column("tannin_max_mg_l_tae") BigDecimal tanninMaxValue;
 
   @Nullable
   @Column("chemical_profile_source")
-  String chemicalProfileSource;
+  String referenceProfileSource;
 
   @Nullable
   @Column("chemical_profile_confidence")
-  ConfidenceLevel chemicalProfileConfidence;
+  ConfidenceLevel referenceProfileConfidence;
 
   @CreatedDate
   @Nullable
@@ -98,18 +82,18 @@ public class AppleVarietyJdbcEntity {
       @Nullable MeasurementJdbcColumns sugar,
       @Nullable MeasurementJdbcColumns ph,
       @Nullable MeasurementJdbcColumns titratableAcidity,
-      @Nullable MeasurementJdbcColumns tanninity,
-      @Nullable String chemicalProfileSource,
-      @Nullable ConfidenceLevel chemicalProfileConfidence
+      @Nullable MeasurementJdbcColumns tannin,
+      @Nullable String referenceProfileSource,
+      @Nullable ConfidenceLevel referenceProfileConfidence
   ) {
     this.varietyId = requireNonNull(varietyId, "variety id cannot be null");
     this.name = requireNonNull(name, "apple variety name cannot be null");
-    this.chemicalProfileSource = normalize(chemicalProfileSource);
-    this.chemicalProfileConfidence = chemicalProfileConfidence;
+    this.referenceProfileSource = normalize(referenceProfileSource);
+    this.referenceProfileConfidence = referenceProfileConfidence;
     applySugar(sugar);
     applyPh(ph);
     applyTitratableAcidity(titratableAcidity);
-    applyTanninity(tanninity);
+    applyTannin(tannin);
   }
 
   @Nullable
@@ -118,11 +102,7 @@ public class AppleVarietyJdbcEntity {
         sugarKind,
         sugarExactValue,
         sugarMinValue,
-        sugarMaxValue,
-        sugarMeanValue,
-        sugarMedianValue,
-        sugarStandardDeviation,
-        sugarSampleSize
+        sugarMaxValue
     );
   }
 
@@ -132,11 +112,7 @@ public class AppleVarietyJdbcEntity {
         phKind,
         phExactValue,
         phMinValue,
-        phMaxValue,
-        phMeanValue,
-        phMedianValue,
-        phStandardDeviation,
-        phSampleSize
+        phMaxValue
     );
   }
 
@@ -146,25 +122,17 @@ public class AppleVarietyJdbcEntity {
         titratableAcidityKind,
         titratableAcidityExactValue,
         titratableAcidityMinValue,
-        titratableAcidityMaxValue,
-        titratableAcidityMeanValue,
-        titratableAcidityMedianValue,
-        titratableAcidityStandardDeviation,
-        titratableAciditySampleSize
+        titratableAcidityMaxValue
     );
   }
 
   @Nullable
-  MeasurementJdbcColumns tanninity() {
+  MeasurementJdbcColumns tannin() {
     return measurement(
-        tanninityKind,
-        tanninityExactValue,
-        tanninityMinValue,
-        tanninityMaxValue,
-        tanninityMeanValue,
-        tanninityMedianValue,
-        tanninityStandardDeviation,
-        tanninitySampleSize
+        tanninKind,
+        tanninExactValue,
+        tanninMinValue,
+        tanninMaxValue
     );
   }
 
@@ -173,10 +141,6 @@ public class AppleVarietyJdbcEntity {
     sugarExactValue = exactValue(measurement);
     sugarMinValue = minValue(measurement);
     sugarMaxValue = maxValue(measurement);
-    sugarMeanValue = meanValue(measurement);
-    sugarMedianValue = medianValue(measurement);
-    sugarStandardDeviation = standardDeviation(measurement);
-    sugarSampleSize = sampleSize(measurement);
   }
 
   private void applyPh(@Nullable MeasurementJdbcColumns measurement) {
@@ -184,10 +148,6 @@ public class AppleVarietyJdbcEntity {
     phExactValue = exactValue(measurement);
     phMinValue = minValue(measurement);
     phMaxValue = maxValue(measurement);
-    phMeanValue = meanValue(measurement);
-    phMedianValue = medianValue(measurement);
-    phStandardDeviation = standardDeviation(measurement);
-    phSampleSize = sampleSize(measurement);
   }
 
   private void applyTitratableAcidity(@Nullable MeasurementJdbcColumns measurement) {
@@ -195,21 +155,13 @@ public class AppleVarietyJdbcEntity {
     titratableAcidityExactValue = exactValue(measurement);
     titratableAcidityMinValue = minValue(measurement);
     titratableAcidityMaxValue = maxValue(measurement);
-    titratableAcidityMeanValue = meanValue(measurement);
-    titratableAcidityMedianValue = medianValue(measurement);
-    titratableAcidityStandardDeviation = standardDeviation(measurement);
-    titratableAciditySampleSize = sampleSize(measurement);
   }
 
-  private void applyTanninity(@Nullable MeasurementJdbcColumns measurement) {
-    tanninityKind = kind(measurement);
-    tanninityExactValue = exactValue(measurement);
-    tanninityMinValue = minValue(measurement);
-    tanninityMaxValue = maxValue(measurement);
-    tanninityMeanValue = meanValue(measurement);
-    tanninityMedianValue = medianValue(measurement);
-    tanninityStandardDeviation = standardDeviation(measurement);
-    tanninitySampleSize = sampleSize(measurement);
+  private void applyTannin(@Nullable MeasurementJdbcColumns measurement) {
+    tanninKind = kind(measurement);
+    tanninExactValue = exactValue(measurement);
+    tanninMinValue = minValue(measurement);
+    tanninMaxValue = maxValue(measurement);
   }
 
   private static @Nullable MeasurementKind kind(@Nullable MeasurementJdbcColumns measurement) {
@@ -228,31 +180,11 @@ public class AppleVarietyJdbcEntity {
     return measurement == null ? null : measurement.maxValue;
   }
 
-  private static @Nullable BigDecimal meanValue(@Nullable MeasurementJdbcColumns measurement) {
-    return measurement == null ? null : measurement.meanValue;
-  }
-
-  private static @Nullable BigDecimal medianValue(@Nullable MeasurementJdbcColumns measurement) {
-    return measurement == null ? null : measurement.medianValue;
-  }
-
-  private static @Nullable BigDecimal standardDeviation(@Nullable MeasurementJdbcColumns measurement) {
-    return measurement == null ? null : measurement.standardDeviation;
-  }
-
-  private static @Nullable Integer sampleSize(@Nullable MeasurementJdbcColumns measurement) {
-    return measurement == null ? null : measurement.sampleSize;
-  }
-
   private static @Nullable MeasurementJdbcColumns measurement(
       @Nullable MeasurementKind kind,
       @Nullable BigDecimal exactValue,
       @Nullable BigDecimal minValue,
-      @Nullable BigDecimal maxValue,
-      @Nullable BigDecimal meanValue,
-      @Nullable BigDecimal medianValue,
-      @Nullable BigDecimal standardDeviation,
-      @Nullable Integer sampleSize
+      @Nullable BigDecimal maxValue
   ) {
     if (kind == null) {
       return null;
@@ -263,10 +195,6 @@ public class AppleVarietyJdbcEntity {
     measurement.exactValue = exactValue;
     measurement.minValue = minValue;
     measurement.maxValue = maxValue;
-    measurement.meanValue = meanValue;
-    measurement.medianValue = medianValue;
-    measurement.standardDeviation = standardDeviation;
-    measurement.sampleSize = sampleSize;
     return measurement;
   }
 

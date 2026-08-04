@@ -7,6 +7,6 @@ public interface QueryFeedstockBatchProfileTargetCandidatesUseCase {
 
   @NonNull
   FeedstockBatchProfileTargetCandidates query(
-      @NonNull FeedstockBatchProfileTargetCandidateQuery query
+      @NonNull FeedstockBatchProfileTargetQuery query
   );
 }

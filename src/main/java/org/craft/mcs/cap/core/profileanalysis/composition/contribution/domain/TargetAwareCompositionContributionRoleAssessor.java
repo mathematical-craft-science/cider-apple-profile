@@ -1,20 +1,18 @@
 package org.craft.mcs.cap.core.profileanalysis.composition.contribution.domain;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileEvaluationAxis;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetObjective;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.SugarAcidityCoordinates;
-import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.assessment.ProfileTargetDistance;
+import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
+import org.craft.mcs.cap.shared.kernel.measurement.MeasuredValue;
+import org.craft.mcs.cap.shared.kernel.measurement.MeasuredValueRangePosition;
 import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
 
 import static java.util.Objects.requireNonNull;
 
@@ -23,161 +21,105 @@ import static java.util.Objects.requireNonNull;
  * Target-aware contribution strategy.
  *
  * <p>The strategy compares a source profile with the nearest point of the selected target area. A
- * source inside the target becomes {@link CompositionContributionRole#BALANCED_BASE}. A source above a target
- * coordinate receives a contributor role for that axis; a source below acidity or tannin target receives a
- * softening/reducing role. Sugar and acidity are required. Tannin is optional and is assessed only when the target
- * includes a tannin range.
+ * source inside the target becomes {@link CompositionContributionRole#BALANCED_BASE}. A source
+ * above a target coordinate receives the corresponding cider-making contribution role; a source
+ * below a TA or tannin target receives a reducing/softening role. The comparison uses canonical SG
+ * and TA evidence. It does not infer sensory sweetness or perceived acidity. Tannin is optional
+ * and is assessed only when the target includes a tannin range.
  */
 public final class TargetAwareCompositionContributionRoleAssessor
     implements CompositionContributionRoleAssessor {
 
-  private static @NonNull Set<@NonNull ChemicalAxis> missingRequiredAxes(
-      @NonNull ChemicalProfileAxes axes
+  private static void addSpecificGravityEvidence(
+      @NonNull SpecificGravityValue source,
+      @NonNull SpecificGravityValue target,
+      @NonNull MeasuredValueRangePosition targetPosition,
+      @NonNull EnumSet<CompositionContributionRole> roles,
+      @NonNull List<@NonNull CompositionContributionEvidence> evidence
   ) {
-    final var missing = EnumSet.noneOf(ChemicalAxis.class);
-    if (!axes.has(ChemicalAxis.SUGAR)) {
-      missing.add(ChemicalAxis.SUGAR);
-    }
-    if (!axes.has(ChemicalAxis.ACIDITY)) {
-      missing.add(ChemicalAxis.ACIDITY);
-    }
-    return missing;
-  }
-
-  private static @NonNull CompositionContributionRoleAssessment unassessable(
-      @NonNull Set<@NonNull ChemicalAxis> missingAxes
-  ) {
-    return new CompositionContributionRoleAssessment(
-        List.of(CompositionContributionRole.UNASSESSABLE),
-        CompositionContributionRole.UNASSESSABLE,
-        List.of(),
-        missingAxes
+    final var fact = addEvidence(
+        ProfileEvaluationAxis.SPECIFIC_GRAVITY,
+        source,
+        target,
+        targetPosition,
+        evidence
     );
-  }
-
-  private static void addSugarEvidence(
-      @NonNull BigDecimal source,
-      @NonNull BigDecimal target,
-      @NonNull EnumSet<CompositionContributionRole> roles,
-      @NonNull List<@NonNull CompositionContributionEvidence> evidence
-  ) {
-    final var deviation = source.subtract(target);
-    if (TargetDeviation.of(deviation).isAboveTarget()) {
+    if (fact.direction() == CompositionContributionEvidenceDirection.ABOVE_TARGET) {
       roles.add(CompositionContributionRole.SUGAR_CONTRIBUTOR);
-      evidence.add(
-          evidence(
-              ProfileEvaluationAxis.SUGAR,
-              source,
-              target,
-              deviation,
-              CompositionContributionRole.SUGAR_CONTRIBUTOR
-          )
-      );
+    } else if (fact.direction() == CompositionContributionEvidenceDirection.BELOW_TARGET) {
+      roles.add(CompositionContributionRole.SUGAR_REDUCER);
     }
   }
 
-  private static void addAcidityEvidence(
-      @NonNull BigDecimal source,
-      @NonNull BigDecimal target,
+  private static void addTitratableAcidityEvidence(
+      @NonNull TitratableAcidityValue source,
+      @NonNull TitratableAcidityValue target,
+      @NonNull MeasuredValueRangePosition targetPosition,
       @NonNull EnumSet<CompositionContributionRole> roles,
       @NonNull List<@NonNull CompositionContributionEvidence> evidence
   ) {
-    final var deviation = source.subtract(target);
-    final var targetDeviation = TargetDeviation.of(deviation);
-    if (targetDeviation.isAboveTarget()) {
+    final var fact = addEvidence(
+        ProfileEvaluationAxis.TITRATABLE_ACIDITY,
+        source,
+        target,
+        targetPosition,
+        evidence
+    );
+    if (fact.direction() == CompositionContributionEvidenceDirection.ABOVE_TARGET) {
       roles.add(CompositionContributionRole.ACIDITY_CONTRIBUTOR);
-      evidence.add(
-          evidence(
-              ProfileEvaluationAxis.ACIDITY,
-              source,
-              target,
-              deviation,
-              CompositionContributionRole.ACIDITY_CONTRIBUTOR
-          )
-      );
-    } else if (targetDeviation.isBelowTarget()) {
+    } else if (fact.direction() == CompositionContributionEvidenceDirection.BELOW_TARGET) {
       roles.add(CompositionContributionRole.ACIDITY_REDUCER);
-      evidence.add(
-          evidence(
-              ProfileEvaluationAxis.ACIDITY,
-              source,
-              target,
-              deviation,
-              CompositionContributionRole.ACIDITY_REDUCER
-          )
-      );
     }
   }
 
   private static void addTanninEvidence(
-      @NonNull ChemicalProfileAxes axes,
-      @NonNull ProfileTargetObjective target,
+      @NonNull ProfileTargetDistance targetDistance,
       @NonNull EnumSet<CompositionContributionRole> roles,
       @NonNull List<@NonNull CompositionContributionEvidence> evidence,
-      @NonNull Set<@NonNull ChemicalAxis> missingAxes
+      @NonNull Set<@NonNull ProfileEvaluationAxis> missingAxes
   ) {
-    final var tanninTarget = target.tanninTarget();
-    if (tanninTarget == null) {
+    missingAxes.addAll(targetDistance.missingAxes());
+    final var tannin = targetDistance.tannin();
+    final var targetValue = targetDistance.nearestTargetTannin();
+    if (tannin == null || targetValue == null) {
       return;
     }
 
-    final var tannin = nullableValueOf(axes, ChemicalAxis.TANNINITY);
-    if (tannin == null) {
-      missingAxes.add(ChemicalAxis.TANNINITY);
-      return;
-    }
-
-    final var targetValue = tanninTarget.nearestValueTo(tannin);
-    final var deviation = tannin.subtract(targetValue);
-    final var targetDeviation = TargetDeviation.of(deviation);
-    if (targetDeviation.isAboveTarget()) {
+    final var fact = addEvidence(
+        ProfileEvaluationAxis.TANNIN,
+        tannin,
+        targetValue,
+        positionOf(tannin, targetValue),
+        evidence
+    );
+    if (fact.direction() == CompositionContributionEvidenceDirection.ABOVE_TARGET) {
       roles.add(CompositionContributionRole.TANNIN_CONTRIBUTOR);
-      evidence.add(
-          evidence(
-              ProfileEvaluationAxis.TANNIN,
-              tannin,
-              targetValue,
-              deviation,
-              CompositionContributionRole.TANNIN_CONTRIBUTOR
-          )
-      );
-    } else if (targetDeviation.isBelowTarget()) {
+    } else if (fact.direction() == CompositionContributionEvidenceDirection.BELOW_TARGET) {
       roles.add(CompositionContributionRole.TANNIN_SOFTENER);
-      evidence.add(
-          evidence(
-              ProfileEvaluationAxis.TANNIN,
-              tannin,
-              targetValue,
-              deviation,
-              CompositionContributionRole.TANNIN_SOFTENER
-          )
-      );
     }
-  }
-
-  private static boolean targetContains(
-      @NonNull SugarAcidityCoordinates sourcePoint,
-      @NonNull ChemicalProfileAxes axes,
-      @NonNull ProfileTargetObjective target
-  ) {
-    final var sugarAcidityMatches = target.sugarAcidityTarget().geometry().contains(sourcePoint);
-    final var tanninTarget = target.tanninTarget();
-    if (!sugarAcidityMatches || tanninTarget == null) {
-      return sugarAcidityMatches;
-    }
-
-    final var tannin = nullableValueOf(axes, ChemicalAxis.TANNINITY);
-    return tannin != null && tanninTarget.contains(tannin);
   }
 
   private static boolean isDilutionSource(
-      @NonNull BigDecimal sugar,
-      @NonNull BigDecimal targetSugar,
-      @NonNull BigDecimal acidity,
-      @NonNull BigDecimal targetAcidity
+      @NonNull List<@NonNull CompositionContributionEvidence> evidence
   ) {
-    return TargetDeviation.of(sugar.subtract(targetSugar)).isBelowTarget()
-        && TargetDeviation.of(acidity.subtract(targetAcidity)).isBelowTarget();
+    return hasDirection(
+        evidence,
+        ProfileEvaluationAxis.SPECIFIC_GRAVITY,
+        CompositionContributionEvidenceDirection.BELOW_TARGET
+    ) && hasDirection(
+        evidence,
+        ProfileEvaluationAxis.TITRATABLE_ACIDITY,
+        CompositionContributionEvidenceDirection.BELOW_TARGET
+    );
+  }
+
+  private static boolean hasDirection(
+      @NonNull List<@NonNull CompositionContributionEvidence> evidence,
+      @NonNull ProfileEvaluationAxis axis,
+      @NonNull CompositionContributionEvidenceDirection direction
+  ) {
+    return evidence.stream()
+        .anyMatch(fact -> fact.axis() == axis && fact.direction() == direction);
   }
 
   private static @NonNull List<@NonNull CompositionContributionRole> orderedRoles(
@@ -188,29 +130,23 @@ public final class TargetAwareCompositionContributionRoleAssessor
         .toList();
   }
 
-  private static @NonNull CompositionContributionEvidence evidence(
+  private static @NonNull CompositionContributionEvidence addEvidence(
       @NonNull ProfileEvaluationAxis axis,
-      @NonNull BigDecimal source,
-      @NonNull BigDecimal target,
-      @NonNull BigDecimal deviation,
-      @NonNull CompositionContributionRole role
+      @NonNull MeasuredValue source,
+      @NonNull MeasuredValue target,
+      @NonNull MeasuredValueRangePosition targetPosition,
+      @NonNull List<@NonNull CompositionContributionEvidence> evidence
   ) {
-    return new CompositionContributionEvidence(axis, source, target, deviation, role);
+    final var fact = new CompositionContributionEvidence(axis, source, target, targetPosition);
+    evidence.add(fact);
+    return fact;
   }
 
-  private static @NonNull BigDecimal valueOf(
-      @NonNull ChemicalProfileAxes axes,
-      @NonNull ChemicalAxis axis
+  private static @NonNull MeasuredValueRangePosition positionOf(
+      @NonNull TanninValue source,
+      @NonNull TanninValue target
   ) {
-    return axes.valueOf(axis).orElseThrow().value();
-  }
-
-  private static @Nullable BigDecimal nullableValueOf(
-      @NonNull ChemicalProfileAxes axes,
-      @NonNull ChemicalAxis axis
-  ) {
-    final var value = axes.valueOf(axis).map(AxisValue::value);
-    return value.orElse(null); // NOSONAR
+    return MeasuredValueRangePosition.fromComparison(source.compareTo(target));
   }
 
   @Override
@@ -219,63 +155,44 @@ public final class TargetAwareCompositionContributionRoleAssessor
   ) {
     requireNonNull(request, "composition contribution assessment request cannot be null");
 
-    final var axes = request.sourceAxes();
-    final var target = request.targetObjective();
-    final var missingAxes = missingRequiredAxes(axes);
-    if (!missingAxes.isEmpty()) {
-      return unassessable(missingAxes);
-    }
-
-    final var sugar = valueOf(axes, ChemicalAxis.SUGAR);
-    final var acidity = valueOf(axes, ChemicalAxis.ACIDITY);
-    final var sourcePoint = new SugarAcidityCoordinates(sugar, acidity);
-    final var targetPoint = target.sugarAcidityTarget().geometry().nearestPointTo(sourcePoint);
+    final var targetDistance = request.targetDistance();
+    final var missingAxes = EnumSet.noneOf(ProfileEvaluationAxis.class);
+    final var sourcePoint = targetDistance.point();
+    final var targetPoint = targetDistance.nearestTargetPoint();
     final var roles = EnumSet.noneOf(CompositionContributionRole.class);
     final var evidence = new ArrayList<CompositionContributionEvidence>();
+    final var specificGravity = sourcePoint.specificGravity();
+    final var titratableAcidity = sourcePoint.titratableAcidity();
+    final var targetSpecificGravity = targetPoint.specificGravity();
+    final var targetTitratableAcidity = targetPoint.titratableAcidity();
+    final var targetPosition = targetDistance.sugarAcidityTargetPosition();
 
-    addSugarEvidence(sugar, targetPoint.sugar(), roles, evidence);
-    addAcidityEvidence(acidity, targetPoint.acidity(), roles, evidence);
-    addTanninEvidence(axes, target, roles, evidence, missingAxes);
+    addSpecificGravityEvidence(
+        specificGravity,
+        targetSpecificGravity,
+        targetPosition.specificGravity(),
+        roles,
+        evidence
+    );
+    addTitratableAcidityEvidence(
+        titratableAcidity,
+        targetTitratableAcidity,
+        targetPosition.titratableAcidity(),
+        roles,
+        evidence
+    );
+    addTanninEvidence(targetDistance, roles, evidence, missingAxes);
 
-    if (targetContains(sourcePoint, axes, target)) {
+    if (targetDistance.insideSugarAcidityTarget()) {
       roles.add(CompositionContributionRole.BALANCED_BASE);
     }
-    if (isDilutionSource(sugar, targetPoint.sugar(), acidity, targetPoint.acidity())) {
+    if (isDilutionSource(evidence)) {
       roles.add(CompositionContributionRole.DILUTION_SOURCE);
     }
-    if (roles.isEmpty()) {
-      roles.add(CompositionContributionRole.LOW_FIT_SOURCE);
-    }
-
-    final var orderedRoles = orderedRoles(roles);
     return new CompositionContributionRoleAssessment(
-        orderedRoles,
-        orderedRoles.getFirst(),
+        orderedRoles(roles),
         evidence,
         missingAxes
     );
-  }
-
-  private enum TargetDeviation {
-    BELOW_TARGET,
-    MATCHES_TARGET,
-    ABOVE_TARGET;
-
-    private static TargetDeviation of(@NonNull BigDecimal deviationFromTarget) {
-      return switch (deviationFromTarget.signum()) {
-        case -1 -> BELOW_TARGET;
-        case 0 -> MATCHES_TARGET;
-        case 1 -> ABOVE_TARGET;
-        default -> throw new DomainRuleViolationException("unexpected decimal signum");
-      };
-    }
-
-    private boolean isAboveTarget() {
-      return this == ABOVE_TARGET;
-    }
-
-    private boolean isBelowTarget() {
-      return this == BELOW_TARGET;
-    }
   }
 }

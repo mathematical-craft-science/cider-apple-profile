@@ -2,40 +2,40 @@ package org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.useca
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.model.FeedstockMeasurementSugarAcidityPagePosition;
+import org.craft.mcs.cap.core.feedstock.application.analysis.common.model.FeedstockAnalysisCandidatePagePosition;
+import org.craft.mcs.cap.core.feedstock.application.analysis.common.service.FeedstockGraphCandidateMatcher;
 import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileEvaluation;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileProjector;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.SugarAcidityZoneAssessment;
-import org.craft.mcs.cap.core.feedstock.application.measurement.query.FeedstockBatchCurrentMeasurementQueryService;
-import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementView;
+import org.craft.mcs.cap.core.profileanalysis.classification.domain.profile.northamerican.NorthAmericanProfileCalculator;
+import org.craft.mcs.cap.core.profileanalysis.graph.application.model.JolicoeurSugarAcidityGraphEvaluation;
+import org.craft.mcs.cap.core.profileanalysis.graph.application.port.in.EvaluateJolicoeurSugarAcidityGraphUseCase;
+import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentProfileView;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockBatchCurrentSugarAcidityZonePointQuery;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockBatchCurrentSugarAcidityZoneResult;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.QueryFeedstockBatchCurrentSugarAcidityZonePointsUseCase;
 import org.craft.mcs.cap.core.feedstock.application.batch.model.FeedstockBatchSummary;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchSummaryQueryRepository;
-import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.out.LatestFeedstockMeasurementSugarAcidityPointCandidateQuery;
-import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
-import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityCriteria;
+import org.craft.mcs.cap.core.feedstock.application.analysis.common.port.out.CurrentFeedstockBatchAnalysisCandidateQuery;
+import org.craft.mcs.cap.core.feedstock.application.analysis.common.port.out.FeedstockCurrentProfileAnalysisCandidateRepository;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.shared.application.query.pagination.ChunkedCursorPageCollector;
 import org.craft.mcs.cap.shared.application.query.pagination.CursorPage;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.application.model.SugarAcidityZoneCriteria;
 import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
 
 import static java.util.Objects.requireNonNull;
+import static org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic.SPECIFIC_GRAVITY;
+import static org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic.TITRATABLE_ACIDITY;
 import static java.util.stream.Collectors.toMap;
 
 
 /**
  * Read-side use case for current feedstock batch points on the sugar-acidity graph.
  *
- * <p>The service applies the product rule that only the latest measurement of each batch represents
- * the current batch profile. It then evaluates capability and zone filters in the application
- * layer, returning cursor pages for feedstock graph clients.
+ * <p>The service projects each batch's current material state, then evaluates capability and zone
+ * filters in the application layer and returns cursor pages for feedstock graph clients.
  */
 @Component
 @RequiredArgsConstructor
@@ -44,13 +44,15 @@ public final class QueryFeedstockBatchCurrentSugarAcidityZonePointsService
 
   private final @NonNull FeedstockBatchSummaryQueryRepository feedstockBatchQueryRepository;
   private final @NonNull FeedstockAccessControl feedstockAccessControl;
-  private final @NonNull FeedstockBatchCurrentMeasurementQueryService currentMeasurementQueryService;
-  private final @NonNull SugarAcidityProfileProjector sugarAcidityProfileProjector;
+  private final @NonNull FeedstockCurrentProfileAnalysisCandidateRepository candidateRepository;
+  private final @NonNull EvaluateJolicoeurSugarAcidityGraphUseCase graphEvaluator;
+  private final @NonNull NorthAmericanProfileCalculator northAmericanProfileCalculator;
+  private final @NonNull FeedstockGraphCandidateMatcher graphCandidateMatcher;
 
   @Override
   public @NonNull CursorPage<
       @NonNull FeedstockBatchCurrentSugarAcidityZoneResult,
-      @NonNull FeedstockMeasurementSugarAcidityPagePosition
+      @NonNull FeedstockAnalysisCandidatePagePosition
   > query(
       @NonNull FeedstockBatchCurrentSugarAcidityZonePointQuery query
   ) {
@@ -62,8 +64,8 @@ public final class QueryFeedstockBatchCurrentSugarAcidityZonePointsService
 
     return ChunkedCursorPageCollector.collect(
         query.page(),
-        (afterPosition, limit) -> currentMeasurementQueryService.findCurrentSugarAcidityPointCandidates(
-            new LatestFeedstockMeasurementSugarAcidityPointCandidateQuery(
+        (afterPosition, limit) -> candidateRepository.findCandidates(
+            new CurrentFeedstockBatchAnalysisCandidateQuery(
                 query.workspaceId(),
                 query.filters().batch(),
                 query.filters().season(),
@@ -77,75 +79,56 @@ public final class QueryFeedstockBatchCurrentSugarAcidityZonePointsService
   }
 
   private @NonNull FeedstockBatchCurrentSugarAcidityZoneResult toResult(
-      @NonNull FeedstockMeasurementView measurement,
+      @NonNull FeedstockCurrentProfileView currentProfile,
       @NonNull FeedstockBatchCurrentSugarAcidityZonePointQuery query,
       @NonNull FeedstockBatchSummary batch,
-      @NonNull SugarAcidityProfileEvaluation evaluation
+      @NonNull JolicoeurSugarAcidityGraphEvaluation graphEvaluation
   ) {
     return new FeedstockBatchCurrentSugarAcidityZoneResult(
-        measurement.batchId(),
+        currentProfile.batchId(),
         batch.name(),
         query.workspaceId(),
-        measurement.measurementId(),
-        measurement.measuredAt(),
-        evaluation
+        currentProfile.currentMaterialStateId(),
+        currentProfile.latestMeasurementSet(),
+        currentProfile.evidenceFor(Set.of(SPECIFIC_GRAVITY, TITRATABLE_ACIDITY)),
+        currentProfile.specificGravity(),
+        currentProfile.titratableAcidity(),
+        graphEvaluation,
+        graphEvaluation.plottable() && currentProfile.tannin() != null
+            ? northAmericanProfileCalculator.assessTannin(currentProfile.tannin()) // NOSONAR
+            : null
     );
   }
 
   private @NonNull Optional<@NonNull FeedstockBatchCurrentSugarAcidityZoneResult> toResultIfMatches(
-      @NonNull FeedstockMeasurementView measurement,
+      @NonNull FeedstockCurrentProfileView currentProfile,
       @NonNull FeedstockBatchCurrentSugarAcidityZonePointQuery query,
       @NonNull Map<@NonNull FeedstockBatchId, @NonNull FeedstockBatchSummary> batchesById
   ) {
-    final var batch = batchesById.get(measurement.batchId());
+    final var batch = batchesById.get(currentProfile.batchId());
     if (batch == null) {
       return Optional.empty();
     }
 
-    final var evaluation = sugarAcidityProfileProjector.project(measurement.chemicalProfile());
-    if (!matchesCapability(evaluation, query.filters().capability())) {
+    final var graphEvaluation = graphEvaluator.evaluate(
+        currentProfile.specificGravity(),
+        currentProfile.titratableAcidity()
+    );
+    if (!graphCandidateMatcher.matches(currentProfile, graphEvaluation, query.filters())) {
       return Optional.empty();
     }
 
-    final var result = toResult(measurement, query, batch, evaluation);
-    return matchesSugarAcidityZone(result, query.filters().sugarAcidityZone())
-        ? Optional.of(result)
-        : Optional.empty();
+    return Optional.of(toResult(currentProfile, query, batch, graphEvaluation));
   }
 
-  private boolean matchesCapability(
-      @NonNull SugarAcidityProfileEvaluation evaluation,
-      @Nullable ChemicalProfileCapabilityCriteria criteria
+  private static @NonNull FeedstockAnalysisCandidatePagePosition toPagePosition(
+      @NonNull FeedstockCurrentProfileView currentProfile
   ) {
-    if (criteria == null || criteria.capable() == null) {
-      return true;
-    }
-
-    final var assessment = sugarAcidityProfileProjector.assessCapability(evaluation, criteria.capability());
-
-    return assessment.capable() == criteria.capable(); // NOSONAR
-  }
-
-  private static boolean matchesSugarAcidityZone(
-      @NonNull FeedstockBatchCurrentSugarAcidityZoneResult result,
-      @Nullable SugarAcidityZoneCriteria criteria
-  ) {
-    if (criteria == null) {
-      return true;
-    }
-
-    final SugarAcidityZoneAssessment assessment = result.evaluation().assessment();
-    return assessment != null
-        && criteria.zones().contains(assessment.zone());
-  }
-
-  private static @NonNull FeedstockMeasurementSugarAcidityPagePosition toPagePosition(
-      @NonNull FeedstockMeasurementView measurement
-  ) {
-    requireNonNull(measurement, "feedstock measurement cannot be null");
-    return new FeedstockMeasurementSugarAcidityPagePosition(
-        measurement.measuredAt(),
-        measurement.measurementId().value()
+    requireNonNull(currentProfile, "feedstock current profile cannot be null");
+    final var latestMeasurement = currentProfile.latestMeasurementSet();
+    return new FeedstockAnalysisCandidatePagePosition(
+        latestMeasurement.measuredAt(),
+        latestMeasurement.measurementSetId()
     );
   }
 }

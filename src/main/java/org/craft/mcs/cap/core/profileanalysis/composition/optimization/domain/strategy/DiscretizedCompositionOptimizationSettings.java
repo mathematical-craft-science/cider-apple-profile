@@ -1,6 +1,6 @@
 package org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.strategy;
 
-import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.InvalidChemicalProfileCompositionOptimizationException;
+import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.InvalidCompositionOptimizationException;
 import org.jspecify.annotations.NonNull;
 
 
@@ -9,8 +9,8 @@ import org.jspecify.annotations.NonNull;
  *
  * <p>{@code stepPercent} controls grid granularity. With step 5 the optimizer enumerates 0, 5, 10
  * ... 100 percent shares for each source, constrained so all shares sum to 100. Smaller steps are
- * more precise but grow the search grid combinatorially. {@code limit} controls how many best
- * candidates are returned after sorting by target distance.
+ * more precise but grow the search grid combinatorially. {@code limit} controls how many highest-ranked
+ * candidates are returned after sorting by the complete optimization objective.
  */
 public record DiscretizedCompositionOptimizationSettings(
     int stepPercent,
@@ -25,17 +25,17 @@ public record DiscretizedCompositionOptimizationSettings(
 
   public DiscretizedCompositionOptimizationSettings {
     if (stepPercent < 1 || stepPercent > 50) {
-      throw new InvalidChemicalProfileCompositionOptimizationException(
+      throw new InvalidCompositionOptimizationException(
           "composition optimization step percent must be between 1 and 50"
       );
     }
     if (100 % stepPercent != 0) {
-      throw new InvalidChemicalProfileCompositionOptimizationException(
+      throw new InvalidCompositionOptimizationException(
           "composition optimization step percent must divide 100 exactly"
       );
     }
     if (limit < 1 || limit > MAX_LIMIT) {
-      throw new InvalidChemicalProfileCompositionOptimizationException(
+      throw new InvalidCompositionOptimizationException(
           "composition optimization limit must be between 1 and " + MAX_LIMIT
       );
     }

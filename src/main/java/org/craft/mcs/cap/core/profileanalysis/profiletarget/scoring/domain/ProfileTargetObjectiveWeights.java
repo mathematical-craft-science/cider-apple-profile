@@ -18,26 +18,26 @@ import static org.craft.mcs.cap.shared.kernel.math.DecimalComparisons.isPositive
  * {@code 1}.
  */
 public record ProfileTargetObjectiveWeights(
-    @NonNull BigDecimal sugar,
-    @NonNull BigDecimal acidity,
+    @NonNull BigDecimal specificGravity,
+    @NonNull BigDecimal titratableAcidity,
     @Nullable BigDecimal tannin
 ) {
 
   public ProfileTargetObjectiveWeights(
-      @NonNull BigDecimal sugar,
-      @NonNull BigDecimal acidity
+      @NonNull BigDecimal specificGravity,
+      @NonNull BigDecimal titratableAcidity
   ) {
-    this(sugar, acidity, null);
+    this(specificGravity, titratableAcidity, null);
   }
 
   public ProfileTargetObjectiveWeights {
-    requireNonNull(sugar, "sugar objective weight cannot be null");
-    requireNonNull(acidity, "acidity objective weight cannot be null");
-    if (!isPositive(sugar)) {
-      throw new DomainRuleViolationException("sugar objective weight must be positive");
+    requireNonNull(specificGravity, "specific gravity objective weight cannot be null");
+    requireNonNull(titratableAcidity, "titratable acidity objective weight cannot be null");
+    if (!isPositive(specificGravity)) {
+      throw new DomainRuleViolationException("specific gravity objective weight must be positive");
     }
-    if (!isPositive(acidity)) {
-      throw new DomainRuleViolationException("acidity objective weight must be positive");
+    if (!isPositive(titratableAcidity)) {
+      throw new DomainRuleViolationException("titratable acidity objective weight must be positive");
     }
     if (tannin != null && !isPositive(tannin)) {
       throw new DomainRuleViolationException("tannin objective weight must be positive");

@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import javax.measure.Quantity;
 import javax.measure.Unit;
 import javax.measure.quantity.Volume;
-import org.craft.mcs.cap.shared.kernel.measurement.MeasuredValue;
+import org.craft.mcs.cap.shared.kernel.measurement.AbstractMeasuredValue;
 import org.craft.mcs.cap.shared.kernel.measurement.unit.BeverageUnits;
 import org.jmolecules.ddd.annotation.ValueObject;
 import org.jspecify.annotations.NonNull;
@@ -22,7 +22,7 @@ import static java.util.Objects.requireNonNull;
  */
 @ValueObject
 public final class VolumeValue
-    extends MeasuredValue<Volume, VolumeValue> {
+    extends AbstractMeasuredValue<Volume, VolumeValue> {
 
   private static final BigDecimal MIN = BigDecimal.ZERO;
   private static final BigDecimal MAX = new BigDecimal("1000000000.000");
@@ -57,6 +57,11 @@ public final class VolumeValue
 
   public static @NonNull VolumeValue ofLiters(double liters) {
     return ofLiters(BigDecimal.valueOf(liters));
+  }
+
+  @Override
+  public @NonNull VolumeValue withValue(@NonNull BigDecimal value) {
+    return ofLiters(value);
   }
 
   public @NonNull BigDecimal liters() {

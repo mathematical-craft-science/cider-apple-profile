@@ -4,7 +4,7 @@ import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchRepository;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
-import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.shared.application.ConcurrentResourceModificationException;
 import org.craft.mcs.cap.shared.application.persistence.VersionedAggregate;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.feedstock.batch.entity.FeedstockBatchJdbcMapper;
@@ -61,17 +61,7 @@ class JdbcFeedstockBatchRepository
   ) {
     requireNonNull(batchId, "feedstock batch id cannot be null");
 
-    return repository.findById(batchId.value())
-        .map(FeedstockBatchJdbcMapper::toVersionedAggregate);
-  }
-
-  @Override
-  public @NonNull Optional<@NonNull VersionedAggregate<FeedstockBatch>> findByIdForConsumption(
-      @NonNull FeedstockBatchId batchId
-  ) {
-    requireNonNull(batchId, "feedstock batch id cannot be null");
-
-    return repository.findByIdForConsumption(batchId.value())
+    return repository.findByBatchIdAndDeletedAtIsNull(batchId.value())
         .map(FeedstockBatchJdbcMapper::toVersionedAggregate);
   }
 

@@ -1,14 +1,17 @@
 package org.craft.mcs.cap.core.production.candidate.domain.model;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatchId;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceComponent;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceComposition;
+import org.craft.mcs.cap.core.production.domain.model.ProductionSourceEvidenceReference;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceReference;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
 import org.craft.mcs.cap.shared.kernel.DomainConflictException;
 import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
+import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jmolecules.ddd.annotation.AggregateRoot;
 import org.jmolecules.ddd.annotation.Identity;
@@ -31,17 +34,19 @@ public final class ProductionBatchCandidate {
   private final @NonNull ProductionBatchCandidateId candidateId;
   private final @NonNull WorkspaceId workspaceId;
   private final @NonNull ProductionSourceComposition sourceComposition;
-  private final @NonNull Map<@NonNull ProductionSourceReference, @NonNull ProductionSourceEvidenceReference>
-      sourceEvidence;
+  private final @NonNull Map<@NonNull ProductionSourceReference, @NonNull ProductionCandidateSourceEvidence>
+      sourceStateEvidence;
   private final @NonNull ProductionProfileSnapshot profile;
   private @NonNull ProductionBatchCandidateStatus status;
   private @Nullable ProductionBatchId confirmedProductionBatchId;
 
+  @SuppressWarnings("java:S107")
   private ProductionBatchCandidate(
       @NonNull ProductionBatchCandidateId candidateId,
       @NonNull WorkspaceId workspaceId,
       @NonNull ProductionSourceComposition sourceComposition,
-      @NonNull Map<@NonNull ProductionSourceReference, @NonNull ProductionSourceEvidenceReference> sourceEvidence,
+      @NonNull Map<@NonNull ProductionSourceReference, @NonNull ProductionCandidateSourceEvidence>
+          sourceStateEvidence,
       @NonNull ProductionProfileSnapshot profile,
       @NonNull ProductionBatchCandidateStatus status,
       @Nullable ProductionBatchId confirmedProductionBatchId
@@ -49,11 +54,13 @@ public final class ProductionBatchCandidate {
     this.candidateId = requireNonNull(candidateId, "production batch candidate id cannot be null");
     this.workspaceId = requireNonNull(workspaceId, "workspace id cannot be null");
     this.sourceComposition = requireNonNull(sourceComposition, "production source composition cannot be null");
-    this.sourceEvidence = Map.copyOf(requireNonNull(sourceEvidence, "production source evidence cannot be null"));
+    this.sourceStateEvidence = Map.copyOf(
+        requireNonNull(sourceStateEvidence, "production source state evidence cannot be null")
+    );
     this.profile = requireNonNull(profile, "production candidate profile cannot be null");
     this.status = requireNonNull(status, "production batch candidate status cannot be null");
     this.confirmedProductionBatchId = confirmedProductionBatchId;
-    validateSourceEvidence(sourceComposition, this.sourceEvidence);
+    validateSourceStateEvidence(sourceComposition, this.sourceStateEvidence);
     validateConfirmationState(status, confirmedProductionBatchId);
   }
 
@@ -61,25 +68,28 @@ public final class ProductionBatchCandidate {
       @NonNull ProductionBatchCandidateId candidateId,
       @NonNull WorkspaceId workspaceId,
       @NonNull ProductionSourceComposition sourceComposition,
-      @NonNull Map<@NonNull ProductionSourceReference, @NonNull ProductionSourceEvidenceReference> sourceEvidence,
+      @NonNull Map<@NonNull ProductionSourceReference, @NonNull ProductionCandidateSourceEvidence>
+          sourceStateEvidence,
       @NonNull ProductionProfileSnapshot profile
   ) {
     return new ProductionBatchCandidate(
         candidateId,
         workspaceId,
         sourceComposition,
-        sourceEvidence,
+        sourceStateEvidence,
         profile,
         ProductionBatchCandidateStatus.AVAILABLE,
         null
     );
   }
 
+  @SuppressWarnings("java:S107")
   public static @NonNull ProductionBatchCandidate restore(
       @NonNull ProductionBatchCandidateId candidateId,
       @NonNull WorkspaceId workspaceId,
       @NonNull ProductionSourceComposition sourceComposition,
-      @NonNull Map<@NonNull ProductionSourceReference, @NonNull ProductionSourceEvidenceReference> sourceEvidence,
+      @NonNull Map<@NonNull ProductionSourceReference, @NonNull ProductionCandidateSourceEvidence>
+          sourceStateEvidence,
       @NonNull ProductionProfileSnapshot profile,
       @NonNull ProductionBatchCandidateStatus status,
       @Nullable ProductionBatchId confirmedProductionBatchId
@@ -88,7 +98,7 @@ public final class ProductionBatchCandidate {
         candidateId,
         workspaceId,
         sourceComposition,
-        sourceEvidence,
+        sourceStateEvidence,
         profile,
         status,
         confirmedProductionBatchId
@@ -113,14 +123,26 @@ public final class ProductionBatchCandidate {
   public @NonNull ProductionSourceEvidenceReference evidenceFor(
       @NonNull ProductionSourceReference sourceReference
   ) {
-    final var evidence = sourceEvidence.get(requireNonNull(
+    return stateEvidenceFor(sourceReference).evidenceReference();
+  }
+
+  public @NonNull MaterialStateId materialStateFor(
+      @NonNull ProductionSourceReference sourceReference
+  ) {
+    return stateEvidenceFor(sourceReference).materialStateId();
+  }
+
+  public @NonNull ProductionCandidateSourceEvidence stateEvidenceFor(
+      @NonNull ProductionSourceReference sourceReference
+  ) {
+    final var stateEvidence = sourceStateEvidence.get(requireNonNull(
         sourceReference,
         "production source reference cannot be null"
     ));
-    if (evidence == null) {
-      throw new DomainRuleViolationException("production source evidence is missing");
+    if (stateEvidence == null) {
+      throw new DomainRuleViolationException("production source state evidence is missing");
     }
-    return evidence;
+    return stateEvidence;
   }
 
   public @NonNull ProductionBatchCandidateId candidateId() {
@@ -135,9 +157,9 @@ public final class ProductionBatchCandidate {
     return sourceComposition;
   }
 
-  public @NonNull Map<@NonNull ProductionSourceReference, @NonNull ProductionSourceEvidenceReference>
-      sourceEvidence() {
-    return sourceEvidence;
+  public @NonNull Map<@NonNull ProductionSourceReference, @NonNull ProductionCandidateSourceEvidence>
+      sourceStateEvidence() {
+    return sourceStateEvidence;
   }
 
   public @NonNull ProductionProfileSnapshot profile() {
@@ -152,19 +174,22 @@ public final class ProductionBatchCandidate {
     return confirmedProductionBatchId;
   }
 
-  private static void validateSourceEvidence(
+  private static void validateSourceStateEvidence(
       @NonNull ProductionSourceComposition sourceComposition,
-      @NonNull Map<@NonNull ProductionSourceReference, @NonNull ProductionSourceEvidenceReference> sourceEvidence
+      @NonNull Map<@NonNull ProductionSourceReference, @NonNull ProductionCandidateSourceEvidence>
+          sourceStateEvidence
   ) {
-    final var references = sourceComposition.sources().stream()
+    if (!sourceReferences(sourceComposition).equals(sourceStateEvidence.keySet())) {
+      throw new DomainRuleViolationException("production source state evidence must match candidate sources");
+    }
+  }
+
+  private static @NonNull Set<@NonNull ProductionSourceReference> sourceReferences(
+      @NonNull ProductionSourceComposition sourceComposition
+  ) {
+    return sourceComposition.sources().stream()
         .map(ProductionSourceComponent::reference)
         .collect(Collectors.toUnmodifiableSet());
-    if (references.size() != sourceComposition.sources().size()) {
-      throw new DomainRuleViolationException("production batch candidate cannot contain duplicate sources");
-    }
-    if (!references.equals(sourceEvidence.keySet())) {
-      throw new DomainRuleViolationException("production source evidence must match candidate sources");
-    }
   }
 
   private static void validateConfirmationState(

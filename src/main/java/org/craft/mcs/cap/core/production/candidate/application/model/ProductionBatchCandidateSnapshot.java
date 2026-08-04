@@ -3,7 +3,7 @@ package org.craft.mcs.cap.core.production.candidate.application.model;
 import java.util.List;
 import org.craft.mcs.cap.core.production.candidate.domain.model.ProductionBatchCandidate;
 import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPrediction;
-import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionWarning;
+import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionWarning;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.normalization.ProfileAxisNormalizerCode;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.assessment.ProfileTargetDistance;
 import org.craft.mcs.cap.shared.application.ApplicationValidationException;
@@ -21,7 +21,7 @@ public record ProductionBatchCandidateSnapshot(
     @NonNull PotentialAbvPrediction potentialAbv,
     @Nullable ProfileAxisNormalizerCode normalizerCode,
     @Nullable ProfileTargetDistance targetDistance,
-    @NonNull List<@NonNull ChemicalProfileCompositionWarning> warnings,
+    @NonNull List<@NonNull CompositionWarning> warnings,
     long revision
 ) {
 
@@ -30,7 +30,7 @@ public record ProductionBatchCandidateSnapshot(
       @NonNull PotentialAbvPrediction potentialAbv,
       @Nullable ProfileAxisNormalizerCode normalizerCode,
       @Nullable ProfileTargetDistance targetDistance,
-      @NonNull List<@NonNull ChemicalProfileCompositionWarning> warnings
+      @NonNull List<@NonNull CompositionWarning> warnings
   ) {
     this(candidate, potentialAbv, normalizerCode, targetDistance, warnings, 0L);
   }

@@ -5,34 +5,22 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.FeedstockBatchProfileTargetCandidate;
-import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.FeedstockBatchProfileTargetCandidateQuery;
+import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.FeedstockBatchProfileTargetQuery;
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.QueryFeedstockBatchProfileTargetCandidatesUseCase;
-import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockMeasurementPointFilters;
+import org.craft.mcs.cap.core.feedstock.application.analysis.common.model.FeedstockAnalysisCandidateFilters;
 import org.craft.mcs.cap.core.feedstock.application.batch.model.FeedstockBatchSummary;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.ListFeedstockBatchesQuery;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.ListFeedstockBatchesUseCase;
-import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentProfileSettings;
-import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentMeasurementView;
-import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentProfilePotentialAbvView;
-import org.craft.mcs.cap.core.feedstock.application.currentprofile.port.out.FeedstockCurrentProfileSettingsProvider;
-import org.craft.mcs.cap.core.feedstock.application.currentprofile.usecase.FeedstockCurrentProfileAssessmentService;
-import org.craft.mcs.cap.core.feedstock.application.measurement.query.FeedstockBatchCurrentMeasurementQueryService;
-import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementView;
+import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentProfileView;
+import org.craft.mcs.cap.core.feedstock.application.currentprofile.service.FeedstockCurrentProfileAssessmentService;
+import org.craft.mcs.cap.core.feedstock.application.currentprofile.query.FeedstockCurrentProfileQueryService;
 import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.model.FeedstockPlanningBatchView;
 import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.FeedstockPlanningBatchViewQuery;
 import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.model.FeedstockPlanningTargetAnalysisView;
 import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.model.FeedstockPlanningTargetCandidateView;
 import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.model.FeedstockPlanningView;
 import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.QueryFeedstockPlanningBatchesUseCase;
-import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPredictor;
-import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.FermentationStartReadinessAssessor;
-import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapability;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileEvaluation;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileProjector;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
-import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
-import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
@@ -42,7 +30,7 @@ import static java.util.Objects.requireNonNull;
 /**
  * Application read model for the feedstock planning.
  *
- * <p>This query service deliberately composes batch metadata, latest measurement state, graph
+ * <p>This query service deliberately composes batch metadata, current material-state evidence, graph
  * projection, target candidate scoring, ABV, YAN and fermentation-start readiness into one
  * application read model. It is not a domain aggregate; its responsibility is to give API clients a
  * coherent planning snapshot without forcing them to stitch several business endpoints
@@ -53,14 +41,9 @@ import static java.util.Objects.requireNonNull;
 public final class QueryFeedstockPlanningBatchesService implements QueryFeedstockPlanningBatchesUseCase {
 
   private final @NonNull ListFeedstockBatchesUseCase listFeedstockBatchesUseCase;
-  private final @NonNull FeedstockBatchCurrentMeasurementQueryService currentMeasurementQueryService;
+  private final @NonNull FeedstockCurrentProfileQueryService currentProfileQueryService;
   private final @NonNull QueryFeedstockBatchProfileTargetCandidatesUseCase queryTargetCandidatesUseCase;
-  private final @NonNull SugarAcidityProfileProjector sugarAcidityProfileProjector;
-  private final @NonNull PotentialAbvPredictor potentialAbvPredictor;
-  private final @NonNull FermentationStartReadinessAssessor fermentationStartReadinessAssessor;
-  private final @NonNull FeedstockCurrentProfileAssessmentService batchAssessmentService;
-  private final @NonNull FeedstockCurrentProfileSettingsProvider currentProfileSettingsProvider;
-  private final @NonNull FeedstockPlanningContributionRoleExplainer contributionRoleExplainer;
+  private final @NonNull FeedstockCurrentProfileAssessmentService currentProfileAssessmentService;
 
   @Override
   public @NonNull FeedstockPlanningView query(@NonNull FeedstockPlanningBatchViewQuery query) {
@@ -70,25 +53,19 @@ public final class QueryFeedstockPlanningBatchesService implements QueryFeedstoc
         query.workspaceId(),
         query.season()
     ));
-    final var batchIds = batches.stream()
-        .map(FeedstockBatchSummary::batchId)
-        .collect(Collectors.toSet());
-    final var measurementsByBatchId = currentMeasurementQueryService.findCurrentMeasurementsByBatchIds(batchIds)
+    final var measurementsByBatchId = currentProfileQueryService.findCurrentProfiles(batches)
         .stream()
         .collect(Collectors.toMap(
-            FeedstockMeasurementView::batchId,
+            FeedstockCurrentProfileView::batchId,
             Function.identity()
         ));
     final var targetCandidates = targetCandidates(query);
-    final var currentProfileSettings = currentProfileSettingsProvider.get(query.workspaceId());
-
     return new FeedstockPlanningView(
         batches.stream()
             .map(batch -> toBatchView(
                 batch,
                 measurementsByBatchId.get(batch.batchId()),
-                targetCandidates.candidatesByBatchId().get(batch.batchId()),
-                currentProfileSettings
+                targetCandidates.candidatesByBatchId().get(batch.batchId())
             ))
             .toList(),
         targetCandidates.analysis()
@@ -97,39 +74,28 @@ public final class QueryFeedstockPlanningBatchesService implements QueryFeedstoc
 
   private @NonNull FeedstockPlanningBatchView toBatchView(
       @NonNull FeedstockBatchSummary batch,
-      @Nullable FeedstockMeasurementView measurement,
-      @Nullable FeedstockPlanningTargetCandidateView targetCandidate,
-      @NonNull FeedstockCurrentProfileSettings settings
+      @Nullable FeedstockCurrentProfileView currentProfile,
+      @Nullable FeedstockPlanningTargetCandidateView targetCandidate
   ) {
-    if (measurement == null) {
-      return new FeedstockPlanningBatchView(
-          batch,
-          null,
-          null,
-          null,
-          null,
-          null,
-          batchAssessmentService.planningReadinessWithoutMeasurement(batch),
-          batchAssessmentService.dataQualityWithoutMeasurement(),
-          null,
-          targetCandidate
-      );
-    }
-
-    final var evaluation = sugarAcidityProfileProjector.project(measurement.chemicalProfile());
-    final var freshness = batchAssessmentService.freshness(measurement, settings);
+    final var coherentTargetCandidate = targetCandidateFor(currentProfile, targetCandidate);
     return new FeedstockPlanningBatchView(
         batch,
-        toCurrentMeasurement(measurement),
-        freshness,
-        evaluation,
-        potentialAbv(evaluation),
-        yeastAssimilableNitrogen(evaluation),
-        batchAssessmentService.planningReadiness(batch, measurement.chemicalProfile()),
-        batchAssessmentService.dataQuality(measurement.chemicalProfile(), evaluation, freshness),
-        fermentationStartReadinessAssessor.assess(measurement.chemicalProfile()),
-        targetCandidate
+        currentProfile == null ? null : currentProfile.summary(),
+        currentProfileAssessmentService.assess(batch, currentProfile),
+        coherentTargetCandidate
     );
+  }
+
+  private static @Nullable FeedstockPlanningTargetCandidateView targetCandidateFor(
+      @Nullable FeedstockCurrentProfileView currentProfile,
+      @Nullable FeedstockPlanningTargetCandidateView targetCandidate
+  ) {
+    if (currentProfile == null || targetCandidate == null) {
+      return null;
+    }
+    return currentProfile.currentMaterialStateId().equals(targetCandidate.currentMaterialStateId())
+        ? targetCandidate
+        : null;
   }
 
   private @NonNull TargetCandidates targetCandidates(@NonNull FeedstockPlanningBatchViewQuery query) {
@@ -138,10 +104,10 @@ public final class QueryFeedstockPlanningBatchesService implements QueryFeedstoc
       return TargetCandidates.empty();
     }
 
-    final var candidates = queryTargetCandidatesUseCase.query(new FeedstockBatchProfileTargetCandidateQuery(
+    final var candidates = queryTargetCandidatesUseCase.query(new FeedstockBatchProfileTargetQuery(
         query.workspaceId(),
-        new FeedstockMeasurementPointFilters(null, query.season(), null, null),
-        query.purpose(),
+        new FeedstockAnalysisCandidateFilters(null, query.season(), null, null),
+        query.analysisScenario(),
         target,
         query.tanninTarget(),
         query.weights(),
@@ -149,7 +115,7 @@ public final class QueryFeedstockPlanningBatchesService implements QueryFeedstoc
     ));
 
     return new TargetCandidates(
-        new FeedstockPlanningTargetAnalysisView(candidates.purpose(), candidates.normalizerCode()),
+        new FeedstockPlanningTargetAnalysisView(candidates.analysisScenario(), candidates.normalizerCode()),
         candidates.candidates().stream()
             .collect(Collectors.toMap(
                 FeedstockBatchProfileTargetCandidate::batchId,
@@ -158,51 +124,15 @@ public final class QueryFeedstockPlanningBatchesService implements QueryFeedstoc
     );
   }
 
-  private static @NonNull FeedstockCurrentMeasurementView toCurrentMeasurement(
-      @NonNull FeedstockMeasurementView measurement
-  ) {
-    requireNonNull(measurement, "feedstock measurement cannot be null");
-    return new FeedstockCurrentMeasurementView(
-        measurement.measurementId(),
-        measurement.name(),
-        measurement.measuredAt(),
-        measurement.chemicalProfile(),
-        measurement.note()
-    );
-  }
-
-  private @Nullable FeedstockCurrentProfilePotentialAbvView potentialAbv(
-      @NonNull SugarAcidityProfileEvaluation evaluation
-  ) {
-    final var capability = sugarAcidityProfileProjector.assessCapability(
-        evaluation,
-        ChemicalProfileCapability.ABV_PREDICTION
-    );
-    if (!capability.capable()) {
-      return null;
-    }
-
-    final var sugar = evaluation.axes().requireValueOf(ChemicalAxis.SUGAR);
-    return new FeedstockCurrentProfilePotentialAbvView(
-        sugar.valueKind(),
-        potentialAbvPredictor.predict(SpecificGravityValue.of(sugar.value()))
-    );
-  }
-
-  private static @Nullable AxisValue yeastAssimilableNitrogen(@NonNull SugarAcidityProfileEvaluation evaluation) {
-    final var axis = evaluation.axes().valueOf(ChemicalAxis.YEAST_ASSIMILABLE_NITROGEN);
-    return axis.orElse(null); // NOSONAR
-  }
-
   private @NonNull FeedstockPlanningTargetCandidateView toTargetCandidateView(
       @NonNull FeedstockBatchProfileTargetCandidate candidate
   ) {
     requireNonNull(candidate, "feedstock batch profile target candidate cannot be null");
     return new FeedstockPlanningTargetCandidateView(
-        candidate.point(),
+        candidate.currentMaterialStateId(),
+        candidate.characteristics(),
         candidate.distance(),
-        candidate.contributionRole(),
-        contributionRoleExplainer.explain(candidate.contributionRole())
+        candidate.contributionRole()
     );
   }
 

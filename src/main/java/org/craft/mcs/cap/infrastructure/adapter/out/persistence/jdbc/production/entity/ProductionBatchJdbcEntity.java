@@ -3,8 +3,8 @@ package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.production
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
-import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchKind;
-import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchStatus;
+import org.craft.mcs.cap.core.production.domain.model.value.AlcoholicFermentationState;
+import org.craft.mcs.cap.shared.kernel.material.value.BatchLifecycle;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.data.annotation.CreatedDate;
@@ -23,13 +23,15 @@ public class ProductionBatchJdbcEntity {
   @Id @NonNull @Column("batch_id") UUID batchId;
   @NonNull @Column("workspace_id") UUID workspaceId;
   @NonNull @Column("name") String name;
-  @NonNull @Column("kind") ProductionBatchKind kind;
-  @NonNull @Column("status") ProductionBatchStatus status;
-  @NonNull @Column("total_volume_liters") BigDecimal totalVolumeLiters;
-  @NonNull @Column("sugar_specific_gravity") BigDecimal sugarSpecificGravity;
-  @NonNull @Column("acidity_g_l_as_malic") BigDecimal acidityGLAsMalic;
-  @Nullable @Column("tannin_mg_l_tae") BigDecimal tanninMgLTae;
-  @Nullable @Column("yan_mg_n_l") BigDecimal yeastAssimilableNitrogenMgNL;
+  @NonNull @Column("vessel") String vessel;
+  @NonNull @Column("lifecycle") BatchLifecycle lifecycle;
+  @NonNull @Column("alcoholic_fermentation_state") AlcoholicFermentationState alcoholicFermentationState;
+  @NonNull @Column("current_volume_liters") BigDecimal currentVolumeLiters;
+  @NonNull @Column("current_material_state_id") UUID currentMaterialStateId;
+  @NonNull @Column("initial_sugar_specific_gravity") BigDecimal initialSpecificGravity;
+  @NonNull @Column("initial_acidity_g_l_as_malic") BigDecimal initialTitratableAcidityGLAsMalic;
+  @Nullable @Column("initial_tannin_mg_l_tae") BigDecimal initialTanninMgLTae;
+  @Nullable @Column("initial_yan_mg_n_l") BigDecimal initialYeastAssimilableNitrogenMgNL;
   @Nullable @Column("note") String note;
   @CreatedDate @Nullable @Column("created_at") Instant createdAt;
   @LastModifiedDate @Nullable @Column("updated_at") Instant updatedAt;
@@ -39,32 +41,46 @@ public class ProductionBatchJdbcEntity {
   public ProductionBatchJdbcEntity() {
   }
 
+  @SuppressWarnings("java:S107")
   ProductionBatchJdbcEntity(
       @NonNull UUID batchId,
       @NonNull UUID workspaceId,
       @NonNull String name,
-      @NonNull ProductionBatchKind kind,
-      @NonNull ProductionBatchStatus status,
-      @NonNull BigDecimal totalVolumeLiters,
-      @NonNull BigDecimal sugarSpecificGravity,
-      @NonNull BigDecimal acidityGLAsMalic,
-      @Nullable BigDecimal tanninMgLTae,
-      @Nullable BigDecimal yeastAssimilableNitrogenMgNL,
+      @NonNull String vessel,
+      @NonNull BatchLifecycle lifecycle,
+      @NonNull AlcoholicFermentationState alcoholicFermentationState,
+      @NonNull BigDecimal currentVolumeLiters,
+      @NonNull UUID currentMaterialStateId,
+      @NonNull BigDecimal initialSpecificGravity,
+      @NonNull BigDecimal initialTitratableAcidityGLAsMalic,
+      @Nullable BigDecimal initialTanninMgLTae,
+      @Nullable BigDecimal initialYeastAssimilableNitrogenMgNL,
       @Nullable String note
   ) {
     this.batchId = requireNonNull(batchId, "production batch id cannot be null");
     this.workspaceId = requireNonNull(workspaceId, "workspace id cannot be null");
     this.name = requireNonNull(name, "production batch name cannot be null");
-    this.kind = requireNonNull(kind, "production batch kind cannot be null");
-    this.status = requireNonNull(status, "production batch status cannot be null");
-    this.totalVolumeLiters = requireNonNull(totalVolumeLiters, "production total volume cannot be null");
-    this.sugarSpecificGravity = requireNonNull(
-        sugarSpecificGravity,
-        "production sugar specific gravity cannot be null"
+    this.vessel = requireNonNull(vessel, "production vessel cannot be null");
+    this.lifecycle = requireNonNull(lifecycle, "production batch lifecycle cannot be null");
+    this.alcoholicFermentationState = requireNonNull(
+        alcoholicFermentationState,
+        "alcoholic fermentation state cannot be null"
     );
-    this.acidityGLAsMalic = requireNonNull(acidityGLAsMalic, "production acidity cannot be null");
-    this.tanninMgLTae = tanninMgLTae;
-    this.yeastAssimilableNitrogenMgNL = yeastAssimilableNitrogenMgNL;
+    this.currentVolumeLiters = requireNonNull(currentVolumeLiters, "production current volume cannot be null");
+    this.currentMaterialStateId = requireNonNull(
+        currentMaterialStateId,
+        "production current material state id cannot be null"
+    );
+    this.initialSpecificGravity = requireNonNull(
+        initialSpecificGravity,
+        "production initial specific gravity cannot be null"
+    );
+    this.initialTitratableAcidityGLAsMalic = requireNonNull(
+        initialTitratableAcidityGLAsMalic,
+        "production initial titratable acidity cannot be null"
+    );
+    this.initialTanninMgLTae = initialTanninMgLTae;
+    this.initialYeastAssimilableNitrogenMgNL = initialYeastAssimilableNitrogenMgNL;
     this.note = normalize(note);
   }
 

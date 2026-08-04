@@ -3,33 +3,38 @@ package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.production
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.craft.mcs.cap.core.production.candidate.application.model.ProductionBatchCandidateSnapshot;
 import org.craft.mcs.cap.core.production.candidate.domain.model.ProductionBatchCandidate;
 import org.craft.mcs.cap.core.production.candidate.domain.model.ProductionBatchCandidateId;
 import org.craft.mcs.cap.core.production.candidate.domain.model.ProductionBatchCandidateStatus;
-import org.craft.mcs.cap.core.production.candidate.domain.model.ProductionSourceEvidenceReference;
+import org.craft.mcs.cap.core.production.domain.model.ProductionSourceEvidenceReference;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatchId;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceComponent;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceComposition;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceReference;
+import org.craft.mcs.cap.core.production.candidate.domain.model.ProductionCandidateSourceEvidence;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
-import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionWarning;
+import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionWarning;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.normalization.ProfileAxisNormalizerCode;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.objective.ProfileDistanceMetric;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.assessment.ProfileTargetDistance;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.assessment.ProfileTargetDistanceStatus;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.objective.ProfileTargetObjectiveFunctionCode;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetObjectiveWeights;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.SugarAcidityCoordinates;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.SugarAcidityTargetGeometryShape;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.SugarAcidityTargetKind;
-import org.craft.mcs.cap.shared.kernel.chemical.value.TanninityValue;
+import org.craft.mcs.cap.core.profileanalysis.graph.domain.SugarAcidityGraphPoint;
+import org.craft.mcs.cap.core.profileanalysis.graph.domain.SugarAcidityGeometryShape;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.SugarAcidityTargetKind;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.SugarAcidityTargetPosition;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
-import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
+import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
-import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
+import org.craft.mcs.cap.shared.kernel.measurement.MeasuredValueRangePosition;
+import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.craft.mcs.cap.shared.application.ConcurrentResourceModificationException;
 import org.craft.mcs.cap.shared.testing.jdbc.PostgresDataJdbcTestConfiguration;
 import org.jspecify.annotations.NonNull;
@@ -87,7 +92,7 @@ class ProductionBatchCandidatePersistenceDataJdbcTest {
             .returns(ProfileAxisNormalizerCode.SENSITIVITY_UNIT, ProductionBatchCandidateSnapshot::normalizerCode)
             .satisfies(candidateSnapshot -> assertThat(candidateSnapshot.potentialAbv().potentialAbv().percent())
                 .isEqualByComparingTo("6.825"))
-            .returns(List.of(ChemicalProfileCompositionWarning.TANNIN_INCOMPLETE),
+            .returns(List.of(CompositionWarning.TANNIN_INCOMPLETE),
                 ProductionBatchCandidateSnapshot::warnings)
             .satisfies(candidateSnapshot -> assertThat(candidateSnapshot.targetDistance())
                 .isNotNull()
@@ -142,13 +147,19 @@ class ProductionBatchCandidatePersistenceDataJdbcTest {
             ProductionBatchCandidateId.newId(),
             workspaceId,
             composition,
-            Map.of(sourceReference, ProductionSourceEvidenceReference.of("measurement-2026-07-16")),
+            Map.of(
+                sourceReference,
+                new ProductionCandidateSourceEvidence(
+                    ProductionSourceEvidenceReference.of("measurement-2026-07-16"),
+                    MaterialStateId.newId()
+                )
+            ),
             productionProfile()
         ),
-        prediction(productionProfile().sugar()),
+        prediction(productionProfile().specificGravity()),
         ProfileAxisNormalizerCode.SENSITIVITY_UNIT,
         targetDistance(),
-        List.of(ChemicalProfileCompositionWarning.TANNIN_INCOMPLETE)
+        List.of(CompositionWarning.TANNIN_INCOMPLETE)
     );
   }
 
@@ -156,19 +167,29 @@ class ProductionBatchCandidatePersistenceDataJdbcTest {
     return new ProductionProfileSnapshot(
         SpecificGravityValue.of("1.052"),
         TitratableAcidityValue.of("6.2"),
-        TanninityValue.of("1200"),
+        TanninValue.of("1200"),
         YeastAssimilableNitrogenValue.of("180")
     );
   }
 
   private static @NonNull ProfileTargetDistance targetDistance() {
-    final var point = new SugarAcidityCoordinates(new BigDecimal("1.052"), new BigDecimal("6.2"));
+    final var point = new SugarAcidityGraphPoint(
+        SpecificGravityValue.of("1.052"),
+        TitratableAcidityValue.of("6.2")
+    );
     return new ProfileTargetDistance(
         ProfileTargetDistanceStatus.SCORED,
         point,
-        new SugarAcidityCoordinates(new BigDecimal("1.050"), new BigDecimal("6.0")),
-        new BigDecimal("1200"),
-        new BigDecimal("1200"),
+        new SugarAcidityGraphPoint(
+            SpecificGravityValue.of("1.050"),
+            TitratableAcidityValue.of("6.0")
+        ),
+        new SugarAcidityTargetPosition(
+            MeasuredValueRangePosition.ABOVE,
+            MeasuredValueRangePosition.ABOVE
+        ),
+        TanninValue.of("1200"),
+        TanninValue.of("1200"),
         new BigDecimal("0.15"),
         false,
         false,
@@ -176,8 +197,8 @@ class ProductionBatchCandidatePersistenceDataJdbcTest {
         ProfileDistanceMetric.NORMALIZED_WEIGHTED_MANHATTAN,
         ProfileTargetObjectiveWeights.balanced(),
         SugarAcidityTargetKind.PREDEFINED_ZONE,
-        SugarAcidityTargetGeometryShape.RECTANGLE,
-        List.of()
+        SugarAcidityGeometryShape.RECTANGLE,
+        Set.of()
     );
   }
 
@@ -198,14 +219,18 @@ class ProductionBatchCandidatePersistenceDataJdbcTest {
     jdbcTemplate.update(
         """
             INSERT INTO production_batches (
-                batch_id, workspace_id, name, kind, status, total_volume_liters,
-                sugar_specific_gravity, acidity_g_l_as_malic, tannin_mg_l_tae, yan_mg_n_l,
+                batch_id, workspace_id, name, vessel, lifecycle, alcoholic_fermentation_state,
+                current_volume_liters, current_material_state_id,
+                initial_sugar_specific_gravity, initial_acidity_g_l_as_malic,
+                initial_tannin_mg_l_tae, initial_yan_mg_n_l,
                 version, created_at, updated_at
-            ) VALUES (?, ?, 'Confirmed batch', 'CIDER', 'PLANNED', 120, 1.052, 6.2, 1200, 180,
+            ) VALUES (?, ?, 'Confirmed batch', 'Tank F-03', 'ACTIVE', 'NOT_STARTED',
+                      120, ?, 1.052, 6.2, 1200, 180,
                       0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
             """,
         productionBatchId.value(),
-        workspaceId.value()
+        workspaceId.value(),
+        MaterialStateId.newId().value()
     );
     return productionBatchId;
   }

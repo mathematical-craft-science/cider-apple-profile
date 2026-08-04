@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.UUID;
+import org.craft.mcs.cap.shared.kernel.material.value.BatchLifecycle;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -28,7 +29,9 @@ public class FeedstockBatchJdbcEntity {
   @NonNull @Column("season_starts_on") LocalDate seasonStartsOn;
   @NonNull @Column("season_ends_on") LocalDate seasonEndsOn;
   @Nullable @Column("source") String source;
+  @NonNull @Column("lifecycle") BatchLifecycle lifecycle;
   @NonNull @Column("available_volume_liters") BigDecimal availableVolumeLiters;
+  @NonNull @Column("current_material_state_id") UUID currentMaterialStateId;
   @Nullable @Column("note") String note;
   @Nullable @Column("deleted_at") Instant deletedAt;
   @CreatedDate @Nullable @Column("created_at") Instant createdAt;
@@ -48,7 +51,9 @@ public class FeedstockBatchJdbcEntity {
       @NonNull LocalDate seasonStartsOn,
       @NonNull LocalDate seasonEndsOn,
       @Nullable String source,
+      @NonNull BatchLifecycle lifecycle,
       @NonNull BigDecimal availableVolumeLiters,
+      @NonNull UUID currentMaterialStateId,
       @Nullable String note,
       @Nullable Instant deletedAt
   ) {
@@ -60,7 +65,12 @@ public class FeedstockBatchJdbcEntity {
     this.seasonStartsOn = requireNonNull(seasonStartsOn, "feedstock season start date cannot be null");
     this.seasonEndsOn = requireNonNull(seasonEndsOn, "feedstock season end date cannot be null");
     this.source = normalize(source);
+    this.lifecycle = requireNonNull(lifecycle, "feedstock batch lifecycle cannot be null");
     this.availableVolumeLiters = requireNonNull(availableVolumeLiters, "available volume cannot be null");
+    this.currentMaterialStateId = requireNonNull(
+        currentMaterialStateId,
+        "feedstock current material state id cannot be null"
+    );
     this.note = normalize(note);
     this.deletedAt = deletedAt;
   }

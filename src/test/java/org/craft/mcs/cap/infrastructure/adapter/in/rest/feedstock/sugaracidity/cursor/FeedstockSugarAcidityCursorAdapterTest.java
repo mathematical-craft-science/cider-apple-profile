@@ -2,8 +2,8 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.sugaracidity.
 
 import java.time.Instant;
 import java.util.UUID;
-import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.model.FeedstockMeasurementSugarAcidityPagePosition;
-import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockMeasurementPointFilters;
+import org.craft.mcs.cap.core.feedstock.application.analysis.common.model.FeedstockAnalysisCandidatePagePosition;
+import org.craft.mcs.cap.core.feedstock.application.analysis.common.model.FeedstockAnalysisCandidateFilters;
 import org.craft.mcs.cap.shared.application.query.MalformedCursorException;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.testing.TestCursorTokenCodec;
@@ -18,10 +18,10 @@ class FeedstockSugarAcidityCursorAdapterTest {
   private static final WorkspaceId WORKSPACE_ID = WorkspaceId.of(
       UUID.fromString("019bfcc0-4830-7000-8000-000000000002")
   );
-  private static final FeedstockMeasurementPointFilters FILTERS =
-      new FeedstockMeasurementPointFilters(null, null, null, null);
-  private static final FeedstockMeasurementSugarAcidityPagePosition POSITION =
-      new FeedstockMeasurementSugarAcidityPagePosition(
+  private static final FeedstockAnalysisCandidateFilters FILTERS =
+      new FeedstockAnalysisCandidateFilters(null, null, null, null);
+  private static final FeedstockAnalysisCandidatePagePosition POSITION =
+      new FeedstockAnalysisCandidatePagePosition(
           Instant.parse("2026-07-20T10:00:00Z"),
           UUID.fromString("019bfcc0-4830-7000-8000-000000000003")
       );

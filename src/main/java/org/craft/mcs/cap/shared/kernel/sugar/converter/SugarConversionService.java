@@ -1,6 +1,6 @@
 package org.craft.mcs.cap.shared.kernel.sugar.converter;
 
-import org.craft.mcs.cap.shared.kernel.sugar.SugarValue;
+import org.craft.mcs.cap.shared.kernel.measurement.MeasuredValue;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
@@ -15,7 +15,7 @@ public final class SugarConversionService {
   }
 
   @NonNull
-  public <F extends SugarValue, T extends SugarValue> T convert(
+  public <F extends MeasuredValue, T extends MeasuredValue> T convert(
       @NonNull F source,
       @NonNull Class<F> sourceType,
       @NonNull Class<T> targetType
@@ -32,7 +32,7 @@ public final class SugarConversionService {
 
   @SuppressWarnings("unchecked")
   @NonNull
-  public <F extends SugarValue, T extends SugarValue> T convert(
+  public <F extends MeasuredValue, T extends MeasuredValue> T convert(
       @NonNull F source,
       @NonNull Class<T> targetType
   ) {

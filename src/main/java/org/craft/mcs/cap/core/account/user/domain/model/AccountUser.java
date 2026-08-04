@@ -30,6 +30,11 @@ public record AccountUser(
     @NonNull AccountUserStatus status
 ) {
 
+  private static final @NonNull DisplayName DELETED_DISPLAY_NAME = DisplayName.of("Deleted user");
+  private static final @NonNull String DELETED_SUBJECT_PREFIX = "deleted:";
+  private static final @NonNull String DELETED_EMAIL_PREFIX = "deleted+";
+  private static final @NonNull String DELETED_EMAIL_DOMAIN = "@deleted.invalid";
+
   public AccountUser {
     requireNonNull(userId, "account user id cannot be null");
     requireNonNull(identityProvider, "identity provider cannot be null");
@@ -37,6 +42,8 @@ public record AccountUser(
     requireNonNull(email, "account email cannot be null");
     requireNonNull(displayName, "account display name cannot be null");
     requireNonNull(status, "account user status cannot be null");
+    requireValidDeletedTombstone(userId, externalSubject, email, displayName, avatarUrl, status);
+    requireNoDeletedIdentityOutsideTombstone(externalSubject, email, status);
   }
 
   /**
@@ -74,6 +81,7 @@ public record AccountUser(
       @NonNull DisplayName displayName,
       @Nullable HttpUrl avatarUrl
   ) {
+    requireMutableAccount();
     return new AccountUser(
         userId,
         identityProvider,
@@ -93,6 +101,7 @@ public record AccountUser(
    * when the account is first created.
    */
   public @NonNull AccountUser synchronizeProviderEmail(@NonNull EmailAddress email) {
+    requireMutableAccount();
     return new AccountUser(
         userId,
         identityProvider,
@@ -105,6 +114,29 @@ public record AccountUser(
   }
 
   /**
+   * Removes personal identity data while retaining the stable CAP identifier for historical audit.
+   *
+   * <p>The account row must be updated with this tombstone and must never be physically deleted.
+   * Replacing the external subject also prevents a later IAM login from resolving to the deleted
+   * account.
+   */
+  public @NonNull AccountUser retainDeletedTombstone() {
+    if (status == AccountUserStatus.DELETED) {
+      return this;
+    }
+    final var retainedId = userId.value().toString();
+    return new AccountUser(
+        userId,
+        identityProvider,
+        ExternalUserSubject.of(DELETED_SUBJECT_PREFIX + retainedId),
+        EmailAddress.of(DELETED_EMAIL_PREFIX + retainedId + DELETED_EMAIL_DOMAIN),
+        DELETED_DISPLAY_NAME,
+        null,
+        AccountUserStatus.DELETED
+    );
+  }
+
+  /**
    * Returns whether CAP permits this account to participate in product workspaces.
    *
    * <p>An active account still requires an active workspace membership with sufficient permissions
@@ -112,6 +144,53 @@ public record AccountUser(
    */
   public boolean isActive() {
     return status == AccountUserStatus.ACTIVE;
+  }
+
+  private static void requireValidDeletedTombstone(
+      @NonNull AccountUserId userId,
+      @NonNull ExternalUserSubject externalSubject,
+      @NonNull EmailAddress email,
+      @NonNull DisplayName displayName,
+      @Nullable HttpUrl avatarUrl,
+      @NonNull AccountUserStatus status
+  ) {
+    if (status != AccountUserStatus.DELETED) {
+      return;
+    }
+
+    final var retainedId = userId.value().toString();
+    final var valid = externalSubject.value().equals(DELETED_SUBJECT_PREFIX + retainedId)
+        && email.value().equals(DELETED_EMAIL_PREFIX + retainedId + DELETED_EMAIL_DOMAIN)
+        && displayName.equals(DELETED_DISPLAY_NAME)
+        && avatarUrl == null;
+    if (!valid) {
+      throw new AccountUserLifecycleException(
+          "deleted account must contain only its canonical anonymized tombstone"
+      );
+    }
+  }
+
+  private void requireMutableAccount() {
+    if (status == AccountUserStatus.DELETED) {
+      throw new AccountUserLifecycleException("deleted account tombstone cannot be changed");
+    }
+  }
+
+  private static void requireNoDeletedIdentityOutsideTombstone(
+      @NonNull ExternalUserSubject externalSubject,
+      @NonNull EmailAddress email,
+      @NonNull AccountUserStatus status
+  ) {
+    if (status == AccountUserStatus.DELETED) {
+      return;
+    }
+    final var containsDeletedIdentity = externalSubject.value().startsWith(DELETED_SUBJECT_PREFIX)
+        || email.value().endsWith(DELETED_EMAIL_DOMAIN);
+    if (containsDeletedIdentity) {
+      throw new AccountUserLifecycleException(
+          "deleted account identity cannot be restored to an active lifecycle"
+      );
+    }
   }
 
 }

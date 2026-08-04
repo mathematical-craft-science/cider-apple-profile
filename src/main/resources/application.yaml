@@ -35,9 +35,15 @@ management:
       export:
         enabled: false
   tracing:
+    sampling:
+      probability: 1.0
     export:
       otlp:
         enabled: false
+
+logging:
+  level:
+    org.springframework.web.servlet.DispatcherServlet: DEBUG
 
 springdoc:
   api-docs:
@@ -83,7 +89,7 @@ cap:
       debug: false
   profile-analysis:
     sugar-acidity:
-      assessor: RECTANGLE # или ellipse
+      geometry: RECTANGLE # or ELLIPSE
     readiness:
       ph:
         generic-yeast-tolerance-min: 2.8

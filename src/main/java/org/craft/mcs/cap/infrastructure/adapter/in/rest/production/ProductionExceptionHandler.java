@@ -102,7 +102,7 @@ public final class ProductionExceptionHandler {
         UNPROCESSABLE_ENTITY,
         SOURCE_PROFILE_UNAVAILABLE,
         "Production source profile unavailable",
-        "The referenced production source has no current chemical profile."
+        "The referenced production source has no current characteristics for composition."
     );
     addSourceProperties(problem, exception.sourceReference());
 

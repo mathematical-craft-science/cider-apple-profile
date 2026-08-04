@@ -3,6 +3,7 @@ package org.craft.mcs.cap.infrastructure.configuration.openapi;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.media.StringSchema;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -59,6 +60,7 @@ public final class PolymorphicSchemaFlatteningCustomizer implements OpenApiCusto
     for (Schema<?> part : allOfSchemas(schema)) {
       mergeSchemaPart(components, part, mergedProperties, required);
     }
+    applyDeclaredAllowableValues(dtoType, mergedProperties);
 
     schema.setAllOf(null);
     schema.setType("object");
@@ -88,6 +90,45 @@ public final class PolymorphicSchemaFlatteningCustomizer implements OpenApiCusto
           .filter(required -> !targetRequired.contains(required))
           .forEach(targetRequired::add);
     }
+  }
+
+  private static void applyDeclaredAllowableValues(
+      @NonNull Class<?> dtoType,
+      @NonNull Map<@NonNull String, @NonNull Schema<?>> properties
+  ) {
+    for (final var method : dtoType.getDeclaredMethods()) {
+      final var annotation = method.getAnnotation(io.swagger.v3.oas.annotations.media.Schema.class);
+      if (annotation == null
+          || method.getParameterCount() != 0
+          || !"string".equals(annotation.type())
+          || annotation.allowableValues().length == 0) {
+        continue;
+      }
+
+      final var property = properties.get(method.getName());
+      if (property == null) {
+        continue;
+      }
+      properties.put(
+          method.getName(),
+          literalStringSchema(annotation, property)
+      );
+    }
+  }
+
+  private static @NonNull StringSchema literalStringSchema(
+      io.swagger.v3.oas.annotations.media.@NonNull Schema annotation,
+      @NonNull Schema<?> source
+  ) {
+    final var schema = new StringSchema();
+    schema.setDescription(annotation.description().isBlank() ? source.getDescription() : annotation.description());
+    schema.setExample(annotation.example().isBlank() ? source.getExample() : annotation.example());
+    schema.setNullable(source.getNullable());
+    schema.setDeprecated(source.getDeprecated());
+    schema.setReadOnly(source.getReadOnly());
+    schema.setWriteOnly(source.getWriteOnly());
+    schema.setEnum(List.of(annotation.allowableValues()));
+    return schema;
   }
 
   private static @Nullable Schema<?> resolveSchemaPart(

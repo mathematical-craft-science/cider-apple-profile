@@ -1,11 +1,12 @@
 package org.craft.mcs.cap.core.feedstock.application.batch.port.in;
 
-import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockBatchName;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
+import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
+import org.craft.mcs.cap.shared.kernel.material.value.BatchLifecycle;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSource;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockVessel;
+import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.jspecify.annotations.NonNull;
@@ -17,11 +18,12 @@ import static java.util.Objects.requireNonNull;
 public record FeedstockBatchCreated(
     @NonNull FeedstockBatchId batchId,
     @NonNull WorkspaceId workspaceId,
-    @NonNull FeedstockBatchName name,
-    @Nullable FeedstockVessel vessel,
+    @NonNull BatchName name,
+    @Nullable Vessel vessel,
     @NonNull FeedstockType type,
     @NonNull FeedstockSeason season,
     @Nullable FeedstockSource source,
+    @NonNull BatchLifecycle lifecycle,
     @NonNull VolumeValue availableVolume,
     @Nullable String note
 ) {
@@ -32,6 +34,7 @@ public record FeedstockBatchCreated(
     requireNonNull(name, "feedstock batch name cannot be null");
     requireNonNull(type, "feedstock type cannot be null");
     requireNonNull(season, "feedstock season cannot be null");
+    requireNonNull(lifecycle, "feedstock batch lifecycle cannot be null");
     requireNonNull(availableVolume, "available volume cannot be null");
   }
 }

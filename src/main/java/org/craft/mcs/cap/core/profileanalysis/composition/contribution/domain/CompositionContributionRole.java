@@ -2,23 +2,33 @@ package org.craft.mcs.cap.core.profileanalysis.composition.contribution.domain;
 
 
 /**
- * Semantic role of one chemical profile source relative to a selected production composition
- * target.
+ * Cider-making interpretation of how one source can contribute to a selected composition target.
+ *
+ * <p>Sugar and acidity roles are inferred from canonical Specific Gravity and Titratable Acidity
+ * evidence. They describe planning utility and do not claim direct sensory sweetness or perceived
+ * acidity.
  */
 public enum CompositionContributionRole {
 
   /**
-   * Source is already inside the selected target profile and can act as a main base.
+   * Source is already inside the selected SG/TA target area and can act as a main base.
    */
   BALANCED_BASE,
 
   /**
-   * Source is above the target sugar coordinate and can raise specific gravity.
+   * Source has higher SG than the nearest target coordinate and can contribute more fermentable
+   * sugar potential.
    */
   SUGAR_CONTRIBUTOR,
 
   /**
-   * Source is above the target acidity coordinate and can raise titratable acidity.
+   * Source has lower SG than the nearest target coordinate and can reduce fermentable sugar
+   * potential in a composition.
+   */
+  SUGAR_REDUCER,
+
+  /**
+   * Source has higher TA than the nearest target coordinate and can contribute more acidity.
    */
   ACIDITY_CONTRIBUTOR,
 
@@ -28,7 +38,8 @@ public enum CompositionContributionRole {
   TANNIN_CONTRIBUTOR,
 
   /**
-   * Source is below the target acidity coordinate and can soften an overly acidic composition.
+   * Source has lower TA than the nearest target coordinate and can reduce the composition's
+   * acidity indicator.
    */
   ACIDITY_REDUCER,
 
@@ -38,17 +49,8 @@ public enum CompositionContributionRole {
   TANNIN_SOFTENER,
 
   /**
-   * Source is below both target sugar and acidity coordinates and mostly acts as a diluting source.
+   * Source is below both target SG and TA coordinates and mostly dilutes sugar and acidity
+   * indicators.
    */
-  DILUTION_SOURCE,
-
-  /**
-   * Source is assessable but does not provide a clear useful contribution to the selected target.
-   */
-  LOW_FIT_SOURCE,
-
-  /**
-   * Source is missing required axes for target-aware role assessment.
-   */
-  UNASSESSABLE
+  DILUTION_SOURCE
 }

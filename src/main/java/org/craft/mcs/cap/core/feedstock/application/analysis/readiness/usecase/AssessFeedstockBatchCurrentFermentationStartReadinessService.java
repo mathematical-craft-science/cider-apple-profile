@@ -1,27 +1,31 @@
 package org.craft.mcs.cap.core.feedstock.application.analysis.readiness.usecase;
 
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
 import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.FermentationStartReadinessAssessor;
+import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.FermentationStartProfile;
 import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchNotFoundException;
 import org.craft.mcs.cap.core.feedstock.application.analysis.readiness.port.in.AssessFeedstockBatchCurrentFermentationStartReadinessUseCase;
 import org.craft.mcs.cap.core.feedstock.application.analysis.readiness.port.in.FeedstockBatchCurrentFermentationStartReadinessResult;
-import org.craft.mcs.cap.core.feedstock.application.measurement.query.FeedstockBatchCurrentMeasurementQueryService;
+import org.craft.mcs.cap.core.feedstock.application.currentprofile.query.FeedstockCurrentProfileQueryService;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchRepository;
-import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 
 import static java.util.Objects.requireNonNull;
+import static org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic.PH;
+import static org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic.SPECIFIC_GRAVITY;
+import static org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic.YAN;
 
 
 /**
- * Application service for assessing whether the latest feedstock measurement is ready to start
+ * Application service for assessing whether the current feedstock material state is ready to start
  * fermentation.
  *
- * <p>The use case deliberately applies the batch-level "latest measurement only" rule: historical
- * measurements remain visible in batch history, but fermentation-start assessments are based on the
- * current measured profile of the feedstock batch.
+ * <p>Historical measurements remain visible in batch history. The assessment uses only evidence
+ * applicable to the current material-state lineage, selected independently per characteristic.
  */
 @Component
 @RequiredArgsConstructor
@@ -30,7 +34,7 @@ public final class AssessFeedstockBatchCurrentFermentationStartReadinessService
 
   private final @NonNull FeedstockBatchRepository feedstockBatchRepository;
   private final @NonNull FeedstockAccessControl feedstockAccessControl;
-  private final @NonNull FeedstockBatchCurrentMeasurementQueryService currentMeasurementQueryService;
+  private final @NonNull FeedstockCurrentProfileQueryService currentProfileQueryService;
   private final @NonNull FermentationStartReadinessAssessor readinessAssessor;
 
   @Override
@@ -42,14 +46,19 @@ public final class AssessFeedstockBatchCurrentFermentationStartReadinessService
     final var batch = feedstockBatchRepository.findById(batchId)
         .orElseThrow(() -> new FeedstockBatchNotFoundException(batchId));
     feedstockAccessControl.requireReadAccess(batch.workspaceId());
-    final var measurement = currentMeasurementQueryService.requireCurrentMeasurement(batchId);
-
+    final var measurement = currentProfileQueryService.requireCurrentProfile(batchId);
     return new FeedstockBatchCurrentFermentationStartReadinessResult(
         batch.batchId(),
         batch.workspaceId(),
-        measurement.measurementId(),
-        measurement.name(),
-        readinessAssessor.assess(measurement.chemicalProfile())
+        measurement.currentMaterialStateId(),
+        measurement.evidenceFor(Set.of(SPECIFIC_GRAVITY, PH, YAN)),
+        readinessAssessor.assess(
+            new FermentationStartProfile(
+                measurement.specificGravity(),
+                measurement.ph(),
+                measurement.yeastAssimilableNitrogen()
+            )
+        )
     );
   }
 }

@@ -9,6 +9,7 @@ import org.jspecify.annotations.NonNull;
 import static java.util.Objects.requireNonNull;
 
 
+/** Harvest or sourcing period associated with a FeedstockBatch. */
 @ValueObject
 public record FeedstockSeason(
     @NonNull LocalDate startsOn,
@@ -29,10 +30,5 @@ public record FeedstockSeason(
       @NonNull LocalDate endsOn
   ) {
     return new FeedstockSeason(startsOn, endsOn);
-  }
-
-  public boolean contains(@NonNull LocalDate date) {
-    requireNonNull(date, "feedstock season date cannot be null");
-    return !date.isBefore(startsOn) && !date.isAfter(endsOn);
   }
 }

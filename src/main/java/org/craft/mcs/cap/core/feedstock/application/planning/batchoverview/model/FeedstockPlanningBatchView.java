@@ -1,14 +1,8 @@
 package org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.model;
 
 import org.craft.mcs.cap.core.feedstock.application.batch.model.FeedstockBatchSummary;
-import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentMeasurementFreshnessView;
-import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentMeasurementView;
-import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentProfileDataQualityView;
-import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentProfilePotentialAbvView;
-import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockPlanningReadinessView;
-import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.FermentationStartReadinessAssessment;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileEvaluation;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
+import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentProfileAssessmentView;
+import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentProfileSummaryView;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -18,26 +12,18 @@ import static java.util.Objects.requireNonNull;
 /**
  * Batch row in the feedstock planning read model.
  *
- * <p>The view keeps the batch as the primary entity and attaches latest-measurement-derived
- * analysis, planning diagnostics and optional target assessment without changing feedstock
- * aggregate state.
+ * <p>The view keeps the batch as the primary entity and attaches composite current-profile
+ * analysis, planning diagnostics and optional target assessment without changing aggregate state.
  */
 public record FeedstockPlanningBatchView(
     @NonNull FeedstockBatchSummary batch,
-    @Nullable FeedstockCurrentMeasurementView currentMeasurement,
-    @Nullable FeedstockCurrentMeasurementFreshnessView measurementFreshness,
-    @Nullable SugarAcidityProfileEvaluation sugarAcidity,
-    @Nullable FeedstockCurrentProfilePotentialAbvView potentialAbv,
-    @Nullable AxisValue yeastAssimilableNitrogen,
-    @NonNull FeedstockPlanningReadinessView planningReadiness,
-    @NonNull FeedstockCurrentProfileDataQualityView dataQuality,
-    @Nullable FermentationStartReadinessAssessment fermentationStartReadiness,
+    @Nullable FeedstockCurrentProfileSummaryView currentProfileSummary,
+    @NonNull FeedstockCurrentProfileAssessmentView currentProfileAssessment,
     @Nullable FeedstockPlanningTargetCandidateView targetCandidate
 ) {
 
   public FeedstockPlanningBatchView {
     requireNonNull(batch, "feedstock batch summary cannot be null");
-    requireNonNull(planningReadiness, "feedstock planning readiness cannot be null");
-    requireNonNull(dataQuality, "feedstock current profile data quality cannot be null");
+    requireNonNull(currentProfileAssessment, "feedstock current profile assessment cannot be null");
   }
 }

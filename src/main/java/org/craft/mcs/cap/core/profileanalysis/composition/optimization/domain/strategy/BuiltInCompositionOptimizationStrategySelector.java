@@ -20,25 +20,25 @@ public final class BuiltInCompositionOptimizationStrategySelector
 
   private final @NonNull Map<
       @NonNull CompositionOptimizationAlgorithm,
-      @NonNull ChemicalProfileCompositionOptimizationStrategy
+      @NonNull CompositionOptimizationStrategy
       > strategies;
 
   public BuiltInCompositionOptimizationStrategySelector() {
     final var builtInStrategies = new EnumMap<
         CompositionOptimizationAlgorithm,
-        ChemicalProfileCompositionOptimizationStrategy
+        CompositionOptimizationStrategy
         >(
         CompositionOptimizationAlgorithm.class
     );
     builtInStrategies.put(
         CompositionOptimizationAlgorithm.DISCRETIZED_BOUNDED_SEARCH,
-        new DiscretizedBoundedChemicalProfileCompositionOptimizationStrategy()
+        new DiscretizedBoundedCompositionOptimizationStrategy()
     );
     this.strategies = Map.copyOf(builtInStrategies);
   }
 
   @Override
-  public @NonNull ChemicalProfileCompositionOptimizationStrategy select(
+  public @NonNull CompositionOptimizationStrategy select(
       @NonNull CompositionOptimizationAlgorithm algorithm
   ) {
     requireNonNull(algorithm, "composition optimization algorithm cannot be null");

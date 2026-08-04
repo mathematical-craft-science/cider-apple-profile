@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '4.0.7'
     id 'io.spring.dependency-management' version '1.1.7'
+    id 'info.solidsoft.pitest' version '1.19.0'
 }
 
 //'Cider Apple Profile'
@@ -25,6 +26,9 @@ ext {
     set('jMolecules', "2025.0.2")
     set('archUnitVersion', "1.4.2")
     set('namastackOutboxVersion', "1.6.0")
+    set('pitestCoreVersion', "1.25.3")
+    set('pitestJUnit5Version', "1.2.3")
+    set('junitVersion', "6.0.3")
 }
 
 dependencies {
@@ -64,6 +68,7 @@ dependencies {
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
     annotationProcessor 'org.projectlombok:lombok'
     //
+    testImplementation enforcedPlatform("org.junit:junit-bom:${junitVersion}")
     testImplementation 'org.springframework.boot:spring-boot-starter-actuator-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-data-jdbc-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-liquibase-test'
@@ -94,6 +99,31 @@ dependencyManagement {
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+pitest {
+    targetClasses = [
+        'org.craft.mcs.cap.core.feedstock.domain.*',
+        'org.craft.mcs.cap.core.production.domain.*',
+        'org.craft.mcs.cap.core.production.candidate.domain.*',
+        'org.craft.mcs.cap.core.measurement.domain.*',
+        'org.craft.mcs.cap.core.traceability.domain.*'
+    ]
+    targetTests = [
+        'org.craft.mcs.cap.feedstock.domain.*',
+        'org.craft.mcs.cap.production.domain.*',
+        'org.craft.mcs.cap.production.candidate.domain.*',
+        'org.craft.mcs.cap.core.measurement.domain.*',
+        'org.craft.mcs.cap.core.traceability.domain.*'
+    ]
+    pitestVersion = pitestCoreVersion
+    junit5PluginVersion = pitestJUnit5Version
+    threads = 1
+    outputFormats = ['XML', 'HTML']
+    timestampedReports = false
+    exportLineCoverage = true
+    failWhenNoMutations = true
+    mutationThreshold = 100
 }
 
 tasks.withType(JavaCompile).configureEach {

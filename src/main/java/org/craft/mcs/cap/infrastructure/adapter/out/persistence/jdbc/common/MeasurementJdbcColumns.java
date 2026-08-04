@@ -18,18 +18,6 @@ public class MeasurementJdbcColumns {
   @Nullable
   public BigDecimal maxValue;
 
-  @Nullable
-  public BigDecimal meanValue;
-
-  @Nullable
-  public BigDecimal medianValue;
-
-  @Nullable
-  public BigDecimal standardDeviation;
-
-  @Nullable
-  public Integer sampleSize;
-
   public MeasurementJdbcColumns() {
   }
 }

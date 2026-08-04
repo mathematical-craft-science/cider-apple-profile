@@ -5,7 +5,7 @@ public enum SeedMeasurementCharacteristic {
   SUGAR(MeasurementSeedUnit.SPECIFIC_GRAVITY),
   PH(MeasurementSeedUnit.PH),
   TITRATABLE_ACIDITY(MeasurementSeedUnit.GRAM_PER_LITER_AS_MALIC_ACID),
-  TANNINITY(MeasurementSeedUnit.MILLIGRAM_PER_LITER_AS_TANNIC_ACID);
+  TANNIN(MeasurementSeedUnit.MILLIGRAM_PER_LITER_AS_TANNIC_ACID);
 
   private final MeasurementSeedUnit canonicalUnit;
 

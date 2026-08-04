@@ -13,7 +13,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "3.60"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "7600.0000"
@@ -35,11 +35,11 @@
       "max": "3.70"
     },
     "titratableAcidity": {
-      "kind": "STATISTICAL",
+      "kind": "EXACT",
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
-      "mean": "4.80"
+      "value": "4.80"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "2000.0000"
@@ -61,11 +61,11 @@
       "max": "3.80"
     },
     "titratableAcidity": {
-      "kind": "STATISTICAL",
+      "kind": "EXACT",
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
-      "mean": "3.80"
+      "value": "3.80"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "1800.0000"
@@ -87,11 +87,11 @@
       "max": "3.90"
     },
     "titratableAcidity": {
-      "kind": "STATISTICAL",
+      "kind": "EXACT",
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
-      "mean": "3.50"
+      "value": "3.50"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "2500.0000"
@@ -111,7 +111,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "4.00"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "10500.0000"
@@ -133,11 +133,11 @@
       "max": "3.80"
     },
     "titratableAcidity": {
-      "kind": "STATISTICAL",
+      "kind": "EXACT",
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
-      "mean": "4.00"
+      "value": "4.00"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "2100.0000"
@@ -159,11 +159,11 @@
       "max": "3.70"
     },
     "titratableAcidity": {
-      "kind": "STATISTICAL",
+      "kind": "EXACT",
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
-      "mean": "4.50"
+      "value": "4.50"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "1700.0000"
@@ -185,11 +185,11 @@
       "max": "4.00"
     },
     "titratableAcidity": {
-      "kind": "STATISTICAL",
+      "kind": "EXACT",
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
-      "mean": "3.20"
+      "value": "3.20"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "2000.0000"
@@ -211,11 +211,11 @@
       "max": "3.60"
     },
     "titratableAcidity": {
-      "kind": "STATISTICAL",
+      "kind": "EXACT",
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
-      "mean": "6.00"
+      "value": "6.00"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "1200.0000"
@@ -237,11 +237,11 @@
       "max": "3.30"
     },
     "titratableAcidity": {
-      "kind": "STATISTICAL",
+      "kind": "EXACT",
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
-      "mean": "9.00"
+      "value": "9.00"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "900.0000"
@@ -263,11 +263,11 @@
       "max": "3.70"
     },
     "titratableAcidity": {
-      "kind": "STATISTICAL",
+      "kind": "EXACT",
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
-      "mean": "5.00"
+      "value": "5.00"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "2200.0000"
@@ -289,11 +289,11 @@
       "max": "3.80"
     },
     "titratableAcidity": {
-      "kind": "STATISTICAL",
+      "kind": "EXACT",
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
-      "mean": "4.00"
+      "value": "4.00"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "2100.0000"
@@ -315,11 +315,11 @@
       "max": "3.70"
     },
     "titratableAcidity": {
-      "kind": "STATISTICAL",
+      "kind": "EXACT",
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
-      "mean": "4.50"
+      "value": "4.50"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "2000.0000"
@@ -339,7 +339,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "2.70"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "4100.0000"
@@ -359,7 +359,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "2.40"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "5100.0000"
@@ -381,11 +381,11 @@
       "max": "3.70"
     },
     "titratableAcidity": {
-      "kind": "STATISTICAL",
+      "kind": "EXACT",
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
-      "mean": "4.20"
+      "value": "4.20"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "1600.0000"
@@ -405,7 +405,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "3.30"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "4600.0000"
@@ -425,7 +425,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "2.20"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "2300.0000"
@@ -445,7 +445,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "2.00"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "3400.0000"
@@ -465,7 +465,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "2.00"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "3400.0000"
@@ -485,7 +485,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "6.20"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "1900.0000"
@@ -505,7 +505,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "2.50"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "2700.0000"
@@ -525,7 +525,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "8.10"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "1700.0000"
@@ -545,7 +545,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "1.40"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "3400.0000"
@@ -565,7 +565,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "12.00"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "900.0000"
@@ -585,7 +585,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "7.00"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "1300.0000"
@@ -605,7 +605,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "7.40"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "590.0000"
@@ -625,7 +625,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "9.00"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "1100.0000"
@@ -645,7 +645,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "1.80"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "2500.0000"
@@ -665,7 +665,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "1.70"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "2600.0000"
@@ -685,7 +685,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "2.10"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "2100.0000"
@@ -705,7 +705,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "4.00"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "370.0000"
@@ -725,7 +725,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "4.80"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "1300.0000"
@@ -745,7 +745,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "1.50"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "2000.0000"
@@ -765,7 +765,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "6.70"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "1200.0000"
@@ -785,7 +785,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "1.60"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "1400.0000"
@@ -805,7 +805,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "9.40"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "1200.0000"
@@ -825,7 +825,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "2.79"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "8800.0000"
@@ -845,7 +845,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "6.40"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "2300.0000"
@@ -865,7 +865,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "2.00"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "1600.0000"
@@ -885,7 +885,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "3.60"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "8200.0000"
@@ -905,7 +905,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "2.30"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "1700.0000"
@@ -925,7 +925,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "8.20"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "2100.0000"
@@ -945,7 +945,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "2.10"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "2200.0000"
@@ -965,7 +965,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "13.10"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "3300.0000"
@@ -985,7 +985,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "2.20"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "3800.0000"
@@ -1005,7 +1005,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "2.10"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "4700.0000"
@@ -1025,7 +1025,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "1.70"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "4000.0000"
@@ -1045,7 +1045,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "1.30"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "2300.0000"
@@ -1065,7 +1065,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "2.50"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "2200.0000"
@@ -1085,7 +1085,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "2.20"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "2300.0000"
@@ -1105,7 +1105,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "8.10"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "1100.0000"
@@ -1125,7 +1125,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "2.10"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "1100.0000"
@@ -1145,7 +1145,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "6.00"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "1300.0000"
@@ -1165,7 +1165,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "3.10"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "440.0000"
@@ -1185,7 +1185,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "9.00"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "800.0000"
@@ -1205,7 +1205,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "3.70"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "440.0000"
@@ -1225,7 +1225,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "9.80"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "1800.0000"
@@ -1245,7 +1245,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "2.10"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "2600.0000"
@@ -1265,7 +1265,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "1.90"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "1800.0000"
@@ -1285,7 +1285,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "2.10"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "2400.0000"
@@ -1305,7 +1305,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "1.60"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "2000.0000"
@@ -1325,7 +1325,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "2.10"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "3600.0000"
@@ -1345,7 +1345,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "1.40"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "2100.0000"
@@ -1365,7 +1365,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "1.60"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "1400.0000"
@@ -1385,7 +1385,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "2.20"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "3100.0000"
@@ -1405,7 +1405,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "2.10"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "5500.0000"
@@ -1425,7 +1425,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "2.00"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "2400.0000"
@@ -1445,7 +1445,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "2.20"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "1900.0000"
@@ -1465,7 +1465,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "9.80"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "700.0000"
@@ -1485,7 +1485,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "6.90"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "1500.0000"
@@ -1505,7 +1505,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "10.20"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "900.0000"
@@ -1525,7 +1525,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "6.50"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "1100.0000"
@@ -1545,7 +1545,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "5.40"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "1800.0000"
@@ -1565,7 +1565,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "6.60"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "1000.0000"
@@ -1585,7 +1585,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "3.00"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "800.0000"
@@ -1605,7 +1605,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "5.60"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "700.0000"
@@ -1625,7 +1625,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "6.10"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "700.0000"
@@ -1645,7 +1645,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "5.80"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "1000.0000"
@@ -1665,7 +1665,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "5.80"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "1350.0000"
@@ -1685,7 +1685,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "2.00"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "2800.0000"
@@ -1705,7 +1705,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "6.40"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "1000.0000"
@@ -1725,7 +1725,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "1.30"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "2900.0000"
@@ -1745,7 +1745,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "1.00"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "2900.0000"
@@ -1765,7 +1765,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "4.10"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "410.0000"
@@ -1785,7 +1785,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "1.90"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "3300.0000"
@@ -1805,7 +1805,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "1.70"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "4200.0000"
@@ -1825,7 +1825,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "1.10"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "2200.0000"
@@ -1845,7 +1845,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "5.80"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "460.0000"
@@ -1865,7 +1865,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "3.00"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "1600.0000"
@@ -1885,7 +1885,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "6.70"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "750.0000"
@@ -1905,7 +1905,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "5.00"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "700.0000"
@@ -1925,7 +1925,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "6.60"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "900.0000"
@@ -1945,7 +1945,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "6.70"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "700.0000"
@@ -1965,7 +1965,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "10.30"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "1800.0000"
@@ -1985,7 +1985,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "8.50"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "600.0000"
@@ -2005,7 +2005,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "1.50"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "4300.0000"
@@ -2025,7 +2025,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "5.80"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "1900.0000"
@@ -2045,7 +2045,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "2.40"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "3400.0000"
@@ -2065,7 +2065,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "5.80"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "2400.0000"
@@ -2085,7 +2085,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "2.10"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "2700.0000"
@@ -2105,7 +2105,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "1.70"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "2000.0000"
@@ -2125,7 +2125,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "3.80"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "1100.0000"
@@ -2145,7 +2145,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "5.80"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "1400.0000"
@@ -2165,7 +2165,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "1.80"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "4100.0000"
@@ -2185,7 +2185,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "5.70"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "700.0000"
@@ -2205,7 +2205,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "3.60"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "8300.0000"
@@ -2225,7 +2225,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "1.70"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "3250.0000"
@@ -2245,7 +2245,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "4.90"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "700.0000"
@@ -2265,7 +2265,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "2.70"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "6400.0000"
@@ -2285,7 +2285,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "8.20"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "340.0000"
@@ -2305,7 +2305,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "1.70"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "3800.0000"
@@ -2325,7 +2325,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "2.20"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "1300.0000"
@@ -2345,7 +2345,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "7.60"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "500.0000"
@@ -2365,7 +2365,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "2.60"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "2700.0000"
@@ -2385,7 +2385,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "2.10"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "2500.0000"
@@ -2405,7 +2405,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "2.80"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "1900.0000"
@@ -2425,7 +2425,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "2.80"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "1700.0000"
@@ -2445,7 +2445,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "1.70"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "6000.0000"
@@ -2465,7 +2465,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "7.00"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "480.0000"
@@ -2485,7 +2485,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "2.70"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "1700.0000"
@@ -2505,7 +2505,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "1.90"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "2200.0000"
@@ -2525,7 +2525,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "2.20"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "3000.0000"
@@ -2545,7 +2545,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "2.60"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "1400.0000"
@@ -2565,7 +2565,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "2.00"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "4400.0000"
@@ -2585,7 +2585,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "7.40"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "1200.0000"
@@ -2605,7 +2605,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "1.50"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "2500.0000"
@@ -2625,7 +2625,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "9.60"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "1300.0000"
@@ -2645,7 +2645,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "5.90"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "430.0000"
@@ -2665,7 +2665,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "6.40"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "1400.0000"
@@ -2685,7 +2685,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "6.30"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "4800.0000"
@@ -2705,7 +2705,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "7.70"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "520.0000"
@@ -2725,7 +2725,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "5.10"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "600.0000"
@@ -2745,7 +2745,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "9.50"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "900.0000"
@@ -2765,7 +2765,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "2.40"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "2700.0000"
@@ -2785,7 +2785,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "3.38"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "6700.0000"
@@ -2805,7 +2805,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "7.60"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "1400.0000"
@@ -2825,7 +2825,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "6.70"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "1100.0000"
@@ -2845,7 +2845,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "8.60"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "700.0000"
@@ -2865,7 +2865,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "6.80"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "1500.0000"
@@ -2885,7 +2885,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "1.70"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "1600.0000"
@@ -2905,7 +2905,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "1.70"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "1600.0000"
@@ -2925,7 +2925,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "6.10"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "800.0000"
@@ -2945,7 +2945,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "1.90"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "3600.0000"
@@ -2965,7 +2965,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "2.30"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "2400.0000"
@@ -2985,7 +2985,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "7.10"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "500.0000"
@@ -3005,7 +3005,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "2.00"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "2300.0000"
@@ -3025,7 +3025,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "5.40"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "1400.0000"
@@ -3045,7 +3045,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "2.70"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "3300.0000"
@@ -3065,7 +3065,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "5.50"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "800.0000"
@@ -3085,7 +3085,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "6.40"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "3100.0000"
@@ -3105,7 +3105,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "3.20"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "3600.0000"
@@ -3125,7 +3125,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "2.20"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "1500.0000"
@@ -3145,7 +3145,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "2.00"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "1400.0000"
@@ -3165,7 +3165,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "7.70"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "900.0000"
@@ -3185,7 +3185,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "2.00"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "3700.0000"
@@ -3205,7 +3205,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "2.00"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "1400.0000"
@@ -3225,7 +3225,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "5.60"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "1600.0000"
@@ -3245,7 +3245,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "2.00"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "3000.0000"
@@ -3265,7 +3265,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "1.80"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "2500.0000"
@@ -3285,7 +3285,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "6.50"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "1300.0000"
@@ -3305,7 +3305,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "1.80"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "1000.0000"
@@ -3325,7 +3325,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "10.10"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "1700.0000"
@@ -3345,7 +3345,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "2.70"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "3400.0000"
@@ -3365,7 +3365,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "1.20"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "580.0000"
@@ -3385,7 +3385,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "1.50"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "1400.0000"
@@ -3405,7 +3405,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "9.10"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "1900.0000"
@@ -3425,7 +3425,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "4.70"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "380.0000"
@@ -3445,7 +3445,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "6.90"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "1200.0000"
@@ -3465,7 +3465,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "2.90"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "2600.0000"
@@ -3485,7 +3485,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "2.00"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "3200.0000"
@@ -3505,7 +3505,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "5.10"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "540.0000"
@@ -3525,7 +3525,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "4.10"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "760.0000"
@@ -3545,7 +3545,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "2.90"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "1500.0000"
@@ -3565,7 +3565,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "5.60"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "400.0000"
@@ -3585,7 +3585,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "5.50"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "1500.0000"
@@ -3605,7 +3605,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "7.90"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "1200.0000"
@@ -3625,7 +3625,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "13.10"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "1220.0000"
@@ -3645,7 +3645,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "5.00"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "430.0000"
@@ -3665,7 +3665,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "8.20"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "370.0000"
@@ -3685,7 +3685,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "2.10"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "1600.0000"
@@ -3705,7 +3705,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "1.90"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "2280.0000"
@@ -3725,7 +3725,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "2.00"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "920.0000"
@@ -3745,7 +3745,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "2.00"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "1720.0000"
@@ -3765,7 +3765,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "1.90"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "880.0000"
@@ -3785,7 +3785,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "3.50"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "580.0000"
@@ -3805,7 +3805,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "2.30"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "360.0000"
@@ -3825,7 +3825,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "4.10"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "370.0000"
@@ -3845,7 +3845,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "2.10"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "430.0000"
@@ -3865,7 +3865,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "6.30"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "480.0000"
@@ -3885,7 +3885,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "2.90"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "450.0000"
@@ -3905,7 +3905,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "5.10"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "600.0000"
@@ -3925,7 +3925,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "3.50"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "380.0000"
@@ -3945,7 +3945,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "7.40"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "1000.0000"
@@ -3965,7 +3965,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "12.30"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "5200.0000"
@@ -3985,7 +3985,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "2.60"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "2100.0000"
@@ -4005,7 +4005,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "2.10"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "600.0000"
@@ -4025,7 +4025,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "5.50"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "900.0000"
@@ -4045,7 +4045,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "5.00"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "800.0000"
@@ -4065,7 +4065,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "9.60"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "1300.0000"
@@ -4085,7 +4085,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "10.30"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "1100.0000"
@@ -4105,7 +4105,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "6.00"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "200.0000"
@@ -4125,7 +4125,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "7.40"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "2600.0000"
@@ -4145,7 +4145,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "4.00"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "600.0000"
@@ -4165,7 +4165,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "8.20"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "900.0000"
@@ -4185,7 +4185,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "1.98"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "2000.0000"
@@ -4205,7 +4205,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "9.75"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "900.0000"
@@ -4225,7 +4225,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "10.18"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "2100.0000"
@@ -4245,7 +4245,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "1.93"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "4800.0000"
@@ -4265,7 +4265,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "6.51"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "1300.0000"
@@ -4285,7 +4285,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "1.82"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "2100.0000"
@@ -4305,7 +4305,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "1.40"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "2300.0000"
@@ -4325,7 +4325,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "2.58"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "2800.0000"
@@ -4345,7 +4345,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "3.48"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "100.0000"
@@ -4365,7 +4365,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "7.84"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "2900.0000"
@@ -4385,7 +4385,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "7.40"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "3100.0000"
@@ -4405,7 +4405,7 @@
       "unit": "GRAM_PER_LITER_AS_MALIC_ACID",
       "value": "2.30"
     },
-    "tanninity": {
+    "tannin": {
       "kind": "EXACT",
       "unit": "MILLIGRAM_PER_LITER_AS_TANNIC_ACID",
       "value": "1690.0000"

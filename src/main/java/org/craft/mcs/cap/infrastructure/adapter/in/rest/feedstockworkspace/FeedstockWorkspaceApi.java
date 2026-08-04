@@ -23,8 +23,8 @@ public interface FeedstockWorkspaceApi {
 
   @Operation(
       summary = "Get Feedstock Workspace batches",
-      description = "Returns batch metadata enriched with latest measurement, graph projection, ABV, YAN, "
-          + "readiness and optional target-aware candidate data.",
+      description = "Returns batch metadata enriched with a state-aware current profile, graph projection, ABV, "
+          + "YAN, readiness and optional target-aware candidate data.",
       requestBody = @RequestBody(
           description = "Workspace query. Include target to enrich batches with target distance and contribution role.",
           required = true,

@@ -5,6 +5,7 @@ import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchHasNoMeasureme
 import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchInsufficientAvailableVolumeException;
 import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchNotFoundException;
 import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchOwnershipMismatchException;
+import org.craft.mcs.cap.core.feedstock.application.inventory.FeedstockMaterialCharacteristicsUnavailableException;
 import org.craft.mcs.cap.core.production.application.ProductionSourceInsufficientAvailableVolumeException;
 import org.craft.mcs.cap.core.production.application.ProductionSourceNotFoundException;
 import org.craft.mcs.cap.core.production.application.ProductionSourceOwnershipMismatchException;
@@ -43,7 +44,8 @@ final class FeedstockProductionSourceFailureTranslator {
           exception.requestedVolume(),
           exception.availableVolume()
       );
-    } catch (FeedstockBatchHasNoMeasurementsException exception) {
+    } catch (FeedstockBatchHasNoMeasurementsException
+             | FeedstockMaterialCharacteristicsUnavailableException exception) {
       throw new ProductionSourceProfileUnavailableException(sourceReference);
     }
   }

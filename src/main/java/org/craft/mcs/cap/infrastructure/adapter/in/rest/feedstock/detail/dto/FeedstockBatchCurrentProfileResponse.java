@@ -1,72 +1,65 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.detail.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.measurement.dto.FeedstockMeasurementResponse;
+import java.util.List;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.common.dto.FeedstockProfileEvidenceResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.currentprofile.dto.FeedstockCurrentProfileFreshnessResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.currentprofile.dto.FeedstockCurrentProfileGraphResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.currentprofile.dto.FeedstockCurrentProfilePotentialAbvResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.currentprofile.dto.FeedstockCurrentProfileSummaryResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.currentprofile.dto.FeedstockDataQualityResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.currentprofile.dto.FeedstockPlanningReadinessResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.readiness.dto.FermentationStartReadinessAssessmentResponse;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.sugaracidity.dto.SugarAcidityAxisPointResponse;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 
 /**
- * Transport projection of the current chemical profile for feedstock batch details.
+ * Transport projection of current measured characteristics for feedstock batch details.
  *
- * <p>The response combines latest-measurement evidence, graph assessment, readiness and freshness
- * signals. It is not an editable measurement command model.
+ * <p>The response combines independently selected current evidence, graph assessment, readiness and
+ * freshness signals. It is not an editable measurement command model.
  */
 @Schema(description = "Current profile read model for a feedstock batch detail page.")
 public record FeedstockBatchCurrentProfileResponse(
     @Schema(
-        description = "Latest measurement used as the current profile source.",
+        description = "Compact composite profile summary assembled independently per characteristic.",
         nullable = true,
         requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )
-    @Nullable FeedstockMeasurementResponse latestMeasurement,
+    @Nullable FeedstockCurrentProfileSummaryResponse profileSummary,
     @Schema(
-        description = "Compact profile summary derived from the latest measurement.",
-        nullable = true,
-        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+        description = "Per-characteristic evidence selected for the composite current profile.",
+        requiredMode = Schema.RequiredMode.REQUIRED
     )
-    @Nullable FeedstockBatchDetailProfileSummaryResponse profileSummary,
+    @NonNull List<@NonNull FeedstockProfileEvidenceResponse> profileEvidence,
     @Schema(
-        description = "Sugar-acidity graph assessment for the latest measurement.",
+        description = "Sugar-acidity graph assessment for the composite current profile.",
         nullable = true,
         requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )
-    @Nullable FeedstockBatchDetailSugarAcidityResponse sugarAcidityAssessment,
+    @Nullable FeedstockCurrentProfileGraphResponse sugarAcidityAssessment,
     @Schema(
-        description = "Potential ABV prediction from latest sugar measurement.",
+        description = "Potential ABV prediction from the SG evidence selected for the current profile.",
         nullable = true,
         requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )
-    @Nullable FeedstockBatchDetailPotentialAbvResponse potentialAbv,
+    @Nullable FeedstockCurrentProfilePotentialAbvResponse potentialAbv,
     @Schema(
-        description = "Current YAN axis value in mg N/L when measured.",
+        description = "Worst freshness status among the planning-required SG and TA evidence.",
         nullable = true,
         requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )
-    @Nullable SugarAcidityAxisPointResponse yeastAssimilableNitrogen,
-    @Schema(
-        description = "Freshness assessment for latest measurement.",
-        nullable = true,
-        requiredMode = Schema.RequiredMode.NOT_REQUIRED
-    )
-    @Nullable FeedstockBatchDetailMeasurementFreshnessResponse measurementFreshness,
+    @Nullable FeedstockCurrentProfileFreshnessResponse measurementFreshness,
     @Schema(description = "Planning readiness for the current profile.", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NonNull FeedstockBatchDetailPlanningReadinessResponse planningReadiness,
+    @NonNull FeedstockPlanningReadinessResponse planningReadiness,
     @Schema(description = "Data quality summary for the current profile.", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NonNull FeedstockBatchDetailDataQualityResponse dataQuality,
+    @NonNull FeedstockDataQualityResponse dataQuality,
     @Schema(
         description = "Fermentation-start readiness assessment for the current profile.",
         nullable = true,
         requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )
-    @Nullable FermentationStartReadinessAssessmentResponse fermentationStartReadiness,
-    @Schema(
-        description = "Last operation reflected by the current profile.",
-        nullable = true,
-        requiredMode = Schema.RequiredMode.NOT_REQUIRED
-    )
-    @Nullable FeedstockBatchDetailLastOperationResponse lastOperation
+    @Nullable FermentationStartReadinessAssessmentResponse fermentationStartReadiness
 ) {
 }

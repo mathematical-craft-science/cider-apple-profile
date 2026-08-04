@@ -120,4 +120,5 @@ class ApplicationExceptionHandlerTest {
       super(message);
     }
   }
+
 }

@@ -5,7 +5,7 @@ import javax.measure.Quantity;
 import javax.measure.Unit;
 import org.craft.mcs.cap.shared.kernel.measurement.unit.BeverageUnits;
 import org.craft.mcs.cap.shared.kernel.measurement.unit.TitratableAcidity;
-import org.craft.mcs.cap.shared.kernel.measurement.MeasuredValue;
+import org.craft.mcs.cap.shared.kernel.measurement.AbstractMeasuredValue;
 import org.jmolecules.ddd.annotation.ValueObject;
 import org.jspecify.annotations.NonNull;
 import tech.units.indriya.quantity.Quantities;
@@ -22,7 +22,7 @@ import static java.util.Objects.requireNonNull;
  */
 @ValueObject
 public final class TitratableAcidityValue
-    extends MeasuredValue<TitratableAcidity, TitratableAcidityValue> {
+    extends AbstractMeasuredValue<TitratableAcidity, TitratableAcidityValue> {
 
   private static final BigDecimal MIN = BigDecimal.ZERO;
   private static final BigDecimal MAX = new BigDecimal("30.0");
@@ -61,6 +61,11 @@ public final class TitratableAcidityValue
   @NonNull
   public static TitratableAcidityValue of(double gramsPerLiter) {
     return of(BigDecimal.valueOf(gramsPerLiter));
+  }
+
+  @Override
+  public @NonNull TitratableAcidityValue withValue(@NonNull BigDecimal value) {
+    return of(value);
   }
 
   public double asDouble() {

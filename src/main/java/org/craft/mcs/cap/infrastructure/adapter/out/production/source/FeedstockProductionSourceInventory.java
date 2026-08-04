@@ -4,13 +4,14 @@ import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.feedstock.application.inventory.port.in.ConsumeFeedstockBatchMaterialCommand;
 import org.craft.mcs.cap.core.feedstock.application.inventory.port.in.ConsumeFeedstockBatchMaterialUseCase;
 import org.craft.mcs.cap.core.feedstock.application.inventory.port.in.ConsumedFeedstockBatchMaterial;
+import org.craft.mcs.cap.core.feedstock.application.inventory.port.in.FeedstockMaterialCharacteristics;
+import org.craft.mcs.cap.core.production.application.model.ProductionSourceCharacteristics;
 import org.craft.mcs.cap.core.production.application.port.out.ConsumedProductionSource;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionSourceDisplayName;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionSourceInventory;
-import org.craft.mcs.cap.core.production.candidate.domain.model.ProductionSourceEvidenceReference;
+import org.craft.mcs.cap.core.production.domain.model.ProductionSourceEvidenceReference;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceComponent;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
-import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
@@ -31,7 +32,6 @@ import static org.craft.mcs.cap.infrastructure.adapter.out.production.source.Fee
 public final class FeedstockProductionSourceInventory implements ProductionSourceInventory {
 
   private final @NonNull ConsumeFeedstockBatchMaterialUseCase consumeFeedstockBatchMaterialUseCase;
-  private final @NonNull ChemicalProfileAxisExtractor axisExtractor;
 
   @Override
   public @NonNull ConsumedProductionSource consume(
@@ -53,15 +53,24 @@ public final class FeedstockProductionSourceInventory implements ProductionSourc
     final var reference = source.reference();
     final var batchId = FeedstockBatchId.of(reference.id());
     final var consumed = consumeMaterial(workspaceId, source, batchId);
-    final var profile = consumed.chemicalProfile();
-
     return new ConsumedProductionSource(
         reference,
         ProductionSourceDisplayName.of(consumed.batchName().value()),
-        consumed.volume(),
-        axisExtractor.extract(profile),
-        profile.confidence(),
+        consumed.consumption(),
+        toProductionSourceCharacteristics(consumed.characteristics()),
+        consumed.profileConfidence(),
         ProductionSourceEvidenceReference.of(consumed.evidenceReference().externalValue())
+    );
+  }
+
+  private static @NonNull ProductionSourceCharacteristics toProductionSourceCharacteristics(
+      @NonNull FeedstockMaterialCharacteristics characteristics
+  ) {
+    return new ProductionSourceCharacteristics(
+        characteristics.specificGravity(),
+        characteristics.titratableAcidity(),
+        characteristics.tannin(),
+        characteristics.yeastAssimilableNitrogen()
     );
   }
 

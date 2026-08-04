@@ -1,15 +1,15 @@
 package org.craft.mcs.cap.core.profileanalysis.classification.domain.profile.french;
 
-import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisRange;
+import org.craft.mcs.cap.core.profileanalysis.classification.domain.rule.ClassificationValueRange;
 import org.jspecify.annotations.NonNull;
 
 
 public record FrenchThresholds(
-    @NonNull AxisRange lowAcid,
-    @NonNull AxisRange mediumAcid,
-    @NonNull AxisRange highAcid,
-    @NonNull AxisRange lowTannin,
-    @NonNull AxisRange mediumTannin,
-    @NonNull AxisRange highTannin
+    @NonNull ClassificationValueRange lowAcid,
+    @NonNull ClassificationValueRange mediumAcid,
+    @NonNull ClassificationValueRange highAcid,
+    @NonNull ClassificationValueRange lowTannin,
+    @NonNull ClassificationValueRange mediumTannin,
+    @NonNull ClassificationValueRange highTannin
 ) {
 }

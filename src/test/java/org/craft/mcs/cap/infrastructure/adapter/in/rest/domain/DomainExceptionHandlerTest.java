@@ -1,13 +1,14 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.domain;
 
-import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.InvalidChemicalProfileCompositionException;
+import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.InvalidCompositionException;
 import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.strategy.CompositionOptimizationAlgorithm;
 import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.strategy.UnsupportedCompositionOptimizationStrategyException;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.SugarAcidityTargetResolutionException;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.SugarAcidityTargetResolutionException;
 import org.craft.mcs.cap.shared.kernel.DomainConflictException;
 import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
 import org.craft.mcs.cap.shared.kernel.sugar.converter.UnsupportedSugarConversionException;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.ProblemDetail;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -50,14 +51,14 @@ class DomainExceptionHandlerTest {
   }
 
   @Test
-  void mapsInvalidChemicalProfileCompositionToUnprocessableEntity() {
-    final var response = new DomainExceptionHandler().handleInvalidChemicalProfileComposition(
-        new InvalidChemicalProfileCompositionException("composition is invalid")
+  void mapsInvalidCompositionToUnprocessableEntity() {
+    final var response = new DomainExceptionHandler().handleInvalidComposition(
+        new InvalidCompositionException("composition is invalid")
     );
 
     assertThat(response.getStatusCode().value()).isEqualTo(422);
     assertThat(response.getBody()).isNotNull();
-    assertThat(response.getBody().getTitle()).isEqualTo("Invalid chemical profile composition");
+    assertThat(response.getBody().getTitle()).isEqualTo("Invalid composition");
     assertThat(response.getBody().getDetail()).isEqualTo("composition is invalid");
   }
 
@@ -79,8 +80,9 @@ class DomainExceptionHandlerTest {
     );
 
     assertThat(response.getStatusCode().value()).isEqualTo(422);
-    assertThat(response.getBody()).isNotNull();
-    assertThat(response.getBody().getTitle()).isEqualTo("Sugar-acidity target cannot be resolved");
-    assertThat(response.getBody().getDetail()).isEqualTo("target is unknown");
+    assertThat(response.getBody())
+        .isNotNull()
+        .returns("Sugar-acidity target cannot be resolved", ProblemDetail::getTitle)
+        .returns("target is unknown", ProblemDetail::getDetail);
   }
 }

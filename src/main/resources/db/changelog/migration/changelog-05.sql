@@ -3,14 +3,16 @@ CREATE TABLE IF NOT EXISTS batch_trace_steps
     step_id        UUID                     NOT NULL PRIMARY KEY,
     workspace_id   UUID                     NOT NULL,
     parent_step_id UUID,
-    operation_type VARCHAR(64)              NOT NULL,
+    step_type      VARCHAR(64)              NOT NULL,
     occurred_at    TIMESTAMP WITH TIME ZONE NOT NULL,
     performed_by_type VARCHAR(32)            NOT NULL,
-    performed_by_id   VARCHAR(160)           NOT NULL,
+    performed_by_id   UUID                   NOT NULL,
     note           VARCHAR(2000),
     created_at     TIMESTAMP WITH TIME ZONE NOT NULL,
     CONSTRAINT fk_batch_trace_steps_workspace
-        FOREIGN KEY (workspace_id) REFERENCES workspaces (workspace_id)
+        FOREIGN KEY (workspace_id) REFERENCES workspaces (workspace_id),
+    CONSTRAINT chk_batch_trace_steps_actor_type
+        CHECK (performed_by_type IN ('ACCOUNT_USER', 'MACHINE_IDENTITY'))
 );
 
 CREATE TABLE IF NOT EXISTS batch_trace_step_subjects
@@ -18,10 +20,11 @@ CREATE TABLE IF NOT EXISTS batch_trace_step_subjects
     step_id                      UUID        NOT NULL,
     subject_role                 VARCHAR(16) NOT NULL,
     subject_order                INTEGER     NOT NULL,
-    trace_state_id               UUID        NOT NULL,
+    material_state_id            UUID        NOT NULL,
     subject_type                 VARCHAR(64) NOT NULL,
-    subject_id                   VARCHAR(120) NOT NULL,
+    subject_id                   UUID        NOT NULL,
     display_name_snapshot        VARCHAR(255),
+    invalidated_characteristics  VARCHAR(64)[] NOT NULL DEFAULT ARRAY[]::VARCHAR(64)[],
 
     snapshot_volume_liters       NUMERIC(15, 3),
     snapshot_confidence          VARCHAR(64),
@@ -30,29 +33,21 @@ CREATE TABLE IF NOT EXISTS batch_trace_step_subjects
     sugar_value_kind             VARCHAR(32),
     sugar_min                    NUMERIC(12, 9),
     sugar_max                    NUMERIC(12, 9),
-    sugar_standard_deviation     NUMERIC(12, 9),
-    sugar_sample_size            INTEGER,
 
     acidity_value                NUMERIC(12, 6),
     acidity_value_kind           VARCHAR(32),
     acidity_min                  NUMERIC(12, 6),
     acidity_max                  NUMERIC(12, 6),
-    acidity_standard_deviation   NUMERIC(12, 6),
-    acidity_sample_size          INTEGER,
 
-    tanninity_value              NUMERIC(12, 4),
-    tanninity_value_kind         VARCHAR(32),
-    tanninity_min                NUMERIC(12, 4),
-    tanninity_max                NUMERIC(12, 4),
-    tanninity_standard_deviation NUMERIC(12, 4),
-    tanninity_sample_size        INTEGER,
+    tannin_value              NUMERIC(12, 4),
+    tannin_value_kind         VARCHAR(32),
+    tannin_min                NUMERIC(12, 4),
+    tannin_max                NUMERIC(12, 4),
 
     yan_value                    NUMERIC(12, 4),
     yan_value_kind               VARCHAR(32),
     yan_min                      NUMERIC(12, 4),
     yan_max                      NUMERIC(12, 4),
-    yan_standard_deviation       NUMERIC(12, 4),
-    yan_sample_size              INTEGER,
 
     CONSTRAINT fk_batch_trace_step_subjects_step
         FOREIGN KEY (step_id)
@@ -72,8 +67,8 @@ CREATE INDEX IF NOT EXISTS idx_batch_trace_steps_workspace_id
 CREATE INDEX IF NOT EXISTS idx_batch_trace_steps_parent_step_id
     ON batch_trace_steps (parent_step_id);
 
-CREATE INDEX IF NOT EXISTS idx_batch_trace_steps_operation_occurred
-    ON batch_trace_steps (operation_type, occurred_at, step_id);
+CREATE INDEX IF NOT EXISTS idx_batch_trace_steps_type_occurred
+    ON batch_trace_steps (step_type, occurred_at, step_id);
 
 CREATE INDEX IF NOT EXISTS idx_batch_trace_step_subjects_step_id
     ON batch_trace_step_subjects (step_id);
@@ -82,4 +77,8 @@ CREATE INDEX IF NOT EXISTS idx_batch_trace_step_subjects_lookup
     ON batch_trace_step_subjects (subject_role, subject_type, subject_id);
 
 CREATE INDEX IF NOT EXISTS idx_batch_trace_step_subjects_state_id
-    ON batch_trace_step_subjects (trace_state_id);
+    ON batch_trace_step_subjects (material_state_id);
+
+CREATE UNIQUE INDEX IF NOT EXISTS ux_batch_trace_step_subjects_output_state
+    ON batch_trace_step_subjects (material_state_id)
+    WHERE subject_role = 'OUTPUT';

@@ -20,7 +20,7 @@ import org.jspecify.annotations.NonNull;
     }
 )
 @Schema(
-    description = "Profile target request. Use PREDEFINED_ZONE or CUSTOM_RECTANGLE shape.",
+    description = "Profile target request. Use PREDEFINED_ZONE or CUSTOM_RECTANGLE kind.",
     discriminatorProperty = "kind",
     oneOf = {PredefinedZoneProfileTargetRequest.class, CustomRectangleProfileTargetRequest.class},
     discriminatorMapping = {
@@ -32,6 +32,6 @@ public sealed interface ProfileTargetRequest
     permits PredefinedZoneProfileTargetRequest, CustomRectangleProfileTargetRequest {
 
   @NonNull
-  @Schema(description = "Target shape discriminator.", example = "PREDEFINED_ZONE")
+  @Schema(description = "Target kind discriminator.", example = "PREDEFINED_ZONE")
   String kind();
 }

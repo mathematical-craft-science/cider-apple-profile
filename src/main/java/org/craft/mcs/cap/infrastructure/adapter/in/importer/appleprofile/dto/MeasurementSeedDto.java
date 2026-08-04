@@ -14,12 +14,11 @@ import org.jspecify.annotations.NonNull;
 @JsonSubTypes(
     {
         @JsonSubTypes.Type(value = ExactMeasurementSeedDto.class, name = "EXACT"),
-        @JsonSubTypes.Type(value = RangeMeasurementSeedDto.class, name = "RANGE"),
-        @JsonSubTypes.Type(value = StatisticalMeasurementSeedDto.class, name = "STATISTICAL")
+        @JsonSubTypes.Type(value = RangeMeasurementSeedDto.class, name = "RANGE")
     }
 )
 public sealed interface MeasurementSeedDto
-    permits ExactMeasurementSeedDto, RangeMeasurementSeedDto, StatisticalMeasurementSeedDto {
+    permits ExactMeasurementSeedDto, RangeMeasurementSeedDto {
 
   @NonNull
   MeasurementSeedKind kind();

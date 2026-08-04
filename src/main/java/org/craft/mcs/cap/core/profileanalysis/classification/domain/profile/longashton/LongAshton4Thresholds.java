@@ -1,16 +1,16 @@
 package org.craft.mcs.cap.core.profileanalysis.classification.domain.profile.longashton;
 
-import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisRange;
+import org.craft.mcs.cap.core.profileanalysis.classification.domain.rule.ClassificationValueRange;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
 
 
 public record LongAshton4Thresholds(
-    @NonNull AxisRange lowAcid,
-    @NonNull AxisRange highAcid,
-    @NonNull AxisRange lowTannin,
-    @NonNull AxisRange highTannin
+    @NonNull ClassificationValueRange lowAcid,
+    @NonNull ClassificationValueRange highAcid,
+    @NonNull ClassificationValueRange lowTannin,
+    @NonNull ClassificationValueRange highTannin
 ) {
 
   public LongAshton4Thresholds {

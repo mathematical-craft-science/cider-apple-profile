@@ -3,23 +3,17 @@ package org.craft.mcs.cap.core.feedstock.application.currentprofile.model;
 /** Stable machine-readable outcomes of feedstock planning-readiness checks. */
 public enum FeedstockPlanningReadinessCheckCode {
 
-  /** No current measurement exists for the batch. */
-  CURRENT_MEASUREMENT_MISSING,
-
-  /** A current measurement exists for the batch. */
-  CURRENT_MEASUREMENT_PRESENT,
-
   /** Available volume is zero and cannot be allocated to a production candidate. */
   AVAILABLE_VOLUME_EMPTY,
 
   /** Positive available volume can be allocated to a production candidate. */
   AVAILABLE_VOLUME_PRESENT,
 
-  /** Sugar is available for planning and target analysis. */
-  SUGAR_PRESENT,
+  /** Specific Gravity is available for planning and target analysis. */
+  SPECIFIC_GRAVITY_PRESENT,
 
-  /** Sugar required for planning and target analysis is missing. */
-  SUGAR_MISSING,
+  /** Specific Gravity required for planning and target analysis is missing. */
+  SPECIFIC_GRAVITY_MISSING,
 
   /** Titratable acidity is available for planning and target analysis. */
   TITRATABLE_ACIDITY_PRESENT,

@@ -5,7 +5,7 @@ import javax.measure.Quantity;
 import javax.measure.Unit;
 import org.craft.mcs.cap.shared.kernel.measurement.unit.BeverageUnits;
 import org.craft.mcs.cap.shared.kernel.measurement.unit.Plato;
-import org.craft.mcs.cap.shared.kernel.measurement.MeasuredValue;
+import org.craft.mcs.cap.shared.kernel.measurement.AbstractMeasuredValue;
 import org.jmolecules.ddd.annotation.ValueObject;
 import org.jspecify.annotations.NonNull;
 import tech.units.indriya.quantity.Quantities;
@@ -13,8 +13,7 @@ import tech.units.indriya.quantity.Quantities;
 
 @ValueObject
 public final class PlatoValue
-    extends MeasuredValue<Plato, PlatoValue>
-    implements SugarValue {
+    extends AbstractMeasuredValue<Plato, PlatoValue> {
 
   private static final BigDecimal MIN = BigDecimal.ZERO;
   private static final BigDecimal MAX = new BigDecimal("32.0");
@@ -32,5 +31,10 @@ public final class PlatoValue
   @NonNull
   public static PlatoValue of(@NonNull String value) {
     return of(new BigDecimal(value));
+  }
+
+  @Override
+  public @NonNull PlatoValue withValue(@NonNull BigDecimal value) {
+    return of(value);
   }
 }

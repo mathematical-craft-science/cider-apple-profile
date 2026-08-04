@@ -85,8 +85,8 @@
       "description": "Whether debug routes are public. Enable only in local or dev environments."
     },
     {
-      "name": "cap.profile-analysis.sugar-acidity.assessor",
-      "description": "Geometry used to classify profile points against built-in sugar-acidity zones."
+      "name": "cap.profile-analysis.sugar-acidity.geometry",
+      "description": "Geometry used to assign SG/TA graph points to built-in sugar-acidity zones."
     },
     {
       "name": "cap.profile-analysis.readiness.ph.generic-yeast-tolerance-min",
@@ -190,15 +190,15 @@
       ]
     },
     {
-      "name": "cap.profile-analysis.sugar-acidity.assessor",
+      "name": "cap.profile-analysis.sugar-acidity.geometry",
       "values": [
         {
           "value": "RECTANGLE",
-          "description": "Classify points by axis-aligned rectangular zone boundaries."
+          "description": "Assign points by axis-aligned rectangular zone boundaries."
         },
         {
           "value": "ELLIPSE",
-          "description": "Classify points by elliptical zone boundaries."
+          "description": "Assign points by elliptical zone boundaries."
         }
       ]
     }

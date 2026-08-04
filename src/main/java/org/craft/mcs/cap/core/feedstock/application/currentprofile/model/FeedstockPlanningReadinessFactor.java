@@ -11,25 +11,19 @@ package org.craft.mcs.cap.core.feedstock.application.currentprofile.model;
 public enum FeedstockPlanningReadinessFactor {
 
   /**
-   * A latest/current measurement is available for the batch. Without it, planning cannot reason
-   * about the current chemical state of the feedstock.
+   * Specific Gravity is available in the current material profile. It supports sugar-acidity
+   * analysis, potential ABV prediction and composition planning.
    */
-  CURRENT_MEASUREMENT,
+  SPECIFIC_GRAVITY,
 
   /**
-   * Sugar concentration is available in the current chemical profile. This is a required input for
-   * sugar-acidity analysis, ABV prediction, and composition planning.
-   */
-  SUGAR,
-
-  /**
-   * Titratable acidity is available in the current chemical profile. This is a required input for
-   * sugar-acidity analysis and composition planning.
+   * Titratable Acidity is available in the current profile. It is required for sugar-acidity
+   * analysis and composition planning.
    */
   TITRATABLE_ACIDITY,
 
   /**
-   * Tannin is available in the current chemical profile. Missing tannin does not block basic
+   * Tannin is available in the current characteristic state. Missing tannin does not block basic
    * composition planning, but makes target-aware structure assessment incomplete.
    */
   TANNIN,

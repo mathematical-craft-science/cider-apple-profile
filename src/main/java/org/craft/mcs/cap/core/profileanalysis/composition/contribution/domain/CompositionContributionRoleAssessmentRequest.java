@@ -1,7 +1,6 @@
 package org.craft.mcs.cap.core.profileanalysis.composition.contribution.domain;
 
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetObjective;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.assessment.ProfileTargetDistance;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
@@ -11,12 +10,10 @@ import static java.util.Objects.requireNonNull;
  * Input for target-aware contribution role assessment.
  */
 public record CompositionContributionRoleAssessmentRequest(
-    @NonNull ChemicalProfileAxes sourceAxes,
-    @NonNull ProfileTargetObjective targetObjective
+    @NonNull ProfileTargetDistance targetDistance
 ) {
 
   public CompositionContributionRoleAssessmentRequest {
-    requireNonNull(sourceAxes, "composition contribution source axes cannot be null");
-    requireNonNull(targetObjective, "composition contribution target objective cannot be null");
+    requireNonNull(targetDistance, "composition contribution target distance cannot be null");
   }
 }

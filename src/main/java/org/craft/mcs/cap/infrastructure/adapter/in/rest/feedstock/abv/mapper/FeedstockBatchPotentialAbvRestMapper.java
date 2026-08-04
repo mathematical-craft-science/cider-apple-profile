@@ -3,6 +3,8 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.abv.mapper;
 import org.craft.mcs.cap.core.feedstock.application.analysis.abv.port.in.FeedstockBatchCurrentPotentialAbvPrediction;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.abv.mapper.PotentialAbvPredictionRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.abv.dto.FeedstockBatchCurrentPotentialAbvResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.common.mapper.FeedstockProfileEvidenceRestMapper;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profilecharacteristic.mapper.ProfileCharacteristicRestMapper;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
@@ -21,9 +23,9 @@ public final class FeedstockBatchPotentialAbvRestMapper {
     return new FeedstockBatchCurrentPotentialAbvResponse(
         prediction.batchId().value(),
         prediction.workspaceId().value(),
-        prediction.currentMeasurementId().value(),
-        prediction.currentMeasurementName().value(),
-        prediction.originalGravityValueKind(),
+        prediction.currentMaterialStateId().value(),
+        FeedstockProfileEvidenceRestMapper.toResponse(prediction.specificGravityEvidence()),
+        ProfileCharacteristicRestMapper.valueKind(prediction.originalGravity()),
         PotentialAbvPredictionRestMapper.toResponse(prediction.prediction())
     );
   }

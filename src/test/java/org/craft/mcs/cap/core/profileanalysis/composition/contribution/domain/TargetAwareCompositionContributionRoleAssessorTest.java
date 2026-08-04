@@ -1,18 +1,34 @@
 package org.craft.mcs.cap.core.profileanalysis.composition.contribution.domain;
 
 import java.math.BigDecimal;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileEvaluationAxis;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetObjective;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.CustomRectangleSugarAcidityTarget;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.RectangleSugarAcidityTargetGeometry;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.TanninTargetRange;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisValue;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxes;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.MeasurementValueKind;
-import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.craft.mcs.cap.shared.kernel.measurement.MeasuredValueRange.closed;
+
+import java.util.List;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileEvaluationAxis;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetIntervalPolicy;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetObjective;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetScoringInput;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.assessment.ProfileTargetDistance;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.normalization.ProfileAxisSensitivityUnits;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.normalization.SensitivityUnitProfileAxisNormalizer;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.objective.TargetAreaProfileTargetObjectiveFunction;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.CustomRectangleSugarAcidityTarget;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.RectangleSugarAcidityTargetGeometry;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.SugarAcidityTargetPosition;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.TanninTargetRange;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.ZoneGeometrySugarAcidityTargetResolver;
+import org.craft.mcs.cap.core.profileanalysis.graph.zone.domain.BuiltInJolicoeurSugarAcidityZoneProfiles;
+import org.craft.mcs.cap.core.profileanalysis.graph.zone.domain.JolicoeurSugarAcidityZone;
+import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
+import org.craft.mcs.cap.shared.kernel.measurement.MeasuredValueRangePosition;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+import org.junit.jupiter.api.Test;
 
 
 class TargetAwareCompositionContributionRoleAssessorTest {
@@ -23,37 +39,53 @@ class TargetAwareCompositionContributionRoleAssessorTest {
   @Test
   void marksSourceInsideTargetAsBalancedBase() {
     final var assessment = assessor.assess(request(
-        axes("1.055", "5.5", "1200"),
+        input("1.055", "5.5", "1200"),
         targetWithTannin()
     ));
 
-    assertThat(assessment.primaryRole()).isEqualTo(CompositionContributionRole.BALANCED_BASE);
-    assertThat(assessment.roles()).containsExactly(CompositionContributionRole.BALANCED_BASE);
-    assertThat(assessment.evidence()).isEmpty();
-    assertThat(assessment.assessable()).isTrue();
+    assertThat(assessment)
+        .returns(CompositionContributionRole.BALANCED_BASE, CompositionContributionRoleAssessment::primaryRole)
+        .satisfies(value -> assertThat(value.roles())
+            .containsExactly(CompositionContributionRole.BALANCED_BASE))
+        .satisfies(value -> assertThat(value.evidence())
+            .hasSize(3)
+            .allSatisfy(evidence -> assertThat(evidence)
+                .returns(
+                    CompositionContributionEvidenceDirection.ON_TARGET,
+                    CompositionContributionEvidence::direction
+                )
+                .returns(
+                    CompositionContributionEvidenceSeverity.NEUTRAL,
+                    CompositionContributionEvidence::severity
+                )));
   }
 
   @Test
-  void detectsSugarAcidityAndTanninContributorsAboveTarget() {
+  void detectsSugarAcidityAndTanninContributionRolesAboveTarget() {
     final var assessment = assessor.assess(request(
-        axes("1.070", "8.5", "2200"),
+        input("1.070", "8.5", "2200"),
         targetWithTannin()
     ));
 
-    assertThat(assessment.roles()).containsExactly(
-        CompositionContributionRole.SUGAR_CONTRIBUTOR,
-        CompositionContributionRole.ACIDITY_CONTRIBUTOR,
-        CompositionContributionRole.TANNIN_CONTRIBUTOR
-    );
-    assertThat(assessment.evidence())
-        .extracting(CompositionContributionEvidence::axis)
-        .containsExactly(ProfileEvaluationAxis.SUGAR, ProfileEvaluationAxis.ACIDITY, ProfileEvaluationAxis.TANNIN);
+    assertThat(assessment)
+        .satisfies(value -> assertThat(value.roles()).containsExactly(
+            CompositionContributionRole.SUGAR_CONTRIBUTOR,
+            CompositionContributionRole.ACIDITY_CONTRIBUTOR,
+            CompositionContributionRole.TANNIN_CONTRIBUTOR
+        ))
+        .satisfies(value -> assertThat(value.evidence())
+            .extracting(CompositionContributionEvidence::axis)
+            .containsExactly(
+                ProfileEvaluationAxis.SPECIFIC_GRAVITY,
+                ProfileEvaluationAxis.TITRATABLE_ACIDITY,
+                ProfileEvaluationAxis.TANNIN
+            ));
   }
 
   @Test
-  void detectsAcidityAndTanninSoftenersBelowTarget() {
+  void detectsTitratableAcidityAndTanninSoftenersBelowTarget() {
     final var assessment = assessor.assess(request(
-        axes("1.055", "3.0", "500"),
+        input("1.055", "3.0", "500"),
         targetWithTannin()
     ));
 
@@ -64,91 +96,141 @@ class TargetAwareCompositionContributionRoleAssessorTest {
   }
 
   @Test
-  void marksLowSugarAndLowAciditySourceAsDilutionSource() {
+  void marksLowSpecificGravityAndTitratableAciditySourceAsDilutionSource() {
     final var assessment = assessor.assess(request(
-        axes("1.040", "3.0", null),
+        input("1.040", "3.0", null),
         targetWithoutTannin()
     ));
 
     assertThat(assessment.roles()).containsExactly(
+        CompositionContributionRole.SUGAR_REDUCER,
         CompositionContributionRole.ACIDITY_REDUCER,
         CompositionContributionRole.DILUTION_SOURCE
     );
   }
 
   @Test
-  void reportsUnassessableWhenSugarOrAcidityIsMissing() {
-    final var assessment = assessor.assess(request(
-        ChemicalProfileAxes.of(axis(ChemicalAxis.SUGAR, "1.055"), null, null),
-        targetWithoutTannin()
-    ));
-
-    assertThat(assessment.primaryRole()).isEqualTo(CompositionContributionRole.UNASSESSABLE);
-    assertThat(assessment.roles()).containsExactly(CompositionContributionRole.UNASSESSABLE);
-    assertThat(assessment.missingAxes()).containsExactly(ChemicalAxis.ACIDITY);
-    assertThat(assessment.assessable()).isFalse();
-  }
-
-  @Test
   void keepsTanninOptionalButReportsMissingWhenTargetRequiresIt() {
     final var assessment = assessor.assess(request(
-        axes("1.055", "5.5", null),
+        input("1.055", "5.5", null),
         targetWithTannin()
     ));
 
-    assertThat(assessment.primaryRole()).isEqualTo(CompositionContributionRole.LOW_FIT_SOURCE);
-    assertThat(assessment.missingAxes()).containsExactly(ChemicalAxis.TANNINITY);
+    assertThat(assessment)
+        .returns(CompositionContributionRole.BALANCED_BASE, CompositionContributionRoleAssessment::primaryRole)
+        .satisfies(value -> assertThat(value.missingAxes()).containsExactly(ProfileEvaluationAxis.TANNIN));
   }
 
-  private static CompositionContributionRoleAssessmentRequest request(
-      ChemicalProfileAxes axes,
-      ProfileTargetObjective target
+  @Test
+  void treatsExcludedLowSugarUpperBoundaryAsAboveTargetWithoutRequiringTannin() {
+    final var targetResolver = new ZoneGeometrySugarAcidityTargetResolver(
+        BuiltInJolicoeurSugarAcidityZoneProfiles.rectangularZoneGeometryProfile()
+    );
+    final var target = ProfileTargetObjective.of(
+        targetResolver.resolvePredefinedZone(JolicoeurSugarAcidityZone.LOW_SUGAR_APPLES)
+    );
+
+    final var request = request(
+        input("1.045", "7.6", null),
+        target
+    );
+    final var assessment = assessor.assess(request);
+
+    assertThat(request.targetDistance())
+        .returns(false, ProfileTargetDistance::insideSugarAcidityTarget)
+        .returns(BigDecimal.ZERO, ProfileTargetDistance::value)
+        .satisfies(distance -> assertThat(distance.sugarAcidityTargetPosition())
+            .returns(
+                MeasuredValueRangePosition.ABOVE,
+                SugarAcidityTargetPosition::specificGravity
+            )
+            .returns(
+                MeasuredValueRangePosition.WITHIN,
+                SugarAcidityTargetPosition::titratableAcidity
+            ));
+    assertThat(assessment)
+        .returns(
+            CompositionContributionRole.SUGAR_CONTRIBUTOR,
+            CompositionContributionRoleAssessment::primaryRole
+        )
+        .satisfies(value -> assertThat(value.roles())
+            .containsExactly(CompositionContributionRole.SUGAR_CONTRIBUTOR))
+        .satisfies(value -> assertThat(value.missingAxes()).isEmpty())
+        .satisfies(value -> assertThat(value.evidence())
+            .filteredOn(evidence -> evidence.axis() == ProfileEvaluationAxis.SPECIFIC_GRAVITY)
+            .singleElement()
+            .returns(
+                CompositionContributionEvidenceDirection.ABOVE_TARGET,
+                CompositionContributionEvidence::direction
+            ));
+  }
+
+  @Test
+  void assignsRolesAtTitratableAcidityAndCornerExcludedBoundaries() {
+    final var targetResolver = new ZoneGeometrySugarAcidityTargetResolver(
+        BuiltInJolicoeurSugarAcidityZoneProfiles.rectangularZoneGeometryProfile()
+    );
+    final var target = ProfileTargetObjective.of(
+        targetResolver.resolvePredefinedZone(JolicoeurSugarAcidityZone.LOW_SUGAR_APPLES)
+    );
+
+    assertThat(List.of(
+        assessor.assess(request(input("1.040", "10.0", null), target)).roles(),
+        assessor.assess(request(input("1.045", "10.0", null), target)).roles()
+    )).containsExactly(
+        List.of(CompositionContributionRole.ACIDITY_CONTRIBUTOR),
+        List.of(
+            CompositionContributionRole.SUGAR_CONTRIBUTOR,
+            CompositionContributionRole.ACIDITY_CONTRIBUTOR
+        )
+    );
+  }
+
+  private static @NonNull CompositionContributionRoleAssessmentRequest request(
+      @NonNull ProfileTargetScoringInput input,
+      @NonNull ProfileTargetObjective target
   ) {
-    return new CompositionContributionRoleAssessmentRequest(axes, target);
+    final var objectiveFunction = TargetAreaProfileTargetObjectiveFunction.euclidean(
+        new SensitivityUnitProfileAxisNormalizer(
+            ProfileAxisSensitivityUnits.ciderBlendingV1()
+        )
+    );
+    return new CompositionContributionRoleAssessmentRequest(
+        objectiveFunction.distanceTo(input, ProfileTargetIntervalPolicy.MIDPOINT, target)
+    );
   }
 
-  private static ProfileTargetObjective targetWithoutTannin() {
+  private static @NonNull ProfileTargetObjective targetWithoutTannin() {
     return ProfileTargetObjective.of(new CustomRectangleSugarAcidityTarget(
         new RectangleSugarAcidityTargetGeometry(
-            new BigDecimal("1.050"),
-            new BigDecimal("1.060"),
-            new BigDecimal("5.0"),
-            new BigDecimal("6.0")
+            closed(
+                SpecificGravityValue.of("1.050"),
+                SpecificGravityValue.of("1.060")
+            ),
+            closed(
+                TitratableAcidityValue.of("5.0"),
+                TitratableAcidityValue.of("6.0")
+            )
         )
     ));
   }
 
-  private static ProfileTargetObjective targetWithTannin() {
+  private static @NonNull ProfileTargetObjective targetWithTannin() {
     return ProfileTargetObjective.withTanninTarget(
         targetWithoutTannin().sugarAcidityTarget(),
-        new TanninTargetRange(new BigDecimal("1000"), new BigDecimal("1500"))
+        new TanninTargetRange(TanninValue.of("1000"), TanninValue.of("1500"))
     );
   }
 
-  private static ChemicalProfileAxes axes(
-      String sugar,
-      String acidity,
-      String tannin
+  private static @NonNull ProfileTargetScoringInput input(
+      @NonNull String specificGravity,
+      @NonNull String titratableAcidity,
+      @Nullable String tannin
   ) {
-    return ChemicalProfileAxes.of(
-        axis(ChemicalAxis.SUGAR, sugar),
-        axis(ChemicalAxis.ACIDITY, acidity),
-        tannin == null ? null : axis(ChemicalAxis.TANNINITY, tannin)
-    );
-  }
-
-  private static AxisValue axis(
-      ChemicalAxis axis,
-      String value
-  ) {
-    return new AxisValue(
-        axis,
-        new BigDecimal(value),
-        MeasurementValueKind.EXACT,
-        null,
-        null,
-        null,
-        null
+    return new ProfileTargetScoringInput(
+        PointCharacteristicValue.of(SpecificGravityValue.of(specificGravity)),
+        PointCharacteristicValue.of(TitratableAcidityValue.of(titratableAcidity)),
+        tannin == null ? null : PointCharacteristicValue.of(TanninValue.of(tannin))
     );
   }
 }

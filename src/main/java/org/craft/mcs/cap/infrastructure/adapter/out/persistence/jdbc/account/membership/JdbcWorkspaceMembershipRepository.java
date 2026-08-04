@@ -20,6 +20,7 @@ import org.springframework.stereotype.Repository;
 
 import static java.util.Objects.requireNonNull;
 import static org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.support.JdbcAggregateRevisionGuard.requireExpectedRevision;
+import static org.craft.mcs.cap.core.account.membership.domain.model.WorkspaceMembershipStatus.REMOVED;
 
 /** Persists workspace membership aggregates and membership ownership references. */
 @Repository
@@ -67,44 +68,28 @@ class JdbcWorkspaceMembershipRepository implements WorkspaceMembershipRepository
   }
 
   @Override
-  public void delete(@NonNull VersionedAggregate<WorkspaceMembership> membership) {
-    requireNonNull(membership, "versioned workspace membership cannot be null");
-    final var affectedRows = repository.deleteByIdAndVersion(
-        membership.aggregate().membershipId().value(),
-        membership.revision().value()
-    );
-    if (affectedRows != 1) {
-      throw new ConcurrentResourceModificationException("workspace membership", null);
-    }
-  }
-
-  @Override
-  public @NonNull List<@NonNull WorkspaceMembership> findAllByUserId(@NonNull AccountUserId userId) {
-    requireNonNull(userId, "account user id cannot be null");
-    return repository.findAllByUserIdOrderByCreatedAtAscMembershipIdAsc(userReference(userId))
-        .stream()
-        .map(WorkspaceMembershipJdbcMapper::toDomain)
-        .toList();
-  }
-
-  @Override
-  public @NonNull List<@NonNull WorkspaceMembership> findAllByWorkspaceId(@NonNull WorkspaceId workspaceId) {
+  public @NonNull List<@NonNull WorkspaceMembership> findAllByWorkspaceId(
+      @NonNull WorkspaceId workspaceId
+  ) {
     requireNonNull(workspaceId, "workspace id cannot be null");
-    return repository.findAllByWorkspaceIdOrderByCreatedAtAscMembershipIdAsc(workspaceReference(workspaceId))
+    return repository.findAllByWorkspaceIdAndStatusNotOrderByCreatedAtAscMembershipIdAsc(
+            workspaceReference(workspaceId),
+            REMOVED
+        )
         .stream()
         .map(WorkspaceMembershipJdbcMapper::toDomain)
         .toList();
   }
 
   @Override
-  public @NonNull Optional<@NonNull WorkspaceMembership> findByWorkspaceIdAndUserId(
+  public @NonNull Optional<@NonNull VersionedAggregate<WorkspaceMembership>> findVersionedByWorkspaceIdAndUserId(
       @NonNull WorkspaceId workspaceId,
       @NonNull AccountUserId userId
   ) {
     requireNonNull(workspaceId, "workspace id cannot be null");
     requireNonNull(userId, "account user id cannot be null");
     return repository.findByWorkspaceIdAndUserId(workspaceReference(workspaceId), userReference(userId))
-        .map(WorkspaceMembershipJdbcMapper::toDomain);
+        .map(WorkspaceMembershipJdbcMapper::toVersionedAggregate);
   }
 
   private static @NonNull AggregateReference<WorkspaceJdbcEntity, @NonNull UUID> workspaceReference(

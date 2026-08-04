@@ -15,7 +15,7 @@ import org.craft.mcs.cap.core.production.candidate.application.port.out.Producti
 import org.craft.mcs.cap.core.production.candidate.application.port.out.ProductionSourceInspector;
 import org.craft.mcs.cap.core.production.candidate.domain.model.ProductionBatchCandidate;
 import org.craft.mcs.cap.core.production.candidate.domain.model.ProductionBatchCandidateId;
-import org.craft.mcs.cap.core.production.candidate.domain.model.ProductionSourceEvidenceReference;
+import org.craft.mcs.cap.core.production.candidate.domain.model.ProductionCandidateSourceEvidence;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceReference;
 import org.craft.mcs.cap.shared.platform.TransactionHelper;
 import org.jspecify.annotations.NonNull;
@@ -54,7 +54,7 @@ public final class CreateProductionBatchCandidateService implements CreateProduc
         ProductionBatchCandidateId.newId(),
         command.workspaceId(),
         command.sourceComposition(),
-        evidenceBySource(sources),
+        stateEvidenceBySource(sources),
         calculation.profile()
     );
     final var saved = candidateStore.create(new ProductionBatchCandidateSnapshot(
@@ -75,11 +75,14 @@ public final class CreateProductionBatchCandidateService implements CreateProduc
         .toList();
   }
 
-  private static @NonNull Map<@NonNull ProductionSourceReference, @NonNull ProductionSourceEvidenceReference>
-      evidenceBySource(@NonNull List<@NonNull AvailableProductionSource> sources) {
+  private static @NonNull Map<@NonNull ProductionSourceReference, @NonNull ProductionCandidateSourceEvidence>
+      stateEvidenceBySource(@NonNull List<@NonNull AvailableProductionSource> sources) {
     return sources.stream().collect(Collectors.toUnmodifiableMap(
         AvailableProductionSource::reference,
-        AvailableProductionSource::evidenceReference
+        source -> new ProductionCandidateSourceEvidence(
+            source.evidenceReference(),
+            source.materialStateId()
+        )
     ));
   }
 }

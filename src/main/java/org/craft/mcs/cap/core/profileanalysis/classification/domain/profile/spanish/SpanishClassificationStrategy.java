@@ -1,8 +1,10 @@
 package org.craft.mcs.cap.core.profileanalysis.classification.domain.profile.spanish;
 
 import java.util.List;
+import java.util.Set;
+import org.craft.mcs.cap.core.profileanalysis.classification.domain.engine.ClassificationCharacteristic;
 import org.craft.mcs.cap.core.profileanalysis.classification.domain.engine.ClassificationStrategy;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.AxisRange;
+import org.craft.mcs.cap.core.profileanalysis.classification.domain.rule.ClassificationValueRange;
 import org.craft.mcs.cap.core.profileanalysis.classification.domain.rule.ClassificationProfile;
 import org.craft.mcs.cap.core.profileanalysis.classification.domain.rule.ClassificationRule;
 import org.jspecify.annotations.NonNull;
@@ -25,11 +27,19 @@ public final class SpanishClassificationStrategy
   public SpanishClassificationStrategy(@NonNull SpanishThresholds thresholds) {
     this.thresholds = requireNonNull(thresholds);
   }
-  private static final AxisRange HIGH_TANNIN = AxisRange.atLeast("2000");
+  private static final ClassificationValueRange HIGH_TANNIN = ClassificationValueRange.atLeast("2000");
 
   @Override
   public @NonNull String code() {
     return "SPANISH";
+  }
+
+  @Override
+  public @NonNull Set<@NonNull ClassificationCharacteristic> requiredCharacteristics() {
+    return Set.of(
+        ClassificationCharacteristic.ACIDITY,
+        ClassificationCharacteristic.TANNIN
+    );
   }
 
   @Override

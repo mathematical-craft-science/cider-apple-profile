@@ -2,8 +2,8 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.UUID;
-import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchKind;
-import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchStatus;
+import org.craft.mcs.cap.core.production.domain.model.value.AlcoholicFermentationState;
+import org.craft.mcs.cap.shared.kernel.material.value.BatchLifecycle;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -31,19 +31,25 @@ public record ProductionBatchResponse(
     )
     @NonNull String name,
     @Schema(
-        description = "Production batch kind.",
-        implementation = ProductionBatchKind.class,
-        example = "CIDER",
+        description = "Current vessel, tank or container.",
+        example = "Fermentation tank F-03",
         requiredMode = Schema.RequiredMode.REQUIRED
     )
-    @NonNull ProductionBatchKind kind,
+    @NonNull String vessel,
     @Schema(
-        description = "Production batch status.",
-        implementation = ProductionBatchStatus.class,
-        example = "PLANNED",
+        description = "Current material lifecycle.",
+        implementation = BatchLifecycle.class,
+        example = "ACTIVE",
         requiredMode = Schema.RequiredMode.REQUIRED
     )
-    @NonNull ProductionBatchStatus status,
+    @NonNull BatchLifecycle lifecycle,
+    @Schema(
+        description = "Current state of the primary alcoholic fermentation cycle.",
+        implementation = AlcoholicFermentationState.class,
+        example = "NOT_STARTED",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
+    @NonNull AlcoholicFermentationState alcoholicFermentationState,
     @Schema(
         description = "Confirmed production candidate identifier.",
         format = "uuid",

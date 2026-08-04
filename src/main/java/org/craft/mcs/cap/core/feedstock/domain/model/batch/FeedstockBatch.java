@@ -1,14 +1,15 @@
 package org.craft.mcs.cap.core.feedstock.domain.model.batch;
 
 import java.time.Instant;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockBatchName;
+import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSource;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockVessel;
+import org.craft.mcs.cap.shared.kernel.material.value.BatchLifecycle;
+import org.craft.mcs.cap.shared.kernel.material.value.BatchMaterialState;
+import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
 import org.craft.mcs.cap.shared.kernel.DomainConflictException;
-import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
-import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
+import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.jmolecules.ddd.annotation.AggregateRoot;
@@ -23,10 +24,9 @@ import static java.util.Objects.requireNonNull;
  * Aggregate root for a physical lot of available raw material owned by a workspace.
  *
  * <p>A batch is the operational entity a cider maker manages as source material: it has a season,
- * optional vessel, optional source/origin, available volume and lifecycle state. Chemical values are
- * intentionally not stored on the batch itself; they are measured over time by
- * {@code FeedstockMeasurement}. Application query services define the current profile as the latest
- * measurement for the batch.
+ * optional vessel, optional source/origin, available volume and lifecycle state. Measurement facts
+ * are owned by the generic Measurement context. Application queries project current values from
+ * evidence applicable to the batch's current material-state lineage.
  *
  * <p>The aggregate owns stock invariants such as consuming no more volume than is available. This
  * keeps production-batch creation and future blending reservations anchored to the feedstock
@@ -40,9 +40,9 @@ public final class FeedstockBatch {
 
   private final @NonNull WorkspaceId workspaceId;
 
-  private @NonNull FeedstockBatchName name;
+  private @NonNull BatchName name;
 
-  private @Nullable FeedstockVessel vessel;
+  private @Nullable Vessel vessel;
 
   private @NonNull FeedstockType type;
 
@@ -50,7 +50,7 @@ public final class FeedstockBatch {
 
   private @Nullable FeedstockSource source;
 
-  private @NonNull VolumeValue availableVolume;
+  private @NonNull BatchMaterialState materialState;
 
   private @Nullable String note;
 
@@ -60,12 +60,12 @@ public final class FeedstockBatch {
   private FeedstockBatch(
       @NonNull FeedstockBatchId batchId,
       @NonNull WorkspaceId workspaceId,
-      @NonNull FeedstockBatchName name,
-      @Nullable FeedstockVessel vessel,
+      @NonNull BatchName name,
+      @Nullable Vessel vessel,
       @NonNull FeedstockType type,
       @NonNull FeedstockSeason season,
       @Nullable FeedstockSource source,
-      @NonNull VolumeValue availableVolume,
+      @NonNull BatchMaterialState materialState,
       @Nullable String note,
       @Nullable Instant deletedAt
   ) {
@@ -76,7 +76,7 @@ public final class FeedstockBatch {
     this.type = requireNonNull(type, "feedstock type cannot be null");
     this.season = requireNonNull(season, "feedstock season cannot be null");
     this.source = source;
-    this.availableVolume = requireNonNull(availableVolume, "available volume cannot be null");
+    this.materialState = requireNonNull(materialState, "feedstock material state cannot be null");
     this.note = normalize(note);
     this.deletedAt = deletedAt;
   }
@@ -84,13 +84,12 @@ public final class FeedstockBatch {
   public static @NonNull FeedstockBatch create(
       @NonNull FeedstockBatchId batchId,
       @NonNull WorkspaceId workspaceId,
-      @NonNull FeedstockBatchName name,
-      @Nullable FeedstockVessel vessel,
+      @NonNull BatchName name,
+      @Nullable Vessel vessel,
       @NonNull FeedstockType type,
       @NonNull FeedstockSeason season,
       @NonNull VolumeValue availableVolume
   ) {
-    requirePositiveAvailableVolume(availableVolume);
     return new FeedstockBatch(
         batchId,
         workspaceId,
@@ -99,7 +98,7 @@ public final class FeedstockBatch {
         type,
         season,
         null,
-        availableVolume,
+        BatchMaterialState.active(availableVolume),
         null,
         null
     );
@@ -109,12 +108,14 @@ public final class FeedstockBatch {
   public static @NonNull FeedstockBatch restore(
       @NonNull FeedstockBatchId batchId,
       @NonNull WorkspaceId workspaceId,
-      @NonNull FeedstockBatchName name,
-      @Nullable FeedstockVessel vessel,
+      @NonNull BatchName name,
+      @Nullable Vessel vessel,
       @NonNull FeedstockType type,
       @NonNull FeedstockSeason season,
       @Nullable FeedstockSource source,
+      @NonNull BatchLifecycle lifecycle,
       @NonNull VolumeValue availableVolume,
+      @NonNull MaterialStateId currentMaterialStateId,
       @Nullable String note,
       @Nullable Instant deletedAt
   ) {
@@ -126,7 +127,7 @@ public final class FeedstockBatch {
         type,
         season,
         source,
-        availableVolume,
+        BatchMaterialState.restore(lifecycle, availableVolume, currentMaterialStateId),
         note,
         deletedAt
     );
@@ -140,11 +141,11 @@ public final class FeedstockBatch {
     return workspaceId;
   }
 
-  public @NonNull FeedstockBatchName name() {
+  public @NonNull BatchName name() {
     return name;
   }
 
-  public @Nullable FeedstockVessel vessel() {
+  public @Nullable Vessel vessel() {
     return vessel;
   }
 
@@ -160,8 +161,16 @@ public final class FeedstockBatch {
     return source;
   }
 
+  public @NonNull BatchLifecycle lifecycle() {
+    return materialState.lifecycle();
+  }
+
   public @NonNull VolumeValue availableVolume() {
-    return availableVolume;
+    return materialState.volume();
+  }
+
+  public @NonNull MaterialStateId currentMaterialStateId() {
+    return materialState.stateId();
   }
 
   public @Nullable String note() {
@@ -176,18 +185,8 @@ public final class FeedstockBatch {
     return deletedAt != null;
   }
 
-  public @NonNull FeedstockBatch rename(@NonNull FeedstockBatchName name) {
+  public @NonNull FeedstockBatch rename(@NonNull BatchName name) {
     this.name = requireNonNull(name, "feedstock batch name cannot be null");
-    return this;
-  }
-
-  public @NonNull FeedstockBatch changeVessel(@NonNull FeedstockVessel vessel) {
-    this.vessel = requireNonNull(vessel, "feedstock vessel cannot be null");
-    return this;
-  }
-
-  public @NonNull FeedstockBatch clearVessel() {
-    this.vessel = null;
     return this;
   }
 
@@ -211,26 +210,11 @@ public final class FeedstockBatch {
     return this;
   }
 
-  public @NonNull FeedstockBatch changeAvailableVolume(@NonNull VolumeValue availableVolume) {
-    this.availableVolume = requirePositiveAvailableVolume(availableVolume);
-    return this;
-  }
-
-  public @NonNull FeedstockBatch ensureAvailableVolumeIsPositive() {
-    requirePositiveAvailableVolume(availableVolume);
-    return this;
-  }
-
   public @NonNull FeedstockBatch consumeAvailableVolume(@NonNull VolumeValue volume) {
-    requireNonNull(volume, "consumed feedstock volume cannot be null");
-    if (volume.isZero()) {
-      throw new DomainRuleViolationException("consumed feedstock volume must be positive");
+    if (deleted()) {
+      throw new DomainConflictException("cannot consume deleted feedstock batch");
     }
-    if (volume.exceeds(availableVolume)) {
-      throw new DomainConflictException("consumed feedstock volume exceeds available volume");
-    }
-
-    this.availableVolume = availableVolume.subtract(volume);
+    materialState = materialState.consume(volume);
     return this;
   }
 
@@ -258,11 +242,4 @@ public final class FeedstockBatch {
     return normalized.isEmpty() ? null : normalized;
   }
 
-  private static @NonNull VolumeValue requirePositiveAvailableVolume(@NonNull VolumeValue availableVolume) {
-    requireNonNull(availableVolume, "available volume cannot be null");
-    if (availableVolume.isZero()) {
-      throw new DomainRuleViolationException("feedstock batch available volume must be greater than zero");
-    }
-    return availableVolume;
-  }
 }

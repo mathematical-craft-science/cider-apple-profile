@@ -15,9 +15,10 @@ import java.util.Set;
 import java.util.UUID;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVariety;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
-import org.craft.mcs.cap.core.feedstock.domain.model.measurement.FeedstockMeasurement;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
+import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSet;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatch;
-import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
+import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionSourceCharacteristics;
 import org.jspecify.annotations.NonNull;
 
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
@@ -111,14 +112,183 @@ class ContextBoundaryArchitectureTest {
           .beFreeOfCycles();
 
   @ArchTest
-  static final ArchRule bounded_context_domains_do_not_depend_on_cider_analysis =
+  static final ArchRule profile_analysis_does_not_depend_on_material_or_catalog_contexts =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.core.profileanalysis..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAnyPackage(
+              "org.craft.mcs.cap.core.appleprofile..",
+              "org.craft.mcs.cap.core.feedstock..",
+              "org.craft.mcs.cap.core.measurement..",
+              "org.craft.mcs.cap.core.production..",
+              "org.craft.mcs.cap.core.traceability..",
+              "org.craft.mcs.cap.core.varietyprofile.."
+          );
+
+  @ArchTest
+  static final ArchRule other_contexts_depend_on_profile_analysis_inbound_ports_not_services =
+      noClasses()
+          .that()
+          .resideInAnyPackage(
+              "org.craft.mcs.cap.core.appleprofile..",
+              "org.craft.mcs.cap.core.feedstock..",
+              "org.craft.mcs.cap.core.measurement..",
+              "org.craft.mcs.cap.core.production..",
+              "org.craft.mcs.cap.core.traceability..",
+              "org.craft.mcs.cap.core.varietyprofile.."
+          )
+          .should()
+          .dependOnClassesThat()
+          .resideInAPackage("org.craft.mcs.cap.core.profileanalysis..application.service..");
+
+  @ArchTest
+  static final ArchRule profile_analysis_slices_are_free_of_cycles =
+      slices()
+          .matching("org.craft.mcs.cap.core.profileanalysis.(*)..")
+          .should()
+          .beFreeOfCycles();
+
+  @ArchTest
+  static final ArchRule graph_domain_does_not_depend_on_cider_apple_classification =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.core.profileanalysis.graph..domain..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAPackage("org.craft.mcs.cap.core.profileanalysis.classification..");
+
+  @ArchTest
+  static final ArchRule cider_apple_classification_does_not_depend_on_graph =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.core.profileanalysis.classification..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAPackage("org.craft.mcs.cap.core.profileanalysis.graph..");
+
+  @ArchTest
+  static final ArchRule feedstock_application_slices_are_free_of_cycles =
+      slices()
+          .matching("org.craft.mcs.cap.core.feedstock.application.(*)..")
+          .should()
+          .beFreeOfCycles();
+
+  @ArchTest
+  static final ArchRule feedstock_analysis_slices_are_free_of_cycles =
+      slices()
+          .matching("org.craft.mcs.cap.core.feedstock.application.analysis.(*)..")
+          .should()
+          .beFreeOfCycles();
+
+  @ArchTest
+  static final ArchRule apple_profile_application_slices_are_free_of_cycles =
+      slices()
+          .matching("org.craft.mcs.cap.core.appleprofile.application.(*)..")
+          .should()
+          .beFreeOfCycles();
+
+  @ArchTest
+  static final ArchRule feedstock_measurement_application_does_not_depend_on_analysis =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.core.feedstock.application.measurement..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAPackage("org.craft.mcs.cap.core.feedstock.application.analysis..");
+
+  @ArchTest
+  static final ArchRule feedstock_analysis_common_does_not_depend_on_specialized_analysis_slices =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.core.feedstock.application.analysis.common..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAnyPackage(
+              "org.craft.mcs.cap.core.feedstock.application.analysis.abv..",
+              "org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget..",
+              "org.craft.mcs.cap.core.feedstock.application.analysis.readiness..",
+              "org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.."
+          );
+
+  @ArchTest
+  static final ArchRule apple_profile_catalog_does_not_depend_on_analysis_slices =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.core.appleprofile.application.catalog..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAnyPackage(
+              "org.craft.mcs.cap.core.appleprofile.application.abv..",
+              "org.craft.mcs.cap.core.appleprofile.application.classification..",
+              "org.craft.mcs.cap.core.appleprofile.application.profiletarget..",
+              "org.craft.mcs.cap.core.appleprofile.application.sugaracidity.."
+          );
+
+  @ArchTest
+  static final ArchRule apple_profile_target_analysis_does_not_depend_on_graph_endpoint_slice =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.core.appleprofile.application.profiletarget..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAPackage("org.craft.mcs.cap.core.appleprofile.application.sugaracidity..");
+
+  @ArchTest
+  static final ArchRule apple_profile_graph_endpoint_slice_does_not_depend_on_target_analysis =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.core.appleprofile.application.sugaracidity..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAPackage("org.craft.mcs.cap.core.appleprofile.application.profiletarget..");
+
+  @ArchTest
+  static final ArchRule apple_profile_analysis_common_does_not_depend_on_specialized_analysis_slices =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.core.appleprofile.application.analysis.common..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAnyPackage(
+              "org.craft.mcs.cap.core.appleprofile.application.abv..",
+              "org.craft.mcs.cap.core.appleprofile.application.classification..",
+              "org.craft.mcs.cap.core.appleprofile.application.profiletarget..",
+              "org.craft.mcs.cap.core.appleprofile.application.sugaracidity.."
+          );
+
+  @ArchTest
+  static final ArchRule profile_analysis_domains_do_not_depend_on_compatibility_orchestration =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.core.profileanalysis..domain..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAPackage("org.craft.mcs.cap.core.profileanalysis.compatibility..");
+
+  @ArchTest
+  static final ArchRule universal_chemical_profile_is_absent_from_main_code =
+      noClasses()
+          .should()
+          .haveFullyQualifiedName("org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile");
+
+  @ArchTest
+  static final ArchRule universal_chemical_axis_abstractions_are_absent_from_main_code =
+      noClasses()
+          .should()
+          .resideInAPackage("org.craft.mcs.cap.shared.kernel.chemical.axis..");
+
+  @ArchTest
+  static final ArchRule bounded_context_domains_do_not_depend_on_profile_analysis =
       noClasses()
           .that()
           .resideInAnyPackage(
               "org.craft.mcs.cap.core.account..domain..",
               "org.craft.mcs.cap.core.appleprofile.domain..",
-              "org.craft.mcs.cap.core.batchtraceability.domain..",
+              "org.craft.mcs.cap.core.traceability.domain..",
               "org.craft.mcs.cap.core.feedstock.domain..",
+              "org.craft.mcs.cap.core.measurement.domain..",
               "org.craft.mcs.cap.core.production.domain..",
               "org.craft.mcs.cap.core.varietyprofile.domain.."
           )
@@ -201,6 +371,41 @@ class ContextBoundaryArchitectureTest {
           .resideInAPackage("org.craft.mcs.cap.core.account..");
 
   @ArchTest
+  static final ArchRule measurement_context_does_not_depend_on_subject_owner_or_traceability_contexts =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.core.measurement..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAnyPackage(
+              "org.craft.mcs.cap.core.account..",
+              "org.craft.mcs.cap.core.traceability..",
+              "org.craft.mcs.cap.core.feedstock..",
+              "org.craft.mcs.cap.core.production.."
+          );
+
+  @ArchTest
+  static final ArchRule measurement_subject_acl_uses_owner_inbound_boundaries_only =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.infrastructure.adapter.out.measurement..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAnyPackage(
+              "org.craft.mcs.cap.core.feedstock.application..port.out..",
+              "org.craft.mcs.cap.core.production.application..port.out.."
+          );
+
+  @ArchTest
+  static final ArchRule jdbc_persistence_adapters_do_not_call_inbound_use_cases =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAPackage("org.craft.mcs.cap.core..application..port.in..");
+
+  @ArchTest
   static final ArchRule account_context_does_not_depend_on_feedstock_or_production_contexts =
       noClasses()
           .that()
@@ -228,7 +433,8 @@ class ContextBoundaryArchitectureTest {
               "org.craft.mcs.cap.core.account.contributor..",
               "org.craft.mcs.cap.core.account.provisioning..",
               "org.craft.mcs.cap.core.account.context..",
-              "org.craft.mcs.cap.core.account.administration.."
+              "org.craft.mcs.cap.core.account.administration..",
+              "org.craft.mcs.cap.core.account.actor.."
           );
 
   @ArchTest
@@ -255,7 +461,8 @@ class ContextBoundaryArchitectureTest {
               "org.craft.mcs.cap.core.account.audit..",
               "org.craft.mcs.cap.core.account.provisioning..",
               "org.craft.mcs.cap.core.account.context..",
-              "org.craft.mcs.cap.core.account.administration.."
+              "org.craft.mcs.cap.core.account.administration..",
+              "org.craft.mcs.cap.core.account.actor.."
           );
 
   @ArchTest
@@ -273,7 +480,8 @@ class ContextBoundaryArchitectureTest {
               "org.craft.mcs.cap.core.account.contributor..",
               "org.craft.mcs.cap.core.account.provisioning..",
               "org.craft.mcs.cap.core.account.context..",
-              "org.craft.mcs.cap.core.account.administration.."
+              "org.craft.mcs.cap.core.account.administration..",
+              "org.craft.mcs.cap.core.account.actor.."
           );
 
   @ArchTest
@@ -295,6 +503,91 @@ class ContextBoundaryArchitectureTest {
           .resideInAPackage("org.craft.mcs.cap.core.feedstock..");
 
   @ArchTest
+  static final ArchRule production_source_boundary_does_not_expose_composition_input_model =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.core.production..")
+          .should()
+          .dependOnClassesThat()
+          .areAssignableTo(CompositionSourceCharacteristics.class);
+
+  @ArchTest
+  static final ArchRule foundational_production_layers_do_not_depend_on_candidate_workflow =
+      noClasses()
+          .that()
+          .resideInAnyPackage(
+              "org.craft.mcs.cap.core.production.domain..",
+              "org.craft.mcs.cap.core.production.application.."
+          )
+          .should()
+          .dependOnClassesThat()
+          .resideInAPackage("org.craft.mcs.cap.core.production.candidate..");
+
+  @ArchTest
+  static final ArchRule feedstock_context_does_not_depend_on_production_context =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.core.feedstock..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAPackage("org.craft.mcs.cap.core.production..");
+
+  @ArchTest
+  static final ArchRule feedstock_context_does_not_depend_on_measurement_or_traceability_contexts =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.core.feedstock..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAnyPackage(
+              "org.craft.mcs.cap.core.measurement..",
+              "org.craft.mcs.cap.core.traceability.."
+          );
+
+  @ArchTest
+  static final ArchRule production_context_does_not_depend_on_measurement_context =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.core.production..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAPackage("org.craft.mcs.cap.core.measurement..");
+
+  @ArchTest
+  static final ArchRule production_context_does_not_depend_on_traceability_context =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.core.production..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAPackage("org.craft.mcs.cap.core.traceability..");
+
+  @ArchTest
+  static final ArchRule material_aggregate_domains_do_not_depend_on_analysis =
+      noClasses()
+          .that()
+          .resideInAnyPackage(
+              "org.craft.mcs.cap.core.feedstock..domain..",
+              "org.craft.mcs.cap.core.production..domain.."
+          )
+          .should()
+          .dependOnClassesThat()
+          .resideInAPackage("org.craft.mcs.cap.core.profileanalysis..");
+
+  @ArchTest
+  static final ArchRule traceability_context_does_not_depend_on_material_owner_or_measurement_contexts =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.core.traceability..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAnyPackage(
+              "org.craft.mcs.cap.core.feedstock..",
+              "org.craft.mcs.cap.core.production..",
+              "org.craft.mcs.cap.core.measurement.."
+          );
+
+  @ArchTest
   static final ArchRule production_source_acl_uses_feedstock_inbound_boundary_only =
       noClasses()
           .that()
@@ -303,16 +596,23 @@ class ContextBoundaryArchitectureTest {
           .dependOnClassesThat()
           .resideInAnyPackage(
               "org.craft.mcs.cap.core.feedstock.application..port.out..",
-              "org.craft.mcs.cap.core.feedstock.application..query..",
-              "org.craft.mcs.cap.core.feedstock.domain.model.batch..",
-              "org.craft.mcs.cap.core.feedstock.domain.model.measurement.."
+              "org.craft.mcs.cap.core.feedstock.application..query.."
           );
 
   @ArchTest
-  static final ArchRule production_domain_does_not_use_feedstock_batch_id_directly =
+  static final ArchRule production_source_acl_does_not_depend_on_feedstock_aggregate =
       noClasses()
           .that()
-          .resideInAPackage("org.craft.mcs.cap.core.production.domain..")
+          .resideInAPackage("org.craft.mcs.cap.infrastructure.adapter.out.production.source..")
+          .should()
+          .dependOnClassesThat()
+          .areAssignableTo(FeedstockBatch.class);
+
+  @ArchTest
+  static final ArchRule production_context_does_not_use_feedstock_batch_id_directly =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.core.production..")
           .should()
           .dependOnClassesThat()
           .areAssignableTo(FeedstockBatchId.class);
@@ -357,7 +657,7 @@ class ContextBoundaryArchitectureTest {
     final var aggregateRootNames = Set.of(
         AppleVariety.class.getName(),
         FeedstockBatch.class.getName(),
-        FeedstockMeasurement.class.getName(),
+        MeasurementSet.class.getName(),
         ProductionBatch.class.getName()
     );
 

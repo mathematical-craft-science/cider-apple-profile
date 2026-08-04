@@ -65,9 +65,14 @@ public record WorkspaceMembership(
     return isActive() && role == AccountRole.OWNER;
   }
 
+  public boolean isRemoved() {
+    return status == WorkspaceMembershipStatus.REMOVED;
+  }
+
   /** Changes a regular workspace role; OWNER assignment is reserved for ownership transfer. */
   public @NonNull WorkspaceMembership changeAssignableRole(@NonNull AccountRole updatedRole) {
     requireNonNull(updatedRole, "updated workspace role cannot be null");
+    requireCurrent("change role");
     if (updatedRole == AccountRole.OWNER) {
       throw new WorkspaceMembershipRuleException("OWNER role can be assigned only by ownership transfer");
     }
@@ -84,10 +89,28 @@ public record WorkspaceMembership(
 
   /** Restores a suspended membership with its existing role. */
   public @NonNull WorkspaceMembership reactivate() {
-    if (isActive()) {
+    if (status != WorkspaceMembershipStatus.SUSPENDED) {
       throw new WorkspaceMembershipRuleException("only a suspended workspace membership can be reactivated");
     }
     return with(role, WorkspaceMembershipStatus.ACTIVE);
+  }
+
+  /** Permanently removes current access while retaining the workspace association for historical attribution. */
+  public @NonNull WorkspaceMembership remove() {
+    requireCurrent("remove");
+    return with(role, WorkspaceMembershipStatus.REMOVED);
+  }
+
+  /** Restores a removed relationship after the user accepts a new invitation. */
+  public @NonNull WorkspaceMembership rejoin(@NonNull AccountRole assignedRole) {
+    requireNonNull(assignedRole, "assigned workspace role cannot be null");
+    if (!isRemoved()) {
+      throw new WorkspaceMembershipRuleException("only a removed workspace membership can rejoin");
+    }
+    if (assignedRole == AccountRole.OWNER) {
+      throw new WorkspaceMembershipRuleException("OWNER role can be assigned only by ownership transfer");
+    }
+    return with(assignedRole, WorkspaceMembershipStatus.ACTIVE);
   }
 
   /** Promotes an active membership as the target of an explicit ownership transfer. */
@@ -111,5 +134,11 @@ public record WorkspaceMembership(
       @NonNull WorkspaceMembershipStatus updatedStatus
   ) {
     return new WorkspaceMembership(membershipId, workspaceId, userId, updatedRole, updatedStatus);
+  }
+
+  private void requireCurrent(@NonNull String action) {
+    if (isRemoved()) {
+      throw new WorkspaceMembershipRuleException("a removed workspace membership cannot " + action);
+    }
   }
 }

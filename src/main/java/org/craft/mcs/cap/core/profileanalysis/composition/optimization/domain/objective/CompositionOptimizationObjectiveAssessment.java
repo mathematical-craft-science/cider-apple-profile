@@ -1,6 +1,6 @@
 package org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.objective;
 
-import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.InvalidChemicalProfileCompositionOptimizationException;
+import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.InvalidCompositionOptimizationException;
 import java.math.BigDecimal;
 import java.util.List;
 import org.jspecify.annotations.NonNull;
@@ -27,7 +27,7 @@ public record CompositionOptimizationObjectiveAssessment(
         "composition optimization penalties cannot be null"
     ));
     if (score != null && isNegative(score)) {
-      throw new InvalidChemicalProfileCompositionOptimizationException(
+      throw new InvalidCompositionOptimizationException(
           "composition optimization score cannot be negative"
       );
     }

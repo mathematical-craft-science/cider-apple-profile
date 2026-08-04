@@ -24,7 +24,7 @@ public record MeasurementUnitsMetadataResponse(
     )
     @NonNull List<@NonNull MeasurementUnitMetadataResponse> units,
     @Schema(
-        description = "Freshness policy for latest measurement evidence.",
+        description = "Freshness policy for current-profile measurement evidence.",
         requiredMode = Schema.RequiredMode.REQUIRED
     )
     @NonNull MeasurementFreshnessMetadataResponse measurementFreshness

@@ -5,15 +5,16 @@ import org.craft.mcs.cap.core.production.application.model.ProductionBatchView;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchQueryRepository;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatch;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatchId;
-import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchKind;
-import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchName;
-import org.craft.mcs.cap.core.production.domain.model.value.ProductionBatchStatus;
+import org.craft.mcs.cap.core.production.domain.model.value.AlcoholicFermentationState;
+import org.craft.mcs.cap.shared.kernel.material.value.BatchLifecycle;
+import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
-import org.craft.mcs.cap.shared.kernel.chemical.value.TanninityValue;
+import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
-import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.craft.mcs.cap.shared.testing.jdbc.PostgresDataJdbcTestConfiguration;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,11 +57,13 @@ class JdbcProductionBatchPersistenceDataJdbcTest {
     final var updated = ProductionBatch.restore(
         saved.aggregate().batchId(),
         saved.aggregate().workspaceId(),
-        ProductionBatchName.of("Updated production batch"),
-        saved.aggregate().kind(),
-        ProductionBatchStatus.PLANNED,
-        saved.aggregate().volume(),
-        saved.aggregate().profile(),
+        BatchName.of("Updated production batch"),
+        saved.aggregate().vessel(),
+        BatchLifecycle.ACTIVE,
+        AlcoholicFermentationState.NOT_STARTED,
+        saved.aggregate().currentVolume(),
+        saved.aggregate().currentMaterialStateId(),
+        saved.aggregate().initialProfileSnapshot(),
         "Updated note"
     );
 
@@ -68,7 +71,7 @@ class JdbcProductionBatchPersistenceDataJdbcTest {
 
     assertThat(springDataRepository.count()).isOne();
     assertThat(result)
-        .returns(ProductionBatchName.of("Updated production batch"), ProductionBatch::name)
+        .returns(BatchName.of("Updated production batch"), ProductionBatch::name)
         .returns("Updated note", ProductionBatch::note);
   }
 
@@ -96,7 +99,7 @@ class JdbcProductionBatchPersistenceDataJdbcTest {
     assertThat(found).get()
         .extracting(ProductionBatchView::batchId)
         .isEqualTo(saved.batchId());
-    assertThat(found.orElseThrow().profile().yeastAssimilableNitrogen())
+    assertThat(found.orElseThrow().initialProfileSnapshot().yeastAssimilableNitrogen())
         .isNotNull()
         .extracting(YeastAssimilableNitrogenValue::asBigDecimal)
         .satisfies(value -> assertThat(value).isEqualByComparingTo("180"));
@@ -109,11 +112,13 @@ class JdbcProductionBatchPersistenceDataJdbcTest {
     return ProductionBatch.restore(
         batch.batchId(),
         batch.workspaceId(),
-        ProductionBatchName.of(name),
-        batch.kind(),
-        batch.status(),
-        batch.volume(),
-        batch.profile(),
+        BatchName.of(name),
+        batch.vessel(),
+        batch.lifecycle(),
+        batch.alcoholicFermentationState(),
+        batch.currentVolume(),
+        batch.currentMaterialStateId(),
+        batch.initialProfileSnapshot(),
         batch.note()
     );
   }
@@ -143,13 +148,13 @@ class JdbcProductionBatchPersistenceDataJdbcTest {
     return ProductionBatch.create(
         ProductionBatchId.newId(),
         workspaceId,
-        ProductionBatchName.of(name),
-        ProductionBatchKind.CIDER,
+        BatchName.of(name),
+        Vessel.named("Tank F-03"),
         VolumeValue.ofLiters("100"),
         new ProductionProfileSnapshot(
             SpecificGravityValue.of("1.052"),
             TitratableAcidityValue.of("5.8"),
-            TanninityValue.of("1200"),
+            TanninValue.of("1200"),
             YeastAssimilableNitrogenValue.of("180")
         ),
         null

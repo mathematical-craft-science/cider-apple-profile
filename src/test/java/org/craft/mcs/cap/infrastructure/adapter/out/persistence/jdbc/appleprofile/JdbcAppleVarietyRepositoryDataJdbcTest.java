@@ -3,11 +3,10 @@ package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.appleprofi
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVariety;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyId;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyName;
-import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
+import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyReferenceProfile;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
-import org.craft.mcs.cap.shared.kernel.measurement.ExactMeasurement;
-import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
-import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
+import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.craft.mcs.cap.shared.testing.jdbc.PostgresDataJdbcTestConfiguration;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,16 +39,18 @@ class JdbcAppleVarietyRepositoryDataJdbcTest {
     final var saved = repository.findVersionedById(created.varietyId()).orElseThrow();
 
     saved.aggregate().rename(AppleVarietyName.of("Updated variety"));
-    saved.aggregate().changeChemicalProfile(ChemicalProfile.builder()
-        .sugar(ExactMeasurement.of(SugarConcentration.ofSpecificGravity(SpecificGravityValue.of("1.055"))))
-        .titratableAcidity(ExactMeasurement.of(TitratableAcidityValue.of("6.1")))
-        .build());
+    saved.aggregate().changeReferenceProfile(new AppleVarietyReferenceProfile(
+        PointCharacteristicValue.of(SpecificGravityValue.of("1.055")),
+        PointCharacteristicValue.of(TitratableAcidityValue.of("6.1")),
+        null,
+        null
+    ));
 
     final var updated = repository.update(saved).aggregate();
 
     assertThat(springDataRepository.count()).isOne();
     assertThat(updated.name().value()).isEqualTo("Updated variety");
-    assertThat(updated.chemicalProfile().titratableAcidity()).isPresent();
+    assertThat(updated.referenceProfile().titratableAcidity()).isNotNull();
   }
 
   @Test
@@ -71,9 +72,12 @@ class JdbcAppleVarietyRepositoryDataJdbcTest {
     return AppleVariety.create(
         AppleVarietyId.newId(),
         AppleVarietyName.of("Initial variety"),
-        ChemicalProfile.builder()
-            .sugar(ExactMeasurement.of(SugarConcentration.ofSpecificGravity(SpecificGravityValue.of("1.052"))))
-            .build()
+        new AppleVarietyReferenceProfile(
+            PointCharacteristicValue.of(SpecificGravityValue.of("1.052")),
+            null,
+            null,
+            null
+        )
     );
   }
 }

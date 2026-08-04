@@ -2,15 +2,14 @@ package org.craft.mcs.cap.core.appleprofile.application.classification.usecase;
 
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.appleprofile.application.AppleVarietyNotFoundException;
+import org.craft.mcs.cap.core.appleprofile.application.classification.AppleVarietyNorthAmericanProfileUnavailableException;
 import org.craft.mcs.cap.core.appleprofile.application.classification.port.in.AppleVarietyNorthAmericanClassification;
 import org.craft.mcs.cap.core.appleprofile.application.classification.port.in.ClassifyAppleVarietyNorthAmericanUseCase;
-import org.craft.mcs.cap.core.appleprofile.application.port.out.AppleVarietyRepository;
+import org.craft.mcs.cap.core.appleprofile.application.catalog.port.out.AppleVarietyRepository;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyId;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
+import org.craft.mcs.cap.core.profileanalysis.classification.domain.engine.CiderAppleClassificationInput;
 import org.craft.mcs.cap.core.profileanalysis.classification.domain.profile.northamerican.NorthAmericanProfileCalculator;
-import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapability;
-import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityAssessor;
-import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityNotMetException;
+import org.craft.mcs.cap.core.profileanalysis.capability.domain.ProfileAnalysisInputAvailability;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 
@@ -22,9 +21,8 @@ import static java.util.Objects.requireNonNull;
  *
  * <p>Unlike generic classification systems, the North American calculator is a reusable profile
  * calculation component that can later participate in other algorithms. This service therefore
- * performs the use-case specific steps around it: load the variety, extract canonical chemical
- * axes, enforce the {@link ChemicalProfileCapability#NORTH_AMERICAN_PROFILE} prerequisite and
- * translate missing axes into the shared capability exception mapped to ProblemDetail by REST.
+ * performs the use-case specific steps around it: load the variety and require the typed
+ * characteristics needed by the North American profile.
  */
 @Component
 @RequiredArgsConstructor
@@ -32,8 +30,6 @@ public final class ClassifyAppleVarietyNorthAmericanService
     implements ClassifyAppleVarietyNorthAmericanUseCase {
 
   private final @NonNull AppleVarietyRepository appleVarietyRepository;
-  private final @NonNull ChemicalProfileAxisExtractor axisExtractor;
-  private final @NonNull ChemicalProfileCapabilityAssessor capabilityAssessor;
   private final @NonNull NorthAmericanProfileCalculator calculator;
 
   @Override
@@ -44,17 +40,27 @@ public final class ClassifyAppleVarietyNorthAmericanService
 
     final var variety = appleVarietyRepository.findById(varietyId)
         .orElseThrow(() -> new AppleVarietyNotFoundException(varietyId));
-
-    final var axes = axisExtractor.extract(variety.chemicalProfile());
-    final var capabilityAssessment = capabilityAssessor.assess(
-        axes,
-        ChemicalProfileCapability.NORTH_AMERICAN_PROFILE
-    );
-    if (!capabilityAssessment.capable()) {
-      throw new ChemicalProfileCapabilityNotMetException(capabilityAssessment);
+    final var referenceProfile = variety.referenceProfile();
+    if (referenceProfile.specificGravity() == null
+        || referenceProfile.titratableAcidity() == null
+        || referenceProfile.tannin() == null) {
+      throw new AppleVarietyNorthAmericanProfileUnavailableException(
+          varietyId,
+          new ProfileAnalysisInputAvailability(
+              referenceProfile.specificGravity() != null,
+              referenceProfile.titratableAcidity() != null,
+              referenceProfile.tannin() != null
+          )
+      );
     }
 
-    final var profile = calculator.calculate(axes);
+    final var profile = calculator.calculate(
+        new CiderAppleClassificationInput(
+            referenceProfile.specificGravity(),
+            referenceProfile.titratableAcidity(),
+            referenceProfile.tannin()
+        )
+    );
 
     return new AppleVarietyNorthAmericanClassification(
         variety.varietyId(),

@@ -3,11 +3,10 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.composition.d
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
-import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionWarning;
+import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionWarning;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.composition.dto.CalculatedCompositionCharacteristicsResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.composition.dto.CompositionOptimizationObjectiveAssessmentResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.ProfileTargetDistanceResponse;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.sugaracidity.dto.SugarAcidityAxisPointResponse;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.sugaracidity.dto.SugarAcidityProfilePointResponse;
 import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -20,20 +19,25 @@ public record FeedstockBatchCompositionOptimizationCandidateResponse(
         schema = @Schema(implementation = FeedstockBatchCompositionOptimizationSourceResponse.class)
     )
     @NonNull List<@NonNull FeedstockBatchCompositionOptimizationSourceResponse> sources,
-    @Schema(description = "Calculated candidate profile.", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NonNull SugarAcidityProfilePointResponse profile,
-    @Schema(description = "Calculated yeast-assimilable nitrogen in mg N/L, when every source contains YAN.", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-    @Nullable SugarAcidityAxisPointResponse yeastAssimilableNitrogen,
-    @Schema(description = "Total candidate volume, when known.", nullable = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @Schema(description = "Calculated composition characteristics.", requiredMode = Schema.RequiredMode.REQUIRED)
+    @NonNull CalculatedCompositionCharacteristicsResponse characteristics,
+    @Schema(
+        description = "Total candidate volume, when known.",
+        nullable = true,
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     @Nullable DecimalQuantityResponse totalVolume,
     @ArraySchema(
         arraySchema = @Schema(description = "Composition warnings.", requiredMode = Schema.RequiredMode.REQUIRED),
-        schema = @Schema(implementation = ChemicalProfileCompositionWarning.class)
+        schema = @Schema(implementation = CompositionWarning.class)
     )
-    @NonNull List<@NonNull ChemicalProfileCompositionWarning> warnings,
+    @NonNull List<@NonNull CompositionWarning> warnings,
     @Schema(description = "Distance from candidate profile to target.", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull ProfileTargetDistanceResponse targetDistance,
-    @Schema(description = "Full objective assessment used to rank this candidate.", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(
+        description = "Full objective assessment used to rank this candidate.",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
     @NonNull CompositionOptimizationObjectiveAssessmentResponse objectiveAssessment
 ) {
 }

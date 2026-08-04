@@ -3,26 +3,24 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.profiletarget.
 import org.craft.mcs.cap.core.appleprofile.application.profiletarget.port.in.AppleVarietyProfileTargetCandidate;
 import org.craft.mcs.cap.core.appleprofile.application.profiletarget.port.in.AppleVarietyProfileTargetCandidateQuery;
 import org.craft.mcs.cap.core.appleprofile.application.profiletarget.port.in.AppleVarietyProfileTargetCandidates;
-import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.in.AppleVarietyPointFilters;
-import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapability;
-import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityCriteria;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.application.model.SugarAcidityZoneCriteria;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.SugarAcidityTargetResolver;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.SugarAcidityZone;
+import org.craft.mcs.cap.core.appleprofile.application.analysis.common.model.AppleVarietyAnalysisFilters;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.SugarAcidityTargetResolver;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.profiletarget.applevariety.dto.AppleVarietyProfileTargetCandidateResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.profiletarget.applevariety.dto.AppleVarietyProfileTargetCandidateSearchRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.profiletarget.applevariety.dto.AppleVarietyProfileTargetCandidatesResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.profiletarget.common.mapper.CompositionContributionRoleRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.mapper.ProfileTargetRestMapper;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.sugaracidity.mapper.SugarAcidityZoneRestMapper;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.mapper.ProfileTargetScoringCharacteristicsRestMapper;
 import org.craft.mcs.cap.shared.application.query.QueryLimits;
-import org.craft.mcs.cap.shared.platform.query.TextSearchCriteria;
+import org.craft.mcs.cap.shared.application.query.TextSearchCriteria;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import static java.util.Objects.requireNonNull;
 import static java.util.Objects.requireNonNullElse;
 import static org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.profiletarget.common.mapper.ProfileTargetCandidateCommonRestMapper.toWeights;
+import static org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.mapper.ProfileGraphCriteriaRestMapper.toCapabilityCriteria;
+import static org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.mapper.ProfileGraphCriteriaRestMapper.toZoneCriteria;
 
 
 public final class AppleVarietyProfileTargetCandidateRestMapper {
@@ -38,12 +36,12 @@ public final class AppleVarietyProfileTargetCandidateRestMapper {
     requireNonNull(targetResolver, "sugar-acidity target resolver cannot be null");
 
     return new AppleVarietyProfileTargetCandidateQuery(
-        new AppleVarietyPointFilters(
+        new AppleVarietyAnalysisFilters(
             toTextCriteria(request.nameContains()),
             toZoneCriteria(request.zone()),
             toCapabilityCriteria(request.capability(), request.capable())
         ),
-        requireNonNull(request.purpose(), "profile target scoring purpose cannot be null"),
+        requireNonNull(request.analysisScenario(), "profile target analysis scenario cannot be null"),
         requireNonNull(
             ProfileTargetRestMapper.toTargetObjective(request.target(), request.tanninTarget(), targetResolver),
             "profile target objective cannot be null"
@@ -59,7 +57,7 @@ public final class AppleVarietyProfileTargetCandidateRestMapper {
     requireNonNull(candidates, "apple variety profile target candidates cannot be null");
 
     return new AppleVarietyProfileTargetCandidatesResponse(
-        candidates.purpose(),
+        candidates.analysisScenario(),
         candidates.normalizerCode(),
         candidates.candidates().stream()
             .map(AppleVarietyProfileTargetCandidateRestMapper::toResponse)
@@ -75,7 +73,7 @@ public final class AppleVarietyProfileTargetCandidateRestMapper {
     return new AppleVarietyProfileTargetCandidateResponse(
         candidate.varietyId().value(),
         candidate.varietyName().value(),
-        SugarAcidityZoneRestMapper.toResponse(candidate.point()),
+        ProfileTargetScoringCharacteristicsRestMapper.toResponse(candidate.characteristics()),
         ProfileTargetRestMapper.toResponse(candidate.distance()),
         requireNonNull(
             CompositionContributionRoleRestMapper.toResponse(candidate.contributionRole()),
@@ -88,14 +86,4 @@ public final class AppleVarietyProfileTargetCandidateRestMapper {
     return nameContains == null || nameContains.isBlank() ? null : new TextSearchCriteria(nameContains);
   }
 
-  private static @Nullable SugarAcidityZoneCriteria toZoneCriteria(@Nullable SugarAcidityZone zone) {
-    return zone == null ? null : SugarAcidityZoneCriteria.of(zone);
-  }
-
-  private static @Nullable ChemicalProfileCapabilityCriteria toCapabilityCriteria(
-      @Nullable ChemicalProfileCapability capability,
-      @Nullable Boolean capable
-  ) {
-    return capability == null ? null : new ChemicalProfileCapabilityCriteria(capability, capable);
-  }
 }

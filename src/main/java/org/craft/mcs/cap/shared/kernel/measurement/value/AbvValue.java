@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import javax.measure.Quantity;
 import javax.measure.Unit;
-import org.craft.mcs.cap.shared.kernel.measurement.MeasuredValue;
+import org.craft.mcs.cap.shared.kernel.measurement.AbstractMeasuredValue;
 import org.craft.mcs.cap.shared.kernel.measurement.unit.AlcoholByVolume;
 import org.craft.mcs.cap.shared.kernel.measurement.unit.BeverageUnits;
 import org.jmolecules.ddd.annotation.ValueObject;
@@ -23,7 +23,7 @@ import static java.util.Objects.requireNonNull;
  */
 @ValueObject
 public final class AbvValue
-    extends MeasuredValue<AlcoholByVolume, AbvValue> {
+    extends AbstractMeasuredValue<AlcoholByVolume, AbvValue> {
 
   private static final int SCALE = 3;
   private static final BigDecimal MIN = BigDecimal.ZERO;
@@ -61,6 +61,11 @@ public final class AbvValue
 
   public static @NonNull BigDecimal stepValue() {
     return STEP;
+  }
+
+  @Override
+  public @NonNull AbvValue withValue(@NonNull BigDecimal value) {
+    return of(value);
   }
 
   @NonNull

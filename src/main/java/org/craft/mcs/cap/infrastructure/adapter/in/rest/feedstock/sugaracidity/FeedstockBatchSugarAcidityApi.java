@@ -20,22 +20,25 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @Tag(
     name = "Feedstock sugar-acidity analysis",
-    description = "Sugar-acidity graph endpoints based on the latest measurement of each feedstock batch."
+    description = "Sugar-acidity graph endpoints based on each feedstock batch current material state."
 )
 public interface FeedstockBatchSugarAcidityApi {
 
   @Operation(
       summary = "Assess current feedstock batch sugar-acidity zone",
-      description = "Uses the latest feedstock measurement in the batch and maps its chemical profile to a sugar-acidity graph zone when possible."
+      description = "Maps current SG and TA evidence to a sugar-acidity graph zone when possible."
   )
   @ApiResponse(
       responseCode = "200",
       description = "Current sugar-acidity assessment or unplottable result.",
-      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = FeedstockBatchGraphPointResponse.class))
+      content = @Content(
+          mediaType = APPLICATION_JSON_VALUE,
+          schema = @Schema(implementation = FeedstockBatchGraphPointResponse.class)
+      )
   )
   @ApiResponse(
       responseCode = "404",
-      description = "Feedstock batch or current measurement not found.",
+      description = "Feedstock batch or initialized material state not found.",
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
   )
   @NonNull ResponseEntity<@NonNull FeedstockBatchGraphPointResponse> assessSugarAcidityZone(
@@ -45,12 +48,15 @@ public interface FeedstockBatchSugarAcidityApi {
 
   @Operation(
       summary = "List current feedstock batch sugar-acidity graph points",
-      description = "Returns plottable and unplottable graph points using only the latest measurement per feedstock batch."
+      description = "Returns plottable and unplottable graph points from state-aware current batch profiles."
   )
   @ApiResponse(
       responseCode = "200",
       description = "Batch of current feedstock graph points.",
-      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = FeedstockBatchCurrentSugarAcidityZonePointBatchResponse.class))
+      content = @Content(
+          mediaType = APPLICATION_JSON_VALUE,
+          schema = @Schema(implementation = FeedstockBatchCurrentSugarAcidityZonePointBatchResponse.class)
+      )
   )
   @ApiResponse(
       responseCode = "400",
@@ -61,7 +67,10 @@ public interface FeedstockBatchSugarAcidityApi {
       @RequestBody(
           description = "Current feedstock graph point query.",
           required = true,
-          content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = FeedstockBatchCurrentSugarAcidityZonePointQueryRequest.class))
+          content = @Content(
+              mediaType = APPLICATION_JSON_VALUE,
+              schema = @Schema(implementation = FeedstockBatchCurrentSugarAcidityZonePointQueryRequest.class)
+          )
       )
       @NonNull FeedstockBatchCurrentSugarAcidityZonePointQueryRequest request
   );

@@ -7,7 +7,7 @@ import org.craft.mcs.cap.core.production.domain.model.ProductionBatchId;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceComposition;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
 import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPrediction;
-import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionWarning;
+import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionWarning;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.normalization.ProfileAxisNormalizerCode;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.assessment.ProfileTargetDistance;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
@@ -27,7 +27,7 @@ public record ProductionBatchCandidateView(
     @NonNull PotentialAbvPrediction potentialAbv,
     @Nullable ProfileAxisNormalizerCode normalizerCode,
     @Nullable ProfileTargetDistance targetDistance,
-    @NonNull List<@NonNull ChemicalProfileCompositionWarning> warnings,
+    @NonNull List<@NonNull CompositionWarning> warnings,
     @Nullable ProductionBatchId confirmedProductionBatchId
 ) {
 

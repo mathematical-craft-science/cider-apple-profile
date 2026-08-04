@@ -10,7 +10,12 @@ import org.craft.mcs.cap.shared.application.persistence.VersionedAggregate;
 import org.craft.mcs.cap.shared.application.persistence.VersionedAggregateRepository;
 import org.jspecify.annotations.NonNull;
 
-/** Aggregate repository port for CAP account users. */
+/**
+ * Aggregate repository port for CAP account users.
+ *
+ * <p>Physical deletion is intentionally absent. Deleted accounts are anonymized and retained as
+ * tombstones so immutable audit and operation history can continue resolving their actor IDs.
+ */
 public interface AccountUserRepository
     extends VersionedAggregateRepository<AccountUser, AccountUserId> {
 

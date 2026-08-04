@@ -1,27 +1,31 @@
 package org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.usecase;
 
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileProjector;
+import org.craft.mcs.cap.core.profileanalysis.classification.domain.profile.northamerican.NorthAmericanProfileCalculator;
+import org.craft.mcs.cap.core.profileanalysis.graph.application.port.in.EvaluateJolicoeurSugarAcidityGraphUseCase;
 import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchNotFoundException;
-import org.craft.mcs.cap.core.feedstock.application.measurement.query.FeedstockBatchCurrentMeasurementQueryService;
+import org.craft.mcs.cap.core.feedstock.application.currentprofile.query.FeedstockCurrentProfileQueryService;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.AssessFeedstockBatchCurrentSugarAcidityZoneUseCase;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockBatchCurrentSugarAcidityZoneResult;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchRepository;
-import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 
 import static java.util.Objects.requireNonNull;
+import static org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic.SPECIFIC_GRAVITY;
+import static org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic.TITRATABLE_ACIDITY;
 
 
 /**
  * Application service for assessing the current profile of a feedstock batch on the sugar-acidity
- * graph.
+ * graph backed by SG/TA evidence.
  *
- * <p>Current means the latest measurement selected by
- * {@link FeedstockBatchCurrentMeasurementQueryService}. The service returns an unplottable result
- * when sugar/acidity capability is missing so clients can show actionable warnings instead of
+ * <p>Current means the state-aware composite selected by
+ * {@link FeedstockCurrentProfileQueryService}. The service returns an unplottable result
+ * when sugar-acidity graph capability is missing so clients can show actionable warnings instead of
  * hiding incomplete batches.
  */
 @Component
@@ -31,8 +35,9 @@ public final class AssessFeedstockBatchCurrentSugarAcidityZoneService
 
   private final @NonNull FeedstockBatchRepository feedstockBatchRepository;
   private final @NonNull FeedstockAccessControl feedstockAccessControl;
-  private final @NonNull FeedstockBatchCurrentMeasurementQueryService currentMeasurementQueryService;
-  private final @NonNull SugarAcidityProfileProjector sugarAcidityProfileProjector;
+  private final @NonNull FeedstockCurrentProfileQueryService currentProfileQueryService;
+  private final @NonNull EvaluateJolicoeurSugarAcidityGraphUseCase graphEvaluator;
+  private final @NonNull NorthAmericanProfileCalculator northAmericanProfileCalculator;
 
   @Override
   public @NonNull FeedstockBatchCurrentSugarAcidityZoneResult assess(@NonNull FeedstockBatchId batchId) {
@@ -41,16 +46,24 @@ public final class AssessFeedstockBatchCurrentSugarAcidityZoneService
     final var batch = feedstockBatchRepository.findById(batchId)
         .orElseThrow(() -> new FeedstockBatchNotFoundException(batchId));
     feedstockAccessControl.requireReadAccess(batch.workspaceId());
-    final var currentMeasurement = currentMeasurementQueryService.requireCurrentMeasurement(batchId);
-    final var evaluation = sugarAcidityProfileProjector.project(currentMeasurement.chemicalProfile());
-
+    final var currentMeasurement = currentProfileQueryService.requireCurrentProfile(batchId);
+    final var graphEvaluation = graphEvaluator.evaluate(
+        currentMeasurement.specificGravity(),
+        currentMeasurement.titratableAcidity()
+    );
     return new FeedstockBatchCurrentSugarAcidityZoneResult(
         currentMeasurement.batchId(),
         batch.name(),
         batch.workspaceId(),
-        currentMeasurement.measurementId(),
-        currentMeasurement.measuredAt(),
-        evaluation
+        currentMeasurement.currentMaterialStateId(),
+        currentMeasurement.latestMeasurementSet(),
+        currentMeasurement.evidenceFor(Set.of(SPECIFIC_GRAVITY, TITRATABLE_ACIDITY)),
+        currentMeasurement.specificGravity(),
+        currentMeasurement.titratableAcidity(),
+        graphEvaluation,
+        graphEvaluation.plottable() && currentMeasurement.tannin() != null
+            ? northAmericanProfileCalculator.assessTannin(currentMeasurement.tannin()) // NOSONAR
+            : null
     );
   }
 }

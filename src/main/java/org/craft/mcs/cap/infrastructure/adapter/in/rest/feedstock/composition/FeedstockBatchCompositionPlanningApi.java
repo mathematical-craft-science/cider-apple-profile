@@ -30,7 +30,10 @@ public interface FeedstockBatchCompositionPlanningApi {
   @ApiResponse(
       responseCode = "200",
       description = "Target distance scores.",
-      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = FeedstockBatchProfileTargetScoreBatchResponse.class))
+      content = @Content(
+          mediaType = APPLICATION_JSON_VALUE,
+          schema = @Schema(implementation = FeedstockBatchProfileTargetScoreBatchResponse.class)
+      )
   )
   @ApiResponse(
       responseCode = "400",
@@ -41,19 +44,28 @@ public interface FeedstockBatchCompositionPlanningApi {
       @RequestBody(
           description = "Target scoring request.",
           required = true,
-          content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ScoreFeedstockBatchProfileTargetRequest.class))
+          content = @Content(
+              mediaType = APPLICATION_JSON_VALUE,
+              schema = @Schema(implementation = ScoreFeedstockBatchProfileTargetRequest.class)
+          )
       )
       @NonNull ScoreFeedstockBatchProfileTargetRequest request
   );
 
   @Operation(
       summary = "Optimize feedstock batch composition",
-      description = "Builds candidate source compositions from current feedstock batches and ranks them by distance to target."
+      description = """
+          Builds candidate source compositions from current feedstock batches and ranks them by
+          distance to target.
+          """
   )
   @ApiResponse(
       responseCode = "200",
       description = "Composition optimization result.",
-      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = OptimizeFeedstockBatchCompositionResponse.class))
+      content = @Content(
+          mediaType = APPLICATION_JSON_VALUE,
+          schema = @Schema(implementation = OptimizeFeedstockBatchCompositionResponse.class)
+      )
   )
   @ApiResponse(
       responseCode = "400",
@@ -69,7 +81,10 @@ public interface FeedstockBatchCompositionPlanningApi {
       @RequestBody(
           description = "Composition optimization request.",
           required = true,
-          content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = OptimizeFeedstockBatchCompositionRequest.class))
+          content = @Content(
+              mediaType = APPLICATION_JSON_VALUE,
+              schema = @Schema(implementation = OptimizeFeedstockBatchCompositionRequest.class)
+          )
       )
       @NonNull OptimizeFeedstockBatchCompositionRequest request
   );

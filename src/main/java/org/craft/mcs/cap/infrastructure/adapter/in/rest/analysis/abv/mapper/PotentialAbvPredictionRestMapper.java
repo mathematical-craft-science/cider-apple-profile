@@ -20,8 +20,11 @@ public final class PotentialAbvPredictionRestMapper {
     requireNonNull(prediction, "potential ABV prediction cannot be null");
 
     return new PotentialAbvPredictionResponse(
-        new DecimalQuantityResponse(prediction.originalGravity().asBigDecimal(), CanonicalUnitLabels.SUGAR),
-        new DecimalQuantityResponse(prediction.predictedFinalGravity().asBigDecimal(), CanonicalUnitLabels.SUGAR),
+        new DecimalQuantityResponse(prediction.originalGravity().asBigDecimal(), CanonicalUnitLabels.SPECIFIC_GRAVITY),
+        new DecimalQuantityResponse(
+            prediction.predictedFinalGravity().asBigDecimal(),
+            CanonicalUnitLabels.SPECIFIC_GRAVITY
+        ),
         prediction.predictedFinalGravitySource(),
         new DecimalQuantityResponse(prediction.potentialAbv().percent(), CanonicalUnitLabels.ABV),
         prediction.method(),

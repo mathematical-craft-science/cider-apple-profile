@@ -13,5 +13,5 @@ import org.jspecify.annotations.NonNull;
 public interface CompositionOptimizationStrategySelector {
 
   @NonNull
-  ChemicalProfileCompositionOptimizationStrategy select(@NonNull CompositionOptimizationAlgorithm algorithm);
+  CompositionOptimizationStrategy select(@NonNull CompositionOptimizationAlgorithm algorithm);
 }

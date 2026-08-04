@@ -7,7 +7,6 @@ import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.profiletarget.c
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.profiletarget.common.dto.CompositionContributionRoleAssessmentResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.measurement.CanonicalUnitLabels;
 import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -28,14 +27,12 @@ public final class CompositionContributionRoleRestMapper {
 
     return new CompositionContributionRoleAssessmentResponse(
         assessment.roles(),
-        assessment.primaryRole(),
         assessment.evidence().stream()
             .map(CompositionContributionRoleRestMapper::toResponse)
             .toList(),
         assessment.missingAxes().stream()
-            .sorted(Comparator.comparing(ChemicalAxis::name))
-            .toList(),
-        assessment.assessable()
+            .sorted(Comparator.comparing(Enum::name))
+            .toList()
     );
   }
 
@@ -46,10 +43,12 @@ public final class CompositionContributionRoleRestMapper {
     final var unit = CanonicalUnitLabels.forAxis(evidence.axis());
     return new CompositionContributionEvidenceResponse(
         evidence.axis(),
-        new DecimalQuantityResponse(evidence.sourceValue(), unit),
-        new DecimalQuantityResponse(evidence.targetCoordinate(), unit),
+        new DecimalQuantityResponse(evidence.sourceValue().asBigDecimal(), unit),
+        new DecimalQuantityResponse(evidence.targetCoordinate().asBigDecimal(), unit),
         new DecimalQuantityResponse(evidence.deviationFromTarget(), unit),
-        evidence.role()
+        evidence.direction(),
+        evidence.effect(),
+        evidence.severity()
     );
   }
 }

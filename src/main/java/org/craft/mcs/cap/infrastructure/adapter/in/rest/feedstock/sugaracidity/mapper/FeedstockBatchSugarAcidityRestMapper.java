@@ -1,32 +1,20 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.sugaracidity.mapper;
 
-import java.util.List;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.model.FeedstockMeasurementSugarAcidityPagePosition;
-import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityAssessment;
-import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapability;
-import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityCriteria;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.application.model.SugarAcidityZoneCriteria;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.SugarAcidityZone;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.SugarAcidityZoneAssessment;
-import org.craft.mcs.cap.core.feedstock.application.batch.model.FeedstockBatchCriteria;
+import org.craft.mcs.cap.core.feedstock.application.analysis.common.model.FeedstockAnalysisCandidatePagePosition;
+import org.craft.mcs.cap.core.profileanalysis.graph.zone.domain.JolicoeurSugarAcidityZone;
+import org.craft.mcs.cap.core.profileanalysis.graph.zone.domain.JolicoeurSugarAcidityZoneAssessment;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockBatchCurrentSugarAcidityZonePointQuery;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockBatchCurrentSugarAcidityZoneResult;
-import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockMeasurementPointFilters;
-import org.craft.mcs.cap.shared.kernel.identity.FeedstockBatchId;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
+import org.craft.mcs.cap.core.feedstock.application.analysis.common.model.FeedstockAnalysisCandidateFilters;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.chemicalprofile.mapper.ChemicalProfileCapabilityRestMapper;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.common.dto.FeedstockSeasonRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.sugaracidity.dto.FeedstockBatchCurrentSugarAcidityZonePointBatchResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.sugaracidity.dto.FeedstockBatchCurrentSugarAcidityZonePointQueryRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.sugaracidity.dto.FeedstockBatchGraphPointResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.sugaracidity.cursor.FeedstockSugarAcidityCursorAdapter;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.sugaracidity.dto.SugarAcidityProfilePointResponse;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.sugaracidity.dto.SugarAcidityZoneAssessmentResponse;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.sugaracidity.mapper.SugarAcidityZoneRestMapper;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.common.mapper.FeedstockProfileEvidenceRestMapper;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.dto.SugarAcidityGraphPointResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.mapper.ProfileGraphRestMapper;
 import org.craft.mcs.cap.shared.application.query.pagination.CursorPage;
 import org.craft.mcs.cap.shared.application.query.pagination.CursorPageRequest;
 import org.craft.mcs.cap.shared.application.query.QueryLimits;
@@ -36,6 +24,10 @@ import org.springframework.stereotype.Component;
 
 import static java.util.Objects.requireNonNull;
 import static java.util.Objects.requireNonNullElse;
+import static org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.common.mapper.FeedstockCriteriaRestMapper.toBatchCriteria;
+import static org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.common.mapper.FeedstockCriteriaRestMapper.toSeason;
+import static org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.mapper.ProfileGraphCriteriaRestMapper.toCapabilityCriteria;
+import static org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.mapper.ProfileGraphCriteriaRestMapper.toZoneCriteria;
 
 
 @Component
@@ -49,7 +41,7 @@ public final class FeedstockBatchSugarAcidityRestMapper {
   ) {
     requireNonNull(request, "feedstock batch current sugar-acidity zone point query request cannot be null");
     final var workspaceId = WorkspaceId.of(request.workspaceId());
-    final var filters = new FeedstockMeasurementPointFilters(
+    final var filters = new FeedstockAnalysisCandidateFilters(
         toBatchCriteria(request.batchId()),
         toSeason(request.season()),
         toZoneCriteria(request.zone()),
@@ -71,27 +63,27 @@ public final class FeedstockBatchSugarAcidityRestMapper {
   ) {
     requireNonNull(result, "feedstock batch current sugar-acidity zone result cannot be null");
 
-    final var evaluation = result.evaluation();
-    final var assessment = evaluation.assessment();
+    final var graphEvaluation = result.graphEvaluation();
     return new FeedstockBatchGraphPointResponse(
         result.batchId().value(),
         result.batchName().value(),
         result.workspaceId().value(),
-        result.currentMeasurementId().value(),
-        result.measuredAt(),
-        evaluation.plottable(),
-        toPointResponse(assessment),
-        toZoneResponse(assessment),
-        missingAxes(evaluation.capabilityAssessment()),
-        toAssessmentResponse(assessment),
-        ChemicalProfileCapabilityRestMapper.toResponse(evaluation.capabilityAssessment())
+        result.currentMaterialStateId().value(),
+        result.profileEvidence().stream()
+            .map(FeedstockProfileEvidenceRestMapper::toResponse)
+            .toList(),
+        graphEvaluation.plottable(),
+        toPointResponse(result),
+        toZoneResponse(graphEvaluation.zoneAssessment()),
+        result.northAmericanTanninLevel(),
+        graphEvaluation.missingCharacteristics().stream().toList()
     );
   }
 
   public @NonNull FeedstockBatchCurrentSugarAcidityZonePointBatchResponse toResponse(
       @NonNull CursorPage<
           @NonNull FeedstockBatchCurrentSugarAcidityZoneResult,
-          @NonNull FeedstockMeasurementSugarAcidityPagePosition
+          @NonNull FeedstockAnalysisCandidatePagePosition
       > page,
       @NonNull FeedstockBatchCurrentSugarAcidityZonePointQuery query
   ) {
@@ -106,46 +98,22 @@ public final class FeedstockBatchSugarAcidityRestMapper {
     );
   }
 
-  private static @NonNull List<@NonNull ChemicalAxis> missingAxes(
-      @NonNull ChemicalProfileCapabilityAssessment assessment
+  private static @Nullable SugarAcidityGraphPointResponse toPointResponse(
+      @NonNull FeedstockBatchCurrentSugarAcidityZoneResult result
   ) {
-    return assessment.missingAxes().stream().toList();
+    if (!result.graphEvaluation().plottable()) {
+      return null;
+    }
+    return ProfileGraphRestMapper.toResponse(
+        requireNonNull(result.specificGravity()),
+        requireNonNull(result.titratableAcidity())
+    );
   }
 
-  private static @Nullable FeedstockSeason toSeason(@Nullable FeedstockSeasonRequest request) {
-    return request == null ? null : FeedstockSeason.of(request.startsOn(), request.endsOn());
-  }
-
-  private static @Nullable FeedstockBatchCriteria toBatchCriteria(@Nullable UUID batchId) {
-    return batchId == null ? null : FeedstockBatchCriteria.of(FeedstockBatchId.of(batchId));
-  }
-
-  private static @Nullable SugarAcidityZoneCriteria toZoneCriteria(@Nullable SugarAcidityZone zone) {
-    return zone == null ? null : SugarAcidityZoneCriteria.of(zone);
-  }
-
-  private static @Nullable ChemicalProfileCapabilityCriteria toCapabilityCriteria(
-      @Nullable ChemicalProfileCapability capability,
-      @Nullable Boolean capable
-  ) {
-    return capability == null ? null : new ChemicalProfileCapabilityCriteria(capability, capable);
-  }
-
-  private static @Nullable SugarAcidityProfilePointResponse toPointResponse(
-      @Nullable SugarAcidityZoneAssessment assessment
-  ) {
-    return assessment == null ? null : SugarAcidityZoneRestMapper.toResponse(assessment.point());
-  }
-
-  private static @Nullable SugarAcidityZone toZoneResponse(
-      @Nullable SugarAcidityZoneAssessment assessment
+  private static @Nullable JolicoeurSugarAcidityZone toZoneResponse(
+      @Nullable JolicoeurSugarAcidityZoneAssessment assessment
   ) {
     return assessment == null ? null : assessment.zone();
   }
 
-  private static @Nullable SugarAcidityZoneAssessmentResponse toAssessmentResponse(
-      @Nullable SugarAcidityZoneAssessment assessment
-  ) {
-    return assessment == null ? null : SugarAcidityZoneRestMapper.toResponse(assessment);
-  }
 }

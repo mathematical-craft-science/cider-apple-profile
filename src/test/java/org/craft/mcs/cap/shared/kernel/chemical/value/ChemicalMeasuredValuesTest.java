@@ -1,27 +1,25 @@
 package org.craft.mcs.cap.shared.kernel.chemical.value;
 
-import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
-
-import org.craft.mcs.cap.shared.kernel.sugar.BrixValue;
-import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
-import org.junit.jupiter.api.Test;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
+import org.craft.mcs.cap.shared.kernel.sugar.BrixValue;
+import org.junit.jupiter.api.Test;
 
 
 class ChemicalMeasuredValuesTest {
 
   @Test
   void acceptsBoundaryValues() {
-    assertThat(SpecificGravityValue.of("1.000").asBigDecimal()).isEqualByComparingTo("1.000");
+    assertThat(SpecificGravityValue.of("0.900").asBigDecimal()).isEqualByComparingTo("0.900");
     assertThat(SpecificGravityValue.of("1.200").asBigDecimal()).isEqualByComparingTo("1.200");
     assertThat(BrixValue.of("0").asBigDecimal()).isEqualByComparingTo("0");
     assertThat(BrixValue.of("32.0").asBigDecimal()).isEqualByComparingTo("32.0");
     assertThat(TitratableAcidityValue.of("0").asBigDecimal()).isEqualByComparingTo("0");
     assertThat(TitratableAcidityValue.of("30.0").asBigDecimal()).isEqualByComparingTo("30.0");
-    assertThat(TanninityValue.of("0").asBigDecimal()).isEqualByComparingTo("0");
-    assertThat(TanninityValue.of("12000").asBigDecimal()).isEqualByComparingTo("12000");
+    assertThat(TanninValue.of("0").asBigDecimal()).isEqualByComparingTo("0");
+    assertThat(TanninValue.of("12000").asBigDecimal()).isEqualByComparingTo("12000");
     assertThat(YeastAssimilableNitrogenValue.of("0").asBigDecimal()).isEqualByComparingTo("0");
     assertThat(YeastAssimilableNitrogenValue.of("2000.0").asBigDecimal()).isEqualByComparingTo("2000.0");
     assertThat(PhValue.of("0").asBigDecimal()).isEqualByComparingTo("0");
@@ -30,7 +28,7 @@ class ChemicalMeasuredValuesTest {
 
   @Test
   void rejectsOutOfRangeValues() {
-    assertThatThrownBy(() -> SpecificGravityValue.of("0.999"))
+    assertThatThrownBy(() -> SpecificGravityValue.of("0.899"))
         .isInstanceOf(DomainRuleViolationException.class);
     assertThatThrownBy(() -> SpecificGravityValue.of("1.201"))
         .isInstanceOf(DomainRuleViolationException.class);
@@ -40,7 +38,7 @@ class ChemicalMeasuredValuesTest {
         .isInstanceOf(DomainRuleViolationException.class);
     assertThatThrownBy(() -> TitratableAcidityValue.of("-0.1"))
         .isInstanceOf(DomainRuleViolationException.class);
-    assertThatThrownBy(() -> TanninityValue.of("12000.1"))
+    assertThatThrownBy(() -> TanninValue.of("12000.1"))
         .isInstanceOf(DomainRuleViolationException.class);
     assertThatThrownBy(() -> YeastAssimilableNitrogenValue.of("2000.1"))
         .isInstanceOf(DomainRuleViolationException.class);

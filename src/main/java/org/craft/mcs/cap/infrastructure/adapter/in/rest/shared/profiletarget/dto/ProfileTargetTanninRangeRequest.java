@@ -9,9 +9,17 @@ import static java.util.Objects.requireNonNull;
 
 @Schema(description = "Optional tannin target range in mg/L TAE.")
 public record ProfileTargetTanninRangeRequest(
-    @Schema(description = "Minimum tannin target in mg/L TAE.", example = "800", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(
+        description = "Minimum tannin target in mg/L TAE.",
+        example = "800",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
     @NonNull BigDecimal min,
-    @Schema(description = "Maximum tannin target in mg/L TAE.", example = "1800", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(
+        description = "Maximum tannin target in mg/L TAE.",
+        example = "1800",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
     @NonNull BigDecimal max
 ) {
 

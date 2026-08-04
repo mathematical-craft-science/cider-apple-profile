@@ -10,12 +10,12 @@ import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurementunits.dto.Mea
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.measurement.CanonicalUnitLabels;
 import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
 import org.craft.mcs.cap.shared.kernel.chemical.value.PhValue;
-import org.craft.mcs.cap.shared.kernel.chemical.value.TanninityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
 import org.craft.mcs.cap.shared.kernel.measurement.value.AbvValue;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
-import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
@@ -40,8 +40,8 @@ public final class MeasurementUnitMetadataRestMapper {
         List.of(
             unit(
                 MeasurementUnitCode.SG,
-                CanonicalUnitLabels.SUGAR_SHORT,
-                CanonicalUnitLabels.SUGAR,
+                CanonicalUnitLabels.SPECIFIC_GRAVITY_SHORT,
+                CanonicalUnitLabels.SPECIFIC_GRAVITY,
                 SpecificGravityValue.minValue(),
                 SpecificGravityValue.maxValue(),
                 SpecificGravityValue.stepValue()
@@ -55,12 +55,12 @@ public final class MeasurementUnitMetadataRestMapper {
                 TitratableAcidityValue.stepValue()
             ),
             unit(
-                MeasurementUnitCode.TANNINITY,
-                CanonicalUnitLabels.TANNINITY_SHORT,
-                CanonicalUnitLabels.TANNINITY,
-                TanninityValue.minValue(),
-                TanninityValue.maxValue(),
-                TanninityValue.stepValue()
+                MeasurementUnitCode.TANNIN,
+                CanonicalUnitLabels.TANNIN_SHORT,
+                CanonicalUnitLabels.TANNIN,
+                TanninValue.minValue(),
+                TanninValue.maxValue(),
+                TanninValue.stepValue()
             ),
             unit(
                 MeasurementUnitCode.YAN,

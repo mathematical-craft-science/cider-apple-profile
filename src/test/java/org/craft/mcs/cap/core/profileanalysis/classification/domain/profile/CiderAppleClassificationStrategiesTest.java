@@ -1,9 +1,7 @@
 package org.craft.mcs.cap.core.profileanalysis.classification.domain.profile;
 
-import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
-import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
-import org.craft.mcs.cap.core.profileanalysis.classification.domain.engine.ChemicalProfileClassifier;
+import org.craft.mcs.cap.core.profileanalysis.classification.domain.engine.CiderAppleClassificationInput;
+import org.craft.mcs.cap.core.profileanalysis.classification.domain.engine.CiderAppleClassifier;
 import org.craft.mcs.cap.core.profileanalysis.classification.domain.engine.ClassificationConfidencePolicy;
 import org.craft.mcs.cap.core.profileanalysis.classification.domain.profile.french.FrenchCiderAppleClass;
 import org.craft.mcs.cap.core.profileanalysis.classification.domain.profile.french.FrenchClassificationStrategy;
@@ -13,9 +11,8 @@ import org.craft.mcs.cap.core.profileanalysis.classification.domain.profile.long
 import org.craft.mcs.cap.core.profileanalysis.classification.domain.profile.longashton.LongAshton7ClassificationStrategy;
 import org.craft.mcs.cap.core.profileanalysis.classification.domain.profile.spanish.SpanishCiderAppleClass;
 import org.craft.mcs.cap.core.profileanalysis.classification.domain.profile.spanish.SpanishClassificationStrategy;
-import org.craft.mcs.cap.shared.kernel.measurement.ExactMeasurement;
-import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
-import org.craft.mcs.cap.shared.kernel.chemical.value.TanninityValue;
+import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
@@ -28,23 +25,20 @@ import static org.craft.mcs.cap.core.profileanalysis.classification.domain.profi
 
 class CiderAppleClassificationStrategiesTest {
 
-  private final ChemicalProfileClassifier classifier = new ChemicalProfileClassifier(
-      new ChemicalProfileAxisExtractor(),
+  private final CiderAppleClassifier classifier = new CiderAppleClassifier(
       new ClassificationConfidencePolicy()
   );
 
   @NonNull
-  private static ChemicalProfile profile(
+  private static CiderAppleClassificationInput profile(
       @NonNull String acidity,
-      @NonNull String tanninity
+      @NonNull String tannin
   ) {
-    return ChemicalProfile.builder()
-        .sugar(ExactMeasurement.of(SugarConcentration.ofSpecificGravity(
-            SpecificGravityValue.of("1.050")
-        )))
-        .titratableAcidity(ExactMeasurement.of(TitratableAcidityValue.of(acidity)))
-        .tanninity(ExactMeasurement.of(TanninityValue.of(tanninity)))
-        .build();
+    return new CiderAppleClassificationInput(
+        null,
+        PointCharacteristicValue.of(TitratableAcidityValue.of(acidity)),
+        PointCharacteristicValue.of(TanninValue.of(tannin))
+    );
   }
 
   @Test

@@ -2,12 +2,14 @@ package org.craft.mcs.cap.core.profileanalysis.ph.domain;
 
 import java.math.BigDecimal;
 import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
-import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
+import org.craft.mcs.cap.shared.kernel.characteristic.CharacteristicValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.PhValue;
 import org.jmolecules.ddd.annotation.Service;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import static java.util.Objects.requireNonNull;
+import static org.craft.mcs.cap.shared.kernel.measurement.MeasurementValueMath.midpoint;
 import static org.craft.mcs.cap.shared.kernel.math.DecimalComparisons.isGreaterThan;
 import static org.craft.mcs.cap.shared.kernel.math.DecimalComparisons.isLessThan;
 
@@ -28,7 +30,6 @@ public record PhPlanningGuidancePolicy(
 
   private static final @NonNull BigDecimal DEFAULT_IDEAL_MIN = new BigDecimal("3.3");
   private static final @NonNull BigDecimal DEFAULT_IDEAL_MAX = new BigDecimal("3.8");
-
   public PhPlanningGuidancePolicy {
     requireNonNull(idealMin, "pH planning guidance ideal minimum cannot be null");
     requireNonNull(idealMax, "pH planning guidance ideal maximum cannot be null");
@@ -46,9 +47,10 @@ public record PhPlanningGuidancePolicy(
     );
   }
 
-  public @NonNull PhPlanningGuidance assess(@NonNull ChemicalProfile profile) {
-    requireNonNull(profile, "chemical profile cannot be null");
-    final var value = PhMeasurementValueExtractor.representativeValue(profile);
+  public @NonNull PhPlanningGuidance assess(
+      @Nullable CharacteristicValue<PhValue> ph
+  ) {
+    final var value = ph == null ? null : representativeValue(ph);
     if (value == null) {
       return guidance(
           PhPlanningGuidanceCode.PH_MISSING,
@@ -84,5 +86,11 @@ public record PhPlanningGuidancePolicy(
       @Nullable BigDecimal value
   ) {
     return new PhPlanningGuidance(code, message, value, source);
+  }
+
+  private static @NonNull BigDecimal representativeValue(
+      @NonNull CharacteristicValue<PhValue> characteristic
+  ) {
+    return midpoint(characteristic);
   }
 }

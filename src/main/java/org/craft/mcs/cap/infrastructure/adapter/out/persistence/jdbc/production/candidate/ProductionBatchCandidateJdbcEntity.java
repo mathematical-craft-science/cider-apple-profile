@@ -29,8 +29,8 @@ class ProductionBatchCandidateJdbcEntity {
   @NonNull @Column("status") ProductionBatchCandidateStatus status;
   @NonNull @Column("sources_json") String sourcesJson;
   @NonNull @Column("total_volume_liters") BigDecimal totalVolumeLiters;
-  @NonNull @Column("sugar_specific_gravity") BigDecimal sugarSpecificGravity;
-  @NonNull @Column("acidity_g_l_as_malic") BigDecimal acidityGLAsMalic;
+  @NonNull @Column("sugar_specific_gravity") BigDecimal specificGravity;
+  @NonNull @Column("acidity_g_l_as_malic") BigDecimal titratableAcidityGLAsMalic;
   @Nullable @Column("tannin_mg_l_tae") BigDecimal tanninMgLTae;
   @Nullable @Column("yan_mg_n_l") BigDecimal yeastAssimilableNitrogenMgNL;
   @NonNull @Column("predicted_final_gravity") BigDecimal predictedFinalGravity;
@@ -57,8 +57,8 @@ class ProductionBatchCandidateJdbcEntity {
       @NonNull ProductionBatchCandidateStatus status,
       @NonNull String sourcesJson,
       @NonNull BigDecimal totalVolumeLiters,
-      @NonNull BigDecimal sugarSpecificGravity,
-      @NonNull BigDecimal acidityGLAsMalic,
+      @NonNull BigDecimal specificGravity,
+      @NonNull BigDecimal titratableAcidityGLAsMalic,
       @Nullable BigDecimal tanninMgLTae,
       @Nullable BigDecimal yeastAssimilableNitrogenMgNL,
       @NonNull BigDecimal predictedFinalGravity,
@@ -77,11 +77,14 @@ class ProductionBatchCandidateJdbcEntity {
     this.status = requireNonNull(status, "production batch candidate status cannot be null");
     this.sourcesJson = requireNonNull(sourcesJson, "production candidate sources JSON cannot be null");
     this.totalVolumeLiters = requireNonNull(totalVolumeLiters, "production candidate total volume cannot be null");
-    this.sugarSpecificGravity = requireNonNull(
-        sugarSpecificGravity,
-        "production candidate sugar specific gravity cannot be null"
+    this.specificGravity = requireNonNull(
+        specificGravity,
+        "production candidate specific gravity cannot be null"
     );
-    this.acidityGLAsMalic = requireNonNull(acidityGLAsMalic, "production candidate acidity cannot be null");
+    this.titratableAcidityGLAsMalic = requireNonNull(
+        titratableAcidityGLAsMalic,
+        "production candidate titratable acidity cannot be null"
+    );
     this.tanninMgLTae = tanninMgLTae;
     this.yeastAssimilableNitrogenMgNL = yeastAssimilableNitrogenMgNL;
     this.predictedFinalGravity = requireNonNull(

@@ -1,13 +1,15 @@
 package org.craft.mcs.cap.feedstock.application.batch.usecase;
 
 import java.time.LocalDate;
+import java.time.Clock;
 import java.util.function.Supplier;
 import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.CreateFeedstockBatchCommand;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchRepository;
+import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchTraceRecorder;
 import org.craft.mcs.cap.core.feedstock.application.batch.usecase.CreateFeedstockBatchService;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockBatchName;
+import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
 import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
@@ -34,15 +36,17 @@ class CreateFeedstockBatchServiceTest {
     final var repository = mock(FeedstockBatchRepository.class);
     final var service = new CreateFeedstockBatchService(
         repository,
+        mock(FeedstockBatchTraceRecorder.class),
         mock(FeedstockAccessControl.class),
-        transactionHelper()
+        transactionHelper(),
+        Clock.systemUTC()
     );
     final var workspaceId = WorkspaceId.of(newUuid());
     when(repository.create(any(FeedstockBatch.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
     final var created = service.create(new CreateFeedstockBatchCommand(
         workspaceId,
-        FeedstockBatchName.of("Late season fruit"),
+        BatchName.of("Late season fruit"),
         null,
         FeedstockType.JUICE,
         FeedstockSeason.of(LocalDate.parse("2026-10-01"), LocalDate.parse("2026-12-15")),
@@ -64,12 +68,14 @@ class CreateFeedstockBatchServiceTest {
     final var repository = mock(FeedstockBatchRepository.class);
     final var service = new CreateFeedstockBatchService(
         repository,
+        mock(FeedstockBatchTraceRecorder.class),
         mock(FeedstockAccessControl.class),
-        transactionHelper()
+        transactionHelper(),
+        Clock.systemUTC()
     );
     final var command = new CreateFeedstockBatchCommand(
         WorkspaceId.of(newUuid()),
-        FeedstockBatchName.of("Late season fruit"),
+        BatchName.of("Late season fruit"),
         null,
         FeedstockType.JUICE,
         FeedstockSeason.of(LocalDate.parse("2026-10-01"), LocalDate.parse("2026-12-15")),
@@ -80,7 +86,7 @@ class CreateFeedstockBatchServiceTest {
 
     assertThatThrownBy(() -> service.create(command))
         .isInstanceOf(DomainRuleViolationException.class)
-        .hasMessageContaining("available volume must be greater than zero");
+        .hasMessage("active batch material volume must be greater than zero");
     verify(repository, never()).create(any(FeedstockBatch.class));
   }
 

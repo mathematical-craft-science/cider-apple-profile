@@ -3,7 +3,7 @@ package org.craft.mcs.cap.core.production.candidate.application.model;
 import java.util.List;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
 import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPrediction;
-import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionWarning;
+import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionWarning;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.normalization.ProfileAxisNormalizerCode;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.assessment.ProfileTargetDistance;
 import org.jspecify.annotations.NonNull;
@@ -18,7 +18,7 @@ public record ProductionBatchCandidateCalculation(
     @NonNull PotentialAbvPrediction potentialAbv,
     @Nullable ProfileAxisNormalizerCode normalizerCode,
     @Nullable ProfileTargetDistance targetDistance,
-    @NonNull List<@NonNull ChemicalProfileCompositionWarning> warnings
+    @NonNull List<@NonNull CompositionWarning> warnings
 ) {
 
   public ProductionBatchCandidateCalculation {

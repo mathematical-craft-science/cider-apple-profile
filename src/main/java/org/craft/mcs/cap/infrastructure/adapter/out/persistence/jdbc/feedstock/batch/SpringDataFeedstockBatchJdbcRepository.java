@@ -14,20 +14,19 @@ import org.springframework.data.repository.query.Param;
 interface SpringDataFeedstockBatchJdbcRepository
     extends ListCrudRepository<FeedstockBatchJdbcEntity, @NonNull UUID> {
 
-  @Query("""
-      SELECT *
-      FROM feedstock_batches
-      WHERE batch_id = :batchId
-        AND deleted_at IS NULL
-      FOR UPDATE
-      """)
   @NonNull
-  Optional<@NonNull FeedstockBatchJdbcEntity> findByIdForConsumption(
-      @Param("batchId") @NonNull UUID batchId
+  Optional<@NonNull FeedstockBatchJdbcEntity> findByBatchIdAndDeletedAtIsNull(
+      @NonNull UUID batchId
   );
 
   @NonNull
   List<@NonNull FeedstockBatchJdbcEntity> findAllByWorkspaceIdAndDeletedAtIsNullOrderByCreatedAtAscBatchIdAsc(
+      @NonNull UUID workspaceId
+  );
+
+  @NonNull
+  List<@NonNull FeedstockBatchJdbcEntity> findAllByBatchIdInAndWorkspaceIdAndDeletedAtIsNull(
+      @NonNull List<@NonNull UUID> batchIds,
       @NonNull UUID workspaceId
   );
 

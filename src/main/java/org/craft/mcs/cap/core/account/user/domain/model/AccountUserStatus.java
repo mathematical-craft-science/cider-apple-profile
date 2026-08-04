@@ -6,5 +6,8 @@ public enum AccountUserStatus {
   ACTIVE,
 
   /** CAP has disabled product access independently of the external identity provider. */
-  DISABLED
+  DISABLED,
+
+  /** An anonymized tombstone retained so historical actor references remain resolvable. */
+  DELETED
 }

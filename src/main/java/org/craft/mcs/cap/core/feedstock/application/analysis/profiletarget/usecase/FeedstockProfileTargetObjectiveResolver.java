@@ -2,14 +2,14 @@ package org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.usec
 
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetObjective;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.CustomRectangleSugarAcidityTarget;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.RectangleSugarAcidityTargetGeometry;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.SugarAcidityTarget;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.target.domain.SugarAcidityTargetResolver;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.SugarAcidityZone;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.CustomRectangleSugarAcidityTarget;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.RectangleSugarAcidityTargetGeometry;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.SugarAcidityTarget;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.SugarAcidityTargetResolver;
+import org.craft.mcs.cap.core.profileanalysis.graph.zone.domain.JolicoeurSugarAcidityZone;
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.CustomRectangleFeedstockProfileTargetSelection;
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.PredefinedFeedstockProfileTargetSelection;
-import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.ScoreFeedstockBatchProfileTargetCommand;
+import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.FeedstockBatchProfileTargetQuery;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 
@@ -30,18 +30,20 @@ public final class FeedstockProfileTargetObjectiveResolver {
   private final @NonNull SugarAcidityTargetResolver targetResolver;
 
   @NonNull ProfileTargetObjective resolve(
-      @NonNull ScoreFeedstockBatchProfileTargetCommand command
+      @NonNull FeedstockBatchProfileTargetQuery query
   ) {
-    requireNonNull(command, "score feedstock batch profile target command cannot be null");
+    requireNonNull(query, "feedstock batch profile target query cannot be null");
 
-    final SugarAcidityTarget target = switch (command.target()) {
-      case PredefinedFeedstockProfileTargetSelection(SugarAcidityZone zone) ->
+    final SugarAcidityTarget target = switch (query.target()) {
+      case PredefinedFeedstockProfileTargetSelection(JolicoeurSugarAcidityZone zone) ->
           targetResolver.resolvePredefinedZone(zone);
-      case CustomRectangleFeedstockProfileTargetSelection(RectangleSugarAcidityTargetGeometry geometry) ->
+      case CustomRectangleFeedstockProfileTargetSelection(
+          RectangleSugarAcidityTargetGeometry geometry
+      ) ->
           new CustomRectangleSugarAcidityTarget(geometry);
     };
 
-    final var tanninTarget = command.tanninTarget();
+    final var tanninTarget = query.tanninTarget();
     if (tanninTarget == null) {
       return ProfileTargetObjective.of(target);
     }

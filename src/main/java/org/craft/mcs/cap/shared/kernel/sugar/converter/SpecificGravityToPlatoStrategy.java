@@ -3,7 +3,7 @@ package org.craft.mcs.cap.shared.kernel.sugar.converter;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import org.craft.mcs.cap.shared.kernel.sugar.PlatoValue;
-import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;

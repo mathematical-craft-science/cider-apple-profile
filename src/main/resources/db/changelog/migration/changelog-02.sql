@@ -49,6 +49,8 @@ CREATE TABLE IF NOT EXISTS workspace_memberships
         FOREIGN KEY (workspace_id) REFERENCES workspaces (workspace_id),
     CONSTRAINT fk_workspace_memberships_user
         FOREIGN KEY (user_id) REFERENCES account_users (user_id),
+    CONSTRAINT chk_workspace_memberships_status
+        CHECK (status IN ('ACTIVE', 'SUSPENDED', 'REMOVED')),
     CONSTRAINT uk_workspace_memberships_workspace_user UNIQUE (workspace_id, user_id)
 );
 

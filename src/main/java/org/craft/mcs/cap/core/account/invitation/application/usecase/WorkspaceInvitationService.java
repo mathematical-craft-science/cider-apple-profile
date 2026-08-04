@@ -112,17 +112,27 @@ public final class WorkspaceInvitationService
       final var invitation = invitationState.aggregate();
       requireRecipient(invitation, user.email());
       final var workspace = findActiveWorkspace(invitation.workspaceId());
-      if (membershipRepository.findByWorkspaceIdAndUserId(invitation.workspaceId(), user.userId()).isPresent()) {
-        throw new WorkspaceInvitationConflictException("account is already a workspace member");
-      }
+      final var existingMembership = membershipRepository.findVersionedByWorkspaceIdAndUserId(
+          invitation.workspaceId(),
+          user.userId()
+      );
+      existingMembership.map(VersionedAggregate::aggregate)
+          .filter(membership -> !membership.isRemoved())
+          .ifPresent(_ -> {
+            throw new WorkspaceInvitationConflictException("account is already a workspace member");
+          });
       final var accepted = invitationRepository.update(
           invitationState.withAggregate(invitation.accept(user.userId(), clock.instant()))
       ).aggregate();
-      final var membership = membershipRepository.create(WorkspaceMembership.create(
-          invitation.workspaceId(),
-          user.userId(),
-          invitation.role()
-      ));
+      final var membership = existingMembership
+          .map(state -> membershipRepository.update(
+              state.withAggregate(state.aggregate().rejoin(invitation.role()))
+          ).aggregate())
+          .orElseGet(() -> membershipRepository.create(WorkspaceMembership.create(
+              invitation.workspaceId(),
+              user.userId(),
+              invitation.role()
+          )));
       auditTrail.recordAccepted(user.userId(), accepted);
       return WorkspaceMembershipView.from(membership, workspace);
     });
@@ -196,7 +206,12 @@ public final class WorkspaceInvitationService
 
   private void requireNotAlreadyMember(@NonNull InviteWorkspaceMemberCommand command) {
     accountUserRepository.findByEmail(command.invitedEmail())
-        .flatMap(user -> membershipRepository.findByWorkspaceIdAndUserId(command.workspaceId(), user.userId()))
+        .flatMap(user -> membershipRepository.findVersionedByWorkspaceIdAndUserId(
+            command.workspaceId(),
+            user.userId()
+        ))
+        .map(VersionedAggregate::aggregate)
+        .filter(membership -> !membership.isRemoved())
         .ifPresent(_ -> {
           throw new WorkspaceInvitationConflictException("account is already a workspace member");
         });

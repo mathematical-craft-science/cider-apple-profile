@@ -5,12 +5,12 @@ import org.jspecify.annotations.NonNull;
 
 
 /**
- * Metadata for latest-measurement freshness assessment used by feedstock read models.
+ * Metadata for per-characteristic current-profile freshness assessment used by feedstock read models.
  */
-@Schema(description = "Latest measurement freshness metadata.")
+@Schema(description = "Current-profile measurement evidence freshness metadata.")
 public record MeasurementFreshnessMetadataResponse(
     @Schema(
-        description = "ISO-8601 duration after which latest measurement evidence is considered stale.",
+        description = "ISO-8601 duration after which current-profile measurement evidence is considered stale.",
         example = "PT336H",
         requiredMode = Schema.RequiredMode.REQUIRED
     )

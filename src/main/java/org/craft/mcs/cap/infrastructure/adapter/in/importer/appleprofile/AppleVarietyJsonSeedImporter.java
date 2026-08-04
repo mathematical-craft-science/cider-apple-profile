@@ -1,28 +1,24 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.importer.appleprofile;
 
 import java.io.InputStream;
-import java.math.BigDecimal;
 import java.util.List;
 import org.craft.mcs.cap.core.appleprofile.application.catalog.port.in.CreateAppleVarietyCommand;
 import org.craft.mcs.cap.core.appleprofile.application.catalog.port.in.CreateAppleVarietyUseCase;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyName;
+import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyReferenceProfile;
 import org.craft.mcs.cap.infrastructure.adapter.in.importer.appleprofile.dto.AppleVarietySeedDto;
 import org.craft.mcs.cap.infrastructure.adapter.in.importer.appleprofile.dto.ExactMeasurementSeedDto;
 import org.craft.mcs.cap.infrastructure.adapter.in.importer.appleprofile.dto.MeasurementSeedDto;
 import org.craft.mcs.cap.infrastructure.adapter.in.importer.appleprofile.dto.RangeMeasurementSeedDto;
 import org.craft.mcs.cap.infrastructure.adapter.in.importer.appleprofile.dto.SeedMeasurementCharacteristic;
-import org.craft.mcs.cap.infrastructure.adapter.in.importer.appleprofile.dto.StatisticalMeasurementSeedDto;
-import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfile;
-import org.craft.mcs.cap.shared.kernel.chemical.ChemicalProfileSource;
-import org.craft.mcs.cap.shared.kernel.measurement.ExactMeasurement;
-import org.craft.mcs.cap.shared.kernel.measurement.MeasuredCharacteristic;
+import org.craft.mcs.cap.core.appleprofile.domain.model.ReferenceProfileSource;
+import org.craft.mcs.cap.shared.kernel.characteristic.IntervalCharacteristicValue;
+import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
+import org.craft.mcs.cap.shared.kernel.characteristic.CharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.PhValue;
-import org.craft.mcs.cap.shared.kernel.measurement.RangeMeasurement;
-import org.craft.mcs.cap.shared.kernel.measurement.StatisticalMeasurement;
-import org.craft.mcs.cap.shared.kernel.chemical.value.TanninityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
-import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
-import org.craft.mcs.cap.shared.kernel.sugar.SugarConcentration;
+import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
@@ -77,62 +73,39 @@ public final class AppleVarietyJsonSeedImporter {
 
     return new CreateAppleVarietyCommand(
         AppleVarietyName.of(dto.name()),
-        toChemicalProfile(dto)
+        toReferenceProfile(dto),
+        dto.source() == null ? null : ReferenceProfileSource.of(dto.source()), // NOSONAR
+        dto.confidence()
     );
   }
 
-  private @NonNull ChemicalProfile toChemicalProfile(@NonNull AppleVarietySeedDto dto) {
+  private @NonNull AppleVarietyReferenceProfile toReferenceProfile(@NonNull AppleVarietySeedDto dto) {
     requireNonNull(dto, "apple variety seed dto cannot be null");
-
-    final var builder = ChemicalProfile.builder();
 
     final var sugar = toMeasurement(
         dto.sugar(),
         SeedMeasurementCharacteristic.SUGAR,
-        value -> SugarConcentration.ofSpecificGravity(SpecificGravityValue.of(value))
+        SpecificGravityValue::of
     );
-    if (sugar != null) {
-      builder.sugar(sugar);
-    }
-
     final var ph = toMeasurement(
         dto.ph(),
         SeedMeasurementCharacteristic.PH,
         PhValue::of
     );
-    if (ph != null) {
-      builder.ph(ph);
-    }
-
     final var titratableAcidity = toMeasurement(
         dto.titratableAcidity(),
         SeedMeasurementCharacteristic.TITRATABLE_ACIDITY,
         TitratableAcidityValue::of
     );
-    if (titratableAcidity != null) {
-      builder.titratableAcidity(titratableAcidity);
-    }
-
-    final var tanninity = toMeasurement(
-        dto.tanninity(),
-        SeedMeasurementCharacteristic.TANNINITY,
-        TanninityValue::of
+    final var tannin = toMeasurement(
+        dto.tannin(),
+        SeedMeasurementCharacteristic.TANNIN,
+        TanninValue::of
     );
-    if (tanninity != null) {
-      builder.tanninity(tanninity);
-    }
-
-    final var source = dto.source();
-    if (source != null) {
-      builder.source(ChemicalProfileSource.of(source));
-    }
-
-    builder.confidence(dto.confidence());
-
-    return builder.build();
+    return new AppleVarietyReferenceProfile(sugar, titratableAcidity, ph, tannin);
   }
 
-  private static <T extends Comparable<T>> @Nullable MeasuredCharacteristic<T> toMeasurement(
+  private static <T extends Comparable<? super T>> @Nullable CharacteristicValue<T> toMeasurement(
       @Nullable MeasurementSeedDto dto,
       @NonNull SeedMeasurementCharacteristic characteristic,
       @NonNull StringValueFactory<T> factory
@@ -147,33 +120,19 @@ public final class AppleVarietyJsonSeedImporter {
     characteristic.validateUnit(dto.unit());
 
     return switch (dto) {
-      case ExactMeasurementSeedDto exact -> ExactMeasurement.of(factory.create(exact.value()));
+      case ExactMeasurementSeedDto(_, _, var measuredValue) ->
+          PointCharacteristicValue.of(factory.create(measuredValue));
 
-      case RangeMeasurementSeedDto range -> RangeMeasurement.of(
-          factory.create(range.min()),
-          factory.create(range.max())
+      case RangeMeasurementSeedDto(_, _, var minimum, var maximum) -> IntervalCharacteristicValue.of(
+          factory.create(minimum),
+          factory.create(maximum)
       );
 
-      case StatisticalMeasurementSeedDto statistical -> statisticalMeasurement(statistical, factory);
     };
   }
 
-  private static <T extends Comparable<T>> @NonNull StatisticalMeasurement<T> statisticalMeasurement(
-      @NonNull StatisticalMeasurementSeedDto statistical,
-      @NonNull StringValueFactory<T> factory
-  ) {
-    final var median = statistical.median();
-    final var standardDeviation = statistical.standardDeviation();
-    return StatisticalMeasurement.of(
-        factory.create(statistical.mean()),
-        median == null ? null : factory.create(median),
-        standardDeviation == null ? null : new BigDecimal(standardDeviation),
-        statistical.sampleSize()
-    );
-  }
-
   @FunctionalInterface
-  private interface StringValueFactory<T extends Comparable<T>> {
+  private interface StringValueFactory<T extends Comparable<? super T>> {
 
     @NonNull
     T create(@NonNull String value);

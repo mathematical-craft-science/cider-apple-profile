@@ -12,6 +12,6 @@ public record AppleVarietySeedDto(
     @Nullable MeasurementSeedDto sugar,
     @Nullable MeasurementSeedDto ph,
     @Nullable MeasurementSeedDto titratableAcidity,
-    @Nullable MeasurementSeedDto tanninity
+    @Nullable MeasurementSeedDto tannin
 ) {
 }

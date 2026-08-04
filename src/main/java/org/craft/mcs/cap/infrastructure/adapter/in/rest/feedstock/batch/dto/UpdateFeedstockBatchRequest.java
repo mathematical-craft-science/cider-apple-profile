@@ -1,8 +1,6 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.batch.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.DecimalMin;
-import java.math.BigDecimal;
 import java.util.UUID;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.common.dto.FeedstockSeasonRequest;
@@ -26,13 +24,6 @@ public record UpdateFeedstockBatchRequest(
     )
     @NonNull String name,
     @Schema(
-        description = "Optional vessel or tank where the batch is stored. Blank value clears the vessel.",
-        example = "Tank A-01",
-        nullable = true,
-        requiredMode = Schema.RequiredMode.NOT_REQUIRED
-    )
-    @Nullable String vessel,
-    @Schema(
         description = "Feedstock type.",
         implementation = FeedstockType.class,
         example = "JUICE",
@@ -48,13 +39,6 @@ public record UpdateFeedstockBatchRequest(
         requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )
     @Nullable String source,
-    @Schema(
-        description = "Available volume in liters. Must be greater than zero.",
-        example = "240.0",
-        requiredMode = Schema.RequiredMode.REQUIRED
-    )
-    @DecimalMin(value = "0", inclusive = false)
-    @NonNull BigDecimal availableVolumeLiters,
     @Schema(
         description = "Optional note. Blank value clears the note.",
         example = "Stored for two weeks before pressing.",

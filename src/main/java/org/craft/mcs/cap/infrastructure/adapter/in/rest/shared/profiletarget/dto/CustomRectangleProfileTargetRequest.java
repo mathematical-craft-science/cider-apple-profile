@@ -9,23 +9,45 @@ import static java.util.Objects.requireNonNull;
 
 @Schema(description = "Custom rectangular sugar-acidity target.")
 public record CustomRectangleProfileTargetRequest(
-    @Schema(description = "Target shape.", example = "CUSTOM_RECTANGLE", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(
+        description = "Target kind.",
+        type = "string",
+        allowableValues = "CUSTOM_RECTANGLE",
+        example = "CUSTOM_RECTANGLE",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
     @NonNull String kind,
-    @Schema(description = "Minimum sugar coordinate in SG.", example = "1.060", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NonNull BigDecimal sugarMin,
-    @Schema(description = "Maximum sugar coordinate in SG.", example = "1.072", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NonNull BigDecimal sugarMax,
-    @Schema(description = "Minimum titratable acidity coordinate in g/L as malic acid.", example = "4.5", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NonNull BigDecimal acidityMin,
-    @Schema(description = "Maximum titratable acidity coordinate in g/L as malic acid.", example = "7.5", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NonNull BigDecimal acidityMax
+    @Schema(
+        description = "Minimum Specific Gravity (SG) coordinate.",
+        example = "1.060",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
+    @NonNull BigDecimal specificGravityMin,
+    @Schema(
+        description = "Maximum Specific Gravity (SG) coordinate.",
+        example = "1.072",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
+    @NonNull BigDecimal specificGravityMax,
+    @Schema(
+        description = "Minimum Titratable Acidity (TA) in g/L as malic acid.",
+        example = "4.5",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
+    @NonNull BigDecimal titratableAcidityMin,
+    @Schema(
+        description = "Maximum Titratable Acidity (TA) in g/L as malic acid.",
+        example = "7.5",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
+    @NonNull BigDecimal titratableAcidityMax
 ) implements ProfileTargetRequest {
 
   public CustomRectangleProfileTargetRequest {
     requireNonNull(kind, "target kind cannot be null");
-    requireNonNull(sugarMin, "target sugar minimum cannot be null");
-    requireNonNull(sugarMax, "target sugar maximum cannot be null");
-    requireNonNull(acidityMin, "target acidity minimum cannot be null");
-    requireNonNull(acidityMax, "target acidity maximum cannot be null");
+    requireNonNull(specificGravityMin, "target specific gravity minimum cannot be null");
+    requireNonNull(specificGravityMax, "target specific gravity maximum cannot be null");
+    requireNonNull(titratableAcidityMin, "target titratable acidity minimum cannot be null");
+    requireNonNull(titratableAcidityMax, "target titratable acidity maximum cannot be null");
   }
 }

@@ -17,7 +17,7 @@ public interface ProductionBatchTraceRecorder {
 
   void recordCreated(
       @NonNull ProductionBatch productionBatch,
-      @NonNull List<@NonNull ProductionBatchTraceSource> sources,
+      @NonNull List<@NonNull ConsumedProductionSource> sources,
       @NonNull Instant occurredAt,
       @Nullable String note
   );

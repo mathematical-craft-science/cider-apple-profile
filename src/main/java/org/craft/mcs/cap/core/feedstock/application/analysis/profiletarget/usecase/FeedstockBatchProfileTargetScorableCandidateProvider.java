@@ -3,30 +3,30 @@ package org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.usec
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityCriteria;
+import org.craft.mcs.cap.core.feedstock.application.analysis.common.model.FeedstockAnalysisCandidatePagePosition;
+import org.craft.mcs.cap.core.feedstock.application.analysis.common.service.FeedstockGraphCandidateMatcher;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.port.in.ProfileTargetDistanceCandidate;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.port.in.ProfileTargetDistanceCandidateReference;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileEvaluation;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.projection.domain.SugarAcidityProfileProjector;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.application.model.SugarAcidityZoneCriteria;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.SugarAcidityZoneAssessment;
-import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.ScoreFeedstockBatchProfileTargetCommand;
-import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.out.LatestFeedstockMeasurementSugarAcidityPointCandidateQuery;
-import org.craft.mcs.cap.core.feedstock.application.measurement.query.FeedstockBatchCurrentMeasurementQueryService;
-import org.craft.mcs.cap.core.feedstock.application.measurement.model.FeedstockMeasurementView;
+import org.craft.mcs.cap.core.profileanalysis.graph.application.port.in.EvaluateJolicoeurSugarAcidityGraphUseCase;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetScoringInput;
+import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.FeedstockBatchProfileTargetQuery;
+import org.craft.mcs.cap.core.feedstock.application.analysis.common.port.out.CurrentFeedstockBatchAnalysisCandidateQuery;
+import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentProfileView;
+import org.craft.mcs.cap.core.feedstock.application.analysis.common.port.out.FeedstockCurrentProfileAnalysisCandidateRepository;
+import org.craft.mcs.cap.shared.application.query.pagination.ChunkedCursorPageCollector;
+import org.craft.mcs.cap.shared.application.query.pagination.CursorPageRequest;
 import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
 
 import static java.util.Objects.requireNonNull;
 
 
 /**
- * Selects latest feedstock batch measurements that can participate in profile-target scoring.
+ * Selects current Feedstock material states that can participate in profile-target scoring.
  *
- * <p>The provider enforces the feedstock planning rule: profile-target candidates are based on
- * the latest measurement only. It does not calculate distance or contribution roles; it only builds
- * the normalized candidate input shared by the score endpoint and analysis candidate endpoint.
+ * <p>The provider uses state-aware current evidence and only builds the typed candidate input
+ * shared by the score endpoint and analysis candidate endpoint. It does not calculate distance or
+ * contribution roles.
  */
 @Component
 @RequiredArgsConstructor
@@ -34,83 +34,83 @@ public final class FeedstockBatchProfileTargetScorableCandidateProvider {
 
   private static final @NonNull String REFERENCE_TYPE = "feedstock-batch";
 
-  private final @NonNull FeedstockBatchCurrentMeasurementQueryService currentMeasurementQueryService;
-  private final @NonNull SugarAcidityProfileProjector sugarAcidityProfileProjector;
+  private final @NonNull FeedstockCurrentProfileAnalysisCandidateRepository candidateRepository;
+  private final @NonNull EvaluateJolicoeurSugarAcidityGraphUseCase graphEvaluator;
+  private final @NonNull FeedstockGraphCandidateMatcher graphCandidateMatcher;
 
   @NonNull List<@NonNull FeedstockBatchProfileTargetScorableCandidate> findCandidates(
-      @NonNull ScoreFeedstockBatchProfileTargetCommand command
+      @NonNull FeedstockBatchProfileTargetQuery query
   ) {
-    requireNonNull(command, "score feedstock batch profile target command cannot be null");
+    requireNonNull(query, "feedstock batch profile target query cannot be null");
 
-    return currentMeasurementQueryService.findCurrentSugarAcidityPointCandidates(
-            new LatestFeedstockMeasurementSugarAcidityPointCandidateQuery(
-                command.workspaceId(),
-                command.filters().batch(),
-                command.filters().season(),
-                null,
-                command.limit()
+    return ChunkedCursorPageCollector.collect(
+        CursorPageRequest.firstPage(query.limit()),
+        (afterPosition, limit) -> candidateRepository.findCandidates(
+            new CurrentFeedstockBatchAnalysisCandidateQuery(
+                query.workspaceId(),
+                query.filters().batch(),
+                query.filters().season(),
+                afterPosition,
+                limit
             )
-        )
-        .stream()
-        .map(measurement -> toCandidateIfScorable(measurement, command))
-        .flatMap(Optional::stream)
-        .toList();
+        ),
+        FeedstockBatchProfileTargetScorableCandidateProvider::toPagePosition,
+        measurement -> toCandidateIfScorable(measurement, query)
+    ).items();
   }
 
   private @NonNull Optional<@NonNull FeedstockBatchProfileTargetScorableCandidate> toCandidateIfScorable(
-      @NonNull FeedstockMeasurementView measurement,
-      @NonNull ScoreFeedstockBatchProfileTargetCommand command
+      @NonNull FeedstockCurrentProfileView currentProfile,
+      @NonNull FeedstockBatchProfileTargetQuery query
   ) {
-    requireNonNull(measurement, "feedstock measurement cannot be null");
-    final var evaluation = sugarAcidityProfileProjector.project(measurement.chemicalProfile());
-    if (!evaluation.plottable()) {
+    requireNonNull(currentProfile, "feedstock current profile cannot be null");
+    final var graphEvaluation = graphEvaluator.evaluate(
+        currentProfile.specificGravity(),
+        currentProfile.titratableAcidity()
+    );
+    if (!graphEvaluation.plottable()) {
       return Optional.empty();
     }
-    if (!matchesCapability(evaluation, command.filters().capability())) {
+    if (!graphCandidateMatcher.matches(currentProfile, graphEvaluation, query.filters())) {
       return Optional.empty();
     }
-
-    final var assessment = evaluation.assessment();
-    if (assessment == null || !matchesSugarAcidityZone(assessment, command.filters().sugarAcidityZone())) {
+    final var specificGravity = currentProfile.specificGravity();
+    final var titratableAcidity = currentProfile.titratableAcidity();
+    if (specificGravity == null || titratableAcidity == null) {
       return Optional.empty();
     }
-    final var point = evaluation.point().orElseThrow();
 
     return Optional.of(new FeedstockBatchProfileTargetScorableCandidate(
-        measurement,
-        evaluation.axes(),
+        currentProfile,
         new ProfileTargetDistanceCandidate(
-            referenceId(measurement),
-            point
+            referenceId(currentProfile),
+            new ProfileTargetScoringInput(
+                specificGravity,
+                titratableAcidity,
+                currentProfile.tannin()
+            )
         )
     ));
   }
 
-  private boolean matchesCapability(
-      @NonNull SugarAcidityProfileEvaluation evaluation,
-      @Nullable ChemicalProfileCapabilityCriteria criteria
-  ) {
-    if (criteria == null || criteria.capable() == null) {
-      return true;
-    }
-    return sugarAcidityProfileProjector.assessCapability(evaluation, criteria.capability()).capable()
-        == Boolean.TRUE.equals(criteria.capable());
-  }
-
-  private static boolean matchesSugarAcidityZone(
-      @NonNull SugarAcidityZoneAssessment assessment,
-      @Nullable SugarAcidityZoneCriteria criteria
-  ) {
-    return criteria == null || criteria.zones().contains(assessment.zone());
-  }
-
   private static @NonNull ProfileTargetDistanceCandidateReference referenceId(
-      @NonNull FeedstockMeasurementView measurement
+      @NonNull FeedstockCurrentProfileView currentProfile
   ) {
-    requireNonNull(measurement, "feedstock measurement cannot be null");
+    requireNonNull(currentProfile, "feedstock current profile cannot be null");
     return new ProfileTargetDistanceCandidateReference(
         REFERENCE_TYPE,
-        measurement.batchId().value().toString()
+        currentProfile.batchId().value().toString()
+    );
+  }
+
+  private static @NonNull FeedstockAnalysisCandidatePagePosition toPagePosition(
+      @NonNull FeedstockCurrentProfileView currentProfile
+  ) {
+    requireNonNull(currentProfile, "feedstock current profile cannot be null");
+    final var latestMeasurement = currentProfile.latestMeasurementSet();
+    return new FeedstockAnalysisCandidatePagePosition(
+        latestMeasurement.measuredAt(),
+        latestMeasurement.measurementSetId()
     );
   }
 }

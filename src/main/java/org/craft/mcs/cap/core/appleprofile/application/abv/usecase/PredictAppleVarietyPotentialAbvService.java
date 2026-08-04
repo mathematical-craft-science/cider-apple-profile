@@ -2,21 +2,19 @@ package org.craft.mcs.cap.core.appleprofile.application.abv.usecase;
 
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.appleprofile.application.AppleVarietyNotFoundException;
+import org.craft.mcs.cap.core.appleprofile.application.abv.AppleVarietyPotentialAbvUnavailableException;
 import org.craft.mcs.cap.core.appleprofile.application.abv.port.in.AppleVarietyPotentialAbvPrediction;
 import org.craft.mcs.cap.core.appleprofile.application.abv.port.in.PredictAppleVarietyPotentialAbvUseCase;
-import org.craft.mcs.cap.core.appleprofile.application.port.out.AppleVarietyRepository;
+import org.craft.mcs.cap.core.appleprofile.application.catalog.port.out.AppleVarietyRepository;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyId;
 import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPredictor;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalAxis;
-import org.craft.mcs.cap.shared.kernel.chemical.axis.ChemicalProfileAxisExtractor;
-import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapability;
-import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityAssessor;
-import org.craft.mcs.cap.core.profileanalysis.profileaxis.domain.ChemicalProfileCapabilityNotMetException;
-import org.craft.mcs.cap.shared.kernel.sugar.SpecificGravityValue;
+import org.craft.mcs.cap.core.profileanalysis.capability.domain.ProfileAnalysisInputAvailability;
+import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 
 import static java.util.Objects.requireNonNull;
+import static org.craft.mcs.cap.shared.kernel.measurement.MeasurementValueMath.midpoint;
 
 
 /**
@@ -32,8 +30,6 @@ public final class PredictAppleVarietyPotentialAbvService
     implements PredictAppleVarietyPotentialAbvUseCase {
 
   private final @NonNull AppleVarietyRepository appleVarietyRepository;
-  private final @NonNull ChemicalProfileAxisExtractor axisExtractor;
-  private final @NonNull ChemicalProfileCapabilityAssessor capabilityAssessor;
   private final @NonNull PotentialAbvPredictor predictor;
 
   @Override
@@ -42,21 +38,24 @@ public final class PredictAppleVarietyPotentialAbvService
 
     final var variety = appleVarietyRepository.findById(varietyId)
         .orElseThrow(() -> new AppleVarietyNotFoundException(varietyId));
-    final var axes = axisExtractor.extract(variety.chemicalProfile());
-    final var capability = capabilityAssessor.assess(axes, ChemicalProfileCapability.ABV_PREDICTION);
-
-    if (!capability.capable()) {
-      throw new ChemicalProfileCapabilityNotMetException(capability);
+    final var referenceProfile = variety.referenceProfile();
+    final var specificGravity = referenceProfile.specificGravity();
+    if (specificGravity == null) {
+      throw new AppleVarietyPotentialAbvUnavailableException(
+          varietyId,
+          new ProfileAnalysisInputAvailability(
+              false,
+              referenceProfile.titratableAcidity() != null,
+              referenceProfile.tannin() != null
+          )
+      );
     }
-
-    final var sugar = axes.valueOf(ChemicalAxis.SUGAR)
-        .orElseThrow(() -> new ChemicalProfileCapabilityNotMetException(capability));
 
     return new AppleVarietyPotentialAbvPrediction(
         variety.varietyId(),
         variety.name(),
-        sugar.valueKind(),
-        predictor.predict(SpecificGravityValue.of(sugar.value()))
+        specificGravity,
+        predictor.predict(SpecificGravityValue.of(midpoint(specificGravity)))
     );
   }
 }

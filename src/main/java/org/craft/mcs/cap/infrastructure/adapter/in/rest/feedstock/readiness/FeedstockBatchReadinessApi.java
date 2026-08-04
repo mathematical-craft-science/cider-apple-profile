@@ -17,22 +17,28 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @Tag(
     name = "Feedstock readiness analysis",
-    description = "Fermentation-start readiness endpoints based on the latest measurement of a feedstock batch."
+    description = "Fermentation-start readiness endpoints based on the state-aware current feedstock profile."
 )
 public interface FeedstockBatchReadinessApi {
 
   @Operation(
       summary = "Assess current feedstock batch fermentation-start readiness",
-      description = "Assesses fermentation-start readiness from the latest batch measurement using sugar, pH and YAN."
+      description = """
+          Assesses fermentation-start readiness from the state-aware current profile using sugar,
+          pH and YAN evidence selected independently by characteristic.
+          """
   )
   @ApiResponse(
       responseCode = "200",
       description = "Current fermentation-start readiness assessment.",
-      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = FeedstockBatchCurrentFermentationStartReadinessResponse.class))
+      content = @Content(
+          mediaType = APPLICATION_JSON_VALUE,
+          schema = @Schema(implementation = FeedstockBatchCurrentFermentationStartReadinessResponse.class)
+      )
   )
   @ApiResponse(
       responseCode = "422",
-      description = "Feedstock batch has no current measurement.",
+      description = "Current material state has no measurement evidence required for the assessment.",
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
   )
   @NonNull ResponseEntity<@NonNull FeedstockBatchCurrentFermentationStartReadinessResponse>

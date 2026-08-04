@@ -6,7 +6,7 @@ package org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.norm
  *
  * <p>Different use cases need different normalization semantics: graph exploration can use full
  * axis ranges, cider blending can use effective cider-making ranges, zone matching can emphasize
- * classification thresholds, and expert calibration can use hand-tuned sensitivity units.
+ * scoring-calibration segments, and expert calibration can use hand-tuned sensitivity units.
  */
 public enum ProfileAxisNormalizerCode {
 
@@ -21,7 +21,7 @@ public enum ProfileAxisNormalizerCode {
   EFFECTIVE_RANGE,
 
   /**
-   * Piecewise scaling by sugar/acidity/tannin classification thresholds.
+   * Piecewise scaling by SG/TA/tannin scoring-calibration segments.
    */
   THRESHOLD_SEGMENT,
 

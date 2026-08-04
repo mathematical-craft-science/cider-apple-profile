@@ -1,7 +1,7 @@
 package org.craft.mcs.cap.infrastructure.configuration;
 
-import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.BuiltInChemicalProfileCompositionCalculatorSelector;
-import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileCompositionCalculatorSelector;
+import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.BuiltInCompositionCalculatorSelector;
+import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionCalculatorSelector;
 import org.craft.mcs.cap.core.profileanalysis.composition.contribution.domain.CompositionContributionRoleAssessor;
 import org.craft.mcs.cap.core.profileanalysis.composition.contribution.domain.TargetAwareCompositionContributionRoleAssessor;
 import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.strategy.BuiltInCompositionOptimizationStrategySelector;
@@ -14,8 +14,8 @@ import org.springframework.context.annotation.Configuration;
 class ProfileAnalysisCompositionConfiguration {
 
   @Bean
-  ChemicalProfileCompositionCalculatorSelector chemicalProfileCompositionCalculatorSelector() {
-    return new BuiltInChemicalProfileCompositionCalculatorSelector();
+  CompositionCalculatorSelector compositionCalculatorSelector() {
+    return new BuiltInCompositionCalculatorSelector();
   }
 
   @Bean

@@ -27,7 +27,10 @@ public interface AppleVarietyClassificationApi {
   @ApiResponse(
       responseCode = "200",
       description = "Apple variety classification result.",
-      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = AppleVarietyClassificationResponse.class))
+      content = @Content(
+          mediaType = APPLICATION_JSON_VALUE,
+          schema = @Schema(implementation = AppleVarietyClassificationResponse.class)
+      )
   )
   @ApiResponse(
       responseCode = "404",
@@ -37,7 +40,11 @@ public interface AppleVarietyClassificationApi {
   @NonNull ResponseEntity<@NonNull AppleVarietyClassificationResponse> classify(
       @Parameter(description = "Apple variety identifier.", required = true, schema = @Schema(format = "uuid"))
       @NonNull UUID varietyId,
-      @Parameter(description = "Classification system to apply.", required = true, schema = @Schema(implementation = AppleVarietyClassificationSystem.class))
+      @Parameter(
+          description = "Classification system to apply.",
+          required = true,
+          schema = @Schema(implementation = AppleVarietyClassificationSystem.class)
+      )
       @NonNull AppleVarietyClassificationSystem system
   );
 
@@ -48,11 +55,14 @@ public interface AppleVarietyClassificationApi {
   @ApiResponse(
       responseCode = "200",
       description = "North American profile result.",
-      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = AppleVarietyNorthAmericanResponse.class))
+      content = @Content(
+          mediaType = APPLICATION_JSON_VALUE,
+          schema = @Schema(implementation = AppleVarietyNorthAmericanResponse.class)
+      )
   )
   @ApiResponse(
       responseCode = "422",
-      description = "Chemical profile does not contain all required axes.",
+      description = "Apple variety reference profile lacks Specific Gravity, Titratable Acidity or tannin.",
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
   )
   @ApiResponse(

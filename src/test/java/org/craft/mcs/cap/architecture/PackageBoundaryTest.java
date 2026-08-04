@@ -3,6 +3,7 @@ package org.craft.mcs.cap.architecture;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
@@ -57,6 +58,25 @@ class PackageBoundaryTest {
   }
 
   @Test
+  void sharedMaterialAndMeasurementTypesRemainContextNeutral() throws IOException {
+    final var violations = new ArrayList<String>();
+    for (final var path : List.of(
+        "org/craft/mcs/cap/shared/kernel/material",
+        "org/craft/mcs/cap/shared/application/measurement"
+    )) {
+      sourceFilesUnder(path).stream()
+          .map(source -> source.path().getFileName().toString())
+          .filter(name -> name.contains("Feedstock") || name.contains("Production"))
+          .forEach(violations::add);
+    }
+    violations.sort(String::compareTo);
+
+    assertThat(violations)
+        .as("shared material and measurement type names must remain context-neutral")
+        .isEmpty();
+  }
+
+  @Test
   void coreDoesNotDependOnInfrastructure() throws IOException {
     assertNoImportsUnder(
         "org/craft/mcs/cap/core",
@@ -78,13 +98,13 @@ class PackageBoundaryTest {
   }
 
   @Test
-  void ciderAnalysisSupportContextsDoNotDependOnClassificationContext() throws IOException {
+  void profileAnalysisSupportContextsDoNotDependOnClassificationContext() throws IOException {
     assertNoImportsUnder(
-        "org/craft/mcs/cap/core/profileanalysis/profileaxis",
+        "org/craft/mcs/cap/core/profileanalysis/capability",
         List.of("org.craft.mcs.cap.core.profileanalysis.classification.")
     );
     assertNoImportsUnder(
-        "org/craft/mcs/cap/core/profileanalysis/sugaracidity",
+        "org/craft/mcs/cap/core/profileanalysis/graph",
         List.of("org.craft.mcs.cap.core.profileanalysis.classification.")
     );
     assertNoImportsUnder(
@@ -100,15 +120,15 @@ class PackageBoundaryTest {
   @Test
   void lowerLevelProfileAnalysisContextsDoNotDependOnCompositionContexts() throws IOException {
     assertNoImportsUnder(
-        "org/craft/mcs/cap/core/profileanalysis/profileaxis",
+        "org/craft/mcs/cap/core/profileanalysis/capability",
         List.of(
-            "org.craft.mcs.cap.core.profileanalysis.sugaracidity.",
+            "org.craft.mcs.cap.core.profileanalysis.graph.",
             "org.craft.mcs.cap.core.profileanalysis.profiletarget.",
             "org.craft.mcs.cap.core.profileanalysis.composition."
         )
     );
     assertNoImportsUnder(
-        "org/craft/mcs/cap/core/profileanalysis/sugaracidity",
+        "org/craft/mcs/cap/core/profileanalysis/graph",
         List.of(
             "org.craft.mcs.cap.core.profileanalysis.profiletarget.",
             "org.craft.mcs.cap.core.profileanalysis.composition."
@@ -125,6 +145,26 @@ class PackageBoundaryTest {
     assertNoImportsUnder(
         "org/craft/mcs/cap/core/profileanalysis/composition/calculation",
         List.of("org.craft.mcs.cap.core.profileanalysis.composition.optimization.")
+    );
+  }
+
+  @Test
+  void jdbcContextsDoNotReadTablesOwnedByPeerContexts() throws IOException {
+    assertNoTextUnder(
+        "org/craft/mcs/cap/infrastructure/adapter/out/persistence/jdbc/measurement",
+        List.of("feedstock_batches", "production_batches", "batch_trace_")
+    );
+    assertNoTextUnder(
+        "org/craft/mcs/cap/infrastructure/adapter/out/persistence/jdbc/feedstock",
+        List.of("measurement_", "production_batches", "batch_trace_")
+    );
+    assertNoTextUnder(
+        "org/craft/mcs/cap/infrastructure/adapter/out/persistence/jdbc/production",
+        List.of("measurement_", "feedstock_batches", "batch_trace_")
+    );
+    assertNoTextUnder(
+        "org/craft/mcs/cap/infrastructure/adapter/out/persistence/jdbc/traceability",
+        List.of("measurement_", "feedstock_batches", "production_batches")
     );
   }
 
@@ -187,6 +227,22 @@ class PackageBoundaryTest {
                 source.path(),
                 forbiddenImport
             )))
+        .toList();
+
+    assertThat(violations)
+        .withFailMessage(() -> String.join(System.lineSeparator(), violations))
+        .isEmpty();
+  }
+
+  private static void assertNoTextUnder(
+      @NonNull String relativePackagePath,
+      @NonNull List<@NonNull String> forbiddenText
+  ) throws IOException {
+    final var violations = sourceFilesUnder(relativePackagePath)
+        .stream()
+        .flatMap(source -> forbiddenText.stream()
+            .filter(source.content()::contains)
+            .map(text -> "%s contains foreign schema reference %s".formatted(source.path(), text)))
         .toList();
 
     assertThat(violations)

@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.ChemicalProfileComposition;
+import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CalculatedComposition;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.assessment.ProfileTargetDistance;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -21,11 +21,11 @@ public final class CompositionOptimizationObjectiveScorer {
   }
 
   public static @NonNull Optional<@NonNull CompositionOptimizationObjectiveAssessment> assess(
-      @NonNull ChemicalProfileComposition composition,
+      @NonNull CalculatedComposition composition,
       @NonNull ProfileTargetDistance targetDistance,
       @NonNull List<@NonNull CompositionOptimizationCriterion> criteria
   ) {
-    requireNonNull(composition, "chemical profile composition cannot be null");
+    requireNonNull(composition, "composition cannot be null");
     requireNonNull(targetDistance, "profile target distance cannot be null");
     requireNonNull(criteria, "composition optimization criteria cannot be null");
 

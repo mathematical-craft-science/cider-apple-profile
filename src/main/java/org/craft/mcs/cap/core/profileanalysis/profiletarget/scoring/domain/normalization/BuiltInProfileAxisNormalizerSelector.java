@@ -4,7 +4,6 @@ import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Optional;
-import org.craft.mcs.cap.core.profileanalysis.sugaracidity.zone.domain.SugarAcidityZoneThresholds;
 import org.jspecify.annotations.NonNull;
 import static java.util.Objects.requireNonNull;
 
@@ -16,7 +15,7 @@ import static java.util.Objects.requireNonNull;
  * <ul>
  *   <li>{@link ProfileAxisNormalizerCode#MIN_MAX}: full cider profile axis range;</li>
  *   <li>{@link ProfileAxisNormalizerCode#EFFECTIVE_RANGE}: practical cider blending range;</li>
- *   <li>{@link ProfileAxisNormalizerCode#THRESHOLD_SEGMENT}: sugar-acidity/tannin threshold segments;</li>
+ *   <li>{@link ProfileAxisNormalizerCode#THRESHOLD_SEGMENT}: SG/TA/tannin scoring segments;</li>
  *   <li>{@link ProfileAxisNormalizerCode#SENSITIVITY_UNIT}: expert-calibrated units.</li>
  * </ul>
  */
@@ -24,10 +23,7 @@ public final class BuiltInProfileAxisNormalizerSelector implements ProfileAxisNo
 
   private final @NonNull Map<@NonNull ProfileAxisNormalizerCode, @NonNull ProfileAxisNormalizer> normalizers;
 
-  public BuiltInProfileAxisNormalizerSelector(
-      @NonNull SugarAcidityZoneThresholds thresholds
-  ) {
-    requireNonNull(thresholds, "sugar-acidity zone thresholds cannot be null");
+  public BuiltInProfileAxisNormalizerSelector() {
     final var builtInNormalizers = new EnumMap<ProfileAxisNormalizerCode, ProfileAxisNormalizer>(
         ProfileAxisNormalizerCode.class
     );
@@ -41,11 +37,13 @@ public final class BuiltInProfileAxisNormalizerSelector implements ProfileAxisNo
     );
     builtInNormalizers.put(
         ProfileAxisNormalizerCode.THRESHOLD_SEGMENT,
-        ThresholdSegmentProfileAxisNormalizer.from(thresholds)
+        ThresholdSegmentProfileAxisNormalizer.defaultScoringCalibration()
     );
     builtInNormalizers.put(
         ProfileAxisNormalizerCode.SENSITIVITY_UNIT,
-        SensitivityUnitProfileAxisNormalizer.ciderBlendingDefaults()
+        new SensitivityUnitProfileAxisNormalizer(
+            ProfileAxisSensitivityUnits.ciderBlendingV1()
+        )
     );
     this.normalizers = Map.copyOf(builtInNormalizers);
   }

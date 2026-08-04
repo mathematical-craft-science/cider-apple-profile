@@ -4,12 +4,15 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.Locale;
+import org.craft.mcs.cap.core.account.actor.application.model.ActorDisplayView;
 import org.craft.mcs.cap.core.account.audit.domain.model.WorkspaceAdministrativeAction;
 import org.craft.mcs.cap.core.account.audit.domain.model.WorkspaceAdministrativeAuditEntry;
 import org.craft.mcs.cap.core.account.audit.domain.model.WorkspaceAdministrativeSubjectType;
 import org.craft.mcs.cap.core.account.audit.domain.model.value.WorkspaceAdministrativeAuditValue;
 import org.craft.mcs.cap.core.account.audit.domain.model.value.WorkspaceAdministrativeSubjectId;
 import org.craft.mcs.cap.core.account.audit.application.port.out.WorkspaceAdministrativeAuditRepository;
+import org.craft.mcs.cap.core.account.actor.application.model.ActorLifecycleStatus;
+import org.craft.mcs.cap.core.account.actor.application.port.out.ActorDirectoryEntryReader;
 import org.craft.mcs.cap.core.account.context.application.model.WorkspaceMembershipSnapshot;
 import org.craft.mcs.cap.core.account.context.application.port.out.CurrentAccountWorkspaceQuery;
 import org.craft.mcs.cap.core.account.contributor.application.port.out.ContributorProfileRepository;
@@ -40,6 +43,8 @@ import org.craft.mcs.cap.core.account.workspace.application.port.out.WorkspaceSe
 import org.craft.mcs.cap.core.account.shared.domain.value.ExternalOrganizationSubject;
 import org.craft.mcs.cap.core.account.provisioning.application.port.out.AccountProvisioningLock;
 import org.craft.mcs.cap.shared.application.ConcurrentResourceModificationException;
+import org.craft.mcs.cap.shared.application.persistence.VersionedAggregate;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.measurement.unit.TitratableAcidityBasis;
 import org.craft.mcs.cap.shared.testing.jdbc.PostgresDataJdbcTestConfiguration;
 import org.junit.jupiter.api.Test;
@@ -91,6 +96,9 @@ class JdbcAccountRepositoriesDataJdbcTest {
   @Autowired
   private CurrentAccountWorkspaceQuery currentAccountWorkspaceQuery;
 
+  @Autowired
+  private ActorDirectoryEntryReader accountUserActorDirectoryEntryReader;
+
   @Test
   void persistsProviderNeutralAccountWorkspaceAndMembershipAggregates() {
     accountProvisioningLock.acquire(
@@ -136,9 +144,11 @@ class JdbcAccountRepositoriesDataJdbcTest {
         ExternalUserSubject.of("user_123")
     )).contains(user);
     assertThat(workspaceRepository.findById(workspace.workspaceId())).contains(workspace);
-    assertThat(membershipRepository.findByWorkspaceIdAndUserId(workspace.workspaceId(), user.userId()))
+    assertThat(membershipRepository.findVersionedByWorkspaceIdAndUserId(workspace.workspaceId(), user.userId())
+        .map(VersionedAggregate::aggregate))
         .contains(membership);
-    assertThat(membershipRepository.findAllByUserId(user.userId())).containsExactly(membership);
+    assertThat(membershipRepository.findAllByWorkspaceId(workspace.workspaceId()))
+        .containsExactly(membership);
     assertThat(currentAccountWorkspaceQuery.findActiveByUserId(user.userId()))
         .singleElement()
         .returns(membership.membershipId(), WorkspaceMembershipSnapshot::membershipId)
@@ -148,6 +158,62 @@ class JdbcAccountRepositoriesDataJdbcTest {
     assertThat(settingsRepository.findByWorkspaceId(workspace.workspaceId())).contains(settings);
     assertThat(preferencesRepository.findByUserId(user.userId())).contains(preferences);
     assertThat(contributorProfileRepository.findByUserId(user.userId())).contains(contributorProfile);
+  }
+
+  @Test
+  void resolvesActiveAndDeletedAccountUsersAsDurableActorEntries() {
+    final var user = userRepository.create(AccountUser.create(
+        IdentityProviderCode.KEYCLOAK,
+        ExternalUserSubject.of("actor-directory-user"),
+        EmailAddress.of("actor@example.com"),
+        DisplayName.of("Audit actor"),
+        HttpUrl.of("https://example.com/audit-actor.png")
+    ));
+    final var workspace = workspaceRepository.create(Workspace.createDefault(
+        DisplayName.of("Actor directory workspace"),
+        WorkspaceType.CIDERY,
+        null,
+        null
+    ));
+    final var membership = membershipRepository.create(WorkspaceMembership.createOwner(
+        workspace.workspaceId(),
+        user.userId()
+    ));
+
+    assertThat(accountUserActorDirectoryEntryReader.findById(
+        workspace.workspaceId(),
+        user.userId().value()
+    ))
+        .get()
+        .returns(user.userId().value(), view -> view.actor().id())
+        .returns(DisplayName.of("Audit actor"), ActorDisplayView::displayName)
+        .returns(ActorLifecycleStatus.ACTIVE, ActorDisplayView::status);
+
+    final var state = userRepository.findVersionedById(user.userId()).orElseThrow();
+    userRepository.update(state.withAggregate(state.aggregate().retainDeletedTombstone()));
+
+    assertThat(accountUserActorDirectoryEntryReader.findById(
+        workspace.workspaceId(),
+        user.userId().value()
+    ))
+        .get()
+        .returns(user.userId().value(), view -> view.actor().id())
+        .returns(DisplayName.of("Deleted user"), ActorDisplayView::displayName)
+        .returns(null, ActorDisplayView::avatarUrl)
+        .returns(ActorLifecycleStatus.DELETED, ActorDisplayView::status);
+    final var membershipState = membershipRepository.findVersionedById(membership.membershipId()).orElseThrow();
+    membershipRepository.update(membershipState.withAggregate(membership.remove()));
+    assertThat(membershipRepository.findAllByWorkspaceId(workspace.workspaceId())).isEmpty();
+    assertThat(accountUserActorDirectoryEntryReader.findById(
+        workspace.workspaceId(),
+        user.userId().value()
+    ))
+        .get()
+        .returns(ActorLifecycleStatus.DELETED, ActorDisplayView::status);
+    assertThat(accountUserActorDirectoryEntryReader.findById(
+        WorkspaceId.newId(),
+        user.userId().value()
+    )).isEmpty();
   }
 
   @Test
