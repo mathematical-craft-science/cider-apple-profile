@@ -6,6 +6,7 @@ import java.util.List;
 import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
 import org.craft.mcs.cap.shared.kernel.characteristic.IntervalCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
+import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
 import org.craft.mcs.cap.shared.kernel.identity.ActorReference;
 import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.shared.kernel.measurement.MeasuredValue;
@@ -108,6 +109,24 @@ class MeasurementSetRevisionTest {
 
     assertThat(revision(List.of(first, second, result)).records())
         .containsExactly(first, second, result);
+  }
+
+  @Test
+  void requiresDerivedConfidenceToMatchSourceObservations() {
+    final var inputProvenance = new MeasurementProvenance(
+        MeasurementSourceType.USER,
+        null,
+        null,
+        null,
+        ConfidenceLevel.HIGH
+    );
+    final var first = observation(MeasurementCharacteristic.PH, "3.20", inputProvenance);
+    final var second = observation(MeasurementCharacteristic.PH, "3.40", inputProvenance);
+    final var result = derivedMeanResult("3.30", first, second);
+
+    assertThatThrownBy(() -> revision(List.of(first, second, result)))
+        .isInstanceOf(DomainRuleViolationException.class)
+        .hasMessage("derived measurement confidence must equal the weakest confidence of its observations");
   }
 
   @Test
@@ -456,13 +475,30 @@ class MeasurementSetRevisionTest {
       String measuredValue,
       Instant measuredAt
   ) {
+    return observation(characteristic, measuredValue, measuredAt, PROVENANCE);
+  }
+
+  private static MeasurementRecord observation(
+      MeasurementCharacteristic characteristic,
+      String measuredValue,
+      MeasurementProvenance provenance
+  ) {
+    return observation(characteristic, measuredValue, MEASURED_AT, provenance);
+  }
+
+  private static MeasurementRecord observation(
+      MeasurementCharacteristic characteristic,
+      String measuredValue,
+      Instant measuredAt,
+      MeasurementProvenance provenance
+  ) {
     return new MeasurementRecord(
         MeasurementRecordId.newId(),
         characteristic,
         MeasurementRecordRole.OBSERVATION,
         point(characteristic, measuredValue),
         measuredAt,
-        PROVENANCE,
+        provenance,
         null,
         List.of()
     );

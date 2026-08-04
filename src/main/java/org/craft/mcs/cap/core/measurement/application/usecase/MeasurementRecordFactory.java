@@ -103,7 +103,9 @@ final class MeasurementRecordFactory {
         MeasurementRecordRole.RESULT,
         resultValue,
         measuredAt,
-        MeasurementProvenance.derived(),
+        MeasurementProvenance.derivedFrom(
+            observations.stream().map(MeasurementRecord::provenance).toList()
+        ),
         derivationMethod,
         observations.stream().map(MeasurementRecord::recordId).toList()
     );

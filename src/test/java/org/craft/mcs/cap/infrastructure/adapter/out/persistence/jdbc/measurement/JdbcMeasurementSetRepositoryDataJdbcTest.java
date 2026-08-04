@@ -172,6 +172,8 @@ class JdbcMeasurementSetRepositoryDataJdbcTest {
             List.of(firstObservation.recordId(), secondObservation.recordId()),
             MeasurementRecord::derivationInputs
         )
+        .satisfies(measurementRecord -> assertThat(measurementRecord.provenance())
+            .returns(ConfidenceLevel.HIGH, MeasurementProvenance::confidence))
         .satisfies(measurementRecord -> assertThat(pointValue(measurementRecord.value()))
             .isInstanceOfSatisfying(
                 SpecificGravityValue.class, value -> assertThat(value)
@@ -188,7 +190,8 @@ class JdbcMeasurementSetRepositoryDataJdbcTest {
         .returns(result.recordId(), CurrentMeasurementResultView::recordId)
         .returns(MeasurementCharacteristic.SPECIFIC_GRAVITY, CurrentMeasurementResultView::characteristic)
         .satisfies(current -> assertThat(current.provenance())
-            .returns(MeasurementSourceType.DERIVED, MeasurementProvenance::sourceType));
+            .returns(MeasurementSourceType.DERIVED, MeasurementProvenance::sourceType)
+            .returns(ConfidenceLevel.HIGH, MeasurementProvenance::confidence));
     assertThat(viewQuery.findBySubject(workspaceId, subject))
         .singleElement()
         .satisfies(view -> assertThat(view)
@@ -1805,7 +1808,7 @@ class JdbcMeasurementSetRepositoryDataJdbcTest {
         MeasurementRecordRole.RESULT,
         point(MeasurementCharacteristic.SPECIFIC_GRAVITY, "1.051"),
         second.measuredAt(),
-        MeasurementProvenance.derived(),
+        MeasurementProvenance.derivedFrom(List.of(first.provenance(), second.provenance())),
         MeasurementDerivationMethod.ARITHMETIC_MEAN,
         List.of(first.recordId(), second.recordId())
     );

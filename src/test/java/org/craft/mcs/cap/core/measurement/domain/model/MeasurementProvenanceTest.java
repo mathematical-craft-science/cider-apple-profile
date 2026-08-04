@@ -1,6 +1,8 @@
 package org.craft.mcs.cap.core.measurement.domain.model;
 
+import java.util.List;
 import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
+import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
 import org.craft.mcs.cap.shared.kernel.measurement.MeasurementSourceType;
 import org.junit.jupiter.api.Test;
 
@@ -28,6 +30,27 @@ class MeasurementProvenanceTest {
         .returns(null, MeasurementProvenance::method)
         .returns(null, MeasurementProvenance::reference)
         .returns(null, MeasurementProvenance::confidence);
+    final var highConfidenceInput = new MeasurementProvenance(
+        MeasurementSourceType.INSTRUMENT,
+        null,
+        null,
+        null,
+        ConfidenceLevel.HIGH
+    );
+    final var mediumConfidenceInput = new MeasurementProvenance(
+        MeasurementSourceType.USER,
+        null,
+        null,
+        null,
+        ConfidenceLevel.MEDIUM
+    );
+
+    assertThat(MeasurementProvenance.derivedFrom(List.of(highConfidenceInput, mediumConfidenceInput)))
+        .returns(MeasurementSourceType.DERIVED, MeasurementProvenance::sourceType)
+        .returns(null, MeasurementProvenance::sourceName)
+        .returns(null, MeasurementProvenance::method)
+        .returns(null, MeasurementProvenance::reference)
+        .returns(ConfidenceLevel.MEDIUM, MeasurementProvenance::confidence);
   }
 
   @Test
@@ -43,5 +66,12 @@ class MeasurementProvenanceTest {
     ))
         .isInstanceOf(DomainRuleViolationException.class)
         .hasMessage("derived measurement provenance cannot declare external source metadata");
+  }
+
+  @Test
+  void requiresInputsForDerivedConfidence() {
+    assertThatThrownBy(() -> MeasurementProvenance.derivedFrom(List.of()))
+        .isInstanceOf(DomainRuleViolationException.class)
+        .hasMessage("derived provenance requires input provenances");
   }
 }

@@ -169,6 +169,7 @@ public record MeasurementSetRevision(
       }
       requireEveryObservationParticipates(result, records);
       requireDerivedResultTime(result, inputs);
+      requireDerivedResultConfidence(result, inputs);
       final var expectedValue = switch (result.derivationMethod()) {
         case ARITHMETIC_MEAN -> ArithmeticMeanMeasurementDerivation.derive(pointValues(inputs));
       };
@@ -183,6 +184,20 @@ public record MeasurementSetRevision(
       if (result.role() == MeasurementRecordRole.RESULT && result.derivationMethod() == null) {
         requireNoUnassociatedObservations(result, records);
       }
+    }
+  }
+
+  private static void requireDerivedResultConfidence(
+      @NonNull MeasurementRecord result,
+      @NonNull List<@NonNull MeasurementRecord> inputs
+  ) {
+    final var expectedConfidence = MeasurementProvenance.derivedFrom(
+        inputs.stream().map(MeasurementRecord::provenance).toList()
+    ).confidence();
+    if (result.provenance().confidence() != expectedConfidence) {
+      throw new DomainRuleViolationException(
+          "derived measurement confidence must equal the weakest confidence of its observations"
+      );
     }
   }
 
