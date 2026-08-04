@@ -50,11 +50,25 @@ public record MeasuredValueRange<V extends MeasuredValue>(
   }
 
   public boolean contains(@NonNull V value) {
+    return positionOf(value) == MeasuredValueRangePosition.WITHIN;
+  }
+
+  /**
+   * Classifies a value using the range's actual membership rules.
+   *
+   * <p>Unlike projection onto the closure, this method preserves an exclusive upper boundary.</p>
+   */
+  public @NonNull MeasuredValueRangePosition positionOf(@NonNull V value) {
     requireNonNull(value, "measured range value cannot be null");
+    if (value.compareTo(min) < 0) {
+      return MeasuredValueRangePosition.BELOW;
+    }
     final var maximumComparison = value.compareTo(max);
-    return value.compareTo(min) >= 0
-        && (maximumComparison < 0
-            || maximumComparison == 0 && upperBound == UpperBound.INCLUSIVE);
+    if (maximumComparison > 0
+        || maximumComparison == 0 && upperBound == UpperBound.EXCLUSIVE) {
+      return MeasuredValueRangePosition.ABOVE;
+    }
+    return MeasuredValueRangePosition.WITHIN;
   }
 
   /**

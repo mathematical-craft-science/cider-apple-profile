@@ -8,7 +8,6 @@ import org.craft.mcs.cap.core.account.user.application.port.in.GetCurrentAccount
 import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceCharacteristicSnapshot;
 import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceMaterialCharacteristics;
 import org.craft.mcs.cap.core.traceability.application.port.in.AppendBatchTraceStepUseCase;
-import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceActorReference;
 import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceMaterialSnapshot;
 import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceStepType;
 import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceStep;
@@ -22,6 +21,7 @@ import org.craft.mcs.cap.core.production.domain.model.ProductionBatch;
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceType;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
 import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
+import org.craft.mcs.cap.shared.kernel.identity.ActorReference;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
@@ -76,9 +76,7 @@ class BatchTraceabilityProductionBatchTraceRecorder implements ProductionBatchTr
             .toList(),
         outputs(sourceTransitions, productionOutput),
         requireNonNull(occurredAt, "trace occurred at cannot be null"),
-        BatchTraceActorReference.accountUser(
-            getCurrentAccountProfileUseCase.get().userId().value().toString()
-        ),
+        ActorReference.accountUser(getCurrentAccountProfileUseCase.get().userId().value()),
         note
     );
     appendBatchTraceStepUseCase.append(step);

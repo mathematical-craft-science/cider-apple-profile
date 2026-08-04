@@ -6,11 +6,13 @@ CREATE TABLE IF NOT EXISTS batch_trace_steps
     step_type      VARCHAR(64)              NOT NULL,
     occurred_at    TIMESTAMP WITH TIME ZONE NOT NULL,
     performed_by_type VARCHAR(32)            NOT NULL,
-    performed_by_id   VARCHAR(160)           NOT NULL,
+    performed_by_id   UUID                   NOT NULL,
     note           VARCHAR(2000),
     created_at     TIMESTAMP WITH TIME ZONE NOT NULL,
     CONSTRAINT fk_batch_trace_steps_workspace
-        FOREIGN KEY (workspace_id) REFERENCES workspaces (workspace_id)
+        FOREIGN KEY (workspace_id) REFERENCES workspaces (workspace_id),
+    CONSTRAINT chk_batch_trace_steps_actor_type
+        CHECK (performed_by_type IN ('ACCOUNT_USER', 'MACHINE_IDENTITY'))
 );
 
 CREATE TABLE IF NOT EXISTS batch_trace_step_subjects

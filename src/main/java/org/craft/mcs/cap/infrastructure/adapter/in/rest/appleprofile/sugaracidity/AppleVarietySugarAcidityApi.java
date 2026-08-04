@@ -26,7 +26,8 @@ public interface AppleVarietySugarAcidityApi {
 
   @Operation(
       summary = "Assess apple variety sugar-acidity zone",
-      description = "Maps SG and TA evidence to a Jolicoeur sugar-acidity zone when possible."
+      description = "Returns graph-oriented analysis with a Jolicoeur SG/TA zone, canonical tannin, "
+          + "North American profile and potential ABV when their required evidence is available."
   )
   @ApiResponse(
       responseCode = "200",
@@ -48,7 +49,8 @@ public interface AppleVarietySugarAcidityApi {
 
   @Operation(
       summary = "List apple variety sugar-acidity graph points",
-      description = "Returns plottable and unplottable variety points with canonical SG and TA coordinates."
+      description = "Returns plottable and unplottable variety points with canonical SG/TA coordinates and "
+          + "supporting tannin, North American profile and potential ABV assessments."
   )
   @ApiResponse(
       responseCode = "200",

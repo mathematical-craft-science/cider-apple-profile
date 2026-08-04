@@ -57,11 +57,13 @@ public record ProfileTargetObjective(
     final var nearestTargetPoint = insideSugarAcidityTarget
         ? point
         : geometry.nearestPointTo(point, distance);
+    final var sugarAcidityTargetPosition = geometry.positionOf(point, nearestTargetPoint);
 
     if (tanninTarget == null) {
       return new ProfileTargetComparison(
           point,
           nearestTargetPoint,
+          sugarAcidityTargetPosition,
           null,
           null,
           insideSugarAcidityTarget,
@@ -75,6 +77,7 @@ public record ProfileTargetObjective(
       return new ProfileTargetComparison(
           point,
           nearestTargetPoint,
+          sugarAcidityTargetPosition,
           null,
           null,
           insideSugarAcidityTarget,
@@ -87,6 +90,7 @@ public record ProfileTargetObjective(
     return new ProfileTargetComparison(
         point,
         nearestTargetPoint,
+        sugarAcidityTargetPosition,
         tannin,
         nearestTargetTannin,
         insideSugarAcidityTarget,

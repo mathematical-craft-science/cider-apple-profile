@@ -7,15 +7,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import org.craft.mcs.cap.core.measurement.application.MeasurementEvidenceIdentityConflictException;
 import org.craft.mcs.cap.core.measurement.application.MeasurementSetAlreadyExistsException;
 import org.craft.mcs.cap.core.measurement.application.model.CurrentMeasurementResultView;
 import org.craft.mcs.cap.core.measurement.application.model.MeasurementRecordView;
+import org.craft.mcs.cap.core.measurement.application.model.MeasurementResultRetractionView;
 import org.craft.mcs.cap.core.measurement.application.model.MeasurementSetMetadataView;
 import org.craft.mcs.cap.core.measurement.application.model.MeasurementSetView;
-import org.craft.mcs.cap.core.measurement.application.port.out.CurrentMeasurementResultQuery;
+import org.craft.mcs.cap.core.measurement.application.model.MeasurementSetRetractionView;
+import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementMaterialStateLineageProvider;
+import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementResultEvidenceQuery;
 import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementSetMetadataQuery;
 import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementSetRepository;
 import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementSetViewQuery;
+import org.craft.mcs.cap.core.measurement.application.usecase.CurrentMeasurementResultResolver;
 import org.craft.mcs.cap.shared.kernel.characteristic.IntervalCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementCorrectionReason;
@@ -25,6 +30,7 @@ import org.craft.mcs.cap.core.measurement.domain.model.MeasurementProvenance;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementRecord;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementRecordId;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementRecordRole;
+import org.craft.mcs.cap.core.measurement.domain.model.MeasurementResultRetraction;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSet;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetId;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetLifecycle;
@@ -32,6 +38,7 @@ import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetName;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetRevision;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetRevisionId;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetRevisionNumber;
+import org.craft.mcs.cap.core.measurement.domain.model.MeasurementRetractionReason;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSourceName;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSourceReference;
 import org.craft.mcs.cap.shared.kernel.measurement.MeasurementSourceType;
@@ -41,8 +48,11 @@ import org.craft.mcs.cap.core.traceability.application.port.in.QueryMaterialStat
 import org.craft.mcs.cap.core.traceability.application.port.out.BatchTraceabilityAccessControl;
 import org.craft.mcs.cap.core.traceability.application.port.out.MaterialStateLineageStore;
 import org.craft.mcs.cap.core.traceability.application.usecase.QueryMaterialStateLineageService;
+import org.craft.mcs.cap.shared.application.ApplicationValidationException;
+import org.craft.mcs.cap.shared.application.ConcurrentResourceModificationException;
 import org.craft.mcs.cap.shared.kernel.characteristic.CharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
+import org.craft.mcs.cap.shared.kernel.identity.ActorType;
 import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
 import org.craft.mcs.cap.shared.kernel.identity.ActorReference;
 import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
@@ -90,7 +100,7 @@ class JdbcMeasurementSetRepositoryDataJdbcTest {
   private MeasurementSetRepository repository;
 
   @Autowired
-  private CurrentMeasurementResultQuery currentResultQuery;
+  private CurrentMeasurementResultResolver currentResultResolver;
 
   @Autowired
   private MeasurementSetViewQuery viewQuery;
@@ -170,7 +180,7 @@ class JdbcMeasurementSetRepositoryDataJdbcTest {
                         .isEqualByComparingTo("1.051"))
             ));
 
-    assertThat(currentResultQuery.findByStates(
+    assertThat(currentResultResolver.resolve(
         workspaceId,
         Map.of(subject, set.currentRevision().materialStateId())
     ))
@@ -198,6 +208,21 @@ class JdbcMeasurementSetRepositoryDataJdbcTest {
         .returns(set.measurementSetId(), MeasurementSetMetadataView::measurementSetId)
         .returns(set.currentRevision().name(), MeasurementSetMetadataView::name)
         .returns(created.revision().value(), MeasurementSetMetadataView::version);
+  }
+
+  @Test
+  void rejectsCurrentMaterialStateThatIsAbsentFromImmutableTrace() {
+    final var subject = new MeasurementSubjectReference(
+        MeasurementSubjectType.FEEDSTOCK_BATCH,
+        newUuid()
+    );
+
+    assertThatThrownBy(() -> currentResultResolver.resolve(
+        workspaceId,
+        Map.of(subject, MaterialStateId.newId())
+    ))
+        .isInstanceOf(ApplicationValidationException.class)
+        .hasMessage("lineage must start with its current material state at depth zero");
   }
 
   @Test
@@ -229,7 +254,8 @@ class JdbcMeasurementSetRepositoryDataJdbcTest {
         MeasurementCorrectionReason.of("Clarified the laboratory note"),
         RECORDED_AT.plusSeconds(60),
         ActorReference.accountUser(newUuid()),
-        initialRevision.records()
+        initialRevision.records(),
+        List.of()
     );
 
     set.correct(correctedRevision);
@@ -255,6 +281,47 @@ class JdbcMeasurementSetRepositoryDataJdbcTest {
             ));
   }
 
+  @Test
+  void rejectsRebindingAnImmutableRecordIdentityToDifferentEvidence() {
+    final var sharedRecordId = MeasurementRecordId.newId();
+    final var firstResult = new MeasurementRecord(
+        sharedRecordId,
+        MeasurementCharacteristic.PH,
+        MeasurementRecordRole.RESULT,
+        point(MeasurementCharacteristic.PH, "3.40"),
+        RECORDED_AT,
+        new MeasurementProvenance(MeasurementSourceType.USER, null, null, null, null),
+        null,
+        List.of()
+    );
+    final var conflictingResult = new MeasurementRecord(
+        sharedRecordId,
+        MeasurementCharacteristic.PH,
+        MeasurementRecordRole.RESULT,
+        point(MeasurementCharacteristic.PH, "3.20"),
+        RECORDED_AT,
+        new MeasurementProvenance(MeasurementSourceType.USER, null, null, null, null),
+        null,
+        List.of()
+    );
+    repository.create(MeasurementSet.create(
+        MeasurementSetId.newId(),
+        workspaceId,
+        new MeasurementSubjectReference(MeasurementSubjectType.FEEDSTOCK_BATCH, newUuid()),
+        revision(1, List.of(firstResult))
+    ));
+    final var conflictingSet = MeasurementSet.create(
+        MeasurementSetId.newId(),
+        workspaceId,
+        new MeasurementSubjectReference(MeasurementSubjectType.FEEDSTOCK_BATCH, newUuid()),
+        revision(1, List.of(conflictingResult))
+    );
+
+    assertThatThrownBy(() -> repository.create(conflictingSet))
+        .isInstanceOf(MeasurementEvidenceIdentityConflictException.class)
+        .hasMessageContaining(sharedRecordId.value().toString());
+  }
+
   private void initializeCurrentState(
       MeasurementSubjectReference subject,
       MaterialStateId materialStateId
@@ -263,6 +330,50 @@ class JdbcMeasurementSetRepositoryDataJdbcTest {
       case FEEDSTOCK_BATCH -> insertFeedstockBatch(subject, materialStateId);
       case PRODUCTION_BATCH -> insertProductionBatch(subject, materialStateId);
     }
+    insertInitialTraceState(subject, materialStateId);
+  }
+
+  private void insertInitialTraceState(
+      @NonNull MeasurementSubjectReference subject,
+      @NonNull MaterialStateId materialStateId
+  ) {
+    final var stepId = newUuid();
+    final var occurredAt = OffsetDateTime.parse("2026-07-20T10:00:00Z");
+    jdbcTemplate.update(
+        """
+            INSERT INTO batch_trace_steps (
+                step_id,
+                workspace_id,
+                step_type,
+                occurred_at,
+                performed_by_type,
+                performed_by_id,
+                created_at
+            ) VALUES (
+                :stepId,
+                :workspaceId,
+                :stepType,
+                :occurredAt,
+                :performedByType,
+                :performedById,
+                :createdAt
+            )
+            """,
+        new MapSqlParameterSource()
+            .addValue("stepId", stepId)
+            .addValue("workspaceId", workspaceId.value())
+            .addValue(
+                "stepType",
+                subject.type() == MeasurementSubjectType.FEEDSTOCK_BATCH
+                    ? "FEEDSTOCK_BATCH_CREATED"
+                    : "PRODUCTION_BATCH_CREATED"
+            )
+            .addValue("performedByType", ActorType.MACHINE_IDENTITY.name())
+            .addValue("performedById", newUuid())
+            .addValue("occurredAt", occurredAt)
+            .addValue("createdAt", occurredAt)
+    );
+    insertStateTransitionSubject(stepId, subject, materialStateId, "OUTPUT", false);
   }
 
   private void insertFeedstockBatch(
@@ -364,6 +475,7 @@ class JdbcMeasurementSetRepositoryDataJdbcTest {
       @NonNull MaterialStateId outputStateId
   ) {
     final var stepId = newUuid();
+    final var actorId = newUuid();
     final var occurredAt = OffsetDateTime.parse("2026-07-20T11:00:00Z");
     jdbcTemplate.update(
         """
@@ -380,14 +492,16 @@ class JdbcMeasurementSetRepositoryDataJdbcTest {
                 :workspaceId,
                 'PRODUCTION_BATCH_CREATED',
                 :occurredAt,
-                'SYSTEM',
-                'test',
+                :performedByType,
+                :performedById,
                 :createdAt
             )
             """,
         new MapSqlParameterSource()
             .addValue("stepId", stepId)
             .addValue("workspaceId", workspaceId.value())
+            .addValue("performedByType", ActorType.MACHINE_IDENTITY.name())
+            .addValue("performedById", actorId)
             .addValue("occurredAt", occurredAt)
             .addValue("createdAt", occurredAt)
     );
@@ -518,7 +632,7 @@ class JdbcMeasurementSetRepositoryDataJdbcTest {
         revision(1, stateId, List.of(ph))
     ));
 
-    assertThat(currentResultQuery.findByStates(workspaceId, Map.of(subject, stateId)))
+    assertThat(currentResultResolver.resolve(workspaceId, Map.of(subject, stateId)))
         .extracting(
             CurrentMeasurementResultView::characteristic,
             CurrentMeasurementResultView::recordId,
@@ -563,19 +677,152 @@ class JdbcMeasurementSetRepositoryDataJdbcTest {
         MeasurementCorrectionReason.of("Corrected transcription error"),
         RECORDED_AT.plusSeconds(60),
         ActorReference.accountUser(newUuid()),
-        List.of(correctedResult)
+        List.of(correctedResult),
+        List.of()
     );
 
     set.correct(correctedRevision);
     repository.appendRevision(created.withAggregate(set));
 
-    assertThat(currentResultQuery.findByStates(workspaceId, Map.of(subject, stateId)))
+    assertThat(currentResultResolver.resolve(workspaceId, Map.of(subject, stateId)))
         .singleElement()
         .returns(stateId, CurrentMeasurementResultView::currentMaterialStateId)
         .returns(stateId, CurrentMeasurementResultView::evidenceMaterialStateId)
         .returns(correctedResult.recordId(), CurrentMeasurementResultView::recordId)
         .satisfies(result -> assertThat(pointValue(result.value()).asBigDecimal())
             .isEqualByComparingTo("1.055"));
+  }
+
+  @Test
+  void fullReplacementMakesEveryCorrectedResultCurrentOnTheObservedState() {
+    final var subject = new MeasurementSubjectReference(
+        MeasurementSubjectType.FEEDSTOCK_BATCH,
+        newUuid()
+    );
+    final var stateId = MaterialStateId.newId();
+    final var initialRevision = revision(
+        1,
+        stateId,
+        List.of(
+            directResult(
+                MeasurementCharacteristic.SPECIFIC_GRAVITY,
+                point(MeasurementCharacteristic.SPECIFIC_GRAVITY, "1.050")
+            ),
+            directResult(
+                MeasurementCharacteristic.PH,
+                point(MeasurementCharacteristic.PH, "3.40")
+            )
+        )
+    );
+    final var set = MeasurementSet.create(
+        MeasurementSetId.newId(),
+        workspaceId,
+        subject,
+        initialRevision
+    );
+    final var created = repository.create(set);
+    initializeCurrentState(subject, stateId);
+    final var correctedSugar = directResult(
+        MeasurementCharacteristic.SPECIFIC_GRAVITY,
+        point(MeasurementCharacteristic.SPECIFIC_GRAVITY, "1.055")
+    );
+    final var correctedPh = directResult(
+        MeasurementCharacteristic.PH,
+        point(MeasurementCharacteristic.PH, "3.25")
+    );
+    final var correctedRevision = new MeasurementSetRevision(
+        MeasurementSetRevisionId.newId(),
+        MeasurementSetRevisionNumber.of(2),
+        stateId,
+        MeasurementSetName.of("Corrected laboratory panel"),
+        null,
+        MeasurementCorrectionReason.of("Corrected the complete laboratory report"),
+        RECORDED_AT.plusSeconds(60),
+        ActorReference.accountUser(newUuid()),
+        List.of(correctedSugar, correctedPh),
+        List.of()
+    );
+
+    set.correct(correctedRevision);
+    repository.appendRevision(created.withAggregate(set));
+
+    assertThat(currentResultResolver.resolve(workspaceId, Map.of(subject, stateId)))
+        .extracting(
+            CurrentMeasurementResultView::characteristic,
+            CurrentMeasurementResultView::recordId
+        )
+        .containsExactlyInAnyOrder(
+            tuple(MeasurementCharacteristic.SPECIFIC_GRAVITY, correctedSugar.recordId()),
+            tuple(MeasurementCharacteristic.PH, correctedPh.recordId())
+        );
+  }
+
+  @Test
+  void staleRevisionCannotAdvanceTheMeasurementSetHead() {
+    final var subject = new MeasurementSubjectReference(
+        MeasurementSubjectType.FEEDSTOCK_BATCH,
+        newUuid()
+    );
+    final var stateId = MaterialStateId.newId();
+    final var initialRevision = revision(
+        1,
+        stateId,
+        List.of(directResult(
+            MeasurementCharacteristic.PH,
+            point(MeasurementCharacteristic.PH, "3.40")
+        ))
+    );
+    final var set = MeasurementSet.create(
+        MeasurementSetId.newId(),
+        workspaceId,
+        subject,
+        initialRevision
+    );
+    final var staleState = repository.create(set);
+    final var secondRevision = new MeasurementSetRevision(
+        MeasurementSetRevisionId.newId(),
+        MeasurementSetRevisionNumber.of(2),
+        stateId,
+        initialRevision.name(),
+        null,
+        MeasurementCorrectionReason.of("First correction"),
+        RECORDED_AT.plusSeconds(60),
+        ActorReference.accountUser(newUuid()),
+        List.of(directResult(
+            MeasurementCharacteristic.PH,
+            point(MeasurementCharacteristic.PH, "3.35")
+        )),
+        List.of()
+    );
+    set.correct(secondRevision);
+    repository.appendRevision(staleState.withAggregate(set));
+    final var thirdRevision = new MeasurementSetRevision(
+        MeasurementSetRevisionId.newId(),
+        MeasurementSetRevisionNumber.of(3),
+        stateId,
+        initialRevision.name(),
+        null,
+        MeasurementCorrectionReason.of("Competing correction"),
+        RECORDED_AT.plusSeconds(120),
+        ActorReference.accountUser(newUuid()),
+        List.of(directResult(
+            MeasurementCharacteristic.PH,
+            point(MeasurementCharacteristic.PH, "3.30")
+        )),
+        List.of()
+    );
+    set.correct(thirdRevision);
+
+    assertThatThrownBy(() -> repository.appendRevision(staleState.withAggregate(set)))
+        .isInstanceOf(ConcurrentResourceModificationException.class);
+    assertThat(repository.findVersionedById(set.measurementSetId()))
+        .get()
+        .returns(1L, persisted -> persisted.revision().value())
+        .satisfies(persisted -> assertThat(persisted.aggregate().currentRevision())
+            .returns(
+                secondRevision.revisionId(),
+                MeasurementSetRevision::revisionId
+            ));
   }
 
   @Test
@@ -611,7 +858,7 @@ class JdbcMeasurementSetRepositoryDataJdbcTest {
     insertFeedstockBatch(subject, currentStateId);
     insertStateTransition(subject, previousStateId, currentStateId);
 
-    assertThat(currentResultQuery.findByStates(workspaceId, Map.of(subject, currentStateId)))
+    assertThat(currentResultResolver.resolve(workspaceId, Map.of(subject, currentStateId)))
         .singleElement()
         .returns(backdatedCurrentResult.recordId(), CurrentMeasurementResultView::recordId)
         .returns(currentStateId, CurrentMeasurementResultView::evidenceMaterialStateId);
@@ -648,7 +895,7 @@ class JdbcMeasurementSetRepositoryDataJdbcTest {
         revision(1, stateId, List.of(backdatedResult))
     ));
 
-    assertThat(currentResultQuery.findByStates(workspaceId, Map.of(subject, stateId)))
+    assertThat(currentResultResolver.resolve(workspaceId, Map.of(subject, stateId)))
         .singleElement()
         .returns(currentResult.recordId(), CurrentMeasurementResultView::recordId);
   }
@@ -678,13 +925,52 @@ class JdbcMeasurementSetRepositoryDataJdbcTest {
     insertFeedstockBatch(subject, currentStateId);
     insertStateTransition(subject, evidenceStateId, currentStateId);
 
-    assertThat(currentResultQuery.findByStates(workspaceId, Map.of(subject, currentStateId)))
+    assertThat(currentResultResolver.resolve(workspaceId, Map.of(subject, currentStateId)))
         .singleElement()
         .returns(
             MeasurementCharacteristic.SPECIFIC_GRAVITY,
             CurrentMeasurementResultView::characteristic
         )
         .returns(evidenceStateId, CurrentMeasurementResultView::evidenceMaterialStateId);
+  }
+
+  @Test
+  void acceptsNewEvidenceRecordedOnTheCurrentStateAfterInheritedEvidenceWasInvalidated() {
+    final var subject = new MeasurementSubjectReference(
+        MeasurementSubjectType.FEEDSTOCK_BATCH,
+        newUuid()
+    );
+    final var previousStateId = MaterialStateId.newId();
+    final var currentStateId = MaterialStateId.newId();
+    final var inheritedPh = directResult(
+        MeasurementCharacteristic.PH,
+        point(MeasurementCharacteristic.PH, "3.35"),
+        RECORDED_AT.minusSeconds(3600)
+    );
+    final var currentPh = directResult(
+        MeasurementCharacteristic.PH,
+        point(MeasurementCharacteristic.PH, "3.25"),
+        RECORDED_AT
+    );
+    repository.create(MeasurementSet.create(
+        MeasurementSetId.newId(),
+        workspaceId,
+        subject,
+        revision(1, previousStateId, List.of(inheritedPh))
+    ));
+    repository.create(MeasurementSet.create(
+        MeasurementSetId.newId(),
+        workspaceId,
+        subject,
+        revision(1, currentStateId, List.of(currentPh))
+    ));
+    insertFeedstockBatch(subject, currentStateId);
+    insertStateTransition(subject, previousStateId, currentStateId);
+
+    assertThat(currentResultResolver.resolve(workspaceId, Map.of(subject, currentStateId)))
+        .singleElement()
+        .returns(currentPh.recordId(), CurrentMeasurementResultView::recordId)
+        .returns(currentStateId, CurrentMeasurementResultView::evidenceMaterialStateId);
   }
 
   @Test
@@ -743,11 +1029,18 @@ class JdbcMeasurementSetRepositoryDataJdbcTest {
     );
     final var created = repository.create(currentSet);
 
-    assertThat(currentResultQuery.findByStates(workspaceId, Map.of(subject, previousStateId)))
+    assertThat(currentResultResolver.resolve(workspaceId, Map.of(subject, previousStateId)))
         .singleElement()
         .returns(currentResult.recordId(), CurrentMeasurementResultView::recordId);
 
-    currentSet.retract(RECORDED_AT.plusSeconds(60));
+    final var retractionActor = ActorReference.accountUser(newUuid());
+    final var retractedAt = RECORDED_AT.plusSeconds(60);
+    final var retractionReason = MeasurementRetractionReason.of("Invalidated measurement set");
+    currentSet.retract(
+        retractionActor,
+        retractedAt,
+        retractionReason
+    );
     repository.retract(created);
 
     assertThat(viewQuery.findById(currentSet.measurementSetId()))
@@ -756,12 +1049,373 @@ class JdbcMeasurementSetRepositoryDataJdbcTest {
             MeasurementSetLifecycle.RETRACTED,
             MeasurementSetView::lifecycle
         )
+        .satisfies(view -> assertThat(view.retraction())
+            .isNotNull()
+            .returns(retractionActor, MeasurementSetRetractionView::actor)
+            .returns(retractedAt, MeasurementSetRetractionView::retractedAt)
+            .returns(retractionReason, MeasurementSetRetractionView::reason))
         .satisfies(view -> assertThat(view.records()).singleElement());
-    assertThat(currentResultQuery.findByStates(workspaceId, Map.of(subject, previousStateId)))
+    assertThat(currentResultResolver.resolve(workspaceId, Map.of(subject, previousStateId)))
         .singleElement()
         .returns(previousResult.recordId(), CurrentMeasurementResultView::recordId)
         .satisfies(result -> assertThat(pointValue(result.value()).asBigDecimal())
             .isEqualByComparingTo("3.30"));
+  }
+
+  @Test
+  void retractingWholeMultiAxisSetRemovesAllItsResultsFromCurrentState() {
+    final var subject = new MeasurementSubjectReference(
+        MeasurementSubjectType.FEEDSTOCK_BATCH,
+        newUuid()
+    );
+    final var stateId = MaterialStateId.newId();
+    final var results = List.of(
+        directResult(
+            MeasurementCharacteristic.SPECIFIC_GRAVITY,
+            point(MeasurementCharacteristic.SPECIFIC_GRAVITY, "1.052")
+        ),
+        directResult(
+            MeasurementCharacteristic.PH,
+            point(MeasurementCharacteristic.PH, "3.35")
+        ),
+        directResult(
+            MeasurementCharacteristic.TITRATABLE_ACIDITY,
+            point(MeasurementCharacteristic.TITRATABLE_ACIDITY, "6.20")
+        )
+    );
+    final var set = MeasurementSet.create(
+        MeasurementSetId.newId(),
+        workspaceId,
+        subject,
+        revision(1, stateId, results)
+    );
+    final var created = repository.create(set);
+    initializeCurrentState(subject, stateId);
+
+    assertThat(currentResultResolver.resolve(workspaceId, Map.of(subject, stateId)))
+        .extracting(CurrentMeasurementResultView::characteristic)
+        .containsExactlyInAnyOrder(
+            MeasurementCharacteristic.SPECIFIC_GRAVITY,
+            MeasurementCharacteristic.PH,
+            MeasurementCharacteristic.TITRATABLE_ACIDITY
+        );
+
+    final var retractionActor = ActorReference.accountUser(newUuid());
+    final var retractedAt = RECORDED_AT.plusSeconds(60);
+    final var retractionReason = MeasurementRetractionReason.of("Invalidated measurement set");
+    set.retract(retractionActor, retractedAt, retractionReason);
+    repository.retract(created);
+
+    assertThat(viewQuery.findById(set.measurementSetId()))
+        .get()
+        .returns(MeasurementSetLifecycle.RETRACTED, MeasurementSetView::lifecycle)
+        .satisfies(view -> assertThat(view.retraction())
+            .isNotNull()
+            .returns(retractionActor, MeasurementSetRetractionView::actor)
+            .returns(retractedAt, MeasurementSetRetractionView::retractedAt)
+            .returns(retractionReason, MeasurementSetRetractionView::reason))
+        .satisfies(view -> assertThat(view.records()).hasSize(3));
+    assertThat(currentResultResolver.resolve(workspaceId, Map.of(subject, stateId))).isEmpty();
+  }
+
+  @Test
+  void oneRevisionCanReplaceOneResultAndRetractAnother() {
+    final var subject = new MeasurementSubjectReference(
+        MeasurementSubjectType.FEEDSTOCK_BATCH,
+        newUuid()
+    );
+    final var stateId = MaterialStateId.newId();
+    final var previousResult = directResult(
+        MeasurementCharacteristic.PH,
+        point(MeasurementCharacteristic.PH, "3.30"),
+        RECORDED_AT.minusSeconds(3_600)
+    );
+    repository.create(MeasurementSet.create(
+        MeasurementSetId.newId(),
+        workspaceId,
+        subject,
+        revision(1, stateId, List.of(previousResult))
+    ));
+    final var retractedResult = directResult(
+        MeasurementCharacteristic.PH,
+        point(MeasurementCharacteristic.PH, "3.40"),
+        RECORDED_AT
+    );
+    final var originalSugar = directResult(
+        MeasurementCharacteristic.SPECIFIC_GRAVITY,
+        point(MeasurementCharacteristic.SPECIFIC_GRAVITY, "1.052"),
+        RECORDED_AT
+    );
+    final var initialRevision = revision(1, stateId, List.of(retractedResult, originalSugar));
+    final var set = MeasurementSet.create(
+        MeasurementSetId.newId(),
+        workspaceId,
+        subject,
+        initialRevision
+    );
+    final var created = repository.create(set);
+    initializeCurrentState(subject, stateId);
+    final var actor = ActorReference.accountUser(newUuid());
+    final var reason = MeasurementCorrectionReason.of("Laboratory invalidated the pH result");
+    final var retractedAt = RECORDED_AT.plusSeconds(60);
+    final var correctedSugar = directResult(
+        MeasurementCharacteristic.SPECIFIC_GRAVITY,
+        point(MeasurementCharacteristic.SPECIFIC_GRAVITY, "1.049"),
+        RECORDED_AT.plusSeconds(30)
+    );
+    final var correctedRevision = new MeasurementSetRevision(
+        MeasurementSetRevisionId.newId(),
+        MeasurementSetRevisionNumber.of(2),
+        stateId,
+        initialRevision.name(),
+        null,
+        reason,
+        retractedAt,
+        actor,
+        List.of(correctedSugar),
+        List.of(new MeasurementResultRetraction(
+            initialRevision.revisionId(),
+            initialRevision.revisionNumber(),
+            retractedResult,
+            List.of(),
+            actor,
+            retractedAt,
+            reason
+        ))
+    );
+
+    set.correct(correctedRevision);
+    repository.appendRevision(created.withAggregate(set));
+
+    assertThat(repository.findVersionedById(set.measurementSetId()).orElseThrow()
+        .aggregate()
+        .currentRevision())
+        .satisfies(revision -> assertThat(revision.records())
+            .singleElement()
+            .returns(
+                MeasurementCharacteristic.SPECIFIC_GRAVITY,
+                MeasurementRecord::characteristic
+            ))
+        .satisfies(revision -> assertThat(revision.resultRetractions())
+            .singleElement()
+            .returns(MeasurementCharacteristic.PH, MeasurementResultRetraction::characteristic)
+            .returns(actor, MeasurementResultRetraction::actor)
+            .returns(retractedAt, MeasurementResultRetraction::retractedAt)
+            .returns(reason, MeasurementResultRetraction::reason));
+    assertThat(viewQuery.findById(set.measurementSetId()))
+        .get()
+        .satisfies(view -> assertThat(view.records())
+            .singleElement()
+            .returns(
+                MeasurementCharacteristic.SPECIFIC_GRAVITY,
+                MeasurementRecordView::characteristic
+            ))
+        .satisfies(view -> assertThat(view.resultRetractions())
+            .singleElement()
+            .returns(retractedResult.recordId(), MeasurementResultRetractionView::recordId)
+            .returns(MeasurementCharacteristic.PH, MeasurementResultRetractionView::characteristic)
+            .returns(actor, MeasurementResultRetractionView::actor)
+            .returns(retractedAt, MeasurementResultRetractionView::retractedAt)
+            .returns(reason, MeasurementResultRetractionView::reason));
+    assertThat(currentResultResolver.resolve(workspaceId, Map.of(subject, stateId)))
+        .extracting(
+            CurrentMeasurementResultView::characteristic,
+            CurrentMeasurementResultView::recordId
+        )
+        .containsExactlyInAnyOrder(
+            tuple(MeasurementCharacteristic.PH, previousResult.recordId()),
+            tuple(MeasurementCharacteristic.SPECIFIC_GRAVITY, correctedSugar.recordId())
+        );
+  }
+
+  @Test
+  void preservesRepeatedMeasurementSnapshotWhenItsResultIsRetracted() {
+    final var subject = new MeasurementSubjectReference(
+        MeasurementSubjectType.FEEDSTOCK_BATCH,
+        newUuid()
+    );
+    final var firstObservation = observation("1.050", "2026-07-20T09:58:00Z");
+    final var secondObservation = observation("1.052", "2026-07-20T10:00:00Z");
+    final var representativeResult = result(firstObservation, secondObservation);
+    final var initialRevision = revision(
+        1,
+        List.of(firstObservation, secondObservation, representativeResult)
+    );
+    final var set = MeasurementSet.create(
+        MeasurementSetId.newId(),
+        workspaceId,
+        subject,
+        initialRevision
+    );
+    final var created = repository.create(set);
+    final var actor = ActorReference.accountUser(newUuid());
+    final var reason = MeasurementCorrectionReason.of("Hydrometer calibration was invalid");
+    final var retractedAt = RECORDED_AT.plusSeconds(60);
+    final var correction = new MeasurementSetRevision(
+        MeasurementSetRevisionId.newId(),
+        MeasurementSetRevisionNumber.of(2),
+        initialRevision.materialStateId(),
+        initialRevision.name(),
+        null,
+        reason,
+        retractedAt,
+        actor,
+        List.of(),
+        List.of(new MeasurementResultRetraction(
+            initialRevision.revisionId(),
+            initialRevision.revisionNumber(),
+            representativeResult,
+            List.of(firstObservation, secondObservation),
+            actor,
+            retractedAt,
+            reason
+        ))
+    );
+
+    set.correct(correction);
+    final var retractedState = repository.appendRevision(created.withAggregate(set));
+    final var carriedRevision = new MeasurementSetRevision(
+        MeasurementSetRevisionId.newId(),
+        MeasurementSetRevisionNumber.of(3),
+        initialRevision.materialStateId(),
+        initialRevision.name(),
+        "Reviewed retraction",
+        MeasurementCorrectionReason.of("Added audit note"),
+        retractedAt.plusSeconds(60),
+        ActorReference.accountUser(newUuid()),
+        List.of(),
+        correction.resultRetractions()
+    );
+    set.correct(carriedRevision);
+    repository.appendRevision(retractedState.withAggregate(set));
+
+    assertThat(repository.findVersionedById(set.measurementSetId()).orElseThrow()
+        .aggregate()
+        .currentRevision()
+        .resultRetractions())
+        .singleElement()
+        .returns(initialRevision.revisionId(), MeasurementResultRetraction::sourceRevisionId)
+        .returns(initialRevision.revisionNumber(), MeasurementResultRetraction::sourceRevisionNumber)
+        .returns(representativeResult, MeasurementResultRetraction::result)
+        .returns(actor, MeasurementResultRetraction::actor)
+        .returns(retractedAt, MeasurementResultRetraction::retractedAt)
+        .returns(reason, MeasurementResultRetraction::reason)
+        .returns(
+            List.of(firstObservation, secondObservation),
+            MeasurementResultRetraction::observations
+        );
+    assertThat(viewQuery.findById(set.measurementSetId()).orElseThrow().resultRetractions())
+        .singleElement()
+        .returns(initialRevision.revisionId(), MeasurementResultRetractionView::sourceRevisionId)
+        .returns(initialRevision.revisionNumber(), MeasurementResultRetractionView::sourceRevisionNumber)
+        .returns(actor, MeasurementResultRetractionView::actor)
+        .returns(retractedAt, MeasurementResultRetractionView::retractedAt)
+        .returns(reason, MeasurementResultRetractionView::reason)
+        .satisfies(retraction -> assertThat(retraction.resultSnapshot())
+            .returns(representativeResult.recordId(), MeasurementRecordView::recordId)
+            .returns(
+                MeasurementDerivationMethod.ARITHMETIC_MEAN,
+                MeasurementRecordView::derivationMethod
+            )
+            .returns(
+                List.of(firstObservation.recordId(), secondObservation.recordId()),
+                MeasurementRecordView::derivationInputs
+            ))
+        .satisfies(retraction -> assertThat(retraction.observationSnapshots())
+            .extracting(MeasurementRecordView::recordId)
+            .containsExactly(firstObservation.recordId(), secondObservation.recordId()));
+    assertThat(viewQuery.findBySubject(workspaceId, subject))
+        .singleElement()
+        .satisfies(view -> assertThat(view.resultRetractions())
+            .singleElement()
+            .returns(representativeResult.recordId(), MeasurementResultRetractionView::recordId)
+            .returns(actor, MeasurementResultRetractionView::actor)
+            .returns(reason, MeasurementResultRetractionView::reason));
+    assertThat(viewQuery.findRevisionsById(set.measurementSetId()))
+        .hasSize(3)
+        .allSatisfy(view -> assertThat(representativeResult(view).derivationInputs())
+            .containsExactly(firstObservation.recordId(), secondObservation.recordId()));
+  }
+
+  @Test
+  void revisionHistoryKeepsRetractionAfterTheCharacteristicIsReplaced() {
+    final var subject = new MeasurementSubjectReference(
+        MeasurementSubjectType.FEEDSTOCK_BATCH,
+        newUuid()
+    );
+    final var initialResult = directResult(
+        MeasurementCharacteristic.PH,
+        point(MeasurementCharacteristic.PH, "3.50"),
+        RECORDED_AT
+    );
+    final var initialRevision = revision(1, List.of(initialResult));
+    final var set = MeasurementSet.create(
+        MeasurementSetId.newId(),
+        workspaceId,
+        subject,
+        initialRevision
+    );
+    final var created = repository.create(set);
+    final var retractionReason = MeasurementCorrectionReason.of("Invalid pH calibration");
+    final var retractionTime = RECORDED_AT.plusSeconds(60);
+    final var retractionActor = ActorReference.accountUser(newUuid());
+    final var retractionRevision = new MeasurementSetRevision(
+        MeasurementSetRevisionId.newId(),
+        MeasurementSetRevisionNumber.of(2),
+        initialRevision.materialStateId(),
+        initialRevision.name(),
+        null,
+        retractionReason,
+        retractionTime,
+        retractionActor,
+        List.of(),
+        List.of(new MeasurementResultRetraction(
+            initialRevision.revisionId(),
+            initialRevision.revisionNumber(),
+            initialResult,
+            List.of(),
+            retractionActor,
+            retractionTime,
+            retractionReason
+        ))
+    );
+    set.correct(retractionRevision);
+    final var retracted = repository.appendRevision(created.withAggregate(set));
+    final var replacementResult = directResult(
+        MeasurementCharacteristic.PH,
+        point(MeasurementCharacteristic.PH, "3.35"),
+        retractionTime.plusSeconds(30)
+    );
+    final var replacementRevision = new MeasurementSetRevision(
+        MeasurementSetRevisionId.newId(),
+        MeasurementSetRevisionNumber.of(3),
+        initialRevision.materialStateId(),
+        initialRevision.name(),
+        null,
+        MeasurementCorrectionReason.of("Recorded corrected pH result"),
+        retractionTime.plusSeconds(60),
+        ActorReference.accountUser(newUuid()),
+        List.of(replacementResult),
+        List.of()
+    );
+    set.correct(replacementRevision);
+    repository.appendRevision(retracted.withAggregate(set));
+
+    assertThat(viewQuery.findRevisionsById(set.measurementSetId()))
+        .hasSize(3)
+        .satisfiesExactly(
+            latest -> assertThat(latest)
+                .returns(3, view -> view.revisionNumber().value())
+                .satisfies(view -> assertThat(view.resultRetractions()).isEmpty()),
+            retractedView -> assertThat(retractedView)
+                .returns(2, view -> view.revisionNumber().value())
+                .satisfies(view -> assertThat(view.resultRetractions())
+                    .singleElement()
+                    .returns(initialResult.recordId(), MeasurementResultRetractionView::recordId)
+                    .returns(retractionReason, MeasurementResultRetractionView::reason)),
+            initial -> assertThat(initial)
+                .returns(1, view -> view.revisionNumber().value())
+        );
   }
 
   @Test
@@ -813,11 +1467,107 @@ class JdbcMeasurementSetRepositoryDataJdbcTest {
         new MapSqlParameterSource(),
         Long.class
     );
+    final var separateRetractionTable = jdbcTemplate.query(
+        "SELECT to_regclass('public.measurement_result_retractions') AS table_name",
+        new MapSqlParameterSource(),
+        (resultSet, rowNumber) -> resultSet.getString("table_name")
+    );
+    final var revisionRecordColumns = jdbcTemplate.queryForList(
+        """
+            SELECT column_name
+              FROM information_schema.columns
+             WHERE table_schema = 'public'
+               AND table_name = 'measurement_revision_records'
+            """,
+        new MapSqlParameterSource(),
+        String.class
+    );
+    final var measurementSetColumns = jdbcTemplate.queryForList(
+        """
+            SELECT column_name
+              FROM information_schema.columns
+             WHERE table_schema = 'public'
+               AND table_name = 'measurement_sets'
+            """,
+        new MapSqlParameterSource(),
+        String.class
+    );
 
     assertThat(legacyTable)
         .singleElement()
         .isNull();
+    assertThat(separateRetractionTable)
+        .singleElement()
+        .isNull();
     assertThat(statisticalColumns).isZero();
+    assertThat(revisionRecordColumns).contains(
+        "revision_id",
+        "record_id",
+        "characteristic",
+        "role",
+        "record_status"
+    ).doesNotContain(
+        "retraction_actor_reference",
+        "retracted_at",
+        "retraction_reason",
+        "source_revision_id"
+    );
+    assertThat(measurementSetColumns).contains(
+        "retracted_by",
+        "retracted_at",
+        "retraction_reason"
+    );
+  }
+
+  @Test
+  void databaseRejectsRetractedMeasurementSetWithoutAudit() {
+    final var set = MeasurementSet.create(
+        MeasurementSetId.newId(),
+        workspaceId,
+        new MeasurementSubjectReference(MeasurementSubjectType.FEEDSTOCK_BATCH, newUuid()),
+        revision(1, List.of(directResult(
+            MeasurementCharacteristic.PH,
+            point(MeasurementCharacteristic.PH, "3.40")
+        )))
+    );
+    repository.create(set);
+
+    assertThatThrownBy(() -> jdbcTemplate.update(
+        """
+            UPDATE measurement_sets
+               SET lifecycle = 'RETRACTED'
+             WHERE measurement_set_id = :measurementSetId
+            """,
+        new MapSqlParameterSource("measurementSetId", set.measurementSetId().value())
+    ))
+        .isInstanceOf(DataIntegrityViolationException.class);
+  }
+
+  @Test
+  void databaseRejectsRetractionStatusForObservationEvidence() {
+    final var firstObservation = observation("1.050", "2026-07-20T09:58:00Z");
+    final var secondObservation = observation("1.052", "2026-07-20T10:00:00Z");
+    final var representativeResult = result(firstObservation, secondObservation);
+    final var set = MeasurementSet.create(
+        MeasurementSetId.newId(),
+        workspaceId,
+        new MeasurementSubjectReference(MeasurementSubjectType.FEEDSTOCK_BATCH, newUuid()),
+        revision(1, List.of(firstObservation, secondObservation, representativeResult))
+    );
+    repository.create(set);
+
+    assertThatThrownBy(() -> jdbcTemplate.update(
+        """
+            UPDATE measurement_revision_records
+               SET record_status = 'RETRACTED'
+             WHERE revision_id = :revisionId
+               AND record_id = :recordId
+            """,
+        new MapSqlParameterSource()
+            .addValue("revisionId", set.currentRevision().revisionId().value())
+            .addValue("recordId", firstObservation.recordId().value())
+    ))
+        .isInstanceOf(DataIntegrityViolationException.class);
   }
 
   @Test
@@ -992,6 +1742,18 @@ class JdbcMeasurementSetRepositoryDataJdbcTest {
     return revision(number, MaterialStateId.newId(), records);
   }
 
+  private static @NonNull MeasurementRecordView representativeResult(
+      @NonNull MeasurementSetView view
+  ) {
+    if (!view.resultRetractions().isEmpty()) {
+      return view.resultRetractions().getFirst().resultSnapshot();
+    }
+    return view.records().stream()
+        .filter(recordView -> recordView.role() == MeasurementRecordRole.RESULT)
+        .findFirst()
+        .orElseThrow();
+  }
+
   private static MeasurementSetRevision revision(
       int number,
       MaterialStateId materialStateId,
@@ -1006,7 +1768,8 @@ class JdbcMeasurementSetRepositoryDataJdbcTest {
         null,
         RECORDED_AT,
         ActorReference.accountUser(newUuid()),
-        records
+        records,
+        List.of()
     );
   }
 
@@ -1095,7 +1858,8 @@ class JdbcMeasurementSetRepositoryDataJdbcTest {
   @TestConfiguration(proxyBeanMethods = false)
   @ComponentScan({
       "org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.measurement",
-      "org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.traceability"
+      "org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.traceability",
+      "org.craft.mcs.cap.infrastructure.adapter.out.traceability.measurement"
   })
   static class MeasurementJdbcAdaptersTestConfiguration {
 
@@ -1110,6 +1874,14 @@ class JdbcMeasurementSetRepositoryDataJdbcTest {
         BatchTraceabilityAccessControl accessControl
     ) {
       return new QueryMaterialStateLineageService(lineageStore, accessControl);
+    }
+
+    @Bean
+    CurrentMeasurementResultResolver currentMeasurementResultResolver(
+        MeasurementResultEvidenceQuery evidenceQuery,
+        MeasurementMaterialStateLineageProvider lineageProvider
+    ) {
+      return new CurrentMeasurementResultResolver(evidenceQuery, lineageProvider);
     }
   }
 }

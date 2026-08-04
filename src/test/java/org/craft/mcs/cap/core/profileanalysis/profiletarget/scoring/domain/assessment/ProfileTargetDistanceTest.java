@@ -8,9 +8,11 @@ import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.objec
 import org.craft.mcs.cap.core.profileanalysis.graph.domain.SugarAcidityGraphPoint;
 import org.craft.mcs.cap.core.profileanalysis.graph.domain.SugarAcidityGeometryShape;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.SugarAcidityTargetKind;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.SugarAcidityTargetPosition;
 import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
 import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
+import org.craft.mcs.cap.shared.kernel.measurement.MeasuredValueRangePosition;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -32,10 +34,51 @@ class ProfileTargetDistanceTest {
         .hasMessage("profile inside the target must have zero distance");
   }
 
+  @Test
+  void rejectsContainmentThatContradictsPerAxisTargetPosition() {
+    assertThatThrownBy(() -> distanceWithPosition(
+        false,
+        false,
+        BigDecimal.ZERO,
+        new SugarAcidityTargetPosition(
+            MeasuredValueRangePosition.WITHIN,
+            MeasuredValueRangePosition.WITHIN
+        )
+    ))
+        .isInstanceOf(DomainRuleViolationException.class)
+        .hasMessage("SG/TA containment must agree with the per-axis target position");
+  }
+
+  @Test
+  void rejectsDifferentFullContainmentWhenNoTanninTargetExists() {
+    assertThatThrownBy(() -> distance(true, false, BigDecimal.ZERO))
+        .isInstanceOf(DomainRuleViolationException.class)
+        .hasMessage("target without tannin must use its SG/TA containment as full containment");
+  }
+
   private static ProfileTargetDistance distance(
       boolean insideSugarAcidityTarget,
       boolean insideTarget,
       BigDecimal value
+  ) {
+    return distanceWithPosition(
+        insideSugarAcidityTarget,
+        insideTarget,
+        value,
+        new SugarAcidityTargetPosition(
+            insideSugarAcidityTarget
+                ? MeasuredValueRangePosition.WITHIN
+                : MeasuredValueRangePosition.ABOVE,
+            MeasuredValueRangePosition.WITHIN
+        )
+    );
+  }
+
+  private static ProfileTargetDistance distanceWithPosition(
+      boolean insideSugarAcidityTarget,
+      boolean insideTarget,
+      BigDecimal value,
+      SugarAcidityTargetPosition position
   ) {
     final var point = new SugarAcidityGraphPoint(
         SpecificGravityValue.of("1.060"),
@@ -45,6 +88,7 @@ class ProfileTargetDistanceTest {
         ProfileTargetDistanceStatus.SCORED,
         point,
         point,
+        position,
         null,
         null,
         value,

@@ -3,7 +3,6 @@ package org.craft.mcs.cap.core.traceability.domain.graph;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
-import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceActorReference;
 import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceCharacteristicSnapshot;
 import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceMaterialCharacteristics;
 import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceMaterialSnapshot;
@@ -17,6 +16,7 @@ import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
 import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
+import org.craft.mcs.cap.shared.kernel.identity.ActorReference;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.craft.mcs.cap.shared.testing.BatchTraceSubjects;
@@ -313,7 +313,7 @@ class BatchTraceabilityGraphProjectorTest {
         List.of(input),
         List.of(output),
         Instant.parse(occurredAt),
-        BatchTraceActorReference.system("test"),
+        ActorReference.machineIdentity(id("test-actor")),
         null
     );
   }

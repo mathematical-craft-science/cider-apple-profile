@@ -7,18 +7,19 @@ import java.util.Set;
 import java.util.Optional;
 import org.craft.mcs.cap.core.traceability.application.port.out.BatchTraceabilityAccessControl;
 import org.craft.mcs.cap.core.traceability.application.port.out.BatchTraceabilityQueryStore;
-import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceActorReference;
 import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceStepType;
 import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceStep;
 import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceStepSubject;
 import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceSubject;
 import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceSubjectType;
 import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
+import org.craft.mcs.cap.shared.kernel.identity.ActorReference;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.craft.mcs.cap.shared.testing.BatchTraceSubjects.id;
 import static org.craft.mcs.cap.shared.testing.BatchTraceSubjects.subject;
 
 
@@ -39,7 +40,7 @@ class QueryBatchTraceabilityServiceTest {
             "production-1"
         ))),
         Instant.parse("2026-05-18T00:00:00Z"),
-        BatchTraceActorReference.system("test"),
+        ActorReference.machineIdentity(id("test-actor")),
         null
     );
     final var queryStore = new StubQueryStore(List.of(step));
@@ -69,7 +70,7 @@ class QueryBatchTraceabilityServiceTest {
         ))),
         List.of(state(production)),
         Instant.parse("2026-05-18T00:00:00Z"),
-        BatchTraceActorReference.system("test"),
+        ActorReference.machineIdentity(id("test-actor")),
         null
     );
     final var queryStore = new StubQueryStore(List.of(step));

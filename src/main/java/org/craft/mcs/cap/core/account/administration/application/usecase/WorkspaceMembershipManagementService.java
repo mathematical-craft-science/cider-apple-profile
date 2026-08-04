@@ -108,7 +108,7 @@ public final class WorkspaceMembershipManagementService
           target,
           membershipRepository.findAllByWorkspaceId(command.workspaceId())
       );
-      membershipRepository.delete(targetState);
+      membershipRepository.update(targetState.withAggregate(target.remove()));
       auditTrail.recordRemoved(context.user().userId(), target);
     });
   }
@@ -128,7 +128,7 @@ public final class WorkspaceMembershipManagementService
           membership,
           membershipRepository.findAllByWorkspaceId(workspaceId)
       );
-      membershipRepository.delete(membershipState);
+      membershipRepository.update(membershipState.withAggregate(membership.remove()));
       auditTrail.recordLeft(context.user().userId(), membership);
     });
   }

@@ -1,10 +1,15 @@
 package org.craft.mcs.cap.core.measurement.application.usecase;
 
 import org.craft.mcs.cap.core.measurement.application.model.MeasurementRecordView;
+import org.craft.mcs.cap.core.measurement.application.model.MeasurementResultRetractionView;
 import org.craft.mcs.cap.core.measurement.application.model.MeasurementSetView;
+import org.craft.mcs.cap.core.measurement.application.model.MeasurementSetRetractionView;
+import org.craft.mcs.cap.core.measurement.domain.model.MeasurementRecord;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSet;
+import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetRetraction;
 import org.craft.mcs.cap.shared.application.persistence.VersionedAggregate;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import static java.util.Objects.requireNonNull;
 
@@ -26,6 +31,7 @@ final class MeasurementSetViewMapper {
         set.workspaceId(),
         set.subject(),
         set.lifecycle(),
+        toRetractionView(set.retraction()),
         state.revision().value(),
         revision.revisionId(),
         revision.revisionNumber(),
@@ -36,19 +42,50 @@ final class MeasurementSetViewMapper {
         revision.createdAt(),
         revision.actor(),
         revision.records().stream()
-            .map(measurementRecord -> new MeasurementRecordView(
-                measurementRecord.recordId(),
-                measurementRecord.characteristic(),
-                measurementRecord.role(),
-                measurementRecord.value(),
-                measurementRecord.measuredAt(),
-                measurementRecord.provenance(),
-                measurementRecord.derivationMethod(),
-                measurementRecord.derivationInputs()
+            .map(MeasurementSetViewMapper::toRecordView)
+            .toList(),
+        revision.resultRetractions().stream()
+            .map(retraction -> new MeasurementResultRetractionView(
+                retraction.sourceRevisionId(),
+                retraction.sourceRevisionNumber(),
+                toRecordView(retraction.result()),
+                retraction.observations().stream()
+                    .map(MeasurementSetViewMapper::toRecordView)
+                    .toList(),
+                retraction.actor(),
+                retraction.retractedAt(),
+                retraction.reason()
             ))
             .toList(),
         set.createdAt(),
         set.updatedAt()
     );
+  }
+
+  private static @NonNull MeasurementRecordView toRecordView(
+      @NonNull MeasurementRecord measurementRecord
+  ) {
+    return new MeasurementRecordView(
+        measurementRecord.recordId(),
+        measurementRecord.characteristic(),
+        measurementRecord.role(),
+        measurementRecord.value(),
+        measurementRecord.measuredAt(),
+        measurementRecord.provenance(),
+        measurementRecord.derivationMethod(),
+        measurementRecord.derivationInputs()
+    );
+  }
+
+  private static @Nullable MeasurementSetRetractionView toRetractionView(
+      @Nullable MeasurementSetRetraction retraction
+  ) {
+    return retraction == null
+        ? null
+        : new MeasurementSetRetractionView(
+            retraction.actor(),
+            retraction.retractedAt(),
+            retraction.reason()
+        );
   }
 }

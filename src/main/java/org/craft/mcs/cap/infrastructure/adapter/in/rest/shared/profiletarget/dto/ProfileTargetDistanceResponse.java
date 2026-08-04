@@ -35,7 +35,7 @@ public record ProfileTargetDistanceResponse(
     @Nullable BigDecimal value,
     @Schema(
         description = "Authoritative target match from 0 to 100 within the selected scoring configuration; "
-            + "absent when fit is unscorable.",
+            + "100 is reserved for a point inside the full target; absent when fit is unscorable.",
         minimum = "0",
         maximum = "100",
         example = "85",

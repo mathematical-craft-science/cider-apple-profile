@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 import static java.util.Objects.requireNonNull;
 
 
-/** Applies graph and transitional capability filters to typed apple-variety reference characteristics. */
+/** Applies graph capability and zone filters to typed apple-variety reference characteristics. */
 @Component
 public final class AppleVarietyGraphCandidateMatcher {
 

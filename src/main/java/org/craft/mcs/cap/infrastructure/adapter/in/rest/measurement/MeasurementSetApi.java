@@ -12,6 +12,7 @@ import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSubjectType;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement.dto.CreateMeasurementSetRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement.dto.MeasurementSetListResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement.dto.MeasurementSetResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement.dto.MeasurementSetRevisionHistoryResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement.dto.PatchMeasurementSetRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement.dto.ReplaceMeasurementSetRequest;
 import org.jspecify.annotations.NonNull;
@@ -88,6 +89,35 @@ public interface MeasurementSetApi {
   );
 
   @Operation(
+      summary = "Get immutable measurement-set revision history",
+      description = "Returns every correction revision from newest to oldest, including result-level "
+          + "retraction tombstones that are no longer present in the current revision."
+  )
+  @ApiResponse(
+      responseCode = "200",
+      content = @Content(
+          mediaType = APPLICATION_JSON_VALUE,
+          schema = @Schema(implementation = MeasurementSetRevisionHistoryResponse.class)
+      )
+  )
+  @ApiResponse(
+      responseCode = "404",
+      description = "The measurement set was not found.",
+      content = @Content(
+          mediaType = APPLICATION_JSON_VALUE,
+          schema = @Schema(implementation = ProblemDetail.class)
+      )
+  )
+  @NonNull ResponseEntity<@NonNull MeasurementSetRevisionHistoryResponse> revisions(
+      @Parameter(
+          description = "Logical measurement-set identifier.",
+          required = true,
+          schema = @Schema(format = "uuid")
+      )
+      @NonNull UUID measurementSetId
+  );
+
+  @Operation(
       summary = "List measurement sets for one business subject",
       description = """
           Returns current revisions of all logical sets, including RETRACTED evidence, ordered by
@@ -130,7 +160,8 @@ public interface MeasurementSetApi {
 
   @Operation(
       summary = "Replace a measurement set",
-      description = "Appends a full immutable correction revision; previous evidence is preserved.",
+      description = "Appends a full immutable correction revision. Existing characteristics omitted from the "
+          + "complete replacement are retained as result-level retraction tombstones.",
       requestBody = @RequestBody(
           required = true,
           content = @Content(
@@ -162,6 +193,14 @@ public interface MeasurementSetApi {
           schema = @Schema(implementation = ProblemDetail.class)
       )
   )
+  @ApiResponse(
+      responseCode = "422",
+      description = "The complete replacement is invalid.",
+      content = @Content(
+          mediaType = APPLICATION_JSON_VALUE,
+          schema = @Schema(implementation = ProblemDetail.class)
+      )
+  )
   @NonNull ResponseEntity<@NonNull MeasurementSetResponse> replace(
       @Parameter(required = true, schema = @Schema(format = "uuid"))
       @NonNull UUID measurementSetId,
@@ -170,7 +209,9 @@ public interface MeasurementSetApi {
 
   @Operation(
       summary = "Patch a measurement set",
-      description = "Appends a correction revision and copies unchanged evidence into that revision.",
+      description = "Appends a correction revision and copies unchanged evidence into that revision. "
+          + "Characteristics listed in removals produce retained result-level retraction tombstones "
+          + "with the current actor, correction time, and correction reason.",
       requestBody = @RequestBody(
           required = true,
           content = @Content(
@@ -202,6 +243,14 @@ public interface MeasurementSetApi {
           schema = @Schema(implementation = ProblemDetail.class)
       )
   )
+  @ApiResponse(
+      responseCode = "422",
+      description = "A requested characteristic has no active result to retract.",
+      content = @Content(
+          mediaType = APPLICATION_JSON_VALUE,
+          schema = @Schema(implementation = ProblemDetail.class)
+      )
+  )
   @NonNull ResponseEntity<@NonNull MeasurementSetResponse> patch(
       @Parameter(required = true, schema = @Schema(format = "uuid"))
       @NonNull UUID measurementSetId,
@@ -210,7 +259,8 @@ public interface MeasurementSetApi {
 
   @Operation(
       summary = "Retract a measurement set",
-      description = "Marks the logical set as retracted without physically deleting revisions or records."
+      description = "Marks the logical set as retracted without physically deleting revisions or records and "
+          + "retains the supplied audit reason."
   )
   @ApiResponse(responseCode = "204", description = "Measurement set retracted.")
   @ApiResponse(
@@ -229,6 +279,14 @@ public interface MeasurementSetApi {
           schema = @Schema(implementation = ProblemDetail.class)
       )
   )
+  @ApiResponse(
+      responseCode = "422",
+      description = "The supplied retraction reason is invalid.",
+      content = @Content(
+          mediaType = APPLICATION_JSON_VALUE,
+          schema = @Schema(implementation = ProblemDetail.class)
+      )
+  )
   @NonNull ResponseEntity<Void> retract(
       @Parameter(required = true, schema = @Schema(format = "uuid"))
       @NonNull UUID measurementSetId,
@@ -237,6 +295,12 @@ public interface MeasurementSetApi {
           required = true,
           schema = @Schema(type = "integer", format = "int64", minimum = "0")
       )
-      long expectedVersion
+      long expectedVersion,
+      @Parameter(
+          description = "Audit reason for retracting the complete measurement set.",
+          required = true,
+          schema = @Schema(minLength = 1, maxLength = 1000)
+      )
+      @NonNull String reason
   );
 }

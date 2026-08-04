@@ -39,16 +39,6 @@ class BatchTraceValueObjectsTest {
   }
 
   @Test
-  void createsAccountAndSystemActorReferences() {
-    assertThat(BatchTraceActorReference.accountUser("account-7"))
-        .returns(BatchTraceActorType.ACCOUNT_USER, BatchTraceActorReference::type)
-        .returns("account-7", BatchTraceActorReference::id);
-    assertThat(BatchTraceActorReference.system("production-creation"))
-        .returns(BatchTraceActorType.SYSTEM, BatchTraceActorReference::type)
-        .returns("production-creation", BatchTraceActorReference::id);
-  }
-
-  @Test
   void capturesImmutableMaterialStateSnapshot() {
     final var materialStateId = MaterialStateId.newId();
     final var subject = BatchTraceSubject.of(

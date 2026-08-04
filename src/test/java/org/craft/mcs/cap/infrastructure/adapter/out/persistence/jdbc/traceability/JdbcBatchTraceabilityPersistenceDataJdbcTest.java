@@ -8,7 +8,6 @@ import org.craft.mcs.cap.core.traceability.application.model.MaterialStateSnapsh
 import org.craft.mcs.cap.core.traceability.application.port.out.BatchTraceabilityQueryStore;
 import org.craft.mcs.cap.core.traceability.application.port.out.BatchTraceabilityStore;
 import org.craft.mcs.cap.core.traceability.application.port.out.MaterialStateHistoryStore;
-import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceActorReference;
 import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceMaterialSnapshot;
 import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceStep;
 import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceStepSubject;
@@ -17,6 +16,7 @@ import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceSubject;
 import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceSubjectType;
 import org.craft.mcs.cap.shared.application.ConcurrentResourceModificationException;
 import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
+import org.craft.mcs.cap.shared.kernel.identity.ActorReference;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
@@ -31,6 +31,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.craft.mcs.cap.shared.testing.BatchTraceSubjects.id;
 import static org.craft.mcs.cap.shared.testing.BatchTraceSubjects.subject;
 
 
@@ -88,7 +89,7 @@ class JdbcBatchTraceabilityPersistenceDataJdbcTest {
         List.of(firstInput, secondInput),
         List.of(output),
         Instant.parse("2026-05-18T00:00:00Z"),
-        BatchTraceActorReference.system("test"),
+        ActorReference.machineIdentity(id("test-actor")),
         null
     );
 
@@ -190,7 +191,7 @@ class JdbcBatchTraceabilityPersistenceDataJdbcTest {
             BatchTraceMaterialSnapshot.ofVolume(VolumeValue.ofLiters("100"))
         )),
         Instant.parse("2026-05-18T00:00:00Z"),
-        BatchTraceActorReference.system("test"),
+        ActorReference.machineIdentity(id("test-actor")),
         null
     );
   }

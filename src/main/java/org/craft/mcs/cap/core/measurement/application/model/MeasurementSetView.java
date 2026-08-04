@@ -25,6 +25,7 @@ public record MeasurementSetView(
     @NonNull WorkspaceId workspaceId,
     @NonNull MeasurementSubjectReference subject,
     @NonNull MeasurementSetLifecycle lifecycle,
+    @Nullable MeasurementSetRetractionView retraction,
     long version,
     @NonNull MeasurementSetRevisionId revisionId,
     @NonNull MeasurementSetRevisionNumber revisionNumber,
@@ -35,6 +36,7 @@ public record MeasurementSetView(
     @NonNull Instant revisionCreatedAt,
     @NonNull ActorReference actor,
     @NonNull List<@NonNull MeasurementRecordView> records,
+    @NonNull List<@NonNull MeasurementResultRetractionView> resultRetractions,
     @NonNull Instant createdAt,
     @NonNull Instant updatedAt
 ) {
@@ -51,6 +53,10 @@ public record MeasurementSetView(
     requireNonNull(revisionCreatedAt, "measurement set view revision creation time cannot be null");
     requireNonNull(actor, "measurement set view actor cannot be null");
     records = List.copyOf(requireNonNull(records, "measurement set view records cannot be null"));
+    resultRetractions = List.copyOf(requireNonNull(
+        resultRetractions,
+        "measurement set view result retractions cannot be null"
+    ));
     requireNonNull(createdAt, "measurement set view creation time cannot be null");
     requireNonNull(updatedAt, "measurement set view update time cannot be null");
     if (version < 0) {

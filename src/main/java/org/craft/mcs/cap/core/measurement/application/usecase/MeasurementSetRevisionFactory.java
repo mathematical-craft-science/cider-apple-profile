@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.craft.mcs.cap.core.measurement.application.model.MeasurementCharacteristicInput;
 import org.craft.mcs.cap.core.measurement.application.port.in.CreateMeasurementSetCommand;
@@ -11,10 +12,13 @@ import org.craft.mcs.cap.core.measurement.application.port.in.PatchMeasurementSe
 import org.craft.mcs.cap.core.measurement.application.port.in.ReplaceMeasurementSetCommand;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementCorrectionReason;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementRecord;
+import org.craft.mcs.cap.core.measurement.domain.model.MeasurementRecordRole;
+import org.craft.mcs.cap.core.measurement.domain.model.MeasurementResultRetraction;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetName;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetRevision;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetRevisionId;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetRevisionNumber;
+import org.craft.mcs.cap.shared.application.ApplicationValidationException;
 import org.craft.mcs.cap.shared.kernel.identity.ActorReference;
 import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic;
@@ -45,7 +49,8 @@ final class MeasurementSetRevisionFactory {
             command.name(),
             command.note(),
             null,
-            records(command.measurements())
+            records(command.measurements()),
+            List.of()
         ),
         createdAt,
         actor
@@ -60,6 +65,14 @@ final class MeasurementSetRevisionFactory {
   ) {
     requireNonNull(current, "current measurement revision cannot be null");
     requireNonNull(command, "replace measurement set command cannot be null");
+    final var replacementRecords = records(command.measurements());
+    final var replaced = replacementRecords.stream()
+        .map(MeasurementRecord::characteristic)
+        .collect(Collectors.toUnmodifiableSet());
+    final var removed = current.records().stream()
+        .map(MeasurementRecord::characteristic)
+        .filter(characteristic -> !replaced.contains(characteristic))
+        .collect(Collectors.toUnmodifiableSet());
     return revision(
         current.revisionNumber().next(),
         current.materialStateId(),
@@ -67,7 +80,15 @@ final class MeasurementSetRevisionFactory {
             command.name(),
             command.note(),
             command.correctionReason(),
-            records(command.measurements())
+            replacementRecords,
+            resultRetractions(
+                current,
+                replaced,
+                removed,
+                actor,
+                createdAt,
+                command.correctionReason()
+            )
         ),
         createdAt,
         actor
@@ -92,6 +113,14 @@ final class MeasurementSetRevisionFactory {
         command.removals()
     ));
     nextRecords.addAll(replacementRecords);
+    final var nextRetractions = resultRetractions(
+        current,
+        replaced,
+        command.removals(),
+        actor,
+        createdAt,
+        command.correctionReason()
+    );
     return revision(
         current.revisionNumber().next(),
         current.materialStateId(),
@@ -99,7 +128,8 @@ final class MeasurementSetRevisionFactory {
             command.name() == null ? current.name() : command.name(),
             command.noteSpecified() ? command.note() : current.note(),
             command.correctionReason(),
-            nextRecords
+            nextRecords,
+            nextRetractions
         ),
         createdAt,
         actor
@@ -128,7 +158,8 @@ final class MeasurementSetRevisionFactory {
         content.correctionReason(),
         createdAt,
         actor,
-        content.records()
+        content.records(),
+        content.resultRetractions()
     );
   }
 
@@ -143,16 +174,64 @@ final class MeasurementSetRevisionFactory {
         .toList();
   }
 
+  private static @NonNull List<@NonNull MeasurementResultRetraction> resultRetractions(
+      @NonNull MeasurementSetRevision current,
+      @NonNull Set<@NonNull MeasurementCharacteristic> replaced,
+      @NonNull Set<@NonNull MeasurementCharacteristic> removed,
+      @NonNull ActorReference actor,
+      @NonNull Instant retractedAt,
+      @NonNull MeasurementCorrectionReason reason
+  ) {
+    final var activeResults = current.records().stream()
+        .filter(measurementRecord -> measurementRecord.role() == MeasurementRecordRole.RESULT)
+        .collect(Collectors.toUnmodifiableMap(
+            MeasurementRecord::characteristic,
+            Function.identity()
+        ));
+    final var observationsByCharacteristic = current.records().stream()
+        .filter(measurementRecord -> measurementRecord.role() == MeasurementRecordRole.OBSERVATION)
+        .collect(Collectors.groupingBy(MeasurementRecord::characteristic));
+    if (!activeResults.keySet().containsAll(removed)) {
+      throw new ApplicationValidationException(
+          "only an active measurement result can be retracted"
+      );
+    }
+
+    final var retractions = new ArrayList<MeasurementResultRetraction>();
+    current.resultRetractions().stream()
+        .filter(retraction -> !replaced.contains(retraction.characteristic()))
+        .forEach(retractions::add);
+    removed.stream()
+        .sorted()
+        .map(activeResults::get)
+        .map(result -> new MeasurementResultRetraction(
+            current.revisionId(),
+            current.revisionNumber(),
+            result,
+            observationsByCharacteristic.getOrDefault(result.characteristic(), List.of()),
+            actor,
+            retractedAt,
+            reason
+        ))
+        .forEach(retractions::add);
+    return List.copyOf(retractions);
+  }
+
   private record RevisionContent(
       @NonNull MeasurementSetName name,
       @Nullable String note,
       @Nullable MeasurementCorrectionReason correctionReason,
-      @NonNull List<@NonNull MeasurementRecord> records
+      @NonNull List<@NonNull MeasurementRecord> records,
+      @NonNull List<@NonNull MeasurementResultRetraction> resultRetractions
   ) {
 
     private RevisionContent {
       requireNonNull(name, "measurement revision name cannot be null");
       records = List.copyOf(requireNonNull(records, "measurement revision records cannot be null"));
+      resultRetractions = List.copyOf(requireNonNull(
+          resultRetractions,
+          "measurement revision retractions cannot be null"
+      ));
     }
   }
 }

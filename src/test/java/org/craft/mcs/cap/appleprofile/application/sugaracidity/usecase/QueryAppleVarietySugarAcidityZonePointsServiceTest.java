@@ -1,5 +1,6 @@
 package org.craft.mcs.cap.appleprofile.application.sugaracidity.usecase;
 
+import static java.util.Objects.requireNonNull;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.craft.mcs.cap.core.profileanalysis.testing.ProfileAnalysisTestFixtures
     .graphEvaluator;
@@ -15,19 +16,25 @@ import java.util.List;
 import org.craft.mcs.cap.core.appleprofile.application.analysis.common.model.AppleVarietyAnalysisFilters;
 import org.craft.mcs.cap.core.appleprofile.application.catalog.port.out.AppleVarietyAnalysisCandidateQuery;
 import org.craft.mcs.cap.core.appleprofile.application.catalog.port.out.AppleVarietyAnalysisCandidateView;
+import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.model.AppleVarietyGraphAnalysisView;
+import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.model.AppleVarietyNorthAmericanAssessmentView;
 import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.in.AppleVarietySugarAcidityZonePointQuery;
-import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.in.AppleVarietySugarAcidityZoneResult;
+import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.service.AppleVarietyGraphAnalysisProjector;
 import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.usecase.QueryAppleVarietySugarAcidityZonePointsService;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVariety;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyId;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyName;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyReferenceProfile;
 import org.craft.mcs.cap.core.appleprofile.application.analysis.common.service.AppleVarietyGraphCandidateMatcher;
+import org.craft.mcs.cap.core.profileanalysis.classification.domain.profile.northamerican.NorthAmericanAcidityLevel;
+import org.craft.mcs.cap.core.profileanalysis.classification.domain.profile.northamerican.NorthAmericanSugarLevel;
+import org.craft.mcs.cap.core.profileanalysis.classification.domain.profile.northamerican.NorthAmericanTanninLevel;
 import org.craft.mcs.cap.core.profileanalysis.graph.application.model.JolicoeurSugarAcidityZoneCriteria;
 import org.craft.mcs.cap.core.profileanalysis.graph.zone.domain.JolicoeurSugarAcidityZone;
 import org.craft.mcs.cap.core.profileanalysis.capability.application.model.ProfileAnalysisCapabilityCriteria;
 import org.craft.mcs.cap.core.profileanalysis.capability.domain.ProfileAnalysisCapability;
 import org.craft.mcs.cap.shared.application.query.TextSearchCriteria;
+import org.craft.mcs.cap.shared.application.query.pagination.CursorPage;
 import org.craft.mcs.cap.shared.application.query.pagination.CursorPageRequest;
 import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.craft.mcs.cap.shared.testing.ProfileCharacteristicsFixture;
@@ -62,16 +69,22 @@ class QueryAppleVarietySugarAcidityZonePointsServiceTest {
         CursorPageRequest.firstPage(1)
     ));
 
-    assertThat(result.nextPosition()).isNotNull();
-    assertThat(result.items()).hasSize(1);
-    assertThat(result.items().getFirst().varietyId()).isEqualTo(alpha.varietyId());
-    assertThat(result.items().getFirst().graphEvaluation().plottable()).isTrue();
-    assertThat(result.items().getFirst().graphEvaluation().zoneAssessment().zone())
-        .isEqualTo(JolicoeurSugarAcidityZone.PERFECT_APPLES);
-    assertThat(result.items().getFirst().potentialAbv())
-        .isNotNull()
-        .satisfies(prediction -> assertThat(prediction.potentialAbv().percent())
-            .isEqualByComparingTo("8.663"));
+    assertThat(result)
+        .matches(page -> page.nextPosition() != null)
+        .satisfies(page -> assertThat(page.items()).hasSize(1));
+    assertThat(result.items().getFirst())
+        .returns(alpha.varietyId(), AppleVarietyGraphAnalysisView::varietyId)
+        .returns(true, view -> view.graphEvaluation().plottable())
+        .returns(
+            JolicoeurSugarAcidityZone.PERFECT_APPLES,
+            view -> requireNonNull(view.graphEvaluation().zoneAssessment()).zone()
+        )
+        .returns(alpha.referenceProfile().tannin(), AppleVarietyGraphAnalysisView::tannin)
+        .satisfies(QueryAppleVarietySugarAcidityZonePointsServiceTest::assertNorthAmericanProfile)
+        .satisfies(view -> assertThat(view.potentialAbv())
+            .isNotNull()
+            .satisfies(prediction -> assertThat(prediction.potentialAbv().percent())
+                .isEqualByComparingTo("8.663")));
   }
 
   @Test
@@ -95,14 +108,16 @@ class QueryAppleVarietySugarAcidityZonePointsServiceTest {
         new CursorPageRequest<>(firstPage.nextPosition(), 2)
     ));
 
-    assertThat(firstPage.items())
-        .extracting(AppleVarietySugarAcidityZoneResult::varietyId)
-        .containsExactly(first.varietyId(), second.varietyId());
-    assertThat(firstPage.nextPosition()).isNotNull();
-    assertThat(secondPage.items())
-        .extracting(AppleVarietySugarAcidityZoneResult::varietyId)
-        .containsExactly(third.varietyId());
-    assertThat(secondPage.nextPosition()).isNull();
+    assertThat(firstPage)
+        .matches(page -> page.nextPosition() != null)
+        .satisfies(page -> assertThat(page.items())
+            .extracting(AppleVarietyGraphAnalysisView::varietyId)
+            .containsExactly(first.varietyId(), second.varietyId()));
+    assertThat(secondPage)
+        .returns(null, CursorPage::nextPosition)
+        .satisfies(page -> assertThat(page.items())
+            .extracting(AppleVarietyGraphAnalysisView::varietyId)
+            .containsExactly(third.varietyId()));
   }
 
   @Test
@@ -124,10 +139,21 @@ class QueryAppleVarietySugarAcidityZonePointsServiceTest {
         CursorPageRequest.firstPage()
     ));
 
-    assertThat(result.items()).hasSize(1);
-    assertThat(result.items().getFirst().graphEvaluation().plottable()).isFalse();
-    assertThat(result.items().getFirst().graphEvaluation().zoneAssessment()).isNull();
-    assertThat(result.items().getFirst().potentialAbv()).isNotNull();
+    assertThat(result.items())
+        .singleElement()
+        .returns(false, view -> view.graphEvaluation().plottable())
+        .returns(null, view -> view.graphEvaluation().zoneAssessment())
+        .matches(view -> view.potentialAbv() != null);
+  }
+
+  private static void assertNorthAmericanProfile(
+      AppleVarietyGraphAnalysisView view
+  ) {
+    assertThat(view.northAmericanAssessment())
+        .isNotNull()
+        .returns(NorthAmericanSugarLevel.HIGH, AppleVarietyNorthAmericanAssessmentView::sugar)
+        .returns(NorthAmericanAcidityLevel.MEDIUM, AppleVarietyNorthAmericanAssessmentView::acidity)
+        .returns(NorthAmericanTanninLevel.MEDIUM, AppleVarietyNorthAmericanAssessmentView::tannin);
   }
 
   private static QueryAppleVarietySugarAcidityZonePointsService service(
@@ -135,10 +161,12 @@ class QueryAppleVarietySugarAcidityZonePointsServiceTest {
   ) {
     return new QueryAppleVarietySugarAcidityZonePointsService(
         repository,
-        graphEvaluator(),
-        northAmericanProfileCalculator(),
         new AppleVarietyGraphCandidateMatcher(),
-        predictor()
+        new AppleVarietyGraphAnalysisProjector(
+            graphEvaluator(),
+            northAmericanProfileCalculator(),
+            predictor()
+        )
     );
   }
 

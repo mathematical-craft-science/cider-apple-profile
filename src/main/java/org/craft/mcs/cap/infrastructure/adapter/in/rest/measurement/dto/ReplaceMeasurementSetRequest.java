@@ -7,6 +7,7 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 
+/** Full correction request that replaces active results in a new immutable revision. */
 @Schema(
     description = "Replaces the current representation by appending a complete immutable correction revision."
 )
@@ -40,7 +41,8 @@ public record ReplaceMeasurementSetRequest(
     @ArraySchema(
         minItems = 1,
         arraySchema = @Schema(
-            description = "Complete characteristic representation for the new revision.",
+            description = "Complete characteristic representation for the new revision. Previously active "
+                + "characteristics omitted here are retained as retraction tombstones.",
             requiredMode = Schema.RequiredMode.REQUIRED
         ),
         schema = @Schema(implementation = MeasurementCharacteristicRequest.class)

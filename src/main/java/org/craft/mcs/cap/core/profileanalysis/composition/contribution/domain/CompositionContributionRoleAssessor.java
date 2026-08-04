@@ -8,6 +8,13 @@ import org.jspecify.annotations.NonNull;
  */
 public interface CompositionContributionRoleAssessor {
 
+  /**
+   * Interprets a scored source against its target.
+   *
+   * @return a non-empty role assessment consistent with the scored target position
+   */
   @NonNull
-  CompositionContributionRoleAssessment assess(@NonNull CompositionContributionRoleAssessmentRequest request);
+  CompositionContributionRoleAssessment assess(
+      @NonNull CompositionContributionRoleAssessmentRequest request
+  );
 }

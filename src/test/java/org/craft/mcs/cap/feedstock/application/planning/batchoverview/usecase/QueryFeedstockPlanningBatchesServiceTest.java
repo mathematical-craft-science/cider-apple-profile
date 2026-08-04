@@ -31,6 +31,7 @@ import org.craft.mcs.cap.core.feedstock.application.batch.port.in.ListFeedstockB
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.PredefinedFeedstockProfileTargetSelection;
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.QueryFeedstockBatchProfileTargetCandidatesUseCase;
 import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.model.FeedstockPlanningBatchView;
+import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.model.FeedstockPlanningTargetAnalysisView;
 import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.FeedstockPlanningBatchViewQuery;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentProfileDataQualityStatus;
 import org.craft.mcs.cap.shared.application.measurement.MeasurementFreshnessStatus;
@@ -139,7 +140,7 @@ class QueryFeedstockPlanningBatchesServiceTest {
   }
 
   @Test
-  void returnsTargetAnalysisMetadataWhenTargetIsRequested() {
+  void returnsBaseRowsAndTargetMetadataWhenNoCandidateIsScorable() {
     final var batchId = FeedstockBatchId.newId();
     final var batch = batch(batchId);
     final var listBatches = mock(ListFeedstockBatchesUseCase.class);
@@ -157,10 +158,20 @@ class QueryFeedstockPlanningBatchesServiceTest {
 
     final var view = service.query(queryWithTarget());
 
-    assertThat(view.targetAnalysis()).isNotNull();
-    assertThat(view.targetAnalysis().analysisScenario())
-        .isEqualTo(ProfileTargetAnalysisScenario.BLENDING_PLANNING);
-    assertThat(view.targetAnalysis().normalizerCode()).isEqualTo(ProfileAxisNormalizerCode.EFFECTIVE_RANGE);
+    assertThat(view)
+        .satisfies(result -> assertThat(result.batches())
+            .singleElement()
+            .returns(null, FeedstockPlanningBatchView::targetCandidate))
+        .satisfies(result -> assertThat(result.targetAnalysis())
+            .isNotNull()
+            .returns(
+                ProfileTargetAnalysisScenario.BLENDING_PLANNING,
+                FeedstockPlanningTargetAnalysisView::analysisScenario
+            )
+            .returns(
+                ProfileAxisNormalizerCode.EFFECTIVE_RANGE,
+                FeedstockPlanningTargetAnalysisView::normalizerCode
+            ));
   }
 
   @Test

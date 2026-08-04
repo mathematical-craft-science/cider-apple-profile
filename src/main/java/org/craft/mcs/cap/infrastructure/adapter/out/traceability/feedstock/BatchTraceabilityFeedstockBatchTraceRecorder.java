@@ -5,7 +5,6 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.account.user.application.port.in.GetCurrentAccountProfileUseCase;
 import org.craft.mcs.cap.core.traceability.application.port.in.AppendBatchTraceStepUseCase;
-import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceActorReference;
 import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceMaterialSnapshot;
 import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceStepType;
 import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceStep;
@@ -14,6 +13,7 @@ import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceSubject;
 import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceSubjectType;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchTraceRecorder;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
+import org.craft.mcs.cap.shared.kernel.identity.ActorReference;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 
@@ -53,9 +53,7 @@ final class BatchTraceabilityFeedstockBatchTraceRecorder implements FeedstockBat
         List.of(),
         List.of(output),
         occurredAt,
-        BatchTraceActorReference.accountUser(
-            getCurrentAccountProfileUseCase.get().userId().value().toString()
-        ),
+        ActorReference.accountUser(getCurrentAccountProfileUseCase.get().userId().value()),
         batch.note()
     );
     appendBatchTraceStepUseCase.append(step);

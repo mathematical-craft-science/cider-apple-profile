@@ -14,6 +14,7 @@ import org.craft.mcs.cap.core.measurement.application.model.MeasurementSetView;
 import org.craft.mcs.cap.core.measurement.application.port.in.CreateMeasurementSetCommand;
 import org.craft.mcs.cap.core.measurement.application.port.in.PatchMeasurementSetCommand;
 import org.craft.mcs.cap.core.measurement.application.port.in.RetractMeasurementSetCommand;
+import org.craft.mcs.cap.core.measurement.application.port.in.ReplaceMeasurementSetCommand;
 import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementActorProvider;
 import org.craft.mcs.cap.core.measurement.application.port.out.ObservedMaterialStateValidator;
 import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementSetRepository;
@@ -24,6 +25,7 @@ import org.craft.mcs.cap.core.measurement.domain.model.MeasurementProvenance;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementRecord;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementRecordId;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementRecordRole;
+import org.craft.mcs.cap.core.measurement.domain.model.MeasurementResultRetraction;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSet;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetId;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetLifecycle;
@@ -31,6 +33,8 @@ import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetName;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetRevision;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetRevisionId;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetRevisionNumber;
+import org.craft.mcs.cap.core.measurement.domain.model.MeasurementRetractionReason;
+import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetRetraction;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSourceName;
 import org.craft.mcs.cap.shared.kernel.measurement.MeasurementSourceType;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSubjectReference;
@@ -104,6 +108,50 @@ class MeasurementSetCommandServicesTest {
   }
 
   @Test
+  void createRecordsMultipleLaboratoryCharacteristicsInOneMeasurementSet() {
+    final var repository = mock(MeasurementSetRepository.class);
+    final var subjectAccessControl = mock(MeasurementSubjectAccessControl.class);
+    final var materialStateValidator = mock(ObservedMaterialStateValidator.class);
+    final var workspaceId = WorkspaceId.newId();
+    final var subject = new MeasurementSubjectReference(
+        MeasurementSubjectType.FEEDSTOCK_BATCH,
+        newUuid()
+    );
+    final var observedStateId = MaterialStateId.newId();
+    when(subjectAccessControl.requireWriteAccess(subject)).thenReturn(workspaceId);
+    when(materialStateValidator.requireObservedState(subject, observedStateId)).thenReturn(observedStateId);
+    when(repository.create(any())).thenAnswer(invocation -> new VersionedAggregate<>(
+        invocation.getArgument(0),
+        AggregateRevision.of(0)
+    ));
+    final var service = createService(repository, subjectAccessControl, materialStateValidator);
+    final var command = new CreateMeasurementSetCommand(
+        null,
+        subject,
+        observedStateId,
+        MeasurementSetName.of("Laboratory panel"),
+        null,
+        List.of(
+            direct(MeasurementCharacteristic.SPECIFIC_GRAVITY, "1.052", CORRECTION_TIME),
+            direct(MeasurementCharacteristic.PH, "3.35", CORRECTION_TIME),
+            direct(MeasurementCharacteristic.TITRATABLE_ACIDITY, "6.20", CORRECTION_TIME)
+        )
+    );
+
+    final var result = service.create(command);
+
+    assertThat(result)
+        .returns(observedStateId, MeasurementSetView::materialStateId)
+        .satisfies(view -> assertThat(view.records())
+            .extracting(MeasurementRecordView::characteristic)
+            .containsExactlyInAnyOrder(
+                MeasurementCharacteristic.SPECIFIC_GRAVITY,
+                MeasurementCharacteristic.PH,
+                MeasurementCharacteristic.TITRATABLE_ACIDITY
+            ));
+  }
+
+  @Test
   void createRejectsStateThatDoesNotBelongToSubjectBeforePersistingEvidence() {
     final var repository = mock(MeasurementSetRepository.class);
     final var subjectAccessControl = mock(MeasurementSubjectAccessControl.class);
@@ -173,6 +221,201 @@ class MeasurementSetCommandServicesTest {
   }
 
   @Test
+  void patchRetractionIsRetainedUntilTheCharacteristicIsReplaced() {
+    final var set = measurementSet();
+    final var actor = ActorReference.accountUser(newUuid());
+    final var factory = new MeasurementSetRevisionFactory();
+    final var reason = MeasurementCorrectionReason.of("Laboratory invalidated pH result");
+    final var retracted = factory.patch(
+        set.currentRevision(),
+        patchCommand(set, reason, List.of(), Set.of(MeasurementCharacteristic.PH)),
+        CORRECTION_TIME,
+        actor
+    );
+
+    assertThat(retracted)
+        .satisfies(revision -> assertThat(revision.records())
+            .singleElement()
+            .returns(MeasurementCharacteristic.SPECIFIC_GRAVITY, MeasurementRecord::characteristic))
+        .satisfies(revision -> assertThat(revision.resultRetractions())
+            .singleElement()
+            .returns(MeasurementCharacteristic.PH, MeasurementResultRetraction::characteristic)
+            .returns(actor, MeasurementResultRetraction::actor)
+            .returns(CORRECTION_TIME, MeasurementResultRetraction::retractedAt)
+            .returns(reason, MeasurementResultRetraction::reason));
+
+    final var carried = factory.patch(
+        retracted,
+        new PatchMeasurementSetCommand(
+            set.measurementSetId(),
+            0,
+            null,
+            true,
+            "Clarified note",
+            MeasurementCorrectionReason.of("Clarified the note"),
+            List.of(),
+            Set.of()
+        ),
+        CORRECTION_TIME.plusSeconds(60),
+        ActorReference.accountUser(newUuid())
+    );
+    assertThat(carried.resultRetractions()).containsExactlyElementsOf(retracted.resultRetractions());
+
+    final var restored = factory.patch(
+        carried,
+        patchCommand(
+            set,
+            MeasurementCorrectionReason.of("Recorded replacement pH result"),
+            List.of(direct(MeasurementCharacteristic.PH, "3.30", CORRECTION_TIME)),
+            Set.of()
+        ),
+        CORRECTION_TIME.plusSeconds(120),
+        ActorReference.accountUser(newUuid())
+    );
+    assertThat(restored)
+        .satisfies(revision -> assertThat(revision.resultRetractions()).isEmpty())
+        .satisfies(revision -> assertThat(revision.records())
+            .extracting(MeasurementRecord::characteristic)
+            .containsExactlyInAnyOrder(
+                MeasurementCharacteristic.SPECIFIC_GRAVITY,
+                MeasurementCharacteristic.PH
+            ));
+
+    final var repeatedRetraction = patchCommand(
+        set,
+        MeasurementCorrectionReason.of("Repeated retraction"),
+        List.of(),
+        Set.of(MeasurementCharacteristic.PH)
+    );
+    assertThatThrownBy(() -> factory.patch(
+        retracted,
+        repeatedRetraction,
+        CORRECTION_TIME.plusSeconds(60),
+        actor
+    ))
+        .isInstanceOf(ApplicationValidationException.class)
+        .hasMessage("only an active measurement result can be retracted");
+  }
+
+  @Test
+  void fullReplacementCreatesTombstoneForAnOmittedActiveResult() {
+    final var set = measurementSet();
+    final var actor = ActorReference.accountUser(newUuid());
+    final var reason = MeasurementCorrectionReason.of("Replaced the complete laboratory result");
+    final var replacement = new ReplaceMeasurementSetCommand(
+        set.measurementSetId(),
+        0,
+        MeasurementSetName.of("Replacement result"),
+        null,
+        reason,
+        List.of(direct(MeasurementCharacteristic.SPECIFIC_GRAVITY, "1.051", CORRECTION_TIME))
+    );
+
+    final var corrected = new MeasurementSetRevisionFactory().replacement(
+        set.currentRevision(),
+        replacement,
+        CORRECTION_TIME,
+        actor
+    );
+    set.correct(corrected);
+
+    assertThat(corrected)
+        .satisfies(revision -> assertThat(revision.records())
+            .singleElement()
+            .returns(MeasurementCharacteristic.SPECIFIC_GRAVITY, MeasurementRecord::characteristic))
+        .satisfies(revision -> assertThat(revision.resultRetractions())
+            .singleElement()
+            .returns(MeasurementCharacteristic.PH, MeasurementResultRetraction::characteristic)
+            .returns(actor, MeasurementResultRetraction::actor)
+            .returns(reason, MeasurementResultRetraction::reason));
+  }
+
+  @Test
+  void fullReplacementChangesEveryResultWithoutCreatingRetractions() {
+    final var set = measurementSet();
+    final var previousRecordIds = set.currentRevision().records().stream()
+        .map(MeasurementRecord::recordId)
+        .toList();
+    final var replacement = new ReplaceMeasurementSetCommand(
+        set.measurementSetId(),
+        0,
+        MeasurementSetName.of("Corrected laboratory panel"),
+        "Both values were transcribed incorrectly",
+        MeasurementCorrectionReason.of("Corrected complete laboratory report"),
+        List.of(
+            direct(MeasurementCharacteristic.SPECIFIC_GRAVITY, "1.049", CORRECTION_TIME),
+            direct(MeasurementCharacteristic.PH, "3.30", CORRECTION_TIME)
+        )
+    );
+
+    final var corrected = new MeasurementSetRevisionFactory().replacement(
+        set.currentRevision(),
+        replacement,
+        CORRECTION_TIME,
+        ActorReference.accountUser(newUuid())
+    );
+    set.correct(corrected);
+
+    assertThat(corrected)
+        .satisfies(revision -> assertThat(revision.resultRetractions()).isEmpty())
+        .satisfies(revision -> assertThat(revision.records())
+            .hasSize(2)
+            .extracting(MeasurementRecord::recordId)
+            .doesNotContainAnyElementsOf(previousRecordIds))
+        .satisfies(revision -> assertThat(revision.records())
+            .extracting(MeasurementRecord::characteristic)
+            .containsExactlyInAnyOrder(
+                MeasurementCharacteristic.SPECIFIC_GRAVITY,
+                MeasurementCharacteristic.PH
+            ));
+  }
+
+  @Test
+  void separateAxisCorrectionsComposeIntoOneCurrentRevision() {
+    final var set = measurementSet();
+    final var factory = new MeasurementSetRevisionFactory();
+    final var correctedSugar = factory.patch(
+        set.currentRevision(),
+        patchCommand(
+            set,
+            MeasurementCorrectionReason.of("Corrected SG transcription"),
+            List.of(direct(MeasurementCharacteristic.SPECIFIC_GRAVITY, "1.049", CORRECTION_TIME)),
+            Set.of()
+        ),
+        CORRECTION_TIME,
+        ActorReference.accountUser(newUuid())
+    );
+    set.correct(correctedSugar);
+    final var retractionTime = CORRECTION_TIME.plusSeconds(60);
+    final var retractedPh = factory.patch(
+        set.currentRevision(),
+        patchCommand(
+            set,
+            MeasurementCorrectionReason.of("Laboratory invalidated pH"),
+            List.of(),
+            Set.of(MeasurementCharacteristic.PH)
+        ),
+        retractionTime,
+        ActorReference.accountUser(newUuid())
+    );
+    set.correct(retractedPh);
+
+    assertThat(set.currentRevision())
+        .returns(MeasurementSetRevisionNumber.of(3), MeasurementSetRevision::revisionNumber)
+        .satisfies(revision -> assertThat(revision.records())
+            .singleElement()
+            .returns(
+                MeasurementCharacteristic.SPECIFIC_GRAVITY,
+                MeasurementRecord::characteristic
+            )
+            .satisfies(result -> assertThat(pointValue(result.value()).asBigDecimal())
+                .isEqualByComparingTo("1.049")))
+        .satisfies(revision -> assertThat(revision.resultRetractions())
+            .singleElement()
+            .returns(MeasurementCharacteristic.PH, MeasurementResultRetraction::characteristic));
+  }
+
+  @Test
   void patchRejectsStaleExpectedVersionBeforeAppendingRevision() {
     final var repository = mock(MeasurementSetRepository.class);
     final var subjectAccessControl = mock(MeasurementSubjectAccessControl.class);
@@ -202,7 +445,11 @@ class MeasurementSetCommandServicesTest {
   void rejectsNegativeExpectedVersionBeforeCallingPersistence() {
     final var measurementSetId = MeasurementSetId.newId();
 
-    assertThatThrownBy(() -> new RetractMeasurementSetCommand(measurementSetId, -1))
+    assertThatThrownBy(() -> new RetractMeasurementSetCommand(
+        measurementSetId,
+        -1,
+        MeasurementRetractionReason.of("Invalidated measurement set")
+    ))
         .isInstanceOf(ApplicationValidationException.class)
         .hasMessage("expected measurement-set version cannot be negative");
   }
@@ -226,6 +473,36 @@ class MeasurementSetCommandServicesTest {
   }
 
   @Test
+  void patchRequiresAtLeastOneChange() {
+    assertThatThrownBy(() -> new PatchMeasurementSetCommand(
+        MeasurementSetId.newId(),
+        0,
+        null,
+        false,
+        null,
+        MeasurementCorrectionReason.of("No-op correction"),
+        List.of(),
+        Set.of()
+    ))
+        .isInstanceOf(ApplicationValidationException.class)
+        .hasMessage("measurement patch requires at least one change");
+  }
+
+  @Test
+  void fullReplacementRequiresAtLeastOneCharacteristic() {
+    assertThatThrownBy(() -> new ReplaceMeasurementSetCommand(
+        MeasurementSetId.newId(),
+        0,
+        MeasurementSetName.of("Empty replacement"),
+        null,
+        MeasurementCorrectionReason.of("Invalid replacement"),
+        List.of()
+    ))
+        .isInstanceOf(ApplicationValidationException.class)
+        .hasMessage("measurement replacement requires at least one characteristic");
+  }
+
+  @Test
   void retractPreservesEvidenceAndChangesAggregateLifecycle() {
     final var repository = mock(MeasurementSetRepository.class);
     final var subjectAccessControl = mock(MeasurementSubjectAccessControl.class);
@@ -235,11 +512,17 @@ class MeasurementSetCommandServicesTest {
     when(repository.retract(state)).thenReturn(state);
     final var service = retractionService(repository, subjectAccessControl);
 
-    service.retract(new RetractMeasurementSetCommand(set.measurementSetId(), 2));
+    final var reason = MeasurementRetractionReason.of("Invalidated measurement set");
+
+    service.retract(new RetractMeasurementSetCommand(set.measurementSetId(), 2, reason));
 
     assertThat(set)
         .returns(MeasurementSetLifecycle.RETRACTED, MeasurementSet::lifecycle)
-        .satisfies(retracted -> assertThat(retracted.currentRevision().records()).hasSize(2));
+        .satisfies(retracted -> assertThat(retracted.currentRevision().records()).hasSize(2))
+        .satisfies(retracted -> assertThat(retracted.retraction())
+            .isNotNull()
+            .returns(CORRECTION_TIME, MeasurementSetRetraction::retractedAt)
+            .returns(reason, MeasurementSetRetraction::reason));
     verify(subjectAccessControl).requireWriteAccess(set.subject());
     verify(repository).retract(state);
   }
@@ -284,9 +567,11 @@ class MeasurementSetCommandServicesTest {
       MeasurementSetRepository repository,
       MeasurementSubjectAccessControl subjectAccessControl
   ) {
+    final MeasurementActorProvider actorProvider = () -> ActorReference.accountUser(newUuid());
     return new RetractMeasurementSetService(
         repository,
         new MeasurementSetWriteAccess(repository, subjectAccessControl),
+        actorProvider,
         new DirectTransactionHelper(),
         Clock.fixed(CORRECTION_TIME, ZoneOffset.UTC)
     );
@@ -323,13 +608,32 @@ class MeasurementSetCommandServicesTest {
         List.of(
             result(MeasurementCharacteristic.SPECIFIC_GRAVITY, "1.052"),
             result(MeasurementCharacteristic.PH, "3.40")
-        )
+        ),
+        List.of()
     );
     return MeasurementSet.create(
         MeasurementSetId.newId(),
         WorkspaceId.newId(),
         subject,
         revision
+    );
+  }
+
+  private static PatchMeasurementSetCommand patchCommand(
+      MeasurementSet set,
+      MeasurementCorrectionReason reason,
+      List<MeasurementCharacteristicInput> replacements,
+      Set<MeasurementCharacteristic> removals
+  ) {
+    return new PatchMeasurementSetCommand(
+        set.measurementSetId(),
+        0,
+        null,
+        false,
+        null,
+        reason,
+        replacements,
+        removals
     );
   }
 

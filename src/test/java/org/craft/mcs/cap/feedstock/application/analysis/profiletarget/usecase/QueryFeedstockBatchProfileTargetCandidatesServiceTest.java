@@ -79,4 +79,5 @@ class QueryFeedstockBatchProfileTargetCandidatesServiceTest {
     verify(scoreUseCase).score(query);
     verify(roleAssessor).assess(argThat(request -> request.targetDistance() == distance));
   }
+
 }

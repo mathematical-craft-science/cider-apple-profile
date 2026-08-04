@@ -2,7 +2,6 @@ package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.traceabili
 
 import java.time.Instant;
 import java.util.List;
-import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceActorReference;
 import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceCharacteristicSnapshot;
 import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceMaterialCharacteristics;
 import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceMaterialSnapshot;
@@ -19,6 +18,7 @@ import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
 import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
+import org.craft.mcs.cap.shared.kernel.identity.ActorReference;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.craft.mcs.cap.shared.testing.BatchTraceSubjects;
@@ -50,7 +50,7 @@ class BatchTraceStepJdbcRowMapperTest {
         List.of(firstSource, secondSource),
         List.of(output),
         Instant.parse("2026-05-18T00:00:00Z"),
-        BatchTraceActorReference.system("test"),
+        ActorReference.machineIdentity(BatchTraceSubjects.id("test-actor")),
         null
     );
 
@@ -100,7 +100,7 @@ class BatchTraceStepJdbcRowMapperTest {
         List.of(input),
         List.of(output),
         Instant.parse("2026-05-18T00:00:00Z"),
-        BatchTraceActorReference.system("test"),
+        ActorReference.machineIdentity(BatchTraceSubjects.id("test-actor")),
         null
     );
 

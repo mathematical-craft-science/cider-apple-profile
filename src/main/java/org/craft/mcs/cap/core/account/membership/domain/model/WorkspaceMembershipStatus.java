@@ -6,5 +6,8 @@ public enum WorkspaceMembershipStatus {
   ACTIVE,
 
   /** Workspace administrators have temporarily disabled this membership. */
-  SUSPENDED
+  SUSPENDED,
+
+  /** The user no longer has workspace access, while the historical association is retained. */
+  REMOVED
 }

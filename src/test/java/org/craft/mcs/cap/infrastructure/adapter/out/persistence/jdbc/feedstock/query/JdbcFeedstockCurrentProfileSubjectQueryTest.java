@@ -6,10 +6,9 @@ import java.util.List;
 import org.craft.mcs.cap.core.feedstock.application.analysis.common.model.FeedstockAnalysisCandidatePagePosition;
 import org.craft.mcs.cap.core.feedstock.application.analysis.common.port.out.CurrentFeedstockBatchAnalysisCandidateQuery;
 import org.craft.mcs.cap.core.feedstock.application.batch.model.FeedstockBatchCriteria;
+import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentProfileSubject;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
-import org.craft.mcs.cap.core.measurement.application.port.in.ProjectCurrentMaterialStateUseCase;
-import org.craft.mcs.cap.core.measurement.application.port.in.QueryMeasurementSetMetadataUseCase;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -24,21 +23,14 @@ import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 
 
-class JdbcFeedstockCurrentProfileQueryTest {
+class JdbcFeedstockCurrentProfileSubjectQueryTest {
 
   @Test
-  void readsOnlyFeedstockOwnedTablesBeforeProjectingCurrentProfiles() {
+  void readsOnlyFeedstockOwnedTablesWhenSelectingAnalysisSubjects() {
     final var jdbcTemplate = mock(NamedParameterJdbcTemplate.class);
-    final var projector = mock(ProjectCurrentMaterialStateUseCase.class);
-    final var metadataQuery = mock(QueryMeasurementSetMetadataUseCase.class);
-    final var repository = new JdbcFeedstockCurrentProfileQuery(
-        jdbcTemplate,
-        projector,
-        metadataQuery
-    );
+    final var queryAdapter = new JdbcFeedstockCurrentProfileSubjectQuery(jdbcTemplate);
     final var batchId = FeedstockBatchId.newId();
     final var position = new FeedstockAnalysisCandidatePagePosition(
         Instant.parse("2026-07-01T12:00:00Z"),
@@ -46,9 +38,9 @@ class JdbcFeedstockCurrentProfileQueryTest {
     );
     doReturn(List.of())
         .when(jdbcTemplate)
-        .query(anyString(), any(SqlParameterSource.class), feedstockBatchIdRowMapper());
+        .query(anyString(), any(SqlParameterSource.class), subjectRowMapper());
 
-    repository.findCandidates(new CurrentFeedstockBatchAnalysisCandidateQuery(
+    queryAdapter.findCandidates(new CurrentFeedstockBatchAnalysisCandidateQuery(
         WorkspaceId.newId(),
         FeedstockBatchCriteria.of(batchId),
         FeedstockSeason.of(LocalDate.parse("2026-01-01"), LocalDate.parse("2026-12-31")),
@@ -58,7 +50,7 @@ class JdbcFeedstockCurrentProfileQueryTest {
 
     final var sql = ArgumentCaptor.forClass(String.class);
     final var parameters = ArgumentCaptor.forClass(SqlParameterSource.class);
-    verify(jdbcTemplate).query(sql.capture(), parameters.capture(), feedstockBatchIdRowMapper());
+    verify(jdbcTemplate).query(sql.capture(), parameters.capture(), subjectRowMapper());
 
     assertThat(sql.getValue())
         .contains("batch.batch_id IN (:batchIds)")
@@ -67,11 +59,10 @@ class JdbcFeedstockCurrentProfileQueryTest {
         .doesNotContain("measurement_sets");
     assertThat(parameters.getValue())
         .satisfies(value -> assertThat(value.getValue("batchIds")).isEqualTo(List.of(batchId.value())));
-    verifyNoInteractions(projector, metadataQuery);
   }
 
   @SuppressWarnings("unchecked")
-  private static RowMapper<FeedstockBatchId> feedstockBatchIdRowMapper() {
+  private static RowMapper<FeedstockCurrentProfileSubject> subjectRowMapper() {
     return isA(RowMapper.class);
   }
 }

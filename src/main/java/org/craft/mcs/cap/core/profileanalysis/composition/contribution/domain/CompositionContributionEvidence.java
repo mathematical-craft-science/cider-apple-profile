@@ -3,6 +3,8 @@ package org.craft.mcs.cap.core.profileanalysis.composition.contribution.domain;
 import java.math.BigDecimal;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileEvaluationAxis;
 import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
+import org.craft.mcs.cap.shared.kernel.measurement.MeasuredValue;
+import org.craft.mcs.cap.shared.kernel.measurement.MeasuredValueRangePosition;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
@@ -12,31 +14,49 @@ import static java.util.Objects.requireNonNull;
  * Per-axis explanation for a target-aware contribution role.
  *
  * <p>{@code targetCoordinate} is the nearest coordinate on the target geometry for the source
- * point. Positive {@code deviationFromTarget} means the source is above that target coordinate;
- * negative means it is below it.
+ * point. {@code targetPosition} follows the target's membership rules, so a value equal to an
+ * exclusive upper bound is above the target despite having zero numeric deviation from its
+ * closure.
  */
 public record CompositionContributionEvidence(
     @NonNull ProfileEvaluationAxis axis,
-    @NonNull BigDecimal sourceValue,
-    @NonNull BigDecimal targetCoordinate
+    @NonNull MeasuredValue sourceValue,
+    @NonNull MeasuredValue targetCoordinate,
+    @NonNull MeasuredValueRangePosition targetPosition
 ) {
 
   public CompositionContributionEvidence {
     requireNonNull(axis, "composition contribution evidence axis cannot be null");
     requireNonNull(sourceValue, "composition contribution evidence source value cannot be null");
     requireNonNull(targetCoordinate, "composition contribution evidence target coordinate cannot be null");
+    requireNonNull(targetPosition, "composition contribution evidence target position cannot be null");
+    if (!axis.supports(sourceValue) || !axis.supports(targetCoordinate)) {
+      throw new DomainRuleViolationException(
+          "composition contribution evidence values must match their evaluation axis"
+      );
+    }
+    final var deviationSign = sourceValue.asBigDecimal().compareTo(targetCoordinate.asBigDecimal());
+    final var positionIsConsistent = switch (targetPosition) {
+      case BELOW -> deviationSign < 0;
+      case WITHIN -> deviationSign == 0;
+      case ABOVE -> deviationSign >= 0;
+    };
+    if (!positionIsConsistent) {
+      throw new DomainRuleViolationException(
+          "composition contribution target position contradicts its numeric deviation"
+      );
+    }
   }
 
   public @NonNull BigDecimal deviationFromTarget() {
-    return sourceValue.subtract(targetCoordinate);
+    return sourceValue.asBigDecimal().subtract(targetCoordinate.asBigDecimal());
   }
 
   public @NonNull CompositionContributionEvidenceDirection direction() {
-    return switch (deviationFromTarget().signum()) {
-      case -1 -> CompositionContributionEvidenceDirection.BELOW_TARGET;
-      case 0 -> CompositionContributionEvidenceDirection.ON_TARGET;
-      case 1 -> CompositionContributionEvidenceDirection.ABOVE_TARGET;
-      default -> throw new DomainRuleViolationException("unexpected decimal signum");
+    return switch (targetPosition) {
+      case BELOW -> CompositionContributionEvidenceDirection.BELOW_TARGET;
+      case WITHIN -> CompositionContributionEvidenceDirection.ON_TARGET;
+      case ABOVE -> CompositionContributionEvidenceDirection.ABOVE_TARGET;
     };
   }
 

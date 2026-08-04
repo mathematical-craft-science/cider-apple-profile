@@ -4,6 +4,8 @@ import org.craft.mcs.cap.core.profileanalysis.graph.domain.SugarAcidityGraphPoin
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -47,6 +49,46 @@ class JolicoeurSugarAcidityZoneAssessorTest {
   void assessesLowSugarApples() {
     assertThat(assess("1.044", "4.50").zone())
         .isEqualTo(JolicoeurSugarAcidityZone.LOW_SUGAR_APPLES);
+  }
+
+  @ParameterizedTest
+  @CsvSource({
+      "1.045, 4.50, MEDIUM_SUGAR_APPLES",
+      "1.045, 7.50, MEDIUM_SUGAR_APPLES",
+      "1.045, 7.60, MEDIUM_SUGAR_APPLES",
+      "1.060, 4.50, PERFECT_APPLES",
+      "1.060, 7.50, HIGH_SUGAR_APPLES",
+      "1.060, 7.60, HIGH_SUGAR_APPLES"
+  })
+  void assignsSharedHalfOpenBoundaryToExactlyOneAdjacentZone(
+      String specificGravity,
+      String titratableAcidity,
+      JolicoeurSugarAcidityZone expectedZone
+  ) {
+    final var graphPoint = point(specificGravity, titratableAcidity);
+    final var geometryProfile = BuiltInJolicoeurSugarAcidityZoneProfiles.rectangularZoneGeometryProfile();
+
+    assertThat(geometryProfile.zones())
+        .filteredOn(zone -> zone.contains(graphPoint))
+        .singleElement()
+        .returns(expectedZone, JolicoeurSugarAcidityZoneGeometry::zone);
+    assertThat(assessor.assess(graphPoint))
+        .returns(true, JolicoeurSugarAcidityZoneAssessment::classified)
+        .returns(expectedZone, JolicoeurSugarAcidityZoneAssessment::zone);
+  }
+
+  @ParameterizedTest
+  @CsvSource({
+      "1.080, 6.0",
+      "1.070, 10.0"
+  })
+  void keepsGraphScaleMaximumOutsideHalfOpenZonePartition(
+      String specificGravity,
+      String titratableAcidity
+  ) {
+    assertThat(assess(specificGravity, titratableAcidity))
+        .returns(false, JolicoeurSugarAcidityZoneAssessment::classified)
+        .returns(null, JolicoeurSugarAcidityZoneAssessment::zone);
   }
 
   @Test

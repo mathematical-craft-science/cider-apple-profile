@@ -14,13 +14,10 @@ import org.jspecify.annotations.NonNull;
 public interface WorkspaceMembershipRepository
     extends VersionedAggregateRepository<WorkspaceMembership, WorkspaceMembershipId> {
 
-  void delete(@NonNull VersionedAggregate<WorkspaceMembership> membership);
-
-  @NonNull List<@NonNull WorkspaceMembership> findAllByUserId(@NonNull AccountUserId userId);
-
+  /** Returns memberships that still represent current workspace participation, including suspended access. */
   @NonNull List<@NonNull WorkspaceMembership> findAllByWorkspaceId(@NonNull WorkspaceId workspaceId);
 
-  @NonNull Optional<@NonNull WorkspaceMembership> findByWorkspaceIdAndUserId(
+  @NonNull Optional<@NonNull VersionedAggregate<WorkspaceMembership>> findVersionedByWorkspaceIdAndUserId(
       @NonNull WorkspaceId workspaceId,
       @NonNull AccountUserId userId
   );

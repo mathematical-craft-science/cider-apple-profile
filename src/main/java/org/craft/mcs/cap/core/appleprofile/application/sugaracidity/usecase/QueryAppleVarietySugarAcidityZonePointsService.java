@@ -4,24 +4,19 @@ import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.appleprofile.application.analysis.common.service.AppleVarietyGraphCandidateMatcher;
 import org.craft.mcs.cap.core.appleprofile.application.catalog.model.AppleVarietyCatalogPagePosition;
+import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.model.AppleVarietyGraphAnalysisView;
 import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.in.AppleVarietySugarAcidityZonePointQuery;
-import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.in.AppleVarietySugarAcidityZoneResult;
 import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.in.QueryAppleVarietySugarAcidityZonePointsUseCase;
+import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.service.AppleVarietyGraphAnalysisProjector;
 import org.craft.mcs.cap.core.appleprofile.application.catalog.port.out.AppleVarietyAnalysisCandidateCriteria;
 import org.craft.mcs.cap.core.appleprofile.application.catalog.port.out.AppleVarietyAnalysisCandidateQuery;
 import org.craft.mcs.cap.core.appleprofile.application.catalog.port.out.AppleVarietyAnalysisCandidateView;
-import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPredictor;
-import org.craft.mcs.cap.core.profileanalysis.classification.domain.profile.northamerican.NorthAmericanProfileCalculator;
-import org.craft.mcs.cap.core.profileanalysis.graph.application.model.JolicoeurSugarAcidityGraphEvaluation;
-import org.craft.mcs.cap.core.profileanalysis.graph.application.port.in.EvaluateJolicoeurSugarAcidityGraphUseCase;
-import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.craft.mcs.cap.shared.application.query.pagination.ChunkedCursorPageCollector;
 import org.craft.mcs.cap.shared.application.query.pagination.CursorPage;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 
 import static java.util.Objects.requireNonNull;
-import static org.craft.mcs.cap.shared.kernel.measurement.MeasurementValueMath.midpoint;
 
 
 /**
@@ -38,14 +33,12 @@ public final class QueryAppleVarietySugarAcidityZonePointsService
     implements QueryAppleVarietySugarAcidityZonePointsUseCase {
 
   private final @NonNull AppleVarietyAnalysisCandidateQuery candidateQuery;
-  private final @NonNull EvaluateJolicoeurSugarAcidityGraphUseCase graphEvaluator;
-  private final @NonNull NorthAmericanProfileCalculator northAmericanProfileCalculator;
   private final @NonNull AppleVarietyGraphCandidateMatcher graphCandidateMatcher;
-  private final @NonNull PotentialAbvPredictor potentialAbvPredictor;
+  private final @NonNull AppleVarietyGraphAnalysisProjector analysisProjector;
 
   @Override
   public @NonNull CursorPage<
-      @NonNull AppleVarietySugarAcidityZoneResult,
+      @NonNull AppleVarietyGraphAnalysisView,
       @NonNull AppleVarietyCatalogPagePosition
   > query(
       @NonNull AppleVarietySugarAcidityZonePointQuery query
@@ -66,42 +59,21 @@ public final class QueryAppleVarietySugarAcidityZonePointsService
     );
   }
 
-  private @NonNull AppleVarietySugarAcidityZoneResult toResult(
-      @NonNull AppleVarietyAnalysisCandidateView variety,
-      @NonNull JolicoeurSugarAcidityGraphEvaluation graphEvaluation
-  ) {
-    final var referenceProfile = variety.referenceProfile();
-    return new AppleVarietySugarAcidityZoneResult(
-        variety.varietyId(),
-        variety.name(),
-        referenceProfile.specificGravity(),
-        referenceProfile.titratableAcidity(),
-        graphEvaluation,
-        graphEvaluation.plottable() && referenceProfile.tannin() != null
-            ? northAmericanProfileCalculator.assessTannin(referenceProfile.tannin()) // NOSONAR
-            : null,
-        referenceProfile.specificGravity() == null
-            ? null
-            : potentialAbvPredictor.predict(
-                SpecificGravityValue.of(midpoint(referenceProfile.specificGravity())) // NOSONAR
-            )
-    );
-  }
-
-  private @NonNull Optional<@NonNull AppleVarietySugarAcidityZoneResult> toResultIfMatches(
+  private @NonNull Optional<@NonNull AppleVarietyGraphAnalysisView> toResultIfMatches(
       @NonNull AppleVarietyAnalysisCandidateView variety,
       @NonNull AppleVarietySugarAcidityZonePointQuery query
   ) {
     final var referenceProfile = variety.referenceProfile();
-    final var graphEvaluation = graphEvaluator.evaluate(
-        referenceProfile.specificGravity(),
-        referenceProfile.titratableAcidity()
+    final var analysis = analysisProjector.project(
+        variety.varietyId(),
+        variety.name(),
+        referenceProfile
     );
-    if (!graphCandidateMatcher.matches(referenceProfile, graphEvaluation, query.filters())) {
+    if (!graphCandidateMatcher.matches(referenceProfile, analysis.graphEvaluation(), query.filters())) {
       return Optional.empty();
     }
 
-    return Optional.of(toResult(variety, graphEvaluation));
+    return Optional.of(analysis);
   }
 
   private static @NonNull AppleVarietyCatalogPagePosition toPagePosition(

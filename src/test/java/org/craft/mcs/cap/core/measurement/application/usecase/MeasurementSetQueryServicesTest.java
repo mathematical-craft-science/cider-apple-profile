@@ -54,6 +54,22 @@ class MeasurementSetQueryServicesTest {
   }
 
   @Test
+  void revisionHistoryChecksReadAccessToItsMeasurementSubject() {
+    final var viewQuery = mock(MeasurementSetViewQuery.class);
+    final var accessControl = mock(MeasurementSubjectAccessControl.class);
+    final var measurementSetId = MeasurementSetId.newId();
+    final var subject = subject();
+    final var latest = mock(MeasurementSetView.class);
+    final var initial = mock(MeasurementSetView.class);
+    when(latest.subject()).thenReturn(subject);
+    when(viewQuery.findRevisionsById(measurementSetId)).thenReturn(List.of(latest, initial));
+    final var service = new QueryMeasurementSetsService(viewQuery, accessControl);
+
+    assertThat(service.listRevisions(measurementSetId)).containsExactly(latest, initial);
+    verify(accessControl).requireReadAccess(subject);
+  }
+
+  @Test
   void measurementSetMetadataQueryRemainsWorkspaceScopedAndSetBased() {
     final var metadataQuery = mock(MeasurementSetMetadataQuery.class);
     final var workspaceId = WorkspaceId.newId();

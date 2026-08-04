@@ -22,12 +22,13 @@ public record CompositionContributionEvidenceResponse(
     @Schema(description = "Nearest target coordinate used for comparison.", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull DecimalQuantityResponse targetCoordinate,
     @Schema(
-        description = "Source value minus target coordinate. Positive means above target.",
+        description = "Signed numeric difference from the target closure coordinate. It can be zero at an "
+            + "excluded upper boundary while direction remains ABOVE_TARGET.",
         requiredMode = Schema.RequiredMode.REQUIRED
     )
     @NonNull DecimalQuantityResponse deviationFromTarget,
     @Schema(
-        description = "Direction of the source value relative to the nearest target coordinate.",
+        description = "Membership-aware direction relative to the selected target, including exclusive bounds.",
         implementation = CompositionContributionEvidenceDirection.class,
         requiredMode = Schema.RequiredMode.REQUIRED
     )

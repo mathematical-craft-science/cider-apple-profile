@@ -23,6 +23,19 @@ public final class ProfileGraphRestMapper {
 
   public static @NonNull SugarAcidityGraphAssessmentResponse toResponse(
       @NonNull JolicoeurSugarAcidityGraphEvaluation graphEvaluation,
+      @NonNull CharacteristicValue<SpecificGravityValue> specificGravity,
+      @NonNull CharacteristicValue<TitratableAcidityValue> titratableAcidity
+  ) {
+    return toResponse(
+        graphEvaluation,
+        null,
+        specificGravity,
+        titratableAcidity
+    );
+  }
+
+  public static @NonNull SugarAcidityGraphAssessmentResponse toResponse(
+      @NonNull JolicoeurSugarAcidityGraphEvaluation graphEvaluation,
       @Nullable NorthAmericanTanninLevel northAmericanTanninLevel,
       @NonNull CharacteristicValue<SpecificGravityValue> specificGravity,
       @NonNull CharacteristicValue<TitratableAcidityValue> titratableAcidity

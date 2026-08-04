@@ -3,7 +3,6 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.traceability.mapper;
 import java.time.Instant;
 import java.util.List;
 import org.craft.mcs.cap.core.traceability.domain.graph.BatchTraceabilityGraphProjector;
-import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceActorReference;
 import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceCharacteristicSnapshot;
 import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceMaterialCharacteristics;
 import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceMaterialSnapshot;
@@ -16,10 +15,12 @@ import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profilecharacteri
 import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
+import org.craft.mcs.cap.shared.kernel.identity.ActorReference;
 import org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.craft.mcs.cap.shared.testing.BatchTraceSubjects.id;
 import static org.craft.mcs.cap.shared.testing.BatchTraceSubjects.subject;
 
 
@@ -41,7 +42,7 @@ class BatchTraceabilityRestMapperTest {
             "production-1"
         ))),
         occurredAt,
-        BatchTraceActorReference.system("test"),
+        ActorReference.machineIdentity(id("test-actor")),
         null
     );
 
@@ -86,7 +87,7 @@ class BatchTraceabilityRestMapperTest {
             ), null)
         )),
         Instant.parse("2026-05-18T00:00:00Z"),
-        BatchTraceActorReference.system("test"),
+        ActorReference.machineIdentity(id("test-actor")),
         null
     );
 

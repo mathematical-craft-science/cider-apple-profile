@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
+import org.craft.mcs.cap.shared.kernel.identity.ActorReference;
 import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic;
@@ -19,7 +20,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class BatchTraceStepTest {
 
   private static final WorkspaceId WORKSPACE_ID = WorkspaceId.newId();
-  private static final BatchTraceActorReference ACTOR = BatchTraceActorReference.system("test");
+  private static final ActorReference ACTOR = ActorReference.machineIdentity(
+      BatchTraceSubjects.id("test-actor")
+  );
 
   @Test
   void createsAppendOnlyTraceStepWithDefensiveCopies() {

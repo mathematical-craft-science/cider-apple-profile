@@ -13,7 +13,6 @@ import org.craft.mcs.cap.core.measurement.application.model.CurrentMaterialChara
 import org.craft.mcs.cap.core.measurement.application.model.CurrentMeasurementResultView;
 import org.craft.mcs.cap.core.measurement.application.model.CurrentMaterialStateView;
 import org.craft.mcs.cap.core.measurement.application.port.in.ProjectCurrentMaterialStateUseCase;
-import org.craft.mcs.cap.core.measurement.application.port.out.CurrentMeasurementResultQuery;
 import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementFreshnessThresholdProvider;
 import org.craft.mcs.cap.core.measurement.application.port.out.CurrentMaterialStateProvider;
 import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementSubjectAccessControl;
@@ -32,7 +31,7 @@ import static java.util.Objects.requireNonNull;
 @RequiredArgsConstructor
 public final class CurrentMaterialStateProjector implements ProjectCurrentMaterialStateUseCase {
 
-  private final @NonNull CurrentMeasurementResultQuery resultQuery;
+  private final @NonNull CurrentMeasurementResultResolver resultResolver;
   private final @NonNull MeasurementSubjectAccessControl subjectAccessControl;
   private final @NonNull CurrentMaterialStateProvider materialStateProvider;
   private final @NonNull MeasurementFreshnessThresholdProvider freshnessThresholdProvider;
@@ -82,7 +81,7 @@ public final class CurrentMaterialStateProjector implements ProjectCurrentMateri
     final var currentStateIds = materialStateProvider.currentStatesOf(workspaceId, subjects);
     final Map<MeasurementSubjectReference, List<CurrentMeasurementResultView>> resultsBySubject =
         new LinkedHashMap<>();
-    resultQuery.findByStates(workspaceId, currentStateIds).forEach(result -> resultsBySubject
+    resultResolver.resolve(workspaceId, currentStateIds).forEach(result -> resultsBySubject
         .computeIfAbsent(result.subject(), _ -> new ArrayList<>())
         .add(result));
 

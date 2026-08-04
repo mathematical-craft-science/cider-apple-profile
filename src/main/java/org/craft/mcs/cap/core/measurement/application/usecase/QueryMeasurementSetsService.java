@@ -40,4 +40,17 @@ public final class QueryMeasurementSetsService implements QueryMeasurementSetsUs
     final var workspaceId = subjectAccessControl.requireReadAccess(subject);
     return viewQuery.findBySubject(workspaceId, subject);
   }
+
+  @Override
+  public @NonNull List<@NonNull MeasurementSetView> listRevisions(
+      @NonNull MeasurementSetId measurementSetId
+  ) {
+    requireNonNull(measurementSetId, "measurement set id cannot be null");
+    final var revisions = viewQuery.findRevisionsById(measurementSetId);
+    if (revisions.isEmpty()) {
+      throw new MeasurementSetNotFoundException(measurementSetId);
+    }
+    subjectAccessControl.requireReadAccess(revisions.getFirst().subject());
+    return revisions;
+  }
 }

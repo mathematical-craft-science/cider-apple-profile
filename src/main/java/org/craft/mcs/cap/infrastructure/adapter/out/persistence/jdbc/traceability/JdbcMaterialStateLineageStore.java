@@ -44,6 +44,14 @@ class JdbcMaterialStateLineageStore implements MaterialStateLineageStore {
                  ARRAY[requested_state.current_state_id] AS visited_states,
                  ARRAY[]::VARCHAR[] AS invalidated_characteristics
             FROM requested_states requested_state
+            JOIN batch_trace_step_subjects current_output
+              ON current_output.material_state_id = requested_state.current_state_id
+             AND current_output.subject_role = 'OUTPUT'
+             AND current_output.subject_type = CAST(:subjectType AS VARCHAR)
+             AND current_output.subject_id = requested_state.subject_id
+            JOIN batch_trace_steps current_step
+              ON current_step.step_id = current_output.step_id
+             AND current_step.workspace_id = :workspaceId
 
           UNION ALL
 

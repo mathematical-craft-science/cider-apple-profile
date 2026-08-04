@@ -31,6 +31,7 @@ import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
+import org.craft.mcs.cap.shared.kernel.identity.ActorReference;
 import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
@@ -91,8 +92,7 @@ class BatchTraceabilityProductionBatchTraceRecorderTest {
         .returns(BatchTraceStepType.PRODUCTION_BATCH_CREATED, BatchTraceStep::stepType)
         .returns(occurredAt, BatchTraceStep::occurredAt)
         .returns("accepted input", BatchTraceStep::note)
-        .satisfies(step -> assertThat(step.performedBy().id())
-            .isEqualTo(ACTOR_USER_ID.value().toString()));
+        .returns(ActorReference.accountUser(ACTOR_USER_ID.value()), BatchTraceStep::performedBy);
 
     final var sourceInput = traceStep.inputs().getFirst();
     final var sourceOutput = outputOfType(traceStep, BatchTraceSubjectType.FEEDSTOCK_BATCH);

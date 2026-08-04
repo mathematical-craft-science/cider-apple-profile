@@ -25,10 +25,12 @@ import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.objec
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.objective.ProfileTargetObjectiveFunctionCode;
 import org.craft.mcs.cap.core.profileanalysis.graph.domain.SugarAcidityGeometryShape;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.SugarAcidityTargetKind;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.SugarAcidityTargetPosition;
 import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
+import org.craft.mcs.cap.shared.kernel.measurement.MeasuredValueRangePosition;
 import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -110,7 +112,7 @@ final class ProductionBatchCandidateJsonCodec {
     }
   }
 
-  private <T extends @NonNull Object> @NonNull T read(
+  private <T extends @NonNull Object> T read(
       @NonNull String value,
       @NonNull Class<T> type
   ) {
@@ -121,7 +123,7 @@ final class ProductionBatchCandidateJsonCodec {
     }
   }
 
-  private <T extends @NonNull Object> @NonNull T read(
+  private <T extends @NonNull Object> T read(
       @NonNull String value,
       @NonNull TypeReference<T> type
   ) {
@@ -145,6 +147,7 @@ final class ProductionBatchCandidateJsonCodec {
       @NonNull ProfileTargetDistanceStatus status,
       @NonNull CoordinatePayload point,
       @NonNull CoordinatePayload nearestTargetPoint,
+      @NonNull TargetPositionPayload targetPosition,
       @Nullable BigDecimal tannin,
       @Nullable BigDecimal nearestTargetTannin,
       @Nullable BigDecimal value,
@@ -165,6 +168,7 @@ final class ProductionBatchCandidateJsonCodec {
           distance.status(),
           CoordinatePayload.from(distance.point()),
           CoordinatePayload.from(distance.nearestTargetPoint()),
+          TargetPositionPayload.from(distance.sugarAcidityTargetPosition()),
           decimal(distance.tannin()),
           decimal(distance.nearestTargetTannin()),
           distance.value(),
@@ -186,6 +190,7 @@ final class ProductionBatchCandidateJsonCodec {
           status,
           point.toDomain(),
           nearestTargetPoint.toDomain(),
+          targetPosition.toDomain(),
           tannin(tannin),
           tannin(nearestTargetTannin),
           value,
@@ -206,6 +211,25 @@ final class ProductionBatchCandidateJsonCodec {
 
     private static @Nullable TanninValue tannin(@Nullable BigDecimal value) {
       return value == null ? null : TanninValue.of(value);
+    }
+  }
+
+  private record TargetPositionPayload(
+      @NonNull MeasuredValueRangePosition specificGravity,
+      @NonNull MeasuredValueRangePosition titratableAcidity
+  ) {
+
+    private static @NonNull TargetPositionPayload from(
+        @NonNull SugarAcidityTargetPosition position
+    ) {
+      return new TargetPositionPayload(
+          position.specificGravity(),
+          position.titratableAcidity()
+      );
+    }
+
+    private @NonNull SugarAcidityTargetPosition toDomain() {
+      return new SugarAcidityTargetPosition(specificGravity, titratableAcidity);
     }
   }
 

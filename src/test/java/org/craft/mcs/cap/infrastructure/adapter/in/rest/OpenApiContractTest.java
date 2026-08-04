@@ -9,6 +9,7 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import org.craft.mcs.cap.core.account.audit.application.port.in.ListWorkspaceAdministrativeAuditUseCase;
 import org.craft.mcs.cap.core.account.contributor.application.port.in.ContributorProfileUseCase;
+import org.craft.mcs.cap.core.account.actor.application.port.in.GetActorDisplayUseCase;
 import org.craft.mcs.cap.core.account.invitation.application.port.in.GetIncomingWorkspaceInvitationUseCase;
 import org.craft.mcs.cap.core.account.invitation.application.port.in.ListIncomingWorkspaceInvitationsUseCase;
 import org.craft.mcs.cap.core.account.invitation.application.port.in.WorkspaceInvitationUseCase;
@@ -113,6 +114,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
     MeasurementSetRestMapper.class
 })
 @MockitoBean(types = {
+    GetActorDisplayUseCase.class,
     ContributorProfileUseCase.class,
     AppleVarietyProfileGraphRestMapper.class,
     FeedstockBatchSugarAcidityRestMapper.class,
@@ -214,6 +216,52 @@ class OpenApiContractTest {
     assertThat(descriptionViolations)
         .as("account DTO schemas and properties must have semantic OpenAPI descriptions")
         .isEmpty();
+  }
+
+  @Test
+  void openApiDescribesProviderNeutralActorDirectory() throws Exception {
+    final var openApi = openApi();
+
+    assertJsonResponse(
+        openApi,
+        "/account/actors/{actorType}/{actorId}",
+        "get"
+    );
+    assertResponseCodes(
+        openApi,
+        "/account/actors/{actorType}/{actorId}",
+        "get",
+        "200",
+        "401",
+        "403",
+        "422",
+        "404"
+    );
+    assertRequiredProperties(
+        openApi,
+        "ActorDisplayResponse",
+        "type",
+        "id",
+        "displayName",
+        "status"
+    );
+    assertNotRequiredProperties(openApi, "ActorDisplayResponse", "avatarUrl");
+    assertNullable(schemaProperty(openApi, "ActorDisplayResponse", "avatarUrl"));
+    assertEnumPropertyValues(
+        openApi,
+        "ActorDisplayResponse",
+        "type",
+        "ACCOUNT_USER",
+        "MACHINE_IDENTITY"
+    );
+    assertEnumPropertyValues(
+        openApi,
+        "ActorDisplayResponse",
+        "status",
+        "ACTIVE",
+        "INACTIVE",
+        "DELETED"
+    );
   }
 
   @Test
@@ -347,6 +395,24 @@ class OpenApiContractTest {
         "expectedVersion"
     );
     final var expectedVersionSchema = resolveSchema(openApi, expectedVersion.path("schema"));
+    final var retractionReason = operationParameter(
+        openApi,
+        "/measurement-sets/{measurementSetId}",
+        "delete",
+        "reason"
+    );
+
+    assertEnumPropertyValues(
+        openApi,
+        "MeasurementProvenanceRequest",
+        "sourceType",
+        "USER",
+        "INSTRUMENT",
+        "LAB",
+        "IMPORT",
+        "CURATOR",
+        "INSTITUTE"
+    );
 
     assertThat(List.of(
         expectedVersion.path("required").asText(),
@@ -354,6 +420,12 @@ class OpenApiContractTest {
         expectedVersionSchema.path("format").asText(),
         expectedVersionSchema.path("minimum").asText()
     )).containsExactly("true", "integer", "int64", "0");
+    assertThat(List.of(
+        retractionReason.path("required").asText(),
+        retractionReason.path("schema").path("type").asText(),
+        retractionReason.path("schema").path("minLength").asText(),
+        retractionReason.path("schema").path("maxLength").asText()
+    )).containsExactly("true", "string", "1", "1000");
 
     assertResponseCodes(
         openApi,
@@ -361,7 +433,8 @@ class OpenApiContractTest {
         "put",
         "200",
         "404",
-        "409"
+        "409",
+        "422"
     );
     assertResponseCodes(
         openApi,
@@ -369,7 +442,8 @@ class OpenApiContractTest {
         "patch",
         "200",
         "404",
-        "409"
+        "409",
+        "422"
     );
     assertResponseCodes(
         openApi,
@@ -377,7 +451,8 @@ class OpenApiContractTest {
         "delete",
         "204",
         "404",
-        "409"
+        "409",
+        "422"
     );
     assertResponseCodes(
         openApi,
@@ -419,6 +494,7 @@ class OpenApiContractTest {
     assertJsonResponse(openApi, "/measurement-sets", "post", "201");
     assertJsonResponse(openApi, "/measurement-sets", "get");
     assertJsonResponse(openApi, "/measurement-sets/{measurementSetId}", "get");
+    assertJsonResponse(openApi, "/measurement-sets/{measurementSetId}/revisions", "get");
     assertJsonResponse(openApi, "/measurement-sets/{measurementSetId}", "put");
     assertJsonResponse(openApi, "/measurement-sets/{measurementSetId}", "patch");
     assertJsonResponse(openApi, "/material-subjects/{subjectType}/{subjectId}/current-state", "get");
@@ -842,10 +918,62 @@ class OpenApiContractTest {
         "revisionCreatedAt",
         "actor",
         "records",
+        "resultRetractions",
         "createdAt",
         "updatedAt"
     );
     assertStringFormat(schemaProperty(openApi, "MeasurementSetResponse", "materialStateId"), "uuid");
+    assertArray(schemaProperty(openApi, "MeasurementSetResponse", "resultRetractions"));
+    assertRequiredProperties(
+        openApi,
+        "MeasurementSetRevisionHistoryResponse",
+        "measurementSetId",
+        "lifecycle",
+        "version",
+        "revisions"
+    );
+    assertArray(schemaProperty(openApi, "MeasurementSetRevisionHistoryResponse", "revisions"));
+    assertRequiredProperties(
+        openApi,
+        "MeasurementSetRevisionResponse",
+        "revisionId",
+        "revisionNumber",
+        "materialStateId",
+        "name",
+        "createdAt",
+        "actor",
+        "records",
+        "resultRetractions"
+    );
+    assertRequiredProperties(
+        openApi,
+        "MeasurementResultRetractionResponse",
+        "recordId",
+        "characteristic",
+        "status",
+        "resultSnapshot",
+        "observationSnapshots",
+        "sourceRevisionId",
+        "sourceRevisionNumber",
+        "actor",
+        "retractedAt",
+        "reason"
+    );
+    assertStringFormat(
+        schemaProperty(openApi, "MeasurementResultRetractionResponse", "recordId"),
+        "uuid"
+    );
+    assertStringFormat(
+        schemaProperty(openApi, "MeasurementResultRetractionResponse", "sourceRevisionId"),
+        "uuid"
+    );
+    assertArray(schemaProperty(openApi, "MeasurementResultRetractionResponse", "observationSnapshots"));
+    assertEnumPropertyValues(
+        openApi,
+        "MeasurementResultRetractionResponse",
+        "status",
+        "RETRACTED"
+    );
     assertRequiredProperties(
         openApi,
         "MeasurementActorReferenceResponse",
@@ -856,7 +984,16 @@ class OpenApiContractTest {
         openApi,
         "MeasurementSetResponse",
         "note",
-        "correctionReason"
+        "correctionReason",
+        "retraction"
+    );
+    assertNullable(schemaProperty(openApi, "MeasurementSetResponse", "retraction"));
+    assertRequiredProperties(
+        openApi,
+        "MeasurementSetRetractionResponse",
+        "actor",
+        "retractedAt",
+        "reason"
     );
     assertRequiredProperties(
         openApi,
@@ -969,8 +1106,26 @@ class OpenApiContractTest {
         "characteristic",
         "YAN"
     );
-    assertNotRequiredProperties(openApi, "AppleVarietySugarAcidityZoneResponse", "potentialAbv");
+    assertNotRequiredProperties(
+        openApi,
+        "AppleVarietySugarAcidityZoneResponse",
+        "tannin",
+        "northAmericanProfile",
+        "potentialAbv"
+    );
+    assertNullable(schemaProperty(openApi, "AppleVarietySugarAcidityZoneResponse", "tannin"));
+    assertNullable(schemaProperty(openApi, "AppleVarietySugarAcidityZoneResponse", "northAmericanProfile"));
     assertNullable(schemaProperty(openApi, "AppleVarietySugarAcidityZoneResponse", "potentialAbv"));
+    assertNotRequiredProperties(
+        openApi,
+        "AppleVarietyNorthAmericanProfileResponse",
+        "sugar",
+        "acidity",
+        "tannin"
+    );
+    assertNullable(schemaProperty(openApi, "AppleVarietyNorthAmericanProfileResponse", "sugar"));
+    assertNullable(schemaProperty(openApi, "AppleVarietyNorthAmericanProfileResponse", "acidity"));
+    assertNullable(schemaProperty(openApi, "AppleVarietyNorthAmericanProfileResponse", "tannin"));
     assertMissingProperties(openApi, "CalculateCompositionRequest", "scoringPurpose");
     assertMissingProperties(openApi, "OptimizeCompositionRequest", "scoringPurpose");
     assertMissingProperties(openApi, "OptimizeFeedstockBatchCompositionRequest", "purpose");

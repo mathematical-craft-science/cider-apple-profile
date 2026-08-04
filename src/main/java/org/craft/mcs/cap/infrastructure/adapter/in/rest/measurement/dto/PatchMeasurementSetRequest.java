@@ -9,8 +9,10 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 
+/** Partial correction request that preserves unchanged evidence in a new immutable revision. */
 @Schema(
-    description = "Applies a partial correction by copying unchanged evidence into a new immutable revision."
+    description = "Applies a partial correction by copying unchanged evidence into a new immutable revision. "
+        + "At least one of name, noteSpecified, replacements, or removals must describe a change."
 )
 public record PatchMeasurementSetRequest(
     @Schema(
@@ -37,7 +39,8 @@ public record PatchMeasurementSetRequest(
     )
     @Nullable String note,
     @Schema(
-        description = "Required explanation of why the previous revision is being corrected.",
+        description = "Required explanation of why the previous revision is being corrected. The same reason "
+            + "is retained by every result retraction created by this patch.",
         minLength = 1,
         maxLength = 1000,
         requiredMode = Schema.RequiredMode.REQUIRED
@@ -53,7 +56,8 @@ public record PatchMeasurementSetRequest(
     @NonNull List<@NonNull MeasurementCharacteristicRequest> replacements,
     @ArraySchema(
         arraySchema = @Schema(
-            description = "Characteristics excluded from the new revision.",
+            description = "Characteristics whose active working RESULT is retracted with a retained tombstone. "
+                + "The backend records the authenticated actor and correction time.",
             requiredMode = Schema.RequiredMode.REQUIRED
         ),
         schema = @Schema(implementation = MeasurementCharacteristic.class)

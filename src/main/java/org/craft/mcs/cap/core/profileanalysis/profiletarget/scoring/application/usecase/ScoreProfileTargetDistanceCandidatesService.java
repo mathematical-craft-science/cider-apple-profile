@@ -1,10 +1,12 @@
 package org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.usecase;
 
+import java.util.Comparator;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.port.in.ProfileTargetDistanceCandidateScore;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.port.in.ProfileTargetDistanceCandidateScores;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.port.in.ScoreProfileTargetDistanceCandidatesCommand;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.port.in.ScoreProfileTargetDistanceCandidatesUseCase;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.assessment.ProfileTargetDistanceOrdering;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.normalization.ProfileAxisNormalizerSelector;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.objective.ProfileTargetObjectiveFunctionFactory;
 import org.jspecify.annotations.NonNull;
@@ -49,27 +51,12 @@ public final class ScoreProfileTargetDistanceCandidatesService
                 command.objective()
             )
         ))
-        .sorted(ScoreProfileTargetDistanceCandidatesService::compareByDistance)
+        .sorted(Comparator.comparing(
+            ProfileTargetDistanceCandidateScore::distance,
+            ProfileTargetDistanceOrdering::compare
+        ))
         .toList();
 
     return new ProfileTargetDistanceCandidateScores(configuration, scores);
-  }
-
-  private static int compareByDistance(
-      @NonNull ProfileTargetDistanceCandidateScore left,
-      @NonNull ProfileTargetDistanceCandidateScore right
-  ) {
-    final var leftValue = left.distance().value();
-    final var rightValue = right.distance().value();
-    if (leftValue == null && rightValue == null) {
-      return 0;
-    }
-    if (leftValue == null) {
-      return 1;
-    }
-    if (rightValue == null) {
-      return -1;
-    }
-    return leftValue.compareTo(rightValue);
   }
 }

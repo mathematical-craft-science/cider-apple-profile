@@ -10,11 +10,11 @@ import static java.util.Objects.requireNonNull;
 /** Immutable keyset position shared by paged feedstock analysis-candidate queries. */
 public record FeedstockAnalysisCandidatePagePosition(
     @NonNull Instant measuredAt,
-    @NonNull UUID measurementId
+    @NonNull UUID measurementSetId
 ) {
 
   public FeedstockAnalysisCandidatePagePosition {
     requireNonNull(measuredAt, "feedstock measurement page position measuredAt cannot be null");
-    requireNonNull(measurementId, "feedstock measurement page position id cannot be null");
+    requireNonNull(measurementSetId, "feedstock measurement set page position id cannot be null");
   }
 }

@@ -1,5 +1,6 @@
 package org.craft.mcs.cap.feedstock.application.analysis.profiletarget.usecase;
 
+import static java.util.Objects.requireNonNull;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.craft.mcs.cap.core.profileanalysis.testing.ProfileAnalysisTestFixtures
     .graphEvaluator;
@@ -23,11 +24,14 @@ import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.PredefinedFeedstockProfileTargetSelection;
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.usecase.FeedstockBatchProfileTargetScorableCandidateProvider;
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.usecase.FeedstockProfileTargetObjectiveResolver;
+import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.usecase.QueryFeedstockBatchProfileTargetCandidatesService;
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.usecase.ScoreFeedstockBatchProfileTargetService;
 import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetId;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetName;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
+import org.craft.mcs.cap.core.profileanalysis.composition.contribution.domain.CompositionContributionRole;
+import org.craft.mcs.cap.core.profileanalysis.composition.contribution.domain.TargetAwareCompositionContributionRoleAssessor;
 import org.craft.mcs.cap.core.profileanalysis.graph.zone.domain.BuiltInJolicoeurSugarAcidityZoneProfiles;
 import org.craft.mcs.cap.core.profileanalysis.graph.zone.domain.JolicoeurSugarAcidityZone;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.model.ProfileTargetAnalysisScenario;
@@ -49,6 +53,43 @@ import org.mockito.ArgumentCaptor;
 
 
 class ScoreFeedstockBatchProfileTargetServiceTest {
+
+  @Test
+  void assessesExcludedLowSugarBoundaryThroughTheCompleteCandidatePipeline() {
+    final var repository = mock(FeedstockCurrentProfileAnalysisCandidateRepository.class);
+    final var scoreService = service(repository);
+    final var service = new QueryFeedstockBatchProfileTargetCandidatesService(
+        scoreService,
+        new TargetAwareCompositionContributionRoleAssessor()
+    );
+    final var boundaryBatch = sample("Excluded low-sugar boundary", profile("1.045", "7.6"));
+    when(repository.findCandidates(any())).thenReturn(List.of(currentProfile(boundaryBatch)));
+
+    final var result = service.query(new FeedstockBatchProfileTargetQuery(
+        WorkspaceId.of(newUuid()),
+        new FeedstockAnalysisCandidateFilters(null, null, null, null),
+        ProfileTargetAnalysisScenario.BLENDING_PLANNING,
+        new PredefinedFeedstockProfileTargetSelection(JolicoeurSugarAcidityZone.LOW_SUGAR_APPLES),
+        null,
+        ProfileTargetObjectiveWeights.balanced(),
+        200
+    ));
+
+    assertThat(result.candidates())
+        .singleElement()
+        .extracting(
+            candidate -> candidate.distance().insideSugarAcidityTarget(),
+            candidate -> candidate.distance().missingAxes().isEmpty(),
+            candidate -> requireNonNull(candidate.distance().value()).signum(),
+            candidate -> candidate.contributionRole().roles()
+        )
+        .containsExactly(
+            false,
+            true,
+            0,
+            List.of(CompositionContributionRole.SUGAR_CONTRIBUTOR)
+        );
+  }
 
   @Test
   void scoresLatestMeasurementCandidatesPerBatchAndSortsByDistance() {

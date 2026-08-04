@@ -24,6 +24,17 @@ class MeasuredValueRangeTest {
         range.contains(TitratableAcidityValue.of("7.499")),
         range.contains(TitratableAcidityValue.of("7.5"))
     )).containsExactly(true, true, false);
+    assertThat(List.of(
+        range.positionOf(TitratableAcidityValue.of("4.499")),
+        range.positionOf(TitratableAcidityValue.of("4.5")),
+        range.positionOf(TitratableAcidityValue.of("7.499")),
+        range.positionOf(TitratableAcidityValue.of("7.5"))
+    )).containsExactly(
+        MeasuredValueRangePosition.BELOW,
+        MeasuredValueRangePosition.WITHIN,
+        MeasuredValueRangePosition.WITHIN,
+        MeasuredValueRangePosition.ABOVE
+    );
   }
 
   @Test

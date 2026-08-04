@@ -6,6 +6,9 @@ import java.time.ZoneId;
 import java.util.List;
 import java.util.Locale;
 import org.craft.mcs.cap.core.account.shared.application.AccountAccessDeniedException;
+import org.craft.mcs.cap.core.account.actor.application.model.ActorDisplayView;
+import org.craft.mcs.cap.core.account.actor.application.model.ActorLifecycleStatus;
+import org.craft.mcs.cap.core.account.actor.application.port.in.GetActorDisplayUseCase;
 import org.craft.mcs.cap.core.account.context.application.ActiveWorkspaceRequiredException;
 import org.craft.mcs.cap.core.account.administration.application.port.in.ListWorkspaceMembersUseCase;
 import org.craft.mcs.cap.core.account.administration.application.port.in.WorkspaceMembershipManagementUseCase;
@@ -36,6 +39,7 @@ import org.craft.mcs.cap.core.account.workspace.domain.model.WorkspaceStatus;
 import org.craft.mcs.cap.core.account.workspace.domain.model.WorkspaceType;
 import org.craft.mcs.cap.infrastructure.adapter.in.importer.appleprofile.AppleVarietyJsonSeedImporter;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.context.AccountContextController;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.actor.ActorDirectoryController;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.membership.WorkspaceMembershipController;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.user.AccountUserController;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.workspace.WorkspaceSettingsController;
@@ -45,6 +49,7 @@ import org.craft.mcs.cap.infrastructure.adapter.in.security.AccountProvisioningF
 import org.craft.mcs.cap.infrastructure.adapter.in.security.DebugAccessAuthorizationManager;
 import org.craft.mcs.cap.infrastructure.configuration.SecurityConfiguration;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
+import org.craft.mcs.cap.shared.kernel.identity.ActorReference;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,6 +79,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 
 @WebMvcTest({
+    ActorDirectoryController.class,
     AccountContextController.class,
     AccountUserController.class,
     WorkspaceSettingsController.class,
@@ -113,6 +119,9 @@ class AccountSecurityWebMvcTest {
   private GetCurrentAccountUseCase getCurrentAccountUseCase;
 
   @MockitoBean
+  private GetActorDisplayUseCase getActorDisplayUseCase;
+
+  @MockitoBean
   private GetCurrentAccountProfileUseCase getCurrentAccountProfileUseCase;
 
   @MockitoBean
@@ -146,6 +155,30 @@ class AccountSecurityWebMvcTest {
   void rejectsUnauthenticatedBusinessRequest() throws Exception {
     mockMvc.perform(get("/account/me"))
         .andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  void resolvesActorDisplayIdentityForAuthenticatedRequest() throws Exception {
+    final var actor = ActorReference.accountUser(AccountUserId.newId().value());
+    when(getActorDisplayUseCase.get(actor)).thenReturn(new ActorDisplayView(
+        actor,
+        DisplayName.of("Audit actor"),
+        null,
+        ActorLifecycleStatus.ACTIVE
+    ));
+
+    mockMvc.perform(get(
+            "/account/actors/{actorType}/{actorId}",
+            actor.type(),
+            actor.id()
+        ).with(jwt().jwt(token -> token
+            .subject("user_123")
+            .claim("email", "technologist@example.com"))))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.type").value("ACCOUNT_USER"))
+        .andExpect(jsonPath("$.id").value(actor.id().toString()))
+        .andExpect(jsonPath("$.displayName").value("Audit actor"))
+        .andExpect(jsonPath("$.status").value("ACTIVE"));
   }
 
   @Test

@@ -186,7 +186,6 @@ public final class ProductionBatch {
    * Marks that all material has left the batch through valid downstream operations.
    */
   public @NonNull ProductionBatch deplete() {
-    requireActive("deplete");
     materialState = materialState.deplete();
     return this;
   }
@@ -195,7 +194,6 @@ public final class ProductionBatch {
    * Marks that the remaining material was intentionally removed from production.
    */
   public @NonNull ProductionBatch discard() {
-    requireActive("discard");
     materialState = materialState.discard();
     return this;
   }

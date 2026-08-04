@@ -226,6 +226,179 @@ class MeasurementSetRevisionTest {
         .hasMessage("measurement set note length must not exceed 2000 characters");
   }
 
+  @Test
+  void allowsCorrectedRevisionContainingOnlyARetractionTombstone() {
+    final var actor = ActorReference.accountUser(newUuid());
+    final var reason = MeasurementCorrectionReason.of("Laboratory invalidated the result");
+    final var retractedAt = MEASURED_AT.plusSeconds(60);
+    final var retraction = new MeasurementResultRetraction(
+        MeasurementSetRevisionId.newId(),
+        MeasurementSetRevisionNumber.initial(),
+        result(MeasurementCharacteristic.PH),
+        List.of(),
+        actor,
+        retractedAt,
+        reason
+    );
+
+    final var revision = correctedRevision(List.of(), List.of(retraction), retractedAt);
+
+    assertThat(revision)
+        .satisfies(value -> assertThat(value.records()).isEmpty())
+        .satisfies(value -> assertThat(value.resultRetractions())
+            .singleElement()
+            .returns(MeasurementCharacteristic.PH, MeasurementResultRetraction::characteristic)
+            .returns(actor, MeasurementResultRetraction::actor)
+            .returns(retractedAt, MeasurementResultRetraction::retractedAt)
+            .returns(reason, MeasurementResultRetraction::reason));
+  }
+
+  @Test
+  void retainsEveryObservationUsedByARetractedDerivedResult() {
+    final var first = observation(MeasurementCharacteristic.PH, "3.20");
+    final var second = observation(MeasurementCharacteristic.PH, "3.40");
+    final var result = derivedMeanResult("3.30", first, second);
+
+    final var retraction = new MeasurementResultRetraction(
+        MeasurementSetRevisionId.newId(),
+        MeasurementSetRevisionNumber.initial(),
+        result,
+        List.of(first, second),
+        ActorReference.accountUser(newUuid()),
+        MEASURED_AT.plusSeconds(60),
+        MeasurementCorrectionReason.of("Invalidated repeated measurement")
+    );
+
+    assertThat(retraction)
+        .returns(result, MeasurementResultRetraction::result)
+        .returns(List.of(first, second), MeasurementResultRetraction::observations);
+  }
+
+  @Test
+  void rejectsIncompleteOrDuplicateRetractedObservationSnapshot() {
+    final var first = observation(MeasurementCharacteristic.PH, "3.20");
+    final var second = observation(MeasurementCharacteristic.PH, "3.40");
+    final var result = derivedMeanResult("3.30", first, second);
+    final var sourceRevisionId = MeasurementSetRevisionId.newId();
+    final var actor = ActorReference.accountUser(newUuid());
+    final var reason = MeasurementCorrectionReason.of("Invalidated repeated measurement");
+
+    assertThatThrownBy(() -> new MeasurementResultRetraction(
+        sourceRevisionId,
+        MeasurementSetRevisionNumber.initial(),
+        result,
+        List.of(first),
+        actor,
+        MEASURED_AT.plusSeconds(60),
+        reason
+    ))
+        .isInstanceOf(DomainRuleViolationException.class)
+        .hasMessage("retracted observations must match the result derivation inputs");
+    assertThatThrownBy(() -> new MeasurementResultRetraction(
+        sourceRevisionId,
+        MeasurementSetRevisionNumber.initial(),
+        result,
+        List.of(first, first),
+        actor,
+        MEASURED_AT.plusSeconds(60),
+        reason
+    ))
+        .isInstanceOf(DomainRuleViolationException.class)
+        .hasMessage("retracted observation identities must be unique");
+  }
+
+  @Test
+  void rejectsRetractionOfAnObservation() {
+    final var retractedAt = MEASURED_AT.plusSeconds(60);
+
+    assertThatThrownBy(() -> new MeasurementResultRetraction(
+        MeasurementSetRevisionId.newId(),
+        MeasurementSetRevisionNumber.initial(),
+        observation(MeasurementCharacteristic.PH),
+        List.of(),
+        ActorReference.accountUser(newUuid()),
+        retractedAt,
+        MeasurementCorrectionReason.of("Invalidated observation")
+    ))
+        .isInstanceOf(DomainRuleViolationException.class)
+        .hasMessage("only a measurement result can be retracted");
+  }
+
+  @Test
+  void rejectsCharacteristicThatIsActiveAndRetractedInTheSameRevision() {
+    final var retractedAt = MEASURED_AT.plusSeconds(60);
+    final var retraction = retraction(MeasurementCharacteristic.PH, retractedAt);
+
+    assertThatThrownBy(() -> correctedRevision(
+        List.of(result(MeasurementCharacteristic.PH)),
+        List.of(retraction),
+        retractedAt
+    ))
+        .isInstanceOf(DomainRuleViolationException.class)
+        .hasMessage("measurement characteristic cannot be active and retracted in the same revision");
+  }
+
+  @Test
+  void rejectsDuplicateCharacteristicRetractions() {
+    final var retractedAt = MEASURED_AT.plusSeconds(60);
+    final var retraction = retraction(MeasurementCharacteristic.PH, retractedAt);
+
+    assertThatThrownBy(() -> correctedRevision(
+        List.of(),
+        List.of(retraction, retraction),
+        retractedAt
+    ))
+        .isInstanceOf(DomainRuleViolationException.class)
+        .hasMessage("measurement revision cannot retract one characteristic more than once");
+  }
+
+  @Test
+  void rejectsRetractionAfterRevisionCreation() {
+    final var revisionCreatedAt = MEASURED_AT.plusSeconds(60);
+
+    assertThatThrownBy(() -> correctedRevision(
+        List.of(),
+        List.of(retraction(MeasurementCharacteristic.PH, revisionCreatedAt.plusSeconds(1))),
+        revisionCreatedAt
+    ))
+        .isInstanceOf(DomainRuleViolationException.class)
+        .hasMessage("measurement result retraction cannot occur after its revision creation time");
+  }
+
+  private static MeasurementSetRevision correctedRevision(
+      List<MeasurementRecord> records,
+      List<MeasurementResultRetraction> retractions,
+      Instant createdAt
+  ) {
+    return new MeasurementSetRevision(
+        MeasurementSetRevisionId.newId(),
+        MeasurementSetRevisionNumber.of(2),
+        MaterialStateId.newId(),
+        MeasurementSetName.of("Corrected laboratory result"),
+        null,
+        MeasurementCorrectionReason.of("Laboratory correction"),
+        createdAt,
+        ActorReference.accountUser(newUuid()),
+        records,
+        retractions
+    );
+  }
+
+  private static MeasurementResultRetraction retraction(
+      MeasurementCharacteristic characteristic,
+      Instant retractedAt
+  ) {
+    return new MeasurementResultRetraction(
+        MeasurementSetRevisionId.newId(),
+        MeasurementSetRevisionNumber.initial(),
+        result(characteristic),
+        List.of(),
+        ActorReference.accountUser(newUuid()),
+        retractedAt,
+        MeasurementCorrectionReason.of("Laboratory invalidated the result")
+    );
+  }
+
   private static MeasurementSetRevision revision(List<MeasurementRecord> records) {
     return revision(1, null, records);
   }
@@ -244,7 +417,8 @@ class MeasurementSetRevisionTest {
         correctionReason == null ? null : MeasurementCorrectionReason.of(correctionReason),
         MEASURED_AT,
         ActorReference.accountUser(newUuid()),
-        records
+        records,
+        List.of()
     );
   }
 
@@ -261,7 +435,8 @@ class MeasurementSetRevisionTest {
         null,
         MEASURED_AT,
         ActorReference.accountUser(newUuid()),
-        records
+        records,
+        List.of()
     );
   }
 

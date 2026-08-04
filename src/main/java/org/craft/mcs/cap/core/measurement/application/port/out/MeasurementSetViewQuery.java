@@ -20,4 +20,9 @@ public interface MeasurementSetViewQuery {
       @NonNull WorkspaceId workspaceId,
       @NonNull MeasurementSubjectReference subject
   );
+
+  /** Reads every immutable revision of one logical set from newest to oldest. */
+  @NonNull List<@NonNull MeasurementSetView> findRevisionsById(
+      @NonNull MeasurementSetId measurementSetId
+  );
 }

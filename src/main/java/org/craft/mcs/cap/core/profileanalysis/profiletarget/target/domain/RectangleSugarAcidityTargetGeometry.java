@@ -47,6 +47,19 @@ public record RectangleSugarAcidityTargetGeometry(
     return geometry.nearestPointTo(point);
   }
 
+  @Override
+  public @NonNull SugarAcidityTargetPosition positionOf(
+      @NonNull SugarAcidityGraphPoint point,
+      @NonNull SugarAcidityGraphPoint nearestTargetPoint
+  ) {
+    requireNonNull(point, "SG/TA point cannot be null");
+    requireNonNull(nearestTargetPoint, "nearest SG/TA target point cannot be null");
+    return new SugarAcidityTargetPosition(
+        specificGravityRange().positionOf(point.specificGravity()),
+        titratableAcidityRange().positionOf(point.titratableAcidity())
+    );
+  }
+
   public @NonNull MeasuredValueRange<SpecificGravityValue> specificGravityRange() {
     return geometry.specificGravityRange();
   }

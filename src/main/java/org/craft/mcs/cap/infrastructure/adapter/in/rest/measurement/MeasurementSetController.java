@@ -8,12 +8,14 @@ import org.craft.mcs.cap.core.measurement.application.port.in.CreateMeasurementS
 import org.craft.mcs.cap.core.measurement.application.port.in.QueryMeasurementSetsUseCase;
 import org.craft.mcs.cap.core.measurement.application.port.in.RetractMeasurementSetCommand;
 import org.craft.mcs.cap.core.measurement.application.port.in.RetractMeasurementSetUseCase;
+import org.craft.mcs.cap.core.measurement.domain.model.MeasurementRetractionReason;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetId;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSubjectReference;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSubjectType;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement.dto.CreateMeasurementSetRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement.dto.MeasurementSetListResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement.dto.MeasurementSetResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement.dto.MeasurementSetRevisionHistoryResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement.dto.PatchMeasurementSetRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement.dto.ReplaceMeasurementSetRequest;
 import org.jspecify.annotations.NonNull;
@@ -64,6 +66,19 @@ public final class MeasurementSetController implements MeasurementSetApi {
   ) {
     return ResponseEntity.ok(restMapper.toResponse(
         queryUseCase.get(MeasurementSetId.of(measurementSetId))
+    ));
+  }
+
+  @Override
+  @GetMapping(
+      value = "/measurement-sets/{measurementSetId}/revisions",
+      produces = APPLICATION_JSON_VALUE
+  )
+  public @NonNull ResponseEntity<@NonNull MeasurementSetRevisionHistoryResponse> revisions(
+      @PathVariable @NonNull UUID measurementSetId
+  ) {
+    return ResponseEntity.ok(restMapper.toRevisionHistoryResponse(
+        queryUseCase.listRevisions(MeasurementSetId.of(measurementSetId))
     ));
   }
 
@@ -120,11 +135,13 @@ public final class MeasurementSetController implements MeasurementSetApi {
   @DeleteMapping("/measurement-sets/{measurementSetId}")
   public @NonNull ResponseEntity<Void> retract(
       @PathVariable @NonNull UUID measurementSetId,
-      @RequestParam long expectedVersion
+      @RequestParam long expectedVersion,
+      @RequestParam @NonNull String reason
   ) {
     retractUseCase.retract(new RetractMeasurementSetCommand(
         MeasurementSetId.of(measurementSetId),
-        expectedVersion
+        expectedVersion,
+        MeasurementRetractionReason.of(reason)
     ));
     return ResponseEntity.noContent().build();
   }

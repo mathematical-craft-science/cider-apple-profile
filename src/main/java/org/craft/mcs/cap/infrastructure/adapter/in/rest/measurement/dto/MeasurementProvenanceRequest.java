@@ -1,21 +1,22 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import org.craft.mcs.cap.shared.kernel.measurement.MeasurementSourceType;
 import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 
+/** Inbound source metadata retained with one immutable measurement record. */
 @Schema(description = "Source and confidence evidence for one measurement record.")
 public record MeasurementProvenanceRequest(
     @Schema(
-        description = "Category of the authority or mechanism that supplied the measured value.",
-        implementation = MeasurementSourceType.class,
+        description = "Category of the source that supplied original measurement evidence. "
+            + "DERIVED is reserved for results calculated by CAP and cannot be submitted.",
+        implementation = MeasurementInputSourceType.class,
         example = "INSTRUMENT",
         requiredMode = Schema.RequiredMode.REQUIRED
     )
-    @NonNull MeasurementSourceType sourceType,
+    @NonNull MeasurementInputSourceType sourceType,
     @Schema(
         description = "Optional human-readable laboratory, instrument, institute, user, or dataset name.",
         minLength = 1,

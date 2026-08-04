@@ -43,8 +43,8 @@ public final class CompositionContributionRoleRestMapper {
     final var unit = CanonicalUnitLabels.forAxis(evidence.axis());
     return new CompositionContributionEvidenceResponse(
         evidence.axis(),
-        new DecimalQuantityResponse(evidence.sourceValue(), unit),
-        new DecimalQuantityResponse(evidence.targetCoordinate(), unit),
+        new DecimalQuantityResponse(evidence.sourceValue().asBigDecimal(), unit),
+        new DecimalQuantityResponse(evidence.targetCoordinate().asBigDecimal(), unit),
         new DecimalQuantityResponse(evidence.deviationFromTarget(), unit),
         evidence.direction(),
         evidence.effect(),

@@ -5,6 +5,9 @@ import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
+import org.craft.mcs.cap.shared.kernel.characteristic.CharacteristicValue;
+import org.craft.mcs.cap.shared.kernel.characteristic.IntervalCharacteristicValue;
+import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.measurement.value.TemperatureValue;
 import org.craft.mcs.cap.shared.kernel.measurement.value.TurbidityValue;
 import org.jspecify.annotations.NonNull;
@@ -52,6 +55,16 @@ public enum MeasurementCharacteristic {
       case YAN -> value instanceof YeastAssimilableNitrogenValue;
       case TEMPERATURE -> value instanceof TemperatureValue;
       case TURBIDITY -> value instanceof TurbidityValue;
+    };
+  }
+
+  /** Verifies every endpoint of a point or interval value against this characteristic. */
+  public boolean supports(@NonNull CharacteristicValue<MeasuredValue> value) {
+    requireNonNull(value, "characteristic value cannot be null");
+    return switch (value) {
+      case PointCharacteristicValue<MeasuredValue>(var point) -> supports(point);
+      case IntervalCharacteristicValue<MeasuredValue>(var lower, var upper) ->
+          supports(lower) && supports(upper);
     };
   }
 }

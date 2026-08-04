@@ -10,6 +10,7 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 
+/** Transport representation of a logical measurement set and its current immutable revision. */
 @Schema(
     description = "Current immutable revision and lifecycle state of one logical measurement set."
 )
@@ -38,6 +39,11 @@ public record MeasurementSetResponse(
         requiredMode = Schema.RequiredMode.REQUIRED
     )
     @NonNull MeasurementSetLifecycle lifecycle,
+    @Schema(
+        description = "Audit details present only when lifecycle is RETRACTED.",
+        nullable = true
+    )
+    @Nullable MeasurementSetRetractionResponse retraction,
     @Schema(
         description = "Aggregate version used for optimistic locking.",
         minimum = "0",
@@ -94,14 +100,22 @@ public record MeasurementSetResponse(
     )
     @NonNull MeasurementActorReferenceResponse actor,
     @ArraySchema(
-        minItems = 1,
         arraySchema = @Schema(
-            description = "Immutable observations and working results contained in this revision.",
+            description = "Active immutable observations and working results contained in this revision. "
+                + "The list can be empty when every characteristic result has been retracted.",
             requiredMode = Schema.RequiredMode.REQUIRED
         ),
         schema = @Schema(implementation = MeasurementRecordResponse.class)
     )
     @NonNull List<@NonNull MeasurementRecordResponse> records,
+    @ArraySchema(
+        arraySchema = @Schema(
+            description = "Retained tombstones for characteristic results retracted from this revision.",
+            requiredMode = Schema.RequiredMode.REQUIRED
+        ),
+        schema = @Schema(implementation = MeasurementResultRetractionResponse.class)
+    )
+    @NonNull List<@NonNull MeasurementResultRetractionResponse> resultRetractions,
     @Schema(
         description = "Time when the logical measurement set was created.",
         format = "date-time",

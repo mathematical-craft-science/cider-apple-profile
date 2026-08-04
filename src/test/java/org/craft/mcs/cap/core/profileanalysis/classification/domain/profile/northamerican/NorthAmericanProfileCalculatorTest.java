@@ -9,6 +9,8 @@ import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -38,6 +40,47 @@ class NorthAmericanProfileCalculatorTest {
         .returns(NorthAmericanSugarLevel.MEDIUM, NorthAmericanProfile::sugar)
         .returns(NorthAmericanAcidityLevel.MEDIUM, NorthAmericanProfile::acidity)
         .returns(NorthAmericanTanninLevel.MEDIUM, NorthAmericanProfile::tannin);
+  }
+
+  @ParameterizedTest
+  @CsvSource({
+      "1.045, MEDIUM",
+      "1.060, HIGH",
+      "1.070, VERY_HIGH"
+  })
+  void assignsExactSugarBoundaryToTheRangeStartingAtThatBoundary(
+      String specificGravity,
+      NorthAmericanSugarLevel expectedLevel
+  ) {
+    assertThat(calculator.assessSugar(input(specificGravity, "6.0", "2000").sugarContent()))
+        .isEqualTo(expectedLevel);
+  }
+
+  @ParameterizedTest
+  @CsvSource({
+      "4.5, MEDIUM",
+      "7.5, HIGH",
+      "11.0, VERY_HIGH"
+  })
+  void assignsExactAcidityBoundaryToTheRangeStartingAtThatBoundary(
+      String titratableAcidity,
+      NorthAmericanAcidityLevel expectedLevel
+  ) {
+    assertThat(calculator.assessAcidity(input("1.055", titratableAcidity, "2000").acidity()))
+        .isEqualTo(expectedLevel);
+  }
+
+  @ParameterizedTest
+  @CsvSource({
+      "1500, MEDIUM",
+      "2500, HIGH"
+  })
+  void assignsExactTanninBoundaryToTheRangeStartingAtThatBoundary(
+      String tannin,
+      NorthAmericanTanninLevel expectedLevel
+  ) {
+    assertThat(calculator.assessTannin(input("1.055", "6.0", tannin).tannin()))
+        .isEqualTo(expectedLevel);
   }
 
   @Test

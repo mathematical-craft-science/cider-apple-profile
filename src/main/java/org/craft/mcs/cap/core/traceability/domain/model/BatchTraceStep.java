@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
+import org.craft.mcs.cap.shared.kernel.identity.ActorReference;
 import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jmolecules.ddd.annotation.Entity;
@@ -33,7 +34,7 @@ public record BatchTraceStep(
     @NonNull List<@NonNull BatchTraceStepSubject> inputs,
     @NonNull List<@NonNull BatchTraceStepSubject> outputs,
     @NonNull Instant occurredAt,
-    @NonNull BatchTraceActorReference performedBy,
+    @NonNull ActorReference performedBy,
     @Nullable String note
 ) {
 
@@ -71,7 +72,7 @@ public record BatchTraceStep(
       @NonNull List<@NonNull BatchTraceStepSubject> inputs,
       @NonNull List<@NonNull BatchTraceStepSubject> outputs,
       @NonNull Instant occurredAt,
-      @NonNull BatchTraceActorReference performedBy,
+      @NonNull ActorReference performedBy,
       @Nullable String note
   ) {
     return new BatchTraceStep(

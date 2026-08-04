@@ -6,7 +6,10 @@ import org.craft.mcs.cap.core.profileanalysis.graph.domain.SugarAcidityGraphPoin
 import org.craft.mcs.cap.shared.kernel.measurement.MeasuredValueRange;
 import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
+import org.craft.mcs.cap.shared.kernel.measurement.MeasuredValueRangePosition;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -104,6 +107,48 @@ class RectangleSugarAcidityTargetGeometryTest {
     assertThat(halfOpenGeometry.contains(upperBoundary)).isFalse();
     assertThat(halfOpenGeometry.nearestPointTo(upperBoundary, UNUSED_DISTANCE))
         .isEqualTo(upperBoundary);
+  }
+
+  @ParameterizedTest
+  @CsvSource({
+      "1.080, 6.0, ABOVE, WITHIN",
+      "1.070, 7.5, WITHIN, ABOVE",
+      "1.080, 7.5, ABOVE, ABOVE"
+  })
+  void preservesMembershipPositionOnEveryExcludedRectangleBoundary(
+      String specificGravity,
+      String titratableAcidity,
+      MeasuredValueRangePosition expectedSpecificGravityPosition,
+      MeasuredValueRangePosition expectedTitratableAcidityPosition
+  ) {
+    final var halfOpenGeometry = new RectangleSugarAcidityTargetGeometry(
+        MeasuredValueRange.closedOpen(
+            SpecificGravityValue.of("1.060"),
+            SpecificGravityValue.of("1.080")
+        ),
+        MeasuredValueRange.closedOpen(
+            TitratableAcidityValue.of("4.5"),
+            TitratableAcidityValue.of("7.5")
+        )
+    );
+    final var boundary = new SugarAcidityGraphPoint(
+        SpecificGravityValue.of(specificGravity),
+        TitratableAcidityValue.of(titratableAcidity)
+    );
+    final var nearest = halfOpenGeometry.nearestPointTo(boundary, UNUSED_DISTANCE);
+
+    assertThat(halfOpenGeometry)
+        .matches(candidate -> !candidate.contains(boundary))
+        .satisfies(candidate -> assertThat(candidate.positionOf(boundary, nearest))
+            .returns(
+                expectedSpecificGravityPosition,
+                SugarAcidityTargetPosition::specificGravity
+            )
+            .returns(
+                expectedTitratableAcidityPosition,
+                SugarAcidityTargetPosition::titratableAcidity
+            ));
+    assertThat(nearest).isEqualTo(boundary);
   }
 
   @Test

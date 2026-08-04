@@ -21,6 +21,7 @@ import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.Com
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionSourceWeight;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionProportion;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.assessment.ProfileTargetDistance;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.assessment.ProfileTargetDistanceOrdering;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetIntervalPolicy;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetScoringInput;
 import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
@@ -238,7 +239,7 @@ public final class DiscretizedBoundedCompositionOptimizationStrategy
         )
         .thenComparing(
             CompositionOptimizationCandidate::distance,
-            DiscretizedBoundedCompositionOptimizationStrategy::compareDistances
+            ProfileTargetDistanceOrdering::compare
         )
         .compare(left, right);
   }
@@ -261,21 +262,4 @@ public final class DiscretizedBoundedCompositionOptimizationStrategy
     return leftScore.compareTo(rightScore);
   }
 
-  private static int compareDistances(
-      @NonNull ProfileTargetDistance left,
-      @NonNull ProfileTargetDistance right
-  ) {
-    final var leftValue = left.value();
-    final var rightValue = right.value();
-    if (leftValue == null && rightValue == null) {
-      return 0;
-    }
-    if (leftValue == null) {
-      return 1;
-    }
-    if (rightValue == null) {
-      return -1;
-    }
-    return leftValue.compareTo(rightValue);
-  }
 }

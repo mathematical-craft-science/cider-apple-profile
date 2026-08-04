@@ -16,6 +16,7 @@ public final class ProfileTargetFitPolicy {
 
   private static final int EXCELLENT_MATCH_PERCENT = 90;
   private static final int CLOSE_MATCH_PERCENT = 70;
+  private static final int MAXIMUM_OUTSIDE_MATCH_PERCENT = 99;
   private static final BigDecimal ONE_HUNDRED = BigDecimal.valueOf(100);
 
   private ProfileTargetFitPolicy() {
@@ -36,9 +37,10 @@ public final class ProfileTargetFitPolicy {
   }
 
   private static int matchPercent(@NonNull BigDecimal distance) {
-    return ONE_HUNDRED
+    final var proximityPercent = ONE_HUNDRED
         .divide(BigDecimal.ONE.add(distance), 0, RoundingMode.HALF_UP)
         .intValueExact();
+    return Math.min(proximityPercent, MAXIMUM_OUTSIDE_MATCH_PERCENT);
   }
 
   static @NonNull ProfileTargetFitStatus statusFor(int matchPercent) {

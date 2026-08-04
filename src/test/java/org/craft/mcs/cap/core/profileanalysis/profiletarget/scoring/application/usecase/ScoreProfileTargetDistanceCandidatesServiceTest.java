@@ -3,7 +3,9 @@ package org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application
 import static java.util.Objects.requireNonNull;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.craft.mcs.cap.shared.kernel.measurement.MeasuredValueRange.closed;
+import static org.craft.mcs.cap.shared.kernel.measurement.MeasuredValueRange.closedOpen;
 
+import java.math.BigDecimal;
 import java.util.List;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.port.in.ProfileTargetDistanceCandidate;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.port.in.ProfileTargetDistanceCandidateReference;
@@ -14,6 +16,7 @@ import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.Profi
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetObjectiveWeights;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetScoringConfiguration;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetScoringInput;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.assessment.ProfileTargetDistance;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.assessment.ProfileTargetDistanceStatus;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.normalization.BuiltInProfileAxisNormalizerSelector;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.normalization.ProfileAxisNormalizerCode;
@@ -92,6 +95,29 @@ class ScoreProfileTargetDistanceCandidatesServiceTest {
   }
 
   @Test
+  void ranksTargetMemberBeforeExcludedBoundaryAtTheSameClosureDistance() {
+    final var command = new ScoreProfileTargetDistanceCandidatesCommand(
+        ProfileTargetObjective.of(halfOpenTarget()),
+        configuration(ProfileAxisNormalizerCode.MIN_MAX),
+        List.of(
+            candidate("excluded-boundary", point("1.045", "7.6", null)),
+            candidate("inside", point("1.044", "7.6", null))
+        )
+    );
+
+    final var result = service.score(command);
+
+    assertThat(result.scores())
+        .extracting(ScoreProfileTargetDistanceCandidatesServiceTest::candidateId)
+        .containsExactly("inside", "excluded-boundary");
+    assertThat(result.scores())
+        .extracting(ProfileTargetDistanceCandidateScore::distance)
+        .allSatisfy(distance -> assertThat(distance.value()).isEqualByComparingTo(BigDecimal.ZERO))
+        .extracting(ProfileTargetDistance::insideTarget)
+        .containsExactly(true, false);
+  }
+
+  @Test
   void selectedNormalizerChangesCalculatedDistance() {
     final var minMaxCommand = new ScoreProfileTargetDistanceCandidatesCommand(
         ProfileTargetObjective.of(target()),
@@ -150,6 +176,21 @@ class ScoreProfileTargetDistanceCandidatesServiceTest {
             closed(
                 TitratableAcidityValue.of("4.5"),
                 TitratableAcidityValue.of("7.5")
+            )
+        )
+    );
+  }
+
+  private static @NonNull CustomRectangleSugarAcidityTarget halfOpenTarget() {
+    return new CustomRectangleSugarAcidityTarget(
+        new RectangleSugarAcidityTargetGeometry(
+            closedOpen(
+                SpecificGravityValue.of("1.020"),
+                SpecificGravityValue.of("1.045")
+            ),
+            closedOpen(
+                TitratableAcidityValue.of("4.5"),
+                TitratableAcidityValue.of("10.0")
             )
         )
     );

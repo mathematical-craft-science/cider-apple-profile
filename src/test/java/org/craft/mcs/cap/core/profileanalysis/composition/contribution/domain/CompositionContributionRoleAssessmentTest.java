@@ -4,8 +4,13 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileEvaluationAxis;
-import org.jspecify.annotations.NonNull;
 import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
+import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
+import org.craft.mcs.cap.shared.kernel.measurement.MeasuredValue;
+import org.craft.mcs.cap.shared.kernel.measurement.MeasuredValueRangePosition;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -83,8 +88,20 @@ class CompositionContributionRoleAssessmentTest {
   ) {
     return new CompositionContributionEvidence(
         axis,
-        BigDecimal.ONE,
-        BigDecimal.TEN
+        measuredValue(axis, false),
+        measuredValue(axis, true),
+        MeasuredValueRangePosition.BELOW
     );
+  }
+
+  private static @NonNull MeasuredValue measuredValue(
+      @NonNull ProfileEvaluationAxis axis,
+      boolean target
+  ) {
+    return switch (axis) {
+      case SPECIFIC_GRAVITY -> SpecificGravityValue.of(new BigDecimal(target ? "1.100" : "1.000"));
+      case TITRATABLE_ACIDITY -> TitratableAcidityValue.of(target ? BigDecimal.TEN : BigDecimal.ONE);
+      case TANNIN -> TanninValue.of(target ? BigDecimal.TEN : BigDecimal.ONE);
+    };
   }
 }

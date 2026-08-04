@@ -3,8 +3,9 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.sugaracidi
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.appleprofile.application.catalog.model.AppleVarietyCatalogPagePosition;
 import org.craft.mcs.cap.core.appleprofile.application.analysis.common.model.AppleVarietyAnalysisFilters;
+import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.model.AppleVarietyGraphAnalysisView;
 import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.in.AppleVarietySugarAcidityZonePointQuery;
-import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.in.AppleVarietySugarAcidityZoneResult;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.sugaracidity.dto.AppleVarietyNorthAmericanProfileResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.sugaracidity.dto.AppleVarietySugarAcidityZonePointQueryRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.sugaracidity.dto.AppleVarietySugarAcidityZonePointBatchResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.sugaracidity.dto.AppleVarietySugarAcidityZoneResponse;
@@ -15,10 +16,14 @@ import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.abv.mapper.Pote
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.capability.mapper.ProfileAnalysisCapabilityRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.mapper.ProfileGraphRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.dto.SugarAcidityGraphAssessmentResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.measurement.CanonicalUnitLabels;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profilecharacteristic.dto.ProfileCharacteristicValueResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profilecharacteristic.mapper.ProfileCharacteristicRestMapper;
 import org.craft.mcs.cap.shared.application.query.pagination.CursorPage;
 import org.craft.mcs.cap.shared.application.query.pagination.CursorPageRequest;
 import org.craft.mcs.cap.shared.application.query.QueryLimits;
 import org.craft.mcs.cap.shared.application.query.TextSearchCriteria;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
@@ -57,9 +62,9 @@ public final class AppleVarietyProfileGraphRestMapper {
   }
 
   public static @NonNull AppleVarietySugarAcidityZoneResponse toResponse(
-      @NonNull AppleVarietySugarAcidityZoneResult result
+      @NonNull AppleVarietyGraphAnalysisView result
   ) {
-    requireNonNull(result, "apple variety sugar-acidity zone result cannot be null");
+    requireNonNull(result, "apple variety graph analysis view cannot be null");
     final var graphEvaluation = result.graphEvaluation();
 
     return new AppleVarietySugarAcidityZoneResponse(
@@ -67,6 +72,8 @@ public final class AppleVarietyProfileGraphRestMapper {
         result.varietyName().value(),
         graphEvaluation.plottable(),
         toAssessmentResponse(result),
+        toTanninResponse(result),
+        toNorthAmericanProfileResponse(result),
         toPotentialAbvResponse(result),
         ProfileAnalysisCapabilityRestMapper.toResponse(graphEvaluation)
     );
@@ -74,7 +81,7 @@ public final class AppleVarietyProfileGraphRestMapper {
 
   public @NonNull AppleVarietySugarAcidityZonePointBatchResponse toResponse(
       @NonNull CursorPage<
-          @NonNull AppleVarietySugarAcidityZoneResult,
+          @NonNull AppleVarietyGraphAnalysisView,
           @NonNull AppleVarietyCatalogPagePosition
       > page,
       @NonNull AppleVarietySugarAcidityZonePointQuery query
@@ -96,9 +103,9 @@ public final class AppleVarietyProfileGraphRestMapper {
   }
 
   private static @NonNull UnplottableAppleVarietySugarAcidityZonePointResponse toUnplottableResponse(
-      @NonNull AppleVarietySugarAcidityZoneResult result
+      @NonNull AppleVarietyGraphAnalysisView result
   ) {
-    requireNonNull(result, "apple variety sugar-acidity zone result cannot be null");
+    requireNonNull(result, "apple variety graph analysis view cannot be null");
 
     return new UnplottableAppleVarietySugarAcidityZonePointResponse(
         result.varietyId().value(),
@@ -112,21 +119,46 @@ public final class AppleVarietyProfileGraphRestMapper {
   }
 
   private static @Nullable SugarAcidityGraphAssessmentResponse toAssessmentResponse(
-      @NonNull AppleVarietySugarAcidityZoneResult result
+      @NonNull AppleVarietyGraphAnalysisView result
   ) {
     if (!result.graphEvaluation().plottable()) {
       return null;
     }
     return ProfileGraphRestMapper.toResponse(
         result.graphEvaluation(),
-        result.northAmericanTanninLevel(),
         requireNonNull(result.specificGravity()),
         requireNonNull(result.titratableAcidity())
     );
   }
 
+  private static @Nullable ProfileCharacteristicValueResponse toTanninResponse(
+      @NonNull AppleVarietyGraphAnalysisView result
+  ) {
+    final var tannin = result.tannin();
+    return tannin == null
+        ? null
+        : ProfileCharacteristicRestMapper.toResponse(
+            tannin,
+            TanninValue::asBigDecimal,
+            CanonicalUnitLabels.TANNIN
+        );
+  }
+
+  private static @Nullable AppleVarietyNorthAmericanProfileResponse toNorthAmericanProfileResponse(
+      @NonNull AppleVarietyGraphAnalysisView result
+  ) {
+    final var assessment = result.northAmericanAssessment();
+    return assessment == null
+        ? null
+        : new AppleVarietyNorthAmericanProfileResponse(
+            assessment.sugar(),
+            assessment.acidity(),
+            assessment.tannin()
+        );
+  }
+
   private static @Nullable PotentialAbvPredictionResponse toPotentialAbvResponse(
-      @NonNull AppleVarietySugarAcidityZoneResult result
+      @NonNull AppleVarietyGraphAnalysisView result
   ) {
     final var prediction = result.potentialAbv();
     return prediction == null ? null : PotentialAbvPredictionRestMapper.toResponse(prediction);

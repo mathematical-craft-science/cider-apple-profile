@@ -3,6 +3,7 @@ package org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain;
 import java.math.BigDecimal;
 import org.craft.mcs.cap.core.profileanalysis.graph.domain.EllipseSugarAcidityGeometry;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.assessment.ProfileTargetDistance;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.assessment.ProfileTargetFitAssessment;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.assessment.ProfileTargetDistanceStatus;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.normalization.MinMaxProfileAxisNormalizer;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.objective.ProfileDistanceMetric;
@@ -16,11 +17,13 @@ import org.craft.mcs.cap.core.profileanalysis.graph.domain.SugarAcidityGraphPoin
 import org.craft.mcs.cap.core.profileanalysis.graph.domain.SugarAcidityGeometryShape;
 import org.craft.mcs.cap.core.profileanalysis.graph.zone.domain.JolicoeurSugarAcidityZone;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.SugarAcidityTargetKind;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.SugarAcidityTargetPosition;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.TanninTargetRange;
 import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
+import org.craft.mcs.cap.shared.kernel.measurement.MeasuredValueRangePosition;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
@@ -171,6 +174,43 @@ class TargetAreaProfileTargetObjectiveFunctionTest {
     assertThat(distance.nearestTargetPoint().titratableAcidity().asBigDecimal())
         .isLessThan(new BigDecimal("6.8945"));
     assertThat(distance.targetShape()).isEqualTo(SugarAcidityGeometryShape.ELLIPSE);
+  }
+
+  @Test
+  void treatsClosedEllipseBoundaryAsActualTargetMembership() {
+    final var ellipseTarget = new PredefinedJolicoeurSugarAcidityZoneTarget(
+        JolicoeurSugarAcidityZone.PERFECT_APPLES,
+        new EllipseSugarAcidityTargetGeometry(
+            new EllipseSugarAcidityGeometry(
+                SpecificGravityValue.of("1.060"),
+                TitratableAcidityValue.of("6.0"),
+                new BigDecimal("0.010"),
+                new BigDecimal("2.0")
+            )
+        )
+    );
+
+    final var distance = objective.distanceTo(
+        point("1.070", "6.0", null),
+        ProfileTargetIntervalPolicy.MIDPOINT,
+        ProfileTargetObjective.of(ellipseTarget)
+    );
+
+    assertThat(distance)
+        .returns(true, ProfileTargetDistance::insideSugarAcidityTarget)
+        .returns(true, ProfileTargetDistance::insideTarget)
+        .satisfies(result -> assertThat(result.value()).isEqualByComparingTo(BigDecimal.ZERO))
+        .satisfies(result -> assertThat(result.sugarAcidityTargetPosition())
+            .returns(
+                MeasuredValueRangePosition.WITHIN,
+                SugarAcidityTargetPosition::specificGravity
+            )
+            .returns(
+                MeasuredValueRangePosition.WITHIN,
+                SugarAcidityTargetPosition::titratableAcidity
+            ))
+        .satisfies(result -> assertThat(result.fitAssessment())
+            .returns(100, ProfileTargetFitAssessment::matchPercent));
   }
 
   @Test

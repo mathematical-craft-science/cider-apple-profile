@@ -86,11 +86,7 @@ public record MeasurementRecord(
       @NonNull MeasurementCharacteristic characteristic,
       @NonNull CharacteristicValue<MeasuredValue> value
   ) {
-    final var typedValue = switch (value) {
-      case PointCharacteristicValue<MeasuredValue>(var point) -> point;
-      case IntervalCharacteristicValue<MeasuredValue>(var lower, _) -> lower;
-    };
-    if (!characteristic.supports(typedValue)) {
+    if (!characteristic.supports(value)) {
       throw new DomainRuleViolationException("measurement value type does not match " + characteristic);
     }
   }

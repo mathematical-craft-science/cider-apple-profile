@@ -5,7 +5,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Function;
-import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceActorReference;
 import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceCharacteristicSnapshot;
 import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceMaterialCharacteristics;
 import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceMaterialSnapshot;
@@ -21,6 +20,7 @@ import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
 import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
+import org.craft.mcs.cap.shared.kernel.identity.ActorReference;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.measurement.MeasuredValue;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
@@ -31,6 +31,7 @@ import static java.util.Objects.requireNonNull;
 import static org.craft.mcs.cap.shared.kernel.measurement.MeasurementValueMath.midpoint;
 
 
+/** Maps traceability domain facts to and from the relational JDBC row representation. */
 public final class BatchTraceStepJdbcRowMapper {
 
   private BatchTraceStepJdbcRowMapper() {
@@ -66,7 +67,7 @@ public final class BatchTraceStepJdbcRowMapper {
         toSubjects(row, BatchTraceStepSubjectRole.INPUT),
         toSubjects(row, BatchTraceStepSubjectRole.OUTPUT),
         requireNonNull(row.occurredAt, "batch trace occurred at cannot be null"),
-        new BatchTraceActorReference(
+        new ActorReference(
             requireNonNull(row.performedByType, "batch trace actor type cannot be null"),
             requireNonNull(row.performedById, "batch trace actor id cannot be null")
         ),

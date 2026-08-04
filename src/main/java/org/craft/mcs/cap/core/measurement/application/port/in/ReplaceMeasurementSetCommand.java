@@ -30,5 +30,8 @@ public record ReplaceMeasurementSetCommand(
     if (expectedVersion < 0) {
       throw new ApplicationValidationException("expected measurement-set version cannot be negative");
     }
+    if (measurements.isEmpty()) {
+      throw new ApplicationValidationException("measurement replacement requires at least one characteristic");
+    }
   }
 }

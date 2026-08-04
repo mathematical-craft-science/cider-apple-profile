@@ -1,6 +1,7 @@
 package org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.in;
 
 import org.craft.mcs.cap.core.appleprofile.application.catalog.model.AppleVarietyCatalogPagePosition;
+import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.model.AppleVarietyGraphAnalysisView;
 import org.craft.mcs.cap.shared.application.query.pagination.CursorPage;
 import org.jspecify.annotations.NonNull;
 
@@ -8,7 +9,7 @@ import org.jspecify.annotations.NonNull;
 public interface QueryAppleVarietySugarAcidityZonePointsUseCase {
 
   @NonNull
-  CursorPage<@NonNull AppleVarietySugarAcidityZoneResult, @NonNull AppleVarietyCatalogPagePosition> query(
+  CursorPage<@NonNull AppleVarietyGraphAnalysisView, @NonNull AppleVarietyCatalogPagePosition> query(
       @NonNull AppleVarietySugarAcidityZonePointQuery query
   );
 }

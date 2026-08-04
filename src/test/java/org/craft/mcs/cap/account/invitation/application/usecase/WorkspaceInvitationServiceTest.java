@@ -11,6 +11,7 @@ import org.craft.mcs.cap.core.account.invitation.application.model.WorkspaceInvi
 import org.craft.mcs.cap.core.account.invitation.application.model.WorkspaceInvitationDefaults;
 import org.craft.mcs.cap.core.account.invitation.application.port.in.InviteWorkspaceMemberCommand;
 import org.craft.mcs.cap.core.account.invitation.application.port.in.WorkspaceInvitationCommand;
+import org.craft.mcs.cap.core.account.invitation.application.port.in.WorkspaceInvitationView;
 import org.craft.mcs.cap.core.account.invitation.application.port.out.WorkspaceInvitationDeliveryScheduler;
 import org.craft.mcs.cap.core.account.invitation.application.port.out.WorkspaceInvitationRepository;
 import org.craft.mcs.cap.core.account.invitation.application.port.out.WorkspaceInvitationAuditTrail;
@@ -33,6 +34,7 @@ import org.craft.mcs.cap.core.account.shared.application.port.out.WorkspaceAdmin
 import org.craft.mcs.cap.core.account.workspace.application.port.out.WorkspaceRepository;
 import org.craft.mcs.cap.core.account.workspace.domain.model.Workspace;
 import org.craft.mcs.cap.core.account.workspace.domain.model.WorkspaceType;
+import org.craft.mcs.cap.shared.application.persistence.VersionedAggregate;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -87,7 +89,7 @@ class WorkspaceInvitationServiceTest {
     when(invitationRepository.findVersionedById(invitation.invitationId()))
         .thenReturn(Optional.of(versioned(invitation)));
     when(workspaceRepository.findById(workspace.workspaceId())).thenReturn(Optional.of(workspace));
-    when(membershipRepository.findByWorkspaceIdAndUserId(workspace.workspaceId(), user.userId()))
+    when(membershipRepository.findVersionedByWorkspaceIdAndUserId(workspace.workspaceId(), user.userId()))
         .thenReturn(Optional.empty());
     when(invitationRepository.update(any())).thenAnswer(invocation -> invocation.getArgument(0));
     when(invitationRepository.create(any()))
@@ -113,6 +115,7 @@ class WorkspaceInvitationServiceTest {
         invitationRepository,
         administrationLock,
         membershipRepository,
+        userRepository,
         auditTrail,
         deliveryScheduler,
         user,
@@ -155,6 +158,86 @@ class WorkspaceInvitationServiceTest {
         fixture.user().userId(),
         fixture.invitation().accept(fixture.user().userId(), NOW)
     );
+  }
+
+  @Test
+  void rejoinsRemovedMembershipWithRoleFromAcceptedInvitation() {
+    final var fixture = fixture(Workspace.create(DisplayName.of("Cidery"), WorkspaceType.CIDERY));
+    final var removedMembership = WorkspaceMembership.create(
+        fixture.invitation().workspaceId(),
+        fixture.user().userId(),
+        AccountRole.VIEWER
+    ).remove();
+    when(fixture.membershipRepository().findVersionedByWorkspaceIdAndUserId(
+        fixture.invitation().workspaceId(),
+        fixture.user().userId()
+    )).thenReturn(Optional.of(versioned(removedMembership)));
+    when(fixture.membershipRepository().update(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+    final var result = fixture.service().accept(fixture.invitation().invitationId());
+    final ArgumentCaptor<VersionedAggregate<WorkspaceMembership>> membershipCaptor = ArgumentCaptor.captor();
+    verify(fixture.membershipRepository()).update(membershipCaptor.capture());
+    verify(fixture.membershipRepository(), never()).create(any());
+
+    assertThat(result)
+        .returns(removedMembership.membershipId(), WorkspaceMembershipView::membershipId)
+        .returns(AccountRole.TECHNOLOGIST, WorkspaceMembershipView::role)
+        .returns(ACTIVE, WorkspaceMembershipView::status)
+        .satisfies(_ -> assertThat(membershipCaptor.getValue().aggregate())
+            .returns(removedMembership.membershipId(), WorkspaceMembership::membershipId)
+            .returns(AccountRole.TECHNOLOGIST, WorkspaceMembership::role)
+            .matches(WorkspaceMembership::isActive));
+  }
+
+  @Test
+  void permitsNewInvitationForRemovedWorkspaceMembership() {
+    final var workspace = Workspace.create(DisplayName.of("Cidery"), WorkspaceType.CIDERY);
+    final var fixture = fixture(workspace);
+    final var removedMembership = WorkspaceMembership.create(
+        workspace.workspaceId(),
+        fixture.user().userId(),
+        AccountRole.VIEWER
+    ).remove();
+    when(fixture.userRepository().findByEmail(fixture.user().email())).thenReturn(Optional.of(fixture.user()));
+    when(fixture.membershipRepository().findVersionedByWorkspaceIdAndUserId(
+        workspace.workspaceId(),
+        fixture.user().userId()
+    )).thenReturn(Optional.of(versioned(removedMembership)));
+    final var command = new InviteWorkspaceMemberCommand(
+        workspace.workspaceId(),
+        fixture.user().email(),
+        AccountRole.TECHNOLOGIST
+    );
+
+    final var result = fixture.service().invite(command);
+
+    assertThat(result)
+        .returns(workspace.workspaceId(), WorkspaceInvitationView::workspaceId)
+        .returns(fixture.user().email(), WorkspaceInvitationView::invitedEmail)
+        .returns(AccountRole.TECHNOLOGIST, WorkspaceInvitationView::role);
+    verify(fixture.invitationRepository()).create(any(WorkspaceInvitation.class));
+  }
+
+  @Test
+  void rejectsInvitationAcceptanceForCurrentWorkspaceMembership() {
+    final var workspace = Workspace.create(DisplayName.of("Cidery"), WorkspaceType.CIDERY);
+    final var fixture = fixture(workspace);
+    final var membership = WorkspaceMembership.create(
+        workspace.workspaceId(),
+        fixture.user().userId(),
+        AccountRole.VIEWER
+    );
+    when(fixture.membershipRepository().findVersionedByWorkspaceIdAndUserId(
+        workspace.workspaceId(),
+        fixture.user().userId()
+    )).thenReturn(Optional.of(versioned(membership)));
+
+    assertThatThrownBy(() -> fixture.service().accept(fixture.invitation().invitationId()))
+        .isInstanceOf(WorkspaceInvitationConflictException.class)
+        .hasMessage("account is already a workspace member");
+    verify(fixture.invitationRepository(), never()).update(any());
+    verify(fixture.membershipRepository(), never()).update(any());
+    verify(fixture.membershipRepository(), never()).create(any());
   }
 
   @Test
@@ -232,6 +315,7 @@ class WorkspaceInvitationServiceTest {
       @NonNull WorkspaceInvitationRepository invitationRepository,
       @NonNull WorkspaceAdministrationLock administrationLock,
       @NonNull WorkspaceMembershipRepository membershipRepository,
+      @NonNull AccountUserRepository userRepository,
       @NonNull WorkspaceInvitationAuditTrail auditTrail,
       @NonNull WorkspaceInvitationDeliveryScheduler deliveryScheduler,
       @NonNull AccountUser user,

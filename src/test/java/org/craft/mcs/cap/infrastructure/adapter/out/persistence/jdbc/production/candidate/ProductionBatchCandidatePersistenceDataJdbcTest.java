@@ -25,6 +25,7 @@ import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.Profi
 import org.craft.mcs.cap.core.profileanalysis.graph.domain.SugarAcidityGraphPoint;
 import org.craft.mcs.cap.core.profileanalysis.graph.domain.SugarAcidityGeometryShape;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.SugarAcidityTargetKind;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.SugarAcidityTargetPosition;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
@@ -32,6 +33,7 @@ import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
+import org.craft.mcs.cap.shared.kernel.measurement.MeasuredValueRangePosition;
 import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.craft.mcs.cap.shared.application.ConcurrentResourceModificationException;
 import org.craft.mcs.cap.shared.testing.jdbc.PostgresDataJdbcTestConfiguration;
@@ -181,6 +183,10 @@ class ProductionBatchCandidatePersistenceDataJdbcTest {
         new SugarAcidityGraphPoint(
             SpecificGravityValue.of("1.050"),
             TitratableAcidityValue.of("6.0")
+        ),
+        new SugarAcidityTargetPosition(
+            MeasuredValueRangePosition.ABOVE,
+            MeasuredValueRangePosition.ABOVE
         ),
         TanninValue.of("1200"),
         TanninValue.of("1200"),

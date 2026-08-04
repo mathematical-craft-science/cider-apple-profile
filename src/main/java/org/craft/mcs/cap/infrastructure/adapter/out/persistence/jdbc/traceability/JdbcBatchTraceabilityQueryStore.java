@@ -13,7 +13,6 @@ import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.traceability.application.port.out.BatchTraceabilityQueryStore;
-import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceActorType;
 import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceStep;
 import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceStepType;
 import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceSubject;
@@ -24,6 +23,7 @@ import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.traceabilit
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.traceability.row.BatchTraceStepSubjectRole;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.traceability.row.BatchTraceCharacteristicStorageKind;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
+import org.craft.mcs.cap.shared.kernel.identity.ActorType;
 import org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -76,8 +76,8 @@ class JdbcBatchTraceabilityQueryStore implements BatchTraceabilityQueryStore {
         resultSet.getObject("parent_step_id", UUID.class),
         BatchTraceStepType.valueOf(resultSet.getString("step_type")),
         instant(resultSet, "occurred_at"),
-        BatchTraceActorType.valueOf(resultSet.getString("performed_by_type")),
-        resultSet.getString("performed_by_id"),
+        ActorType.valueOf(resultSet.getString("performed_by_type")),
+        resultSet.getObject("performed_by_id", UUID.class),
         resultSet.getString("note")
     );
     row.createdAt = instant(resultSet, "created_at");

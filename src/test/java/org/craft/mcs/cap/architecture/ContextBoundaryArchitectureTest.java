@@ -397,6 +397,15 @@ class ContextBoundaryArchitectureTest {
           );
 
   @ArchTest
+  static final ArchRule jdbc_persistence_adapters_do_not_call_inbound_use_cases =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAPackage("org.craft.mcs.cap.core..application..port.in..");
+
+  @ArchTest
   static final ArchRule account_context_does_not_depend_on_feedstock_or_production_contexts =
       noClasses()
           .that()
@@ -424,7 +433,8 @@ class ContextBoundaryArchitectureTest {
               "org.craft.mcs.cap.core.account.contributor..",
               "org.craft.mcs.cap.core.account.provisioning..",
               "org.craft.mcs.cap.core.account.context..",
-              "org.craft.mcs.cap.core.account.administration.."
+              "org.craft.mcs.cap.core.account.administration..",
+              "org.craft.mcs.cap.core.account.actor.."
           );
 
   @ArchTest
@@ -451,7 +461,8 @@ class ContextBoundaryArchitectureTest {
               "org.craft.mcs.cap.core.account.audit..",
               "org.craft.mcs.cap.core.account.provisioning..",
               "org.craft.mcs.cap.core.account.context..",
-              "org.craft.mcs.cap.core.account.administration.."
+              "org.craft.mcs.cap.core.account.administration..",
+              "org.craft.mcs.cap.core.account.actor.."
           );
 
   @ArchTest
@@ -469,7 +480,8 @@ class ContextBoundaryArchitectureTest {
               "org.craft.mcs.cap.core.account.contributor..",
               "org.craft.mcs.cap.core.account.provisioning..",
               "org.craft.mcs.cap.core.account.context..",
-              "org.craft.mcs.cap.core.account.administration.."
+              "org.craft.mcs.cap.core.account.administration..",
+              "org.craft.mcs.cap.core.account.actor.."
           );
 
   @ArchTest

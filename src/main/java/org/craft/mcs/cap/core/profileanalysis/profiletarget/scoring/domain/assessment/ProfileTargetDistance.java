@@ -9,6 +9,7 @@ import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.Profi
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.objective.ProfileDistanceMetric;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.objective.ProfileTargetObjectiveFunctionCode;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.SugarAcidityTargetKind;
+import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.SugarAcidityTargetPosition;
 import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.jspecify.annotations.NonNull;
@@ -29,6 +30,7 @@ public record ProfileTargetDistance(
     @NonNull ProfileTargetDistanceStatus status,
     @NonNull SugarAcidityGraphPoint point,
     @NonNull SugarAcidityGraphPoint nearestTargetPoint,
+    @NonNull SugarAcidityTargetPosition sugarAcidityTargetPosition,
     @Nullable TanninValue tannin,
     @Nullable TanninValue nearestTargetTannin,
     @Nullable BigDecimal value,
@@ -46,6 +48,7 @@ public record ProfileTargetDistance(
     requireNonNull(status, "target distance status cannot be null");
     requireNonNull(point, "SG/TA point cannot be null");
     requireNonNull(nearestTargetPoint, "nearest target point cannot be null");
+    requireNonNull(sugarAcidityTargetPosition, "SG/TA target position cannot be null");
     requireNonNull(objectiveFunction, "objective function cannot be null");
     requireNonNull(metric, "distance metric cannot be null");
     requireNonNull(weights, "objective weights cannot be null");
@@ -58,8 +61,21 @@ public record ProfileTargetDistance(
           "profile cannot be inside the full target outside its SG/TA target"
       );
     }
+    if (insideSugarAcidityTarget != sugarAcidityTargetPosition.inside()) {
+      throw new DomainRuleViolationException(
+          "SG/TA containment must agree with the per-axis target position"
+      );
+    }
     if ((tannin == null) != (nearestTargetTannin == null)) {
       throw new DomainRuleViolationException("candidate and nearest target tannin must be present together");
+    }
+    if (!missingAxes.isEmpty() && tannin != null) {
+      throw new DomainRuleViolationException("missing tannin cannot have candidate and target tannin values");
+    }
+    if (tannin == null && missingAxes.isEmpty() && insideTarget != insideSugarAcidityTarget) {
+      throw new DomainRuleViolationException(
+          "target without tannin must use its SG/TA containment as full containment"
+      );
     }
     if (value != null && isNegative(value)) {
       throw new DomainRuleViolationException("target distance value cannot be negative");

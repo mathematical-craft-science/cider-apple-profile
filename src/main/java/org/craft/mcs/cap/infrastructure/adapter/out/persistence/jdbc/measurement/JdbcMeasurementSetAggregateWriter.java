@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import lombok.RequiredArgsConstructor;
+import org.craft.mcs.cap.core.measurement.application.MeasurementEvidenceIdentityConflictException;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementRecord;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSet;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetId;
@@ -44,6 +45,9 @@ final class JdbcMeasurementSetAggregateWriter {
                 subject_type,
                 subject_id,
                 lifecycle,
+                retracted_by,
+                retracted_at,
+                retraction_reason,
                 created_at,
                 updated_at,
                 version
@@ -53,6 +57,9 @@ final class JdbcMeasurementSetAggregateWriter {
                 :subjectType,
                 :subjectId,
                 :lifecycle,
+                :retractedBy,
+                :retractedAt,
+                :retractionReason,
                 :createdAt,
                 :updatedAt,
                 0
@@ -97,6 +104,9 @@ final class JdbcMeasurementSetAggregateWriter {
         """
             UPDATE measurement_sets
                SET lifecycle = :lifecycle,
+                   retracted_by = :retractedBy,
+                   retracted_at = :retractedAt,
+                   retraction_reason = :retractionReason,
                    updated_at = :updatedAt,
                    version = version + 1
              WHERE measurement_set_id = :measurementSetId
@@ -153,11 +163,14 @@ final class JdbcMeasurementSetAggregateWriter {
     );
     revision.records().forEach(measurementRecord -> {
       insertRecord(measurementRecord);
-      associateRecord(revision.revisionId(), measurementRecord);
+      associateActiveRecord(revision.revisionId(), measurementRecord);
     });
     revision.records().stream()
         .filter(measurementRecord -> !measurementRecord.derivationInputs().isEmpty())
         .forEach(this::insertDerivationInputs);
+    revision.resultRetractions().forEach(retraction ->
+        associateRetractedRecord(revision.revisionId(), retraction.result())
+    );
   }
 
   private void insertHead(
@@ -216,7 +229,7 @@ final class JdbcMeasurementSetAggregateWriter {
         .addValue("confidence", enumName(measurementRecord.provenance().confidence()))
         .addValue("derivationMethod", enumName(measurementRecord.derivationMethod()));
     addValueParameters(parameters, measurementRecord.value());
-    jdbcTemplate.update(
+    final var affectedRows = jdbcTemplate.update(
         """
             INSERT INTO measurement_records (
                 record_id,
@@ -249,13 +262,30 @@ final class JdbcMeasurementSetAggregateWriter {
                 :upperValue,
                 :derivationMethod
             )
-            ON CONFLICT (record_id) DO NOTHING
+            ON CONFLICT (record_id) DO UPDATE
+                SET record_id = EXCLUDED.record_id
+              WHERE measurement_records.characteristic = EXCLUDED.characteristic
+                AND measurement_records.role = EXCLUDED.role
+                AND measurement_records.value_kind = EXCLUDED.value_kind
+                AND measurement_records.measured_at = EXCLUDED.measured_at
+                AND measurement_records.source_type = EXCLUDED.source_type
+                AND measurement_records.source_name IS NOT DISTINCT FROM EXCLUDED.source_name
+                AND measurement_records.measurement_method IS NOT DISTINCT FROM EXCLUDED.measurement_method
+                AND measurement_records.source_reference IS NOT DISTINCT FROM EXCLUDED.source_reference
+                AND measurement_records.confidence IS NOT DISTINCT FROM EXCLUDED.confidence
+                AND measurement_records.point_value IS NOT DISTINCT FROM EXCLUDED.point_value
+                AND measurement_records.lower_value IS NOT DISTINCT FROM EXCLUDED.lower_value
+                AND measurement_records.upper_value IS NOT DISTINCT FROM EXCLUDED.upper_value
+                AND measurement_records.derivation_method IS NOT DISTINCT FROM EXCLUDED.derivation_method
             """,
         parameters
     );
+    if (affectedRows != 1) {
+      throw new MeasurementEvidenceIdentityConflictException(measurementRecord.recordId());
+    }
   }
 
-  private void associateRecord(
+  private void associateActiveRecord(
       @NonNull MeasurementSetRevisionId revisionId,
       @NonNull MeasurementRecord measurementRecord
   ) {
@@ -265,12 +295,42 @@ final class JdbcMeasurementSetAggregateWriter {
                 revision_id,
                 record_id,
                 characteristic,
-                role
+                role,
+                record_status
             ) VALUES (
                 :revisionId,
                 :recordId,
                 :characteristic,
-                :role
+                :role,
+                'ACTIVE'
+            )
+            """,
+        new MapSqlParameterSource()
+            .addValue("revisionId", revisionId.value())
+            .addValue("recordId", measurementRecord.recordId().value())
+            .addValue("characteristic", measurementRecord.characteristic().name())
+            .addValue("role", measurementRecord.role().name())
+    );
+  }
+
+  private void associateRetractedRecord(
+      @NonNull MeasurementSetRevisionId revisionId,
+      @NonNull MeasurementRecord measurementRecord
+  ) {
+    jdbcTemplate.update(
+        """
+            INSERT INTO measurement_revision_records (
+                revision_id,
+                record_id,
+                characteristic,
+                role,
+                record_status
+            ) VALUES (
+                :revisionId,
+                :recordId,
+                :characteristic,
+                :role,
+                'RETRACTED'
             )
             """,
         new MapSqlParameterSource()
@@ -323,12 +383,25 @@ final class JdbcMeasurementSetAggregateWriter {
   }
 
   private static @NonNull MapSqlParameterSource setParameters(@NonNull MeasurementSet measurementSet) {
+    final var retraction = measurementSet.retraction();
     return new MapSqlParameterSource()
         .addValue("measurementSetId", measurementSet.measurementSetId().value())
         .addValue("workspaceId", measurementSet.workspaceId().value())
         .addValue("subjectType", measurementSet.subject().type().name())
         .addValue("subjectId", measurementSet.subject().id())
         .addValue("lifecycle", measurementSet.lifecycle().name())
+        .addValue(
+            "retractedBy",
+            retraction == null ? null : ActorReferenceJdbcCodec.encode(retraction.actor())
+        )
+        .addValue(
+            "retractedAt",
+            retraction == null ? null : timestamp(retraction.retractedAt())
+        )
+        .addValue(
+            "retractionReason",
+            retraction == null ? null : retraction.reason().value()
+        )
         .addValue("createdAt", timestamp(measurementSet.createdAt()))
         .addValue("updatedAt", timestamp(measurementSet.updatedAt()));
   }

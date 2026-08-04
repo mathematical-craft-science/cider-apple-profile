@@ -12,8 +12,6 @@ import org.craft.mcs.cap.shared.application.measurement.MeasurementProvenanceVie
 import org.craft.mcs.cap.shared.application.measurement.MeasurementValueOrigin;
 import org.craft.mcs.cap.shared.application.ApplicationValidationException;
 import org.craft.mcs.cap.shared.kernel.characteristic.CharacteristicValue;
-import org.craft.mcs.cap.shared.kernel.characteristic.IntervalCharacteristicValue;
-import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.shared.kernel.measurement.MeasuredValue;
 import org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic;
@@ -46,7 +44,7 @@ public record CurrentMaterialCharacteristicView(
     requireNonNull(measuredAt, "measurement time cannot be null");
     requireNonNull(provenance, "measurement provenance cannot be null");
     requireNonNull(freshnessStatus, "measurement freshness status cannot be null");
-    if (!supports(characteristic, value)) {
+    if (!characteristic.supports(value)) {
       throw new ApplicationValidationException(
           "measurement characteristic " + characteristic + " has an incompatible value"
       );
@@ -86,14 +84,4 @@ public record CurrentMaterialCharacteristicView(
     return provenance.reference() == null ? null : provenance.reference().value(); // NOSONAR
   }
 
-  private static boolean supports(
-      @NonNull MeasurementCharacteristic characteristic,
-      @NonNull CharacteristicValue<MeasuredValue> value
-  ) {
-    return switch (value) {
-      case PointCharacteristicValue<MeasuredValue>(var point) -> characteristic.supports(point);
-      case IntervalCharacteristicValue<MeasuredValue>(var lower, var upper) ->
-          characteristic.supports(lower) && characteristic.supports(upper);
-    };
-  }
 }

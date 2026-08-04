@@ -31,6 +31,7 @@ import org.craft.mcs.cap.core.measurement.application.port.out.CurrentMaterialSt
 import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementFreshnessThresholdProvider;
 import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementSubjectAccessControl;
 import org.craft.mcs.cap.core.measurement.application.usecase.CurrentMaterialStateProjector;
+import org.craft.mcs.cap.core.measurement.application.usecase.CurrentMeasurementResultResolver;
 import org.craft.mcs.cap.core.measurement.application.usecase.QueryMeasurementSetMetadataService;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSubjectReference;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSubjectType;
@@ -97,6 +98,7 @@ import static org.craft.mcs.cap.support.PotentialAbvPredictionFixtures.predictio
         PostgresDataJdbcTestConfiguration.class,
         ProductionCreationMaterialFlowDataJdbcTest.FlowTestConfiguration.class,
         SpringTransactionHelper.class,
+        CurrentMeasurementResultResolver.class,
         CurrentMaterialStateProjector.class,
         QueryMeasurementSetMetadataService.class,
         FeedstockCurrentProfileQueryService.class,
@@ -151,7 +153,47 @@ class ProductionCreationMaterialFlowDataJdbcTest {
     initialFeedstockStateId = MaterialStateId.newId();
     insertWorkspace();
     insertFeedstockBatch();
+    insertInitialFeedstockTraceState();
     insertMeasurementSet();
+  }
+
+  private void insertInitialFeedstockTraceState() {
+    final var stepId = newUuid();
+    final var occurredAt = OffsetDateTime.parse(RECORDED_AT.toString());
+    jdbcTemplate.update(
+        """
+            INSERT INTO batch_trace_steps (
+                step_id,
+                workspace_id,
+                step_type,
+                occurred_at,
+                performed_by_type,
+                performed_by_id,
+                created_at
+            ) VALUES (?, ?, 'FEEDSTOCK_BATCH_CREATED', ?, 'ACCOUNT_USER', ?, ?)
+            """,
+        stepId,
+        workspaceId.value(),
+        occurredAt,
+        newUuid(),
+        occurredAt
+    );
+    jdbcTemplate.update(
+        """
+            INSERT INTO batch_trace_step_subjects (
+                step_id,
+                subject_role,
+                subject_order,
+                material_state_id,
+                subject_type,
+                subject_id,
+                invalidated_characteristics
+            ) VALUES (?, 'OUTPUT', 0, ?, 'FEEDSTOCK_BATCH', ?, ARRAY[]::VARCHAR[])
+            """,
+        stepId,
+        initialFeedstockStateId.value(),
+        feedstockBatchId.value()
+    );
   }
 
   @Test
@@ -186,9 +228,11 @@ class ProductionCreationMaterialFlowDataJdbcTest {
     assertThat(number("""
         SELECT snapshot_volume_liters
           FROM batch_trace_step_subjects
+          JOIN batch_trace_steps USING (step_id)
          WHERE subject_type = 'FEEDSTOCK_BATCH'
            AND subject_id = ?
            AND subject_role = 'OUTPUT'
+           AND step_type = 'PRODUCTION_BATCH_CREATED'
         """))
         .isEqualByComparingTo("150");
     assertThat(feedstockCurrentState())
@@ -450,8 +494,9 @@ class ProductionCreationMaterialFlowDataJdbcTest {
                 revision_id,
                 record_id,
                 characteristic,
-                role
-            ) VALUES (?, ?, ?, 'RESULT')
+                role,
+                record_status
+            ) VALUES (?, ?, ?, 'RESULT', 'ACTIVE')
             """,
         revisionId,
         recordId,
@@ -507,6 +552,7 @@ class ProductionCreationMaterialFlowDataJdbcTest {
           "org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.measurement",
           "org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.traceability",
           "org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.production.candidate",
+          "org.craft.mcs.cap.infrastructure.adapter.out.feedstock.measurement",
           "org.craft.mcs.cap.infrastructure.adapter.out.traceability.feedstock",
           "org.craft.mcs.cap.infrastructure.adapter.out.traceability.measurement",
           "org.craft.mcs.cap.infrastructure.adapter.out.traceability.production",

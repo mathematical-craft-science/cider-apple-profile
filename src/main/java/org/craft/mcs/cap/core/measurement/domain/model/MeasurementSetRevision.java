@@ -37,7 +37,8 @@ public record MeasurementSetRevision(
     @Nullable MeasurementCorrectionReason correctionReason,
     @NonNull Instant createdAt,
     @NonNull ActorReference actor,
-    @NonNull List<@NonNull MeasurementRecord> records
+    @NonNull List<@NonNull MeasurementRecord> records,
+    @NonNull List<@NonNull MeasurementResultRetraction> resultRetractions
 ) {
 
   private static final int MAX_NOTE_LENGTH = 2_000;
@@ -50,6 +51,10 @@ public record MeasurementSetRevision(
     requireNonNull(createdAt, "measurement set revision creation time cannot be null");
     requireNonNull(actor, "measurement actor reference cannot be null");
     records = List.copyOf(requireNonNull(records, "measurement records cannot be null"));
+    resultRetractions = List.copyOf(requireNonNull(
+        resultRetractions,
+        "measurement result retractions cannot be null"
+    ));
     note = normalize(note);
 
     if (revisionNumber.isInitial() && correctionReason != null) {
@@ -58,14 +63,59 @@ public record MeasurementSetRevision(
     if (!revisionNumber.isInitial() && correctionReason == null) {
       throw new DomainRuleViolationException("corrected measurement revision requires a correction reason");
     }
-    if (records.isEmpty()) {
-      throw new DomainRuleViolationException("measurement revision must contain at least one record");
+    if (records.isEmpty() && resultRetractions.isEmpty()) {
+      throw new DomainRuleViolationException(
+          "measurement revision must contain records or result retractions"
+      );
+    }
+    if (revisionNumber.isInitial() && !resultRetractions.isEmpty()) {
+      throw new DomainRuleViolationException("initial measurement revision cannot retract a result");
     }
     requireMaximumLength(note, MAX_NOTE_LENGTH, "measurement set note");
     validateRecordIdentities(records);
     validateResults(records);
     validateRecordChronology(records, createdAt);
     validateDerivations(records);
+    validateResultRetractions(records, resultRetractions, createdAt);
+  }
+
+  private static void validateResultRetractions(
+      @NonNull List<@NonNull MeasurementRecord> records,
+      @NonNull List<@NonNull MeasurementResultRetraction> retractions,
+      @NonNull Instant revisionCreatedAt
+  ) {
+    final Set<MeasurementCharacteristic> representedCharacteristics = EnumSet.noneOf(
+        MeasurementCharacteristic.class
+    );
+    records.stream()
+        .map(MeasurementRecord::characteristic)
+        .forEach(representedCharacteristics::add);
+    final Set<MeasurementCharacteristic> retractedCharacteristics = EnumSet.noneOf(
+        MeasurementCharacteristic.class
+    );
+    final Set<MeasurementRecordId> retractedRecordIds = new HashSet<>();
+    for (final var retraction : retractions) {
+      if (!retractedCharacteristics.add(retraction.characteristic())) {
+        throw new DomainRuleViolationException(
+            "measurement revision cannot retract one characteristic more than once"
+        );
+      }
+      if (representedCharacteristics.contains(retraction.characteristic())) {
+        throw new DomainRuleViolationException(
+            "measurement characteristic cannot be active and retracted in the same revision"
+        );
+      }
+      if (!retractedRecordIds.add(retraction.recordId())) {
+        throw new DomainRuleViolationException(
+            "measurement revision cannot retract one result record more than once"
+        );
+      }
+      if (retraction.retractedAt().isAfter(revisionCreatedAt)) {
+        throw new DomainRuleViolationException(
+            "measurement result retraction cannot occur after its revision creation time"
+        );
+      }
+    }
   }
 
   private static void validateRecordIdentities(@NonNull List<@NonNull MeasurementRecord> records) {

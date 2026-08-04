@@ -4,11 +4,13 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.measurement.application.model.MeasurementCharacteristicInput;
 import org.craft.mcs.cap.core.measurement.application.model.MeasurementObservationInput;
+import org.craft.mcs.cap.core.measurement.application.model.MeasurementRecordView;
+import org.craft.mcs.cap.core.measurement.application.model.MeasurementResultRetractionView;
+import org.craft.mcs.cap.core.measurement.application.model.MeasurementSetRetractionView;
 import org.craft.mcs.cap.core.measurement.application.model.MeasurementSetView;
 import org.craft.mcs.cap.core.measurement.application.port.in.CreateMeasurementSetCommand;
 import org.craft.mcs.cap.core.measurement.application.port.in.PatchMeasurementSetCommand;
 import org.craft.mcs.cap.core.measurement.application.port.in.ReplaceMeasurementSetCommand;
-import org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementCorrectionReason;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementProvenance;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementRecordId;
@@ -21,10 +23,16 @@ import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement.dto.DirectMe
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement.dto.IntervalMeasurementValueRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement.dto.MeasurementActorReferenceResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement.dto.MeasurementCharacteristicRequest;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement.dto.MeasurementInputSourceType;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement.dto.MeasurementProvenanceRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement.dto.MeasurementProvenanceResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement.dto.MeasurementRecordResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement.dto.MeasurementResultRetractionResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement.dto.MeasurementResultRetractionStatus;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement.dto.MeasurementSetResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement.dto.MeasurementSetRetractionResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement.dto.MeasurementSetRevisionHistoryResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement.dto.MeasurementSetRevisionResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement.dto.MeasurementSubjectRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement.dto.MeasurementSubjectResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement.dto.MeasurementValueRequest;
@@ -35,7 +43,10 @@ import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement.dto.ReplaceM
 import org.craft.mcs.cap.shared.kernel.characteristic.CharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.shared.kernel.measurement.MeasuredValue;
+import org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic;
+import org.craft.mcs.cap.shared.kernel.measurement.MeasurementSourceType;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
 
 import static java.util.Objects.requireNonNull;
@@ -112,6 +123,7 @@ public final class MeasurementSetRestMapper {
         view.workspaceId().value(),
         new MeasurementSubjectResponse(view.subject().type(), view.subject().id()),
         view.lifecycle(),
+        toRetractionResponse(view.retraction()),
         view.version(),
         view.revisionId().value(),
         view.revisionNumber().value(),
@@ -121,26 +133,105 @@ public final class MeasurementSetRestMapper {
         view.correctionReason() == null ? null : view.correctionReason().value(), // NOSONAR
         view.revisionCreatedAt(),
         new MeasurementActorReferenceResponse(view.actor().type(), view.actor().id()),
-        view.records().stream()
-            .map(recordView -> new MeasurementRecordResponse(
-                recordView.recordId().value(),
-                recordView.characteristic(),
-                recordView.role(),
-                MeasurementValueRestMapper.toResponse(recordView.characteristic(), recordView.value()),
-                recordView.measuredAt(),
-                new MeasurementProvenanceResponse(
-                    recordView.provenance().sourceType(),
-                    sourceNameValue(recordView.provenance().sourceName()),
-                    methodValue(recordView.provenance().method()),
-                    referenceValue(recordView.provenance().reference()),
-                    recordView.provenance().confidence()
-                ),
-                recordView.derivationMethod(),
-                recordView.derivationInputs().stream().map(MeasurementRecordId::value).toList()
-            ))
+        view.records().stream().map(MeasurementSetRestMapper::toRecordResponse).toList(),
+        view.resultRetractions().stream()
+            .map(MeasurementSetRestMapper::toResultRetractionResponse)
             .toList(),
         view.createdAt(),
         view.updatedAt()
+    );
+  }
+
+  @NonNull MeasurementSetRevisionHistoryResponse toRevisionHistoryResponse(
+      @NonNull List<@NonNull MeasurementSetView> revisions
+  ) {
+    requireNonNull(revisions, "measurement set revisions cannot be null");
+    final var current = revisions.getFirst();
+    return new MeasurementSetRevisionHistoryResponse(
+        current.measurementSetId().value(),
+        current.lifecycle(),
+        toRetractionResponse(current.retraction()),
+        current.version(),
+        revisions.stream()
+            .map(MeasurementSetRestMapper::toRevisionResponse)
+            .toList()
+    );
+  }
+
+  private static @NonNull MeasurementSetRevisionResponse toRevisionResponse(
+      @NonNull MeasurementSetView view
+  ) {
+    return new MeasurementSetRevisionResponse(
+        view.revisionId().value(),
+        view.revisionNumber().value(),
+        view.materialStateId().value(),
+        view.name().value(),
+        view.note(),
+        view.correctionReason() == null ? null : view.correctionReason().value(), // NOSONAR
+        view.revisionCreatedAt(),
+        new MeasurementActorReferenceResponse(view.actor().type(), view.actor().id()),
+        view.records().stream().map(MeasurementSetRestMapper::toRecordResponse).toList(),
+        view.resultRetractions().stream()
+            .map(MeasurementSetRestMapper::toResultRetractionResponse)
+            .toList()
+    );
+  }
+
+  private static @NonNull MeasurementResultRetractionResponse toResultRetractionResponse(
+      @NonNull MeasurementResultRetractionView retraction
+  ) {
+    return new MeasurementResultRetractionResponse(
+        retraction.recordId().value(),
+        retraction.characteristic(),
+        MeasurementResultRetractionStatus.RETRACTED,
+        toRecordResponse(retraction.resultSnapshot()),
+        retraction.observationSnapshots().stream()
+            .map(MeasurementSetRestMapper::toRecordResponse)
+            .toList(),
+        retraction.sourceRevisionId().value(),
+        retraction.sourceRevisionNumber().value(),
+        new MeasurementActorReferenceResponse(
+            retraction.actor().type(),
+            retraction.actor().id()
+        ),
+        retraction.retractedAt(),
+        retraction.reason().value()
+    );
+  }
+
+  private static @Nullable MeasurementSetRetractionResponse toRetractionResponse(
+      @Nullable MeasurementSetRetractionView retraction
+  ) {
+    return retraction == null
+        ? null
+        : new MeasurementSetRetractionResponse(
+            new MeasurementActorReferenceResponse(
+                retraction.actor().type(),
+                retraction.actor().id()
+            ),
+            retraction.retractedAt(),
+            retraction.reason().value()
+        );
+  }
+
+  private static @NonNull MeasurementRecordResponse toRecordResponse(
+      @NonNull MeasurementRecordView recordView
+  ) {
+    return new MeasurementRecordResponse(
+        recordView.recordId().value(),
+        recordView.characteristic(),
+        recordView.role(),
+        MeasurementValueRestMapper.toResponse(recordView.characteristic(), recordView.value()),
+        recordView.measuredAt(),
+        new MeasurementProvenanceResponse(
+            recordView.provenance().sourceType(),
+            sourceNameValue(recordView.provenance().sourceName()),
+            methodValue(recordView.provenance().method()),
+            referenceValue(recordView.provenance().reference()),
+            recordView.provenance().confidence()
+        ),
+        recordView.derivationMethod(),
+        recordView.derivationInputs().stream().map(MeasurementRecordId::value).toList()
     );
   }
 
@@ -205,12 +296,25 @@ public final class MeasurementSetRestMapper {
       @NonNull MeasurementProvenanceRequest request
   ) {
     return new MeasurementProvenance(
-        request.sourceType(),
+        toSourceType(request.sourceType()),
         sourceName(request.sourceName()),
         method(request.method()),
         reference(request.reference()),
         request.confidence()
     );
+  }
+
+  private static @NonNull MeasurementSourceType toSourceType(
+      @NonNull MeasurementInputSourceType sourceType
+  ) {
+    return switch (sourceType) {
+      case USER -> MeasurementSourceType.USER;
+      case INSTRUMENT -> MeasurementSourceType.INSTRUMENT;
+      case LAB -> MeasurementSourceType.LAB;
+      case IMPORT -> MeasurementSourceType.IMPORT;
+      case CURATOR -> MeasurementSourceType.CURATOR;
+      case INSTITUTE -> MeasurementSourceType.INSTITUTE;
+    };
   }
 
 }

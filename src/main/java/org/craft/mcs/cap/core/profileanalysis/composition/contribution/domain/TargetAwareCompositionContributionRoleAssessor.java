@@ -1,6 +1,5 @@
 package org.craft.mcs.cap.core.profileanalysis.composition.contribution.domain;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
@@ -8,6 +7,11 @@ import java.util.Set;
 import java.util.stream.Stream;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileEvaluationAxis;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.assessment.ProfileTargetDistance;
+import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
+import org.craft.mcs.cap.shared.kernel.measurement.MeasuredValue;
+import org.craft.mcs.cap.shared.kernel.measurement.MeasuredValueRangePosition;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
@@ -27,12 +31,19 @@ public final class TargetAwareCompositionContributionRoleAssessor
     implements CompositionContributionRoleAssessor {
 
   private static void addSpecificGravityEvidence(
-      @NonNull BigDecimal source,
-      @NonNull BigDecimal target,
+      @NonNull SpecificGravityValue source,
+      @NonNull SpecificGravityValue target,
+      @NonNull MeasuredValueRangePosition targetPosition,
       @NonNull EnumSet<CompositionContributionRole> roles,
       @NonNull List<@NonNull CompositionContributionEvidence> evidence
   ) {
-    final var fact = addEvidence(ProfileEvaluationAxis.SPECIFIC_GRAVITY, source, target, evidence);
+    final var fact = addEvidence(
+        ProfileEvaluationAxis.SPECIFIC_GRAVITY,
+        source,
+        target,
+        targetPosition,
+        evidence
+    );
     if (fact.direction() == CompositionContributionEvidenceDirection.ABOVE_TARGET) {
       roles.add(CompositionContributionRole.SUGAR_CONTRIBUTOR);
     } else if (fact.direction() == CompositionContributionEvidenceDirection.BELOW_TARGET) {
@@ -41,12 +52,19 @@ public final class TargetAwareCompositionContributionRoleAssessor
   }
 
   private static void addTitratableAcidityEvidence(
-      @NonNull BigDecimal source,
-      @NonNull BigDecimal target,
+      @NonNull TitratableAcidityValue source,
+      @NonNull TitratableAcidityValue target,
+      @NonNull MeasuredValueRangePosition targetPosition,
       @NonNull EnumSet<CompositionContributionRole> roles,
       @NonNull List<@NonNull CompositionContributionEvidence> evidence
   ) {
-    final var fact = addEvidence(ProfileEvaluationAxis.TITRATABLE_ACIDITY, source, target, evidence);
+    final var fact = addEvidence(
+        ProfileEvaluationAxis.TITRATABLE_ACIDITY,
+        source,
+        target,
+        targetPosition,
+        evidence
+    );
     if (fact.direction() == CompositionContributionEvidenceDirection.ABOVE_TARGET) {
       roles.add(CompositionContributionRole.ACIDITY_CONTRIBUTOR);
     } else if (fact.direction() == CompositionContributionEvidenceDirection.BELOW_TARGET) {
@@ -67,9 +85,13 @@ public final class TargetAwareCompositionContributionRoleAssessor
       return;
     }
 
-    final var tanninValue = tannin.asBigDecimal();
-    final var targetTanninValue = targetValue.asBigDecimal();
-    final var fact = addEvidence(ProfileEvaluationAxis.TANNIN, tanninValue, targetTanninValue, evidence);
+    final var fact = addEvidence(
+        ProfileEvaluationAxis.TANNIN,
+        tannin,
+        targetValue,
+        positionOf(tannin, targetValue),
+        evidence
+    );
     if (fact.direction() == CompositionContributionEvidenceDirection.ABOVE_TARGET) {
       roles.add(CompositionContributionRole.TANNIN_CONTRIBUTOR);
     } else if (fact.direction() == CompositionContributionEvidenceDirection.BELOW_TARGET) {
@@ -110,13 +132,21 @@ public final class TargetAwareCompositionContributionRoleAssessor
 
   private static @NonNull CompositionContributionEvidence addEvidence(
       @NonNull ProfileEvaluationAxis axis,
-      @NonNull BigDecimal source,
-      @NonNull BigDecimal target,
+      @NonNull MeasuredValue source,
+      @NonNull MeasuredValue target,
+      @NonNull MeasuredValueRangePosition targetPosition,
       @NonNull List<@NonNull CompositionContributionEvidence> evidence
   ) {
-    final var fact = new CompositionContributionEvidence(axis, source, target);
+    final var fact = new CompositionContributionEvidence(axis, source, target, targetPosition);
     evidence.add(fact);
     return fact;
+  }
+
+  private static @NonNull MeasuredValueRangePosition positionOf(
+      @NonNull TanninValue source,
+      @NonNull TanninValue target
+  ) {
+    return MeasuredValueRangePosition.fromComparison(source.compareTo(target));
   }
 
   @Override
@@ -131,20 +161,23 @@ public final class TargetAwareCompositionContributionRoleAssessor
     final var targetPoint = targetDistance.nearestTargetPoint();
     final var roles = EnumSet.noneOf(CompositionContributionRole.class);
     final var evidence = new ArrayList<CompositionContributionEvidence>();
-    final var specificGravity = sourcePoint.specificGravity().asBigDecimal();
-    final var titratableAcidity = sourcePoint.titratableAcidity().asBigDecimal();
-    final var targetSpecificGravity = targetPoint.specificGravity().asBigDecimal();
-    final var targetTitratableAcidity = targetPoint.titratableAcidity().asBigDecimal();
+    final var specificGravity = sourcePoint.specificGravity();
+    final var titratableAcidity = sourcePoint.titratableAcidity();
+    final var targetSpecificGravity = targetPoint.specificGravity();
+    final var targetTitratableAcidity = targetPoint.titratableAcidity();
+    final var targetPosition = targetDistance.sugarAcidityTargetPosition();
 
     addSpecificGravityEvidence(
         specificGravity,
         targetSpecificGravity,
+        targetPosition.specificGravity(),
         roles,
         evidence
     );
     addTitratableAcidityEvidence(
         titratableAcidity,
         targetTitratableAcidity,
+        targetPosition.titratableAcidity(),
         roles,
         evidence
     );
@@ -156,9 +189,8 @@ public final class TargetAwareCompositionContributionRoleAssessor
     if (isDilutionSource(evidence)) {
       roles.add(CompositionContributionRole.DILUTION_SOURCE);
     }
-    final var orderedRoles = orderedRoles(roles);
     return new CompositionContributionRoleAssessment(
-        orderedRoles,
+        orderedRoles(roles),
         evidence,
         missingAxes
     );

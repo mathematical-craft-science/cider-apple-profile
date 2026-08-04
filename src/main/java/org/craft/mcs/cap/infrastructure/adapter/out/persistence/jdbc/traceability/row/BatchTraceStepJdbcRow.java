@@ -5,13 +5,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceStepType;
-import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceActorType;
+import org.craft.mcs.cap.shared.kernel.identity.ActorType;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import static java.util.Objects.requireNonNull;
 
 
+/**
+ * Mutable JDBC persistence row for one trace step and its ordered subject rows.
+ *
+ * <p>This type carries relational data only; trace invariants are restored and validated by the
+ * domain model through {@link BatchTraceStepJdbcRowMapper}.</p>
+ */
 public class BatchTraceStepJdbcRow {
 
   @NonNull
@@ -30,10 +36,10 @@ public class BatchTraceStepJdbcRow {
   public Instant occurredAt;
 
   @NonNull
-  public BatchTraceActorType performedByType;
+  public ActorType performedByType;
 
   @NonNull
-  public String performedById;
+  public UUID performedById;
 
   @Nullable
   public String note;
@@ -54,8 +60,8 @@ public class BatchTraceStepJdbcRow {
       @Nullable UUID parentStepId,
       @NonNull BatchTraceStepType stepType,
       @NonNull Instant occurredAt,
-      @NonNull BatchTraceActorType performedByType,
-      @NonNull String performedById,
+      @NonNull ActorType performedByType,
+      @NonNull UUID performedById,
       @Nullable String note
   ) {
     this.stepId = requireNonNull(stepId, "batch trace step id cannot be null");

@@ -76,6 +76,22 @@ class CurrentMaterialStateViewTest {
         .hasMessageContaining("PH has an incompatible value");
   }
 
+  @Test
+  void rejectsRawEvidenceWhoseValueHasAnotherCanonicalType() {
+    assertThatThrownBy(() -> new MeasurementResultEvidenceView(
+        new MeasurementSubjectReference(MeasurementSubjectType.FEEDSTOCK_BATCH, newUuid()),
+        MaterialStateId.newId(),
+        MeasurementSetId.newId(),
+        MeasurementRecordId.newId(),
+        MeasurementCharacteristic.PH,
+        MeasurementTestValues.point(MeasurementCharacteristic.SPECIFIC_GRAVITY, new BigDecimal("1.050")),
+        Instant.parse("2026-07-24T10:00:00Z"),
+        MeasurementProvenance.derived()
+    ))
+        .isInstanceOf(ApplicationValidationException.class)
+        .hasMessageContaining("PH has an incompatible value");
+  }
+
   private static CurrentMaterialStateView view(CurrentMaterialCharacteristicView... characteristics) {
     return new CurrentMaterialStateView(
         new MeasurementSubjectReference(MeasurementSubjectType.FEEDSTOCK_BATCH, newUuid()),
