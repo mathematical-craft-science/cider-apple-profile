@@ -41,6 +41,12 @@ public enum WorkspacePermission {
   /** Create or change production batches and operations. */
   PRODUCTION_WRITE,
 
+  /** Read vessels and their catalog characteristics. */
+  VESSEL_READ,
+
+  /** Register or change vessels and their operational availability. */
+  VESSEL_WRITE,
+
   /** Add catalog and regional-profile contributions. */
   CATALOG_CONTRIBUTE,
 

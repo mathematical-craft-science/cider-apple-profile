@@ -32,8 +32,8 @@ public interface FeedstockBatchApi {
   @Operation(
       summary = "Create feedstock batch",
       description = """
-          Creates a feedstock batch with optional vessel, season dates, optional source and
-          available volume.
+          Creates a feedstock batch in an existing operational workspace vessel, with season dates,
+          optional source and available volume.
           """,
       requestBody = @RequestBody(
           description = "Feedstock batch creation payload.",
@@ -55,6 +55,26 @@ public interface FeedstockBatchApi {
   @ApiResponse(
       responseCode = "400",
       description = "Invalid feedstock batch request.",
+      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
+  )
+  @ApiResponse(
+      responseCode = "403",
+      description = "Workspace cannot access the selected vessel.",
+      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
+  )
+  @ApiResponse(
+      responseCode = "404",
+      description = "Selected vessel was not found.",
+      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
+  )
+  @ApiResponse(
+      responseCode = "409",
+      description = "Selected vessel is occupied, not operational, or its nominal capacity is insufficient.",
+      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
+  )
+  @ApiResponse(
+      responseCode = "422",
+      description = "Feedstock batch data violates a domain rule.",
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
   )
   @NonNull ResponseEntity<@NonNull FeedstockBatchResponse> create(
@@ -232,8 +252,9 @@ public interface FeedstockBatchApi {
   @Operation(
       summary = "Delete feedstock batch",
       description = """
-          Soft-deletes a feedstock batch. The batch disappears from normal workspace queries while
-          historical rows remain in persistence.
+          Soft-deletes a depleted or discarded feedstock batch. A batch containing active material
+          must first be depleted or discarded by an explicit material operation. The deleted batch
+          disappears from normal workspace queries while historical rows remain in persistence.
           """
   )
   @ApiResponse(responseCode = "204", description = "Feedstock batch deleted.")
@@ -249,7 +270,7 @@ public interface FeedstockBatchApi {
   )
   @ApiResponse(
       responseCode = "409",
-      description = "Feedstock batch was modified concurrently.",
+      description = "Batch still contains active material or was modified concurrently.",
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
   )
   @NonNull ResponseEntity<Void> delete(

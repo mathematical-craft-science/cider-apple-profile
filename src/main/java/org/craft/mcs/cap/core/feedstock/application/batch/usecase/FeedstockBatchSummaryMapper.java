@@ -21,7 +21,7 @@ public final class FeedstockBatchSummaryMapper {
         batch.batchId(),
         batch.workspaceId(),
         batch.name(),
-        batch.vessel(),
+        batch.vesselId(),
         batch.type(),
         batch.season(),
         batch.source(),

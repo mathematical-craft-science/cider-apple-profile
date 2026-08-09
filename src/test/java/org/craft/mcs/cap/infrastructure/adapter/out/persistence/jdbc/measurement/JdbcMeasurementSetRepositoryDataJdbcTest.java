@@ -61,6 +61,7 @@ import org.craft.mcs.cap.shared.kernel.measurement.MeasuredValue;
 import org.craft.mcs.cap.shared.kernel.measurement.unit.BeverageUnits;
 import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.craft.mcs.cap.shared.testing.jdbc.PostgresDataJdbcTestConfiguration;
+import org.craft.mcs.cap.testsupport.VesselTestFixtures;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -141,6 +142,7 @@ class JdbcMeasurementSetRepositoryDataJdbcTest {
             .addValue("createdAt", OffsetDateTime.parse("2026-07-20T10:00:00Z"))
             .addValue("updatedAt", OffsetDateTime.parse("2026-07-20T10:00:00Z"))
     );
+    VesselTestFixtures.persistAllVessels(jdbcTemplate.getJdbcOperations(), workspaceId);
   }
 
   @Test
@@ -389,7 +391,7 @@ class JdbcMeasurementSetRepositoryDataJdbcTest {
                 batch_id,
                 workspace_id,
                 name,
-                vessel,
+                vessel_id,
                 type,
                 season_starts_on,
                 season_ends_on,
@@ -403,7 +405,7 @@ class JdbcMeasurementSetRepositoryDataJdbcTest {
                 :batchId,
                 :workspaceId,
                 'Measurement feedstock',
-                'Test vessel',
+                :vesselId,
                 'JUICE',
                 DATE '2026-01-01',
                 DATE '2026-12-31',
@@ -429,7 +431,7 @@ class JdbcMeasurementSetRepositoryDataJdbcTest {
                 batch_id,
                 workspace_id,
                 name,
-                vessel,
+                vessel_id,
                 lifecycle,
                 alcoholic_fermentation_state,
                 current_volume_liters,
@@ -443,7 +445,7 @@ class JdbcMeasurementSetRepositoryDataJdbcTest {
                 :batchId,
                 :workspaceId,
                 'Measurement production',
-                'Test vessel',
+                :vesselId,
                 'ACTIVE',
                 'NOT_STARTED',
                 100,
@@ -467,6 +469,7 @@ class JdbcMeasurementSetRepositoryDataJdbcTest {
     return new MapSqlParameterSource()
         .addValue("batchId", subject.id())
         .addValue("workspaceId", workspaceId.value())
+        .addValue("vesselId", VesselTestFixtures.FEEDSTOCK_VESSEL_ID.value())
         .addValue("materialStateId", materialStateId.value())
         .addValue("createdAt", timestamp)
         .addValue("updatedAt", timestamp);

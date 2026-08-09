@@ -5,9 +5,9 @@ import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchLifecycle;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchMaterialState;
-import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
 import org.craft.mcs.cap.shared.kernel.DomainConflictException;
 import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
+import org.craft.mcs.cap.shared.kernel.identity.VesselId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.jmolecules.ddd.annotation.AggregateRoot;
@@ -36,7 +36,7 @@ public final class ProductionBatch {
 
   private @NonNull BatchName name;
 
-  private @NonNull Vessel vessel;
+  private @NonNull VesselId vesselId;
 
   private @NonNull AlcoholicFermentationState alcoholicFermentationState;
 
@@ -51,7 +51,7 @@ public final class ProductionBatch {
       @NonNull ProductionBatchId batchId,
       @NonNull WorkspaceId workspaceId,
       @NonNull BatchName name,
-      @NonNull Vessel vessel,
+      @NonNull VesselId vesselId,
       @NonNull AlcoholicFermentationState alcoholicFermentationState,
       @NonNull BatchMaterialState materialState,
       @NonNull ProductionProfileSnapshot initialProfileSnapshot,
@@ -60,7 +60,7 @@ public final class ProductionBatch {
     this.batchId = requireNonNull(batchId, "production batch id cannot be null");
     this.workspaceId = requireNonNull(workspaceId, "workspace id cannot be null");
     this.name = requireNonNull(name, "production batch name cannot be null");
-    this.vessel = requireNonNull(vessel, "production vessel cannot be null");
+    this.vesselId = requireNonNull(vesselId, "production vessel id cannot be null");
     this.alcoholicFermentationState = requireNonNull(
         alcoholicFermentationState,
         "alcoholic fermentation state cannot be null"
@@ -77,7 +77,7 @@ public final class ProductionBatch {
       @NonNull ProductionBatchId batchId,
       @NonNull WorkspaceId workspaceId,
       @NonNull BatchName name,
-      @NonNull Vessel vessel,
+      @NonNull VesselId vesselId,
       @NonNull VolumeValue initialVolume,
       @NonNull ProductionProfileSnapshot initialProfileSnapshot,
       @Nullable String note
@@ -86,7 +86,7 @@ public final class ProductionBatch {
         batchId,
         workspaceId,
         name,
-        vessel,
+        vesselId,
         AlcoholicFermentationState.NOT_STARTED,
         BatchMaterialState.active(initialVolume),
         initialProfileSnapshot,
@@ -99,7 +99,7 @@ public final class ProductionBatch {
       @NonNull ProductionBatchId batchId,
       @NonNull WorkspaceId workspaceId,
       @NonNull BatchName name,
-      @NonNull Vessel vessel,
+      @NonNull VesselId vesselId,
       @NonNull BatchLifecycle lifecycle,
       @NonNull AlcoholicFermentationState alcoholicFermentationState,
       @NonNull VolumeValue currentVolume,
@@ -111,7 +111,7 @@ public final class ProductionBatch {
         batchId,
         workspaceId,
         name,
-        vessel,
+        vesselId,
         alcoholicFermentationState,
         BatchMaterialState.restore(lifecycle, currentVolume, currentMaterialStateId),
         initialProfileSnapshot,
@@ -131,8 +131,8 @@ public final class ProductionBatch {
     return name;
   }
 
-  public @NonNull Vessel vessel() {
-    return vessel;
+  public @NonNull VesselId vesselId() {
+    return vesselId;
   }
 
   public @NonNull BatchLifecycle lifecycle() {
@@ -162,13 +162,13 @@ public final class ProductionBatch {
   /**
    * Records a full transfer of the active batch to another vessel.
    */
-  public @NonNull ProductionBatch transferTo(@NonNull Vessel vessel) {
+  public @NonNull ProductionBatch transferTo(@NonNull VesselId vesselId) {
     requireActive("transfer");
-    final var targetVessel = requireNonNull(vessel, "production vessel cannot be null");
-    if (this.vessel.equals(targetVessel)) {
+    final var targetVesselId = requireNonNull(vesselId, "production vessel id cannot be null");
+    if (this.vesselId.equals(targetVesselId)) {
       throw new DomainConflictException("target production vessel must differ from current vessel");
     }
-    this.vessel = targetVessel;
+    this.vesselId = targetVesselId;
     materialState = materialState.advance();
     return this;
   }

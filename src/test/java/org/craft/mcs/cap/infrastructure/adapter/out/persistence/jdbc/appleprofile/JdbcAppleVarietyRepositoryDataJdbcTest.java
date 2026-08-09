@@ -17,6 +17,7 @@ import org.springframework.context.annotation.Import;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import org.craft.mcs.cap.shared.application.ConcurrentResourceModificationException;
+import org.craft.mcs.cap.shared.application.persistence.VersionedAggregate;
 
 
 @DataJdbcTest
@@ -66,6 +67,11 @@ class JdbcAppleVarietyRepositoryDataJdbcTest {
     assertThatThrownBy(() -> repository.update(stale))
         .isInstanceOf(ConcurrentResourceModificationException.class)
         .hasMessage("resource was modified concurrently: apple variety");
+    assertThat(repository.findVersionedById(created.varietyId()))
+        .get()
+        .extracting(VersionedAggregate::aggregate)
+        .extracting(AppleVariety::name)
+        .isEqualTo(AppleVarietyName.of("First update"));
   }
 
   private static AppleVariety appleVariety() {

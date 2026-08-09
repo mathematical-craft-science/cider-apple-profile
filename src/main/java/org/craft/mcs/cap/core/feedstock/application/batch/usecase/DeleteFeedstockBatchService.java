@@ -1,5 +1,6 @@
 package org.craft.mcs.cap.core.feedstock.application.batch.usecase;
 
+import java.time.Clock;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
 import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchNotFoundException;
@@ -15,11 +16,10 @@ import static java.util.Objects.requireNonNull;
 
 
 /**
- * Application service for removing a feedstock batch from active source material.
+ * Application service for removing an inactive feedstock batch from normal workspace queries.
  *
- * <p>The service checks workspace ownership before delegating deletion to the repository. The
- * persistence adapter may implement this as soft delete; the use case expresses the domain intent
- * that the batch should no longer participate in normal feedstock queries.
+ * <p>The service checks workspace ownership and asks the aggregate to permit soft deletion. Active
+ * material cannot be hidden: a material operation must first deplete or discard it.
  */
 @Component
 @RequiredArgsConstructor
@@ -29,6 +29,7 @@ public final class DeleteFeedstockBatchService
   private final @NonNull FeedstockBatchRepository feedstockBatchRepository;
   private final @NonNull FeedstockAccessControl feedstockAccessControl;
   private final @NonNull TransactionHelper transactionHelper;
+  private final @NonNull Clock clock;
 
   @Override
   public void delete(@NonNull DeleteFeedstockBatchCommand command) {
@@ -48,7 +49,8 @@ public final class DeleteFeedstockBatchService
         );
       }
 
-      feedstockBatchRepository.delete(state);
+      batch.delete(clock.instant());
+      feedstockBatchRepository.update(state.withAggregate(batch));
     });
   }
 }

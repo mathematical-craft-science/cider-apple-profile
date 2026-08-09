@@ -1,5 +1,6 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.production;
 
+import jakarta.validation.Valid;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.production.candidate.application.confirmation.port.in.CreateProductionBatchUseCase;
@@ -55,7 +56,9 @@ public final class ProductionBatchController implements ProductionBatchApi {
   @Override
   @PostMapping(consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
   @ResponseStatus(HttpStatus.CREATED)
-  public @NonNull ProductionBatchResponse create(@RequestBody @NonNull CreateProductionBatchRequest request) {
+  public @NonNull ProductionBatchResponse create(
+      @Valid @RequestBody @NonNull CreateProductionBatchRequest request
+  ) {
     final var command = ProductionBatchRestMapper.toCommand(request);
     return ProductionBatchRestMapper.toResponse(createProductionBatchUseCase.create(command));
   }

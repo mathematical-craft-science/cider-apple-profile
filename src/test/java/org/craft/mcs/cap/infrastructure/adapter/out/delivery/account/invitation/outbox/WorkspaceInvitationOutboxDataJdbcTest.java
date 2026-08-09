@@ -41,7 +41,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.mail.MailSendException;
-import org.springframework.transaction.IllegalTransactionStateException;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -132,14 +131,6 @@ class WorkspaceInvitationOutboxDataJdbcTest {
     assertThat(counts(invitation))
         .returns(0L, PersistenceCounts::invitationCount)
         .returns(0L, PersistenceCounts::outboxCount);
-  }
-
-  @Test
-  void rejectsSchedulingOutsideInvitationTransaction() {
-    final var request = WorkspaceInvitationDeliveryRequest.from(invitation());
-
-    assertThatThrownBy(() -> deliveryScheduler.schedule(request))
-        .isInstanceOf(IllegalTransactionStateException.class);
   }
 
   @Test

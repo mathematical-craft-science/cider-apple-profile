@@ -2,6 +2,7 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.application;
 
 import java.io.Serial;
 import org.craft.mcs.cap.shared.application.ApplicationConflictException;
+import org.craft.mcs.cap.shared.application.ApplicationDataIntegrityException;
 import org.craft.mcs.cap.shared.application.ApplicationForbiddenException;
 import org.craft.mcs.cap.shared.application.ApplicationNotFoundException;
 import org.craft.mcs.cap.shared.application.ApplicationUnprocessableException;
@@ -9,6 +10,7 @@ import org.craft.mcs.cap.shared.application.ApplicationValidationException;
 import org.craft.mcs.cap.shared.application.ConcurrentResourceModificationException;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.ResponseEntity;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -81,6 +83,28 @@ class ApplicationExceptionHandlerTest {
     assertThat(response.getBody().getTitle()).isEqualTo("Application request validation failed");
   }
 
+  @Test
+  void mapsInternalDataIntegrityFailureWithoutExposingStoredDetails() {
+    final var response = handler.handleDataIntegrityFailure(
+        new TestDataIntegrityException("vessel has two active occupants")
+    );
+
+    assertThat(response)
+        .satisfies(value -> assertThat(value.getStatusCode().value()).isEqualTo(500))
+        .extracting(ResponseEntity::getBody)
+        .isNotNull()
+        .satisfies(problem -> assertThat(problem)
+            .returns(
+                java.net.URI.create("urn:problem-type:application-data-integrity-failure"),
+                org.springframework.http.ProblemDetail::getType
+            )
+            .returns("Application data integrity failure", org.springframework.http.ProblemDetail::getTitle)
+            .returns(
+                "The application encountered inconsistent persisted data.",
+                org.springframework.http.ProblemDetail::getDetail
+            ));
+  }
+
   private static final class TestNotFoundException extends ApplicationNotFoundException {
 
     @Serial
@@ -117,6 +141,16 @@ class ApplicationExceptionHandlerTest {
     private static final long serialVersionUID = 1L;
 
     private TestUnprocessableException(@NonNull String message) {
+      super(message);
+    }
+  }
+
+  private static final class TestDataIntegrityException extends ApplicationDataIntegrityException {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
+
+    private TestDataIntegrityException(@NonNull String message) {
       super(message);
     }
   }

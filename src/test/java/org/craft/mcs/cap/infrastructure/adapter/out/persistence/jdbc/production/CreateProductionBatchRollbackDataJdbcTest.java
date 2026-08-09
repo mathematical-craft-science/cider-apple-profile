@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.craft.mcs.cap.core.production.application.authorization.port.out.ProductionAccessControl;
+import org.craft.mcs.cap.core.production.application.vessel.port.out.ProductionVesselAssignmentValidator;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
@@ -29,7 +30,7 @@ import org.craft.mcs.cap.core.production.domain.model.ProductionSourceReference;
 import org.craft.mcs.cap.core.production.candidate.domain.model.ProductionCandidateSourceEvidence;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
-import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
+import org.craft.mcs.cap.testsupport.VesselTestFixtures;
 import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
@@ -91,6 +92,7 @@ class CreateProductionBatchRollbackDataJdbcTest {
             """,
         workspaceId.value()
     );
+    VesselTestFixtures.persistAllVessels(jdbcTemplate, workspaceId);
     final var sourceReference = ProductionSourceReference.feedstockBatch(FeedstockBatchId.newId().value());
     insertFeedstockSource(workspaceId, sourceReference);
     final var candidate = candidate(workspaceId, sourceReference);
@@ -111,13 +113,14 @@ class CreateProductionBatchRollbackDataJdbcTest {
   ) {
     jdbcTemplate.update("""
         INSERT INTO feedstock_batches (
-            batch_id, workspace_id, name, type, season_starts_on, season_ends_on, lifecycle,
+            batch_id, workspace_id, name, vessel_id, type, season_starts_on, season_ends_on, lifecycle,
             available_volume_liters, current_material_state_id, version, created_at, updated_at
-        ) VALUES (?, ?, 'Late juice', 'JUICE', DATE '2026-01-01', DATE '2026-12-31',
+        ) VALUES (?, ?, 'Late juice', ?, 'JUICE', DATE '2026-01-01', DATE '2026-12-31',
                   'ACTIVE', 250, ?, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
         """,
         sourceReference.id(),
         workspaceId.value(),
+        VesselTestFixtures.FEEDSTOCK_VESSEL_ID.value(),
         MaterialStateId.newId().value()
     );
   }
@@ -149,7 +152,7 @@ class CreateProductionBatchRollbackDataJdbcTest {
     return new CreateProductionBatchCommand(
         workspaceId,
         BatchName.of("Rollback candidate"),
-        Vessel.named("Tank F-03"),
+        VesselTestFixtures.vesselId("Tank F-03"),
         candidateId,
         null
     );
@@ -249,6 +252,11 @@ class CreateProductionBatchRollbackDataJdbcTest {
         public void requireWriteAccess(@NonNull WorkspaceId workspaceId) {
         }
       };
+    }
+
+    @Bean
+    ProductionVesselAssignmentValidator productionVesselAssignmentValidator() {
+      return (workspaceId, vesselId, materialVolume) -> VesselTestFixtures.reference(vesselId, "Tank F-03");
     }
 
   }

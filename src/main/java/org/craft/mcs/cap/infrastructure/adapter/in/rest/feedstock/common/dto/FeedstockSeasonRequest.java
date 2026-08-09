@@ -1,6 +1,7 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.common.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import org.jspecify.annotations.NonNull;
 
@@ -12,13 +13,13 @@ public record FeedstockSeasonRequest(
         format = "date",
         example = "2026-09-15",
         requiredMode = Schema.RequiredMode.REQUIRED
-    ) @NonNull LocalDate startsOn,
+    ) @NotNull @NonNull LocalDate startsOn,
     @Schema(
         description = "Season end date.",
         format = "date",
         example = "2026-12-01",
         requiredMode = Schema.RequiredMode.REQUIRED
-    ) @NonNull LocalDate endsOn
+    ) @NotNull @NonNull LocalDate endsOn
 ) {
 
 }

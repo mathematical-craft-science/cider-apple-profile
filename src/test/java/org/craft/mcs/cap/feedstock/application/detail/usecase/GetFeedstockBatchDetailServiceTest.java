@@ -8,6 +8,9 @@ import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.Feeds
 import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchNotFoundException;
 import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchOwnershipMismatchException;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchRepository;
+import org.craft.mcs.cap.core.feedstock.application.batch.usecase.FeedstockBatchViewEnricher;
+import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentProfileSummaryView;
+import org.craft.mcs.cap.core.feedstock.application.vessel.port.out.FeedstockVesselReferenceQuery;
 import org.craft.mcs.cap.shared.application.measurement.MeasurementFreshnessStatus;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentProfileFreshnessView;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentProfileAssessmentView;
@@ -27,7 +30,7 @@ import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
-import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
+import org.craft.mcs.cap.testsupport.VesselTestFixtures;
 import org.craft.mcs.cap.shared.testing.FeedstockMeasurementFixture;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetId;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetName;
@@ -61,6 +64,8 @@ import static java.util.Objects.requireNonNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anySet;
 
 
 class GetFeedstockBatchDetailServiceTest {
@@ -72,6 +77,11 @@ class GetFeedstockBatchDetailServiceTest {
       FeedstockBatchRepository batchRepository,
       FeedstockCurrentProfileQueryRepository currentProfileRepository
   ) {
+    final var vesselReferenceQuery = mock(FeedstockVesselReferenceQuery.class);
+    when(vesselReferenceQuery.resolveReferences(any(), anySet())).thenReturn(java.util.Map.of(
+        VesselTestFixtures.FEEDSTOCK_VESSEL_ID,
+        VesselTestFixtures.reference(VesselTestFixtures.FEEDSTOCK_VESSEL_ID, "Tank A-01")
+    ));
     return new GetFeedstockBatchDetailService(
         batchRepository,
         mock(FeedstockAccessControl.class),
@@ -87,7 +97,8 @@ class GetFeedstockBatchDetailServiceTest {
             new FeedstockCurrentProfileFreshnessAssessor(),
             new FeedstockPlanningReadinessAssessor(PhPlanningGuidancePolicy.curatedCiderV1()),
             new FeedstockProfileDataQualityAssessor()
-        )
+        ),
+        new FeedstockBatchViewEnricher(vesselReferenceQuery)
     );
   }
 
@@ -99,7 +110,7 @@ class GetFeedstockBatchDetailServiceTest {
         batchId,
         workspaceId,
         BatchName.of("Late season juice"),
-        Vessel.named("Tank A-01"),
+        VesselTestFixtures.vesselId("Tank A-01"),
         FeedstockType.JUICE,
         FeedstockSeason.of(LocalDate.parse("2026-09-01"), LocalDate.parse("2026-12-31")),
         VolumeValue.ofLiters("120")
@@ -159,7 +170,7 @@ class GetFeedstockBatchDetailServiceTest {
     final var detail = service.get(new GetFeedstockBatchDetailQuery(batchId, WORKSPACE_ID));
 
     assertThat(detail)
-        .returns(batchId, view -> view.batch().batchId())
+        .returns(batchId, view -> view.batch().batch().batchId())
         .satisfies(view -> assertThat(view.currentProfile())
             .returns(
                 FeedstockPlanningReadinessStatus.READY,
@@ -170,11 +181,11 @@ class GetFeedstockBatchDetailServiceTest {
               assertThat(summary)
                   .returns(
                       compositeTitratableAcidity,
-                      value -> value.titratableAcidity()
+                      FeedstockCurrentProfileSummaryView::titratableAcidity
                   )
                   .returns(
                       stateAwareProfile.specificGravity(),
-                      value -> value.specificGravity()
+                      FeedstockCurrentProfileSummaryView::specificGravity
                   );
             })
             .satisfies(profile -> {

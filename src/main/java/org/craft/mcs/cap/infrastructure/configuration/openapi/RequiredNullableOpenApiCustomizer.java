@@ -4,6 +4,7 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.media.Schema;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.RecordComponent;
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -107,7 +108,6 @@ public final class RequiredNullableOpenApiCustomizer implements OpenApiCustomize
   }
 
   private static void markNullable(@NonNull Schema<?> property) {
-    property.nullable(true);
     if (property.get$ref() != null) {
       final var ref = property.get$ref();
       property.set$ref(null);
@@ -115,6 +115,21 @@ public final class RequiredNullableOpenApiCustomizer implements OpenApiCustomize
           new Schema<>().$ref(ref),
           new Schema<>().types(new LinkedHashSet<>(List.of("null")))
       ));
+      clearLegacyNullability(property);
+      return;
+    }
+
+    final var alternatives = property.getAnyOf();
+    if (alternatives != null && !alternatives.isEmpty()) {
+      final var nullableAlternatives = new ArrayList<>(alternatives);
+      final var nullAlternativeExists = alternatives.stream()
+          .anyMatch(alternative -> "null".equals(alternative.getType())
+              || alternative.getTypes() != null && alternative.getTypes().contains("null"));
+      if (!nullAlternativeExists) {
+        nullableAlternatives.add(new Schema<>().types(new LinkedHashSet<>(List.of("null"))));
+      }
+      property.setAnyOf(nullableAlternatives);
+      clearLegacyNullability(property);
       return;
     }
 
@@ -127,5 +142,12 @@ public final class RequiredNullableOpenApiCustomizer implements OpenApiCustomize
     }
     types.add("null");
     property.setTypes(types);
+    property.setNullable(null);
+  }
+
+  private static void clearLegacyNullability(@NonNull Schema<?> property) {
+    property.setType(null);
+    property.setTypes(null);
+    property.setNullable(null);
   }
 }

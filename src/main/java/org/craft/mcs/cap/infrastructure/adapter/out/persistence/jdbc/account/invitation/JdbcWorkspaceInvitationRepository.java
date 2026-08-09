@@ -12,14 +12,13 @@ import org.craft.mcs.cap.core.account.shared.domain.value.EmailAddress;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.account.workspace.WorkspaceJdbcEntity;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.support.JdbcPersistenceExceptionTranslator;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
-import org.craft.mcs.cap.shared.application.ConcurrentResourceModificationException;
 import org.craft.mcs.cap.shared.application.persistence.VersionedAggregate;
 import org.jspecify.annotations.NonNull;
 import org.springframework.data.jdbc.core.mapping.AggregateReference;
 import org.springframework.stereotype.Repository;
 
 import static java.util.Objects.requireNonNull;
-import static org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.support.JdbcAggregateRevisionGuard.requireExpectedRevision;
+import static org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.support.JdbcVersionedUpdate.complete;
 
 /** Persists workspace invitation aggregates independently from memberships. */
 @Repository
@@ -44,18 +43,18 @@ class JdbcWorkspaceInvitationRepository implements WorkspaceInvitationRepository
   ) {
     requireNonNull(invitation, "versioned workspace invitation cannot be null");
     final var aggregate = invitation.aggregate();
-    final var entity = repository.findById(aggregate.invitationId().value())
-        .orElseThrow(() -> new ConcurrentResourceModificationException("workspace invitation", null));
-    requireExpectedRevision(
+    final var affectedRows = JdbcPersistenceExceptionTranslator.translateOptimisticLocking(
         "workspace invitation",
-        invitation.revision(),
-        WorkspaceInvitationJdbcMapper.revision(entity)
+        () -> repository.updateByIdAndVersion(
+            aggregate.invitationId().value(),
+            aggregate.status(),
+            aggregate.acceptedByUserId() == null ? null : aggregate.acceptedByUserId().value(),
+            aggregate.expiresAt(),
+            aggregate.resendCount(),
+            invitation.revision().value()
+        )
     );
-    final var saved = JdbcPersistenceExceptionTranslator.translateOptimisticLocking(
-        "workspace invitation",
-        () -> repository.save(WorkspaceInvitationJdbcMapper.updateFromDomain(aggregate, entity))
-    );
-    return WorkspaceInvitationJdbcMapper.toVersionedAggregate(saved);
+    return complete("workspace invitation", invitation, affectedRows);
   }
 
   @Override

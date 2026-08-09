@@ -3,6 +3,7 @@ package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.feedstock.
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.UUID;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
@@ -16,7 +17,7 @@ import org.craft.mcs.cap.shared.application.persistence.VersionedAggregate;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchLifecycle;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
-import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
+import org.craft.mcs.cap.testsupport.VesselTestFixtures;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.craft.mcs.cap.shared.testing.jdbc.PostgresDataJdbcTestConfiguration;
 import org.junit.jupiter.api.Test;
@@ -24,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jdbc.test.autoconfigure.DataJdbcTest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.context.annotation.Import;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -96,10 +98,15 @@ class JdbcOptimisticLockingDataJdbcTest {
     assertThatThrownBy(() -> aggregateRepository.update(stale))
         .isInstanceOf(ConcurrentResourceModificationException.class)
         .hasMessage("resource was modified concurrently: feedstock batch");
+    assertThat(aggregateRepository.findVersionedById(created.batchId()))
+        .get()
+        .extracting(VersionedAggregate::aggregate)
+        .extracting(FeedstockBatch::name)
+        .isEqualTo(BatchName.of("First update"));
   }
 
   @Test
-  void aggregateAdapterRejectsDeletionOfStateLoadedBeforeAnotherUpdate() {
+  void aggregateAdapterRejectsSoftDeletionOfStateLoadedBeforeAnotherUpdate() {
     final var aggregateRepository = new JdbcFeedstockBatchRepository(repository);
     final var created = aggregateRepository.create(feedstockBatch(persistWorkspace()));
     final var current = aggregateRepository.findVersionedById(created.batchId()).orElseThrow();
@@ -108,7 +115,11 @@ class JdbcOptimisticLockingDataJdbcTest {
     current.aggregate().rename(BatchName.of("Updated before delete"));
     aggregateRepository.update(current);
 
-    assertThatThrownBy(() -> aggregateRepository.delete(stale))
+    stale.aggregate()
+        .consumeAvailableVolume(stale.aggregate().availableVolume())
+        .delete(Instant.parse("2026-01-02T00:00:00Z"));
+
+    assertThatThrownBy(() -> aggregateRepository.update(stale))
         .isInstanceOf(ConcurrentResourceModificationException.class)
         .hasMessage("resource was modified concurrently: feedstock batch");
     assertThat(aggregateRepository.findById(created.batchId())).isPresent();
@@ -120,9 +131,24 @@ class JdbcOptimisticLockingDataJdbcTest {
     final var created = aggregateRepository.create(feedstockBatch(persistWorkspace()));
     final var current = aggregateRepository.findVersionedById(created.batchId()).orElseThrow();
 
-    aggregateRepository.delete(current);
+    current.aggregate()
+        .consumeAvailableVolume(current.aggregate().availableVolume())
+        .delete(Instant.parse("2026-01-02T00:00:00Z"));
+    aggregateRepository.update(current);
 
     assertThat(aggregateRepository.findVersionedById(created.batchId())).isEmpty();
+  }
+
+  @Test
+  void databaseRejectsSoftDeletingBatchThatStillContainsActiveMaterial() {
+    final var aggregateRepository = new JdbcFeedstockBatchRepository(repository);
+    final var created = aggregateRepository.create(feedstockBatch(persistWorkspace()));
+
+    assertThatThrownBy(() -> jdbcTemplate.update(
+        "UPDATE feedstock_batches SET deleted_at = CURRENT_TIMESTAMP WHERE batch_id = ?",
+        created.batchId().value()
+    ))
+        .isInstanceOf(DataIntegrityViolationException.class);
   }
 
   @Test
@@ -146,7 +172,7 @@ class JdbcOptimisticLockingDataJdbcTest {
         FeedstockBatchId.newId(),
         workspaceId,
         BatchName.of("Late juice"),
-        Vessel.named("Tank A-01"),
+        VesselTestFixtures.vesselId("Tank A-01"),
         FeedstockType.JUICE,
         FeedstockSeason.of(LocalDate.parse("2026-10-01"), LocalDate.parse("2026-12-15")),
         VolumeValue.ofLiters("250")
@@ -162,6 +188,7 @@ class JdbcOptimisticLockingDataJdbcTest {
             """,
         workspaceId.value()
     );
+    VesselTestFixtures.persistFeedstockVessel(jdbcTemplate, workspaceId);
     return workspaceId;
   }
 }

@@ -24,7 +24,7 @@ public class FeedstockBatchJdbcEntity {
   @Id @NonNull @Column("batch_id") UUID batchId;
   @NonNull @Column("workspace_id") UUID workspaceId;
   @NonNull @Column("name") String name;
-  @Nullable @Column("vessel") String vessel;
+  @NonNull @Column("vessel_id") UUID vesselId;
   @NonNull @Column("type") FeedstockType type;
   @NonNull @Column("season_starts_on") LocalDate seasonStartsOn;
   @NonNull @Column("season_ends_on") LocalDate seasonEndsOn;
@@ -46,7 +46,7 @@ public class FeedstockBatchJdbcEntity {
       @NonNull UUID batchId,
       @NonNull UUID workspaceId,
       @NonNull String name,
-      @Nullable String vessel,
+      @NonNull UUID vesselId,
       @NonNull FeedstockType type,
       @NonNull LocalDate seasonStartsOn,
       @NonNull LocalDate seasonEndsOn,
@@ -60,7 +60,7 @@ public class FeedstockBatchJdbcEntity {
     this.batchId = requireNonNull(batchId, "feedstock batch id cannot be null");
     this.workspaceId = requireNonNull(workspaceId, "workspace id cannot be null");
     this.name = requireNonNull(name, "feedstock batch name cannot be null");
-    this.vessel = normalize(vessel);
+    this.vesselId = requireNonNull(vesselId, "feedstock vessel id cannot be null");
     this.type = requireNonNull(type, "feedstock type cannot be null");
     this.seasonStartsOn = requireNonNull(seasonStartsOn, "feedstock season start date cannot be null");
     this.seasonEndsOn = requireNonNull(seasonEndsOn, "feedstock season end date cannot be null");

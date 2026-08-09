@@ -17,8 +17,8 @@ import org.springframework.stereotype.Component;
  * Fixes strict decimal minima for REST record DTO fields where springdoc drops exclusivity.
  *
  * <p>springdoc 3.0.2 may keep {@code minimum: 0} but omit {@code exclusiveMinimum: true} for
- * Java record request properties. The domain rule still lives in {@code FeedstockBatch}; this
- * customizer only keeps the generated OpenAPI contract machine-readable for API clients.
+ * Java record request properties. Domain rules remain authoritative; this customizer only keeps
+ * the generated OpenAPI contract machine-readable for API clients.
  */
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE + 30)
@@ -65,7 +65,7 @@ public final class DecimalMinOpenApiCustomizer
     }
 
     applyExclusiveMinimumZero(schemas, "CreateFeedstockBatchRequest", "availableVolumeLiters");
-    applyExclusiveMinimumZero(schemas, "UpdateFeedstockBatchRequest", "availableVolumeLiters");
-    applyExclusiveMinimumZero(schemas, "PatchFeedstockBatchRequest", "availableVolumeLiters");
+    applyExclusiveMinimumZero(schemas, "CreateVesselRequest", "nominalCapacityLiters");
+    applyExclusiveMinimumZero(schemas, "UpdateVesselRequest", "nominalCapacityLiters");
   }
 }

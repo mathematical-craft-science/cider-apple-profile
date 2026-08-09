@@ -2,13 +2,13 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.batch.mapper;
 
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.CreateFeedstockBatchCommand;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.FeedstockBatchCreated;
-import org.craft.mcs.cap.core.feedstock.application.batch.model.FeedstockBatchSummary;
+import org.craft.mcs.cap.core.feedstock.application.batch.model.FeedstockBatchView;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.UpdateFeedstockBatchCommand;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSource;
-import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
+import org.craft.mcs.cap.shared.kernel.identity.VesselId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.batch.dto.CreateFeedstockBatchRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.batch.dto.FeedstockBatchResponse;
@@ -18,6 +18,7 @@ import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.batch.dto.Upda
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.measurement.CanonicalUnitLabels;
 import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.vessel.mapper.VesselRestMapper;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -41,7 +42,7 @@ public final class FeedstockBatchRestMapper {
     return new CreateFeedstockBatchCommand(
         WorkspaceId.of(requireNonNull(request.workspaceId(), WORKSPACE_ID_REQUIRED)),
         BatchName.of(request.name()),
-        vesselOf(request.vessel()),
+        VesselId.of(requireNonNull(request.vesselId(), "vessel id cannot be null")),
         requireNonNull(request.type(), "feedstock type cannot be null"),
         FeedstockSeason.of(request.season().startsOn(), request.season().endsOn()),
         sourceOf(request.source()),
@@ -55,30 +56,20 @@ public final class FeedstockBatchRestMapper {
   ) {
     requireNonNull(batch, "created feedstock batch cannot be null");
 
-    return new FeedstockBatchResponse(
-        batch.batchId().value(),
-        batch.workspaceId().value(),
-        batch.name().value(),
-        toResponse(batch.vessel()),
-        batch.type(),
-        toResponse(batch.season()),
-        toResponse(batch.source()),
-        batch.lifecycle(),
-        new DecimalQuantityResponse(batch.availableVolume().liters(), CanonicalUnitLabels.VOLUME),
-        batch.note()
-    );
+    return toResponse(batch.batch());
   }
 
   public static @NonNull FeedstockBatchResponse toResponse(
-      @NonNull FeedstockBatchSummary batch
+      @NonNull FeedstockBatchView view
   ) {
-    requireNonNull(batch, "feedstock batch summary cannot be null");
+    requireNonNull(view, "feedstock batch view cannot be null");
+    final var batch = view.batch();
 
     return new FeedstockBatchResponse(
         batch.batchId().value(),
         batch.workspaceId().value(),
         batch.name().value(),
-        toResponse(batch.vessel()),
+        VesselRestMapper.toResponse(view.vessel()),
         batch.type(),
         toResponse(batch.season()),
         toResponse(batch.source()),
@@ -137,16 +128,8 @@ public final class FeedstockBatchRestMapper {
     return source == null ? null : source.value();
   }
 
-  private static @Nullable String toResponse(@Nullable Vessel vessel) {
-    return vessel == null ? null : vessel.name();
-  }
-
   private static @Nullable BatchName nameOf(@Nullable String name) {
     return name == null ? null : BatchName.of(name);
-  }
-
-  private static @Nullable Vessel vesselOf(@Nullable String vessel) {
-    return isBlank(vessel) ? null : Vessel.named(vessel);
   }
 
   private static @Nullable FeedstockSource sourceOf(@Nullable String source) {

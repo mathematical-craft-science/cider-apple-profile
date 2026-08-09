@@ -18,6 +18,7 @@ import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchLifecycle;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
+import org.craft.mcs.cap.testsupport.VesselTestFixtures;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -63,7 +64,7 @@ class FeedstockPlanningReadinessAssessorTest {
         FeedstockBatchId.newId(),
         WorkspaceId.newId(),
         BatchName.of("Planning batch"),
-        null,
+        VesselTestFixtures.FEEDSTOCK_VESSEL_ID,
         FeedstockType.JUICE,
         FeedstockSeason.of(
             LocalDate.of(2026, Month.SEPTEMBER, 1),

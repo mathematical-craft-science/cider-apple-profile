@@ -27,6 +27,7 @@ import org.craft.mcs.cap.core.profileanalysis.graph.zone.domain.JolicoeurSugarAc
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.FeedstockBatchProfileTargetCandidate;
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.FeedstockBatchProfileTargetCandidates;
 import org.craft.mcs.cap.core.feedstock.application.batch.model.FeedstockBatchSummary;
+import org.craft.mcs.cap.core.feedstock.application.batch.model.FeedstockBatchView;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.ListFeedstockBatchesUseCase;
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.PredefinedFeedstockProfileTargetSelection;
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.QueryFeedstockBatchProfileTargetCandidatesUseCase;
@@ -48,7 +49,7 @@ import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchLifecycle;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
-import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
+import org.craft.mcs.cap.testsupport.VesselTestFixtures;
 import org.craft.mcs.cap.shared.testing.FeedstockMeasurementFixture;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetId;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetName;
@@ -95,7 +96,7 @@ class QueryFeedstockPlanningBatchesServiceTest {
     final var service = service(listBatches, currentProfileRepository, targetCandidates);
     when(listBatches.list(any())).thenReturn(List.of(batch));
     when(currentProfileRepository.findByBatchIds(Set.of(batchId)))
-        .thenReturn(List.of(currentProfile(measurement, batch.currentMaterialStateId())));
+        .thenReturn(List.of(currentProfile(measurement, batch.batch().currentMaterialStateId())));
 
     final var view = service.query(queryWithoutTarget());
 
@@ -149,7 +150,7 @@ class QueryFeedstockPlanningBatchesServiceTest {
     final var service = service(listBatches, currentProfileRepository, targetCandidates);
     when(listBatches.list(any())).thenReturn(List.of(batch));
     when(currentProfileRepository.findByBatchIds(Set.of(batchId)))
-        .thenReturn(List.of(currentProfile(measurement(batchId), batch.currentMaterialStateId())));
+        .thenReturn(List.of(currentProfile(measurement(batchId), batch.batch().currentMaterialStateId())));
     when(targetCandidates.query(any())).thenReturn(new FeedstockBatchProfileTargetCandidates(
         ProfileTargetAnalysisScenario.BLENDING_PLANNING,
         ProfileAxisNormalizerCode.EFFECTIVE_RANGE,
@@ -178,7 +179,7 @@ class QueryFeedstockPlanningBatchesServiceTest {
   void omitsTargetCandidateCalculatedForAReplacedMaterialState() {
     final var batchId = FeedstockBatchId.newId();
     final var batch = batch(batchId);
-    final var currentProfile = currentProfile(measurement(batchId), batch.currentMaterialStateId());
+    final var currentProfile = currentProfile(measurement(batchId), batch.batch().currentMaterialStateId());
     final var listBatches = mock(ListFeedstockBatchesUseCase.class);
     final var currentProfileRepository = mock(FeedstockCurrentProfileQueryRepository.class);
     final var targetCandidates = mock(QueryFeedstockBatchProfileTargetCandidatesUseCase.class);
@@ -219,7 +220,7 @@ class QueryFeedstockPlanningBatchesServiceTest {
     when(currentProfileRepository.findByBatchIds(Set.of(batchId)))
         .thenReturn(List.of(currentProfile(
             measurement,
-            batch.currentMaterialStateId(),
+            batch.batch().currentMaterialStateId(),
             MeasurementFreshnessStatus.STALE
         )));
 
@@ -313,12 +314,12 @@ class QueryFeedstockPlanningBatchesServiceTest {
     );
   }
 
-  private static FeedstockBatchSummary batch(FeedstockBatchId batchId) {
-    return new FeedstockBatchSummary(
+  private static FeedstockBatchView batch(FeedstockBatchId batchId) {
+    final var summary = new FeedstockBatchSummary(
         batchId,
         WORKSPACE_ID,
         BatchName.of("Late season juice"),
-        Vessel.named("Tank A-01"),
+        VesselTestFixtures.vesselId("Tank A-01"),
         FeedstockType.JUICE,
         SEASON,
         null,
@@ -326,6 +327,10 @@ class QueryFeedstockPlanningBatchesServiceTest {
         VolumeValue.ofLiters("120"),
         MaterialStateId.newId(),
         null
+    );
+    return new FeedstockBatchView(
+        summary,
+        VesselTestFixtures.reference(VesselTestFixtures.FEEDSTOCK_VESSEL_ID, "Tank A-01")
     );
   }
 

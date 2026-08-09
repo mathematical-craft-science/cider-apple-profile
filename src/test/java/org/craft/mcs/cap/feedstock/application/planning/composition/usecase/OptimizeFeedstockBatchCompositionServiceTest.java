@@ -58,7 +58,7 @@ import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
-import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
+import org.craft.mcs.cap.testsupport.VesselTestFixtures;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.craft.mcs.cap.shared.testing.FeedstockMeasurementFixture;
 import org.jspecify.annotations.NonNull;
@@ -279,7 +279,7 @@ class OptimizeFeedstockBatchCompositionServiceTest {
         FeedstockBatchId.newId(),
         workspaceId,
         BatchName.of("Harvest batch"),
-        Vessel.named("Tank A-01"),
+        VesselTestFixtures.vesselId("Tank A-01"),
         FeedstockType.JUICE,
         FeedstockSeason.of(LocalDate.parse("2026-09-01"), LocalDate.parse("2026-12-31")),
         VolumeValue.ofLiters(availableVolumeLiters)

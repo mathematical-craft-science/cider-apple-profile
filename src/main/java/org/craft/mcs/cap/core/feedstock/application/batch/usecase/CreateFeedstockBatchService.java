@@ -3,11 +3,13 @@ package org.craft.mcs.cap.core.feedstock.application.batch.usecase;
 import java.time.Clock;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
+import org.craft.mcs.cap.core.feedstock.application.batch.model.FeedstockBatchView;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.CreateFeedstockBatchCommand;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.CreateFeedstockBatchUseCase;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.FeedstockBatchCreated;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchRepository;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchTraceRecorder;
+import org.craft.mcs.cap.core.feedstock.application.vessel.port.out.FeedstockVesselAssignmentValidator;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.shared.platform.TransactionHelper;
@@ -32,6 +34,7 @@ public final class CreateFeedstockBatchService
   private final @NonNull FeedstockBatchRepository feedstockBatchRepository;
   private final @NonNull FeedstockBatchTraceRecorder traceRecorder;
   private final @NonNull FeedstockAccessControl feedstockAccessControl;
+  private final @NonNull FeedstockVesselAssignmentValidator vesselAssignmentValidator;
   private final @NonNull TransactionHelper transactionHelper;
   private final @NonNull Clock clock;
 
@@ -41,11 +44,16 @@ public final class CreateFeedstockBatchService
     feedstockAccessControl.requireWriteAccess(command.workspaceId());
 
     return transactionHelper.callInTransactionNonNull(() -> {
+      final var vessel = vesselAssignmentValidator.requireAssignable(
+          command.workspaceId(),
+          command.vesselId(),
+          command.availableVolume()
+      );
       final var batch = FeedstockBatch.create(
           FeedstockBatchId.newId(),
           command.workspaceId(),
           command.name(),
-          command.vessel(),
+          command.vesselId(),
           command.type(),
           command.season(),
           command.availableVolume()
@@ -54,18 +62,10 @@ public final class CreateFeedstockBatchService
       final var saved = feedstockBatchRepository.create(batch);
       traceRecorder.recordCreated(saved, clock.instant());
 
-      return new FeedstockBatchCreated(
-          saved.batchId(),
-          saved.workspaceId(),
-          saved.name(),
-          saved.vessel(),
-          saved.type(),
-          saved.season(),
-          saved.source(),
-          saved.lifecycle(),
-          saved.availableVolume(),
-          saved.note()
-      );
+      return new FeedstockBatchCreated(new FeedstockBatchView(
+          FeedstockBatchSummaryMapper.toSummary(saved),
+          vessel
+      ));
     });
   }
 }

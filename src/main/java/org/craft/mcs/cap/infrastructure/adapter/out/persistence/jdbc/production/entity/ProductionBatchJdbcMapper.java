@@ -8,7 +8,7 @@ import org.craft.mcs.cap.core.production.domain.model.ProductionBatch;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatchId;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
-import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
+import org.craft.mcs.cap.shared.kernel.identity.VesselId;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
@@ -35,7 +35,7 @@ public final class ProductionBatchJdbcMapper {
         batch.batchId().value(),
         batch.workspaceId().value(),
         batch.name().value(),
-        batch.vessel().name(),
+        batch.vesselId().value(),
         batch.lifecycle(),
         batch.alcoholicFermentationState(),
         batch.currentVolume().liters(),
@@ -48,30 +48,6 @@ public final class ProductionBatchJdbcMapper {
     );
   }
 
-  public static @NonNull ProductionBatchJdbcEntity updateFromDomain(
-      @NonNull ProductionBatch batch,
-      @NonNull ProductionBatchJdbcEntity entity
-  ) {
-    requireNonNull(batch, "production batch cannot be null");
-    requireNonNull(entity, "production batch row cannot be null");
-
-    final var updated = fromDomain(batch);
-
-    entity.workspaceId = updated.workspaceId;
-    entity.name = updated.name;
-    entity.vessel = updated.vessel;
-    entity.lifecycle = updated.lifecycle;
-    entity.alcoholicFermentationState = updated.alcoholicFermentationState;
-    entity.currentVolumeLiters = updated.currentVolumeLiters;
-    entity.currentMaterialStateId = updated.currentMaterialStateId;
-    entity.initialSpecificGravity = updated.initialSpecificGravity;
-    entity.initialTitratableAcidityGLAsMalic = updated.initialTitratableAcidityGLAsMalic;
-    entity.initialTanninMgLTae = updated.initialTanninMgLTae;
-    entity.initialYeastAssimilableNitrogenMgNL = updated.initialYeastAssimilableNitrogenMgNL;
-    entity.note = updated.note;
-    return entity;
-  }
-
   public static @NonNull ProductionBatch toDomain(@NonNull ProductionBatchJdbcEntity entity) {
     requireNonNull(entity, "production batch row cannot be null");
 
@@ -79,7 +55,7 @@ public final class ProductionBatchJdbcMapper {
         ProductionBatchId.of(requireNonNull(entity.batchId, "production batch id cannot be null")),
         WorkspaceId.of(requireNonNull(entity.workspaceId, "workspace id cannot be null")),
         BatchName.of(requireNonNull(entity.name, "production batch name cannot be null")),
-        Vessel.named(requireNonNull(entity.vessel, "production vessel cannot be null")),
+        VesselId.of(requireNonNull(entity.vesselId, "production vessel id cannot be null")),
         requireNonNull(entity.lifecycle, "production batch lifecycle cannot be null"),
         requireNonNull(entity.alcoholicFermentationState, "alcoholic fermentation state cannot be null"),
         VolumeValue.ofLiters(requireNonNull(entity.currentVolumeLiters, "production current volume cannot be null")),
@@ -98,17 +74,13 @@ public final class ProductionBatchJdbcMapper {
     return new VersionedAggregate<>(toDomain(entity), AggregateRevision.of(entity.version));
   }
 
-  public static long revision(@NonNull ProductionBatchJdbcEntity entity) {
-    return requireNonNull(entity, "production batch row cannot be null").version;
-  }
-
   public static @NonNull ProductionBatchView toView(@NonNull ProductionBatchJdbcEntity entity) {
     requireNonNull(entity, "production batch row cannot be null");
     return new ProductionBatchView(
         ProductionBatchId.of(requireNonNull(entity.batchId, "production batch id cannot be null")),
         WorkspaceId.of(requireNonNull(entity.workspaceId, "workspace id cannot be null")),
         BatchName.of(requireNonNull(entity.name, "production batch name cannot be null")),
-        Vessel.named(requireNonNull(entity.vessel, "production vessel cannot be null")),
+        VesselId.of(requireNonNull(entity.vesselId, "production vessel id cannot be null")),
         requireNonNull(entity.lifecycle, "production batch lifecycle cannot be null"),
         requireNonNull(entity.alcoholicFermentationState, "alcoholic fermentation state cannot be null"),
         VolumeValue.ofLiters(requireNonNull(entity.currentVolumeLiters, "production current volume cannot be null")),

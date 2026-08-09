@@ -12,6 +12,7 @@ import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchRep
 import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchTraceRecorder;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionSourceInventory;
 import org.craft.mcs.cap.core.production.application.usecase.ProductionBatchViewMapper;
+import org.craft.mcs.cap.core.production.application.vessel.port.out.ProductionVesselAssignmentValidator;
 import org.craft.mcs.cap.core.production.candidate.application.confirmation.port.in.CreateProductionBatchCommand;
 import org.craft.mcs.cap.core.production.candidate.application.confirmation.port.in.CreateProductionBatchUseCase;
 import org.craft.mcs.cap.core.production.candidate.application.confirmation.port.in.ProductionBatchCreated;
@@ -59,6 +60,7 @@ public final class CreateProductionBatchService
   private final @NonNull ProductionBatchRepository productionBatchRepository;
   private final @NonNull ProductionBatchTraceRecorder traceRecorder;
   private final @NonNull ProductionAccessControl productionAccessControl;
+  private final @NonNull ProductionVesselAssignmentValidator vesselAssignmentValidator;
   private final @NonNull TransactionHelper transactionHelper;
   private final @NonNull Clock clock;
 
@@ -71,13 +73,18 @@ public final class CreateProductionBatchService
       final var snapshot = requireCandidate(command);
       final var candidate = snapshot.candidate();
       candidate.requireAvailable();
+      final var vessel = vesselAssignmentValidator.requireAssignable(
+          command.workspaceId(),
+          command.vesselId(),
+          candidate.sourceComposition().totalVolume()
+      );
       final var consumedSources = consumeSources(command.workspaceId(), candidate.sourceComposition());
       requireCurrentEvidence(candidate, consumedSources);
       final var productionBatch = ProductionBatch.create(
           ProductionBatchId.newId(),
           command.workspaceId(),
           command.name(),
-          command.vessel(),
+          command.vesselId(),
           candidate.sourceComposition().totalVolume(),
           candidate.profile(),
           command.note()
@@ -95,6 +102,7 @@ public final class CreateProductionBatchService
 
       return new ProductionBatchCreated(
           ProductionBatchViewMapper.toView(savedProductionBatch),
+          vessel,
           ProductionBatchCandidateViewMapper.toView(confirmedCandidate)
       );
     });

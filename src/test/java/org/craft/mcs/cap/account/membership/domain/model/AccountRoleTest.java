@@ -15,7 +15,9 @@ class AccountRoleTest {
             WorkspacePermission.FEEDSTOCK_READ,
             WorkspacePermission.FEEDSTOCK_WRITE,
             WorkspacePermission.PRODUCTION_READ,
-            WorkspacePermission.PRODUCTION_WRITE
+            WorkspacePermission.PRODUCTION_WRITE,
+            WorkspacePermission.VESSEL_READ,
+            WorkspacePermission.VESSEL_WRITE
         );
 
     assertThat(AccountRole.CATALOG_CONTRIBUTOR.workspacePermissions())
@@ -24,12 +26,22 @@ class AccountRoleTest {
             WorkspacePermission.FEEDSTOCK_READ,
             WorkspacePermission.FEEDSTOCK_WRITE,
             WorkspacePermission.PRODUCTION_READ,
-            WorkspacePermission.PRODUCTION_WRITE
+            WorkspacePermission.PRODUCTION_WRITE,
+            WorkspacePermission.VESSEL_READ,
+            WorkspacePermission.VESSEL_WRITE
         );
 
     assertThat(AccountRole.LAB_CONTRIBUTOR.workspacePermissions())
-        .contains(WorkspacePermission.FEEDSTOCK_READ, WorkspacePermission.LAB_CONTRIBUTE)
-        .doesNotContain(WorkspacePermission.FEEDSTOCK_WRITE, WorkspacePermission.PRODUCTION_WRITE);
+        .contains(
+            WorkspacePermission.FEEDSTOCK_READ,
+            WorkspacePermission.VESSEL_READ,
+            WorkspacePermission.LAB_CONTRIBUTE
+        )
+        .doesNotContain(
+            WorkspacePermission.FEEDSTOCK_WRITE,
+            WorkspacePermission.PRODUCTION_WRITE,
+            WorkspacePermission.VESSEL_WRITE
+        );
   }
 
   @Test

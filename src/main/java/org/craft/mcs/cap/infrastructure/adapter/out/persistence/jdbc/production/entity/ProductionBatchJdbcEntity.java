@@ -23,7 +23,7 @@ public class ProductionBatchJdbcEntity {
   @Id @NonNull @Column("batch_id") UUID batchId;
   @NonNull @Column("workspace_id") UUID workspaceId;
   @NonNull @Column("name") String name;
-  @NonNull @Column("vessel") String vessel;
+  @NonNull @Column("vessel_id") UUID vesselId;
   @NonNull @Column("lifecycle") BatchLifecycle lifecycle;
   @NonNull @Column("alcoholic_fermentation_state") AlcoholicFermentationState alcoholicFermentationState;
   @NonNull @Column("current_volume_liters") BigDecimal currentVolumeLiters;
@@ -46,7 +46,7 @@ public class ProductionBatchJdbcEntity {
       @NonNull UUID batchId,
       @NonNull UUID workspaceId,
       @NonNull String name,
-      @NonNull String vessel,
+      @NonNull UUID vesselId,
       @NonNull BatchLifecycle lifecycle,
       @NonNull AlcoholicFermentationState alcoholicFermentationState,
       @NonNull BigDecimal currentVolumeLiters,
@@ -60,7 +60,7 @@ public class ProductionBatchJdbcEntity {
     this.batchId = requireNonNull(batchId, "production batch id cannot be null");
     this.workspaceId = requireNonNull(workspaceId, "workspace id cannot be null");
     this.name = requireNonNull(name, "production batch name cannot be null");
-    this.vessel = requireNonNull(vessel, "production vessel cannot be null");
+    this.vesselId = requireNonNull(vesselId, "production vessel id cannot be null");
     this.lifecycle = requireNonNull(lifecycle, "production batch lifecycle cannot be null");
     this.alcoholicFermentationState = requireNonNull(
         alcoholicFermentationState,

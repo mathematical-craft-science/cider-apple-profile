@@ -9,13 +9,12 @@ import org.craft.mcs.cap.core.account.user.domain.model.AccountUser;
 import org.craft.mcs.cap.core.account.user.domain.model.value.ExternalUserSubject;
 import org.craft.mcs.cap.core.account.shared.domain.value.IdentityProviderCode;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.support.JdbcPersistenceExceptionTranslator;
-import org.craft.mcs.cap.shared.application.ConcurrentResourceModificationException;
 import org.craft.mcs.cap.shared.application.persistence.VersionedAggregate;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Repository;
 
 import static java.util.Objects.requireNonNull;
-import static org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.support.JdbcAggregateRevisionGuard.requireExpectedRevision;
+import static org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.support.JdbcVersionedUpdate.complete;
 
 /** Persists the AccountUser aggregate through Spring Data JDBC and restores its domain form. */
 @Repository
@@ -40,14 +39,20 @@ class JdbcAccountUserRepository implements AccountUserRepository {
   ) {
     requireNonNull(user, "versioned account user cannot be null");
     final var aggregate = user.aggregate();
-    final var entity = repository.findById(aggregate.userId().value())
-        .orElseThrow(() -> new ConcurrentResourceModificationException("account user", null));
-    requireExpectedRevision("account user", user.revision(), AccountUserJdbcMapper.revision(entity));
-    final var saved = JdbcPersistenceExceptionTranslator.translateOptimisticLocking(
+    final var affectedRows = JdbcPersistenceExceptionTranslator.translateOptimisticLocking(
         "account user",
-        () -> repository.save(AccountUserJdbcMapper.updateFromDomain(aggregate, entity))
+        () -> repository.updateByIdAndVersion(
+            aggregate.userId().value(),
+            aggregate.identityProvider().value(),
+            aggregate.externalSubject().value(),
+            aggregate.email().value(),
+            aggregate.displayName().value(),
+            aggregate.avatarUrl() == null ? null : aggregate.avatarUrl().value().toString(),
+            aggregate.status(),
+            user.revision().value()
+        )
     );
-    return AccountUserJdbcMapper.toVersionedAggregate(saved);
+    return complete("account user", user, affectedRows);
   }
 
   @Override

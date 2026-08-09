@@ -17,6 +17,7 @@ import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchQue
 import org.craft.mcs.cap.core.production.application.port.out.ProductionMeasurementProfileProvider;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatchId;
 import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
+import org.craft.mcs.cap.shared.application.material.VesselReferenceView;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
@@ -41,6 +42,7 @@ public final class QueryProductionBatchesService
   private final @NonNull ProductionMeasurementProfileProvider measurementProfileProvider;
   private final @NonNull ProductionCurrentProfileProjector productionCurrentProfileProjector;
   private final @NonNull PotentialAbvPredictor potentialAbvPredictor;
+  private final @NonNull ProductionVesselReferenceResolver vesselReferenceResolver;
 
   @Override
   public @NonNull ProductionBatchDetailsView get(@NonNull ProductionBatchId batchId) {
@@ -51,6 +53,7 @@ public final class QueryProductionBatchesService
     productionAccessControl.requireReadAccess(batch.workspaceId());
     return toDetailsView(
         batch,
+        vesselReferenceResolver.resolve(batch),
         measurementProfileProvider.findCurrent(batch.batchId()).orElse(null) // NOSONAR
     );
   }
@@ -65,9 +68,11 @@ public final class QueryProductionBatchesService
         .map(ProductionBatchView::batchId)
         .collect(Collectors.toUnmodifiableSet());
     final var measuredProfiles = measurementProfileProvider.findAllCurrent(query.workspaceId(), batchIds);
+    final var vessels = vesselReferenceResolver.resolveAll(query.workspaceId(), batches);
     return batches.stream()
         .map(batch -> toDetailsView(
             batch,
+            requireNonNull(vessels.get(batch.vesselId()), "production vessel reference cannot be null"),
             measuredProfiles.get(batch.batchId())
         ))
         .toList();
@@ -75,6 +80,7 @@ public final class QueryProductionBatchesService
 
   private @NonNull ProductionBatchDetailsView toDetailsView(
       @NonNull ProductionBatchView batch,
+      @NonNull VesselReferenceView vessel,
       @Nullable ProductionMeasuredProfileView measuredProfile
   ) {
     final var currentProfile = productionCurrentProfileProjector.project(
@@ -83,6 +89,7 @@ public final class QueryProductionBatchesService
     );
     return new ProductionBatchDetailsView(
         batch,
+        vessel,
         currentProfile,
         potentialAbvPredictor.predict(
             SpecificGravityValue.of(midpoint(currentProfile.specificGravity().value()))

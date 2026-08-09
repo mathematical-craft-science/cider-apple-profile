@@ -31,12 +31,14 @@ import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
+import org.craft.mcs.cap.shared.kernel.identity.VesselId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.craft.mcs.cap.shared.kernel.measurement.MeasuredValueRangePosition;
 import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.craft.mcs.cap.shared.application.ConcurrentResourceModificationException;
 import org.craft.mcs.cap.shared.testing.jdbc.PostgresDataJdbcTestConfiguration;
+import org.craft.mcs.cap.testsupport.VesselTestFixtures;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -216,20 +218,28 @@ class ProductionBatchCandidatePersistenceDataJdbcTest {
 
   private @NonNull ProductionBatchId persistProductionBatch(@NonNull WorkspaceId workspaceId) {
     final var productionBatchId = ProductionBatchId.newId();
+    final var vesselId = VesselId.newId();
+    VesselTestFixtures.persist(
+        jdbcTemplate,
+        workspaceId,
+        vesselId,
+        "Candidate confirmation vessel " + vesselId.value()
+    );
     jdbcTemplate.update(
         """
             INSERT INTO production_batches (
-                batch_id, workspace_id, name, vessel, lifecycle, alcoholic_fermentation_state,
+                batch_id, workspace_id, name, vessel_id, lifecycle, alcoholic_fermentation_state,
                 current_volume_liters, current_material_state_id,
                 initial_sugar_specific_gravity, initial_acidity_g_l_as_malic,
                 initial_tannin_mg_l_tae, initial_yan_mg_n_l,
                 version, created_at, updated_at
-            ) VALUES (?, ?, 'Confirmed batch', 'Tank F-03', 'ACTIVE', 'NOT_STARTED',
+            ) VALUES (?, ?, 'Confirmed batch', ?, 'ACTIVE', 'NOT_STARTED',
                       120, ?, 1.052, 6.2, 1200, 180,
                       0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
             """,
         productionBatchId.value(),
         workspaceId.value(),
+        vesselId.value(),
         MaterialStateId.newId().value()
     );
     return productionBatchId;

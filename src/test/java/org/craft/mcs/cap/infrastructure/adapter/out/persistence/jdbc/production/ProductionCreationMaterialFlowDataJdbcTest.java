@@ -41,6 +41,7 @@ import org.craft.mcs.cap.core.production.candidate.application.confirmation.port
 import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchRepository;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchTraceRecorder;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionSourceInventory;
+import org.craft.mcs.cap.core.production.application.vessel.port.out.ProductionVesselAssignmentValidator;
 import org.craft.mcs.cap.core.production.candidate.application.confirmation.usecase.CreateProductionBatchService;
 import org.craft.mcs.cap.core.production.candidate.application.model.ProductionBatchCandidateSnapshot;
 import org.craft.mcs.cap.core.production.candidate.application.port.out.ProductionBatchCandidateStore;
@@ -58,9 +59,10 @@ import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
+import org.craft.mcs.cap.shared.kernel.identity.VesselId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
-import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
+import org.craft.mcs.cap.testsupport.VesselTestFixtures;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.craft.mcs.cap.shared.platform.TransactionHelper;
@@ -137,6 +139,9 @@ class ProductionCreationMaterialFlowDataJdbcTest {
   private ProductionAccessControl productionAccessControl;
 
   @Autowired
+  private ProductionVesselAssignmentValidator productionVesselAssignmentValidator;
+
+  @Autowired
   private TransactionHelper transactionHelper;
 
   @Autowired
@@ -145,12 +150,16 @@ class ProductionCreationMaterialFlowDataJdbcTest {
   private WorkspaceId workspaceId;
   private FeedstockBatchId feedstockBatchId;
   private MaterialStateId initialFeedstockStateId;
+  private VesselId feedstockVesselId;
+  private VesselId productionVesselId;
 
   @BeforeEach
   void seedSourceMaterial() {
     workspaceId = WorkspaceId.newId();
     feedstockBatchId = FeedstockBatchId.newId();
     initialFeedstockStateId = MaterialStateId.newId();
+    feedstockVesselId = VesselId.newId();
+    productionVesselId = VesselId.newId();
     insertWorkspace();
     insertFeedstockBatch();
     insertInitialFeedstockTraceState();
@@ -291,6 +300,7 @@ class ProductionCreationMaterialFlowDataJdbcTest {
         productionBatchRepository,
         traceRecorder,
         productionAccessControl,
+        productionVesselAssignmentValidator,
         transactionHelper,
         clock
     );
@@ -342,7 +352,7 @@ class ProductionCreationMaterialFlowDataJdbcTest {
     return new CreateProductionBatchCommand(
         workspaceId,
         BatchName.of("Integrated production"),
-        Vessel.named("Tank P-01"),
+        productionVesselId,
         candidate.candidate().candidateId(),
         null
     );
@@ -366,6 +376,8 @@ class ProductionCreationMaterialFlowDataJdbcTest {
         OffsetDateTime.parse("2026-07-25T10:00:00Z"),
         OffsetDateTime.parse("2026-07-25T10:00:00Z")
     );
+    VesselTestFixtures.persist(jdbcTemplate, workspaceId, feedstockVesselId, "Tank A-01");
+    VesselTestFixtures.persist(jdbcTemplate, workspaceId, productionVesselId, "Tank P-01");
   }
 
   private void insertFeedstockBatch() {
@@ -375,7 +387,7 @@ class ProductionCreationMaterialFlowDataJdbcTest {
                 batch_id,
                 workspace_id,
                 name,
-                vessel,
+                vessel_id,
                 type,
                 season_starts_on,
                 season_ends_on,
@@ -389,7 +401,7 @@ class ProductionCreationMaterialFlowDataJdbcTest {
                 ?,
                 ?,
                 'Integrated juice',
-                'Tank F-01',
+                ?,
                 'JUICE',
                 DATE '2026-01-01',
                 DATE '2026-12-31',
@@ -403,6 +415,7 @@ class ProductionCreationMaterialFlowDataJdbcTest {
             """,
         feedstockBatchId.value(),
         workspaceId.value(),
+        feedstockVesselId.value(),
         initialFeedstockStateId.value(),
         OffsetDateTime.parse("2026-07-25T10:00:00Z"),
         OffsetDateTime.parse("2026-07-25T10:00:00Z")
@@ -588,6 +601,11 @@ class ProductionCreationMaterialFlowDataJdbcTest {
         public void requireWriteAccess(@NonNull WorkspaceId workspaceId) {
         }
       };
+    }
+
+    @Bean
+    ProductionVesselAssignmentValidator productionVesselAssignmentValidator() {
+      return (workspaceId, vesselId, materialVolume) -> VesselTestFixtures.reference(vesselId, "Tank P-01");
     }
 
     @Bean

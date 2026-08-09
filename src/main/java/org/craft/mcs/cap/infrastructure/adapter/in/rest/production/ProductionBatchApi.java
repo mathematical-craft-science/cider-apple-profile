@@ -67,8 +67,9 @@ public interface ProductionBatchApi {
 
   @Operation(
       summary = "Create production batch",
-      description = "Confirms a saved production candidate, consumes its source volumes, creates the production batch "
-          + "and appends traceability atomically. The candidate is rejected when source evidence has changed."
+      description = "Confirms a saved production candidate into the selected operational vessel, consumes its source "
+          + "volumes, creates the production batch and appends traceability atomically. The candidate is rejected when "
+          + "source evidence has changed."
   )
   @ApiResponse(
       responseCode = "201",
@@ -85,17 +86,18 @@ public interface ProductionBatchApi {
   )
   @ApiResponse(
       responseCode = "403",
-      description = "At least one feedstock source belongs to another workspace.",
+      description = "A source or the selected vessel belongs to another workspace.",
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
   )
   @ApiResponse(
       responseCode = "404",
-      description = "Production candidate or one of its sources was not found.",
+      description = "Production candidate, source or selected vessel was not found.",
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
   )
   @ApiResponse(
       responseCode = "409",
-      description = "The candidate was already confirmed, became stale or a resource was modified concurrently.",
+      description = "Candidate state changed, a resource was modified concurrently, or the selected vessel is "
+          + "occupied, not operational, or too small for the candidate volume.",
       content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
   )
   @ApiResponse(

@@ -7,6 +7,7 @@ import org.craft.mcs.cap.shared.kernel.material.value.BatchLifecycle;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.abv.dto.PotentialAbvPredictionResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.composition.dto.CalculatedCompositionCharacteristicsResponse;
 import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.vessel.dto.VesselReferenceResponse;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -26,10 +27,11 @@ public record ProductionBatchDetailsResponse(
     @Schema(description = "Production batch name.", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull String name,
     @Schema(
-        description = "Current vessel, tank or container.",
+        description = "Current vessel reference resolved from the workspace vessel catalog.",
+        implementation = VesselReferenceResponse.class,
         requiredMode = Schema.RequiredMode.REQUIRED
     )
-    @NonNull String vessel,
+    @NonNull VesselReferenceResponse vessel,
     @Schema(
         description = "Current material lifecycle.",
         implementation = BatchLifecycle.class,

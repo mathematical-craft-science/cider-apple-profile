@@ -8,8 +8,6 @@ import org.craft.mcs.cap.shared.application.persistence.AggregateRevision;
 import org.craft.mcs.cap.shared.application.persistence.VersionedAggregate;
 import org.jspecify.annotations.NonNull;
 
-import static java.util.Objects.requireNonNull;
-
 /** Maps the UserPreferences aggregate to its Spring Data JDBC representation. */
 final class UserPreferencesJdbcMapper {
 
@@ -22,15 +20,6 @@ final class UserPreferencesJdbcMapper {
         preferences.locale().toLanguageTag(),
         preferences.timeZone().getId()
     );
-  }
-
-  static @NonNull UserPreferencesJdbcEntity updateFromDomain(
-      @NonNull UserPreferences preferences,
-      @NonNull UserPreferencesJdbcEntity entity
-  ) {
-    entity.locale = preferences.locale().toLanguageTag();
-    entity.timeZone = preferences.timeZone().getId();
-    return entity;
   }
 
   static @NonNull UserPreferences toDomain(@NonNull UserPreferencesJdbcEntity entity) {
@@ -47,7 +36,4 @@ final class UserPreferencesJdbcMapper {
     return new VersionedAggregate<>(toDomain(entity), AggregateRevision.of(entity.version));
   }
 
-  static long revision(@NonNull UserPreferencesJdbcEntity entity) {
-    return requireNonNull(entity, "user preferences row cannot be null").version;
-  }
 }

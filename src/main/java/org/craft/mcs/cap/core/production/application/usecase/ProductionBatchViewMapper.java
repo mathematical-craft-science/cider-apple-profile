@@ -18,7 +18,7 @@ public final class ProductionBatchViewMapper {
         batch.batchId(),
         batch.workspaceId(),
         batch.name(),
-        batch.vessel(),
+        batch.vesselId(),
         batch.lifecycle(),
         batch.alcoholicFermentationState(),
         batch.currentVolume(),

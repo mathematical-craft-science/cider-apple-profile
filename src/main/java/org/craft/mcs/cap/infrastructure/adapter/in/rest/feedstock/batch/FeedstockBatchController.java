@@ -1,5 +1,6 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.batch;
 
+import jakarta.validation.Valid;
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.UUID;
@@ -53,14 +54,14 @@ public final class FeedstockBatchController implements FeedstockBatchApi {
   @Override
   @PostMapping(value = "/feedstock-batches", consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
   public @NonNull ResponseEntity<@NonNull FeedstockBatchResponse> create(
-      @RequestBody @NonNull CreateFeedstockBatchRequest request
+      @Valid @RequestBody @NonNull CreateFeedstockBatchRequest request
   ) {
     final var created = createFeedstockBatchUseCase.create(
         FeedstockBatchRestMapper.toCommand(request)
     );
 
     return ResponseEntity
-        .created(URI.create("/feedstock-batches/" + created.batchId().value()))
+        .created(URI.create("/feedstock-batches/" + created.batch().batch().batchId().value()))
         .body(FeedstockBatchRestMapper.toResponse(created));
   }
 
@@ -105,7 +106,7 @@ public final class FeedstockBatchController implements FeedstockBatchApi {
   @Override
   public @NonNull ResponseEntity<@NonNull FeedstockBatchResponse> update(
       @PathVariable @NonNull UUID batchId,
-      @RequestBody @NonNull UpdateFeedstockBatchRequest request
+      @Valid @RequestBody @NonNull UpdateFeedstockBatchRequest request
   ) {
     final var updated = updateFeedstockBatchUseCase.update(
         FeedstockBatchRestMapper.toCommand(FeedstockBatchId.of(batchId), request)
@@ -122,7 +123,7 @@ public final class FeedstockBatchController implements FeedstockBatchApi {
   @Override
   public @NonNull ResponseEntity<@NonNull FeedstockBatchResponse> patch(
       @PathVariable @NonNull UUID batchId,
-      @RequestBody @NonNull PatchFeedstockBatchRequest request
+      @Valid @RequestBody @NonNull PatchFeedstockBatchRequest request
   ) {
     final var updated = updateFeedstockBatchUseCase.update(
         FeedstockBatchRestMapper.toCommand(FeedstockBatchId.of(batchId), request)

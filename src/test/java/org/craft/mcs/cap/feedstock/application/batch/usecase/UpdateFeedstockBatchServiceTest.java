@@ -5,9 +5,12 @@ import java.util.Optional;
 import java.util.function.Supplier;
 import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
 import org.craft.mcs.cap.core.feedstock.application.batch.model.FeedstockBatchSummary;
+import org.craft.mcs.cap.core.feedstock.application.batch.model.FeedstockBatchView;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.UpdateFeedstockBatchCommand;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchRepository;
 import org.craft.mcs.cap.core.feedstock.application.batch.usecase.UpdateFeedstockBatchService;
+import org.craft.mcs.cap.core.feedstock.application.batch.usecase.FeedstockBatchViewEnricher;
+import org.craft.mcs.cap.core.feedstock.application.vessel.port.out.FeedstockVesselReferenceQuery;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchLifecycle;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
@@ -16,7 +19,7 @@ import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
-import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
+import org.craft.mcs.cap.testsupport.VesselTestFixtures;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.craft.mcs.cap.shared.platform.TransactionHelper;
 import org.jspecify.annotations.NonNull;
@@ -26,6 +29,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.craft.mcs.cap.shared.kernel.identity.UuidV7Generator.newUuid;
 import static org.craft.mcs.cap.support.VersionedAggregateFixtures.versioned;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -36,10 +40,12 @@ class UpdateFeedstockBatchServiceTest {
   @Test
   void updatesMetadataWithoutChangingMaterialStateProperties() {
     final var repository = mock(FeedstockBatchRepository.class);
+    final var enricher = enricher();
     final var service = new UpdateFeedstockBatchService(
         repository,
         mock(FeedstockAccessControl.class),
-        transactionHelper()
+        transactionHelper(),
+        enricher
     );
     final var workspaceId = WorkspaceId.of(newUuid());
     final var batch = batch(workspaceId, VolumeValue.ofLiters("250.000"));
@@ -59,9 +65,10 @@ class UpdateFeedstockBatchServiceTest {
     ));
 
     assertThat(updated)
+        .extracting(FeedstockBatchView::batch)
         .returns(BatchName.of("Renamed batch"), FeedstockBatchSummary::name)
         .returns(FeedstockType.BLEND, FeedstockBatchSummary::type)
-        .returns(Vessel.named("Tank A-01"), FeedstockBatchSummary::vessel)
+        .returns(VesselTestFixtures.FEEDSTOCK_VESSEL_ID, FeedstockBatchSummary::vesselId)
         .returns(VolumeValue.ofLiters("250.000"), FeedstockBatchSummary::availableVolume);
     verify(repository).update(any());
   }
@@ -69,10 +76,12 @@ class UpdateFeedstockBatchServiceTest {
   @Test
   void allowsMetadataUpdateAfterBatchWasFullyConsumed() {
     final var repository = mock(FeedstockBatchRepository.class);
+    final var enricher = enricher();
     final var service = new UpdateFeedstockBatchService(
         repository,
         mock(FeedstockAccessControl.class),
-        transactionHelper()
+        transactionHelper(),
+        enricher
     );
     final var workspaceId = WorkspaceId.of(newUuid());
     final var batch = batch(workspaceId, VolumeValue.ofLiters("0"));
@@ -92,6 +101,7 @@ class UpdateFeedstockBatchServiceTest {
     ));
 
     assertThat(updated)
+        .extracting(FeedstockBatchView::batch)
         .returns(BatchName.of("Renamed batch"), FeedstockBatchSummary::name)
         .returns(VolumeValue.ofLiters("0"), FeedstockBatchSummary::availableVolume);
     verify(repository).update(any());
@@ -105,7 +115,7 @@ class UpdateFeedstockBatchServiceTest {
         FeedstockBatchId.newId(),
         workspaceId,
         BatchName.of("Late season fruit"),
-        Vessel.named("Tank A-01"),
+        VesselTestFixtures.vesselId("Tank A-01"),
         FeedstockType.JUICE,
         FeedstockSeason.of(LocalDate.parse("2026-10-01"), LocalDate.parse("2026-12-15")),
         null,
@@ -132,5 +142,14 @@ class UpdateFeedstockBatchServiceTest {
         action.run();
       }
     };
+  }
+
+  private static FeedstockBatchViewEnricher enricher() {
+    final var referenceQuery = mock(FeedstockVesselReferenceQuery.class);
+    when(referenceQuery.resolveReferences(any(), anySet())).thenReturn(java.util.Map.of(
+        VesselTestFixtures.FEEDSTOCK_VESSEL_ID,
+        VesselTestFixtures.reference(VesselTestFixtures.FEEDSTOCK_VESSEL_ID, "Tank A-01")
+    ));
+    return new FeedstockBatchViewEnricher(referenceQuery);
   }
 }

@@ -1,6 +1,6 @@
 package org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.model;
 
-import org.craft.mcs.cap.core.feedstock.application.batch.model.FeedstockBatchSummary;
+import org.craft.mcs.cap.core.feedstock.application.batch.model.FeedstockBatchView;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentProfileAssessmentView;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentProfileSummaryView;
 import org.jspecify.annotations.NonNull;
@@ -16,7 +16,7 @@ import static java.util.Objects.requireNonNull;
  * analysis, planning diagnostics and optional target assessment without changing aggregate state.
  */
 public record FeedstockPlanningBatchView(
-    @NonNull FeedstockBatchSummary batch,
+    @NonNull FeedstockBatchView batch,
     @Nullable FeedstockCurrentProfileSummaryView currentProfileSummary,
     @NonNull FeedstockCurrentProfileAssessmentView currentProfileAssessment,
     @Nullable FeedstockPlanningTargetCandidateView targetCandidate

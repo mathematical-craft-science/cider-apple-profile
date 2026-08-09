@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchNotFoundException;
 import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchOwnershipMismatchException;
 import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
-import org.craft.mcs.cap.core.feedstock.application.batch.model.FeedstockBatchSummary;
+import org.craft.mcs.cap.core.feedstock.application.batch.model.FeedstockBatchView;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.UpdateFeedstockBatchCommand;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.UpdateFeedstockBatchUseCase;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchRepository;
@@ -32,19 +32,24 @@ public final class UpdateFeedstockBatchService
   private final @NonNull FeedstockBatchRepository feedstockBatchRepository;
   private final @NonNull FeedstockAccessControl feedstockAccessControl;
   private final @NonNull TransactionHelper transactionHelper;
+  private final @NonNull FeedstockBatchViewEnricher batchViewEnricher;
 
   @Override
-  public @NonNull FeedstockBatchSummary update(@NonNull UpdateFeedstockBatchCommand command) {
+  public @NonNull FeedstockBatchView update(@NonNull UpdateFeedstockBatchCommand command) {
     requireNonNull(command, "update feedstock batch command cannot be null");
     feedstockAccessControl.requireWriteAccess(command.workspaceId());
     return transactionHelper.callInTransactionNonNull(() -> updateInTransaction(command));
   }
 
-  private @NonNull FeedstockBatchSummary updateInTransaction(@NonNull UpdateFeedstockBatchCommand command) {
+  private @NonNull FeedstockBatchView updateInTransaction(@NonNull UpdateFeedstockBatchCommand command) {
     final var state = findOwnedBatch(command);
     final var batch = state.aggregate();
     applyChanges(batch, command);
-    return toSummary(feedstockBatchRepository.update(state.withAggregate(batch)).aggregate());
+    return batchViewEnricher.enrich(
+        FeedstockBatchSummaryMapper.toSummary(
+            feedstockBatchRepository.update(state.withAggregate(batch)).aggregate()
+        )
+    );
   }
 
   private @NonNull VersionedAggregate<FeedstockBatch> findOwnedBatch(
@@ -118,19 +123,4 @@ public final class UpdateFeedstockBatchService
     }
   }
 
-  private static @NonNull FeedstockBatchSummary toSummary(@NonNull FeedstockBatch batch) {
-    return new FeedstockBatchSummary(
-        batch.batchId(),
-        batch.workspaceId(),
-        batch.name(),
-        batch.vessel(),
-        batch.type(),
-        batch.season(),
-        batch.source(),
-        batch.lifecycle(),
-        batch.availableVolume(),
-        batch.currentMaterialStateId(),
-        batch.note()
-    );
-  }
 }

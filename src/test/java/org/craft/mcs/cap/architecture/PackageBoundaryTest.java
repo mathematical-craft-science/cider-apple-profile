@@ -85,6 +85,43 @@ class PackageBoundaryTest {
   }
 
   @Test
+  void infrastructureDoesNotOwnTransactionBoundaries() throws IOException {
+    assertNoImportsUnder(
+        "org/craft/mcs/cap/infrastructure",
+        List.of(
+            "org.springframework.transaction.PlatformTransactionManager",
+            "org.springframework.transaction.annotation.Transactional",
+            "org.springframework.transaction.support.TransactionTemplate"
+        )
+    );
+  }
+
+  @Test
+  void materialBatchContextsDoNotDependOnVesselImplementation() throws IOException {
+    assertNoImportsUnder(
+        "org/craft/mcs/cap/core/feedstock",
+        List.of("org.craft.mcs.cap.core.vessel.")
+    );
+    assertNoImportsUnder(
+        "org/craft/mcs/cap/core/production",
+        List.of("org.craft.mcs.cap.core.vessel.")
+    );
+  }
+
+  @Test
+  void vesselContextDoesNotDependOnMaterialBatchContexts() throws IOException {
+    assertNoImportsUnder(
+        "org/craft/mcs/cap/core/vessel",
+        List.of(
+            "org.craft.mcs.cap.core.feedstock.",
+            "org.craft.mcs.cap.core.production.",
+            "org.craft.mcs.cap.core.measurement.",
+            "org.craft.mcs.cap.core.traceability."
+        )
+    );
+  }
+
+  @Test
   void coreClassesUseExplicitApplicationOrDomainLayers() throws IOException {
     final var violations = sourceFilesUnder("org/craft/mcs/cap/core")
         .stream()
@@ -173,11 +210,17 @@ class PackageBoundaryTest {
     );
     assertNoTextUnder(
         "org/craft/mcs/cap/infrastructure/adapter/out/persistence/jdbc/feedstock",
-        List.of("measurement_", "production_batches", "batch_trace_")
+        List.of(
+            "measurement_",
+            "production_batches",
+            "batch_trace_",
+            "JOIN vessels",
+            "FROM vessels"
+        )
     );
     assertNoTextUnder(
         "org/craft/mcs/cap/infrastructure/adapter/out/persistence/jdbc/production",
-        List.of("measurement_", "feedstock_batches", "batch_trace_")
+        List.of("measurement_", "feedstock_batches", "batch_trace_", "JOIN vessels", "FROM vessels")
     );
     assertNoTextUnder(
         "org/craft/mcs/cap/infrastructure/adapter/out/persistence/jdbc/traceability",

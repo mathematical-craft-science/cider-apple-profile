@@ -6,13 +6,13 @@ import org.craft.mcs.cap.core.account.contributor.application.port.out.Contribut
 import org.craft.mcs.cap.core.account.contributor.domain.model.ContributorProfile;
 import org.craft.mcs.cap.core.account.shared.domain.value.AccountUserId;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.support.JdbcPersistenceExceptionTranslator;
-import org.craft.mcs.cap.shared.application.ConcurrentResourceModificationException;
 import org.craft.mcs.cap.shared.application.persistence.VersionedAggregate;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Repository;
 
 import static java.util.Objects.requireNonNull;
-import static org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.support.JdbcAggregateRevisionGuard.requireExpectedRevision;
+import static org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.support.JdbcVersionedUpdate.complete;
+import static org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.support.JdbcVersionedUpdate.requireSingleRow;
 
 /** Persists the optional public contributor profile associated with a CAP account. */
 @Repository
@@ -37,14 +37,21 @@ class JdbcContributorProfileRepository implements ContributorProfileRepository {
   ) {
     requireNonNull(profile, "versioned contributor profile cannot be null");
     final var aggregate = profile.aggregate();
-    final var entity = repository.findById(aggregate.userId().value())
-        .orElseThrow(() -> new ConcurrentResourceModificationException("contributor profile", null));
-    requireExpectedRevision("contributor profile", profile.revision(), ContributorProfileJdbcMapper.revision(entity));
-    final var saved = JdbcPersistenceExceptionTranslator.translateOptimisticLocking(
+    final var affectedRows = JdbcPersistenceExceptionTranslator.translateOptimisticLocking(
         "contributor profile",
-        () -> repository.save(ContributorProfileJdbcMapper.updateFromDomain(aggregate, entity))
+        () -> repository.updateByIdAndVersion(
+            aggregate.userId().value(),
+            aggregate.contributorType(),
+            aggregate.publicName().value(),
+            aggregate.website() == null ? null : aggregate.website().value().toString(),
+            aggregate.publicEmail() == null ? null : aggregate.publicEmail().value(),
+            aggregate.publicPhone() == null ? null : aggregate.publicPhone().value(),
+            aggregate.contactVisibility(),
+            aggregate.contactPublicationConsentedAt(),
+            profile.revision().value()
+        )
     );
-    return ContributorProfileJdbcMapper.toVersionedAggregate(saved);
+    return complete("contributor profile", profile, affectedRows);
   }
 
   @Override
@@ -62,8 +69,6 @@ class JdbcContributorProfileRepository implements ContributorProfileRepository {
         profile.aggregate().userId().value(),
         profile.revision().value()
     );
-    if (affectedRows != 1) {
-      throw new ConcurrentResourceModificationException("contributor profile", null);
-    }
+    requireSingleRow("contributor profile", affectedRows);
   }
 }

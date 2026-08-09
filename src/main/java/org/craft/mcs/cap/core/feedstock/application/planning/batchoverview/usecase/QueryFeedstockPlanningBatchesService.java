@@ -1,44 +1,44 @@
 package org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.usecase;
 
+import static java.util.Objects.requireNonNull;
+
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.craft.mcs.cap.core.feedstock.application.analysis.common.model.FeedstockAnalysisCandidateFilters;
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.FeedstockBatchProfileTargetCandidate;
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.FeedstockBatchProfileTargetQuery;
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.QueryFeedstockBatchProfileTargetCandidatesUseCase;
-import org.craft.mcs.cap.core.feedstock.application.analysis.common.model.FeedstockAnalysisCandidateFilters;
-import org.craft.mcs.cap.core.feedstock.application.batch.model.FeedstockBatchSummary;
+import org.craft.mcs.cap.core.feedstock.application.batch.model.FeedstockBatchView;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.ListFeedstockBatchesQuery;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.ListFeedstockBatchesUseCase;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentProfileView;
-import org.craft.mcs.cap.core.feedstock.application.currentprofile.service.FeedstockCurrentProfileAssessmentService;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.query.FeedstockCurrentProfileQueryService;
+import org.craft.mcs.cap.core.feedstock.application.currentprofile.service.FeedstockCurrentProfileAssessmentService;
 import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.model.FeedstockPlanningBatchView;
-import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.FeedstockPlanningBatchViewQuery;
 import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.model.FeedstockPlanningTargetAnalysisView;
 import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.model.FeedstockPlanningTargetCandidateView;
 import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.model.FeedstockPlanningView;
+import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.FeedstockPlanningBatchViewQuery;
 import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.QueryFeedstockPlanningBatchesUseCase;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
 
-import static java.util.Objects.requireNonNull;
-
 /**
  * Application read model for the feedstock planning.
  *
  * <p>This query service deliberately composes batch metadata, current material-state evidence, graph
- * projection, target candidate scoring, ABV, YAN and fermentation-start readiness into one
- * application read model. It is not a domain aggregate; its responsibility is to give API clients a
- * coherent planning snapshot without forcing them to stitch several business endpoints
- * together.
+ * projection, target candidate scoring, ABV, YAN and fermentation-start readiness into one application read model. It
+ * is not a domain aggregate; its responsibility is to give API clients a coherent planning snapshot without forcing
+ * them to stitch several business endpoints together.
  */
 @Component
 @RequiredArgsConstructor
-public final class QueryFeedstockPlanningBatchesService implements QueryFeedstockPlanningBatchesUseCase {
+public final class QueryFeedstockPlanningBatchesService
+    implements QueryFeedstockPlanningBatchesUseCase {
 
   private final @NonNull ListFeedstockBatchesUseCase listFeedstockBatchesUseCase;
   private final @NonNull FeedstockCurrentProfileQueryService currentProfileQueryService;
@@ -53,7 +53,8 @@ public final class QueryFeedstockPlanningBatchesService implements QueryFeedstoc
         query.workspaceId(),
         query.season()
     ));
-    final var measurementsByBatchId = currentProfileQueryService.findCurrentProfiles(batches)
+    final var batchSummaries = batches.stream().map(FeedstockBatchView::batch).toList();
+    final var measurementsByBatchId = currentProfileQueryService.findCurrentProfiles(batchSummaries)
         .stream()
         .collect(Collectors.toMap(
             FeedstockCurrentProfileView::batchId,
@@ -64,8 +65,8 @@ public final class QueryFeedstockPlanningBatchesService implements QueryFeedstoc
         batches.stream()
             .map(batch -> toBatchView(
                 batch,
-                measurementsByBatchId.get(batch.batchId()),
-                targetCandidates.candidatesByBatchId().get(batch.batchId())
+                measurementsByBatchId.get(batch.batch().batchId()),
+                targetCandidates.candidatesByBatchId().get(batch.batch().batchId())
             ))
             .toList(),
         targetCandidates.analysis()
@@ -73,7 +74,7 @@ public final class QueryFeedstockPlanningBatchesService implements QueryFeedstoc
   }
 
   private @NonNull FeedstockPlanningBatchView toBatchView(
-      @NonNull FeedstockBatchSummary batch,
+      @NonNull FeedstockBatchView batch,
       @Nullable FeedstockCurrentProfileView currentProfile,
       @Nullable FeedstockPlanningTargetCandidateView targetCandidate
   ) {
@@ -81,7 +82,7 @@ public final class QueryFeedstockPlanningBatchesService implements QueryFeedstoc
     return new FeedstockPlanningBatchView(
         batch,
         currentProfile == null ? null : currentProfile.summary(),
-        currentProfileAssessmentService.assess(batch, currentProfile),
+        currentProfileAssessmentService.assess(batch.batch(), currentProfile),
         coherentTargetCandidate
     );
   }
@@ -94,8 +95,8 @@ public final class QueryFeedstockPlanningBatchesService implements QueryFeedstoc
       return null;
     }
     return currentProfile.currentMaterialStateId().equals(targetCandidate.currentMaterialStateId())
-        ? targetCandidate
-        : null;
+           ? targetCandidate
+           : null;
   }
 
   private @NonNull TargetCandidates targetCandidates(@NonNull FeedstockPlanningBatchViewQuery query) {

@@ -7,6 +7,7 @@ import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.Feeds
 import org.craft.mcs.cap.core.feedstock.application.batch.model.FeedstockBatchSummary;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchRepository;
 import org.craft.mcs.cap.core.feedstock.application.batch.usecase.FeedstockBatchSummaryMapper;
+import org.craft.mcs.cap.core.feedstock.application.batch.usecase.FeedstockBatchViewEnricher;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentProfileView;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.service.FeedstockCurrentProfileAssessmentService;
 import org.craft.mcs.cap.core.feedstock.application.detail.model.FeedstockBatchCurrentProfileView;
@@ -34,6 +35,7 @@ public final class GetFeedstockBatchDetailService implements GetFeedstockBatchDe
   private final @NonNull FeedstockAccessControl feedstockAccessControl;
   private final @NonNull FeedstockCurrentProfileQueryService currentProfileQueryService;
   private final @NonNull FeedstockCurrentProfileAssessmentService currentProfileAssessmentService;
+  private final @NonNull FeedstockBatchViewEnricher batchViewEnricher;
 
   @Override
   public @NonNull FeedstockBatchDetailView get(@NonNull GetFeedstockBatchDetailQuery query) {
@@ -55,7 +57,7 @@ public final class GetFeedstockBatchDetailService implements GetFeedstockBatchDe
         .orElse(null); // NOSONAR
 
     return new FeedstockBatchDetailView(
-        batchSummary,
+        batchViewEnricher.enrich(batchSummary),
         toCurrentProfile(batchSummary, currentProfile)
     );
   }

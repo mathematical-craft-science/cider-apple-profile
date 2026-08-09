@@ -7,8 +7,6 @@ import org.craft.mcs.cap.core.account.invitation.application.port.out.WorkspaceI
 import org.craft.mcs.cap.infrastructure.messaging.account.invitation.WorkspaceInvitationEmailOutboxPayload;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 import static java.util.Objects.requireNonNull;
 
@@ -21,7 +19,6 @@ public class NamastackWorkspaceInvitationDeliveryScheduler
   private final @NonNull Outbox outbox;
 
   @Override
-  @Transactional(propagation = Propagation.MANDATORY)
   public void schedule(@NonNull WorkspaceInvitationDeliveryRequest request) {
     requireNonNull(request, "workspace invitation delivery request cannot be null");
     outbox.schedule(
