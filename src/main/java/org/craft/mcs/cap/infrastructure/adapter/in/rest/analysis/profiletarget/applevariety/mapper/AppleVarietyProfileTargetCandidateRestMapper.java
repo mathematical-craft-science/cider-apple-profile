@@ -19,8 +19,7 @@ import org.jspecify.annotations.Nullable;
 import static java.util.Objects.requireNonNull;
 import static java.util.Objects.requireNonNullElse;
 import static org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.profiletarget.common.mapper.ProfileTargetCandidateCommonRestMapper.toWeights;
-import static org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.mapper.ProfileGraphCriteriaRestMapper.toCapabilityCriteria;
-import static org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.mapper.ProfileGraphCriteriaRestMapper.toZoneCriteria;
+import static org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.mapper.JolicoeurSugarAcidityGraphCriteriaRestMapper.toZoneCriteria;
 
 
 public final class AppleVarietyProfileTargetCandidateRestMapper {
@@ -36,11 +35,8 @@ public final class AppleVarietyProfileTargetCandidateRestMapper {
     requireNonNull(targetResolver, "sugar-acidity target resolver cannot be null");
 
     return new AppleVarietyProfileTargetCandidateQuery(
-        new AppleVarietyAnalysisFilters(
-            toTextCriteria(request.nameContains()),
-            toZoneCriteria(request.zone()),
-            toCapabilityCriteria(request.capability(), request.capable())
-        ),
+        new AppleVarietyAnalysisFilters(toTextCriteria(request.nameContains())),
+        toZoneCriteria(request.zone()),
         requireNonNull(request.analysisScenario(), "profile target analysis scenario cannot be null"),
         requireNonNull(
             ProfileTargetRestMapper.toTargetObjective(request.target(), request.tanninTarget(), targetResolver),

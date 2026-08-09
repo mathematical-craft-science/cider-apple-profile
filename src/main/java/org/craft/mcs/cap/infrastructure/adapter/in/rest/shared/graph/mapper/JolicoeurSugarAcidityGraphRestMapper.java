@@ -1,7 +1,10 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.mapper;
 
+import java.util.Comparator;
+import java.util.List;
 import org.craft.mcs.cap.core.profileanalysis.classification.domain.profile.northamerican.NorthAmericanTanninLevel;
 import org.craft.mcs.cap.core.profileanalysis.graph.application.model.JolicoeurSugarAcidityGraphEvaluation;
+import org.craft.mcs.cap.core.profileanalysis.graph.domain.GraphMissingCharacteristic;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.measurement.CanonicalUnitLabels;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profilecharacteristic.mapper.ProfileCharacteristicRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.dto.SugarAcidityGraphPointResponse;
@@ -16,9 +19,9 @@ import static java.util.Objects.requireNonNull;
 
 
 /** Maps sugar-acidity graph projections and assessments to transport responses. */
-public final class ProfileGraphRestMapper {
+public final class JolicoeurSugarAcidityGraphRestMapper {
 
-  private ProfileGraphRestMapper() {
+  private JolicoeurSugarAcidityGraphRestMapper() {
   }
 
   public static @NonNull SugarAcidityGraphAssessmentResponse toResponse(
@@ -68,5 +71,15 @@ public final class ProfileGraphRestMapper {
             CanonicalUnitLabels.TITRATABLE_ACIDITY
         )
     );
+  }
+
+  /** Returns graph-specific missing inputs in deterministic enum order. */
+  public static @NonNull List<@NonNull GraphMissingCharacteristic> missingCharacteristics(
+      @NonNull JolicoeurSugarAcidityGraphEvaluation graphEvaluation
+  ) {
+    requireNonNull(graphEvaluation, "sugar-acidity graph evaluation cannot be null");
+    return graphEvaluation.missingCharacteristics().stream()
+        .sorted(Comparator.comparingInt(Enum::ordinal))
+        .toList();
   }
 }

@@ -8,7 +8,6 @@ import java.util.UUID;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionCalculatorCode;
 import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.strategy.CompositionOptimizationAlgorithm;
 import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.CompositionOptimizationMode;
-import org.craft.mcs.cap.core.profileanalysis.capability.domain.ProfileAnalysisCapability;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.normalization.ProfileAxisNormalizerCode;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.objective.ProfileTargetObjectiveFunctionCode;
 import org.craft.mcs.cap.core.profileanalysis.graph.zone.domain.JolicoeurSugarAcidityZone;
@@ -55,21 +54,6 @@ public record OptimizeFeedstockBatchCompositionRequest(
         requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )
     @Nullable JolicoeurSugarAcidityZone zone,
-    @Schema(
-        description = "Optional profile-analysis capability filter.",
-        implementation = ProfileAnalysisCapability.class,
-        example = "SUGAR_ACIDITY_GRAPH",
-        nullable = true,
-        requiredMode = Schema.RequiredMode.NOT_REQUIRED
-    )
-    @Nullable ProfileAnalysisCapability capability,
-    @Schema(
-        description = "Whether the optional capability must be met.",
-        example = "true",
-        nullable = true,
-        requiredMode = Schema.RequiredMode.NOT_REQUIRED
-    )
-    @Nullable Boolean capable,
     @Schema(description = "Required target.", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull ProfileTargetRequest target,
     @Schema(

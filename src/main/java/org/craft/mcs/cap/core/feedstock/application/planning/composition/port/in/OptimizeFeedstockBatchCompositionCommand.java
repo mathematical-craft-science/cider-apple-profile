@@ -10,6 +10,7 @@ import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.Profi
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.TanninTargetRange;
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.FeedstockProfileTargetSelection;
 import org.craft.mcs.cap.core.feedstock.application.analysis.common.model.FeedstockAnalysisCandidateFilters;
+import org.craft.mcs.cap.core.profileanalysis.graph.application.model.JolicoeurSugarAcidityZoneCriteria;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.application.ApplicationValidationException;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
@@ -23,6 +24,7 @@ import static java.util.Objects.requireNonNull;
 public record OptimizeFeedstockBatchCompositionCommand(
     @NonNull WorkspaceId workspaceId,
     @NonNull FeedstockAnalysisCandidateFilters filters,
+    @Nullable JolicoeurSugarAcidityZoneCriteria sourceZoneCriteria,
     @NonNull FeedstockProfileTargetSelection target,
     @Nullable TanninTargetRange tanninTarget,
     @NonNull ProfileTargetScoringConfiguration scoringConfiguration,

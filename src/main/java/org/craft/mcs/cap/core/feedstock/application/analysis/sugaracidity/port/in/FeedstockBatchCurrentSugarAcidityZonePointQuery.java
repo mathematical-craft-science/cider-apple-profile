@@ -2,9 +2,11 @@ package org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.
 
 import org.craft.mcs.cap.core.feedstock.application.analysis.common.model.FeedstockAnalysisCandidateFilters;
 import org.craft.mcs.cap.core.feedstock.application.analysis.common.model.FeedstockAnalysisCandidatePagePosition;
+import org.craft.mcs.cap.core.profileanalysis.graph.application.model.JolicoeurSugarAcidityGraphCriteria;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.application.query.pagination.CursorPageRequest;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import static java.util.Objects.requireNonNull;
 
@@ -12,6 +14,7 @@ import static java.util.Objects.requireNonNull;
 public record FeedstockBatchCurrentSugarAcidityZonePointQuery(
     @NonNull WorkspaceId workspaceId,
     @NonNull FeedstockAnalysisCandidateFilters filters,
+    @Nullable JolicoeurSugarAcidityGraphCriteria graphCriteria,
     @NonNull CursorPageRequest<@NonNull FeedstockAnalysisCandidatePagePosition> page
 ) {
 

@@ -3,6 +3,7 @@ package org.craft.mcs.cap.core.profileanalysis.graph.application.model;
 import java.util.HashSet;
 import java.util.Set;
 import org.craft.mcs.cap.core.profileanalysis.graph.zone.domain.JolicoeurSugarAcidityZone;
+import org.craft.mcs.cap.core.profileanalysis.graph.zone.domain.JolicoeurSugarAcidityZoneAssessment;
 import org.craft.mcs.cap.shared.application.ApplicationValidationException;
 import org.junit.jupiter.api.Test;
 
@@ -27,5 +28,14 @@ class JolicoeurSugarAcidityZoneCriteriaTest {
     assertThatThrownBy(() -> new JolicoeurSugarAcidityZoneCriteria(Set.of()))
         .isInstanceOf(ApplicationValidationException.class)
         .hasMessageContaining("cannot be empty");
+  }
+
+  @Test
+  void rejectsUnclassifiedAssessmentWithoutThrowing() {
+    final var criteria = JolicoeurSugarAcidityZoneCriteria.of(
+        JolicoeurSugarAcidityZone.PERFECT_APPLES
+    );
+
+    assertThat(criteria.matches(JolicoeurSugarAcidityZoneAssessment.unclassified())).isFalse();
   }
 }

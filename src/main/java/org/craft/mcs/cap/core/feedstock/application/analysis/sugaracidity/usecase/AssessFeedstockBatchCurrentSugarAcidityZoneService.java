@@ -25,7 +25,7 @@ import static org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteris
  *
  * <p>Current means the state-aware composite selected by
  * {@link FeedstockCurrentProfileQueryService}. The service returns an unplottable result
- * when sugar-acidity graph capability is missing so clients can show actionable warnings instead of
+ * when SG or TA graph input is missing so clients can show actionable warnings instead of
  * hiding incomplete batches.
  */
 @Component

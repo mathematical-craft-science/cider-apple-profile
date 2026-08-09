@@ -13,9 +13,9 @@ class AppleVarietySugarAcidityZonePointQueryTest {
   void firstPageCreatesEmptyFiltersWithDefaultPage() {
     final var query = AppleVarietySugarAcidityZonePointQuery.firstPage();
 
-    assertThat(query.filters().nameContains()).isNull();
-    assertThat(query.filters().sugarAcidityZone()).isNull();
-    assertThat(query.filters().capability()).isNull();
-    assertThat(query.page()).isEqualTo(CursorPageRequest.firstPage());
+    assertThat(query)
+        .returns(null, value -> value.filters().nameContains())
+        .returns(null, AppleVarietySugarAcidityZonePointQuery::graphCriteria)
+        .returns(CursorPageRequest.firstPage(), AppleVarietySugarAcidityZonePointQuery::page);
   }
 }

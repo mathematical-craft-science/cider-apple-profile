@@ -1,22 +1,18 @@
 package org.craft.mcs.cap.core.feedstock.application.analysis.common.model;
 
-import org.craft.mcs.cap.core.profileanalysis.capability.application.model.ProfileAnalysisCapabilityCriteria;
 import org.craft.mcs.cap.core.feedstock.application.batch.model.FeedstockBatchCriteria;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
-import org.craft.mcs.cap.core.profileanalysis.graph.application.model.JolicoeurSugarAcidityZoneCriteria;
 import org.jspecify.annotations.Nullable;
 
 
 /**
- * Shared filters for independent feedstock analysis scenarios.
+ * Source-side filters for selecting FeedstockBatch analysis candidates.
  *
- * <p>Batch and season criteria narrow source evidence. Zone and capability criteria narrow the
- * derived assessment after that evidence has been evaluated.</p>
+ * <p>These criteria only select business subjects. Derived graph, target, or composition criteria
+ * belong to the concrete scenario query.</p>
  */
 public record FeedstockAnalysisCandidateFilters(
     @Nullable FeedstockBatchCriteria batch,
-    @Nullable FeedstockSeason season,
-    @Nullable JolicoeurSugarAcidityZoneCriteria sugarAcidityZone,
-    @Nullable ProfileAnalysisCapabilityCriteria capability
+    @Nullable FeedstockSeason season
 ) {
 }

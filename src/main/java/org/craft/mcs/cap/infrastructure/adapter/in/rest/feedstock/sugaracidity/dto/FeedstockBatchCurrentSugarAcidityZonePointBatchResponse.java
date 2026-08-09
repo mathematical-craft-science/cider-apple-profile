@@ -13,7 +13,7 @@ public record FeedstockBatchCurrentSugarAcidityZonePointBatchResponse(
         arraySchema = @Schema(
             description = """
                 Current feedstock batch graph points. Unplottable batches are included with
-                plottable=false and missingAxes.
+                plottable=false and missingCharacteristics.
                 """,
             requiredMode = Schema.RequiredMode.REQUIRED
         ),

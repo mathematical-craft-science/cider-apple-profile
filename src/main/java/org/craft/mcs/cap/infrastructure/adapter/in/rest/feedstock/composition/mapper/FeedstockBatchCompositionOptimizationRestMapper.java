@@ -36,9 +36,7 @@ import static org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.common.
     .toBatchCriteria;
 import static org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.common.mapper.FeedstockCriteriaRestMapper
     .toSeason;
-import static org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.mapper.ProfileGraphCriteriaRestMapper
-    .toCapabilityCriteria;
-import static org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.mapper.ProfileGraphCriteriaRestMapper
+import static org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.mapper.JolicoeurSugarAcidityGraphCriteriaRestMapper
     .toZoneCriteria;
 
 
@@ -82,10 +80,9 @@ public final class FeedstockBatchCompositionOptimizationRestMapper {
         WorkspaceId.of(request.workspaceId()),
         new FeedstockAnalysisCandidateFilters(
             toBatchCriteria(request.batchIds()),
-            toSeason(request.season()),
-            toZoneCriteria(request.zone()),
-            toCapabilityCriteria(request.capability(), request.capable())
+            toSeason(request.season())
         ),
+        toZoneCriteria(request.zone()),
         FeedstockProfileTargetRestMapper.toSelection(target),
         FeedstockProfileTargetRestMapper.toTanninTarget(request.tanninTarget()),
         new ProfileTargetScoringConfiguration(

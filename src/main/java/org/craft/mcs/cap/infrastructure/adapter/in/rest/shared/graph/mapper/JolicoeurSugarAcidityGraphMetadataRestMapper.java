@@ -10,7 +10,7 @@ import org.craft.mcs.cap.core.profileanalysis.graph.zone.domain.JolicoeurSugarAc
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.dto.EllipseSugarAcidityGraphZoneResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.dto.RectangleSugarAcidityGraphZoneResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.dto.SugarAcidityGraphAxisResponse;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.dto.SugarAcidityGraphMetadataResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.dto.JolicoeurSugarAcidityGraphMetadataResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.dto.SugarAcidityGraphRangeResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.dto.SugarAcidityGraphZoneResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.measurement.CanonicalUnitLabels;
@@ -24,17 +24,18 @@ import org.jspecify.annotations.NonNull;
 import static java.util.Objects.requireNonNull;
 
 
-public final class SugarAcidityGraphMetadataRestMapper {
+/** Maps configured Jolicoeur graph geometry to its transport metadata contract. */
+public final class JolicoeurSugarAcidityGraphMetadataRestMapper {
 
-  private SugarAcidityGraphMetadataRestMapper() {
+  private JolicoeurSugarAcidityGraphMetadataRestMapper() {
   }
 
-  public static @NonNull SugarAcidityGraphMetadataResponse toResponse(
+  public static @NonNull JolicoeurSugarAcidityGraphMetadataResponse toResponse(
       @NonNull JolicoeurSugarAcidityZoneGeometryProfile geometryProfile
   ) {
     requireNonNull(geometryProfile, "sugar-acidity zone geometry profile cannot be null");
 
-    return new SugarAcidityGraphMetadataResponse(
+    return new JolicoeurSugarAcidityGraphMetadataResponse(
         axisResponse(
             geometryProfile.specificGravityScale(),
             CanonicalUnitLabels.SPECIFIC_GRAVITY
@@ -44,7 +45,7 @@ public final class SugarAcidityGraphMetadataRestMapper {
             CanonicalUnitLabels.TITRATABLE_ACIDITY
         ),
         geometryProfile.zones().stream()
-            .map(SugarAcidityGraphMetadataRestMapper::zoneResponse)
+            .map(JolicoeurSugarAcidityGraphMetadataRestMapper::zoneResponse)
             .toList()
     );
   }

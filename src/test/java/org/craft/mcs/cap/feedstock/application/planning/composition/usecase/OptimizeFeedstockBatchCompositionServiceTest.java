@@ -20,7 +20,6 @@ import java.util.List;
 import org.craft.mcs.cap.core.feedstock.application.analysis.common.model.FeedstockAnalysisCandidateFilters;
 import org.craft.mcs.cap.core.feedstock.application.analysis.common.port.out.CurrentFeedstockBatchAnalysisCandidateQuery;
 import org.craft.mcs.cap.core.feedstock.application.analysis.common.port.out.FeedstockCurrentProfileAnalysisCandidateRepository;
-import org.craft.mcs.cap.core.feedstock.application.analysis.common.service.FeedstockGraphCandidateMatcher;
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.PredefinedFeedstockProfileTargetSelection;
 import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchSummaryQueryRepository;
@@ -42,6 +41,7 @@ import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.Co
 import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.strategy.CompositionOptimizationAlgorithm;
 import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.strategy.DiscretizedCompositionOptimizationSettings;
 import org.craft.mcs.cap.core.profileanalysis.graph.zone.domain.BuiltInJolicoeurSugarAcidityZoneProfiles;
+import org.craft.mcs.cap.core.profileanalysis.graph.application.model.JolicoeurSugarAcidityZoneCriteria;
 import org.craft.mcs.cap.core.profileanalysis.graph.zone.domain.JolicoeurSugarAcidityZone;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetObjectiveWeights;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetScoringConfiguration;
@@ -78,24 +78,32 @@ class OptimizeFeedstockBatchCompositionServiceTest {
     final var usableBatch = batch(workspaceId, "20");
     final var secondUsableBatch = batch(workspaceId, "30");
     final var incompleteBatch = batch(workspaceId, "10");
+    final var wrongZoneBatch = batch(workspaceId, "15");
     final var usableMeasurement = sample(usableBatch.batchId(), profile("1.065", "5.5"));
     final var secondUsableMeasurement = sample(secondUsableBatch.batchId(), profile("1.070", "6.0"));
     final var incompleteMeasurement = sample(incompleteBatch.batchId(), acidityOnlyProfile("6.0"));
+    final var wrongZoneMeasurement = sample(wrongZoneBatch.batchId(), profile("1.040", "8.0"));
 
     when(batchRepository.findAllByWorkspaceId(workspaceId))
         .thenReturn(List.of(
             toSummary(usableBatch),
             toSummary(secondUsableBatch),
-            toSummary(incompleteBatch)
+            toSummary(incompleteBatch),
+            toSummary(wrongZoneBatch)
         ));
     when(measurementRepository.findCandidates(any()))
         .thenReturn(List.of(
             currentProfile(incompleteMeasurement),
+            currentProfile(wrongZoneMeasurement),
             currentProfile(usableMeasurement),
             currentProfile(secondUsableMeasurement)
         ));
 
-    final var result = service.optimize(command(workspaceId, null));
+    final var result = service.optimize(command(
+        workspaceId,
+        null,
+        JolicoeurSugarAcidityZoneCriteria.of(JolicoeurSugarAcidityZone.PERFECT_APPLES)
+    ));
 
     assertThat(result.sourceCount()).isEqualTo(2);
 
@@ -201,7 +209,6 @@ class OptimizeFeedstockBatchCompositionServiceTest {
         measurementRepository,
         batchRepository,
         graphEvaluator(geometryProfile),
-        new FeedstockGraphCandidateMatcher(),
         new ZoneGeometrySugarAcidityTargetResolver(geometryProfile),
         optimizer,
         mock(FeedstockAccessControl.class)
@@ -235,9 +242,18 @@ class OptimizeFeedstockBatchCompositionServiceTest {
       WorkspaceId workspaceId,
       TanninTargetRange tanninTarget
   ) {
+    return command(workspaceId, tanninTarget, null);
+  }
+
+  private static OptimizeFeedstockBatchCompositionCommand command(
+      WorkspaceId workspaceId,
+      TanninTargetRange tanninTarget,
+      JolicoeurSugarAcidityZoneCriteria sourceZoneCriteria
+  ) {
     return new OptimizeFeedstockBatchCompositionCommand(
         workspaceId,
-        new FeedstockAnalysisCandidateFilters(null, null, null, null),
+        new FeedstockAnalysisCandidateFilters(null, null),
+        sourceZoneCriteria,
         new PredefinedFeedstockProfileTargetSelection(JolicoeurSugarAcidityZone.PERFECT_APPLES),
         tanninTarget,
         new ProfileTargetScoringConfiguration(

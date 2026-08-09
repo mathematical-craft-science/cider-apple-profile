@@ -12,11 +12,11 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-class SugarAcidityGraphMetadataRestMapperTest {
+class JolicoeurSugarAcidityGraphMetadataRestMapperTest {
 
   @Test
   void mapsAxisBoundariesAndRectangularZoneGeometry() {
-    final var response = SugarAcidityGraphMetadataRestMapper.toResponse(
+    final var response = JolicoeurSugarAcidityGraphMetadataRestMapper.toResponse(
         BuiltInJolicoeurSugarAcidityZoneProfiles.rectangularZoneGeometryProfile()
     );
 
@@ -35,7 +35,7 @@ class SugarAcidityGraphMetadataRestMapperTest {
 
   @Test
   void mapsEllipticalZoneGeometryWithoutASecondDomainModel() {
-    final var response = SugarAcidityGraphMetadataRestMapper.toResponse(
+    final var response = JolicoeurSugarAcidityGraphMetadataRestMapper.toResponse(
         BuiltInJolicoeurSugarAcidityZoneProfiles.ellipticalZoneGeometryProfile()
     );
 

@@ -11,7 +11,6 @@ import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatc
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.query.FeedstockCurrentProfileQueryService;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPredictor;
-import org.craft.mcs.cap.core.profileanalysis.capability.domain.ProfileAnalysisInputAvailability;
 import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
@@ -49,12 +48,7 @@ public final class PredictFeedstockBatchCurrentPotentialAbvService
     final var specificGravity = currentMeasurement.specificGravity();
     if (specificGravity == null) {
       throw new FeedstockPotentialAbvUnavailableException(
-          batchId,
-          new ProfileAnalysisInputAvailability(
-              false,
-              currentMeasurement.titratableAcidity() != null,
-              currentMeasurement.tannin() != null
-          )
+          batchId
       );
     }
 

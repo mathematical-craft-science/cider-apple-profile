@@ -5,7 +5,6 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.appleprofile.application.analysis.common.service.AppleVarietyGraphCandidateMatcher;
 import org.craft.mcs.cap.core.appleprofile.application.catalog.model.AppleVarietyCatalogPagePosition;
 import org.craft.mcs.cap.core.appleprofile.application.profiletarget.port.in.AppleVarietyProfileTargetCandidate;
 import org.craft.mcs.cap.core.appleprofile.application.profiletarget.port.in.AppleVarietyProfileTargetCandidateQuery;
@@ -48,7 +47,6 @@ public final class QueryAppleVarietyProfileTargetCandidatesService
 
   private final @NonNull AppleVarietyAnalysisCandidateQuery candidateQuery;
   private final @NonNull EvaluateJolicoeurSugarAcidityGraphUseCase graphEvaluator;
-  private final @NonNull AppleVarietyGraphCandidateMatcher graphCandidateMatcher;
   private final @NonNull ScoreProfileTargetDistanceCandidatesUseCase scoreProfileTargetDistanceCandidatesUseCase;
   private final @NonNull ProfileTargetAnalysisScenarioResolver scoringConfigurationResolver;
   private final @NonNull CompositionContributionRoleAssessor contributionRoleAssessor;
@@ -125,7 +123,8 @@ public final class QueryAppleVarietyProfileTargetCandidatesService
     if (!graphEvaluation.plottable()) {
       return Optional.empty();
     }
-    if (!graphCandidateMatcher.matches(referenceProfile, graphEvaluation, query.filters())) {
+    final var sourceZoneCriteria = query.sourceZoneCriteria();
+    if (sourceZoneCriteria != null && !sourceZoneCriteria.matches(requireNonNull(graphEvaluation.zoneAssessment()))) {
       return Optional.empty();
     }
     final var specificGravity = referenceProfile.specificGravity();

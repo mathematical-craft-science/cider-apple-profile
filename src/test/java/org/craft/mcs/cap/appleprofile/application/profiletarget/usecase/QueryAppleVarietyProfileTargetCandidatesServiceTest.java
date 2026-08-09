@@ -3,7 +3,6 @@ package org.craft.mcs.cap.appleprofile.application.profiletarget.usecase;
 import java.util.List;
 import java.util.Set;
 import org.craft.mcs.cap.core.appleprofile.application.analysis.common.model.AppleVarietyAnalysisFilters;
-import org.craft.mcs.cap.core.appleprofile.application.analysis.common.service.AppleVarietyGraphCandidateMatcher;
 import org.craft.mcs.cap.core.appleprofile.application.catalog.port.out.AppleVarietyAnalysisCandidateCriteria;
 import org.craft.mcs.cap.core.appleprofile.application.catalog.port.out.AppleVarietyAnalysisCandidateQuery;
 import org.craft.mcs.cap.core.appleprofile.application.catalog.port.out.AppleVarietyAnalysisCandidateView;
@@ -114,14 +113,14 @@ class QueryAppleVarietyProfileTargetCandidatesServiceTest {
     final var service = new QueryAppleVarietyProfileTargetCandidatesService(
         candidateQuery,
         graphEvaluator,
-        new AppleVarietyGraphCandidateMatcher(),
         scoring,
         scenarioResolver,
         contributionRoleAssessor
     );
 
     final var result = service.query(new AppleVarietyProfileTargetCandidateQuery(
-        new AppleVarietyAnalysisFilters(null, null, null),
+        new AppleVarietyAnalysisFilters(null),
+        null,
         ProfileTargetAnalysisScenario.BLENDING_PLANNING,
         mock(ProfileTargetObjective.class),
         ProfileTargetObjectiveWeights.balanced(),

@@ -25,14 +25,12 @@ import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVariety;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyId;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyName;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyReferenceProfile;
-import org.craft.mcs.cap.core.appleprofile.application.analysis.common.service.AppleVarietyGraphCandidateMatcher;
 import org.craft.mcs.cap.core.profileanalysis.classification.domain.profile.northamerican.NorthAmericanAcidityLevel;
 import org.craft.mcs.cap.core.profileanalysis.classification.domain.profile.northamerican.NorthAmericanSugarLevel;
 import org.craft.mcs.cap.core.profileanalysis.classification.domain.profile.northamerican.NorthAmericanTanninLevel;
+import org.craft.mcs.cap.core.profileanalysis.graph.application.model.JolicoeurSugarAcidityGraphCriteria;
 import org.craft.mcs.cap.core.profileanalysis.graph.application.model.JolicoeurSugarAcidityZoneCriteria;
 import org.craft.mcs.cap.core.profileanalysis.graph.zone.domain.JolicoeurSugarAcidityZone;
-import org.craft.mcs.cap.core.profileanalysis.capability.application.model.ProfileAnalysisCapabilityCriteria;
-import org.craft.mcs.cap.core.profileanalysis.capability.domain.ProfileAnalysisCapability;
 import org.craft.mcs.cap.shared.application.query.TextSearchCriteria;
 import org.craft.mcs.cap.shared.application.query.pagination.CursorPage;
 import org.craft.mcs.cap.shared.application.query.pagination.CursorPageRequest;
@@ -47,7 +45,7 @@ import org.junit.jupiter.api.Test;
 class QueryAppleVarietySugarAcidityZonePointsServiceTest {
 
   @Test
-  void filtersByTextCapabilityZoneAndLimitInStableOrder() {
+  void filtersByTextGraphZoneAndLimitInStableOrder() {
     final var repository = mock(AppleVarietyAnalysisCandidateQuery.class);
     final var service = service(repository);
     final var beta = variety("Kingston Beta", profile("1.064", "5.8", "1800"));
@@ -61,10 +59,10 @@ class QueryAppleVarietySugarAcidityZonePointsServiceTest {
     ));
 
     final var result = service.query(new AppleVarietySugarAcidityZonePointQuery(
-        new AppleVarietyAnalysisFilters(
-            new TextSearchCriteria("kingston"),
+        new AppleVarietyAnalysisFilters(new TextSearchCriteria("kingston")),
+        new JolicoeurSugarAcidityGraphCriteria(
             JolicoeurSugarAcidityZoneCriteria.of(JolicoeurSugarAcidityZone.PERFECT_APPLES),
-            ProfileAnalysisCapabilityCriteria.capable(ProfileAnalysisCapability.NORTH_AMERICAN_PROFILE)
+            true
         ),
         CursorPageRequest.firstPage(1)
     ));
@@ -100,11 +98,13 @@ class QueryAppleVarietySugarAcidityZonePointsServiceTest {
         .thenReturn(List.of(candidate(third)));
 
     final var firstPage = service.query(new AppleVarietySugarAcidityZonePointQuery(
-        new AppleVarietyAnalysisFilters(null, null, null),
+        new AppleVarietyAnalysisFilters(null),
+        null,
         CursorPageRequest.firstPage(2)
     ));
     final var secondPage = service.query(new AppleVarietySugarAcidityZonePointQuery(
-        new AppleVarietyAnalysisFilters(null, null, null),
+        new AppleVarietyAnalysisFilters(null),
+        null,
         new CursorPageRequest<>(firstPage.nextPosition(), 2)
     ));
 
@@ -121,7 +121,7 @@ class QueryAppleVarietySugarAcidityZonePointsServiceTest {
   }
 
   @Test
-  void canReturnVarietiesNotCapableForSugarAcidityPlot() {
+  void canReturnUnplottableVarieties() {
     final var repository = mock(AppleVarietyAnalysisCandidateQuery.class);
     final var service = service(repository);
     final var partial = variety("Partial", partialProfile());
@@ -129,13 +129,8 @@ class QueryAppleVarietySugarAcidityZonePointsServiceTest {
     when(repository.findCandidates(any())).thenReturn(List.of(candidate(partial)));
 
     final var result = service.query(new AppleVarietySugarAcidityZonePointQuery(
-        new AppleVarietyAnalysisFilters(
-            null,
-            null,
-            ProfileAnalysisCapabilityCriteria.notCapable(
-                ProfileAnalysisCapability.SUGAR_ACIDITY_GRAPH
-            )
-        ),
+        new AppleVarietyAnalysisFilters(null),
+        new JolicoeurSugarAcidityGraphCriteria(null, false),
         CursorPageRequest.firstPage()
     ));
 
@@ -161,7 +156,6 @@ class QueryAppleVarietySugarAcidityZonePointsServiceTest {
   ) {
     return new QueryAppleVarietySugarAcidityZonePointsService(
         repository,
-        new AppleVarietyGraphCandidateMatcher(),
         new AppleVarietyGraphAnalysisProjector(
             graphEvaluator(),
             northAmericanProfileCalculator(),

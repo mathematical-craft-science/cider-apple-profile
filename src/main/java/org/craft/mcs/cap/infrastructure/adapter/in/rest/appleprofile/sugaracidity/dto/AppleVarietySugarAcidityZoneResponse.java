@@ -1,9 +1,11 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.sugaracidity.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import java.util.List;
 import java.util.UUID;
+import org.craft.mcs.cap.core.profileanalysis.graph.domain.GraphMissingCharacteristic;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.abv.dto.PotentialAbvPredictionResponse;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.capability.dto.ProfileAnalysisCapabilityAssessmentResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.dto.SugarAcidityGraphAssessmentResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profilecharacteristic.dto.ProfileCharacteristicValueResponse;
 import org.jspecify.annotations.NonNull;
@@ -56,11 +58,13 @@ public record AppleVarietySugarAcidityZoneResponse(
         requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )
     @Nullable PotentialAbvPredictionResponse potentialAbv,
-    @Schema(
-        description = "Capability assessment explaining missing measurements.",
-        nullable = true,
-        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    @ArraySchema(
+        arraySchema = @Schema(
+            description = "SG or TA inputs missing from an unplottable graph projection.",
+            requiredMode = Schema.RequiredMode.REQUIRED
+        ),
+        schema = @Schema(implementation = GraphMissingCharacteristic.class)
     )
-    @Nullable ProfileAnalysisCapabilityAssessmentResponse capabilityAssessment
+    @NonNull List<@NonNull GraphMissingCharacteristic> missingCharacteristics
 ) {
 }

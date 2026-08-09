@@ -18,7 +18,6 @@ import java.util.List;
 import org.craft.mcs.cap.core.feedstock.application.analysis.common.model.FeedstockAnalysisCandidateFilters;
 import org.craft.mcs.cap.core.feedstock.application.analysis.common.port.out.CurrentFeedstockBatchAnalysisCandidateQuery;
 import org.craft.mcs.cap.core.feedstock.application.analysis.common.port.out.FeedstockCurrentProfileAnalysisCandidateRepository;
-import org.craft.mcs.cap.core.feedstock.application.analysis.common.service.FeedstockGraphCandidateMatcher;
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.FeedstockBatchProfileTargetQuery;
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.FeedstockBatchProfileTargetScore;
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.PredefinedFeedstockProfileTargetSelection;
@@ -33,6 +32,7 @@ import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.core.profileanalysis.composition.contribution.domain.CompositionContributionRole;
 import org.craft.mcs.cap.core.profileanalysis.composition.contribution.domain.TargetAwareCompositionContributionRoleAssessor;
 import org.craft.mcs.cap.core.profileanalysis.graph.zone.domain.BuiltInJolicoeurSugarAcidityZoneProfiles;
+import org.craft.mcs.cap.core.profileanalysis.graph.application.model.JolicoeurSugarAcidityZoneCriteria;
 import org.craft.mcs.cap.core.profileanalysis.graph.zone.domain.JolicoeurSugarAcidityZone;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.model.ProfileTargetAnalysisScenario;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.usecase.BuiltInProfileTargetAnalysisScenarioResolver;
@@ -67,7 +67,8 @@ class ScoreFeedstockBatchProfileTargetServiceTest {
 
     final var result = service.query(new FeedstockBatchProfileTargetQuery(
         WorkspaceId.of(newUuid()),
-        new FeedstockAnalysisCandidateFilters(null, null, null, null),
+        new FeedstockAnalysisCandidateFilters(null, null),
+        null,
         ProfileTargetAnalysisScenario.BLENDING_PLANNING,
         new PredefinedFeedstockProfileTargetSelection(JolicoeurSugarAcidityZone.LOW_SUGAR_APPLES),
         null,
@@ -104,7 +105,8 @@ class ScoreFeedstockBatchProfileTargetServiceTest {
 
     final var result = service.score(new FeedstockBatchProfileTargetQuery(
         workspaceId,
-        new FeedstockAnalysisCandidateFilters(null, null, null, null),
+        new FeedstockAnalysisCandidateFilters(null, null),
+        null,
         ProfileTargetAnalysisScenario.BLENDING_PLANNING,
         new PredefinedFeedstockProfileTargetSelection(JolicoeurSugarAcidityZone.PERFECT_APPLES),
         null,
@@ -127,6 +129,31 @@ class ScoreFeedstockBatchProfileTargetServiceTest {
   }
 
   @Test
+  void filtersCandidatesBySourceZoneBeforeTargetScoring() {
+    final var repository = mock(FeedstockCurrentProfileAnalysisCandidateRepository.class);
+    final var service = service(repository);
+    final var perfect = sample("Perfect source", profile("1.070", "6.0"));
+    final var lowSugar = sample("Low-sugar source", profile("1.040", "7.6"));
+    when(repository.findCandidates(any()))
+        .thenReturn(List.of(currentProfile(lowSugar), currentProfile(perfect)));
+
+    final var result = service.score(new FeedstockBatchProfileTargetQuery(
+        WorkspaceId.of(newUuid()),
+        new FeedstockAnalysisCandidateFilters(null, null),
+        JolicoeurSugarAcidityZoneCriteria.of(JolicoeurSugarAcidityZone.PERFECT_APPLES),
+        ProfileTargetAnalysisScenario.BLENDING_PLANNING,
+        new PredefinedFeedstockProfileTargetSelection(JolicoeurSugarAcidityZone.PERFECT_APPLES),
+        null,
+        ProfileTargetObjectiveWeights.balanced(),
+        50
+    ));
+
+    assertThat(result.scores())
+        .singleElement()
+        .returns(perfect.batchId(), FeedstockBatchProfileTargetScore::batchId);
+  }
+
+  @Test
   void continuesReadingCandidatesAfterAFullChunkIsRejectedByApplicationFilters() {
     final var repository = mock(FeedstockCurrentProfileAnalysisCandidateRepository.class);
     final var service = service(repository);
@@ -142,7 +169,8 @@ class ScoreFeedstockBatchProfileTargetServiceTest {
 
     final var result = service.score(new FeedstockBatchProfileTargetQuery(
         WorkspaceId.of(newUuid()),
-        new FeedstockAnalysisCandidateFilters(null, null, null, null),
+        new FeedstockAnalysisCandidateFilters(null, null),
+        null,
         ProfileTargetAnalysisScenario.BLENDING_PLANNING,
         new PredefinedFeedstockProfileTargetSelection(JolicoeurSugarAcidityZone.PERFECT_APPLES),
         null,
@@ -173,8 +201,7 @@ class ScoreFeedstockBatchProfileTargetServiceTest {
     return new ScoreFeedstockBatchProfileTargetService(
         new FeedstockBatchProfileTargetScorableCandidateProvider(
             repository,
-            graphEvaluator(geometryProfile),
-            new FeedstockGraphCandidateMatcher()
+            graphEvaluator(geometryProfile)
         ),
         new FeedstockProfileTargetObjectiveResolver(
             new ZoneGeometrySugarAcidityTargetResolver(geometryProfile)

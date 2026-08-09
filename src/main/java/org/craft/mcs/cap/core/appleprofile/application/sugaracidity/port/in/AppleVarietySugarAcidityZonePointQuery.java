@@ -2,14 +2,17 @@ package org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.in;
 
 import org.craft.mcs.cap.core.appleprofile.application.analysis.common.model.AppleVarietyAnalysisFilters;
 import org.craft.mcs.cap.core.appleprofile.application.catalog.model.AppleVarietyCatalogPagePosition;
+import org.craft.mcs.cap.core.profileanalysis.graph.application.model.JolicoeurSugarAcidityGraphCriteria;
 import org.craft.mcs.cap.shared.application.query.pagination.CursorPageRequest;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import static java.util.Objects.requireNonNull;
 
 
 public record AppleVarietySugarAcidityZonePointQuery(
     @NonNull AppleVarietyAnalysisFilters filters,
+    @Nullable JolicoeurSugarAcidityGraphCriteria graphCriteria,
     @NonNull CursorPageRequest<@NonNull AppleVarietyCatalogPagePosition> page
 ) {
 
@@ -20,7 +23,8 @@ public record AppleVarietySugarAcidityZonePointQuery(
 
   public static @NonNull AppleVarietySugarAcidityZonePointQuery firstPage() {
     return new AppleVarietySugarAcidityZonePointQuery(
-        new AppleVarietyAnalysisFilters(null, null, null),
+        new AppleVarietyAnalysisFilters(null),
+        null,
         CursorPageRequest.firstPage()
     );
   }

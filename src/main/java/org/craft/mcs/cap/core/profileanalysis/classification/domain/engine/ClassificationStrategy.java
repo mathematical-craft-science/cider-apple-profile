@@ -11,7 +11,7 @@ import org.jspecify.annotations.NonNull;
  * <p>Implementations are small adapters from a named classification tradition to a
  * {@link ClassificationProfile}: they provide the public code and the ordered rules used by
  * {@link CiderAppleClassifier}. They do not load apple varieties, decide API behavior or
- * handle incomplete profiles; those concerns belong to application services and capability checks.
+ * handle incomplete profiles; those concerns belong to scenario-specific application input checks.
  *
  * @param <C> enum type of classes produced by the profile
  */

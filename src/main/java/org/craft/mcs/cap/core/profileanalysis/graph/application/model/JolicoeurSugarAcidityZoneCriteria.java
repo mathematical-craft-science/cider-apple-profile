@@ -31,8 +31,10 @@ public record JolicoeurSugarAcidityZoneCriteria(
   }
 
   public boolean matches(@NonNull JolicoeurSugarAcidityZoneAssessment assessment) {
-    return zones.contains(
-        requireNonNull(assessment, "Jolicoeur sugar-acidity zone assessment cannot be null").zone()
-    );
+    final var zone = requireNonNull(
+        assessment,
+        "Jolicoeur sugar-acidity zone assessment cannot be null"
+    ).zone();
+    return zone != null && zones.contains(zone);
   }
 }

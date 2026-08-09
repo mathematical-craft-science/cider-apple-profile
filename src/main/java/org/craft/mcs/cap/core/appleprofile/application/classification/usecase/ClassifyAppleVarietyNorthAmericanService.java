@@ -1,5 +1,6 @@
 package org.craft.mcs.cap.core.appleprofile.application.classification.usecase;
 
+import java.util.EnumSet;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.appleprofile.application.AppleVarietyNotFoundException;
 import org.craft.mcs.cap.core.appleprofile.application.classification.AppleVarietyNorthAmericanProfileUnavailableException;
@@ -7,9 +8,10 @@ import org.craft.mcs.cap.core.appleprofile.application.classification.port.in.Ap
 import org.craft.mcs.cap.core.appleprofile.application.classification.port.in.ClassifyAppleVarietyNorthAmericanUseCase;
 import org.craft.mcs.cap.core.appleprofile.application.catalog.port.out.AppleVarietyRepository;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyId;
+import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyReferenceProfile;
 import org.craft.mcs.cap.core.profileanalysis.classification.domain.engine.CiderAppleClassificationInput;
 import org.craft.mcs.cap.core.profileanalysis.classification.domain.profile.northamerican.NorthAmericanProfileCalculator;
-import org.craft.mcs.cap.core.profileanalysis.capability.domain.ProfileAnalysisInputAvailability;
+import org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 
@@ -46,11 +48,7 @@ public final class ClassifyAppleVarietyNorthAmericanService
         || referenceProfile.tannin() == null) {
       throw new AppleVarietyNorthAmericanProfileUnavailableException(
           varietyId,
-          new ProfileAnalysisInputAvailability(
-              referenceProfile.specificGravity() != null,
-              referenceProfile.titratableAcidity() != null,
-              referenceProfile.tannin() != null
-          )
+          presentCharacteristics(referenceProfile)
       );
     }
 
@@ -67,5 +65,21 @@ public final class ClassifyAppleVarietyNorthAmericanService
         variety.name(),
         profile
     );
+  }
+
+  private static @NonNull EnumSet<MeasurementCharacteristic> presentCharacteristics(
+      @NonNull AppleVarietyReferenceProfile referenceProfile
+  ) {
+    final var present = EnumSet.noneOf(MeasurementCharacteristic.class);
+    if (referenceProfile.specificGravity() != null) {
+      present.add(MeasurementCharacteristic.SPECIFIC_GRAVITY);
+    }
+    if (referenceProfile.titratableAcidity() != null) {
+      present.add(MeasurementCharacteristic.TITRATABLE_ACIDITY);
+    }
+    if (referenceProfile.tannin() != null) {
+      present.add(MeasurementCharacteristic.TANNIN);
+    }
+    return present;
   }
 }
