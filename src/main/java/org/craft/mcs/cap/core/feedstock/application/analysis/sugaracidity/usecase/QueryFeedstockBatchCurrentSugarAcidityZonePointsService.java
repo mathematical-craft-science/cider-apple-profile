@@ -6,7 +6,6 @@ import java.util.Set;
 import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.feedstock.application.analysis.common.model.FeedstockAnalysisCandidatePagePosition;
-import org.craft.mcs.cap.core.feedstock.application.analysis.common.service.FeedstockGraphCandidateMatcher;
 import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
 import org.craft.mcs.cap.core.profileanalysis.classification.domain.profile.northamerican.NorthAmericanProfileCalculator;
 import org.craft.mcs.cap.core.profileanalysis.graph.application.model.JolicoeurSugarAcidityGraphEvaluation;
@@ -34,7 +33,7 @@ import static java.util.stream.Collectors.toMap;
 /**
  * Read-side use case for current feedstock batch points on the sugar-acidity graph.
  *
- * <p>The service projects each batch's current material state, then evaluates capability and zone
+ * <p>The service projects each batch's current material state, then evaluates graph
  * filters in the application layer and returns cursor pages for feedstock graph clients.
  */
 @Component
@@ -47,7 +46,6 @@ public final class QueryFeedstockBatchCurrentSugarAcidityZonePointsService
   private final @NonNull FeedstockCurrentProfileAnalysisCandidateRepository candidateRepository;
   private final @NonNull EvaluateJolicoeurSugarAcidityGraphUseCase graphEvaluator;
   private final @NonNull NorthAmericanProfileCalculator northAmericanProfileCalculator;
-  private final @NonNull FeedstockGraphCandidateMatcher graphCandidateMatcher;
 
   @Override
   public @NonNull CursorPage<
@@ -114,7 +112,8 @@ public final class QueryFeedstockBatchCurrentSugarAcidityZonePointsService
         currentProfile.specificGravity(),
         currentProfile.titratableAcidity()
     );
-    if (!graphCandidateMatcher.matches(currentProfile, graphEvaluation, query.filters())) {
+    final var graphCriteria = query.graphCriteria();
+    if (graphCriteria != null && !graphCriteria.matches(graphEvaluation)) {
       return Optional.empty();
     }
 

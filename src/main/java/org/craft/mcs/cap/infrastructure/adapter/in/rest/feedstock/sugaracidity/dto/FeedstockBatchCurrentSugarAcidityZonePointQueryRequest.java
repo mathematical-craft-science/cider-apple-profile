@@ -2,7 +2,6 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.sugaracidity.
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.UUID;
-import org.craft.mcs.cap.core.profileanalysis.capability.domain.ProfileAnalysisCapability;
 import org.craft.mcs.cap.core.profileanalysis.graph.zone.domain.JolicoeurSugarAcidityZone;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.common.dto.FeedstockSeasonRequest;
 import org.jspecify.annotations.NonNull;
@@ -41,20 +40,12 @@ public record FeedstockBatchCurrentSugarAcidityZonePointQueryRequest(
     )
     @Nullable JolicoeurSugarAcidityZone zone,
     @Schema(
-        description = "Optional profile-analysis capability filter.",
-        implementation = ProfileAnalysisCapability.class,
-        example = "SUGAR_ACIDITY_GRAPH",
-        nullable = true,
-        requiredMode = Schema.RequiredMode.NOT_REQUIRED
-    )
-    @Nullable ProfileAnalysisCapability capability,
-    @Schema(
-        description = "Whether the optional capability must be met.",
+        description = "Optional filter by whether current SG and TA can be plotted.",
         example = "true",
         nullable = true,
         requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )
-    @Nullable Boolean capable,
+    @Nullable Boolean plottable,
     @Schema(
         description = "Opaque cursor returned by the previous page.",
         nullable = true,

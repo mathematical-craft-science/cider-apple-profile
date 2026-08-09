@@ -1,6 +1,7 @@
 package org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in;
 
 import org.craft.mcs.cap.core.feedstock.application.analysis.common.model.FeedstockAnalysisCandidateFilters;
+import org.craft.mcs.cap.core.profileanalysis.graph.application.model.JolicoeurSugarAcidityZoneCriteria;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.model.ProfileTargetAnalysisScenario;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetObjectiveWeights;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.TanninTargetRange;
@@ -17,6 +18,7 @@ import static java.util.Objects.requireNonNull;
 public record FeedstockBatchProfileTargetQuery(
     @NonNull WorkspaceId workspaceId,
     @NonNull FeedstockAnalysisCandidateFilters filters,
+    @Nullable JolicoeurSugarAcidityZoneCriteria sourceZoneCriteria,
     @NonNull ProfileTargetAnalysisScenario analysisScenario,
     @NonNull FeedstockProfileTargetSelection target,
     @Nullable TanninTargetRange tanninTarget,

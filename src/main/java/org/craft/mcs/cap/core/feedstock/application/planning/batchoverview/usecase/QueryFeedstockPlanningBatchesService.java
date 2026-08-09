@@ -106,7 +106,8 @@ public final class QueryFeedstockPlanningBatchesService implements QueryFeedstoc
 
     final var candidates = queryTargetCandidatesUseCase.query(new FeedstockBatchProfileTargetQuery(
         query.workspaceId(),
-        new FeedstockAnalysisCandidateFilters(null, query.season(), null, null),
+        new FeedstockAnalysisCandidateFilters(null, query.season()),
+        null,
         query.analysisScenario(),
         target,
         query.tanninTarget(),

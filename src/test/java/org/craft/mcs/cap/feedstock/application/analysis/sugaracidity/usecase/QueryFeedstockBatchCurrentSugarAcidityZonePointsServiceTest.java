@@ -21,7 +21,6 @@ import java.util.List;
 import org.craft.mcs.cap.core.feedstock.application.analysis.common.model.FeedstockAnalysisCandidateFilters;
 import org.craft.mcs.cap.core.feedstock.application.analysis.common.port.out.CurrentFeedstockBatchAnalysisCandidateQuery;
 import org.craft.mcs.cap.core.feedstock.application.analysis.common.port.out.FeedstockCurrentProfileAnalysisCandidateRepository;
-import org.craft.mcs.cap.core.feedstock.application.analysis.common.service.FeedstockGraphCandidateMatcher;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockBatchCurrentSugarAcidityZonePointQuery;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockBatchCurrentSugarAcidityZoneResult;
 import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.usecase.QueryFeedstockBatchCurrentSugarAcidityZonePointsService;
@@ -65,7 +64,8 @@ class QueryFeedstockBatchCurrentSugarAcidityZonePointsServiceTest {
 
     final var result = service.query(new FeedstockBatchCurrentSugarAcidityZonePointQuery(
         workspaceId,
-        new FeedstockAnalysisCandidateFilters(null, null, null, null),
+        new FeedstockAnalysisCandidateFilters(null, null),
+        null,
         CursorPageRequest.firstPage(QueryLimits.MAXIMUM)
     ));
 
@@ -97,8 +97,7 @@ class QueryFeedstockBatchCurrentSugarAcidityZonePointsServiceTest {
         mock(FeedstockAccessControl.class),
         repository,
         graphEvaluator(),
-        northAmericanProfileCalculator(),
-        new FeedstockGraphCandidateMatcher()
+        northAmericanProfileCalculator()
     );
   }
 

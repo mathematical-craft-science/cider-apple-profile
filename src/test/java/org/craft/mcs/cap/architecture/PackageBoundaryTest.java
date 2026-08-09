@@ -100,7 +100,7 @@ class PackageBoundaryTest {
   @Test
   void profileAnalysisSupportContextsDoNotDependOnClassificationContext() throws IOException {
     assertNoImportsUnder(
-        "org/craft/mcs/cap/core/profileanalysis/capability",
+        "org/craft/mcs/cap/core/profileanalysis/input",
         List.of("org.craft.mcs.cap.core.profileanalysis.classification.")
     );
     assertNoImportsUnder(
@@ -120,7 +120,7 @@ class PackageBoundaryTest {
   @Test
   void lowerLevelProfileAnalysisContextsDoNotDependOnCompositionContexts() throws IOException {
     assertNoImportsUnder(
-        "org/craft/mcs/cap/core/profileanalysis/capability",
+        "org/craft/mcs/cap/core/profileanalysis/input",
         List.of(
             "org.craft.mcs.cap.core.profileanalysis.graph.",
             "org.craft.mcs.cap.core.profileanalysis.profiletarget.",
@@ -137,6 +137,23 @@ class PackageBoundaryTest {
     assertNoImportsUnder(
         "org/craft/mcs/cap/core/profileanalysis/profiletarget",
         List.of("org.craft.mcs.cap.core.profileanalysis.composition.")
+    );
+  }
+
+  @Test
+  void sourceCandidateFiltersDoNotDependOnDerivedAnalysisScenarios() throws IOException {
+    final var derivedAnalysisPackages = List.of(
+        "org.craft.mcs.cap.core.profileanalysis.graph.",
+        "org.craft.mcs.cap.core.profileanalysis.profiletarget.",
+        "org.craft.mcs.cap.core.profileanalysis.composition."
+    );
+    assertNoImportsUnder(
+        "org/craft/mcs/cap/core/appleprofile/application/analysis/common",
+        derivedAnalysisPackages
+    );
+    assertNoImportsUnder(
+        "org/craft/mcs/cap/core/feedstock/application/analysis/common",
+        derivedAnalysisPackages
     );
   }
 

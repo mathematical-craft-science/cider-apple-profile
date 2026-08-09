@@ -6,8 +6,9 @@ import java.util.List;
 import org.jspecify.annotations.NonNull;
 
 
+/** Transport metadata required to plot the configured Jolicoeur SG/TA graph and its zones. */
 @Schema(description = "Jolicoeur sugar-acidity graph metadata.")
-public record SugarAcidityGraphMetadataResponse(
+public record JolicoeurSugarAcidityGraphMetadataResponse(
     @Schema(
         description = "Specific Gravity (SG) axis metadata.",
         requiredMode = Schema.RequiredMode.REQUIRED

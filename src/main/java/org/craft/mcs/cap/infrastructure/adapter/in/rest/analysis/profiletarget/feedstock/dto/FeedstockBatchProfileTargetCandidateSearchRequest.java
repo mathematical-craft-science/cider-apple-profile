@@ -5,7 +5,6 @@ import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 import java.util.UUID;
-import org.craft.mcs.cap.core.profileanalysis.capability.domain.ProfileAnalysisCapability;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.model.ProfileTargetAnalysisScenario;
 import org.craft.mcs.cap.core.profileanalysis.graph.zone.domain.JolicoeurSugarAcidityZone;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.common.dto.FeedstockSeasonRequest;
@@ -45,21 +44,6 @@ public record FeedstockBatchProfileTargetCandidateSearchRequest(
         requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )
     @Nullable JolicoeurSugarAcidityZone zone,
-    @Schema(
-        description = "Optional profile-analysis capability filter.",
-        implementation = ProfileAnalysisCapability.class,
-        example = "SUGAR_ACIDITY_GRAPH",
-        nullable = true,
-        requiredMode = Schema.RequiredMode.NOT_REQUIRED
-    )
-    @Nullable ProfileAnalysisCapability capability,
-    @Schema(
-        description = "Whether the optional capability must be met.",
-        example = "true",
-        nullable = true,
-        requiredMode = Schema.RequiredMode.NOT_REQUIRED
-    )
-    @Nullable Boolean capable,
     @Schema(
         description = "Analysis scenario used to select scoring defaults.",
         implementation = ProfileTargetAnalysisScenario.class,

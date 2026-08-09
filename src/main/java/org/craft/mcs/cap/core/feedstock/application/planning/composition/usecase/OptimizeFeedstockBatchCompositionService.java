@@ -5,7 +5,6 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.feedstock.application.analysis.common.service.FeedstockGraphCandidateMatcher;
 import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
 import org.craft.mcs.cap.core.profileanalysis.composition.optimization.application.port.in.OptimizeCompositionCommand;
 import org.craft.mcs.cap.core.profileanalysis.composition.optimization.application.port.in.OptimizeCompositionUseCase;
@@ -20,11 +19,11 @@ import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.Rectan
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.SugarAcidityTarget;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.SugarAcidityTargetResolver;
 import org.craft.mcs.cap.core.profileanalysis.graph.zone.domain.JolicoeurSugarAcidityZone;
+import org.craft.mcs.cap.core.profileanalysis.graph.application.model.JolicoeurSugarAcidityZoneCriteria;
 import org.craft.mcs.cap.core.feedstock.application.planning.composition.InsufficientFeedstockCompositionSourcesException;
 import org.craft.mcs.cap.core.feedstock.application.analysis.common.port.out.FeedstockCurrentProfileAnalysisCandidateRepository;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentProfileView;
 import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.CustomRectangleFeedstockProfileTargetSelection;
-import org.craft.mcs.cap.core.feedstock.application.analysis.common.model.FeedstockAnalysisCandidateFilters;
 import org.craft.mcs.cap.core.feedstock.application.planning.composition.port.in.OptimizeFeedstockBatchCompositionCommand;
 import org.craft.mcs.cap.core.feedstock.application.planning.composition.port.in.OptimizeFeedstockBatchCompositionResult;
 import org.craft.mcs.cap.core.feedstock.application.planning.composition.port.in.OptimizeFeedstockBatchCompositionUseCase;
@@ -34,6 +33,7 @@ import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatc
 import org.craft.mcs.cap.core.feedstock.application.analysis.common.port.out.CurrentFeedstockBatchAnalysisCandidateQuery;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
 
 import static java.util.Objects.requireNonNull;
@@ -56,7 +56,6 @@ public final class OptimizeFeedstockBatchCompositionService implements OptimizeF
   private final @NonNull FeedstockCurrentProfileAnalysisCandidateRepository candidateRepository;
   private final @NonNull FeedstockBatchSummaryQueryRepository feedstockBatchQueryRepository;
   private final @NonNull EvaluateJolicoeurSugarAcidityGraphUseCase graphEvaluator;
-  private final @NonNull FeedstockGraphCandidateMatcher graphCandidateMatcher;
   private final @NonNull SugarAcidityTargetResolver targetResolver;
   private final @NonNull OptimizeCompositionUseCase optimizeCompositionUseCase;
   private final @NonNull FeedstockAccessControl feedstockAccessControl;
@@ -81,7 +80,11 @@ public final class OptimizeFeedstockBatchCompositionService implements OptimizeF
             )
         )
         .stream()
-        .map(measurement -> toOptimizationSourceIfUsable(measurement, command.filters(), batchesById))
+        .map(currentProfile -> toOptimizationSourceIfUsable(
+            currentProfile,
+            command.sourceZoneCriteria(),
+            batchesById
+        ))
         .flatMap(Optional::stream)
         .toList();
     if (sources.size() < MINIMUM_SOURCE_COUNT) {
@@ -110,7 +113,7 @@ public final class OptimizeFeedstockBatchCompositionService implements OptimizeF
 
   private @NonNull Optional<@NonNull CompositionOptimizationSource> toOptimizationSourceIfUsable(
       @NonNull FeedstockCurrentProfileView currentProfile,
-      @NonNull FeedstockAnalysisCandidateFilters filters,
+      @Nullable JolicoeurSugarAcidityZoneCriteria sourceZoneCriteria,
       @NonNull Map<@NonNull FeedstockBatchId, @NonNull FeedstockBatchSummary> batchesById
   ) {
     requireNonNull(currentProfile, "feedstock current profile cannot be null");
@@ -121,7 +124,8 @@ public final class OptimizeFeedstockBatchCompositionService implements OptimizeF
     if (!graphEvaluation.plottable()) {
       return Optional.empty();
     }
-    if (!graphCandidateMatcher.matches(currentProfile, graphEvaluation, filters)) {
+    if (sourceZoneCriteria != null
+        && !sourceZoneCriteria.matches(requireNonNull(graphEvaluation.zoneAssessment()))) {
       return Optional.empty();
     }
     final var specificGravity = currentProfile.specificGravity();

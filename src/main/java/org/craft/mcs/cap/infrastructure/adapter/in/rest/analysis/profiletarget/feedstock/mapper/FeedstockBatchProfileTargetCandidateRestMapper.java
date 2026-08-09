@@ -21,8 +21,7 @@ import static java.util.Objects.requireNonNullElse;
 import static org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.profiletarget.common.mapper.ProfileTargetCandidateCommonRestMapper.toWeights;
 import static org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.common.mapper.FeedstockCriteriaRestMapper.toBatchCriteria;
 import static org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.common.mapper.FeedstockCriteriaRestMapper.toSeason;
-import static org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.mapper.ProfileGraphCriteriaRestMapper.toCapabilityCriteria;
-import static org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.mapper.ProfileGraphCriteriaRestMapper.toZoneCriteria;
+import static org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.mapper.JolicoeurSugarAcidityGraphCriteriaRestMapper.toZoneCriteria;
 
 
 public final class FeedstockBatchProfileTargetCandidateRestMapper {
@@ -39,10 +38,9 @@ public final class FeedstockBatchProfileTargetCandidateRestMapper {
         WorkspaceId.of(request.workspaceId()),
         new FeedstockAnalysisCandidateFilters(
             toBatchCriteria(request.batchIds()),
-            toSeason(request.season()),
-            toZoneCriteria(request.zone()),
-            toCapabilityCriteria(request.capability(), request.capable())
+            toSeason(request.season())
         ),
+        toZoneCriteria(request.zone()),
         requireNonNull(request.analysisScenario(), "profile target analysis scenario cannot be null"),
         FeedstockProfileTargetRestMapper.toSelection(request.target()),
         FeedstockProfileTargetRestMapper.toTanninTarget(request.tanninTarget()),

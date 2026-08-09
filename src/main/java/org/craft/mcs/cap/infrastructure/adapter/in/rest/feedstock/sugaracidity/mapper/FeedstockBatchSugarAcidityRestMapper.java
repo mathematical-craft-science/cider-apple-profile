@@ -14,7 +14,7 @@ import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.sugaracidity.d
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.sugaracidity.cursor.FeedstockSugarAcidityCursorAdapter;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.common.mapper.FeedstockProfileEvidenceRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.dto.SugarAcidityGraphPointResponse;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.mapper.ProfileGraphRestMapper;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.mapper.JolicoeurSugarAcidityGraphRestMapper;
 import org.craft.mcs.cap.shared.application.query.pagination.CursorPage;
 import org.craft.mcs.cap.shared.application.query.pagination.CursorPageRequest;
 import org.craft.mcs.cap.shared.application.query.QueryLimits;
@@ -26,8 +26,7 @@ import static java.util.Objects.requireNonNull;
 import static java.util.Objects.requireNonNullElse;
 import static org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.common.mapper.FeedstockCriteriaRestMapper.toBatchCriteria;
 import static org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.common.mapper.FeedstockCriteriaRestMapper.toSeason;
-import static org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.mapper.ProfileGraphCriteriaRestMapper.toCapabilityCriteria;
-import static org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.mapper.ProfileGraphCriteriaRestMapper.toZoneCriteria;
+import static org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.mapper.JolicoeurSugarAcidityGraphCriteriaRestMapper.toGraphCriteria;
 
 
 @Component
@@ -43,16 +42,16 @@ public final class FeedstockBatchSugarAcidityRestMapper {
     final var workspaceId = WorkspaceId.of(request.workspaceId());
     final var filters = new FeedstockAnalysisCandidateFilters(
         toBatchCriteria(request.batchId()),
-        toSeason(request.season()),
-        toZoneCriteria(request.zone()),
-        toCapabilityCriteria(request.capability(), request.capable())
+        toSeason(request.season())
     );
+    final var graphCriteria = toGraphCriteria(request.zone(), request.plottable());
 
     return new FeedstockBatchCurrentSugarAcidityZonePointQuery(
         workspaceId,
         filters,
+        graphCriteria,
         new CursorPageRequest<>(
-            cursorAdapter.decodeCurrent(request.after(), workspaceId, filters),
+            cursorAdapter.decodeCurrent(request.after(), workspaceId, filters, graphCriteria),
             requireNonNullElse(request.limit(), QueryLimits.DEFAULT)
         )
     );
@@ -94,7 +93,12 @@ public final class FeedstockBatchSugarAcidityRestMapper {
         page.items().stream()
             .map(FeedstockBatchSugarAcidityRestMapper::toResponse)
             .toList(),
-        cursorAdapter.encodeCurrent(page.nextPosition(), query.workspaceId(), query.filters())
+        cursorAdapter.encodeCurrent(
+            page.nextPosition(),
+            query.workspaceId(),
+            query.filters(),
+            query.graphCriteria()
+        )
     );
   }
 
@@ -104,7 +108,7 @@ public final class FeedstockBatchSugarAcidityRestMapper {
     if (!result.graphEvaluation().plottable()) {
       return null;
     }
-    return ProfileGraphRestMapper.toResponse(
+    return JolicoeurSugarAcidityGraphRestMapper.toResponse(
         requireNonNull(result.specificGravity()),
         requireNonNull(result.titratableAcidity())
     );

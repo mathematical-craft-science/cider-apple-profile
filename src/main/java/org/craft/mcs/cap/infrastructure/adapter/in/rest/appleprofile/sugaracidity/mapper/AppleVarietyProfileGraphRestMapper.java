@@ -13,8 +13,7 @@ import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.sugaracidit
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.sugaracidity.cursor.AppleVarietySugarAcidityCursorAdapter;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.abv.dto.PotentialAbvPredictionResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.abv.mapper.PotentialAbvPredictionRestMapper;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.capability.mapper.ProfileAnalysisCapabilityRestMapper;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.mapper.ProfileGraphRestMapper;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.mapper.JolicoeurSugarAcidityGraphRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.dto.SugarAcidityGraphAssessmentResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.measurement.CanonicalUnitLabels;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profilecharacteristic.dto.ProfileCharacteristicValueResponse;
@@ -30,10 +29,10 @@ import org.springframework.stereotype.Component;
 
 import static java.util.Objects.requireNonNull;
 import static java.util.Objects.requireNonNullElse;
-import static org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.mapper.ProfileGraphCriteriaRestMapper
-    .toCapabilityCriteria;
-import static org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.mapper.ProfileGraphCriteriaRestMapper
-    .toZoneCriteria;
+import static org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.mapper.JolicoeurSugarAcidityGraphRestMapper
+    .missingCharacteristics;
+import static org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.mapper.JolicoeurSugarAcidityGraphCriteriaRestMapper
+    .toGraphCriteria;
 
 
 @Component
@@ -46,16 +45,14 @@ public final class AppleVarietyProfileGraphRestMapper {
       @NonNull AppleVarietySugarAcidityZonePointQueryRequest request
   ) {
     requireNonNull(request, "apple variety sugar-acidity zone point query request cannot be null");
-    final var filters = new AppleVarietyAnalysisFilters(
-        toTextCriteria(request.nameContains()),
-        toZoneCriteria(request.zone()),
-        toCapabilityCriteria(request.capability(), request.capable())
-    );
+    final var filters = new AppleVarietyAnalysisFilters(toTextCriteria(request.nameContains()));
+    final var graphCriteria = toGraphCriteria(request.zone(), request.plottable());
 
     return new AppleVarietySugarAcidityZonePointQuery(
         filters,
+        graphCriteria,
         new CursorPageRequest<>(
-            cursorAdapter.decode(request.after(), filters),
+            cursorAdapter.decode(request.after(), filters, graphCriteria),
             requireNonNullElse(request.limit(), QueryLimits.DEFAULT)
         )
     );
@@ -75,7 +72,7 @@ public final class AppleVarietyProfileGraphRestMapper {
         toTanninResponse(result),
         toNorthAmericanProfileResponse(result),
         toPotentialAbvResponse(result),
-        ProfileAnalysisCapabilityRestMapper.toResponse(graphEvaluation)
+        missingCharacteristics(graphEvaluation)
     );
   }
 
@@ -98,7 +95,7 @@ public final class AppleVarietyProfileGraphRestMapper {
             .filter(result -> !result.graphEvaluation().plottable())
             .map(AppleVarietyProfileGraphRestMapper::toUnplottableResponse)
             .toList(),
-        cursorAdapter.encode(page.nextPosition(), query.filters())
+        cursorAdapter.encode(page.nextPosition(), query.filters(), query.graphCriteria())
     );
   }
 
@@ -110,7 +107,7 @@ public final class AppleVarietyProfileGraphRestMapper {
     return new UnplottableAppleVarietySugarAcidityZonePointResponse(
         result.varietyId().value(),
         result.varietyName().value(),
-        ProfileAnalysisCapabilityRestMapper.toResponse(result.graphEvaluation())
+        missingCharacteristics(result.graphEvaluation())
     );
   }
 
@@ -124,7 +121,7 @@ public final class AppleVarietyProfileGraphRestMapper {
     if (!result.graphEvaluation().plottable()) {
       return null;
     }
-    return ProfileGraphRestMapper.toResponse(
+    return JolicoeurSugarAcidityGraphRestMapper.toResponse(
         result.graphEvaluation(),
         requireNonNull(result.specificGravity()),
         requireNonNull(result.titratableAcidity())

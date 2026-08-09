@@ -86,6 +86,6 @@ public record FeedstockBatchGraphPointResponse(
         ),
         schema = @Schema(implementation = GraphMissingCharacteristic.class)
     )
-    @NonNull List<@NonNull GraphMissingCharacteristic> missingAxes
+    @NonNull List<@NonNull GraphMissingCharacteristic> missingCharacteristics
 ) {
 }

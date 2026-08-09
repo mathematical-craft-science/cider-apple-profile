@@ -1,14 +1,15 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.currentprofile.dto;
 
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.capability.dto.ProfileAnalysisCapabilityAssessmentResponse;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.dto.SugarAcidityGraphPointResponse;
+import java.util.List;
+import org.craft.mcs.cap.core.profileanalysis.graph.domain.GraphMissingCharacteristic;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.dto.SugarAcidityGraphAssessmentResponse;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 
-@Schema(description = "Current batch sugar-acidity graph projection and capability assessment.")
+@Schema(description = "Current batch sugar-acidity graph projection.")
 public record FeedstockCurrentProfileGraphResponse(
     @Schema(
         description = "Whether current SG and TA evidence can be plotted on the sugar-acidity graph.",
@@ -16,21 +17,18 @@ public record FeedstockCurrentProfileGraphResponse(
     )
     boolean plottable,
     @Schema(
-        description = "Computed graph point coordinates when plottable.",
-        nullable = true,
-        requiredMode = Schema.RequiredMode.NOT_REQUIRED
-    )
-    @Nullable SugarAcidityGraphPointResponse point,
-    @Schema(
-        description = "Sugar-acidity zone assessment when plottable.",
+        description = "Jolicoeur zone assessment and SG/TA graph point when plottable.",
         nullable = true,
         requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )
     @Nullable SugarAcidityGraphAssessmentResponse assessment,
-    @Schema(
-        description = "Capability assessment for sugar-acidity plotting.",
-        requiredMode = Schema.RequiredMode.REQUIRED
+    @ArraySchema(
+        arraySchema = @Schema(
+            description = "SG or TA inputs missing from an unplottable current profile.",
+            requiredMode = Schema.RequiredMode.REQUIRED
+        ),
+        schema = @Schema(implementation = GraphMissingCharacteristic.class)
     )
-    @NonNull ProfileAnalysisCapabilityAssessmentResponse capabilityAssessment
+    @NonNull List<@NonNull GraphMissingCharacteristic> missingCharacteristics
 ) {
 }

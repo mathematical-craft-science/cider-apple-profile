@@ -8,7 +8,6 @@ import org.craft.mcs.cap.core.appleprofile.application.abv.port.in.PredictAppleV
 import org.craft.mcs.cap.core.appleprofile.application.catalog.port.out.AppleVarietyRepository;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyId;
 import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPredictor;
-import org.craft.mcs.cap.core.profileanalysis.capability.domain.ProfileAnalysisInputAvailability;
 import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
@@ -42,12 +41,7 @@ public final class PredictAppleVarietyPotentialAbvService
     final var specificGravity = referenceProfile.specificGravity();
     if (specificGravity == null) {
       throw new AppleVarietyPotentialAbvUnavailableException(
-          varietyId,
-          new ProfileAnalysisInputAvailability(
-              false,
-              referenceProfile.titratableAcidity() != null,
-              referenceProfile.tannin() != null
-          )
+          varietyId
       );
     }
 

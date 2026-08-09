@@ -2,7 +2,6 @@ package org.craft.mcs.cap.core.appleprofile.application.sugaracidity.usecase;
 
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.appleprofile.application.analysis.common.service.AppleVarietyGraphCandidateMatcher;
 import org.craft.mcs.cap.core.appleprofile.application.catalog.model.AppleVarietyCatalogPagePosition;
 import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.model.AppleVarietyGraphAnalysisView;
 import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.port.in.AppleVarietySugarAcidityZonePointQuery;
@@ -23,7 +22,7 @@ import static java.util.Objects.requireNonNull;
  * Read-side use case for catalog variety points on the sugar-acidity graph.
  *
  * <p>The service performs cursor pagination over repository candidates, applies application-level
- * capability and zone filters, and returns both plottable and unplottable results according to the
+ * graph filters, and returns both plottable and unplottable results according to the
  * requested filters. It keeps graph read queries out of the aggregate repository contract and makes
  * catalog exploration independent from feedstock batch queries.
  */
@@ -33,7 +32,6 @@ public final class QueryAppleVarietySugarAcidityZonePointsService
     implements QueryAppleVarietySugarAcidityZonePointsUseCase {
 
   private final @NonNull AppleVarietyAnalysisCandidateQuery candidateQuery;
-  private final @NonNull AppleVarietyGraphCandidateMatcher graphCandidateMatcher;
   private final @NonNull AppleVarietyGraphAnalysisProjector analysisProjector;
 
   @Override
@@ -69,7 +67,8 @@ public final class QueryAppleVarietySugarAcidityZonePointsService
         variety.name(),
         referenceProfile
     );
-    if (!graphCandidateMatcher.matches(referenceProfile, analysis.graphEvaluation(), query.filters())) {
+    final var graphCriteria = query.graphCriteria();
+    if (graphCriteria != null && !graphCriteria.matches(analysis.graphEvaluation())) {
       return Optional.empty();
     }
 

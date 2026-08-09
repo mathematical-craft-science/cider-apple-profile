@@ -10,7 +10,6 @@ import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.Feedsto
 import org.craft.mcs.cap.core.profileanalysis.classification.domain.profile.northamerican.NorthAmericanTanninLevel;
 import org.craft.mcs.cap.core.profileanalysis.graph.application.model.JolicoeurSugarAcidityGraphEvaluation;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.abv.mapper.PotentialAbvPredictionRestMapper;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.capability.mapper.ProfileAnalysisCapabilityRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.currentprofile.dto.FeedstockCurrentProfileFreshnessResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.currentprofile.dto.FeedstockCurrentProfileGraphResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.currentprofile.dto.FeedstockCurrentProfilePotentialAbvResponse;
@@ -19,12 +18,14 @@ import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.currentprofile
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.currentprofile.dto.FeedstockDataQualityResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.currentprofile.dto.FeedstockPlanningReadinessCheckResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.currentprofile.dto.FeedstockPlanningReadinessResponse;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.mapper.ProfileGraphRestMapper;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.mapper.JolicoeurSugarAcidityGraphRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profilecharacteristic.mapper.ProfileCharacteristicRestMapper;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import static java.util.Objects.requireNonNull;
+import static org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.mapper.JolicoeurSugarAcidityGraphRestMapper
+    .missingCharacteristics;
 
 
 /** Maps reusable Feedstock current-profile application bricks to their shared REST representations. */
@@ -56,20 +57,14 @@ public final class FeedstockCurrentProfileRestMapper {
     return new FeedstockCurrentProfileGraphResponse(
         graphEvaluation.plottable(),
         graphEvaluation.plottable()
-            ? ProfileGraphRestMapper.toResponse(
-                requireNonNull(specificGravity),
-                requireNonNull(titratableAcidity)
-            )
-            : null,
-        graphEvaluation.plottable()
-            ? ProfileGraphRestMapper.toResponse(
+            ? JolicoeurSugarAcidityGraphRestMapper.toResponse(
                 graphEvaluation,
                 northAmericanTanninLevel,
                 requireNonNull(specificGravity),
                 requireNonNull(titratableAcidity)
             )
             : null,
-        ProfileAnalysisCapabilityRestMapper.toResponse(graphEvaluation)
+        missingCharacteristics(graphEvaluation)
     );
   }
 

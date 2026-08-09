@@ -1,22 +1,5 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.sugaracidity.mapper;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.model.AppleVarietyGraphAnalysisView;
-import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.model.AppleVarietyNorthAmericanAssessmentView;
-import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyId;
-import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyName;
-import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPrediction;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.sugaracidity.dto.AppleVarietySugarAcidityZoneResponse;
-import org.craft.mcs.cap.shared.testing.ProfileCharacteristicsFixture;
-import org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic;
-import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
-import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
-import org.craft.mcs.cap.shared.kernel.characteristic.IntervalCharacteristicValue;
-import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
-import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
-import org.junit.jupiter.api.Test;
-
-import static java.util.Objects.requireNonNull;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatObject;
 import static org.craft.mcs.cap.core.profileanalysis.testing.ProfileAnalysisTestFixtures.graphEvaluator;
@@ -25,13 +8,30 @@ import static org.craft.mcs.cap.core.profileanalysis.testing.ProfileAnalysisTest
 import static org.craft.mcs.cap.shared.testing.AppleVarietyReferenceProfiles.from;
 import static org.craft.mcs.cap.support.PotentialAbvPredictionFixtures.prediction;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.model.AppleVarietyGraphAnalysisView;
+import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.model.AppleVarietyNorthAmericanAssessmentView;
+import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyId;
+import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyName;
+import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPrediction;
+import org.craft.mcs.cap.core.profileanalysis.graph.domain.GraphMissingCharacteristic;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.sugaracidity.dto.AppleVarietySugarAcidityZoneResponse;
+import org.craft.mcs.cap.shared.kernel.characteristic.IntervalCharacteristicValue;
+import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
+import org.craft.mcs.cap.shared.testing.ProfileCharacteristicsFixture;
+import org.junit.jupiter.api.Test;
+
 
 class AppleVarietyProfileGraphRestMapperTest {
 
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
   @Test
-  void serializesAxisPointDiscriminatorForPlottableSingleResult() throws Exception {
+  void serializesAxisPointDiscriminatorForPlottableSingleResult()
+      throws Exception {
     final var profile = ProfileCharacteristicsFixture.builder()
         .specificGravity(PointCharacteristicValue.of(SpecificGravityValue.of("1.066")))
         .titratableAcidity(PointCharacteristicValue.of(TitratableAcidityValue.of("5.7")))
@@ -120,10 +120,9 @@ class AppleVarietyProfileGraphRestMapperTest {
         .returns("Partial Profile", AppleVarietySugarAcidityZoneResponse::varietyName)
         .returns(false, AppleVarietySugarAcidityZoneResponse::plottable)
         .returns(null, AppleVarietySugarAcidityZoneResponse::assessment)
-        .matches(value -> value.capabilityAssessment() != null)
         .matches(value -> value.potentialAbv() != null)
-        .satisfies(value -> assertThat(requireNonNull(value.capabilityAssessment()).missingCharacteristics())
-            .containsExactly(MeasurementCharacteristic.TITRATABLE_ACIDITY));
+        .satisfies(value -> assertThat(value.missingCharacteristics())
+            .containsExactly(GraphMissingCharacteristic.TITRATABLE_ACIDITY));
   }
 
   private static AppleVarietyGraphAnalysisView result(
@@ -139,14 +138,14 @@ class AppleVarietyProfileGraphRestMapperTest {
     );
     final var northAmericanAssessment = new AppleVarietyNorthAmericanAssessmentView(
         referenceProfile.specificGravity() == null
-            ? null
-            : northAmericanProfileCalculator().assessSugar(referenceProfile.specificGravity()),
+        ? null
+        : northAmericanProfileCalculator().assessSugar(referenceProfile.specificGravity()),
         referenceProfile.titratableAcidity() == null
-            ? null
-            : northAmericanProfileCalculator().assessAcidity(referenceProfile.titratableAcidity()),
+        ? null
+        : northAmericanProfileCalculator().assessAcidity(referenceProfile.titratableAcidity()),
         referenceProfile.tannin() == null
-            ? null
-            : northAmericanProfileCalculator().assessTannin(referenceProfile.tannin())
+        ? null
+        : northAmericanProfileCalculator().assessTannin(referenceProfile.tannin())
     );
     return new AppleVarietyGraphAnalysisView(
         varietyId,

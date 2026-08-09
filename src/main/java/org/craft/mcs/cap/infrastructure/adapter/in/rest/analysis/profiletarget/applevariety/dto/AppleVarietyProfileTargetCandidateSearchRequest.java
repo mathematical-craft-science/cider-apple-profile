@@ -7,7 +7,6 @@ import org.craft.mcs.cap.core.profileanalysis.graph.zone.domain.JolicoeurSugarAc
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.ProfileTargetObjectiveWeightsRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.ProfileTargetRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.ProfileTargetTanninRangeRequest;
-import org.craft.mcs.cap.core.profileanalysis.capability.domain.ProfileAnalysisCapability;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -31,21 +30,6 @@ public record AppleVarietyProfileTargetCandidateSearchRequest(
         requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )
     @Nullable JolicoeurSugarAcidityZone zone,
-    @Schema(
-        description = "Optional profile-analysis capability filter.",
-        implementation = ProfileAnalysisCapability.class,
-        example = "SUGAR_ACIDITY_GRAPH",
-        nullable = true,
-        requiredMode = Schema.RequiredMode.NOT_REQUIRED
-    )
-    @Nullable ProfileAnalysisCapability capability,
-    @Schema(
-        description = "Whether the optional capability must be met.",
-        example = "true",
-        nullable = true,
-        requiredMode = Schema.RequiredMode.NOT_REQUIRED
-    )
-    @Nullable Boolean capable,
     @Schema(
         description = "Analysis scenario used to select scoring defaults.",
         implementation = ProfileTargetAnalysisScenario.class,

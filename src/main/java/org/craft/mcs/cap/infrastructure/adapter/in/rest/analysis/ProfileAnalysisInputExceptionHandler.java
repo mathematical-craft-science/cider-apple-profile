@@ -4,7 +4,7 @@ import java.net.URI;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
-import org.craft.mcs.cap.core.profileanalysis.capability.application.ProfileAnalysisInputUnavailableException;
+import org.craft.mcs.cap.core.profileanalysis.input.application.ProfileAnalysisInputUnavailableException;
 import org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic;
 import org.jspecify.annotations.NonNull;
 import org.springframework.core.Ordered;
@@ -35,9 +35,9 @@ public final class ProfileAnalysisInputExceptionHandler {
         UNPROCESSABLE_ENTITY,
         PROFILE_ANALYSIS_INPUT_UNAVAILABLE,
         "Profile analysis inputs are unavailable",
-        "Current characteristics do not satisfy " + exception.capability().name()
+        "Available characteristics do not satisfy " + exception.analysis()
     );
-    problem.setProperty("capability", exception.capability().name());
+    problem.setProperty("analysis", exception.analysis());
     problem.setProperty(
         "requiredCharacteristics",
         characteristicNames(exception.requiredCharacteristics())

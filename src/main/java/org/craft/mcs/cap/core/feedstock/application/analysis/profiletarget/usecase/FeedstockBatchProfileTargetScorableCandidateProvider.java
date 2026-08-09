@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.feedstock.application.analysis.common.model.FeedstockAnalysisCandidatePagePosition;
-import org.craft.mcs.cap.core.feedstock.application.analysis.common.service.FeedstockGraphCandidateMatcher;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.port.in.ProfileTargetDistanceCandidate;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.port.in.ProfileTargetDistanceCandidateReference;
 import org.craft.mcs.cap.core.profileanalysis.graph.application.port.in.EvaluateJolicoeurSugarAcidityGraphUseCase;
@@ -36,7 +35,6 @@ public final class FeedstockBatchProfileTargetScorableCandidateProvider {
 
   private final @NonNull FeedstockCurrentProfileAnalysisCandidateRepository candidateRepository;
   private final @NonNull EvaluateJolicoeurSugarAcidityGraphUseCase graphEvaluator;
-  private final @NonNull FeedstockGraphCandidateMatcher graphCandidateMatcher;
 
   @NonNull List<@NonNull FeedstockBatchProfileTargetScorableCandidate> findCandidates(
       @NonNull FeedstockBatchProfileTargetQuery query
@@ -71,7 +69,9 @@ public final class FeedstockBatchProfileTargetScorableCandidateProvider {
     if (!graphEvaluation.plottable()) {
       return Optional.empty();
     }
-    if (!graphCandidateMatcher.matches(currentProfile, graphEvaluation, query.filters())) {
+    final var sourceZoneCriteria = query.sourceZoneCriteria();
+    if (sourceZoneCriteria != null
+        && !sourceZoneCriteria.matches(requireNonNull(graphEvaluation.zoneAssessment()))) {
       return Optional.empty();
     }
     final var specificGravity = currentProfile.specificGravity();
