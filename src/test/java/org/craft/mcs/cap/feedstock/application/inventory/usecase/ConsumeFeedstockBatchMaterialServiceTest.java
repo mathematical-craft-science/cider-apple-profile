@@ -18,7 +18,7 @@ import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
-import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
+import org.craft.mcs.cap.testsupport.VesselTestFixtures;
 import org.craft.mcs.cap.shared.testing.FeedstockMeasurementFixture;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetId;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetName;
@@ -58,7 +58,7 @@ class ConsumeFeedstockBatchMaterialServiceTest {
     final var batch = batch(workspaceId);
     final var measurement = measurement(batch.batchId());
     final var command = command(workspaceId, batch.batchId(), "100");
-    when(repository.findVersionedById(batch.batchId())).thenReturn(Optional.of(versioned(batch)));
+    when(repository.lockVersionedById(batch.batchId())).thenReturn(Optional.of(versioned(batch)));
     when(measurementQuery.requireCurrentProfile(batch.batchId())).thenReturn(currentProfile(measurement));
     final var service = service(repository, measurementQuery, accessControl);
 
@@ -95,7 +95,7 @@ class ConsumeFeedstockBatchMaterialServiceTest {
     final var requestedWorkspaceId = WorkspaceId.newId();
     final var batch = batch(actualWorkspaceId);
     final var command = command(requestedWorkspaceId, batch.batchId(), "100");
-    when(repository.findVersionedById(batch.batchId())).thenReturn(Optional.of(versioned(batch)));
+    when(repository.lockVersionedById(batch.batchId())).thenReturn(Optional.of(versioned(batch)));
     final var service = service(repository, measurementQuery, accessControl);
 
     assertThatThrownBy(() -> service.consume(command))
@@ -112,7 +112,7 @@ class ConsumeFeedstockBatchMaterialServiceTest {
     final var workspaceId = WorkspaceId.newId();
     final var batch = batch(workspaceId);
     final var command = command(workspaceId, batch.batchId(), "251");
-    when(repository.findVersionedById(batch.batchId())).thenReturn(Optional.of(versioned(batch)));
+    when(repository.lockVersionedById(batch.batchId())).thenReturn(Optional.of(versioned(batch)));
     final var service = service(repository, measurementQuery, accessControl);
 
     assertThatThrownBy(() -> service.consume(command))
@@ -132,7 +132,7 @@ class ConsumeFeedstockBatchMaterialServiceTest {
     final var workspaceId = WorkspaceId.newId();
     final var batch = batch(workspaceId);
     final var command = command(workspaceId, batch.batchId(), "100");
-    when(repository.findVersionedById(batch.batchId())).thenReturn(Optional.of(versioned(batch)));
+    when(repository.lockVersionedById(batch.batchId())).thenReturn(Optional.of(versioned(batch)));
     when(measurementQuery.requireCurrentProfile(batch.batchId()))
         .thenThrow(new FeedstockBatchHasNoMeasurementsException(batch.batchId()));
     final var service = service(repository, measurementQuery, accessControl);
@@ -152,7 +152,7 @@ class ConsumeFeedstockBatchMaterialServiceTest {
     final var workspaceId = WorkspaceId.newId();
     final var batch = batch(workspaceId);
     final var command = command(workspaceId, batch.batchId(), "100");
-    when(repository.findVersionedById(batch.batchId())).thenReturn(Optional.of(versioned(batch)));
+    when(repository.lockVersionedById(batch.batchId())).thenReturn(Optional.of(versioned(batch)));
     when(measurementQuery.requireCurrentProfile(batch.batchId()))
         .thenReturn(currentProfile(measurementWithoutAcidity(batch.batchId())));
     final var service = service(repository, measurementQuery, accessControl);
@@ -182,7 +182,7 @@ class ConsumeFeedstockBatchMaterialServiceTest {
         FeedstockBatchId.newId(),
         workspaceId,
         BatchName.of("Late juice"),
-        Vessel.named("Tank A-01"),
+        VesselTestFixtures.vesselId("Tank A-01"),
         FeedstockType.JUICE,
         FeedstockSeason.of(LocalDate.parse("2026-10-01"), LocalDate.parse("2026-12-15")),
         VolumeValue.ofLiters("250")

@@ -56,4 +56,16 @@ public record ProductionBatchCandidateSnapshot(
         revision
     );
   }
+
+  /** Returns this persisted candidate snapshot with the revision assigned after an atomic update. */
+  public @NonNull ProductionBatchCandidateSnapshot withRevision(long updatedRevision) {
+    return new ProductionBatchCandidateSnapshot(
+        candidate,
+        potentialAbv,
+        normalizerCode,
+        targetDistance,
+        warnings,
+        updatedRevision
+    );
+  }
 }

@@ -5,6 +5,7 @@ import java.util.UUID;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchLifecycle;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.common.dto.FeedstockSeasonResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.vessel.dto.VesselReferenceResponse;
 import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -33,12 +34,11 @@ public record FeedstockBatchResponse(
     )
     @NonNull String name,
     @Schema(
-        description = "Optional vessel or tank where the batch is stored.",
-        example = "Tank A-01",
-        nullable = true,
-        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+        description = "Current vessel reference resolved from the workspace vessel catalog.",
+        implementation = VesselReferenceResponse.class,
+        requiredMode = Schema.RequiredMode.REQUIRED
     )
-    @Nullable String vessel,
+    @NonNull VesselReferenceResponse vessel,
     @Schema(
         description = "Feedstock type.",
         implementation = FeedstockType.class,

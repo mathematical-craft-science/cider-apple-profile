@@ -7,9 +7,10 @@ import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSource
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchLifecycle;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchMaterialState;
-import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
 import org.craft.mcs.cap.shared.kernel.DomainConflictException;
+import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
 import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
+import org.craft.mcs.cap.shared.kernel.identity.VesselId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.jmolecules.ddd.annotation.AggregateRoot;
@@ -24,7 +25,7 @@ import static java.util.Objects.requireNonNull;
  * Aggregate root for a physical lot of available raw material owned by a workspace.
  *
  * <p>A batch is the operational entity a cider maker manages as source material: it has a season,
- * optional vessel, optional source/origin, available volume and lifecycle state. Measurement facts
+ * vessel reference, optional source/origin, available volume and lifecycle state. Measurement facts
  * are owned by the generic Measurement context. Application queries project current values from
  * evidence applicable to the batch's current material-state lineage.
  *
@@ -42,7 +43,7 @@ public final class FeedstockBatch {
 
   private @NonNull BatchName name;
 
-  private @Nullable Vessel vessel;
+  private @NonNull VesselId vesselId;
 
   private @NonNull FeedstockType type;
 
@@ -61,7 +62,7 @@ public final class FeedstockBatch {
       @NonNull FeedstockBatchId batchId,
       @NonNull WorkspaceId workspaceId,
       @NonNull BatchName name,
-      @Nullable Vessel vessel,
+      @NonNull VesselId vesselId,
       @NonNull FeedstockType type,
       @NonNull FeedstockSeason season,
       @Nullable FeedstockSource source,
@@ -72,20 +73,21 @@ public final class FeedstockBatch {
     this.batchId = requireNonNull(batchId, "feedstock batch id cannot be null");
     this.workspaceId = requireNonNull(workspaceId, "workspace id cannot be null");
     this.name = requireNonNull(name, "feedstock batch name cannot be null");
-    this.vessel = vessel;
+    this.vesselId = requireNonNull(vesselId, "feedstock vessel id cannot be null");
     this.type = requireNonNull(type, "feedstock type cannot be null");
     this.season = requireNonNull(season, "feedstock season cannot be null");
     this.source = source;
     this.materialState = requireNonNull(materialState, "feedstock material state cannot be null");
     this.note = normalize(note);
     this.deletedAt = deletedAt;
+    validateDeletionState();
   }
 
   public static @NonNull FeedstockBatch create(
       @NonNull FeedstockBatchId batchId,
       @NonNull WorkspaceId workspaceId,
       @NonNull BatchName name,
-      @Nullable Vessel vessel,
+      @NonNull VesselId vesselId,
       @NonNull FeedstockType type,
       @NonNull FeedstockSeason season,
       @NonNull VolumeValue availableVolume
@@ -94,7 +96,7 @@ public final class FeedstockBatch {
         batchId,
         workspaceId,
         name,
-        vessel,
+        vesselId,
         type,
         season,
         null,
@@ -109,7 +111,7 @@ public final class FeedstockBatch {
       @NonNull FeedstockBatchId batchId,
       @NonNull WorkspaceId workspaceId,
       @NonNull BatchName name,
-      @Nullable Vessel vessel,
+      @NonNull VesselId vesselId,
       @NonNull FeedstockType type,
       @NonNull FeedstockSeason season,
       @Nullable FeedstockSource source,
@@ -123,7 +125,7 @@ public final class FeedstockBatch {
         batchId,
         workspaceId,
         name,
-        vessel,
+        vesselId,
         type,
         season,
         source,
@@ -145,8 +147,8 @@ public final class FeedstockBatch {
     return name;
   }
 
-  public @Nullable Vessel vessel() {
-    return vessel;
+  public @NonNull VesselId vesselId() {
+    return vesselId;
   }
 
   public @NonNull FeedstockType type() {
@@ -185,8 +187,23 @@ public final class FeedstockBatch {
     return deletedAt != null;
   }
 
+  /** Ensures that measurement evidence may still be added, corrected, or retracted for this batch. */
+  public void requireMeasurementChangesAllowed() {
+    if (lifecycle() != BatchLifecycle.ACTIVE) {
+      throw new DomainConflictException(
+          "feedstock batch measurements can be changed only when lifecycle is ACTIVE"
+      );
+    }
+  }
+
   public @NonNull FeedstockBatch rename(@NonNull BatchName name) {
     this.name = requireNonNull(name, "feedstock batch name cannot be null");
+    return this;
+  }
+
+  /** Corrects the initial vessel assignment before any operation has been recorded for this batch. */
+  public @NonNull FeedstockBatch correctInitialVesselAssignment(@NonNull VesselId vesselId) {
+    this.vesselId = requireNonNull(vesselId, "feedstock vessel id cannot be null");
     return this;
   }
 
@@ -229,6 +246,12 @@ public final class FeedstockBatch {
   }
 
   public @NonNull FeedstockBatch delete(@NonNull Instant deletedAt) {
+    if (deleted()) {
+      throw new DomainConflictException("feedstock batch is already deleted");
+    }
+    if (lifecycle() == BatchLifecycle.ACTIVE) {
+      throw new DomainConflictException("cannot delete feedstock batch containing active material");
+    }
     this.deletedAt = requireNonNull(deletedAt, "deleted at cannot be null");
     return this;
   }
@@ -240,6 +263,12 @@ public final class FeedstockBatch {
 
     final var normalized = value.strip();
     return normalized.isEmpty() ? null : normalized;
+  }
+
+  private void validateDeletionState() {
+    if (deleted() && lifecycle() == BatchLifecycle.ACTIVE) {
+      throw new DomainRuleViolationException("deleted feedstock batch cannot contain active material");
+    }
   }
 
 }

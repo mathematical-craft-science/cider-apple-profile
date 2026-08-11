@@ -24,17 +24,23 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import static java.util.Objects.requireNonNull;
+import static org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetRevisionChangeKind.CORRECTION;
+import static org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetRevisionChangeKind.INITIAL;
+import static org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetRevisionChangeKind.RETRACTION;
 
 
-/** Immutable full representation of a measurement set at one correction revision. */
+/** Immutable full representation of a measurement set after one auditable lifecycle change. */
 @Entity
 public record MeasurementSetRevision(
     @Identity @NonNull MeasurementSetRevisionId revisionId,
     @NonNull MeasurementSetRevisionNumber revisionNumber,
     @NonNull MaterialStateId materialStateId,
+    @NonNull MeasurementSetLifecycle lifecycle,
+    @NonNull MeasurementSetRevisionChangeKind changeKind,
     @NonNull MeasurementSetName name,
     @Nullable String note,
     @Nullable MeasurementCorrectionReason correctionReason,
+    @Nullable MeasurementRetractionReason retractionReason,
     @NonNull Instant createdAt,
     @NonNull ActorReference actor,
     @NonNull List<@NonNull MeasurementRecord> records,
@@ -47,6 +53,8 @@ public record MeasurementSetRevision(
     requireNonNull(revisionId, "measurement set revision id cannot be null");
     requireNonNull(revisionNumber, "measurement set revision number cannot be null");
     requireNonNull(materialStateId, "measurement revision material state id cannot be null");
+    requireNonNull(lifecycle, "measurement revision lifecycle cannot be null");
+    requireNonNull(changeKind, "measurement revision change kind cannot be null");
     requireNonNull(name, "measurement set name cannot be null");
     requireNonNull(createdAt, "measurement set revision creation time cannot be null");
     requireNonNull(actor, "measurement actor reference cannot be null");
@@ -57,12 +65,7 @@ public record MeasurementSetRevision(
     ));
     note = normalize(note);
 
-    if (revisionNumber.isInitial() && correctionReason != null) {
-      throw new DomainRuleViolationException("initial measurement revision cannot have a correction reason");
-    }
-    if (!revisionNumber.isInitial() && correctionReason == null) {
-      throw new DomainRuleViolationException("corrected measurement revision requires a correction reason");
-    }
+    validateChangeAudit(revisionNumber, lifecycle, changeKind, correctionReason, retractionReason);
     if (records.isEmpty() && resultRetractions.isEmpty()) {
       throw new DomainRuleViolationException(
           "measurement revision must contain records or result retractions"
@@ -72,11 +75,86 @@ public record MeasurementSetRevision(
       throw new DomainRuleViolationException("initial measurement revision cannot retract a result");
     }
     requireMaximumLength(note, MAX_NOTE_LENGTH, "measurement set note");
-    validateRecordIdentities(records);
     validateResults(records);
     validateRecordChronology(records, createdAt);
     validateDerivations(records);
     validateResultRetractions(records, resultRetractions, createdAt);
+    validateEvidenceIdentities(records, resultRetractions);
+  }
+
+  public MeasurementSetRevision(
+      @NonNull MeasurementSetRevisionId revisionId,
+      @NonNull MeasurementSetRevisionNumber revisionNumber,
+      @NonNull MaterialStateId materialStateId,
+      @NonNull MeasurementSetName name,
+      @Nullable String note,
+      @Nullable MeasurementCorrectionReason correctionReason,
+      @NonNull Instant createdAt,
+      @NonNull ActorReference actor,
+      @NonNull List<@NonNull MeasurementRecord> records,
+      @NonNull List<@NonNull MeasurementResultRetraction> resultRetractions
+  ) {
+    this(
+        revisionId,
+        revisionNumber,
+        materialStateId,
+        MeasurementSetLifecycle.ACTIVE,
+        revisionNumber.isInitial()
+            ? MeasurementSetRevisionChangeKind.INITIAL
+            : MeasurementSetRevisionChangeKind.CORRECTION,
+        name,
+        note,
+        correctionReason,
+        null,
+        createdAt,
+        actor,
+        records,
+        resultRetractions
+    );
+  }
+
+  private static void validateChangeAudit(
+      @NonNull MeasurementSetRevisionNumber revisionNumber,
+      @NonNull MeasurementSetLifecycle lifecycle,
+      @NonNull MeasurementSetRevisionChangeKind changeKind,
+      @Nullable MeasurementCorrectionReason correctionReason,
+      @Nullable MeasurementRetractionReason retractionReason
+  ) {
+    switch (changeKind) {
+      case MeasurementSetRevisionChangeKind kind
+          when kind == INITIAL
+          && revisionNumber.isInitial()
+          && lifecycle == MeasurementSetLifecycle.ACTIVE
+          && correctionReason == null
+          && retractionReason == null -> {
+        // ignore
+      }
+      case INITIAL -> throw new DomainRuleViolationException(
+          "initial measurement revision must be active revision one without a reason"
+      );
+      case MeasurementSetRevisionChangeKind kind
+          when kind == CORRECTION
+          && !revisionNumber.isInitial()
+          && lifecycle == MeasurementSetLifecycle.ACTIVE
+          && correctionReason != null
+          && retractionReason == null -> {
+        // ignore
+      }
+      case CORRECTION -> throw new DomainRuleViolationException(
+          "measurement correction must be an active later revision with only a correction reason"
+      );
+      case MeasurementSetRevisionChangeKind kind
+          when kind == RETRACTION
+          && !revisionNumber.isInitial()
+          && lifecycle == MeasurementSetLifecycle.RETRACTED
+          && correctionReason == null
+          && retractionReason != null -> {
+        // ignore
+      }
+      case RETRACTION -> throw new DomainRuleViolationException(
+          "measurement retraction must be a retracted later revision with only a retraction reason"
+      );
+    }
   }
 
   private static void validateResultRetractions(
@@ -118,12 +196,30 @@ public record MeasurementSetRevision(
     }
   }
 
-  private static void validateRecordIdentities(@NonNull List<@NonNull MeasurementRecord> records) {
+  private static void validateEvidenceIdentities(
+      @NonNull List<@NonNull MeasurementRecord> records,
+      @NonNull List<@NonNull MeasurementResultRetraction> retractions
+  ) {
     final Set<MeasurementRecordId> recordIds = new HashSet<>();
     for (final var measurementRecord : records) {
-      if (!recordIds.add(measurementRecord.recordId())) {
-        throw new DomainRuleViolationException("measurement record ids must be unique within a revision");
-      }
+      requireUniqueEvidenceIdentity(recordIds, measurementRecord);
+    }
+    for (final var retraction : retractions) {
+      requireUniqueEvidenceIdentity(recordIds, retraction.result());
+      retraction.observations().forEach(observation ->
+          requireUniqueEvidenceIdentity(recordIds, observation)
+      );
+    }
+  }
+
+  private static void requireUniqueEvidenceIdentity(
+      @NonNull Set<MeasurementRecordId> recordIds,
+      @NonNull MeasurementRecord measurementRecord
+  ) {
+    if (!recordIds.add(measurementRecord.recordId())) {
+      throw new DomainRuleViolationException(
+          "measurement evidence ids must be unique within a revision"
+      );
     }
   }
 

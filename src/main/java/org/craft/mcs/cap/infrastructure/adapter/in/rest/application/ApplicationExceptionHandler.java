@@ -2,6 +2,7 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.application;
 
 import java.net.URI;
 import org.craft.mcs.cap.shared.application.ApplicationConflictException;
+import org.craft.mcs.cap.shared.application.ApplicationDataIntegrityException;
 import org.craft.mcs.cap.shared.application.ApplicationException;
 import org.craft.mcs.cap.shared.application.ApplicationForbiddenException;
 import org.craft.mcs.cap.shared.application.ApplicationNotFoundException;
@@ -9,6 +10,8 @@ import org.craft.mcs.cap.shared.application.ApplicationUnprocessableException;
 import org.craft.mcs.cap.shared.application.ApplicationValidationException;
 import org.craft.mcs.cap.shared.application.ConcurrentResourceModificationException;
 import org.jspecify.annotations.NonNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.ProblemDetail;
@@ -28,6 +31,7 @@ import static org.craft.mcs.cap.infrastructure.adapter.in.rest.support.RestProbl
 @Order(Ordered.LOWEST_PRECEDENCE)
 public final class ApplicationExceptionHandler {
 
+  private static final @NonNull Logger LOGGER = LoggerFactory.getLogger(ApplicationExceptionHandler.class);
   private static final @NonNull URI APPLICATION_RESOURCE_NOT_FOUND =
       URI.create("urn:problem-type:application-resource-not-found");
   private static final @NonNull URI APPLICATION_FORBIDDEN =
@@ -40,11 +44,14 @@ public final class ApplicationExceptionHandler {
       URI.create("urn:problem-type:application-unprocessable");
   private static final @NonNull URI APPLICATION_VALIDATION_FAILED =
       URI.create("urn:problem-type:application-validation-failed");
+  private static final @NonNull URI APPLICATION_DATA_INTEGRITY_FAILURE =
+      URI.create("urn:problem-type:application-data-integrity-failure");
   private static final int BAD_REQUEST = 400;
   private static final int NOT_FOUND = 404;
   private static final int FORBIDDEN = 403;
   private static final int CONFLICT = 409;
   private static final int UNPROCESSABLE_ENTITY = 422;
+  private static final int INTERNAL_SERVER_ERROR = 500;
 
   @ExceptionHandler(ApplicationNotFoundException.class)
   public @NonNull ResponseEntity<@NonNull ProblemDetail> handleNotFound(
@@ -118,6 +125,19 @@ public final class ApplicationExceptionHandler {
         APPLICATION_VALIDATION_FAILED,
         "Application request validation failed",
         exception.getMessage()
+    );
+  }
+
+  @ExceptionHandler(ApplicationDataIntegrityException.class)
+  public @NonNull ResponseEntity<@NonNull ProblemDetail> handleDataIntegrityFailure(
+      @NonNull ApplicationDataIntegrityException exception
+  ) {
+    LOGGER.error("Application data integrity failure", exception);
+    return response(
+        INTERNAL_SERVER_ERROR,
+        APPLICATION_DATA_INTEGRITY_FAILURE,
+        "Application data integrity failure",
+        "The application encountered inconsistent persisted data."
     );
   }
 

@@ -60,7 +60,7 @@ public final class FeedstockBatchController implements FeedstockBatchApi {
     );
 
     return ResponseEntity
-        .created(URI.create("/feedstock-batches/" + created.batchId().value()))
+        .created(URI.create("/feedstock-batches/" + created.batch().batch().batchId().value()))
         .body(FeedstockBatchRestMapper.toResponse(created));
   }
 

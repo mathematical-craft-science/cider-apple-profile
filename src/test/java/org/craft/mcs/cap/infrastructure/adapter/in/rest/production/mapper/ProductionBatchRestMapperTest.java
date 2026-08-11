@@ -9,8 +9,10 @@ import org.craft.mcs.cap.core.profileanalysis.abv.domain.PredictionConfidence;
 import org.craft.mcs.cap.core.profileanalysis.abv.domain.StandardGravityDropAbvPredictionStrategy;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
+import org.craft.mcs.cap.shared.application.material.VesselReferenceView;
 import org.craft.mcs.cap.core.production.candidate.application.confirmation.port.in.ProductionBatchCreated;
 import org.craft.mcs.cap.core.production.application.model.ProductionBatchDetailsView;
+import org.craft.mcs.cap.core.production.application.port.in.UpdateProductionBatchCommand;
 import org.craft.mcs.cap.core.production.application.model.ProductionCurrentProfileView;
 import org.craft.mcs.cap.core.production.application.model.ProductionCurrentCharacteristicView;
 import org.craft.mcs.cap.core.production.application.model.ProductionBatchView;
@@ -24,8 +26,9 @@ import org.craft.mcs.cap.core.production.domain.model.ProductionSourceCompositio
 import org.craft.mcs.cap.core.production.domain.model.ProductionSourceReference;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
-import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
+import org.craft.mcs.cap.testsupport.VesselTestFixtures;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.ProductionBatchResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.UpdateProductionBatchRequest;
 import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
@@ -54,6 +57,7 @@ class ProductionBatchRestMapperTest {
     final var response = ProductionBatchRestMapper.toDetailsResponse(
         new ProductionBatchDetailsView(
             view,
+            vesselReference(view),
             currentProfile(view),
             potentialAbvPredictor.predict(view.initialProfileSnapshot().specificGravity())
         )
@@ -88,11 +92,36 @@ class ProductionBatchRestMapperTest {
   }
 
   @Test
+  void mapsProductionUpdateRequestToTypedCommand() {
+    final var batchId = ProductionBatchId.newId();
+    final var workspaceId = WorkspaceId.newId();
+    final var vesselId = VesselTestFixtures.vesselId("Tank F-04");
+
+    final var command = ProductionBatchRestMapper.toCommand(
+        batchId,
+        new UpdateProductionBatchRequest(
+            workspaceId.value(),
+            "Corrected cider",
+            vesselId.value(),
+            "Corrected initial placement"
+        )
+    );
+
+    assertThat(command)
+        .returns(batchId, UpdateProductionBatchCommand::batchId)
+        .returns(workspaceId, UpdateProductionBatchCommand::workspaceId)
+        .returns(BatchName.of("Corrected cider"), UpdateProductionBatchCommand::name)
+        .returns(vesselId, UpdateProductionBatchCommand::vesselId)
+        .returns("Corrected initial placement", UpdateProductionBatchCommand::note);
+  }
+
+  @Test
   void mapsYanAndAuthoritativePotentialAbvToCreateResponseComposition() {
     final var candidate = productionCandidateView();
     final var response = ProductionBatchRestMapper.toResponse(
         new ProductionBatchCreated(
             productionBatchView(productionBatch()),
+            VesselTestFixtures.reference(VesselTestFixtures.PRODUCTION_VESSEL_ID, "Tank F-03"),
             candidate
         )
     );
@@ -119,6 +148,7 @@ class ProductionBatchRestMapperTest {
     final var response = ProductionBatchRestMapper.toListResponse(
         List.of(new ProductionBatchDetailsView(
             view,
+            vesselReference(view),
             currentProfile(view),
             potentialAbvPredictor.predict(view.initialProfileSnapshot().specificGravity())
         ))
@@ -142,7 +172,7 @@ class ProductionBatchRestMapperTest {
         ProductionBatchId.newId(),
         WorkspaceId.newId(),
         BatchName.of("Late season cuvee"),
-        Vessel.named("Tank F-03"),
+        VesselTestFixtures.vesselId("Tank F-03"),
         VolumeValue.ofLiters("120"),
         profileSnapshot(),
         null
@@ -154,7 +184,7 @@ class ProductionBatchRestMapperTest {
         batch.batchId(),
         batch.workspaceId(),
         batch.name(),
-        batch.vessel(),
+        batch.vesselId(),
         batch.lifecycle(),
         batch.alcoholicFermentationState(),
         batch.currentVolume(),
@@ -162,6 +192,10 @@ class ProductionBatchRestMapperTest {
         batch.initialProfileSnapshot(),
         batch.note()
     );
+  }
+
+  private static VesselReferenceView vesselReference(ProductionBatchView batch) {
+    return VesselTestFixtures.reference(batch.vesselId(), "Tank F-03");
   }
 
   private static ProductionProfileSnapshot profileSnapshot() {

@@ -1,6 +1,5 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.account.contributor;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.account.contributor.application.port.in.ContributorProfileUseCase;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.contributor.dto.ConfigureContributorProfileRequest;
@@ -33,7 +32,7 @@ public final class ContributorProfileController
   @Override
   @PutMapping("/account/contributor-profile")
   public @NonNull ResponseEntity<@NonNull ContributorProfileResponse> configureContributorProfile(
-      @Valid @RequestBody @NonNull ConfigureContributorProfileRequest request
+      @RequestBody @NonNull ConfigureContributorProfileRequest request
   ) {
     return ResponseEntity.ok(ContributorProfileRestMapper.toResponse(
         contributorProfileUseCase.configure(ContributorProfileRestMapper.toCommand(request))

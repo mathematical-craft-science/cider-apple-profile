@@ -9,9 +9,6 @@ import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;
 import org.springframework.data.jdbc.core.mapping.AggregateReference;
 
-import static java.util.Objects.requireNonNull;
-
-
 /**
  * Maps the WorkspaceMembership aggregate and its typed aggregate references.
  */
@@ -32,17 +29,6 @@ final class WorkspaceMembershipJdbcMapper {
     );
   }
 
-  static @NonNull WorkspaceMembershipJdbcEntity updateFromDomain(
-      @NonNull WorkspaceMembership membership,
-      @NonNull WorkspaceMembershipJdbcEntity entity
-  ) {
-    entity.workspaceId = AggregateReference.to(membership.workspaceId().value());
-    entity.userId = AggregateReference.to(membership.userId().value());
-    entity.role = membership.role();
-    entity.status = membership.status();
-    return entity;
-  }
-
   static @NonNull WorkspaceMembership toDomain(@NonNull WorkspaceMembershipJdbcEntity entity) {
     return new WorkspaceMembership(
         WorkspaceMembershipId.of(entity.membershipId),
@@ -59,7 +45,4 @@ final class WorkspaceMembershipJdbcMapper {
     return new VersionedAggregate<>(toDomain(entity), AggregateRevision.of(entity.version));
   }
 
-  static long revision(@NonNull WorkspaceMembershipJdbcEntity entity) {
-    return requireNonNull(entity, "workspace membership row cannot be null").version;
-  }
 }

@@ -16,10 +16,6 @@ public interface MeasurementSetRepository {
       @NonNull VersionedAggregate<MeasurementSet> measurementSet
   );
 
-  @NonNull VersionedAggregate<MeasurementSet> retract(
-      @NonNull VersionedAggregate<MeasurementSet> measurementSet
-  );
-
   @NonNull Optional<@NonNull VersionedAggregate<MeasurementSet>> findVersionedById(
       @NonNull MeasurementSetId measurementSetId
   );

@@ -6,6 +6,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetLifecycle;
+import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetRevisionChangeKind;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -16,7 +17,7 @@ import org.jspecify.annotations.Nullable;
 )
 public record MeasurementSetResponse(
     @Schema(
-        description = "Stable identifier shared by every correction revision of this logical set.",
+        description = "Stable identifier shared by every immutable revision of this logical set.",
         format = "uuid",
         requiredMode = Schema.RequiredMode.REQUIRED
     )
@@ -51,7 +52,7 @@ public record MeasurementSetResponse(
     )
     long version,
     @Schema(
-        description = "Identifier of this immutable correction revision.",
+        description = "Identifier of this immutable revision.",
         format = "uuid",
         requiredMode = Schema.RequiredMode.REQUIRED
     )
@@ -62,6 +63,12 @@ public record MeasurementSetResponse(
         requiredMode = Schema.RequiredMode.REQUIRED
     )
     int revisionNumber,
+    @Schema(
+        description = "Business action that created this immutable revision.",
+        implementation = MeasurementSetRevisionChangeKind.class,
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
+    @NonNull MeasurementSetRevisionChangeKind changeKind,
     @Schema(
         description = "Immutable material state to which this measurement revision applies. "
             + "Corrections retain the same state identifier.",
@@ -83,11 +90,17 @@ public record MeasurementSetResponse(
     )
     @Nullable String note,
     @Schema(
-        description = "Reason for this correction; null only for the initial revision.",
+        description = "Reason for a CORRECTION revision; null for INITIAL and RETRACTION.",
         maxLength = 1000,
         nullable = true
     )
     @Nullable String correctionReason,
+    @Schema(
+        description = "Reason for full logical-set retraction; present only for a RETRACTION revision.",
+        maxLength = 1000,
+        nullable = true
+    )
+    @Nullable String retractionReason,
     @Schema(
         description = "Time when this immutable revision was created.",
         format = "date-time",
@@ -123,7 +136,7 @@ public record MeasurementSetResponse(
     )
     @NonNull Instant createdAt,
     @Schema(
-        description = "Time when the logical set lifecycle or current revision last changed.",
+        description = "Creation time of the current immutable revision.",
         format = "date-time",
         requiredMode = Schema.RequiredMode.REQUIRED
     )

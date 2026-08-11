@@ -20,6 +20,7 @@ import org.craft.mcs.cap.core.account.contributor.domain.model.ContactVisibility
 import org.craft.mcs.cap.core.account.contributor.domain.model.ContributorProfile;
 import org.craft.mcs.cap.core.account.contributor.domain.model.ContributorType;
 import org.craft.mcs.cap.core.account.invitation.domain.model.WorkspaceInvitation;
+import org.craft.mcs.cap.core.account.invitation.domain.model.WorkspaceInvitationStatus;
 import org.craft.mcs.cap.core.account.invitation.application.port.out.WorkspaceInvitationRepository;
 import org.craft.mcs.cap.core.account.membership.application.port.out.WorkspaceMembershipRepository;
 import org.craft.mcs.cap.core.account.membership.domain.model.AccountRole;
@@ -48,6 +49,7 @@ import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.measurement.unit.TitratableAcidityBasis;
 import org.craft.mcs.cap.shared.testing.jdbc.PostgresDataJdbcTestConfiguration;
 import org.junit.jupiter.api.Test;
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jdbc.test.autoconfigure.DataJdbcTest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
@@ -158,6 +160,28 @@ class JdbcAccountRepositoriesDataJdbcTest {
     assertThat(settingsRepository.findByWorkspaceId(workspace.workspaceId())).contains(settings);
     assertThat(preferencesRepository.findByUserId(user.userId())).contains(preferences);
     assertThat(contributorProfileRepository.findByUserId(user.userId())).contains(contributorProfile);
+  }
+
+  @Test
+  void findsAllProviderIdentitiesSharingOneNormalizedEmail() {
+    final var email = EmailAddress.of("Shared.Identity@Example.com");
+    final var clerkUser = userRepository.create(AccountUser.create(
+        IdentityProviderCode.CLERK,
+        ExternalUserSubject.of("shared-email-clerk"),
+        email,
+        DisplayName.of("Clerk identity"),
+        null
+    ));
+    final var keycloakUser = userRepository.create(AccountUser.create(
+        IdentityProviderCode.KEYCLOAK,
+        ExternalUserSubject.of("shared-email-keycloak"),
+        email,
+        DisplayName.of("Keycloak identity"),
+        null
+    ));
+
+    assertThat(userRepository.findAllByEmail(EmailAddress.of("SHARED.IDENTITY@example.com")))
+        .containsExactlyInAnyOrder(clerkUser, keycloakUser);
   }
 
   @Test
@@ -319,6 +343,10 @@ class JdbcAccountRepositoriesDataJdbcTest {
     )))
         .isInstanceOf(ConcurrentResourceModificationException.class)
         .hasMessage("resource was modified concurrently: account user");
+    assertThat(userRepository.findById(user.userId()))
+        .get()
+        .extracting(AccountUser::email)
+        .isEqualTo(EmailAddress.of("first@example.com"));
   }
 
   @Test
@@ -341,6 +369,189 @@ class JdbcAccountRepositoriesDataJdbcTest {
     preferencesRepository.update(state.withAggregate(updated));
 
     assertThat(preferencesRepository.findByUserId(user.userId())).contains(updated);
+  }
+
+  @Test
+  void rejectsWorkspaceStateLoadedBeforeAnotherUpdate() {
+    final var workspace = workspaceRepository.create(Workspace.create(
+        DisplayName.of("Initial workspace"),
+        WorkspaceType.CIDERY
+    ));
+    final var first = workspaceRepository.findVersionedById(workspace.workspaceId()).orElseThrow();
+    final var stale = workspaceRepository.findVersionedById(workspace.workspaceId()).orElseThrow();
+
+    workspaceRepository.update(first.withAggregate(
+        first.aggregate().update(DisplayName.of("Winning workspace"), WorkspaceType.LABORATORY)
+    ));
+
+    assertThatThrownBy(() -> workspaceRepository.update(stale.withAggregate(
+        stale.aggregate().update(DisplayName.of("Stale workspace"), WorkspaceType.INSTITUTE)
+    )))
+        .isInstanceOf(ConcurrentResourceModificationException.class)
+        .hasMessage("resource was modified concurrently: workspace");
+    assertThat(workspaceRepository.findById(workspace.workspaceId()))
+        .get()
+        .returns(DisplayName.of("Winning workspace"), Workspace::name)
+        .returns(WorkspaceType.LABORATORY, Workspace::type);
+  }
+
+  @Test
+  void rejectsWorkspaceMembershipStateLoadedBeforeAnotherUpdate() {
+    final var user = persistUser("membership-revision");
+    final var workspace = persistWorkspace("Membership revision workspace");
+    final var membership = membershipRepository.create(WorkspaceMembership.createOwner(
+        workspace.workspaceId(),
+        user.userId()
+    ));
+    final var first = membershipRepository.findVersionedById(membership.membershipId()).orElseThrow();
+    final var stale = membershipRepository.findVersionedById(membership.membershipId()).orElseThrow();
+
+    membershipRepository.update(first.withAggregate(first.aggregate().demoteOwnerToAdmin()));
+
+    assertThatThrownBy(() -> membershipRepository.update(stale.withAggregate(stale.aggregate().suspend())))
+        .isInstanceOf(ConcurrentResourceModificationException.class)
+        .hasMessage("resource was modified concurrently: workspace membership");
+    assertThat(membershipRepository.findVersionedById(membership.membershipId()))
+        .get()
+        .extracting(VersionedAggregate::aggregate)
+        .returns(AccountRole.ADMIN, WorkspaceMembership::role)
+        .returns(WorkspaceMembershipStatus.ACTIVE, WorkspaceMembership::status);
+  }
+
+  @Test
+  void rejectsUserPreferencesStateLoadedBeforeAnotherUpdate() {
+    final var user = persistUser("preferences-revision");
+    preferencesRepository.create(UserPreferences.defaults(user.userId()));
+    final var first = preferencesRepository.findVersionedById(user.userId()).orElseThrow();
+    final var stale = preferencesRepository.findVersionedById(user.userId()).orElseThrow();
+    final var winning = new UserPreferences(
+        user.userId(),
+        Locale.forLanguageTag("ru-RU"),
+        ZoneId.of("Europe/Moscow")
+    );
+    final var staleUpdate = new UserPreferences(
+        user.userId(),
+        Locale.forLanguageTag("de-DE"),
+        ZoneId.of("Europe/Berlin")
+    );
+
+    preferencesRepository.update(first.withAggregate(winning));
+
+    assertThatThrownBy(() -> preferencesRepository.update(stale.withAggregate(staleUpdate)))
+        .isInstanceOf(ConcurrentResourceModificationException.class)
+        .hasMessage("resource was modified concurrently: user preferences");
+    assertThat(preferencesRepository.findByUserId(user.userId())).contains(winning);
+  }
+
+  @Test
+  void rejectsContributorProfileStateLoadedBeforeAnotherUpdate() {
+    final var user = persistUser("contributor-revision");
+    final var consentedAt = Instant.parse("2026-01-10T12:00:00Z");
+    final var profile = contributorProfileRepository.create(ContributorProfile.create(
+        user.userId(),
+        ContributorType.PRODUCER,
+        DisplayName.of("Initial contributor"),
+        null,
+        EmailAddress.of("contributor@example.com"),
+        null,
+        true,
+        consentedAt
+    ));
+    final var first = contributorProfileRepository.findVersionedById(user.userId()).orElseThrow();
+    final var stale = contributorProfileRepository.findVersionedById(user.userId()).orElseThrow();
+    final var winning = profile.update(
+        ContributorType.LABORATORY,
+        DisplayName.of("Winning contributor"),
+        null,
+        EmailAddress.of("winner@example.com"),
+        null,
+        true,
+        consentedAt
+    );
+    final var staleUpdate = profile.update(
+        ContributorType.RESEARCHER,
+        DisplayName.of("Stale contributor"),
+        null,
+        EmailAddress.of("stale-contributor@example.com"),
+        null,
+        true,
+        consentedAt
+    );
+
+    contributorProfileRepository.update(first.withAggregate(winning));
+
+    assertThatThrownBy(() -> contributorProfileRepository.update(stale.withAggregate(staleUpdate)))
+        .isInstanceOf(ConcurrentResourceModificationException.class)
+        .hasMessage("resource was modified concurrently: contributor profile");
+    assertThat(contributorProfileRepository.findByUserId(user.userId()))
+        .get()
+        .returns(DisplayName.of("Winning contributor"), ContributorProfile::publicName)
+        .returns(ContributorType.LABORATORY, ContributorProfile::contributorType);
+  }
+
+  @Test
+  void rejectsWorkspaceInvitationStateLoadedBeforeAnotherUpdate() {
+    final var user = persistUser("invitation-revision");
+    final var workspace = persistWorkspace("Invitation revision workspace");
+    final var now = Instant.parse("2026-07-14T08:00:00Z");
+    final var invitation = invitationRepository.create(WorkspaceInvitation.create(
+        workspace.workspaceId(),
+        EmailAddress.of("revision-invitee@example.com"),
+        AccountRole.TECHNOLOGIST,
+        user.userId(),
+        now,
+        Duration.ofDays(7)
+    ));
+    final var first = invitationRepository.findVersionedById(invitation.invitationId()).orElseThrow();
+    final var stale = invitationRepository.findVersionedById(invitation.invitationId()).orElseThrow();
+
+    invitationRepository.update(first.withAggregate(first.aggregate().reject(now)));
+
+    assertThatThrownBy(() -> invitationRepository.update(stale.withAggregate(stale.aggregate().revoke(now))))
+        .isInstanceOf(ConcurrentResourceModificationException.class)
+        .hasMessage("resource was modified concurrently: workspace invitation");
+    assertThat(invitationRepository.findById(invitation.invitationId()))
+        .get()
+        .extracting(WorkspaceInvitation::status)
+        .isEqualTo(WorkspaceInvitationStatus.REJECTED);
+  }
+
+  @Test
+  void persistedExpirationReleasesPendingInvitationEmailUniqueness() {
+    final var user = persistUser("expired-invitation");
+    final var workspace = persistWorkspace("Expired invitation workspace");
+    final var invitedEmail = EmailAddress.of("expired-invitee@example.com");
+    final var createdAt = Instant.parse("2026-07-01T08:00:00Z");
+    final var elapsed = invitationRepository.create(WorkspaceInvitation.create(
+        workspace.workspaceId(),
+        invitedEmail,
+        AccountRole.TECHNOLOGIST,
+        user.userId(),
+        createdAt,
+        Duration.ofDays(1)
+    ));
+    final var elapsedState = invitationRepository.findVersionedById(elapsed.invitationId()).orElseThrow();
+
+    invitationRepository.update(elapsedState.withAggregate(
+        elapsedState.aggregate().expire(createdAt.plus(Duration.ofDays(2)))
+    ));
+    final var replacement = invitationRepository.create(WorkspaceInvitation.create(
+        workspace.workspaceId(),
+        invitedEmail,
+        AccountRole.VIEWER,
+        user.userId(),
+        createdAt.plus(Duration.ofDays(2)),
+        Duration.ofDays(7)
+    ));
+
+    assertThat(invitationRepository.findById(elapsed.invitationId()))
+        .get()
+        .extracting(WorkspaceInvitation::status)
+        .isEqualTo(WorkspaceInvitationStatus.EXPIRED);
+    assertThat(invitationRepository.findById(replacement.invitationId()))
+        .get()
+        .extracting(WorkspaceInvitation::status)
+        .isEqualTo(WorkspaceInvitationStatus.PENDING);
   }
 
   @Test
@@ -373,6 +584,27 @@ class JdbcAccountRepositoriesDataJdbcTest {
     assertThatThrownBy(() -> settingsRepository.update(staleUpdate, created.revision()))
         .isInstanceOf(ConcurrentResourceModificationException.class)
         .hasMessage("resource was modified concurrently: workspace settings");
+    assertThat(settingsRepository.findByWorkspaceId(workspace.workspaceId()))
+        .get()
+        .returns(Duration.ofDays(21), state -> state.settings().measurementStaleAfter())
+        .returns(TitratableAcidityBasis.CITRIC_ACID, state -> state.settings().defaultAcidityBasis());
+  }
+
+  private @NonNull AccountUser persistUser(@NonNull String subjectSuffix) {
+    return userRepository.create(AccountUser.create(
+        IdentityProviderCode.CLERK,
+        ExternalUserSubject.of("user_" + subjectSuffix),
+        EmailAddress.of(subjectSuffix + "@example.com"),
+        DisplayName.of("Test user " + subjectSuffix),
+        null
+    ));
+  }
+
+  private @NonNull Workspace persistWorkspace(@NonNull String name) {
+    return workspaceRepository.create(Workspace.create(
+        DisplayName.of(name),
+        WorkspaceType.CIDERY
+    ));
   }
 
   @TestConfiguration(proxyBeanMethods = false)

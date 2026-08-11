@@ -5,7 +5,7 @@ import org.craft.mcs.cap.core.production.domain.model.value.AlcoholicFermentatio
 import org.craft.mcs.cap.shared.kernel.material.value.BatchLifecycle;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
-import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
+import org.craft.mcs.cap.shared.kernel.identity.VesselId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
@@ -23,7 +23,7 @@ public record ProductionBatchView(
     @NonNull ProductionBatchId batchId,
     @NonNull WorkspaceId workspaceId,
     @NonNull BatchName name,
-    @NonNull Vessel vessel,
+    @NonNull VesselId vesselId,
     @NonNull BatchLifecycle lifecycle,
     @NonNull AlcoholicFermentationState alcoholicFermentationState,
     @NonNull VolumeValue currentVolume,
@@ -36,7 +36,7 @@ public record ProductionBatchView(
     requireNonNull(batchId, "production batch id cannot be null");
     requireNonNull(workspaceId, "workspace id cannot be null");
     requireNonNull(name, "production batch name cannot be null");
-    requireNonNull(vessel, "production vessel cannot be null");
+    requireNonNull(vesselId, "production vessel id cannot be null");
     requireNonNull(lifecycle, "production batch lifecycle cannot be null");
     requireNonNull(alcoholicFermentationState, "alcoholic fermentation state cannot be null");
     requireNonNull(currentVolume, "production current volume cannot be null");

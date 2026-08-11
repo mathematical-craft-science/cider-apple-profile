@@ -1,65 +1,84 @@
--- Namastack Outbox 1.6.0 PostgreSQL schema. Schema initialization remains owned by Liquibase.
-CREATE TABLE IF NOT EXISTS outbox_record
+CREATE TABLE IF NOT EXISTS batch_trace_steps
 (
-    id             VARCHAR(255)             NOT NULL,
-    status         VARCHAR(20)              NOT NULL,
-    record_key     VARCHAR(255)             NOT NULL,
-    record_type    VARCHAR(255)             NOT NULL,
-    payload        TEXT                     NOT NULL,
-    context        TEXT,
+    step_id        UUID                     NOT NULL PRIMARY KEY,
+    workspace_id   UUID                     NOT NULL,
+    parent_step_id UUID,
+    step_type      VARCHAR(64)              NOT NULL,
+    occurred_at    TIMESTAMP WITH TIME ZONE NOT NULL,
+    performed_by_type VARCHAR(32)            NOT NULL,
+    performed_by_id   UUID                   NOT NULL,
+    note           VARCHAR(2000),
     created_at     TIMESTAMP WITH TIME ZONE NOT NULL,
-    completed_at   TIMESTAMP WITH TIME ZONE,
-    failure_count  INT                      NOT NULL,
-    failure_reason VARCHAR(1000),
-    next_retry_at  TIMESTAMP WITH TIME ZONE NOT NULL,
-    partition_no   INTEGER                  NOT NULL,
-    handler_id     VARCHAR(1000)            NOT NULL,
-    PRIMARY KEY (id)
+    CONSTRAINT fk_batch_trace_steps_workspace
+        FOREIGN KEY (workspace_id) REFERENCES workspaces (workspace_id),
+    CONSTRAINT chk_batch_trace_steps_actor_type
+        CHECK (performed_by_type IN ('ACCOUNT_USER', 'MACHINE_IDENTITY'))
 );
 
-CREATE TABLE IF NOT EXISTS outbox_instance
+CREATE TABLE IF NOT EXISTS batch_trace_step_subjects
 (
-    instance_id    VARCHAR(255) PRIMARY KEY,
-    hostname       VARCHAR(255)             NOT NULL,
-    port           INTEGER                  NOT NULL,
-    status         VARCHAR(50)              NOT NULL,
-    started_at     TIMESTAMP WITH TIME ZONE NOT NULL,
-    last_heartbeat TIMESTAMP WITH TIME ZONE NOT NULL,
-    created_at     TIMESTAMP WITH TIME ZONE NOT NULL,
-    updated_at     TIMESTAMP WITH TIME ZONE NOT NULL
+    step_id                      UUID        NOT NULL,
+    subject_role                 VARCHAR(16) NOT NULL,
+    subject_order                INTEGER     NOT NULL,
+    material_state_id            UUID        NOT NULL,
+    subject_type                 VARCHAR(64) NOT NULL,
+    subject_id                   UUID        NOT NULL,
+    display_name_snapshot        VARCHAR(255),
+    invalidated_characteristics  VARCHAR(64)[] NOT NULL DEFAULT ARRAY[]::VARCHAR(64)[],
+
+    snapshot_volume_liters       NUMERIC(15, 3),
+    snapshot_confidence          VARCHAR(64),
+
+    sugar_value                  NUMERIC(12, 9),
+    sugar_value_kind             VARCHAR(32),
+    sugar_min                    NUMERIC(12, 9),
+    sugar_max                    NUMERIC(12, 9),
+
+    acidity_value                NUMERIC(12, 6),
+    acidity_value_kind           VARCHAR(32),
+    acidity_min                  NUMERIC(12, 6),
+    acidity_max                  NUMERIC(12, 6),
+
+    tannin_value              NUMERIC(12, 4),
+    tannin_value_kind         VARCHAR(32),
+    tannin_min                NUMERIC(12, 4),
+    tannin_max                NUMERIC(12, 4),
+
+    yan_value                    NUMERIC(12, 4),
+    yan_value_kind               VARCHAR(32),
+    yan_min                      NUMERIC(12, 4),
+    yan_max                      NUMERIC(12, 4),
+
+    CONSTRAINT fk_batch_trace_step_subjects_step
+        FOREIGN KEY (step_id)
+            REFERENCES batch_trace_steps (step_id)
+            ON DELETE CASCADE,
+    CONSTRAINT pk_batch_trace_step_subjects
+        PRIMARY KEY (step_id, subject_role, subject_order),
+    CONSTRAINT chk_batch_trace_step_subjects_role
+        CHECK (subject_role IN ('INPUT', 'OUTPUT')),
+    CONSTRAINT chk_batch_trace_step_subjects_order
+        CHECK (subject_order >= 0)
 );
 
-CREATE TABLE IF NOT EXISTS outbox_partition
-(
-    partition_number INTEGER PRIMARY KEY,
-    instance_id      VARCHAR(255),
-    version          BIGINT                   NOT NULL DEFAULT 0,
-    updated_at       TIMESTAMP WITH TIME ZONE NOT NULL
-);
+CREATE INDEX IF NOT EXISTS idx_batch_trace_steps_workspace_id
+    ON batch_trace_steps (workspace_id);
 
-CREATE INDEX IF NOT EXISTS idx_outbox_record_record_key_created
-    ON outbox_record (record_key, created_at);
+CREATE INDEX IF NOT EXISTS idx_batch_trace_steps_parent_step_id
+    ON batch_trace_steps (parent_step_id);
 
-CREATE INDEX IF NOT EXISTS idx_outbox_record_partition_status_retry
-    ON outbox_record (partition_no, status, next_retry_at);
+CREATE INDEX IF NOT EXISTS idx_batch_trace_steps_type_occurred
+    ON batch_trace_steps (step_type, occurred_at, step_id);
 
-CREATE INDEX IF NOT EXISTS idx_outbox_record_status_retry
-    ON outbox_record (status, next_retry_at);
+CREATE INDEX IF NOT EXISTS idx_batch_trace_step_subjects_step_id
+    ON batch_trace_step_subjects (step_id);
 
-CREATE INDEX IF NOT EXISTS idx_outbox_record_status
-    ON outbox_record (status);
+CREATE INDEX IF NOT EXISTS idx_batch_trace_step_subjects_lookup
+    ON batch_trace_step_subjects (subject_role, subject_type, subject_id);
 
-CREATE INDEX IF NOT EXISTS idx_outbox_record_record_key_completed_created
-    ON outbox_record (record_key, completed_at, created_at);
+CREATE INDEX IF NOT EXISTS idx_batch_trace_step_subjects_state_id
+    ON batch_trace_step_subjects (material_state_id);
 
-CREATE INDEX IF NOT EXISTS idx_outbox_instance_status_heartbeat
-    ON outbox_instance (status, last_heartbeat);
-
-CREATE INDEX IF NOT EXISTS idx_outbox_instance_last_heartbeat
-    ON outbox_instance (last_heartbeat);
-
-CREATE INDEX IF NOT EXISTS idx_outbox_instance_status
-    ON outbox_instance (status);
-
-CREATE INDEX IF NOT EXISTS idx_outbox_partition_instance_id
-    ON outbox_partition (instance_id);
+CREATE UNIQUE INDEX IF NOT EXISTS ux_batch_trace_step_subjects_output_state
+    ON batch_trace_step_subjects (material_state_id)
+    WHERE subject_role = 'OUTPUT';

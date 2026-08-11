@@ -15,7 +15,10 @@ import org.craft.mcs.cap.core.production.application.port.in.ListProductionBatch
 import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchQueryRepository;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionMeasurementProfileProvider;
 import org.craft.mcs.cap.core.production.application.usecase.ProductionCurrentProfileProjector;
+import org.craft.mcs.cap.core.production.application.usecase.ProductionBatchDetailsAssembler;
 import org.craft.mcs.cap.core.production.application.usecase.QueryProductionBatchesService;
+import org.craft.mcs.cap.core.production.application.usecase.ProductionVesselReferenceResolver;
+import org.craft.mcs.cap.core.production.application.vessel.port.out.ProductionVesselReferenceQuery;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatchId;
 import org.craft.mcs.cap.core.production.domain.model.value.AlcoholicFermentationState;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchLifecycle;
@@ -30,7 +33,7 @@ import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
-import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
+import org.craft.mcs.cap.testsupport.VesselTestFixtures;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic;
 import org.craft.mcs.cap.shared.kernel.measurement.MeasurementSourceType;
@@ -38,10 +41,11 @@ import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.ArgumentMatchers.any;
 import static org.craft.mcs.cap.shared.kernel.identity.UuidV7Generator.newUuid;
 
 class QueryProductionBatchesServiceTest {
@@ -148,7 +152,7 @@ class QueryProductionBatchesServiceTest {
         ProductionBatchId.newId(),
         WorkspaceId.newId(),
         BatchName.of("Late season cider"),
-        Vessel.named("Tank F-03"),
+        VesselTestFixtures.vesselId("Tank F-03"),
         BatchLifecycle.ACTIVE,
         AlcoholicFermentationState.NOT_STARTED,
         VolumeValue.ofLiters("120"),
@@ -168,12 +172,24 @@ class QueryProductionBatchesServiceTest {
       ProductionAccessControl accessControl,
       ProductionMeasurementProfileProvider measurementProvider
   ) {
+    final var vesselReferenceQuery = mock(ProductionVesselReferenceQuery.class);
+    when(vesselReferenceQuery.resolveReferences(any(), anySet())).thenReturn(Map.of(
+        VesselTestFixtures.PRODUCTION_VESSEL_ID,
+        VesselTestFixtures.reference(VesselTestFixtures.PRODUCTION_VESSEL_ID, "Tank F-03")
+    ));
+    final var vesselReferenceResolver = new ProductionVesselReferenceResolver(vesselReferenceQuery);
+    final var detailsAssembler = new ProductionBatchDetailsAssembler(
+        measurementProvider,
+        new ProductionCurrentProfileProjector(),
+        POTENTIAL_ABV_PREDICTOR,
+        vesselReferenceResolver
+    );
     return new QueryProductionBatchesService(
         repository,
         accessControl,
         measurementProvider,
-        new ProductionCurrentProfileProjector(),
-        POTENTIAL_ABV_PREDICTOR
+        vesselReferenceResolver,
+        detailsAssembler
     );
   }
 }

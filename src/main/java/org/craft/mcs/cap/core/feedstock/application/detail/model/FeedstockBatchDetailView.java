@@ -1,6 +1,6 @@
 package org.craft.mcs.cap.core.feedstock.application.detail.model;
 
-import org.craft.mcs.cap.core.feedstock.application.batch.model.FeedstockBatchSummary;
+import org.craft.mcs.cap.core.feedstock.application.batch.model.FeedstockBatchView;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
@@ -13,7 +13,7 @@ import static java.util.Objects.requireNonNull;
  * measurement history owned by the generic Measurement context.
  */
 public record FeedstockBatchDetailView(
-    @NonNull FeedstockBatchSummary batch,
+    @NonNull FeedstockBatchView batch,
     @NonNull FeedstockBatchCurrentProfileView currentProfile
 ) {
 

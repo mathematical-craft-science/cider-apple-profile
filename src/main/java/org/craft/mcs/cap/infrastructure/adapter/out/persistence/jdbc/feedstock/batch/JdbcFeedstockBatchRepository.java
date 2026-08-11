@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchRepository;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
-import org.craft.mcs.cap.shared.application.ConcurrentResourceModificationException;
 import org.craft.mcs.cap.shared.application.persistence.VersionedAggregate;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.feedstock.batch.entity.FeedstockBatchJdbcMapper;
 import org.jspecify.annotations.NonNull;
@@ -13,7 +12,7 @@ import org.springframework.stereotype.Repository;
 
 import static java.util.Objects.requireNonNull;
 import static org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.support.JdbcPersistenceExceptionTranslator.translateOptimisticLocking;
-import static org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.support.JdbcAggregateRevisionGuard.requireExpectedRevision;
+import static org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.support.JdbcVersionedUpdate.complete;
 
 
 @Repository
@@ -41,18 +40,25 @@ class JdbcFeedstockBatchRepository
   ) {
     requireNonNull(feedstockBatch, "versioned feedstock batch cannot be null");
     final var aggregate = feedstockBatch.aggregate();
-    final var entity = repository.findById(aggregate.batchId().value())
-        .orElseThrow(() -> new ConcurrentResourceModificationException("feedstock batch", null));
-    requireExpectedRevision(
+    final var affectedRows = translateOptimisticLocking(
         "feedstock batch",
-        feedstockBatch.revision(),
-        FeedstockBatchJdbcMapper.revision(entity)
+        () -> repository.updateByIdAndVersion(
+            aggregate.batchId().value(),
+            aggregate.name().value(),
+            aggregate.vesselId().value(),
+            aggregate.type(),
+            aggregate.season().startsOn(),
+            aggregate.season().endsOn(),
+            aggregate.source() == null ? null : aggregate.source().value(),
+            aggregate.lifecycle(),
+            aggregate.availableVolume().liters(),
+            aggregate.currentMaterialStateId().value(),
+            aggregate.note(),
+            aggregate.deletedAt(),
+            feedstockBatch.revision().value()
+        )
     );
-    final var saved = translateOptimisticLocking(
-        "feedstock batch",
-        () -> repository.save(FeedstockBatchJdbcMapper.updateFromDomain(aggregate, entity))
-    );
-    return FeedstockBatchJdbcMapper.toVersionedAggregate(saved);
+    return complete("feedstock batch", feedstockBatch, affectedRows);
   }
 
   @Override
@@ -66,14 +72,20 @@ class JdbcFeedstockBatchRepository
   }
 
   @Override
-  public void delete(@NonNull VersionedAggregate<FeedstockBatch> feedstockBatch) {
-    requireNonNull(feedstockBatch, "feedstock batch cannot be null");
-    final var affectedRows = repository.softDeleteByIdAndVersion(
-        feedstockBatch.aggregate().batchId().value(),
-        feedstockBatch.revision().value()
-    );
-    if (affectedRows != 1) {
-      throw new ConcurrentResourceModificationException("feedstock batch", null);
-    }
+  public @NonNull Optional<@NonNull VersionedAggregate<FeedstockBatch>> lockVersionedById(
+      @NonNull FeedstockBatchId batchId
+  ) {
+    requireNonNull(batchId, "feedstock batch id cannot be null");
+    return repository.lockById(batchId.value())
+        .map(FeedstockBatchJdbcMapper::toVersionedAggregate);
+  }
+
+  @Override
+  public @NonNull Optional<@NonNull FeedstockBatch> lockForMeasurementChange(
+      @NonNull FeedstockBatchId batchId
+  ) {
+    requireNonNull(batchId, "feedstock batch id cannot be null");
+    return repository.lockForMeasurementChange(batchId.value())
+        .map(FeedstockBatchJdbcMapper::toDomain);
   }
 }

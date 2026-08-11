@@ -10,4 +10,5 @@
   <include file="migration/changelog-04.sql" relativeToChangelogFile="true"/>
   <include file="migration/changelog-05.sql" relativeToChangelogFile="true"/>
   <include file="migration/changelog-06.sql" relativeToChangelogFile="true"/>
+  <include file="migration/changelog-07.sql" relativeToChangelogFile="true"/>
 </databaseChangeLog>

@@ -41,11 +41,11 @@ class JdbcMaterialStateHistoryStore implements MaterialStateHistoryStore {
         """
             SELECT step.workspace_id,
                    trace_subject.*
-              FROM batch_trace_step_subjects trace_subject
+             FROM batch_trace_step_subjects trace_subject
               JOIN batch_trace_steps step ON step.step_id = trace_subject.step_id
              WHERE trace_subject.material_state_id = :materialStateId
-             ORDER BY CASE trace_subject.subject_role WHEN 'OUTPUT' THEN 0 ELSE 1 END,
-                      step.occurred_at,
+               AND trace_subject.subject_role = 'OUTPUT'
+             ORDER BY step.occurred_at,
                       step.step_id
              LIMIT 1
             """,

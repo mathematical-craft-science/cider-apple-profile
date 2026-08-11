@@ -17,6 +17,7 @@ import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetId;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetLifecycle;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetName;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetRevisionId;
+import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetRevisionChangeKind;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetRevisionNumber;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementRetractionReason;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSourceName;
@@ -81,10 +82,12 @@ class MeasurementSetRestMapperTest {
         3,
         MeasurementSetRevisionId.newId(),
         MeasurementSetRevisionNumber.of(3),
+        MeasurementSetRevisionChangeKind.RETRACTION,
         MaterialStateId.newId(),
         MeasurementSetName.of("Repeated gravity reading"),
         null,
-        reason,
+        null,
+        setRetractionReason,
         RETRACTED_AT,
         actor,
         List.of(),

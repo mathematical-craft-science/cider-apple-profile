@@ -55,10 +55,12 @@ final class MeasurementSubjectAccessControlAdapter implements MeasurementSubject
   public @NonNull WorkspaceId requireWriteAccess(@NonNull MeasurementSubjectReference subject) {
     requireNonNull(subject, "measurement subject cannot be null");
     return switch (subject.type()) {
-      case FEEDSTOCK_BATCH ->
-          feedstockBatchAccessUseCase.requireWriteAccess(FeedstockBatchId.of(subject.id()));
-      case PRODUCTION_BATCH ->
-          productionBatchAccessUseCase.requireWriteAccess(ProductionBatchId.of(subject.id()));
+      case FEEDSTOCK_BATCH -> feedstockBatchAccessUseCase.requireWriteAccess(
+          FeedstockBatchId.of(subject.id())
+      );
+      case PRODUCTION_BATCH -> productionBatchAccessUseCase.requireWriteAccess(
+          ProductionBatchId.of(subject.id())
+      );
     };
   }
 }

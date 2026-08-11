@@ -58,38 +58,6 @@ final class ProductionBatchCandidateJdbcMapper {
     );
   }
 
-  static @NonNull ProductionBatchCandidateJdbcEntity updateFromSnapshot(
-      @NonNull ProductionBatchCandidateSnapshot snapshot,
-      @NonNull ProductionBatchCandidateJdbcEntity entity,
-      @NonNull ProductionBatchCandidateJsonCodec codec
-  ) {
-    requireNonNull(snapshot, "production batch candidate snapshot cannot be null");
-    requireNonNull(entity, "production batch candidate entity cannot be null");
-    requireNonNull(codec, "production batch candidate JSON codec cannot be null");
-    final var candidate = snapshot.candidate();
-    final var profile = candidate.profile();
-    entity.workspaceId = candidate.workspaceId().value();
-    entity.status = candidate.status();
-    entity.sourcesJson = codec.encodeSources(candidate);
-    entity.totalVolumeLiters = candidate.sourceComposition().totalVolume().liters();
-    entity.specificGravity = profile.specificGravity().asBigDecimal();
-    entity.titratableAcidityGLAsMalic = profile.titratableAcidity().asBigDecimal();
-    entity.tanninMgLTae = tannin(profile);
-    entity.yeastAssimilableNitrogenMgNL = yeastAssimilableNitrogen(profile);
-    entity.predictedFinalGravity = snapshot.potentialAbv().predictedFinalGravity().asBigDecimal();
-    entity.predictedFinalGravitySource = snapshot.potentialAbv().predictedFinalGravitySource();
-    entity.potentialAbvPercent = snapshot.potentialAbv().potentialAbv().percent();
-    entity.abvPredictionMethod = snapshot.potentialAbv().method();
-    entity.abvPredictionConfidence = snapshot.potentialAbv().confidence();
-    entity.normalizerCode = snapshot.normalizerCode();
-    entity.targetDistanceJson = codec.encodeTargetDistance(snapshot.targetDistance());
-    entity.warningsJson = codec.encodeWarnings(snapshot.warnings());
-    entity.confirmedProductionBatchId = candidate.confirmedProductionBatchId() == null
-        ? null
-        : candidate.confirmedProductionBatchId().value();
-    return entity;
-  }
-
   static @NonNull ProductionBatchCandidateSnapshot toSnapshot(
       @NonNull ProductionBatchCandidateJdbcEntity entity,
       @NonNull ProductionBatchCandidateJsonCodec codec

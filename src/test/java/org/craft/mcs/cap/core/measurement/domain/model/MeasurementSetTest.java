@@ -57,23 +57,18 @@ class MeasurementSetTest {
     final var measurementSetId = MeasurementSetId.newId();
     final var workspaceId = WorkspaceId.newId();
     final var subject = subject();
-    final var currentRevision = revision(2, INITIAL_TIME.plusSeconds(60));
-    final var updatedAt = INITIAL_TIME.plusSeconds(120);
-    final var retraction = new MeasurementSetRetraction(
-        ActorReference.accountUser(newUuid()),
-        updatedAt,
-        RETRACTION_REASON
+    final var activeRevision = revision(2, INITIAL_TIME.plusSeconds(60));
+    final var currentRevision = fullRetractionRevision(
+        activeRevision,
+        INITIAL_TIME.plusSeconds(120)
     );
 
     final var restored = MeasurementSet.restore(
         measurementSetId,
         workspaceId,
         subject,
-        MeasurementSetLifecycle.RETRACTED,
-        retraction,
         currentRevision,
-        INITIAL_TIME,
-        updatedAt
+        INITIAL_TIME
     );
 
     assertThat(restored)
@@ -81,69 +76,27 @@ class MeasurementSetTest {
         .returns(workspaceId, MeasurementSet::workspaceId)
         .returns(subject, MeasurementSet::subject)
         .returns(MeasurementSetLifecycle.RETRACTED, MeasurementSet::lifecycle)
-        .returns(retraction, MeasurementSet::retraction)
         .returns(currentRevision, MeasurementSet::currentRevision)
         .returns(INITIAL_TIME, MeasurementSet::createdAt)
-        .returns(updatedAt, MeasurementSet::updatedAt);
+        .returns(currentRevision.createdAt(), MeasurementSet::updatedAt)
+        .satisfies(set -> assertThat(set.retraction())
+            .isNotNull()
+            .returns(currentRevision.actor(), MeasurementSetRetraction::actor)
+            .returns(currentRevision.createdAt(), MeasurementSetRetraction::retractedAt)
+            .returns(RETRACTION_REASON, MeasurementSetRetraction::reason));
   }
 
   @Test
-  void restoredLifecycleRequiresConsistentRetractionAudit() {
-    final var revision = revision(2, INITIAL_TIME.plusSeconds(60));
-    final var updatedAt = INITIAL_TIME.plusSeconds(120);
-    final var retraction = new MeasurementSetRetraction(
-        ActorReference.accountUser(newUuid()),
-        updatedAt,
-        RETRACTION_REASON
-    );
-
+  void restoredRevisionCannotPredateAggregateCreation() {
     assertThatThrownBy(() -> MeasurementSet.restore(
         MeasurementSetId.newId(),
         WorkspaceId.newId(),
         subject(),
-        MeasurementSetLifecycle.ACTIVE,
-        retraction,
-        revision,
-        INITIAL_TIME,
-        updatedAt
+        revision(2, INITIAL_TIME),
+        INITIAL_TIME.plusSeconds(1)
     ))
         .isInstanceOf(DomainRuleViolationException.class)
-        .hasMessage("active measurement set cannot have retraction audit");
-    assertThatThrownBy(() -> MeasurementSet.restore(
-        MeasurementSetId.newId(),
-        WorkspaceId.newId(),
-        subject(),
-        MeasurementSetLifecycle.RETRACTED,
-        null,
-        revision,
-        INITIAL_TIME,
-        updatedAt
-    ))
-        .isInstanceOf(DomainRuleViolationException.class)
-        .hasMessage("retracted measurement set requires retraction audit");
-  }
-
-  @Test
-  void restoredRetractionTimeMustEqualAggregateUpdateTime() {
-    final var revision = revision(2, INITIAL_TIME.plusSeconds(60));
-    final var updatedAt = INITIAL_TIME.plusSeconds(120);
-
-    assertThatThrownBy(() -> MeasurementSet.restore(
-        MeasurementSetId.newId(),
-        WorkspaceId.newId(),
-        subject(),
-        MeasurementSetLifecycle.RETRACTED,
-        new MeasurementSetRetraction(
-            ActorReference.accountUser(newUuid()),
-            updatedAt.minusSeconds(1),
-            RETRACTION_REASON
-        ),
-        revision,
-        INITIAL_TIME,
-        updatedAt
-    ))
-        .isInstanceOf(DomainRuleViolationException.class)
-        .hasMessage("measurement-set retraction time must equal aggregate update time");
+        .hasMessage("current measurement revision cannot predate measurement set creation");
   }
 
   @Test
@@ -178,7 +131,7 @@ class MeasurementSetTest {
 
     assertThatThrownBy(() -> set.correct(correction))
         .isInstanceOf(DomainConflictException.class)
-        .hasMessage("measurement correction requires a new revision identity");
+        .hasMessage("measurement change requires a new revision identity");
   }
 
   @Test
@@ -188,7 +141,7 @@ class MeasurementSetTest {
 
     assertThatThrownBy(() -> set.correct(backdatedCorrection))
         .isInstanceOf(DomainConflictException.class)
-        .hasMessage("measurement correction cannot predate the current aggregate state");
+        .hasMessage("measurement change cannot predate the current revision");
   }
 
   @Test
@@ -207,7 +160,7 @@ class MeasurementSetTest {
 
     assertThatThrownBy(() -> set.correct(skippedRevision))
         .isInstanceOf(DomainConflictException.class)
-        .hasMessage("measurement correction must append the next revision");
+        .hasMessage("measurement change must append the next revision");
   }
 
   @Test
@@ -221,7 +174,7 @@ class MeasurementSetTest {
 
     assertThatThrownBy(() -> set.correct(correction))
         .isInstanceOf(DomainConflictException.class)
-        .hasMessage("measurement correction must preserve the observed material state");
+        .hasMessage("measurement change must preserve the observed material state");
   }
 
   @Test
@@ -630,60 +583,87 @@ class MeasurementSetTest {
   @Test
   void rejectsRetractionThatPredatesCurrentAggregateState() {
     final var set = createSet(revision(1, INITIAL_TIME));
-
-    assertThatThrownBy(() -> set.retract(
+    final var current = set.currentRevision();
+    set.correct(new MeasurementSetRevision(
+        MeasurementSetRevisionId.newId(),
+        current.revisionNumber().next(),
+        current.materialStateId(),
+        current.name(),
+        current.note(),
+        MeasurementCorrectionReason.of("Metadata correction"),
+        INITIAL_TIME.plusSeconds(60),
         ActorReference.accountUser(newUuid()),
-        INITIAL_TIME.minusSeconds(1),
-        RETRACTION_REASON
-    ))
+        current.records(),
+        current.resultRetractions()
+    ));
+
+    assertThatThrownBy(() -> set.retract(fullRetractionRevision(
+        set.currentRevision(),
+        INITIAL_TIME.plusSeconds(30)
+    )))
         .isInstanceOf(DomainConflictException.class)
-        .hasMessage("measurement retraction cannot predate the current aggregate state");
+        .hasMessage("measurement change cannot predate the current revision");
   }
 
   @Test
-  void rejectsRestoredRevisionOutsideAggregateLifetime() {
-    final var revision = revision(2, INITIAL_TIME.plusSeconds(120));
-
-    assertThatThrownBy(() -> MeasurementSet.restore(
-        MeasurementSetId.newId(),
-        WorkspaceId.newId(),
-        subject(),
-        MeasurementSetLifecycle.ACTIVE,
+  void fullRetractionMustPreserveCurrentRevisionMetadata() {
+    final var set = createSet(revision(1, INITIAL_TIME));
+    final var current = set.currentRevision();
+    final var retraction = new MeasurementSetRevision(
+        MeasurementSetRevisionId.newId(),
+        current.revisionNumber().next(),
+        current.materialStateId(),
+        MeasurementSetLifecycle.RETRACTED,
+        MeasurementSetRevisionChangeKind.RETRACTION,
+        MeasurementSetName.of("Changed during retraction"),
+        current.note(),
         null,
-        revision,
-        INITIAL_TIME,
-        INITIAL_TIME.plusSeconds(60)
-    ))
-        .isInstanceOf(DomainRuleViolationException.class)
-        .hasMessage("current measurement revision time must belong to the aggregate lifetime");
+        RETRACTION_REASON,
+        INITIAL_TIME.plusSeconds(30),
+        ActorReference.accountUser(newUuid()),
+        current.records(),
+        current.resultRetractions()
+    );
+
+    assertThatThrownBy(() -> set.retract(retraction))
+        .isInstanceOf(DomainConflictException.class)
+        .hasMessage("full measurement retraction must preserve the current revision evidence and metadata");
   }
 
   @Test
-  void rejectsAggregateCreationTimeAfterUpdateTime() {
-    final var revision = revision(1, INITIAL_TIME);
-
-    assertThatThrownBy(() -> MeasurementSet.restore(
-        MeasurementSetId.newId(),
-        WorkspaceId.newId(),
-        subject(),
-        MeasurementSetLifecycle.ACTIVE,
+  void fullRetractionMustPreserveCurrentRevisionEvidence() {
+    final var set = createSet(revision(1, INITIAL_TIME));
+    final var current = set.currentRevision();
+    final var replacementResult = result(
+        MeasurementCharacteristic.PH,
+        "3.50",
+        current.createdAt()
+    );
+    final var retraction = new MeasurementSetRevision(
+        MeasurementSetRevisionId.newId(),
+        current.revisionNumber().next(),
+        current.materialStateId(),
+        MeasurementSetLifecycle.RETRACTED,
+        MeasurementSetRevisionChangeKind.RETRACTION,
+        current.name(),
+        current.note(),
         null,
-        revision,
-        INITIAL_TIME.plusSeconds(1),
-        INITIAL_TIME
-    ))
-        .isInstanceOf(DomainRuleViolationException.class)
-        .hasMessage("measurement set creation time cannot follow its update time");
+        RETRACTION_REASON,
+        INITIAL_TIME.plusSeconds(30),
+        ActorReference.accountUser(newUuid()),
+        List.of(replacementResult),
+        current.resultRetractions()
+    );
+
+    assertThatThrownBy(() -> set.retract(retraction))
+        .isInstanceOf(DomainConflictException.class)
+        .hasMessage("full measurement retraction must preserve the current revision evidence and metadata");
   }
 
   @Test
   void retractedSetCannotBeCorrected() {
     final var set = createSet(revision(1, INITIAL_TIME));
-    set.retract(
-        ActorReference.accountUser(newUuid()),
-        INITIAL_TIME.plusSeconds(30),
-        RETRACTION_REASON
-    );
+    retract(set, INITIAL_TIME.plusSeconds(30));
     final var correction = revision(2, INITIAL_TIME.plusSeconds(60));
 
     assertThatThrownBy(() -> set.correct(correction))
@@ -705,11 +685,7 @@ class MeasurementSetTest {
   @EnumSource(MeasurementSetMutation.class)
   void retractedSetRejectsEveryFurtherLifecycleMutation(MeasurementSetMutation mutation) {
     final var set = createSet(revision(1, INITIAL_TIME));
-    set.retract(
-        ActorReference.accountUser(newUuid()),
-        INITIAL_TIME.plusSeconds(30),
-        RETRACTION_REASON
-    );
+    retract(set, INITIAL_TIME.plusSeconds(30));
 
     assertThatThrownBy(() -> mutation.apply(set))
         .isInstanceOf(DomainConflictException.class)
@@ -722,6 +698,34 @@ class MeasurementSetTest {
         WorkspaceId.newId(),
         subject(),
         revision
+    );
+  }
+
+  private static void retract(
+      MeasurementSet set,
+      Instant createdAt
+  ) {
+    set.retract(fullRetractionRevision(set.currentRevision(), createdAt));
+  }
+
+  private static MeasurementSetRevision fullRetractionRevision(
+      MeasurementSetRevision current,
+      Instant createdAt
+  ) {
+    return new MeasurementSetRevision(
+        MeasurementSetRevisionId.newId(),
+        current.revisionNumber().next(),
+        current.materialStateId(),
+        MeasurementSetLifecycle.RETRACTED,
+        MeasurementSetRevisionChangeKind.RETRACTION,
+        current.name(),
+        current.note(),
+        null,
+        RETRACTION_REASON,
+        createdAt,
+        ActorReference.accountUser(newUuid()),
+        current.records(),
+        current.resultRetractions()
     );
   }
 
@@ -964,11 +968,7 @@ class MeasurementSetTest {
     void apply(MeasurementSet set) {
       switch (this) {
         case CORRECT -> set.correct(revision(2, INITIAL_TIME.plusSeconds(30)));
-        case RETRACT -> set.retract(
-            ActorReference.accountUser(newUuid()),
-            INITIAL_TIME.plusSeconds(30),
-            RETRACTION_REASON
-        );
+        case RETRACT -> retract(set, INITIAL_TIME.plusSeconds(30));
       }
     }
 

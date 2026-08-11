@@ -76,6 +76,20 @@ class JdbcPersistenceModelArchitectureTest {
           .should()
           .notHaveModifier(JavaModifier.FINAL);
 
+  @ArchTest
+  static final ArchRule jdbc_repository_updates_do_not_use_spring_data_save =
+      classes()
+          .that()
+          .areAnnotatedWith(Repository.class)
+          .should(notCallSaveFromUpdatePath());
+
+  @ArchTest
+  static final ArchRule jdbc_repository_updates_do_not_read_before_atomic_update =
+      classes()
+          .that()
+          .areAnnotatedWith(Repository.class)
+          .should(notCallFindByIdBeforeAtomicUpdate());
+
   private static @NonNull ArchCondition<JavaClass> haveFieldAnnotatedWith(
       @NonNull Class<? extends Annotation> annotationType
   ) {
@@ -173,5 +187,76 @@ class JdbcPersistenceModelArchitectureTest {
         || name.contains("score")
         || name.contains("current")
         || name.contains("latest");
+  }
+
+  private static @NonNull ArchCondition<JavaClass> notCallSaveFromUpdatePath() {
+    return new ArchCondition<>("not call Spring Data save from an aggregate update path") {
+      @Override
+      public void check(
+          @NonNull JavaClass item,
+          @NonNull ConditionEvents events
+      ) {
+        final var violations = item.getMethodCallsFromSelf()
+            .stream()
+            .filter(call -> isUpdatePath(call.getOrigin().getName()))
+            .filter(call -> call.getTarget().getName().equals("save"))
+            .map(call -> call.getSourceCodeLocation().toString())
+            .sorted()
+            .toList();
+
+        events.add(new SimpleConditionEvent(
+            item,
+            violations.isEmpty(),
+            "%s must use an atomic id-and-version UPDATE instead of save: %s".formatted(
+                item.getName(),
+                String.join(", ", violations)
+            )
+        ));
+      }
+    };
+  }
+
+  private static boolean isUpdatePath(@NonNull String methodName) {
+    return methodName.equals("update") || methodName.startsWith("lambda$update$");
+  }
+
+  private static @NonNull ArchCondition<JavaClass> notCallFindByIdBeforeAtomicUpdate() {
+    return new ArchCondition<>("not read an aggregate before its atomic id-and-version update") {
+      @Override
+      public void check(
+          @NonNull JavaClass item,
+          @NonNull ConditionEvents events
+      ) {
+        final var updateCalls = item.getMethodCallsFromSelf()
+            .stream()
+            .filter(call -> isUpdatePath(call.getOrigin().getName()))
+            .toList();
+        final var firstAtomicUpdateLine = updateCalls
+            .stream()
+            .filter(call -> call.getTarget().getName().equals("updateByIdAndVersion"))
+            .mapToInt(call -> call.getSourceCodeLocation().getLineNumber())
+            .min();
+        if (firstAtomicUpdateLine.isEmpty()) {
+          return;
+        }
+
+        final var violations = updateCalls
+            .stream()
+            .filter(call -> call.getTarget().getName().equals("findById"))
+            .filter(call -> call.getSourceCodeLocation().getLineNumber() < firstAtomicUpdateLine.getAsInt())
+            .map(call -> call.getSourceCodeLocation().toString())
+            .sorted()
+            .toList();
+
+        events.add(new SimpleConditionEvent(
+            item,
+            violations.isEmpty(),
+            "%s must not read current state before atomic update: %s".formatted(
+                item.getName(),
+                String.join(", ", violations)
+            )
+        ));
+      }
+    };
   }
 }

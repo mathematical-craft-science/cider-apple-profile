@@ -45,7 +45,7 @@ public final class FeedstockWorkspaceResponseRestMapper {
     final var assessment = view.currentProfileAssessment();
     return new FeedstockWorkspaceBatchResponse(
         FeedstockBatchRestMapper.toResponse(view.batch()),
-        view.batch().currentMaterialStateId().value(),
+        view.batch().batch().currentMaterialStateId().value(),
         toCurrentMeasurementResponse(view.currentProfileSummary()),
         FeedstockCurrentProfileRestMapper.toProfileSummary(view.currentProfileSummary()),
         assessment.profileEvidence().stream()

@@ -46,7 +46,8 @@ public interface MeasurementSetApi {
   )
   @ApiResponse(
       responseCode = "409",
-      description = "The caller-assigned measurement-set identifier already exists.",
+      description = "The caller-assigned measurement-set identifier already exists or the measured batch "
+          + "lifecycle is not ACTIVE.",
       content = @Content(
           mediaType = APPLICATION_JSON_VALUE,
           schema = @Schema(implementation = ProblemDetail.class)
@@ -55,6 +56,14 @@ public interface MeasurementSetApi {
   @ApiResponse(
       responseCode = "404",
       description = "The measured subject or observed material state was not found.",
+      content = @Content(
+          mediaType = APPLICATION_JSON_VALUE,
+          schema = @Schema(implementation = ProblemDetail.class)
+      )
+  )
+  @ApiResponse(
+      responseCode = "403",
+      description = "The authenticated actor cannot change measurements for the subject.",
       content = @Content(
           mediaType = APPLICATION_JSON_VALUE,
           schema = @Schema(implementation = ProblemDetail.class)
@@ -90,7 +99,7 @@ public interface MeasurementSetApi {
 
   @Operation(
       summary = "Get immutable measurement-set revision history",
-      description = "Returns every correction revision from newest to oldest, including result-level "
+      description = "Returns every immutable revision from newest to oldest, including result-level "
           + "retraction tombstones that are no longer present in the current revision."
   )
   @ApiResponse(
@@ -179,7 +188,7 @@ public interface MeasurementSetApi {
   )
   @ApiResponse(
       responseCode = "409",
-      description = "The expected measurement-set version is stale.",
+      description = "The expected measurement-set version is stale or the measured batch lifecycle is not ACTIVE.",
       content = @Content(
           mediaType = APPLICATION_JSON_VALUE,
           schema = @Schema(implementation = ProblemDetail.class)
@@ -187,7 +196,15 @@ public interface MeasurementSetApi {
   )
   @ApiResponse(
       responseCode = "404",
-      description = "The measurement set was not found.",
+      description = "The measurement set or its measured subject was not found.",
+      content = @Content(
+          mediaType = APPLICATION_JSON_VALUE,
+          schema = @Schema(implementation = ProblemDetail.class)
+      )
+  )
+  @ApiResponse(
+      responseCode = "403",
+      description = "The authenticated actor cannot change measurements for the subject.",
       content = @Content(
           mediaType = APPLICATION_JSON_VALUE,
           schema = @Schema(implementation = ProblemDetail.class)
@@ -229,7 +246,7 @@ public interface MeasurementSetApi {
   )
   @ApiResponse(
       responseCode = "409",
-      description = "The expected measurement-set version is stale.",
+      description = "The expected measurement-set version is stale or the measured batch lifecycle is not ACTIVE.",
       content = @Content(
           mediaType = APPLICATION_JSON_VALUE,
           schema = @Schema(implementation = ProblemDetail.class)
@@ -237,7 +254,15 @@ public interface MeasurementSetApi {
   )
   @ApiResponse(
       responseCode = "404",
-      description = "The measurement set was not found.",
+      description = "The measurement set or its measured subject was not found.",
+      content = @Content(
+          mediaType = APPLICATION_JSON_VALUE,
+          schema = @Schema(implementation = ProblemDetail.class)
+      )
+  )
+  @ApiResponse(
+      responseCode = "403",
+      description = "The authenticated actor cannot change measurements for the subject.",
       content = @Content(
           mediaType = APPLICATION_JSON_VALUE,
           schema = @Schema(implementation = ProblemDetail.class)
@@ -259,13 +284,21 @@ public interface MeasurementSetApi {
 
   @Operation(
       summary = "Retract a measurement set",
-      description = "Marks the logical set as retracted without physically deleting revisions or records and "
-          + "retains the supplied audit reason."
+      description = "Appends a terminal immutable RETRACTION revision that preserves all evidence and records "
+          + "the current actor, time, and supplied reason."
   )
   @ApiResponse(responseCode = "204", description = "Measurement set retracted.")
   @ApiResponse(
       responseCode = "404",
-      description = "The measurement set was not found.",
+      description = "The measurement set or its measured subject was not found.",
+      content = @Content(
+          mediaType = APPLICATION_JSON_VALUE,
+          schema = @Schema(implementation = ProblemDetail.class)
+      )
+  )
+  @ApiResponse(
+      responseCode = "403",
+      description = "The authenticated actor cannot change measurements for the subject.",
       content = @Content(
           mediaType = APPLICATION_JSON_VALUE,
           schema = @Schema(implementation = ProblemDetail.class)
@@ -273,7 +306,8 @@ public interface MeasurementSetApi {
   )
   @ApiResponse(
       responseCode = "409",
-      description = "The expected version is stale or the measurement set is already retracted.",
+      description = "The expected version is stale, the measurement set is already retracted, or the measured "
+          + "batch lifecycle is not ACTIVE.",
       content = @Content(
           mediaType = APPLICATION_JSON_VALUE,
           schema = @Schema(implementation = ProblemDetail.class)

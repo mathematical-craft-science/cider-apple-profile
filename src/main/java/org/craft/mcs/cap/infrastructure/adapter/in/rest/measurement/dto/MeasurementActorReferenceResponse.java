@@ -10,6 +10,7 @@ import org.jspecify.annotations.NonNull;
 public record MeasurementActorReferenceResponse(
     @Schema(
         description = "Actor category used by CAP audit semantics.",
+        implementation = ActorType.class,
         requiredMode = Schema.RequiredMode.REQUIRED
     )
     @NonNull ActorType type,

@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.contributor.dto.ConfigureContributorProfileRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.contributor.dto.ContributorProfileResponse;
 import org.jspecify.annotations.NonNull;
@@ -57,7 +58,7 @@ public interface ContributorProfileApi {
       )
   )
   @NonNull ResponseEntity<@NonNull ContributorProfileResponse> configureContributorProfile(
-      @NonNull ConfigureContributorProfileRequest request
+      @Valid @NonNull ConfigureContributorProfileRequest request
   );
 
   @Operation(summary = "Delete current contributor profile")

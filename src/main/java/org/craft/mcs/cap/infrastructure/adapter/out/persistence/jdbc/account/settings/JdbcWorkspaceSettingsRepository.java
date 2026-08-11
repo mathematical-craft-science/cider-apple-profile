@@ -7,12 +7,12 @@ import org.craft.mcs.cap.core.account.workspace.application.port.out.WorkspaceSe
 import org.craft.mcs.cap.core.account.workspace.application.port.out.WorkspaceSettingsState;
 import org.craft.mcs.cap.core.account.workspace.domain.model.WorkspaceSettings;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.support.JdbcPersistenceExceptionTranslator;
-import org.craft.mcs.cap.shared.application.ConcurrentResourceModificationException;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Repository;
 
 import static java.util.Objects.requireNonNull;
+import static org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.support.JdbcVersionedUpdate.requireSingleRow;
 
 /** Persists independently versioned product settings for one CAP workspace. */
 @Repository
@@ -38,17 +38,19 @@ class JdbcWorkspaceSettingsRepository implements WorkspaceSettingsRepository {
   ) {
     requireNonNull(settings, "workspace settings cannot be null");
     requireNonNull(expectedRevision, "expected workspace settings revision cannot be null");
-    return repository.findById(settings.workspaceId().value()).map(entity -> {
-      final var state = WorkspaceSettingsJdbcMapper.toState(entity);
-      if (!state.revision().equals(expectedRevision)) {
-        throw new ConcurrentResourceModificationException("workspace settings", null);
-      }
-      final var saved = JdbcPersistenceExceptionTranslator.translateOptimisticLocking(
-          "workspace settings",
-          () -> repository.save(WorkspaceSettingsJdbcMapper.updateFromDomain(settings, entity))
-      );
-      return WorkspaceSettingsJdbcMapper.toState(saved);
-    });
+    final var affectedRows = JdbcPersistenceExceptionTranslator.translateOptimisticLocking(
+        "workspace settings",
+        () -> repository.updateByIdAndVersion(
+            settings.workspaceId().value(),
+            settings.measurementStaleAfter().toSeconds(),
+            settings.defaultAcidityBasis(),
+            expectedRevision.value()
+        )
+    );
+    requireSingleRow("workspace settings", affectedRows);
+
+    // The read returns database-managed audit timestamps; it is not part of the concurrency check.
+    return repository.findById(settings.workspaceId().value()).map(WorkspaceSettingsJdbcMapper::toState);
   }
 
   @Override

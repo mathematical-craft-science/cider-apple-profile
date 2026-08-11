@@ -148,6 +148,21 @@ class MeasurementRecordTest {
         .hasMessage("DERIVED provenance requires a measurement derivation");
   }
 
+  @Test
+  void derivedResultCannotReferenceItsOwnIdentity() {
+    final var recordId = MeasurementRecordId.newId();
+
+    assertThatThrownBy(() -> result(
+        recordId,
+        PointCharacteristicValue.of(measuredValue("3.40")),
+        MeasurementProvenance.derived(),
+        MeasurementDerivationMethod.ARITHMETIC_MEAN,
+        List.of(recordId, MeasurementRecordId.newId())
+    ))
+        .isInstanceOf(DomainRuleViolationException.class)
+        .hasMessage("measurement result cannot reference itself as derivation evidence");
+  }
+
   private static MeasurementRecord observation(
       CharacteristicValue<MeasuredValue> value,
       MeasurementDerivationMethod derivationMethod,

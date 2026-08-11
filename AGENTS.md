@@ -114,6 +114,25 @@ Act as a senior Java architect and production-grade software engineer for the Ci
 - JDBC row/read-model classes should not pretend to be aggregate entities.
 - Aggregate entities that represent mutable aggregate state should have audit fields and optimistic
   locking where needed.
+- Implement optimistic locking as one atomic persistence operation:
+  - application code loads mutable state as `VersionedAggregate<T>` and passes that same expected revision
+    to `update`;
+  - an aggregate repository must expose separate `create` and `update` operations; `update` accepts the
+    already loaded `VersionedAggregate<T>` rather than only the current domain object;
+  - a JDBC adapter must map the aggregate together with its expected revision directly to the update entity
+    or statement; it must not call `findById`, reload the row, or replace the caller's expected revision before
+    saving;
+  - the database update must compare identity and expected version atomically, for example
+    `UPDATE ... SET version = version + 1 WHERE id = ? AND version = ?`, or the equivalent Spring Data JDBC
+    `@Version` update using the version carried by the supplied aggregate;
+  - zero updated rows or a Spring optimistic-locking failure must be translated at the adapter boundary to
+    `ConcurrentResourceModificationException`, which REST maps to HTTP 409;
+  - a post-update read is allowed only when explicitly required to obtain database-generated values and never
+    as the concurrency check itself.
+- Every new mutable aggregate persistence adapter must have a focused PostgreSQL test that loads two copies at
+  the same revision, successfully updates the first, rejects the stale second, and confirms that the winning
+  state remains stored. Where practical, an adapter-level test should also verify that `update` performs no
+  repository read before the atomic write.
 - Use `AggregateReference<T, ID>` where Spring Data JDBC aggregate references make the model clearer.
 - Do not introduce technical IDs or persistence fields into domain objects unless the domain needs them.
 

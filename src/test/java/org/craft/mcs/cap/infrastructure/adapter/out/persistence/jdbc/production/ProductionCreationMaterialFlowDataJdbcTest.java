@@ -11,6 +11,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import org.craft.mcs.cap.core.account.shared.domain.value.AccountUserId;
 import org.craft.mcs.cap.core.account.shared.domain.value.DisplayName;
 import org.craft.mcs.cap.core.account.shared.domain.value.EmailAddress;
@@ -41,6 +44,7 @@ import org.craft.mcs.cap.core.production.candidate.application.confirmation.port
 import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchRepository;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchTraceRecorder;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionSourceInventory;
+import org.craft.mcs.cap.core.production.application.vessel.port.out.ProductionVesselAssignmentValidator;
 import org.craft.mcs.cap.core.production.candidate.application.confirmation.usecase.CreateProductionBatchService;
 import org.craft.mcs.cap.core.production.candidate.application.model.ProductionBatchCandidateSnapshot;
 import org.craft.mcs.cap.core.production.candidate.application.port.out.ProductionBatchCandidateStore;
@@ -58,15 +62,17 @@ import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
+import org.craft.mcs.cap.shared.kernel.identity.VesselId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
-import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
+import org.craft.mcs.cap.testsupport.VesselTestFixtures;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.craft.mcs.cap.shared.platform.TransactionHelper;
 import org.craft.mcs.cap.shared.platform.persistence.SpringTransactionHelper;
 import org.craft.mcs.cap.shared.testing.jdbc.PostgresDataJdbcTestConfiguration;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -137,6 +143,9 @@ class ProductionCreationMaterialFlowDataJdbcTest {
   private ProductionAccessControl productionAccessControl;
 
   @Autowired
+  private ProductionVesselAssignmentValidator productionVesselAssignmentValidator;
+
+  @Autowired
   private TransactionHelper transactionHelper;
 
   @Autowired
@@ -145,12 +154,16 @@ class ProductionCreationMaterialFlowDataJdbcTest {
   private WorkspaceId workspaceId;
   private FeedstockBatchId feedstockBatchId;
   private MaterialStateId initialFeedstockStateId;
+  private VesselId feedstockVesselId;
+  private VesselId productionVesselId;
 
   @BeforeEach
   void seedSourceMaterial() {
     workspaceId = WorkspaceId.newId();
     feedstockBatchId = FeedstockBatchId.newId();
     initialFeedstockStateId = MaterialStateId.newId();
+    feedstockVesselId = VesselId.newId();
+    productionVesselId = VesselId.newId();
     insertWorkspace();
     insertFeedstockBatch();
     insertInitialFeedstockTraceState();
@@ -282,6 +295,60 @@ class ProductionCreationMaterialFlowDataJdbcTest {
         .returns(ProductionBatchCandidateStatus.AVAILABLE, ProductionBatchCandidate::status);
   }
 
+  @Test
+  void concurrentConfirmationConsumesSourceAndConfirmsCandidateExactlyOnce() throws Exception {
+    final var source = sourceComponent();
+    final var saved = candidateStore.create(candidate(source));
+    final var secondVesselId = VesselId.newId();
+    VesselTestFixtures.persist(jdbcTemplate, workspaceId, secondVesselId, "Tank P-02");
+    final var start = new CountDownLatch(1);
+    final var creationService = service(candidateStore);
+
+    try (final var executor = Executors.newVirtualThreadPerTaskExecutor()) {
+      final var first = executor.submit(() -> createAfter(
+          start,
+          creationService,
+          command(saved, productionVesselId)
+      ));
+      final var second = executor.submit(() -> createAfter(
+          start,
+          creationService,
+          command(saved, secondVesselId)
+      ));
+      start.countDown();
+      final var attempts = List.of(
+          first.get(10, TimeUnit.SECONDS),
+          second.get(10, TimeUnit.SECONDS)
+      );
+
+      assertThat(attempts)
+          .filteredOn(CreationAttempt::succeeded)
+          .hasSize(1);
+      assertThat(attempts)
+          .filteredOn(attempt -> attempt.failure() != null)
+          .hasSize(1);
+      assertThat(number("SELECT available_volume_liters FROM feedstock_batches WHERE batch_id = ?"))
+          .isEqualByComparingTo("150");
+      assertThat(count(
+          "SELECT COUNT(*) FROM production_batches WHERE workspace_id = ?",
+          workspaceId.value()
+      )).isOne();
+      assertThat(count(
+          """
+              SELECT COUNT(*)
+                FROM batch_trace_steps
+               WHERE workspace_id = ?
+                 AND step_type = 'PRODUCTION_BATCH_CREATED'
+              """,
+          workspaceId.value()
+      )).isOne();
+      assertThat(candidateStore.findById(saved.candidate().candidateId()))
+          .get()
+          .extracting(ProductionBatchCandidateSnapshot::candidate)
+          .returns(ProductionBatchCandidateStatus.CONFIRMED, ProductionBatchCandidate::status);
+    }
+  }
+
   private @NonNull CreateProductionBatchService service(
       @NonNull ProductionBatchCandidateStore store
   ) {
@@ -291,6 +358,7 @@ class ProductionCreationMaterialFlowDataJdbcTest {
         productionBatchRepository,
         traceRecorder,
         productionAccessControl,
+        productionVesselAssignmentValidator,
         transactionHelper,
         clock
     );
@@ -339,13 +407,45 @@ class ProductionCreationMaterialFlowDataJdbcTest {
   private @NonNull CreateProductionBatchCommand command(
       @NonNull ProductionBatchCandidateSnapshot candidate
   ) {
+    return command(candidate, productionVesselId);
+  }
+
+  private @NonNull CreateProductionBatchCommand command(
+      @NonNull ProductionBatchCandidateSnapshot candidate,
+      @NonNull VesselId vesselId
+  ) {
     return new CreateProductionBatchCommand(
         workspaceId,
         BatchName.of("Integrated production"),
-        Vessel.named("Tank P-01"),
+        vesselId,
         candidate.candidate().candidateId(),
         null
     );
+  }
+
+  private CreationAttempt createAfter(
+      CountDownLatch start,
+      CreateProductionBatchService service,
+      CreateProductionBatchCommand command
+  ) {
+    await(start);
+    try {
+      service.create(command);
+      return CreationAttempt.success();
+    } catch (RuntimeException exception) {
+      return CreationAttempt.failure(exception);
+    }
+  }
+
+  private static void await(CountDownLatch latch) {
+    try {
+      if (!latch.await(10, TimeUnit.SECONDS)) {
+        throw new AssertionError("timed out while waiting for production concurrency test coordination");
+      }
+    } catch (InterruptedException exception) {
+      Thread.currentThread().interrupt();
+      throw new AssertionError("production concurrency test was interrupted", exception);
+    }
   }
 
   private static @NonNull ProductionProfileSnapshot productionProfile() {
@@ -366,6 +466,8 @@ class ProductionCreationMaterialFlowDataJdbcTest {
         OffsetDateTime.parse("2026-07-25T10:00:00Z"),
         OffsetDateTime.parse("2026-07-25T10:00:00Z")
     );
+    VesselTestFixtures.persist(jdbcTemplate, workspaceId, feedstockVesselId, "Tank A-01");
+    VesselTestFixtures.persist(jdbcTemplate, workspaceId, productionVesselId, "Tank P-01");
   }
 
   private void insertFeedstockBatch() {
@@ -375,7 +477,7 @@ class ProductionCreationMaterialFlowDataJdbcTest {
                 batch_id,
                 workspace_id,
                 name,
-                vessel,
+                vessel_id,
                 type,
                 season_starts_on,
                 season_ends_on,
@@ -389,7 +491,7 @@ class ProductionCreationMaterialFlowDataJdbcTest {
                 ?,
                 ?,
                 'Integrated juice',
-                'Tank F-01',
+                ?,
                 'JUICE',
                 DATE '2026-01-01',
                 DATE '2026-12-31',
@@ -403,6 +505,7 @@ class ProductionCreationMaterialFlowDataJdbcTest {
             """,
         feedstockBatchId.value(),
         workspaceId.value(),
+        feedstockVesselId.value(),
         initialFeedstockStateId.value(),
         OffsetDateTime.parse("2026-07-25T10:00:00Z"),
         OffsetDateTime.parse("2026-07-25T10:00:00Z")
@@ -419,16 +522,13 @@ class ProductionCreationMaterialFlowDataJdbcTest {
                 workspace_id,
                 subject_type,
                 subject_id,
-                lifecycle,
                 version,
-                created_at,
-                updated_at
-            ) VALUES (?, ?, 'FEEDSTOCK_BATCH', ?, 'ACTIVE', 0, ?, ?)
+                created_at
+            ) VALUES (?, ?, 'FEEDSTOCK_BATCH', ?, 0, ?)
             """,
         measurementSetId,
         workspaceId.value(),
         feedstockBatchId.value(),
-        OffsetDateTime.parse("2026-07-25T10:00:00Z"),
         OffsetDateTime.parse("2026-07-25T10:00:00Z")
     );
     jdbcTemplate.update(
@@ -438,16 +538,19 @@ class ProductionCreationMaterialFlowDataJdbcTest {
                 measurement_set_id,
                 revision_number,
                 material_state_id,
+                lifecycle,
+                change_kind,
                 name,
                 created_at,
-                actor_reference
-            ) VALUES (?, ?, 1, ?, 'Integrated chemistry', ?, ?)
+                performed_by_type,
+                performed_by_id
+            ) VALUES (?, ?, 1, ?, 'ACTIVE', 'INITIAL', 'Integrated chemistry', ?, 'ACCOUNT_USER', ?)
             """,
         revisionId,
         measurementSetId,
         initialFeedstockStateId.value(),
         OffsetDateTime.parse("2026-07-25T10:00:00Z"),
-        "ACCOUNT_USER:" + AccountUserId.newId().value()
+        AccountUserId.newId().value()
     );
     jdbcTemplate.update(
         """
@@ -459,12 +562,13 @@ class ProductionCreationMaterialFlowDataJdbcTest {
         measurementSetId,
         revisionId
     );
-    insertMeasurementRecord(revisionId, "SPECIFIC_GRAVITY", "1.052");
-    insertMeasurementRecord(revisionId, "TITRATABLE_ACIDITY", "6.2");
-    insertMeasurementRecord(revisionId, "TANNIN", "1200");
+    insertMeasurementRecord(measurementSetId, revisionId, "SPECIFIC_GRAVITY", "1.052");
+    insertMeasurementRecord(measurementSetId, revisionId, "TITRATABLE_ACIDITY", "6.2");
+    insertMeasurementRecord(measurementSetId, revisionId, "TANNIN", "1200");
   }
 
   private void insertMeasurementRecord(
+      @NonNull UUID measurementSetId,
       @NonNull UUID revisionId,
       @NonNull String characteristic,
       @NonNull String value
@@ -473,6 +577,7 @@ class ProductionCreationMaterialFlowDataJdbcTest {
     jdbcTemplate.update(
         """
             INSERT INTO measurement_records (
+                measurement_set_id,
                 record_id,
                 characteristic,
                 role,
@@ -481,8 +586,9 @@ class ProductionCreationMaterialFlowDataJdbcTest {
                 source_type,
                 confidence,
                 point_value
-            ) VALUES (?, ?, 'RESULT', 'POINT', ?, 'LAB', 'LAB_VERIFIED', ?)
+            ) VALUES (?, ?, ?, 'RESULT', 'POINT', ?, 'LAB', 'LAB_VERIFIED', ?)
             """,
+        measurementSetId,
         recordId,
         characteristic,
         OffsetDateTime.parse("2026-07-25T10:00:00Z"),
@@ -491,13 +597,15 @@ class ProductionCreationMaterialFlowDataJdbcTest {
     jdbcTemplate.update(
         """
             INSERT INTO measurement_revision_records (
+                measurement_set_id,
                 revision_id,
                 record_id,
                 characteristic,
                 role,
                 record_status
-            ) VALUES (?, ?, ?, 'RESULT', 'ACTIVE')
+            ) VALUES (?, ?, ?, ?, 'RESULT', 'ACTIVE')
             """,
+        measurementSetId,
         revisionId,
         recordId,
         characteristic
@@ -588,6 +696,11 @@ class ProductionCreationMaterialFlowDataJdbcTest {
         public void requireWriteAccess(@NonNull WorkspaceId workspaceId) {
         }
       };
+    }
+
+    @Bean
+    ProductionVesselAssignmentValidator productionVesselAssignmentValidator() {
+      return (workspaceId, vesselId, materialVolume) -> VesselTestFixtures.reference(vesselId, "Tank P-01");
     }
 
     @Bean
@@ -724,6 +837,20 @@ class ProductionCreationMaterialFlowDataJdbcTest {
         @NonNull ProductionBatchCandidateId candidateId
     ) {
       return delegate.findById(candidateId);
+    }
+  }
+
+  private record CreationAttempt(
+      boolean succeeded,
+      @Nullable RuntimeException failure
+  ) {
+
+    private static CreationAttempt success() {
+      return new CreationAttempt(true, null);
+    }
+
+    private static CreationAttempt failure(RuntimeException exception) {
+      return new CreationAttempt(false, requireNonNull(exception));
     }
   }
 }

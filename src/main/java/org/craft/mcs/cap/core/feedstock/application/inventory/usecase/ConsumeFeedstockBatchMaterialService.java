@@ -85,7 +85,7 @@ public final class ConsumeFeedstockBatchMaterialService
   private @NonNull VersionedAggregate<FeedstockBatch> requireOwnedBatch(
       @NonNull ConsumeFeedstockBatchMaterialCommand command
   ) {
-    final var state = feedstockBatchRepository.findVersionedById(command.batchId())
+    final var state = feedstockBatchRepository.lockVersionedById(command.batchId())
         .orElseThrow(() -> new FeedstockBatchNotFoundException(command.batchId()));
     final var batch = state.aggregate();
 

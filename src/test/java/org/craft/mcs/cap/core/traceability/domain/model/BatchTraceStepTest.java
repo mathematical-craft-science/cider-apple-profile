@@ -83,6 +83,22 @@ class BatchTraceStepTest {
   }
 
   @Test
+  void rejectsNoteThatCannotBePersistedWithoutTruncation() {
+    assertThatThrownBy(() -> BatchTraceStep.create(
+        WORKSPACE_ID,
+        null,
+        BatchTraceStepType.PRODUCTION_BATCH_CREATED,
+        List.of(),
+        List.of(state(subject("production-1"))),
+        Instant.parse("2026-05-18T00:00:00Z"),
+        ACTOR,
+        "n".repeat(2_001)
+    ))
+        .isInstanceOf(DomainRuleViolationException.class)
+        .hasMessage("batch trace step note cannot exceed 2000 characters");
+  }
+
+  @Test
   void rejectsRepeatedOutputStateWithinOneStep() {
     final var outputState = state(subject("production-1"));
 

@@ -8,6 +8,7 @@ import org.craft.mcs.cap.core.traceability.application.port.out.MaterialStateLin
 import org.craft.mcs.cap.core.traceability.application.usecase.AppendBatchTraceStepService;
 import org.craft.mcs.cap.core.traceability.application.usecase.GetMaterialStateService;
 import org.craft.mcs.cap.core.traceability.application.usecase.QueryBatchTraceabilityService;
+import org.craft.mcs.cap.core.traceability.application.usecase.QueryBatchOperationHistoryService;
 import org.craft.mcs.cap.core.traceability.application.usecase.QueryMaterialStateLineageService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,9 +19,10 @@ class BatchTraceabilityConfiguration {
   @Bean
   AppendBatchTraceStepService appendBatchTraceStepService(
       BatchTraceabilityStore traceabilityStore,
+      MaterialStateHistoryStore historyStore,
       BatchTraceabilityAccessControl accessControl
   ) {
-    return new AppendBatchTraceStepService(traceabilityStore, accessControl);
+    return new AppendBatchTraceStepService(traceabilityStore, historyStore, accessControl);
   }
 
   @Bean
@@ -37,6 +39,13 @@ class BatchTraceabilityConfiguration {
       BatchTraceabilityAccessControl accessControl
   ) {
     return new QueryBatchTraceabilityService(queryStore, accessControl);
+  }
+
+  @Bean
+  QueryBatchOperationHistoryService queryBatchOperationHistoryService(
+      BatchTraceabilityQueryStore queryStore
+  ) {
+    return new QueryBatchOperationHistoryService(queryStore);
   }
 
   @Bean

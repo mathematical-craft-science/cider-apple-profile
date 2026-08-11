@@ -11,6 +11,8 @@ import static org.craft.mcs.cap.core.account.membership.domain.model.WorkspacePe
 import static org.craft.mcs.cap.core.account.membership.domain.model.WorkspacePermission.LAB_CONTRIBUTE;
 import static org.craft.mcs.cap.core.account.membership.domain.model.WorkspacePermission.PRODUCTION_READ;
 import static org.craft.mcs.cap.core.account.membership.domain.model.WorkspacePermission.PRODUCTION_WRITE;
+import static org.craft.mcs.cap.core.account.membership.domain.model.WorkspacePermission.VESSEL_READ;
+import static org.craft.mcs.cap.core.account.membership.domain.model.WorkspacePermission.VESSEL_WRITE;
 import static org.craft.mcs.cap.core.account.membership.domain.model.WorkspacePermission.WORKSPACE_MEMBERS_READ;
 import static org.craft.mcs.cap.core.account.membership.domain.model.WorkspacePermission.WORKSPACE_READ;
 import static org.craft.mcs.cap.core.account.membership.domain.model.WorkspacePermission.WORKSPACE_SETTINGS_READ;
@@ -50,7 +52,8 @@ public enum AccountRole {
   private static final @NonNull Set<@NonNull WorkspacePermission> BUSINESS_READ_PERMISSIONS = with(
       WORKSPACE_BASE_PERMISSIONS,
       FEEDSTOCK_READ,
-      PRODUCTION_READ
+      PRODUCTION_READ,
+      VESSEL_READ
   );
 
   private static final @NonNull Set<@NonNull WorkspacePermission> PRODUCTION_PERMISSIONS = Set.of(
@@ -60,7 +63,9 @@ public enum AccountRole {
       FEEDSTOCK_READ,
       FEEDSTOCK_WRITE,
       PRODUCTION_READ,
-      PRODUCTION_WRITE
+      PRODUCTION_WRITE,
+      VESSEL_READ,
+      VESSEL_WRITE
   );
 
   /** Returns stable permissions granted by this role within its workspace membership. */
@@ -70,7 +75,12 @@ public enum AccountRole {
       case ADMIN -> administrativePermissions();
       case TECHNOLOGIST, CIDERMAKER -> PRODUCTION_PERMISSIONS;
       case CATALOG_CONTRIBUTOR -> with(WORKSPACE_BASE_PERMISSIONS, CATALOG_CONTRIBUTE);
-      case LAB_CONTRIBUTOR -> with(WORKSPACE_BASE_PERMISSIONS, FEEDSTOCK_READ, LAB_CONTRIBUTE);
+      case LAB_CONTRIBUTOR -> with(
+          WORKSPACE_BASE_PERMISSIONS,
+          FEEDSTOCK_READ,
+          VESSEL_READ,
+          LAB_CONTRIBUTE
+      );
       case CURATOR -> with(WORKSPACE_BASE_PERMISSIONS, CATALOG_CONTRIBUTE, CATALOG_CURATE);
       case VIEWER -> BUSINESS_READ_PERMISSIONS;
     };

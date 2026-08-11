@@ -6,13 +6,12 @@ import org.craft.mcs.cap.core.account.workspace.application.port.out.WorkspaceRe
 import org.craft.mcs.cap.core.account.workspace.domain.model.Workspace;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.support.JdbcPersistenceExceptionTranslator;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
-import org.craft.mcs.cap.shared.application.ConcurrentResourceModificationException;
 import org.craft.mcs.cap.shared.application.persistence.VersionedAggregate;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Repository;
 
 import static java.util.Objects.requireNonNull;
-import static org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.support.JdbcAggregateRevisionGuard.requireExpectedRevision;
+import static org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.support.JdbcVersionedUpdate.complete;
 
 /** Persists CAP Workspace aggregates. */
 @Repository
@@ -37,14 +36,23 @@ class JdbcWorkspaceRepository implements WorkspaceRepository {
   ) {
     requireNonNull(workspace, "versioned workspace cannot be null");
     final var aggregate = workspace.aggregate();
-    final var entity = repository.findById(aggregate.workspaceId().value())
-        .orElseThrow(() -> new ConcurrentResourceModificationException("workspace", null));
-    requireExpectedRevision("workspace", workspace.revision(), WorkspaceJdbcMapper.revision(entity));
-    final var saved = JdbcPersistenceExceptionTranslator.translateOptimisticLocking(
+    final var affectedRows = JdbcPersistenceExceptionTranslator.translateOptimisticLocking(
         "workspace",
-        () -> repository.save(WorkspaceJdbcMapper.updateFromDomain(aggregate, entity))
+        () -> repository.updateByIdAndVersion(
+            aggregate.workspaceId().value(),
+            aggregate.name().value(),
+            aggregate.type(),
+            aggregate.status(),
+            aggregate.externalOrganizationProvider() == null
+                ? null
+                : aggregate.externalOrganizationProvider().value(),
+            aggregate.externalOrganizationSubject() == null
+                ? null
+                : aggregate.externalOrganizationSubject().value(),
+            workspace.revision().value()
+        )
     );
-    return WorkspaceJdbcMapper.toVersionedAggregate(saved);
+    return complete("workspace", workspace, affectedRows);
   }
 
   @Override

@@ -3,7 +3,6 @@ package org.craft.mcs.cap.core.measurement.domain.model;
 import java.time.Instant;
 import org.craft.mcs.cap.shared.kernel.DomainConflictException;
 import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
-import org.craft.mcs.cap.shared.kernel.identity.ActorReference;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jmolecules.ddd.annotation.AggregateRoot;
 import org.jmolecules.ddd.annotation.Identity;
@@ -23,33 +22,22 @@ public final class MeasurementSet {
   private final @NonNull MeasurementSetId measurementSetId;
   private final @NonNull WorkspaceId workspaceId;
   private final @NonNull MeasurementSubjectReference subject;
-  private @NonNull MeasurementSetLifecycle lifecycle;
-  private @Nullable MeasurementSetRetraction retraction;
   private @NonNull MeasurementSetRevision currentRevision;
   private final @NonNull Instant createdAt;
-  private @NonNull Instant updatedAt;
 
-  @SuppressWarnings("java:S107")
   private MeasurementSet(
       @NonNull MeasurementSetId measurementSetId,
       @NonNull WorkspaceId workspaceId,
       @NonNull MeasurementSubjectReference subject,
-      @NonNull MeasurementSetLifecycle lifecycle,
-      @Nullable MeasurementSetRetraction retraction,
       @NonNull MeasurementSetRevision currentRevision,
-      @NonNull Instant createdAt,
-      @NonNull Instant updatedAt
+      @NonNull Instant createdAt
   ) {
     this.measurementSetId = requireNonNull(measurementSetId, "measurement set id cannot be null");
     this.workspaceId = requireNonNull(workspaceId, "measurement workspace id cannot be null");
     this.subject = requireNonNull(subject, "measurement subject cannot be null");
-    this.lifecycle = requireNonNull(lifecycle, "measurement set lifecycle cannot be null");
-    this.retraction = retraction;
     this.currentRevision = requireNonNull(currentRevision, "current measurement revision cannot be null");
     this.createdAt = requireNonNull(createdAt, "measurement set created at cannot be null");
-    this.updatedAt = requireNonNull(updatedAt, "measurement set updated at cannot be null");
-    validateLifecycle(lifecycle, retraction, updatedAt);
-    validateChronology(currentRevision, createdAt, updatedAt);
+    validateChronology(currentRevision, createdAt);
   }
 
   public static @NonNull MeasurementSet create(
@@ -62,115 +50,85 @@ public final class MeasurementSet {
     if (!initialRevision.revisionNumber().isInitial()) {
       throw new DomainRuleViolationException("initial measurement revision number must be one");
     }
+    if (initialRevision.changeKind() != MeasurementSetRevisionChangeKind.INITIAL) {
+      throw new DomainRuleViolationException("measurement set must start with an initial revision");
+    }
     final var createdAt = initialRevision.createdAt();
     return new MeasurementSet(
         measurementSetId,
         workspaceId,
         subject,
-        MeasurementSetLifecycle.ACTIVE,
-        null,
         initialRevision,
-        createdAt,
         createdAt
     );
   }
 
-  @SuppressWarnings("java:S107")
   public static @NonNull MeasurementSet restore(
       @NonNull MeasurementSetId measurementSetId,
       @NonNull WorkspaceId workspaceId,
       @NonNull MeasurementSubjectReference subject,
-      @NonNull MeasurementSetLifecycle lifecycle,
-      @Nullable MeasurementSetRetraction retraction,
       @NonNull MeasurementSetRevision currentRevision,
-      @NonNull Instant createdAt,
-      @NonNull Instant updatedAt
+      @NonNull Instant createdAt
   ) {
     return new MeasurementSet(
         measurementSetId,
         workspaceId,
         subject,
-        lifecycle,
-        retraction,
         currentRevision,
-        createdAt,
-        updatedAt
+        createdAt
     );
   }
 
   public void correct(@NonNull MeasurementSetRevision revision) {
     requireActive();
     requireNonNull(revision, "corrected measurement revision cannot be null");
-    if (revision.revisionId().equals(currentRevision.revisionId())) {
-      throw new DomainConflictException("measurement correction requires a new revision identity");
-    }
-    if (!revision.revisionNumber().equals(currentRevision.revisionNumber().next())) {
-      throw new DomainConflictException("measurement correction must append the next revision");
-    }
-    if (!revision.materialStateId().equals(currentRevision.materialStateId())) {
-      throw new DomainConflictException("measurement correction must preserve the observed material state");
-    }
-    if (revision.createdAt().isBefore(updatedAt)) {
-      throw new DomainConflictException("measurement correction cannot predate the current aggregate state");
+    requireNextRevision(revision);
+    if (revision.changeKind() != MeasurementSetRevisionChangeKind.CORRECTION) {
+      throw new DomainConflictException("measurement correction requires a correction revision");
     }
     MeasurementSetRevisionTransitionPolicy.requireValid(currentRevision, revision);
     currentRevision = revision;
-    updatedAt = revision.createdAt();
   }
 
-  public void retract(
-      @NonNull ActorReference actor,
-      @NonNull Instant retractedAt,
-      @NonNull MeasurementRetractionReason reason
-  ) {
+  public void retract(@NonNull MeasurementSetRevision revision) {
     requireActive();
-    requireNonNull(actor, "measurement-set retraction actor cannot be null");
-    requireNonNull(retractedAt, "measurement retraction time cannot be null");
-    requireNonNull(reason, "measurement-set retraction reason cannot be null");
-    if (retractedAt.isBefore(updatedAt)) {
-      throw new DomainConflictException("measurement retraction cannot predate the current aggregate state");
+    requireNonNull(revision, "measurement retraction revision cannot be null");
+    requireNextRevision(revision);
+    if (revision.changeKind() != MeasurementSetRevisionChangeKind.RETRACTION) {
+      throw new DomainConflictException("measurement retraction requires a retraction revision");
     }
-    lifecycle = MeasurementSetLifecycle.RETRACTED;
-    retraction = new MeasurementSetRetraction(actor, retractedAt, reason);
-    updatedAt = retractedAt;
+    MeasurementSetRevisionTransitionPolicy.requireRetraction(currentRevision, revision);
+    currentRevision = revision;
   }
 
-  private static void validateLifecycle(
-      @NonNull MeasurementSetLifecycle lifecycle,
-      @Nullable MeasurementSetRetraction retraction,
-      @NonNull Instant updatedAt
-  ) {
-    if (lifecycle == MeasurementSetLifecycle.ACTIVE && retraction != null) {
-      throw new DomainRuleViolationException("active measurement set cannot have retraction audit");
+  private void requireNextRevision(@NonNull MeasurementSetRevision revision) {
+    if (revision.revisionId().equals(currentRevision.revisionId())) {
+      throw new DomainConflictException("measurement change requires a new revision identity");
     }
-    if (lifecycle == MeasurementSetLifecycle.RETRACTED && retraction == null) {
-      throw new DomainRuleViolationException("retracted measurement set requires retraction audit");
+    if (!revision.revisionNumber().equals(currentRevision.revisionNumber().next())) {
+      throw new DomainConflictException("measurement change must append the next revision");
     }
-    if (retraction != null && !retraction.retractedAt().equals(updatedAt)) {
-      throw new DomainRuleViolationException(
-          "measurement-set retraction time must equal aggregate update time"
-      );
+    if (!revision.materialStateId().equals(currentRevision.materialStateId())) {
+      throw new DomainConflictException("measurement change must preserve the observed material state");
+    }
+    if (revision.createdAt().isBefore(currentRevision.createdAt())) {
+      throw new DomainConflictException("measurement change cannot predate the current revision");
     }
   }
 
   private void requireActive() {
-    if (lifecycle != MeasurementSetLifecycle.ACTIVE) {
+    if (lifecycle() != MeasurementSetLifecycle.ACTIVE) {
       throw new DomainConflictException("retracted measurement set cannot be changed");
     }
   }
 
   private static void validateChronology(
       @NonNull MeasurementSetRevision currentRevision,
-      @NonNull Instant createdAt,
-      @NonNull Instant updatedAt
+      @NonNull Instant createdAt
   ) {
-    if (createdAt.isAfter(updatedAt)) {
-      throw new DomainRuleViolationException("measurement set creation time cannot follow its update time");
-    }
-    if (currentRevision.createdAt().isBefore(createdAt)
-        || currentRevision.createdAt().isAfter(updatedAt)) {
+    if (currentRevision.createdAt().isBefore(createdAt)) {
       throw new DomainRuleViolationException(
-          "current measurement revision time must belong to the aggregate lifetime"
+          "current measurement revision cannot predate measurement set creation"
       );
     }
   }
@@ -188,11 +146,17 @@ public final class MeasurementSet {
   }
 
   public @NonNull MeasurementSetLifecycle lifecycle() {
-    return lifecycle;
+    return currentRevision.lifecycle();
   }
 
   public @Nullable MeasurementSetRetraction retraction() {
-    return retraction;
+    return currentRevision.changeKind() == MeasurementSetRevisionChangeKind.RETRACTION
+        ? new MeasurementSetRetraction(
+            currentRevision.actor(),
+            currentRevision.createdAt(),
+            requireNonNull(currentRevision.retractionReason())
+        )
+        : null;
   }
 
   public @NonNull MeasurementSetRevision currentRevision() {
@@ -204,6 +168,6 @@ public final class MeasurementSet {
   }
 
   public @NonNull Instant updatedAt() {
-    return updatedAt;
+    return currentRevision.createdAt();
   }
 }

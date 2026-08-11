@@ -5,6 +5,7 @@ import org.craft.mcs.cap.core.production.application.ProductionBatchNotFoundExce
 import org.craft.mcs.cap.core.production.application.authorization.port.out.ProductionAccessControl;
 import org.craft.mcs.cap.core.production.application.port.in.ProductionBatchAccessUseCase;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchRepository;
+import org.craft.mcs.cap.core.production.domain.model.ProductionBatch;
 import org.craft.mcs.cap.core.production.domain.model.ProductionBatchId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;
@@ -30,9 +31,9 @@ public final class ProductionBatchAccessService implements ProductionBatchAccess
 
   @Override
   public @NonNull WorkspaceId requireWriteAccess(@NonNull ProductionBatchId batchId) {
-    final var workspaceId = workspaceId(batchId);
-    accessControl.requireWriteAccess(workspaceId);
-    return workspaceId;
+    final var batch = batch(batchId);
+    accessControl.requireWriteAccess(batch.workspaceId());
+    return batch.workspaceId();
   }
 
   @Override
@@ -41,9 +42,13 @@ public final class ProductionBatchAccessService implements ProductionBatchAccess
   }
 
   private @NonNull WorkspaceId workspaceId(@NonNull ProductionBatchId batchId) {
+    return batch(batchId).workspaceId();
+  }
+
+  private @NonNull ProductionBatch batch(@NonNull ProductionBatchId batchId) {
     requireNonNull(batchId, "production batch id cannot be null");
     return repository.findById(batchId)
-        .orElseThrow(() -> new ProductionBatchNotFoundException(batchId))
-        .workspaceId();
+        .orElseThrow(() -> new ProductionBatchNotFoundException(batchId));
   }
+
 }

@@ -2,19 +2,23 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.production.mapper;
 
 import java.util.List;
 import org.craft.mcs.cap.core.production.application.model.ProductionBatchDetailsView;
+import org.craft.mcs.cap.core.production.application.port.in.UpdateProductionBatchCommand;
 import org.craft.mcs.cap.core.production.candidate.application.confirmation.port.in.CreateProductionBatchCommand;
 import org.craft.mcs.cap.core.production.candidate.application.confirmation.port.in.ProductionBatchCreated;
 import org.craft.mcs.cap.core.production.candidate.domain.model.ProductionBatchCandidateId;
+import org.craft.mcs.cap.core.production.domain.model.ProductionBatchId;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
-import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
+import org.craft.mcs.cap.shared.kernel.identity.VesselId;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.abv.mapper.PotentialAbvPredictionRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.CreateProductionBatchRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.ProductionBatchDetailsResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.ProductionBatchListResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.ProductionBatchResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.UpdateProductionBatchRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.measurement.CanonicalUnitLabels;
 import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.vessel.mapper.VesselRestMapper;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
@@ -33,8 +37,24 @@ public final class ProductionBatchRestMapper {
     return new CreateProductionBatchCommand(
         WorkspaceId.of(requireNonNull(request.workspaceId(), "workspace id cannot be null")),
         BatchName.of(request.name()),
-        Vessel.named(request.vessel()),
+        VesselId.of(requireNonNull(request.vesselId(), "vessel id cannot be null")),
         ProductionBatchCandidateId.of(requireNonNull(request.candidateId(), "candidate id cannot be null")),
+        request.note()
+    );
+  }
+
+  public static @NonNull UpdateProductionBatchCommand toCommand(
+      @NonNull ProductionBatchId batchId,
+      @NonNull UpdateProductionBatchRequest request
+  ) {
+    requireNonNull(batchId, "production batch id cannot be null");
+    requireNonNull(request, "update production batch request cannot be null");
+
+    return new UpdateProductionBatchCommand(
+        batchId,
+        WorkspaceId.of(requireNonNull(request.workspaceId(), "workspace id cannot be null")),
+        BatchName.of(request.name()),
+        VesselId.of(requireNonNull(request.vesselId(), "vessel id cannot be null")),
         request.note()
     );
   }
@@ -47,7 +67,7 @@ public final class ProductionBatchRestMapper {
         batch.batchId().value(),
         batch.workspaceId().value(),
         batch.name().value(),
-        batch.vessel().name(),
+        VesselRestMapper.toResponse(created.vessel()),
         batch.lifecycle(),
         batch.alcoholicFermentationState(),
         created.candidate().candidateId().value(),
@@ -67,7 +87,7 @@ public final class ProductionBatchRestMapper {
         batch.workspaceId().value(),
         batch.currentMaterialStateId().value(),
         batch.name().value(),
-        batch.vessel().name(),
+        VesselRestMapper.toResponse(details.vessel()),
         batch.lifecycle(),
         batch.alcoholicFermentationState(),
         new DecimalQuantityResponse(batch.currentVolume().liters(), CanonicalUnitLabels.VOLUME),

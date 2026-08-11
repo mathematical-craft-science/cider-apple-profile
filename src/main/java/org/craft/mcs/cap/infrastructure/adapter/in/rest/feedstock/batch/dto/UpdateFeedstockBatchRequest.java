@@ -1,11 +1,17 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.batch.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.common.dto.FeedstockSeasonRequest;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+
+import static org.craft.mcs.cap.shared.infrastructure.rest.UuidV7Schema.FORMAT;
+import static org.craft.mcs.cap.shared.infrastructure.rest.UuidV7Schema.PATTERN;
 
 
 @Schema(description = "Request to replace editable feedstock batch fields.")
@@ -16,22 +22,32 @@ public record UpdateFeedstockBatchRequest(
         example = "4d96759c-86ff-4d39-8b19-241bc60f82ff",
         requiredMode = Schema.RequiredMode.REQUIRED
     )
-    @NonNull UUID workspaceId,
+    @NotNull @NonNull UUID workspaceId,
+    @Schema(
+        description = "Optional initial vessel correction. Omission preserves the current vessel. The value can "
+            + "change only before the first post-creation operation.",
+        format = FORMAT,
+        pattern = PATTERN,
+        example = "019fd42c-3ac8-7000-91fe-48173dfc0c7e",
+        nullable = true,
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
+    @Nullable UUID vesselId,
     @Schema(
         description = "Batch name.",
         example = "October Kingston Black harvest",
         requiredMode = Schema.RequiredMode.REQUIRED
     )
-    @NonNull String name,
+    @NotBlank @NonNull String name,
     @Schema(
         description = "Feedstock type.",
         implementation = FeedstockType.class,
         example = "JUICE",
         requiredMode = Schema.RequiredMode.REQUIRED
     )
-    @NonNull FeedstockType type,
+    @NotNull @NonNull FeedstockType type,
     @Schema(description = "Season date range.", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NonNull FeedstockSeasonRequest season,
+    @Valid @NotNull @NonNull FeedstockSeasonRequest season,
     @Schema(
         description = "Optional source or origin. Blank value clears the source.",
         example = "North orchard block A",

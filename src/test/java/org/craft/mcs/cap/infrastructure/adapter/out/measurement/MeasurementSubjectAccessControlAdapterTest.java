@@ -38,6 +38,7 @@ class MeasurementSubjectAccessControlAdapterTest {
         .returns(workspaceId, value -> value.requireWriteAccess(subject));
     adapter.requireReadAccess(MeasurementSubjectType.FEEDSTOCK_BATCH, workspaceId);
 
+    verify(feedstockAccess).requireWriteAccess(batchId);
     verify(feedstockAccess).requireWorkspaceReadAccess(workspaceId);
   }
 
@@ -62,6 +63,7 @@ class MeasurementSubjectAccessControlAdapterTest {
         .returns(workspaceId, value -> value.requireWriteAccess(subject));
     adapter.requireReadAccess(MeasurementSubjectType.PRODUCTION_BATCH, workspaceId);
 
+    verify(productionAccess).requireWriteAccess(batchId);
     verify(productionAccess).requireWorkspaceReadAccess(workspaceId);
   }
 }

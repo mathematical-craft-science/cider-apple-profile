@@ -19,6 +19,7 @@ import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementActorP
 import org.craft.mcs.cap.core.measurement.application.port.out.ObservedMaterialStateValidator;
 import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementSetRepository;
 import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementSubjectAccessControl;
+import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementSubjectChangePolicy;
 import org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementCorrectionReason;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementProvenance;
@@ -31,6 +32,7 @@ import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetId;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetLifecycle;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetName;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetRevision;
+import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetRevisionChangeKind;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetRevisionId;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetRevisionNumber;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementRetractionReason;
@@ -42,6 +44,7 @@ import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSubjectType;
 import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.craft.mcs.cap.shared.application.ConcurrentResourceModificationException;
 import org.craft.mcs.cap.shared.application.ApplicationValidationException;
+import org.craft.mcs.cap.shared.kernel.DomainConflictException;
 import org.craft.mcs.cap.shared.application.persistence.AggregateRevision;
 import org.craft.mcs.cap.shared.application.persistence.VersionedAggregate;
 import org.craft.mcs.cap.shared.kernel.identity.ActorReference;
@@ -60,6 +63,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.ArgumentMatchers.any;
 
 
@@ -176,6 +180,35 @@ class MeasurementSetCommandServicesTest {
     assertThatThrownBy(() -> service.create(command(subject, observedStateId)))
         .isInstanceOf(ApplicationValidationException.class);
     verify(repository, never()).create(any());
+  }
+
+  @Test
+  void createRejectsMeasurementWriteWhenSubjectLifecycleDisallowsChanges() {
+    final var repository = mock(MeasurementSetRepository.class);
+    final var subjectAccessControl = mock(MeasurementSubjectAccessControl.class);
+    final var subjectChangePolicy = mock(MeasurementSubjectChangePolicy.class);
+    final var materialStateValidator = mock(ObservedMaterialStateValidator.class);
+    final var subject = new MeasurementSubjectReference(
+        MeasurementSubjectType.FEEDSTOCK_BATCH,
+        newUuid()
+    );
+    final var observedStateId = MaterialStateId.newId();
+    when(subjectAccessControl.requireWriteAccess(subject)).thenReturn(WorkspaceId.newId());
+    doThrow(new DomainConflictException(
+        "feedstock batch measurements can be changed only when lifecycle is ACTIVE"
+    )).when(subjectChangePolicy).requireChangesAllowed(subject);
+    final var service = createService(
+        repository,
+        subjectAccessControl,
+        subjectChangePolicy,
+        materialStateValidator
+    );
+
+    assertThatThrownBy(() -> service.create(command(subject, observedStateId)))
+        .isInstanceOf(DomainConflictException.class)
+        .hasMessage("feedstock batch measurements can be changed only when lifecycle is ACTIVE");
+    verify(repository, never()).create(any());
+    verify(materialStateValidator, never()).requireObservedState(any(), any());
   }
 
   @Test
@@ -442,6 +475,62 @@ class MeasurementSetCommandServicesTest {
   }
 
   @Test
+  void patchRejectsMeasurementWriteWhenSubjectLifecycleDisallowsChanges() {
+    final var repository = mock(MeasurementSetRepository.class);
+    final var subjectAccessControl = mock(MeasurementSubjectAccessControl.class);
+    final var subjectChangePolicy = mock(MeasurementSubjectChangePolicy.class);
+    final var set = measurementSet();
+    when(repository.findVersionedById(set.measurementSetId())).thenReturn(Optional.of(
+        new VersionedAggregate<>(set, AggregateRevision.of(3))
+    ));
+    doThrow(new DomainConflictException(
+        "feedstock batch measurements can be changed only when lifecycle is ACTIVE"
+    )).when(subjectChangePolicy).requireChangesAllowed(set.subject());
+    final var service = correctionService(repository, subjectAccessControl, subjectChangePolicy);
+
+    assertThatThrownBy(() -> service.patch(new PatchMeasurementSetCommand(
+        set.measurementSetId(),
+        3,
+        null,
+        false,
+        null,
+        MeasurementCorrectionReason.of("Corrected pH"),
+        List.of(direct(MeasurementCharacteristic.PH, "3.25", CORRECTION_TIME)),
+        Set.of()
+    )))
+        .isInstanceOf(DomainConflictException.class)
+        .hasMessage("feedstock batch measurements can be changed only when lifecycle is ACTIVE");
+    verify(repository, never()).appendRevision(any());
+  }
+
+  @Test
+  void replaceRejectsMeasurementWriteWhenSubjectLifecycleDisallowsChanges() {
+    final var repository = mock(MeasurementSetRepository.class);
+    final var subjectAccessControl = mock(MeasurementSubjectAccessControl.class);
+    final var subjectChangePolicy = mock(MeasurementSubjectChangePolicy.class);
+    final var set = measurementSet();
+    when(repository.findVersionedById(set.measurementSetId())).thenReturn(Optional.of(
+        new VersionedAggregate<>(set, AggregateRevision.of(3))
+    ));
+    doThrow(new DomainConflictException(
+        "feedstock batch measurements can be changed only when lifecycle is ACTIVE"
+    )).when(subjectChangePolicy).requireChangesAllowed(set.subject());
+    final var service = correctionService(repository, subjectAccessControl, subjectChangePolicy);
+
+    assertThatThrownBy(() -> service.replace(new ReplaceMeasurementSetCommand(
+        set.measurementSetId(),
+        3,
+        MeasurementSetName.of("Corrected laboratory result"),
+        null,
+        MeasurementCorrectionReason.of("Corrected complete laboratory report"),
+        List.of(direct(MeasurementCharacteristic.PH, "3.25", CORRECTION_TIME))
+    )))
+        .isInstanceOf(DomainConflictException.class)
+        .hasMessage("feedstock batch measurements can be changed only when lifecycle is ACTIVE");
+    verify(repository, never()).appendRevision(any());
+  }
+
+  @Test
   void rejectsNegativeExpectedVersionBeforeCallingPersistence() {
     final var measurementSetId = MeasurementSetId.newId();
 
@@ -509,7 +598,7 @@ class MeasurementSetCommandServicesTest {
     final var set = measurementSet();
     final var state = new VersionedAggregate<>(set, AggregateRevision.of(2));
     when(repository.findVersionedById(set.measurementSetId())).thenReturn(Optional.of(state));
-    when(repository.retract(state)).thenReturn(state);
+    when(repository.appendRevision(state)).thenReturn(state);
     final var service = retractionService(repository, subjectAccessControl);
 
     final var reason = MeasurementRetractionReason.of("Invalidated measurement set");
@@ -519,12 +608,39 @@ class MeasurementSetCommandServicesTest {
     assertThat(set)
         .returns(MeasurementSetLifecycle.RETRACTED, MeasurementSet::lifecycle)
         .satisfies(retracted -> assertThat(retracted.currentRevision().records()).hasSize(2))
+        .satisfies(retracted -> assertThat(retracted.currentRevision())
+            .returns(MeasurementSetRevisionChangeKind.RETRACTION, MeasurementSetRevision::changeKind)
+            .returns(reason, MeasurementSetRevision::retractionReason))
         .satisfies(retracted -> assertThat(retracted.retraction())
             .isNotNull()
             .returns(CORRECTION_TIME, MeasurementSetRetraction::retractedAt)
             .returns(reason, MeasurementSetRetraction::reason));
     verify(subjectAccessControl).requireWriteAccess(set.subject());
-    verify(repository).retract(state);
+    verify(repository).appendRevision(state);
+  }
+
+  @Test
+  void retractRejectsMeasurementWriteWhenSubjectLifecycleDisallowsChanges() {
+    final var repository = mock(MeasurementSetRepository.class);
+    final var subjectAccessControl = mock(MeasurementSubjectAccessControl.class);
+    final var subjectChangePolicy = mock(MeasurementSubjectChangePolicy.class);
+    final var set = measurementSet();
+    when(repository.findVersionedById(set.measurementSetId())).thenReturn(Optional.of(
+        new VersionedAggregate<>(set, AggregateRevision.of(2))
+    ));
+    doThrow(new DomainConflictException(
+        "feedstock batch measurements can be changed only when lifecycle is ACTIVE"
+    )).when(subjectChangePolicy).requireChangesAllowed(set.subject());
+    final var service = retractionService(repository, subjectAccessControl, subjectChangePolicy);
+
+    assertThatThrownBy(() -> service.retract(new RetractMeasurementSetCommand(
+        set.measurementSetId(),
+        2,
+        MeasurementRetractionReason.of("Invalidated measurement set")
+    )))
+        .isInstanceOf(DomainConflictException.class)
+        .hasMessage("feedstock batch measurements can be changed only when lifecycle is ACTIVE");
+    verify(repository, never()).appendRevision(any());
   }
 
   private static CreateMeasurementSetService createService(
@@ -532,10 +648,25 @@ class MeasurementSetCommandServicesTest {
       MeasurementSubjectAccessControl subjectAccessControl,
       ObservedMaterialStateValidator observedMaterialStateValidator
   ) {
+    return createService(
+        repository,
+        subjectAccessControl,
+        mock(MeasurementSubjectChangePolicy.class),
+        observedMaterialStateValidator
+    );
+  }
+
+  private static CreateMeasurementSetService createService(
+      MeasurementSetRepository repository,
+      MeasurementSubjectAccessControl subjectAccessControl,
+      MeasurementSubjectChangePolicy subjectChangePolicy,
+      ObservedMaterialStateValidator observedMaterialStateValidator
+  ) {
     final MeasurementActorProvider actorProvider = () -> ActorReference.accountUser(newUuid());
     return new CreateMeasurementSetService(
         repository,
         subjectAccessControl,
+        subjectChangePolicy,
         (subject, measurements) -> {
         },
         actorProvider,
@@ -550,10 +681,22 @@ class MeasurementSetCommandServicesTest {
       MeasurementSetRepository repository,
       MeasurementSubjectAccessControl subjectAccessControl
   ) {
+    return correctionService(
+        repository,
+        subjectAccessControl,
+        mock(MeasurementSubjectChangePolicy.class)
+    );
+  }
+
+  private static CorrectMeasurementSetService correctionService(
+      MeasurementSetRepository repository,
+      MeasurementSubjectAccessControl subjectAccessControl,
+      MeasurementSubjectChangePolicy subjectChangePolicy
+  ) {
     final MeasurementActorProvider actorProvider = () -> ActorReference.accountUser(newUuid());
     return new CorrectMeasurementSetService(
         repository,
-        new MeasurementSetWriteAccess(repository, subjectAccessControl),
+        new MeasurementSetWriteAccess(repository, subjectAccessControl, subjectChangePolicy),
         (subject, measurements) -> {
         },
         actorProvider,
@@ -567,10 +710,23 @@ class MeasurementSetCommandServicesTest {
       MeasurementSetRepository repository,
       MeasurementSubjectAccessControl subjectAccessControl
   ) {
+    return retractionService(
+        repository,
+        subjectAccessControl,
+        mock(MeasurementSubjectChangePolicy.class)
+    );
+  }
+
+  private static RetractMeasurementSetService retractionService(
+      MeasurementSetRepository repository,
+      MeasurementSubjectAccessControl subjectAccessControl,
+      MeasurementSubjectChangePolicy subjectChangePolicy
+  ) {
     final MeasurementActorProvider actorProvider = () -> ActorReference.accountUser(newUuid());
     return new RetractMeasurementSetService(
         repository,
-        new MeasurementSetWriteAccess(repository, subjectAccessControl),
+        new MeasurementSetWriteAccess(repository, subjectAccessControl, subjectChangePolicy),
+        new MeasurementSetRevisionFactory(),
         actorProvider,
         new DirectTransactionHelper(),
         Clock.fixed(CORRECTION_TIME, ZoneOffset.UTC)

@@ -46,6 +46,7 @@ public record MeasurementRecord(
     validateValueCompatibility(characteristic, value);
     validateDerivation(value, provenance, derivationMethod, derivationInputs);
     validateUniqueDerivationInputs(derivationInputs);
+    validateNoSelfReference(recordId, derivationInputs);
   }
 
   /** Returns the point-or-interval shape retained by this measurement record. */
@@ -132,6 +133,17 @@ public record MeasurementRecord(
       if (!uniqueInputs.add(derivationInput)) {
         throw new DomainRuleViolationException("measurement derivation inputs must be unique");
       }
+    }
+  }
+
+  private static void validateNoSelfReference(
+      @NonNull MeasurementRecordId recordId,
+      @NonNull List<@NonNull MeasurementRecordId> derivationInputs
+  ) {
+    if (derivationInputs.contains(recordId)) {
+      throw new DomainRuleViolationException(
+          "measurement result cannot reference itself as derivation evidence"
+      );
     }
   }
 }

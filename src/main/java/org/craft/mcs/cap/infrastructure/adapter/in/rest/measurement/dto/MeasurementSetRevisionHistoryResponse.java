@@ -10,7 +10,7 @@ import org.jspecify.annotations.Nullable;
 
 
 /** Audit history of every immutable revision belonging to one logical measurement set. */
-@Schema(description = "Logical measurement-set lifecycle and immutable correction history.")
+@Schema(description = "Logical measurement-set lifecycle and immutable revision history.")
 public record MeasurementSetRevisionHistoryResponse(
     @Schema(format = "uuid", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull UUID measurementSetId,

@@ -9,7 +9,7 @@ import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSource;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
-import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
+import org.craft.mcs.cap.testsupport.VesselTestFixtures;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.DomainConflictException;
 import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
@@ -22,6 +22,7 @@ import org.junit.jupiter.params.provider.EnumSource;
 
 import static org.craft.mcs.cap.shared.kernel.identity.UuidV7Generator.newUuid;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementInstant;
 
@@ -33,7 +34,7 @@ class FeedstockBatchTest {
     final var batchId = FeedstockBatchId.newId();
     final var workspaceId = WorkspaceId.of(newUuid());
     final var name = BatchName.of("Late season fruit");
-    final var vessel = Vessel.named("Tank A-01");
+    final var vessel = VesselTestFixtures.vesselId("Tank A-01");
     final var season = FeedstockSeason.of(LocalDate.parse("2026-10-01"), LocalDate.parse("2026-12-15"));
     final var batch = FeedstockBatch.create(
         batchId,
@@ -49,7 +50,7 @@ class FeedstockBatchTest {
         .returns(batchId, FeedstockBatch::batchId)
         .returns(workspaceId, FeedstockBatch::workspaceId)
         .returns(name, FeedstockBatch::name)
-        .returns(vessel, FeedstockBatch::vessel)
+        .returns(vessel, FeedstockBatch::vesselId)
         .returns(FeedstockType.JUICE, FeedstockBatch::type)
         .returns(season, FeedstockBatch::season)
         .returns(null, FeedstockBatch::source)
@@ -95,6 +96,18 @@ class FeedstockBatchTest {
   }
 
   @Test
+  void correctsInitialVesselWithoutChangingMaterialState() {
+    final var batch = activeBatch(VolumeValue.ofLiters("250.000"));
+    final var materialStateId = batch.currentMaterialStateId();
+    final var targetVesselId = VesselTestFixtures.vesselId("Tank A-02");
+
+    assertThat(batch.correctInitialVesselAssignment(targetVesselId))
+        .isSameAs(batch)
+        .returns(targetVesselId, FeedstockBatch::vesselId)
+        .returns(materialStateId, FeedstockBatch::currentMaterialStateId);
+  }
+
+  @Test
   void treatsBlankNoteAsAbsent() {
     final var batch = activeBatch(VolumeValue.ofLiters("250.000"));
 
@@ -106,17 +119,10 @@ class FeedstockBatchTest {
   }
 
   @Test
-  void marksBatchAsDeletedWithoutLosingDomainState() {
+  void marksDepletedBatchAsDeletedWithoutLosingDomainState() {
     final var deletedAt = feedstockMeasurementInstant();
-    final var batch = FeedstockBatch.create(
-        FeedstockBatchId.newId(),
-        WorkspaceId.of(newUuid()),
-        BatchName.of("Late season fruit"),
-        Vessel.named("Tank A-01"),
-        FeedstockType.JUICE,
-        FeedstockSeason.of(LocalDate.parse("2026-10-01"), LocalDate.parse("2026-12-15")),
-        VolumeValue.ofLiters("250.000")
-    );
+    final var batch = activeBatch(VolumeValue.ofLiters("250.000"))
+        .consumeAvailableVolume(VolumeValue.ofLiters("250.000"));
 
     final var deleted = batch.delete(deletedAt);
 
@@ -124,8 +130,29 @@ class FeedstockBatchTest {
         .isSameAs(batch)
         .returns(true, FeedstockBatch::deleted)
         .returns(deletedAt, FeedstockBatch::deletedAt)
+        .returns(BatchLifecycle.DEPLETED, FeedstockBatch::lifecycle)
         .satisfies(value -> assertThat(value.availableVolume().liters())
-            .isEqualByComparingTo("250.000"));
+            .isZero());
+  }
+
+  @Test
+  void rejectsDeletingBatchThatStillContainsActiveMaterial() {
+    final var batch = activeBatch(VolumeValue.ofLiters("250.000"));
+
+    assertThatThrownBy(() -> batch.delete(feedstockMeasurementInstant()))
+        .isInstanceOf(DomainConflictException.class)
+        .hasMessage("cannot delete feedstock batch containing active material");
+  }
+
+  @Test
+  void rejectsDeletingBatchMoreThanOnce() {
+    final var batch = activeBatch(VolumeValue.ofLiters("250.000"))
+        .consumeAvailableVolume(VolumeValue.ofLiters("250.000"))
+        .delete(feedstockMeasurementInstant());
+
+    assertThatThrownBy(() -> batch.delete(feedstockMeasurementInstant().plusSeconds(1)))
+        .isInstanceOf(DomainConflictException.class)
+        .hasMessage("feedstock batch is already deleted");
   }
 
   @Test
@@ -134,7 +161,7 @@ class FeedstockBatchTest {
         FeedstockBatchId.newId(),
         WorkspaceId.of(newUuid()),
         BatchName.of("Late season fruit"),
-        Vessel.named("Tank A-01"),
+        VesselTestFixtures.vesselId("Tank A-01"),
         FeedstockType.JUICE,
         FeedstockSeason.of(LocalDate.parse("2026-10-01"), LocalDate.parse("2026-12-15")),
         VolumeValue.ofLiters("250.000")
@@ -151,7 +178,7 @@ class FeedstockBatchTest {
         FeedstockBatchId.newId(),
         WorkspaceId.of(newUuid()),
         BatchName.of("Late season fruit"),
-        Vessel.named("Tank A-01"),
+        VesselTestFixtures.vesselId("Tank A-01"),
         FeedstockType.JUICE,
         FeedstockSeason.of(LocalDate.parse("2026-10-01"), LocalDate.parse("2026-12-15")),
         VolumeValue.ofLiters("0")
@@ -192,7 +219,7 @@ class FeedstockBatchTest {
         FeedstockBatchId.newId(),
         WorkspaceId.of(newUuid()),
         BatchName.of("Consumed fruit"),
-        Vessel.named("Tank A-01"),
+        VesselTestFixtures.vesselId("Tank A-01"),
         FeedstockType.JUICE,
         FeedstockSeason.of(LocalDate.parse("2026-10-01"), LocalDate.parse("2026-12-15")),
         null,
@@ -210,8 +237,20 @@ class FeedstockBatchTest {
 
   @Test
   void rejectsConsumingMaterialFromDeletedBatch() {
-    final var batch = activeBatch(VolumeValue.ofLiters("250"))
-        .delete(feedstockMeasurementInstant());
+    final var batch = FeedstockBatch.restore(
+        FeedstockBatchId.newId(),
+        WorkspaceId.of(newUuid()),
+        BatchName.of("Consumed fruit"),
+        VesselTestFixtures.vesselId("Tank A-01"),
+        FeedstockType.JUICE,
+        FeedstockSeason.of(LocalDate.parse("2026-10-01"), LocalDate.parse("2026-12-15")),
+        null,
+        BatchLifecycle.DEPLETED,
+        VolumeValue.ofLiters("0"),
+        MaterialStateId.newId(),
+        null,
+        feedstockMeasurementInstant()
+    );
 
     assertThatThrownBy(() -> batch.consumeAvailableVolume(VolumeValue.ofLiters("1")))
         .isInstanceOf(DomainConflictException.class)
@@ -228,6 +267,26 @@ class FeedstockBatchTest {
         .hasMessage("active batch material volume must be greater than zero");
   }
 
+  @Test
+  void rejectsRestoringDeletedBatchWithActiveMaterial() {
+    assertThatThrownBy(() -> FeedstockBatch.restore(
+        FeedstockBatchId.newId(),
+        WorkspaceId.of(newUuid()),
+        BatchName.of("Deleted active fruit"),
+        VesselTestFixtures.vesselId("Tank A-01"),
+        FeedstockType.JUICE,
+        FeedstockSeason.of(LocalDate.parse("2026-10-01"), LocalDate.parse("2026-12-15")),
+        null,
+        BatchLifecycle.ACTIVE,
+        VolumeValue.ofLiters("250"),
+        MaterialStateId.newId(),
+        null,
+        feedstockMeasurementInstant()
+    ))
+        .isInstanceOf(DomainRuleViolationException.class)
+        .hasMessage("deleted feedstock batch cannot contain active material");
+  }
+
   @ParameterizedTest
   @EnumSource(value = BatchLifecycle.class, names = {"DEPLETED", "DISCARDED"})
   void rejectsInactiveLifecycleWithRemainingVolumeDuringRestore(BatchLifecycle lifecycle) {
@@ -239,12 +298,29 @@ class FeedstockBatchTest {
         .hasMessage("inactive batch material volume must be zero");
   }
 
+  @Test
+  void allowsMeasurementChangesForActiveBatch() {
+    final var batch = activeBatch(VolumeValue.ofLiters("250"));
+
+    assertThatCode(batch::requireMeasurementChangesAllowed).doesNotThrowAnyException();
+  }
+
+  @ParameterizedTest
+  @EnumSource(value = BatchLifecycle.class, names = {"DEPLETED", "DISCARDED"})
+  void rejectsMeasurementChangesForInactiveBatch(BatchLifecycle lifecycle) {
+    final var batch = restore(lifecycle, VolumeValue.ofLiters("0"));
+
+    assertThatThrownBy(batch::requireMeasurementChangesAllowed)
+        .isInstanceOf(DomainConflictException.class)
+        .hasMessage("feedstock batch measurements can be changed only when lifecycle is ACTIVE");
+  }
+
   private static @NonNull FeedstockBatch activeBatch(@NonNull VolumeValue availableVolume) {
     return FeedstockBatch.create(
         FeedstockBatchId.newId(),
         WorkspaceId.of(newUuid()),
         BatchName.of("Late season fruit"),
-        Vessel.named("Tank A-01"),
+        VesselTestFixtures.vesselId("Tank A-01"),
         FeedstockType.JUICE,
         FeedstockSeason.of(LocalDate.parse("2026-10-01"), LocalDate.parse("2026-12-15")),
         availableVolume
@@ -259,7 +335,7 @@ class FeedstockBatchTest {
         FeedstockBatchId.newId(),
         WorkspaceId.of(newUuid()),
         BatchName.of("Late season fruit"),
-        Vessel.named("Tank A-01"),
+        VesselTestFixtures.vesselId("Tank A-01"),
         FeedstockType.JUICE,
         FeedstockSeason.of(LocalDate.parse("2026-10-01"), LocalDate.parse("2026-12-15")),
         null,

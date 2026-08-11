@@ -1,6 +1,5 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.account.workspace;
 
-import jakarta.validation.Valid;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.account.administration.application.port.in.WorkspaceLifecycleUseCase;
@@ -29,7 +28,7 @@ public final class WorkspaceLifecycleController implements WorkspaceLifecycleApi
   @Override
   @PostMapping("/account/workspaces")
   public @NonNull ResponseEntity<@NonNull AccountMembershipResponse> createWorkspace(
-      @Valid @RequestBody @NonNull CreateWorkspaceRequest request
+      @RequestBody @NonNull CreateWorkspaceRequest request
   ) {
     final var membership = workspaceLifecycleUseCase.create(WorkspaceRestMapper.toCommand(request));
     return ResponseEntity.status(201).body(WorkspaceMembershipRestMapper.toResponse(membership));
@@ -39,7 +38,7 @@ public final class WorkspaceLifecycleController implements WorkspaceLifecycleApi
   @PatchMapping("/account/workspaces/{workspaceId}")
   public @NonNull ResponseEntity<@NonNull AccountWorkspaceResponse> updateWorkspace(
       @PathVariable @NonNull UUID workspaceId,
-      @Valid @RequestBody @NonNull UpdateWorkspaceRequest request
+      @RequestBody @NonNull UpdateWorkspaceRequest request
   ) {
     final var updated = workspaceLifecycleUseCase.update(WorkspaceRestMapper.toCommand(
         WorkspaceId.of(workspaceId),

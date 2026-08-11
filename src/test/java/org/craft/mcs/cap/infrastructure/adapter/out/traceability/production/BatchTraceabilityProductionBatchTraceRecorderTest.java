@@ -36,7 +36,7 @@ import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.shared.kernel.material.value.MaterialConsumption;
-import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
+import org.craft.mcs.cap.testsupport.VesselTestFixtures;
 import org.craft.mcs.cap.shared.kernel.measurement.MeasuredValue;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.jspecify.annotations.NonNull;
@@ -196,7 +196,7 @@ class BatchTraceabilityProductionBatchTraceRecorderTest {
         ProductionBatchId.newId(),
         workspaceId,
         BatchName.of("Classic cider"),
-        Vessel.named("Tank F-03"),
+        VesselTestFixtures.vesselId("Tank F-03"),
         VolumeValue.ofLiters("100"),
         new ProductionProfileSnapshot(
             SpecificGravityValue.of("1.052"),

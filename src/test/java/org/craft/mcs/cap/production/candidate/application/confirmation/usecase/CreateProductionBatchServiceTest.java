@@ -17,6 +17,7 @@ import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchRep
 import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchTraceRecorder;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionSourceDisplayName;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionSourceInventory;
+import org.craft.mcs.cap.core.production.application.vessel.port.out.ProductionVesselAssignmentValidator;
 import org.craft.mcs.cap.core.production.candidate.application.confirmation.usecase.CreateProductionBatchService;
 import org.craft.mcs.cap.core.production.candidate.application.ProductionBatchCandidateStaleException;
 import org.craft.mcs.cap.core.production.candidate.application.model.ProductionBatchCandidateSnapshot;
@@ -36,7 +37,7 @@ import org.craft.mcs.cap.core.production.domain.model.value.AlcoholicFermentatio
 import org.craft.mcs.cap.shared.kernel.material.value.BatchLifecycle;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
-import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
+import org.craft.mcs.cap.testsupport.VesselTestFixtures;
 import org.craft.mcs.cap.shared.kernel.DomainConflictException;
 import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
 import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
@@ -60,6 +61,8 @@ import static org.craft.mcs.cap.production.testing.ProductionSourceCharacteristi
     .productionSourceCharacteristics;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 
 class CreateProductionBatchServiceTest {
@@ -92,7 +95,7 @@ class CreateProductionBatchServiceTest {
     assertThat(productionRepository.committed)
         .hasSize(1);
     assertThat(created.productionBatch())
-        .returns(Vessel.named("Tank F-03"), ProductionBatchView::vessel)
+        .returns(VesselTestFixtures.PRODUCTION_VESSEL_ID, ProductionBatchView::vesselId)
         .returns(BatchLifecycle.ACTIVE, ProductionBatchView::lifecycle)
         .returns(
             AlcoholicFermentationState.NOT_STARTED,
@@ -250,12 +253,17 @@ class CreateProductionBatchServiceTest {
       @NonNull ProductionBatchTraceRecorder traceRecorder,
       @NonNull TransactionHelper transactionHelper
   ) {
+    final var vesselAssignmentValidator = mock(ProductionVesselAssignmentValidator.class);
+    when(vesselAssignmentValidator.requireAssignable(any(), any(), any())).thenReturn(
+        VesselTestFixtures.reference(VesselTestFixtures.PRODUCTION_VESSEL_ID, "Tank F-03")
+    );
     return new CreateProductionBatchService(
         sourceInventory,
         candidateStore,
         productionRepository,
         traceRecorder,
         mock(ProductionAccessControl.class),
+        vesselAssignmentValidator,
         transactionHelper,
         CLOCK
     );
@@ -268,7 +276,7 @@ class CreateProductionBatchServiceTest {
     return new CreateProductionBatchCommand(
         workspaceId,
         BatchName.of("Classic cider path"),
-        Vessel.named("Tank F-03"),
+        VesselTestFixtures.vesselId("Tank F-03"),
         candidateId,
         "accepted production input"
     );
@@ -391,6 +399,13 @@ class CreateProductionBatchServiceTest {
           .filter(batch -> batch.batchId().equals(batchId))
           .findFirst()
           .map(batch -> new VersionedAggregate<>(batch, AggregateRevision.of(1)));
+    }
+
+    @Override
+    public @NonNull Optional<@NonNull ProductionBatch> lockForMeasurementChange(
+        @NonNull ProductionBatchId batchId
+    ) {
+      return findById(batchId);
     }
   }
 

@@ -23,15 +23,6 @@ final class WorkspaceSettingsJdbcMapper {
     );
   }
 
-  static @NonNull WorkspaceSettingsJdbcEntity updateFromDomain(
-      @NonNull WorkspaceSettings settings,
-      @NonNull WorkspaceSettingsJdbcEntity entity
-  ) {
-    entity.measurementStaleAfterSeconds = settings.measurementStaleAfter().toSeconds();
-    entity.defaultAcidityBasis = settings.defaultAcidityBasis();
-    return entity;
-  }
-
   static @NonNull WorkspaceSettings toDomain(@NonNull WorkspaceSettingsJdbcEntity entity) {
     return new WorkspaceSettings(
         WorkspaceId.of(entity.workspaceId),

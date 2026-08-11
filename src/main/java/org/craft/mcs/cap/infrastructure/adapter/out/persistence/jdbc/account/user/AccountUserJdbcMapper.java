@@ -11,8 +11,6 @@ import org.craft.mcs.cap.shared.application.persistence.AggregateRevision;
 import org.craft.mcs.cap.shared.application.persistence.VersionedAggregate;
 import org.jspecify.annotations.NonNull;
 
-import static java.util.Objects.requireNonNull;
-
 /** Maps the AccountUser aggregate to its Spring Data JDBC representation. */
 final class AccountUserJdbcMapper {
 
@@ -29,19 +27,6 @@ final class AccountUserJdbcMapper {
         user.avatarUrl() == null ? null : user.avatarUrl().value().toString(),
         user.status()
     );
-  }
-
-  static @NonNull AccountUserJdbcEntity updateFromDomain(
-      @NonNull AccountUser user,
-      @NonNull AccountUserJdbcEntity entity
-  ) {
-    entity.identityProvider = user.identityProvider().value();
-    entity.externalSubject = user.externalSubject().value();
-    entity.email = user.email().value();
-    entity.displayName = user.displayName().value();
-    entity.avatarUrl = user.avatarUrl() == null ? null : user.avatarUrl().value().toString();
-    entity.status = user.status();
-    return entity;
   }
 
   static @NonNull AccountUser toDomain(@NonNull AccountUserJdbcEntity entity) {
@@ -62,7 +47,4 @@ final class AccountUserJdbcMapper {
     return new VersionedAggregate<>(toDomain(entity), AggregateRevision.of(entity.version));
   }
 
-  static long revision(@NonNull AccountUserJdbcEntity entity) {
-    return requireNonNull(entity, "account user row cannot be null").version;
-  }
 }

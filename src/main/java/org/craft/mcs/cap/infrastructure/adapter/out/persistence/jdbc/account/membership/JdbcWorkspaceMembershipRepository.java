@@ -11,7 +11,6 @@ import org.craft.mcs.cap.core.account.shared.domain.value.AccountUserId;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.account.user.AccountUserJdbcEntity;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.account.workspace.WorkspaceJdbcEntity;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.support.JdbcPersistenceExceptionTranslator;
-import org.craft.mcs.cap.shared.application.ConcurrentResourceModificationException;
 import org.craft.mcs.cap.shared.application.persistence.VersionedAggregate;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;
@@ -19,8 +18,8 @@ import org.springframework.data.jdbc.core.mapping.AggregateReference;
 import org.springframework.stereotype.Repository;
 
 import static java.util.Objects.requireNonNull;
-import static org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.support.JdbcAggregateRevisionGuard.requireExpectedRevision;
 import static org.craft.mcs.cap.core.account.membership.domain.model.WorkspaceMembershipStatus.REMOVED;
+import static org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.support.JdbcVersionedUpdate.complete;
 
 /** Persists workspace membership aggregates and membership ownership references. */
 @Repository
@@ -45,18 +44,16 @@ class JdbcWorkspaceMembershipRepository implements WorkspaceMembershipRepository
   ) {
     requireNonNull(membership, "versioned workspace membership cannot be null");
     final var aggregate = membership.aggregate();
-    final var entity = repository.findById(aggregate.membershipId().value())
-        .orElseThrow(() -> new ConcurrentResourceModificationException("workspace membership", null));
-    requireExpectedRevision(
+    final var affectedRows = JdbcPersistenceExceptionTranslator.translateOptimisticLocking(
         "workspace membership",
-        membership.revision(),
-        WorkspaceMembershipJdbcMapper.revision(entity)
+        () -> repository.updateByIdAndVersion(
+            aggregate.membershipId().value(),
+            aggregate.role(),
+            aggregate.status(),
+            membership.revision().value()
+        )
     );
-    final var saved = JdbcPersistenceExceptionTranslator.translateOptimisticLocking(
-        "workspace membership",
-        () -> repository.save(WorkspaceMembershipJdbcMapper.updateFromDomain(aggregate, entity))
-    );
-    return WorkspaceMembershipJdbcMapper.toVersionedAggregate(saved);
+    return complete("workspace membership", membership, affectedRows);
   }
 
   @Override

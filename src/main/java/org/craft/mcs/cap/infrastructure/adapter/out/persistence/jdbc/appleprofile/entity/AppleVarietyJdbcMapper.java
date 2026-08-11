@@ -53,43 +53,6 @@ public final class AppleVarietyJdbcMapper {
     );
   }
 
-  public static @NonNull AppleVarietyJdbcEntity updateFromDomain(
-      @NonNull AppleVariety appleVariety,
-      @NonNull AppleVarietyJdbcEntity entity
-  ) {
-    requireNonNull(appleVariety, "apple variety cannot be null");
-    requireNonNull(entity, "apple variety row cannot be null");
-
-    final var updated = fromDomain(appleVariety);
-
-    entity.name = updated.name;
-
-    entity.sugarKind = updated.sugarKind;
-    entity.sugarExactValue = updated.sugarExactValue;
-    entity.sugarMinValue = updated.sugarMinValue;
-    entity.sugarMaxValue = updated.sugarMaxValue;
-
-    entity.phKind = updated.phKind;
-    entity.phExactValue = updated.phExactValue;
-    entity.phMinValue = updated.phMinValue;
-    entity.phMaxValue = updated.phMaxValue;
-
-    entity.titratableAcidityKind = updated.titratableAcidityKind;
-    entity.titratableAcidityExactValue = updated.titratableAcidityExactValue;
-    entity.titratableAcidityMinValue = updated.titratableAcidityMinValue;
-    entity.titratableAcidityMaxValue = updated.titratableAcidityMaxValue;
-
-    entity.tanninKind = updated.tanninKind;
-    entity.tanninExactValue = updated.tanninExactValue;
-    entity.tanninMinValue = updated.tanninMinValue;
-    entity.tanninMaxValue = updated.tanninMaxValue;
-
-    entity.referenceProfileSource = updated.referenceProfileSource;
-    entity.referenceProfileConfidence = updated.referenceProfileConfidence;
-
-    return entity;
-  }
-
   public static @NonNull AppleVariety toDomain(@NonNull AppleVarietyJdbcEntity entity) {
     requireNonNull(entity, "apple variety row cannot be null");
 
@@ -108,10 +71,6 @@ public final class AppleVarietyJdbcMapper {
       @NonNull AppleVarietyJdbcEntity entity
   ) {
     return new VersionedAggregate<>(toDomain(entity), AggregateRevision.of(entity.version));
-  }
-
-  public static long revision(@NonNull AppleVarietyJdbcEntity entity) {
-    return requireNonNull(entity, "apple variety row cannot be null").version;
   }
 
   private static @NonNull AppleVarietyReferenceProfile toReferenceProfile(

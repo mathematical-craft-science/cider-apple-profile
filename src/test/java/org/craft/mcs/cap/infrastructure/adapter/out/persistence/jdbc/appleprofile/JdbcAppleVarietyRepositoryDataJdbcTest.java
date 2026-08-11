@@ -1,10 +1,15 @@
 package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.appleprofile;
 
+import org.craft.mcs.cap.core.appleprofile.application.catalog.AppleVarietyNameConflictException;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVariety;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyId;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyName;
 import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyReferenceProfile;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
+import org.craft.mcs.cap.shared.application.ConcurrentResourceModificationException;
+import org.craft.mcs.cap.shared.application.persistence.VersionedAggregate;
+import org.craft.mcs.cap.shared.kernel.chemical.value.PhValue;
 import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.craft.mcs.cap.shared.testing.jdbc.PostgresDataJdbcTestConfiguration;
@@ -16,7 +21,6 @@ import org.springframework.context.annotation.Import;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import org.craft.mcs.cap.shared.application.ConcurrentResourceModificationException;
 
 
 @DataJdbcTest
@@ -66,6 +70,57 @@ class JdbcAppleVarietyRepositoryDataJdbcTest {
     assertThatThrownBy(() -> repository.update(stale))
         .isInstanceOf(ConcurrentResourceModificationException.class)
         .hasMessage("resource was modified concurrently: apple variety");
+    assertThat(repository.findVersionedById(created.varietyId()))
+        .get()
+        .extracting(VersionedAggregate::aggregate)
+        .extracting(AppleVariety::name)
+        .isEqualTo(AppleVarietyName.of("First update"));
+  }
+
+  @Test
+  void preservesMeaningfulCatalogReferenceProfilePrecision() {
+    final var variety = AppleVariety.create(
+        AppleVarietyId.newId(),
+        AppleVarietyName.of("Precision variety"),
+        new AppleVarietyReferenceProfile(
+            PointCharacteristicValue.of(SpecificGravityValue.of("1.0524")),
+            PointCharacteristicValue.of(TitratableAcidityValue.of("6.517")),
+            PointCharacteristicValue.of(PhValue.of("3.456")),
+            PointCharacteristicValue.of(TanninValue.of("1200.5"))
+        )
+    );
+
+    repository.create(variety);
+
+    assertThat(repository.findVersionedById(variety.varietyId()))
+        .get()
+        .extracting(VersionedAggregate::aggregate)
+        .extracting(AppleVariety::referenceProfile)
+        .satisfies(profile -> assertThat(profile)
+            .returns(variety.referenceProfile().specificGravity(), AppleVarietyReferenceProfile::specificGravity)
+            .returns(variety.referenceProfile().titratableAcidity(),
+                AppleVarietyReferenceProfile::titratableAcidity)
+            .returns(variety.referenceProfile().ph(), AppleVarietyReferenceProfile::ph)
+            .returns(variety.referenceProfile().tannin(), AppleVarietyReferenceProfile::tannin));
+  }
+
+  @Test
+  void translatesCaseInsensitiveNameUniquenessToApplicationConflict() {
+    repository.create(appleVariety());
+    final var duplicate = AppleVariety.create(
+        AppleVarietyId.newId(),
+        AppleVarietyName.of("INITIAL VARIETY"),
+        new AppleVarietyReferenceProfile(
+            PointCharacteristicValue.of(SpecificGravityValue.of("1.050")),
+            null,
+            null,
+            null
+        )
+    );
+
+    assertThatThrownBy(() -> repository.create(duplicate))
+        .isInstanceOf(AppleVarietyNameConflictException.class)
+        .hasMessage("apple variety already exists: INITIAL VARIETY");
   }
 
   private static AppleVariety appleVariety() {

@@ -9,8 +9,6 @@ import org.craft.mcs.cap.shared.application.persistence.VersionedAggregate;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;
 
-import static java.util.Objects.requireNonNull;
-
 /** Maps the Workspace aggregate to its Spring Data JDBC representation. */
 final class WorkspaceJdbcMapper {
 
@@ -30,22 +28,6 @@ final class WorkspaceJdbcMapper {
             ? null
             : workspace.externalOrganizationSubject().value()
     );
-  }
-
-  static @NonNull WorkspaceJdbcEntity updateFromDomain(
-      @NonNull Workspace workspace,
-      @NonNull WorkspaceJdbcEntity entity
-  ) {
-    entity.name = workspace.name().value();
-    entity.type = workspace.type();
-    entity.status = workspace.status();
-    entity.externalOrganizationProvider = workspace.externalOrganizationProvider() == null
-        ? null
-        : workspace.externalOrganizationProvider().value();
-    entity.externalOrganizationSubject = workspace.externalOrganizationSubject() == null
-        ? null
-        : workspace.externalOrganizationSubject().value();
-    return entity;
   }
 
   static @NonNull Workspace toDomain(@NonNull WorkspaceJdbcEntity entity) {
@@ -69,7 +51,4 @@ final class WorkspaceJdbcMapper {
     return new VersionedAggregate<>(toDomain(entity), AggregateRevision.of(entity.version));
   }
 
-  static long revision(@NonNull WorkspaceJdbcEntity entity) {
-    return requireNonNull(entity, "workspace row cannot be null").version;
-  }
 }

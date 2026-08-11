@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.UUID;
 import org.craft.mcs.cap.core.production.domain.model.value.AlcoholicFermentationState;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchLifecycle;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.vessel.dto.VesselReferenceResponse;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -31,11 +32,11 @@ public record ProductionBatchResponse(
     )
     @NonNull String name,
     @Schema(
-        description = "Current vessel, tank or container.",
-        example = "Fermentation tank F-03",
+        description = "Current vessel reference resolved from the workspace vessel catalog.",
+        implementation = VesselReferenceResponse.class,
         requiredMode = Schema.RequiredMode.REQUIRED
     )
-    @NonNull String vessel,
+    @NonNull VesselReferenceResponse vessel,
     @Schema(
         description = "Current material lifecycle.",
         implementation = BatchLifecycle.class,

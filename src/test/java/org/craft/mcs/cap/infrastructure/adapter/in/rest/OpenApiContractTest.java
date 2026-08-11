@@ -51,6 +51,7 @@ import org.craft.mcs.cap.core.feedstock.application.planning.composition.port.in
 import org.craft.mcs.cap.core.production.candidate.application.confirmation.port.in.CreateProductionBatchUseCase;
 import org.craft.mcs.cap.core.production.application.port.in.GetProductionBatchUseCase;
 import org.craft.mcs.cap.core.production.application.port.in.ListProductionBatchesUseCase;
+import org.craft.mcs.cap.core.production.application.port.in.UpdateProductionBatchUseCase;
 import org.craft.mcs.cap.core.production.candidate.application.port.in.CreateProductionBatchCandidateUseCase;
 import org.craft.mcs.cap.core.production.candidate.application.port.in.GetProductionBatchCandidateUseCase;
 import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPredictor;
@@ -59,6 +60,11 @@ import org.craft.mcs.cap.core.profileanalysis.composition.optimization.applicati
 import org.craft.mcs.cap.core.profileanalysis.compositiongraph.application.port.in.CompositionGraphInterpretationUseCase;
 import org.craft.mcs.cap.core.profileanalysis.graph.zone.domain.JolicoeurSugarAcidityZoneGeometryProfile;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.SugarAcidityTargetResolver;
+import org.craft.mcs.cap.core.vessel.application.port.in.CreateVesselUseCase;
+import org.craft.mcs.cap.core.vessel.application.port.in.GetVesselUseCase;
+import org.craft.mcs.cap.core.vessel.application.port.in.ListAvailableVesselsUseCase;
+import org.craft.mcs.cap.core.vessel.application.port.in.ListVesselsUseCase;
+import org.craft.mcs.cap.core.vessel.application.port.in.UpdateVesselUseCase;
 import org.craft.mcs.cap.infrastructure.adapter.in.importer.appleprofile.AppleVarietyJsonSeedImporter;
 import org.craft.mcs.cap.infrastructure.adapter.in.measurement.MeasurementValueInputAcl;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.CompositionRequestMapper;
@@ -90,6 +96,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.craft.mcs.cap.shared.infrastructure.rest.UuidV7Schema.PATTERN;
 import static org.craft.mcs.cap.shared.infrastructure.http.ActiveWorkspaceHttpHeaders.ACTIVE_WORKSPACE_ID;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -166,12 +173,18 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
     GetProductionBatchCandidateUseCase.class,
     GetProductionBatchUseCase.class,
     ListProductionBatchesUseCase.class,
+    UpdateProductionBatchUseCase.class,
     PotentialAbvPredictor.class,
     CalculateCompositionUseCase.class,
     OptimizeCompositionUseCase.class,
     CompositionGraphInterpretationUseCase.class,
     JolicoeurSugarAcidityZoneGeometryProfile.class,
     SugarAcidityTargetResolver.class,
+    CreateVesselUseCase.class,
+    GetVesselUseCase.class,
+    ListAvailableVesselsUseCase.class,
+    ListVesselsUseCase.class,
+    UpdateVesselUseCase.class,
     AppleVarietyJsonSeedImporter.class
 })
 class OpenApiContractTest {
@@ -523,6 +536,7 @@ class OpenApiContractTest {
     assertJsonResponse(openApi, "/production-batches", "get");
     assertJsonResponse(openApi, "/production-batches", "post", "201");
     assertJsonResponse(openApi, "/production-batches/{batchId}", "get");
+    assertJsonResponse(openApi, "/production-batches/{batchId}", "put");
     assertJsonResponse(openApi, "/production-batches/{batchId}/traceability", "get");
     assertJsonResponse(openApi, "/account/me", "get");
     assertJsonResponse(openApi, "/account/profile", "get");
@@ -553,6 +567,7 @@ class OpenApiContractTest {
     assertJsonRequest(openApi, "/feedstock-batches/composition-optimizations", "post");
     assertJsonRequest(openApi, "/feedstock-workspace/batches", "post");
     assertJsonRequest(openApi, "/production-batches", "post");
+    assertJsonRequest(openApi, "/production-batches/{batchId}", "put");
     assertJsonRequest(openApi, "/account/profile", "patch");
     assertJsonRequest(openApi, "/account/preferences", "patch");
 
@@ -693,11 +708,13 @@ class OpenApiContractTest {
         "CreateFeedstockBatchRequest",
         "workspaceId",
         "name",
+        "vesselId",
         "type",
         "season"
     );
-    assertNotRequiredProperties(openApi, "CreateFeedstockBatchRequest", "vessel", "source", "note");
-    assertNullable(schemaProperty(openApi, "CreateFeedstockBatchRequest", "vessel"));
+    assertMissingProperties(openApi, "CreateFeedstockBatchRequest", "vessel");
+    assertUuidV7(schemaProperty(openApi, "CreateFeedstockBatchRequest", "vesselId"));
+    assertNotRequiredProperties(openApi, "CreateFeedstockBatchRequest", "source", "note");
     assertNullable(schemaProperty(openApi, "CreateFeedstockBatchRequest", "source"));
     assertNullable(schemaProperty(openApi, "CreateFeedstockBatchRequest", "note"));
     assertExclusiveMinimumZero(schemaProperty(openApi, "CreateFeedstockBatchRequest", "availableVolumeLiters"));
@@ -1370,6 +1387,94 @@ class OpenApiContractTest {
   }
 
   @Test
+  void openApiDescribesWorkspaceVesselCatalogAndBatchReferences() throws Exception {
+    final var openApi = openApi();
+
+    assertThat(operation(openApi, "/vessels", "post").path("responses").has("201")).isTrue();
+    assertThat(operation(openApi, "/vessels", "get").path("responses").has("200")).isTrue();
+    assertThat(operation(openApi, "/vessels/available", "get").path("responses").has("200")).isTrue();
+    assertThat(operation(openApi, "/vessels/available", "get").path("responses").has("400")).isTrue();
+    assertThat(operation(openApi, "/vessels/{vesselId}", "get").path("responses").has("404")).isTrue();
+    assertThat(operation(openApi, "/vessels/{vesselId}", "put").path("responses").has("409")).isTrue();
+    assertParameterRequired(openApi, "/vessels", "get", "workspaceId", true);
+    assertParameterRequired(openApi, "/vessels/available", "get", "workspaceId", true);
+    assertParameterRequired(openApi, "/vessels/available", "get", "nameContains", false);
+    assertParameterRequired(openApi, "/vessels/available", "get", "requiredVolumeLiters", false);
+    assertExclusiveMinimumZero(
+        operationParameter(openApi, "/vessels/available", "get", "requiredVolumeLiters").path("schema")
+    );
+    assertParameterRequired(openApi, "/vessels/{vesselId}", "get", "vesselId", true);
+    assertUuidV7(operationParameter(openApi, "/vessels/{vesselId}", "get", "vesselId").path("schema"));
+    assertUuidV7(operationParameter(openApi, "/vessels/{vesselId}", "put", "vesselId").path("schema"));
+
+    assertRequiredProperties(
+        openApi,
+        "CreateVesselRequest",
+        "workspaceId",
+        "name",
+        "nominalCapacityLiters",
+        "material"
+    );
+    assertStringFormat(schemaProperty(openApi, "CreateVesselRequest", "workspaceId"), "uuid");
+    assertExclusiveMinimumZero(schemaProperty(openApi, "CreateVesselRequest", "nominalCapacityLiters"));
+    assertEnumProperty(openApi, "CreateVesselRequest", "material", "STAINLESS_STEEL");
+    assertEnumProperty(openApi, "CreateVesselRequest", "material", "FIBERGLASS");
+    assertRequiredProperties(
+        openApi,
+        "UpdateVesselRequest",
+        "workspaceId",
+        "expectedVersion",
+        "name",
+        "nominalCapacityLiters",
+        "material",
+        "operationalStatus"
+    );
+    assertThat(List.of(
+        schemaProperty(openApi, "UpdateVesselRequest", "expectedVersion").path("type").asText(),
+        schemaProperty(openApi, "UpdateVesselRequest", "expectedVersion").path("format").asText(),
+        schemaProperty(openApi, "UpdateVesselRequest", "expectedVersion").path("minimum").asText()
+    )).containsExactly("integer", "int64", "0");
+    assertRequiredProperties(
+        openApi,
+        "VesselResponse",
+        "vesselId",
+        "workspaceId",
+        "name",
+        "nominalCapacity",
+        "material",
+        "operationalStatus",
+        "usedVolume",
+        "remainingCapacity",
+        "usage",
+        "version"
+    );
+    assertUuidV7(schemaProperty(openApi, "VesselResponse", "vesselId"));
+    assertEnumProperty(openApi, "VesselResponse", "operationalStatus", "OPERATIONAL");
+    assertNotRequiredProperties(openApi, "VesselResponse", "currentContent");
+    assertNullableReference(
+        schemaProperty(openApi, "VesselResponse", "currentContent"),
+        "VesselCurrentContentResponse"
+    );
+    assertEnumProperty(openApi, "VesselResponse", "usage", "PARTIALLY_FILLED");
+    assertRequiredProperties(
+        openApi,
+        "VesselCurrentContentResponse",
+        "subjectType",
+        "subjectId",
+        "materialStateId",
+        "displayName",
+        "volume"
+    );
+    assertEnumProperty(openApi, "VesselCurrentContentResponse", "subjectType", "FEEDSTOCK_BATCH");
+    assertUuidV7(schemaProperty(openApi, "VesselCurrentContentResponse", "subjectId"));
+    assertUuidV7(schemaProperty(openApi, "VesselCurrentContentResponse", "materialStateId"));
+    assertRequiredProperties(openApi, "VesselReferenceResponse", "vesselId", "name");
+    assertUuidV7(schemaProperty(openApi, "VesselReferenceResponse", "vesselId"));
+    assertRequiredProperties(openApi, "ProductionBatchResponse", "vessel");
+    assertRequiredProperties(openApi, "ProductionBatchDetailsResponse", "vessel");
+  }
+
+  @Test
   void openApiDescribesProductionAndFeedstockRequiredNullableContracts() throws Exception {
     final var openApi = openApi();
 
@@ -1379,13 +1484,25 @@ class OpenApiContractTest {
         "CreateProductionBatchRequest",
         "workspaceId",
         "name",
-        "vessel",
+        "vesselId",
         "candidateId"
     );
     assertStringFormat(schemaProperty(openApi, "CreateProductionBatchRequest", "workspaceId"), "uuid");
+    assertUuidV7(schemaProperty(openApi, "CreateProductionBatchRequest", "vesselId"));
     assertStringFormat(schemaProperty(openApi, "CreateProductionBatchRequest", "candidateId"), "uuid");
     assertNotRequiredProperties(openApi, "CreateProductionBatchRequest", "note");
     assertNullable(schemaProperty(openApi, "CreateProductionBatchRequest", "note"));
+    assertRequiredProperties(
+        openApi,
+        "UpdateProductionBatchRequest",
+        "workspaceId",
+        "name",
+        "vesselId"
+    );
+    assertStringFormat(schemaProperty(openApi, "UpdateProductionBatchRequest", "workspaceId"), "uuid");
+    assertUuidV7(schemaProperty(openApi, "UpdateProductionBatchRequest", "vesselId"));
+    assertNotRequiredProperties(openApi, "UpdateProductionBatchRequest", "note");
+    assertNullable(schemaProperty(openApi, "UpdateProductionBatchRequest", "note"));
 
     assertRequiredProperties(openApi, "CreateProductionBatchCandidateRequest", "workspaceId", "sources");
     assertStringFormat(schemaProperty(openApi, "CreateProductionBatchCandidateRequest", "workspaceId"), "uuid");
@@ -1556,20 +1673,25 @@ class OpenApiContractTest {
         "batchId",
         "workspaceId",
         "name",
+        "vessel",
         "type",
         "season",
         "availableVolume"
     );
-    assertNotRequiredProperties(openApi, "UpdateFeedstockBatchRequest", "source", "note");
-    assertNotRequiredProperties(openApi, "FeedstockBatchResponse", "vessel", "source", "note");
+    assertNotRequiredProperties(openApi, "UpdateFeedstockBatchRequest", "vesselId", "source", "note");
+    assertNotRequiredProperties(openApi, "FeedstockBatchResponse", "source", "note");
     assertNullable(schemaProperty(openApi, "UpdateFeedstockBatchRequest", "source"));
     assertNullable(schemaProperty(openApi, "UpdateFeedstockBatchRequest", "note"));
-    assertNullable(schemaProperty(openApi, "FeedstockBatchResponse", "vessel"));
+    assertNullable(schemaProperty(openApi, "UpdateFeedstockBatchRequest", "vesselId"));
+    assertUuidV7(schemaProperty(openApi, "UpdateFeedstockBatchRequest", "vesselId"));
+    assertThat(referencedSchemaName(schemaProperty(openApi, "FeedstockBatchResponse", "vessel")))
+        .isEqualTo("VesselReferenceResponse");
     assertMissingProperties(openApi, "UpdateFeedstockBatchRequest", "availableVolumeLiters", "vessel");
     assertRequiredProperties(openApi, "PatchFeedstockBatchRequest", "workspaceId");
     assertNotRequiredProperties(
         openApi,
         "PatchFeedstockBatchRequest",
+        "vesselId",
         "name",
         "type",
         "season",
@@ -1577,6 +1699,8 @@ class OpenApiContractTest {
         "note"
     );
     assertNullable(schemaProperty(openApi, "PatchFeedstockBatchRequest", "name"));
+    assertNullable(schemaProperty(openApi, "PatchFeedstockBatchRequest", "vesselId"));
+    assertUuidV7(schemaProperty(openApi, "PatchFeedstockBatchRequest", "vesselId"));
     assertNullable(schemaProperty(openApi, "PatchFeedstockBatchRequest", "season"));
     assertNullable(schemaProperty(openApi, "PatchFeedstockBatchRequest", "note"));
     assertMissingProperties(openApi, "PatchFeedstockBatchRequest", "availableVolumeLiters", "vessel");
@@ -2216,6 +2340,26 @@ class OpenApiContractTest {
     assertThat(nullable).isTrue();
   }
 
+  private static void assertNullableReference(
+      JsonNode property,
+      String schemaName
+  ) {
+    final var alternatives = StreamSupport.stream(property.path("anyOf").spliterator(), false)
+        .map(schema -> schema.has("$ref")
+            ? schema.path("$ref").asText()
+            : "type:" + schema.path("type").asText())
+        .toList();
+
+    assertThat(property.has("type"))
+        .as("nullable reference must not declare a conflicting root type")
+        .isFalse();
+    assertThat(alternatives)
+        .containsExactlyInAnyOrder(
+            "#/components/schemas/" + schemaName,
+            "type:null"
+        );
+  }
+
   private static void assertParameterRequired(
       JsonNode openApi,
       String path,
@@ -2314,6 +2458,11 @@ class OpenApiContractTest {
   ) {
     assertThat(hasType(property, "string")).isTrue();
     assertThat(property.path("format").asText()).isEqualTo(format);
+  }
+
+  private static void assertUuidV7(JsonNode property) {
+    assertStringFormat(property, "uuid");
+    assertThat(property.path("pattern").asText()).isEqualTo(PATTERN);
   }
 
   private static void assertExclusiveMinimumZero(JsonNode property) {

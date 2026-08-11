@@ -20,6 +20,7 @@ public final class RetractMeasurementSetService implements RetractMeasurementSet
 
   private final @NonNull MeasurementSetRepository repository;
   private final @NonNull MeasurementSetWriteAccess writeAccess;
+  private final @NonNull MeasurementSetRevisionFactory revisionFactory;
   private final @NonNull MeasurementActorProvider actorProvider;
   private final @NonNull TransactionHelper transactionHelper;
   private final @NonNull Clock clock;
@@ -29,12 +30,14 @@ public final class RetractMeasurementSetService implements RetractMeasurementSet
     requireNonNull(command, "retract measurement set command cannot be null");
     transactionHelper.executeInTransaction(() -> {
       final var state = writeAccess.require(command.measurementSetId(), command.expectedVersion());
-      state.aggregate().retract(
-          actorProvider.requireCurrentActorReference(),
+      final var retraction = revisionFactory.retraction(
+          state.aggregate().currentRevision(),
+          command.reason(),
           clock.instant(),
-          command.reason()
+          actorProvider.requireCurrentActorReference()
       );
-      repository.retract(state);
+      state.aggregate().retract(retraction);
+      repository.appendRevision(state);
     });
   }
 }

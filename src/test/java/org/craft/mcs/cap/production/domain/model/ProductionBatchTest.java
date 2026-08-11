@@ -9,7 +9,7 @@ import org.craft.mcs.cap.core.production.domain.model.value.AlcoholicFermentatio
 import org.craft.mcs.cap.shared.kernel.material.value.BatchLifecycle;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
-import org.craft.mcs.cap.shared.kernel.material.value.Vessel;
+import org.craft.mcs.cap.testsupport.VesselTestFixtures;
 import org.craft.mcs.cap.shared.kernel.DomainConflictException;
 import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
@@ -20,9 +20,11 @@ import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.craft.mcs.cap.shared.kernel.identity.UuidV7Generator.newUuid;
 
@@ -38,7 +40,7 @@ class ProductionBatchTest {
         batchId,
         workspaceId,
         name,
-        Vessel.named("Tank F-03"),
+        VesselTestFixtures.vesselId("Tank F-03"),
         VolumeValue.ofLiters("100"),
         profile(),
         null
@@ -48,7 +50,7 @@ class ProductionBatchTest {
         .returns(batchId, ProductionBatch::batchId)
         .returns(workspaceId, ProductionBatch::workspaceId)
         .returns(name, ProductionBatch::name)
-        .returns(Vessel.named("Tank F-03"), ProductionBatch::vessel)
+        .returns(VesselTestFixtures.PRODUCTION_VESSEL_ID, ProductionBatch::vesselId)
         .returns(BatchLifecycle.ACTIVE, ProductionBatch::lifecycle)
         .returns(
             AlcoholicFermentationState.NOT_STARTED,
@@ -60,12 +62,32 @@ class ProductionBatchTest {
   }
 
   @Test
+  void allowsMeasurementChangesForActiveBatch() {
+    assertThatCode(() -> productionBatch().requireMeasurementChangesAllowed())
+        .doesNotThrowAnyException();
+  }
+
+  @ParameterizedTest
+  @EnumSource(value = BatchLifecycle.class, names = {"DEPLETED", "DISCARDED"})
+  void rejectsMeasurementChangesForInactiveBatch(BatchLifecycle lifecycle) {
+    final var batch = restoredBatch(
+        lifecycle,
+        AlcoholicFermentationState.NOT_STARTED,
+        VolumeValue.ofLiters("0")
+    );
+
+    assertThatThrownBy(batch::requireMeasurementChangesAllowed)
+        .isInstanceOf(DomainConflictException.class)
+        .hasMessage("production batch measurements can be changed only when lifecycle is ACTIVE");
+  }
+
+  @Test
   void normalizesOptionalNote() {
     final var notedBatch = ProductionBatch.create(
         ProductionBatchId.newId(),
         WorkspaceId.newId(),
         BatchName.of("Noted cider"),
-        Vessel.named("Tank F-03"),
+        VesselTestFixtures.vesselId("Tank F-03"),
         VolumeValue.ofLiters("100"),
         profile(),
         "  Retain for tasting  "
@@ -74,7 +96,7 @@ class ProductionBatchTest {
         ProductionBatchId.newId(),
         WorkspaceId.newId(),
         BatchName.of("Unnoted cider"),
-        Vessel.named("Tank F-04"),
+        VesselTestFixtures.vesselId("Tank F-04"),
         VolumeValue.ofLiters("100"),
         profile(),
         "   "
@@ -82,6 +104,23 @@ class ProductionBatchTest {
 
     assertThat(notedBatch.note()).isEqualTo("Retain for tasting");
     assertThat(blankNoteBatch.note()).isNull();
+  }
+
+  @Test
+  void correctsEditableMetadataWithoutChangingMaterialState() {
+    final var batch = productionBatch();
+    final var materialStateId = batch.currentMaterialStateId();
+    final var targetVesselId = VesselTestFixtures.vesselId("Tank F-04");
+
+    assertThat(batch
+        .rename(BatchName.of("Corrected cider name"))
+        .correctInitialVesselAssignment(targetVesselId)
+        .changeNote("  Corrected initial placement  "))
+        .isSameAs(batch)
+        .returns(BatchName.of("Corrected cider name"), ProductionBatch::name)
+        .returns(targetVesselId, ProductionBatch::vesselId)
+        .returns("Corrected initial placement", ProductionBatch::note)
+        .returns(materialStateId, ProductionBatch::currentMaterialStateId);
   }
 
   @Test
@@ -151,7 +190,7 @@ class ProductionBatchTest {
     final var batch = productionBatch();
     final var stateBeforeDepletion = batch.currentMaterialStateId();
     final var result = batch.deplete();
-    final var targetVessel = Vessel.named("Tank F-04");
+    final var targetVessel = VesselTestFixtures.vesselId("Tank F-04");
 
     assertThat(result)
         .isSameAs(batch)
@@ -210,13 +249,13 @@ class ProductionBatchTest {
   void rejectsTransferToCurrentVesselWithoutCreatingMaterialState() {
     final var batch = productionBatch();
     final var currentState = batch.currentMaterialStateId();
-    final var currentVessel = batch.vessel();
+    final var currentVessel = batch.vesselId();
 
     assertThatThrownBy(() -> batch.transferTo(currentVessel))
         .isInstanceOf(DomainConflictException.class)
         .hasMessage("target production vessel must differ from current vessel");
     assertThat(batch)
-        .returns(currentVessel, ProductionBatch::vessel)
+        .returns(currentVessel, ProductionBatch::vesselId)
         .returns(currentState, ProductionBatch::currentMaterialStateId);
   }
 
@@ -225,7 +264,7 @@ class ProductionBatchTest {
     final var batch = productionBatch();
     final var initialState = batch.currentMaterialStateId();
 
-    final var transferResult = batch.transferTo(Vessel.named("Tank F-04"));
+    final var transferResult = batch.transferTo(VesselTestFixtures.vesselId("Tank F-04"));
     final var transferredState = batch.currentMaterialStateId();
     batch.startAlcoholicFermentation();
 
@@ -290,7 +329,7 @@ class ProductionBatchTest {
         ProductionBatchId.newId(),
         WorkspaceId.newId(),
         BatchName.of("Classic cider"),
-        Vessel.named("Tank F-03"),
+        VesselTestFixtures.vesselId("Tank F-03"),
         volume,
         profile(),
         null
@@ -306,7 +345,7 @@ class ProductionBatchTest {
         ProductionBatchId.newId(),
         WorkspaceId.newId(),
         BatchName.of("Classic cider"),
-        Vessel.named("Tank F-03"),
+        VesselTestFixtures.vesselId("Tank F-03"),
         lifecycle,
         alcoholicFermentationState,
         volume,
@@ -333,7 +372,7 @@ class ProductionBatchTest {
     return Stream.of(
         Arguments.of(
             "transfer",
-            (ProductionOperation) batch -> batch.transferTo(Vessel.named("Tank F-04")),
+            (ProductionOperation) batch -> batch.transferTo(VesselTestFixtures.vesselId("Tank F-04")),
             AlcoholicFermentationState.NOT_STARTED
         ),
         Arguments.of(

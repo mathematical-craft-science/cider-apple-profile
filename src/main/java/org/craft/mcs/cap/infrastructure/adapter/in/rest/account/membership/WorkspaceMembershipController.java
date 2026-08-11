@@ -1,6 +1,5 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.account.membership;
 
-import jakarta.validation.Valid;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.account.administration.application.port.in.ListWorkspaceMembersUseCase;
@@ -48,7 +47,7 @@ public final class WorkspaceMembershipController implements WorkspaceMembershipA
   public @NonNull ResponseEntity<@NonNull AccountWorkspaceMemberResponse> changeRole(
       @PathVariable @NonNull UUID workspaceId,
       @PathVariable @NonNull UUID membershipId,
-      @Valid @RequestBody @NonNull ChangeWorkspaceMemberRoleRequest request
+      @RequestBody @NonNull ChangeWorkspaceMemberRoleRequest request
   ) {
     final var updated = membershipManagementUseCase.changeRole(WorkspaceMembershipRestMapper.toCommand(
         WorkspaceId.of(workspaceId),
@@ -101,7 +100,7 @@ public final class WorkspaceMembershipController implements WorkspaceMembershipA
   @PostMapping("/account/workspaces/{workspaceId}/ownership-transfer")
   public @NonNull ResponseEntity<@NonNull AccountWorkspaceMemberResponse> transferOwnership(
       @PathVariable @NonNull UUID workspaceId,
-      @Valid @RequestBody @NonNull TransferWorkspaceOwnershipRequest request
+      @RequestBody @NonNull TransferWorkspaceOwnershipRequest request
   ) {
     final var newOwner = membershipManagementUseCase.transferOwnership(
         WorkspaceMembershipRestMapper.toCommand(WorkspaceId.of(workspaceId), request)

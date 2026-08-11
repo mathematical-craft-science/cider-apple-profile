@@ -4,6 +4,7 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneOffset;
+import java.util.List;
 import java.util.Optional;
 import org.craft.mcs.cap.core.account.invitation.application.WorkspaceInvitationConflictException;
 import org.craft.mcs.cap.core.account.invitation.application.WorkspaceInvitationRecipientMismatchException;
@@ -42,6 +43,8 @@ import org.mockito.ArgumentCaptor;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.craft.mcs.cap.account.support.DirectTransactionHelper.INSTANCE;
+import static org.craft.mcs.cap.core.account.invitation.domain.model.WorkspaceInvitationStatus.EXPIRED;
+import static org.craft.mcs.cap.core.account.invitation.domain.model.WorkspaceInvitationStatus.PENDING;
 import static org.craft.mcs.cap.core.account.membership.domain.model.WorkspaceMembershipStatus.ACTIVE;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -83,9 +86,9 @@ class WorkspaceInvitationServiceTest {
     when(workspaceContext.user()).thenReturn(user);
     when(permissionChecker.requirePermission(eq(workspace.workspaceId()), any()))
         .thenReturn(workspaceContext);
-    when(invitationRepository.findByWorkspaceIdAndInvitedEmailAndStatus(any(), any(), any()))
+    when(invitationRepository.findVersionedByWorkspaceIdAndInvitedEmailAndStatus(any(), any(), any()))
         .thenReturn(Optional.empty());
-    when(userRepository.findByEmail(any())).thenReturn(Optional.empty());
+    when(userRepository.findAllByEmail(any())).thenReturn(List.of());
     when(invitationRepository.findVersionedById(invitation.invitationId()))
         .thenReturn(Optional.of(versioned(invitation)));
     when(workspaceRepository.findById(workspace.workspaceId())).thenReturn(Optional.of(workspace));
@@ -198,7 +201,8 @@ class WorkspaceInvitationServiceTest {
         fixture.user().userId(),
         AccountRole.VIEWER
     ).remove();
-    when(fixture.userRepository().findByEmail(fixture.user().email())).thenReturn(Optional.of(fixture.user()));
+    when(fixture.userRepository().findAllByEmail(fixture.user().email()))
+        .thenReturn(List.of(fixture.user()));
     when(fixture.membershipRepository().findVersionedByWorkspaceIdAndUserId(
         workspace.workspaceId(),
         fixture.user().userId()
@@ -215,6 +219,73 @@ class WorkspaceInvitationServiceTest {
         .returns(workspace.workspaceId(), WorkspaceInvitationView::workspaceId)
         .returns(fixture.user().email(), WorkspaceInvitationView::invitedEmail)
         .returns(AccountRole.TECHNOLOGIST, WorkspaceInvitationView::role);
+    verify(fixture.invitationRepository()).create(any(WorkspaceInvitation.class));
+  }
+
+  @Test
+  void rejectsInvitationWhenAnyAccountWithTheEmailIsAlreadyAMember() {
+    final var workspace = Workspace.create(DisplayName.of("Cidery"), WorkspaceType.CIDERY);
+    final var fixture = fixture(workspace);
+    final var accountFromAnotherProvider = AccountUser.create(
+        IdentityProviderCode.KEYCLOAK,
+        ExternalUserSubject.of("keycloak-user-with-shared-email"),
+        fixture.user().email(),
+        DisplayName.of("Keycloak technologist"),
+        null
+    );
+    final var membership = WorkspaceMembership.create(
+        workspace.workspaceId(),
+        accountFromAnotherProvider.userId(),
+        AccountRole.VIEWER
+    );
+    when(fixture.userRepository().findAllByEmail(fixture.user().email()))
+        .thenReturn(List.of(fixture.user(), accountFromAnotherProvider));
+    when(fixture.membershipRepository().findVersionedByWorkspaceIdAndUserId(
+        workspace.workspaceId(),
+        accountFromAnotherProvider.userId()
+    )).thenReturn(Optional.of(versioned(membership)));
+    final var command = new InviteWorkspaceMemberCommand(
+        workspace.workspaceId(),
+        fixture.user().email(),
+        AccountRole.TECHNOLOGIST
+    );
+
+    assertThatThrownBy(() -> fixture.service().invite(command))
+        .isInstanceOf(WorkspaceInvitationConflictException.class)
+        .hasMessage("account is already a workspace member");
+    verify(fixture.invitationRepository(), never()).create(any());
+  }
+
+  @Test
+  void expiresElapsedPendingInvitationBeforeCreatingItsReplacement() {
+    final var workspace = Workspace.create(DisplayName.of("Cidery"), WorkspaceType.CIDERY);
+    final var fixture = fixture(workspace);
+    final var elapsed = WorkspaceInvitation.create(
+        workspace.workspaceId(),
+        EmailAddress.of("elapsed@example.com"),
+        AccountRole.TECHNOLOGIST,
+        fixture.user().userId(),
+        NOW.minus(Duration.ofDays(8)),
+        Duration.ofDays(7)
+    );
+    final var elapsedState = versioned(elapsed);
+    when(fixture.invitationRepository().findVersionedByWorkspaceIdAndInvitedEmailAndStatus(
+        workspace.workspaceId(),
+        elapsed.invitedEmail(),
+        PENDING
+    )).thenReturn(Optional.of(elapsedState));
+    final var command = new InviteWorkspaceMemberCommand(
+        workspace.workspaceId(),
+        elapsed.invitedEmail(),
+        AccountRole.TECHNOLOGIST
+    );
+
+    fixture.service().invite(command);
+
+    final ArgumentCaptor<VersionedAggregate<WorkspaceInvitation>> expiredCaptor = ArgumentCaptor.captor();
+    verify(fixture.invitationRepository()).update(expiredCaptor.capture());
+    assertThat(expiredCaptor.getValue().aggregate().status())
+        .isEqualTo(EXPIRED);
     verify(fixture.invitationRepository()).create(any(WorkspaceInvitation.class));
   }
 
