@@ -2,6 +2,7 @@ package org.craft.mcs.cap.core.account.invitation.application.usecase;
 
 import java.time.Clock;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.account.context.application.port.in.WorkspaceMembershipView;
 import org.craft.mcs.cap.core.account.context.application.usecase.WorkspacePermissionChecker;
@@ -78,7 +79,7 @@ public final class WorkspaceInvitationService
           command.workspaceId(),
           WORKSPACE_MEMBERS_MANAGE
       );
-      requireNoPendingInvitation(command);
+      expireElapsedInvitationOrRejectPending(command);
       requireNotAlreadyMember(command);
       final var invitation = invitationRepository.create(WorkspaceInvitation.create(
           command.workspaceId(),
@@ -194,24 +195,35 @@ public final class WorkspaceInvitationService
     });
   }
 
-  private void requireNoPendingInvitation(@NonNull InviteWorkspaceMemberCommand command) {
-    if (invitationRepository.findByWorkspaceIdAndInvitedEmailAndStatus(
+  private void expireElapsedInvitationOrRejectPending(@NonNull InviteWorkspaceMemberCommand command) {
+    final var pendingState = invitationRepository.findVersionedByWorkspaceIdAndInvitedEmailAndStatus(
         command.workspaceId(),
         command.invitedEmail(),
         PENDING
-    ).isPresent()) {
+    );
+    if (pendingState.isEmpty()) {
+      return;
+    }
+
+    final var state = pendingState.orElseThrow();
+    final var invitation = state.aggregate();
+    final var now = clock.instant();
+    if (invitation.effectiveStatus(now) == PENDING) {
       throw new WorkspaceInvitationConflictException("pending invitation already exists for this email");
     }
+    invitationRepository.update(state.withAggregate(invitation.expire(now)));
   }
 
   private void requireNotAlreadyMember(@NonNull InviteWorkspaceMemberCommand command) {
-    accountUserRepository.findByEmail(command.invitedEmail())
-        .flatMap(user -> membershipRepository.findVersionedByWorkspaceIdAndUserId(
+    accountUserRepository.findAllByEmail(command.invitedEmail()).stream()
+        .map(user -> membershipRepository.findVersionedByWorkspaceIdAndUserId(
             command.workspaceId(),
             user.userId()
         ))
+        .flatMap(Optional::stream)
         .map(VersionedAggregate::aggregate)
         .filter(membership -> !membership.isRemoved())
+        .findAny()
         .ifPresent(_ -> {
           throw new WorkspaceInvitationConflictException("account is already a workspace member");
         });

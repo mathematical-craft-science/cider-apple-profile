@@ -400,6 +400,13 @@ class CreateProductionBatchServiceTest {
           .findFirst()
           .map(batch -> new VersionedAggregate<>(batch, AggregateRevision.of(1)));
     }
+
+    @Override
+    public @NonNull Optional<@NonNull ProductionBatch> lockForMeasurementChange(
+        @NonNull ProductionBatchId batchId
+    ) {
+      return findById(batchId);
+    }
   }
 
   private static final class StagingCandidateStore implements ProductionBatchCandidateStore {

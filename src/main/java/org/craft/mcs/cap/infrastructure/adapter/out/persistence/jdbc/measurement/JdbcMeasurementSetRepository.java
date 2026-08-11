@@ -42,13 +42,6 @@ class JdbcMeasurementSetRepository implements MeasurementSetRepository {
   }
 
   @Override
-  public @NonNull VersionedAggregate<MeasurementSet> retract(
-      @NonNull VersionedAggregate<MeasurementSet> state
-  ) {
-    return writer.retract(requireNonNull(state, "versioned measurement set cannot be null"));
-  }
-
-  @Override
   public @NonNull Optional<@NonNull VersionedAggregate<MeasurementSet>> findVersionedById(
       @NonNull MeasurementSetId measurementSetId
   ) {

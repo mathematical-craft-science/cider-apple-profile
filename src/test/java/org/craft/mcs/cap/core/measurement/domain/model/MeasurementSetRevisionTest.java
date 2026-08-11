@@ -200,7 +200,7 @@ class MeasurementSetRevisionTest {
 
     assertThatThrownBy(() -> revision(1, "Not an initial revision", List.of(result)))
         .isInstanceOf(DomainRuleViolationException.class)
-        .hasMessage("initial measurement revision cannot have a correction reason");
+        .hasMessage("initial measurement revision must be active revision one without a reason");
   }
 
   @Test
@@ -209,7 +209,42 @@ class MeasurementSetRevisionTest {
 
     assertThatThrownBy(() -> revision(2, null, List.of(result)))
         .isInstanceOf(DomainRuleViolationException.class)
-        .hasMessage("corrected measurement revision requires a correction reason");
+        .hasMessage("measurement correction must be an active later revision with only a correction reason");
+  }
+
+  @Test
+  void acceptsTerminalRetractionRevisionWithDedicatedReason() {
+    final var reason = MeasurementRetractionReason.of("Laboratory withdrew the complete report");
+    final var revision = fullRetractionRevision(reason);
+
+    assertThat(revision)
+        .returns(MeasurementSetLifecycle.RETRACTED, MeasurementSetRevision::lifecycle)
+        .returns(MeasurementSetRevisionChangeKind.RETRACTION, MeasurementSetRevision::changeKind)
+        .returns(null, MeasurementSetRevision::correctionReason)
+        .returns(reason, MeasurementSetRevision::retractionReason);
+  }
+
+  @Test
+  void requiresRetractionReasonForTerminalRevision() {
+    final var result = result(MeasurementCharacteristic.PH);
+
+    assertThatThrownBy(() -> new MeasurementSetRevision(
+        MeasurementSetRevisionId.newId(),
+        MeasurementSetRevisionNumber.of(2),
+        MaterialStateId.newId(),
+        MeasurementSetLifecycle.RETRACTED,
+        MeasurementSetRevisionChangeKind.RETRACTION,
+        MeasurementSetName.of("Retracted laboratory result"),
+        null,
+        null,
+        null,
+        MEASURED_AT,
+        ActorReference.accountUser(newUuid()),
+        List.of(result),
+        List.of()
+    ))
+        .isInstanceOf(DomainRuleViolationException.class)
+        .hasMessage("measurement retraction must be a retracted later revision with only a retraction reason");
   }
 
   @Test
@@ -384,6 +419,38 @@ class MeasurementSetRevisionTest {
         .hasMessage("measurement result retraction cannot occur after its revision creation time");
   }
 
+  @Test
+  void rejectsEvidenceIdentitySharedByActiveAndRetractedResults() {
+    final var sharedRecordId = MeasurementRecordId.newId();
+    final var activeResult = result(
+        sharedRecordId,
+        MeasurementCharacteristic.PH,
+        "3.40"
+    );
+    final var retractedResult = result(
+        sharedRecordId,
+        MeasurementCharacteristic.TANNIN,
+        "1200"
+    );
+    final var retraction = new MeasurementResultRetraction(
+        MeasurementSetRevisionId.newId(),
+        MeasurementSetRevisionNumber.initial(),
+        retractedResult,
+        List.of(),
+        ActorReference.accountUser(newUuid()),
+        MEASURED_AT,
+        MeasurementCorrectionReason.of("Laboratory invalidated the tannin result")
+    );
+
+    assertThatThrownBy(() -> correctedRevision(
+        List.of(activeResult),
+        List.of(retraction),
+        MEASURED_AT
+    ))
+        .isInstanceOf(DomainRuleViolationException.class)
+        .hasMessage("measurement evidence ids must be unique within a revision");
+  }
+
   private static MeasurementSetRevision correctedRevision(
       List<MeasurementRecord> records,
       List<MeasurementResultRetraction> retractions,
@@ -400,6 +467,26 @@ class MeasurementSetRevisionTest {
         ActorReference.accountUser(newUuid()),
         records,
         retractions
+    );
+  }
+
+  private static MeasurementSetRevision fullRetractionRevision(
+      MeasurementRetractionReason reason
+  ) {
+    return new MeasurementSetRevision(
+        MeasurementSetRevisionId.newId(),
+        MeasurementSetRevisionNumber.of(2),
+        MaterialStateId.newId(),
+        MeasurementSetLifecycle.RETRACTED,
+        MeasurementSetRevisionChangeKind.RETRACTION,
+        MeasurementSetName.of("Retracted laboratory result"),
+        null,
+        null,
+        reason,
+        MEASURED_AT,
+        ActorReference.accountUser(newUuid()),
+        List.of(result(MeasurementCharacteristic.PH)),
+        List.of()
     );
   }
 
@@ -532,6 +619,23 @@ class MeasurementSetRevisionTest {
 
   private static MeasurementRecord result(MeasurementCharacteristic characteristic) {
     return result(characteristic, MEASURED_AT);
+  }
+
+  private static MeasurementRecord result(
+      MeasurementRecordId recordId,
+      MeasurementCharacteristic characteristic,
+      String measuredValue
+  ) {
+    return new MeasurementRecord(
+        recordId,
+        characteristic,
+        MeasurementRecordRole.RESULT,
+        point(characteristic, measuredValue),
+        MEASURED_AT,
+        PROVENANCE,
+        null,
+        List.of()
+    );
   }
 
   private static MeasurementRecord result(

@@ -46,7 +46,13 @@ class JdbcVesselPersistenceDataJdbcTest {
   @Test
   void roundTripsAggregateAndCatalogProjection() {
     final var workspaceId = persistWorkspace("Primary cidery");
-    final var created = repository.create(vessel(workspaceId, "Tank F-03"));
+    final var created = repository.create(Vessel.create(
+        VesselId.newId(),
+        workspaceId,
+        "Tank F-03",
+        VolumeValue.ofLiters("500"),
+        VesselMaterial.FIBERGLASS
+    ));
     final var vessel = created.aggregate();
 
     final var loaded = repository.findVersionedById(vessel.vesselId()).orElseThrow();
@@ -57,7 +63,7 @@ class JdbcVesselPersistenceDataJdbcTest {
         .returns(workspaceId, Vessel::workspaceId)
         .returns("Tank F-03", Vessel::name)
         .returns(VolumeValue.ofLiters("500"), Vessel::nominalCapacity)
-        .returns(VesselMaterial.STAINLESS_STEEL, Vessel::material)
+        .returns(VesselMaterial.FIBERGLASS, Vessel::material)
         .returns(VesselOperationalStatus.OPERATIONAL, Vessel::operationalStatus);
     assertThat(loaded.revision()).isEqualTo(created.revision());
     assertThat(catalogEntry.revision()).isEqualTo(created.revision());

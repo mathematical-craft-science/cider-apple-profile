@@ -5,6 +5,7 @@ import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchNotFoundExcept
 import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.FeedstockBatchAccessUseCase;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchRepository;
+import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;
@@ -23,16 +24,16 @@ public final class FeedstockBatchAccessService implements FeedstockBatchAccessUs
 
   @Override
   public @NonNull WorkspaceId requireReadAccess(@NonNull FeedstockBatchId batchId) {
-    final var workspaceId = workspaceId(batchId);
-    accessControl.requireReadAccess(workspaceId);
-    return workspaceId;
+    final var batch = batch(batchId);
+    accessControl.requireReadAccess(batch.workspaceId());
+    return batch.workspaceId();
   }
 
   @Override
   public @NonNull WorkspaceId requireWriteAccess(@NonNull FeedstockBatchId batchId) {
-    final var workspaceId = workspaceId(batchId);
-    accessControl.requireWriteAccess(workspaceId);
-    return workspaceId;
+    final var batch = batch(batchId);
+    accessControl.requireWriteAccess(batch.workspaceId());
+    return batch.workspaceId();
   }
 
   @Override
@@ -40,10 +41,10 @@ public final class FeedstockBatchAccessService implements FeedstockBatchAccessUs
     accessControl.requireReadAccess(requireNonNull(workspaceId, "feedstock workspace id cannot be null"));
   }
 
-  private @NonNull WorkspaceId workspaceId(@NonNull FeedstockBatchId batchId) {
+  private @NonNull FeedstockBatch batch(@NonNull FeedstockBatchId batchId) {
     requireNonNull(batchId, "feedstock batch id cannot be null");
     return repository.findById(batchId)
-        .orElseThrow(() -> new FeedstockBatchNotFoundException(batchId))
-        .workspaceId();
+        .orElseThrow(() -> new FeedstockBatchNotFoundException(batchId));
   }
+
 }

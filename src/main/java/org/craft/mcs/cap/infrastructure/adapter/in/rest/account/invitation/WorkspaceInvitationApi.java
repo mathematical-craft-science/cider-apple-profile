@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import java.util.UUID;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.membership.dto.AccountMembershipResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.invitation.dto.InviteWorkspaceMemberRequest;
@@ -98,7 +99,7 @@ public interface WorkspaceInvitationApi {
   )
   @NonNull ResponseEntity<@NonNull WorkspaceInvitationResponse> invite(
       @NonNull UUID workspaceId,
-      @NonNull InviteWorkspaceMemberRequest request
+      @Valid @NonNull InviteWorkspaceMemberRequest request
   );
 
   @Operation(summary = "List workspace invitations")

@@ -1,6 +1,6 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.vessel;
 
-import jakarta.validation.Valid;
+import java.math.BigDecimal;
 import java.net.URI;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -46,7 +46,7 @@ public final class VesselController implements VesselApi {
   @Override
   @PostMapping(value = "/vessels", consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
   public @NonNull ResponseEntity<@NonNull VesselResponse> create(
-      @Valid @RequestBody @NonNull CreateVesselRequest request
+      @RequestBody @NonNull CreateVesselRequest request
   ) {
     final var created = createVesselUseCase.create(VesselRestMapper.toCommand(request));
     return ResponseEntity.created(URI.create("/vessels/" + created.vessel().vesselId().value()))
@@ -68,10 +68,11 @@ public final class VesselController implements VesselApi {
   @GetMapping(value = "/vessels/available", produces = APPLICATION_JSON_VALUE)
   public @NonNull ResponseEntity<@NonNull VesselListResponse> listAvailable(
       @RequestParam @NonNull UUID workspaceId,
-      @RequestParam(required = false) @Nullable String nameContains
+      @RequestParam(required = false) @Nullable String nameContains,
+      @RequestParam(required = false) @Nullable BigDecimal requiredVolumeLiters
   ) {
     final var vessels = listAvailableVesselsUseCase.listAvailable(
-        VesselRestMapper.toAvailableQuery(workspaceId, nameContains)
+        VesselRestMapper.toAvailableQuery(workspaceId, nameContains, requiredVolumeLiters)
     );
     return ResponseEntity.ok(new VesselListResponse(
         vessels.stream().map(VesselRestMapper::toResponse).toList()
@@ -99,7 +100,7 @@ public final class VesselController implements VesselApi {
   )
   public @NonNull ResponseEntity<@NonNull VesselResponse> update(
       @PathVariable @NonNull UUID vesselId,
-      @Valid @RequestBody @NonNull UpdateVesselRequest request
+      @RequestBody @NonNull UpdateVesselRequest request
   ) {
     final var vessel = updateVesselUseCase.update(
         VesselRestMapper.toCommand(VesselId.of(vesselId), request)

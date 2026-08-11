@@ -51,6 +51,7 @@ import org.craft.mcs.cap.core.feedstock.application.planning.composition.port.in
 import org.craft.mcs.cap.core.production.candidate.application.confirmation.port.in.CreateProductionBatchUseCase;
 import org.craft.mcs.cap.core.production.application.port.in.GetProductionBatchUseCase;
 import org.craft.mcs.cap.core.production.application.port.in.ListProductionBatchesUseCase;
+import org.craft.mcs.cap.core.production.application.port.in.UpdateProductionBatchUseCase;
 import org.craft.mcs.cap.core.production.candidate.application.port.in.CreateProductionBatchCandidateUseCase;
 import org.craft.mcs.cap.core.production.candidate.application.port.in.GetProductionBatchCandidateUseCase;
 import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPredictor;
@@ -172,6 +173,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
     GetProductionBatchCandidateUseCase.class,
     GetProductionBatchUseCase.class,
     ListProductionBatchesUseCase.class,
+    UpdateProductionBatchUseCase.class,
     PotentialAbvPredictor.class,
     CalculateCompositionUseCase.class,
     OptimizeCompositionUseCase.class,
@@ -534,6 +536,7 @@ class OpenApiContractTest {
     assertJsonResponse(openApi, "/production-batches", "get");
     assertJsonResponse(openApi, "/production-batches", "post", "201");
     assertJsonResponse(openApi, "/production-batches/{batchId}", "get");
+    assertJsonResponse(openApi, "/production-batches/{batchId}", "put");
     assertJsonResponse(openApi, "/production-batches/{batchId}/traceability", "get");
     assertJsonResponse(openApi, "/account/me", "get");
     assertJsonResponse(openApi, "/account/profile", "get");
@@ -564,6 +567,7 @@ class OpenApiContractTest {
     assertJsonRequest(openApi, "/feedstock-batches/composition-optimizations", "post");
     assertJsonRequest(openApi, "/feedstock-workspace/batches", "post");
     assertJsonRequest(openApi, "/production-batches", "post");
+    assertJsonRequest(openApi, "/production-batches/{batchId}", "put");
     assertJsonRequest(openApi, "/account/profile", "patch");
     assertJsonRequest(openApi, "/account/preferences", "patch");
 
@@ -1389,11 +1393,16 @@ class OpenApiContractTest {
     assertThat(operation(openApi, "/vessels", "post").path("responses").has("201")).isTrue();
     assertThat(operation(openApi, "/vessels", "get").path("responses").has("200")).isTrue();
     assertThat(operation(openApi, "/vessels/available", "get").path("responses").has("200")).isTrue();
+    assertThat(operation(openApi, "/vessels/available", "get").path("responses").has("400")).isTrue();
     assertThat(operation(openApi, "/vessels/{vesselId}", "get").path("responses").has("404")).isTrue();
     assertThat(operation(openApi, "/vessels/{vesselId}", "put").path("responses").has("409")).isTrue();
     assertParameterRequired(openApi, "/vessels", "get", "workspaceId", true);
     assertParameterRequired(openApi, "/vessels/available", "get", "workspaceId", true);
     assertParameterRequired(openApi, "/vessels/available", "get", "nameContains", false);
+    assertParameterRequired(openApi, "/vessels/available", "get", "requiredVolumeLiters", false);
+    assertExclusiveMinimumZero(
+        operationParameter(openApi, "/vessels/available", "get", "requiredVolumeLiters").path("schema")
+    );
     assertParameterRequired(openApi, "/vessels/{vesselId}", "get", "vesselId", true);
     assertUuidV7(operationParameter(openApi, "/vessels/{vesselId}", "get", "vesselId").path("schema"));
     assertUuidV7(operationParameter(openApi, "/vessels/{vesselId}", "put", "vesselId").path("schema"));
@@ -1409,6 +1418,7 @@ class OpenApiContractTest {
     assertStringFormat(schemaProperty(openApi, "CreateVesselRequest", "workspaceId"), "uuid");
     assertExclusiveMinimumZero(schemaProperty(openApi, "CreateVesselRequest", "nominalCapacityLiters"));
     assertEnumProperty(openApi, "CreateVesselRequest", "material", "STAINLESS_STEEL");
+    assertEnumProperty(openApi, "CreateVesselRequest", "material", "FIBERGLASS");
     assertRequiredProperties(
         openApi,
         "UpdateVesselRequest",
@@ -1482,6 +1492,17 @@ class OpenApiContractTest {
     assertStringFormat(schemaProperty(openApi, "CreateProductionBatchRequest", "candidateId"), "uuid");
     assertNotRequiredProperties(openApi, "CreateProductionBatchRequest", "note");
     assertNullable(schemaProperty(openApi, "CreateProductionBatchRequest", "note"));
+    assertRequiredProperties(
+        openApi,
+        "UpdateProductionBatchRequest",
+        "workspaceId",
+        "name",
+        "vesselId"
+    );
+    assertStringFormat(schemaProperty(openApi, "UpdateProductionBatchRequest", "workspaceId"), "uuid");
+    assertUuidV7(schemaProperty(openApi, "UpdateProductionBatchRequest", "vesselId"));
+    assertNotRequiredProperties(openApi, "UpdateProductionBatchRequest", "note");
+    assertNullable(schemaProperty(openApi, "UpdateProductionBatchRequest", "note"));
 
     assertRequiredProperties(openApi, "CreateProductionBatchCandidateRequest", "workspaceId", "sources");
     assertStringFormat(schemaProperty(openApi, "CreateProductionBatchCandidateRequest", "workspaceId"), "uuid");
@@ -1657,10 +1678,12 @@ class OpenApiContractTest {
         "season",
         "availableVolume"
     );
-    assertNotRequiredProperties(openApi, "UpdateFeedstockBatchRequest", "source", "note");
+    assertNotRequiredProperties(openApi, "UpdateFeedstockBatchRequest", "vesselId", "source", "note");
     assertNotRequiredProperties(openApi, "FeedstockBatchResponse", "source", "note");
     assertNullable(schemaProperty(openApi, "UpdateFeedstockBatchRequest", "source"));
     assertNullable(schemaProperty(openApi, "UpdateFeedstockBatchRequest", "note"));
+    assertNullable(schemaProperty(openApi, "UpdateFeedstockBatchRequest", "vesselId"));
+    assertUuidV7(schemaProperty(openApi, "UpdateFeedstockBatchRequest", "vesselId"));
     assertThat(referencedSchemaName(schemaProperty(openApi, "FeedstockBatchResponse", "vessel")))
         .isEqualTo("VesselReferenceResponse");
     assertMissingProperties(openApi, "UpdateFeedstockBatchRequest", "availableVolumeLiters", "vessel");
@@ -1668,6 +1691,7 @@ class OpenApiContractTest {
     assertNotRequiredProperties(
         openApi,
         "PatchFeedstockBatchRequest",
+        "vesselId",
         "name",
         "type",
         "season",
@@ -1675,6 +1699,8 @@ class OpenApiContractTest {
         "note"
     );
     assertNullable(schemaProperty(openApi, "PatchFeedstockBatchRequest", "name"));
+    assertNullable(schemaProperty(openApi, "PatchFeedstockBatchRequest", "vesselId"));
+    assertUuidV7(schemaProperty(openApi, "PatchFeedstockBatchRequest", "vesselId"));
     assertNullable(schemaProperty(openApi, "PatchFeedstockBatchRequest", "season"));
     assertNullable(schemaProperty(openApi, "PatchFeedstockBatchRequest", "note"));
     assertMissingProperties(openApi, "PatchFeedstockBatchRequest", "availableVolumeLiters", "vessel");

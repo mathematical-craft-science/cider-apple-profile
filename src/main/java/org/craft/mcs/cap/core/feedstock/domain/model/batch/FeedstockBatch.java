@@ -43,7 +43,7 @@ public final class FeedstockBatch {
 
   private @NonNull BatchName name;
 
-  private final @NonNull VesselId vesselId;
+  private @NonNull VesselId vesselId;
 
   private @NonNull FeedstockType type;
 
@@ -187,8 +187,23 @@ public final class FeedstockBatch {
     return deletedAt != null;
   }
 
+  /** Ensures that measurement evidence may still be added, corrected, or retracted for this batch. */
+  public void requireMeasurementChangesAllowed() {
+    if (lifecycle() != BatchLifecycle.ACTIVE) {
+      throw new DomainConflictException(
+          "feedstock batch measurements can be changed only when lifecycle is ACTIVE"
+      );
+    }
+  }
+
   public @NonNull FeedstockBatch rename(@NonNull BatchName name) {
     this.name = requireNonNull(name, "feedstock batch name cannot be null");
+    return this;
+  }
+
+  /** Corrects the initial vessel assignment before any operation has been recorded for this batch. */
+  public @NonNull FeedstockBatch correctInitialVesselAssignment(@NonNull VesselId vesselId) {
+    this.vesselId = requireNonNull(vesselId, "feedstock vessel id cannot be null");
     return this;
   }
 

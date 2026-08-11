@@ -22,6 +22,7 @@ import org.junit.jupiter.params.provider.EnumSource;
 
 import static org.craft.mcs.cap.shared.kernel.identity.UuidV7Generator.newUuid;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementInstant;
 
@@ -92,6 +93,18 @@ class FeedstockBatchTest {
         .isSameAs(batch)
         .returns(null, FeedstockBatch::source)
         .returns(null, FeedstockBatch::note);
+  }
+
+  @Test
+  void correctsInitialVesselWithoutChangingMaterialState() {
+    final var batch = activeBatch(VolumeValue.ofLiters("250.000"));
+    final var materialStateId = batch.currentMaterialStateId();
+    final var targetVesselId = VesselTestFixtures.vesselId("Tank A-02");
+
+    assertThat(batch.correctInitialVesselAssignment(targetVesselId))
+        .isSameAs(batch)
+        .returns(targetVesselId, FeedstockBatch::vesselId)
+        .returns(materialStateId, FeedstockBatch::currentMaterialStateId);
   }
 
   @Test
@@ -283,6 +296,23 @@ class FeedstockBatchTest {
     ))
         .isInstanceOf(DomainRuleViolationException.class)
         .hasMessage("inactive batch material volume must be zero");
+  }
+
+  @Test
+  void allowsMeasurementChangesForActiveBatch() {
+    final var batch = activeBatch(VolumeValue.ofLiters("250"));
+
+    assertThatCode(batch::requireMeasurementChangesAllowed).doesNotThrowAnyException();
+  }
+
+  @ParameterizedTest
+  @EnumSource(value = BatchLifecycle.class, names = {"DEPLETED", "DISCARDED"})
+  void rejectsMeasurementChangesForInactiveBatch(BatchLifecycle lifecycle) {
+    final var batch = restore(lifecycle, VolumeValue.ofLiters("0"));
+
+    assertThatThrownBy(batch::requireMeasurementChangesAllowed)
+        .isInstanceOf(DomainConflictException.class)
+        .hasMessage("feedstock batch measurements can be changed only when lifecycle is ACTIVE");
   }
 
   private static @NonNull FeedstockBatch activeBatch(@NonNull VolumeValue availableVolume) {

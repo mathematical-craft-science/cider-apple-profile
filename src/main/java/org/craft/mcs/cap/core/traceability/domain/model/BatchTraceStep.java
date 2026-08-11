@@ -38,6 +38,8 @@ public record BatchTraceStep(
     @Nullable String note
 ) {
 
+  private static final int MAX_NOTE_LENGTH = 2_000;
+
   public BatchTraceStep {
     requireNonNull(workspaceId, "batch trace workspace id cannot be null");
     requireNonNull(stepId, "batch trace step id cannot be null");
@@ -48,6 +50,9 @@ public record BatchTraceStep(
     requireNonNull(performedBy, "batch trace actor cannot be null");
     note = normalize(note);
 
+    if (note != null && note.length() > MAX_NOTE_LENGTH) {
+      throw new DomainRuleViolationException("batch trace step note cannot exceed 2000 characters");
+    }
     if (outputs.isEmpty()) {
       throw new DomainRuleViolationException("batch trace step must contain at least one output subject");
     }

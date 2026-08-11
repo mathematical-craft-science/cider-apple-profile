@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import java.util.UUID;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.membership.dto.AccountWorkspaceMemberListResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.membership.dto.AccountWorkspaceMemberResponse;
@@ -76,7 +77,7 @@ public interface WorkspaceMembershipApi {
   @NonNull ResponseEntity<@NonNull AccountWorkspaceMemberResponse> changeRole(
       @NonNull UUID workspaceId,
       @NonNull UUID membershipId,
-      @NonNull ChangeWorkspaceMemberRoleRequest request
+      @Valid @NonNull ChangeWorkspaceMemberRoleRequest request
   );
 
   @Operation(summary = "Suspend a workspace membership")
@@ -246,6 +247,6 @@ public interface WorkspaceMembershipApi {
   )
   @NonNull ResponseEntity<@NonNull AccountWorkspaceMemberResponse> transferOwnership(
       @NonNull UUID workspaceId,
-      @NonNull TransferWorkspaceOwnershipRequest request
+      @Valid @NonNull TransferWorkspaceOwnershipRequest request
   );
 }

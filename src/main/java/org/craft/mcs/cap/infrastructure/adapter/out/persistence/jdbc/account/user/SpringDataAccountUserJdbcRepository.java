@@ -1,5 +1,6 @@
 package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.account.user;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.craft.mcs.cap.core.account.user.domain.model.AccountUserStatus;
@@ -45,5 +46,5 @@ interface SpringDataAccountUserJdbcRepository
       @NonNull String externalSubject
   );
 
-  @NonNull Optional<@NonNull AccountUserJdbcEntity> findByEmailIgnoreCase(@NonNull String email);
+  @NonNull List<@NonNull AccountUserJdbcEntity> findAllByEmailOrderByUserId(@NonNull String email);
 }

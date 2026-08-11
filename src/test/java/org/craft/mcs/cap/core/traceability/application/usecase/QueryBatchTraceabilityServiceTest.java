@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.Optional;
+import java.util.UUID;
 import org.craft.mcs.cap.core.traceability.application.port.out.BatchTraceabilityAccessControl;
 import org.craft.mcs.cap.core.traceability.application.port.out.BatchTraceabilityQueryStore;
 import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceStepType;
@@ -118,6 +119,15 @@ class QueryBatchTraceabilityServiceTest {
     ) {
       requestedSubject = subject;
       return Optional.of(WORKSPACE_ID);
+    }
+
+    @Override
+    public boolean hasOperationStep(
+        @NonNull BatchTraceSubjectType subjectType,
+        @NonNull UUID subjectId,
+        @NonNull BatchTraceStepType creationStepType
+    ) {
+      return steps.stream().anyMatch(step -> step.stepType() != creationStepType);
     }
 
     @Override

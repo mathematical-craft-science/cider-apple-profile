@@ -1,6 +1,5 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.batch;
 
-import jakarta.validation.Valid;
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.UUID;
@@ -54,7 +53,7 @@ public final class FeedstockBatchController implements FeedstockBatchApi {
   @Override
   @PostMapping(value = "/feedstock-batches", consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
   public @NonNull ResponseEntity<@NonNull FeedstockBatchResponse> create(
-      @Valid @RequestBody @NonNull CreateFeedstockBatchRequest request
+      @RequestBody @NonNull CreateFeedstockBatchRequest request
   ) {
     final var created = createFeedstockBatchUseCase.create(
         FeedstockBatchRestMapper.toCommand(request)
@@ -106,7 +105,7 @@ public final class FeedstockBatchController implements FeedstockBatchApi {
   @Override
   public @NonNull ResponseEntity<@NonNull FeedstockBatchResponse> update(
       @PathVariable @NonNull UUID batchId,
-      @Valid @RequestBody @NonNull UpdateFeedstockBatchRequest request
+      @RequestBody @NonNull UpdateFeedstockBatchRequest request
   ) {
     final var updated = updateFeedstockBatchUseCase.update(
         FeedstockBatchRestMapper.toCommand(FeedstockBatchId.of(batchId), request)
@@ -123,7 +122,7 @@ public final class FeedstockBatchController implements FeedstockBatchApi {
   @Override
   public @NonNull ResponseEntity<@NonNull FeedstockBatchResponse> patch(
       @PathVariable @NonNull UUID batchId,
-      @Valid @RequestBody @NonNull PatchFeedstockBatchRequest request
+      @RequestBody @NonNull PatchFeedstockBatchRequest request
   ) {
     final var updated = updateFeedstockBatchUseCase.update(
         FeedstockBatchRestMapper.toCommand(FeedstockBatchId.of(batchId), request)

@@ -72,4 +72,13 @@ class JdbcProductionBatchRepository
     return repository.findById(batchId.value()).map(ProductionBatchJdbcMapper::toVersionedAggregate);
   }
 
+  @Override
+  public @NonNull Optional<@NonNull ProductionBatch> lockForMeasurementChange(
+      @NonNull ProductionBatchId batchId
+  ) {
+    requireNonNull(batchId, "production batch id cannot be null");
+    return repository.lockForMeasurementChange(batchId.value())
+        .map(ProductionBatchJdbcMapper::toDomain);
+  }
+
 }

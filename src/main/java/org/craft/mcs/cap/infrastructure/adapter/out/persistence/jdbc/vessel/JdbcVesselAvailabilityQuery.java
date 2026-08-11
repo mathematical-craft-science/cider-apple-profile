@@ -1,5 +1,6 @@
 package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.vessel;
 
+import java.math.BigDecimal;
 import java.sql.Types;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -7,6 +8,7 @@ import org.craft.mcs.cap.core.vessel.application.model.VesselView;
 import org.craft.mcs.cap.core.vessel.application.port.out.VesselAvailabilityQuery;
 import org.craft.mcs.cap.shared.application.query.TextSearchCriteria;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
+import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.jdbc.core.RowMapper;
@@ -34,6 +36,10 @@ class JdbcVesselAvailabilityQuery implements VesselAvailabilityQuery {
        WHERE vessel.workspace_id = :workspaceId
          AND vessel.operational_status = 'OPERATIONAL'
          AND (:nameContains IS NULL OR POSITION(LOWER(:nameContains) IN LOWER(vessel.name)) > 0)
+         AND (
+           :requiredVolumeLiters IS NULL
+           OR vessel.nominal_capacity_liters >= :requiredVolumeLiters
+         )
          AND NOT EXISTS (
            SELECT 1
              FROM feedstock_batches feedstock
@@ -59,12 +65,14 @@ class JdbcVesselAvailabilityQuery implements VesselAvailabilityQuery {
   @Override
   public @NonNull List<@NonNull VesselView> findAvailable(
       @NonNull WorkspaceId workspaceId,
-      @Nullable TextSearchCriteria nameContains
+      @Nullable TextSearchCriteria nameContains,
+      @Nullable VolumeValue requiredVolume
   ) {
     requireNonNull(workspaceId, "workspace id cannot be null");
     final var parameters = new MapSqlParameterSource()
         .addValue("workspaceId", workspaceId.value())
-        .addValue("nameContains", searchTerm(nameContains), Types.VARCHAR);
+        .addValue("nameContains", searchTerm(nameContains), Types.VARCHAR)
+        .addValue("requiredVolumeLiters", liters(requiredVolume), Types.NUMERIC);
     return jdbc.query(
         FIND_AVAILABLE_SQL,
         parameters,
@@ -74,5 +82,9 @@ class JdbcVesselAvailabilityQuery implements VesselAvailabilityQuery {
 
   private static @Nullable String searchTerm(@Nullable TextSearchCriteria nameContains) {
     return nameContains == null ? null : nameContains.query();
+  }
+
+  private static @Nullable BigDecimal liters(@Nullable VolumeValue requiredVolume) {
+    return requiredVolume == null ? null : requiredVolume.liters();
   }
 }

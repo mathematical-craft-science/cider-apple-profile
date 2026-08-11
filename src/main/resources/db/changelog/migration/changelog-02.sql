@@ -33,6 +33,9 @@ CREATE TABLE IF NOT EXISTS workspaces
         CHECK ((external_organization_provider IS NULL) = (external_organization_subject IS NULL))
 );
 
+CREATE INDEX IF NOT EXISTS idx_account_users_email
+    ON account_users (email);
+
 CREATE TABLE IF NOT EXISTS workspace_memberships
 (
     membership_id UUID                     NOT NULL PRIMARY KEY,
@@ -140,6 +143,9 @@ CREATE UNIQUE INDEX IF NOT EXISTS uk_workspace_invitations_pending_email
 
 CREATE INDEX IF NOT EXISTS idx_workspace_invitations_workspace_created
     ON workspace_invitations (workspace_id, created_at DESC, invitation_id DESC);
+
+CREATE INDEX IF NOT EXISTS idx_workspace_invitations_invited_email_created
+    ON workspace_invitations (invited_email, created_at DESC, invitation_id DESC);
 
 CREATE TABLE IF NOT EXISTS workspace_administrative_audit
 (

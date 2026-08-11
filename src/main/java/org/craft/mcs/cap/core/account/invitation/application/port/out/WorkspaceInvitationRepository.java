@@ -6,6 +6,7 @@ import org.craft.mcs.cap.core.account.invitation.domain.model.WorkspaceInvitatio
 import org.craft.mcs.cap.core.account.invitation.domain.model.WorkspaceInvitationStatus;
 import org.craft.mcs.cap.core.account.invitation.domain.model.value.WorkspaceInvitationId;
 import org.craft.mcs.cap.core.account.shared.domain.value.EmailAddress;
+import org.craft.mcs.cap.shared.application.persistence.VersionedAggregate;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.application.persistence.VersionedAggregateRepository;
 import org.jspecify.annotations.NonNull;
@@ -14,7 +15,8 @@ import org.jspecify.annotations.NonNull;
 public interface WorkspaceInvitationRepository
     extends VersionedAggregateRepository<WorkspaceInvitation, WorkspaceInvitationId> {
 
-  @NonNull Optional<@NonNull WorkspaceInvitation> findByWorkspaceIdAndInvitedEmailAndStatus(
+  @NonNull Optional<@NonNull VersionedAggregate<WorkspaceInvitation>>
+      findVersionedByWorkspaceIdAndInvitedEmailAndStatus(
       @NonNull WorkspaceId workspaceId,
       @NonNull EmailAddress invitedEmail,
       @NonNull WorkspaceInvitationStatus status

@@ -27,7 +27,11 @@ public final class ListAvailableVesselsService implements ListAvailableVesselsUs
   ) {
     requireNonNull(query, "list available vessels query cannot be null");
     vesselAccessControl.requireReadAccess(query.workspaceId());
-    return vesselAvailabilityQuery.findAvailable(query.workspaceId(), query.nameContains()).stream()
+    return vesselAvailabilityQuery.findAvailable(
+        query.workspaceId(),
+        query.nameContains(),
+        query.requiredVolume()
+    ).stream()
         .map(VesselUsageView::empty)
         .toList();
   }

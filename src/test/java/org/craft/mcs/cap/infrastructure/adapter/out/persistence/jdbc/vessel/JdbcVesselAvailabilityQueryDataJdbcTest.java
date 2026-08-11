@@ -7,6 +7,7 @@ import org.craft.mcs.cap.shared.application.query.TextSearchCriteria;
 import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.shared.kernel.identity.VesselId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
+import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.craft.mcs.cap.shared.testing.jdbc.PostgresDataJdbcTestConfiguration;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,46 +35,62 @@ class JdbcVesselAvailabilityQueryDataJdbcTest {
   private JdbcTemplate jdbc;
 
   @Test
-  void findsOnlyOperationalEmptyWorkspaceVesselsWithOptionalCaseInsensitiveNameFilter() {
+  void filtersOperationalEmptyWorkspaceVesselsByNameAndRequiredVolume() {
     final var workspaceId = persistWorkspace("Availability cidery");
     final var otherWorkspaceId = persistWorkspace("Other cidery");
     final var barrelId = persistVessel(
         workspaceId,
         "barrel B-01",
+        "300",
         VesselOperationalStatus.OPERATIONAL
     );
     final var matchingId = persistVessel(
         workspaceId,
         "Fermentation tank F-01",
+        "500",
         VesselOperationalStatus.OPERATIONAL
     );
     final var literalWildcardId = persistVessel(
         workspaceId,
         "Pilot % vessel",
+        "750",
         VesselOperationalStatus.OPERATIONAL
     );
     final var feedstockVesselId = persistVessel(
         workspaceId,
         "Fermentation tank F-02",
+        "500",
         VesselOperationalStatus.OPERATIONAL
     );
     final var productionVesselId = persistVessel(
         workspaceId,
         "Fermentation tank P-01",
+        "500",
         VesselOperationalStatus.OPERATIONAL
     );
-    persistVessel(workspaceId, "Fermentation tank X-01", VesselOperationalStatus.OUT_OF_SERVICE);
-    persistVessel(otherWorkspaceId, "Fermentation tank O-01", VesselOperationalStatus.OPERATIONAL);
+    persistVessel(workspaceId, "Fermentation tank X-01", "1000", VesselOperationalStatus.OUT_OF_SERVICE);
+    persistVessel(otherWorkspaceId, "Fermentation tank O-01", "1000", VesselOperationalStatus.OPERATIONAL);
     persistFeedstock(workspaceId, feedstockVesselId);
     persistProduction(workspaceId, productionVesselId);
 
-    assertThat(query.findAvailable(workspaceId, new TextSearchCriteria("FERMENTATION")))
+    assertThat(query.findAvailable(
+        workspaceId,
+        new TextSearchCriteria("FERMENTATION"),
+        VolumeValue.ofLiters("500")
+    ))
         .extracting(VesselView::vesselId)
         .containsExactly(matchingId);
-    assertThat(query.findAvailable(workspaceId, new TextSearchCriteria("%")))
+    assertThat(query.findAvailable(
+        workspaceId,
+        new TextSearchCriteria("%"),
+        VolumeValue.ofLiters("750")
+    ))
         .extracting(VesselView::vesselId)
         .containsExactly(literalWildcardId);
-    assertThat(query.findAvailable(workspaceId, null))
+    assertThat(query.findAvailable(workspaceId, null, VolumeValue.ofLiters("501")))
+        .extracting(VesselView::vesselId)
+        .containsExactly(literalWildcardId);
+    assertThat(query.findAvailable(workspaceId, null, null))
         .extracting(VesselView::vesselId)
         .containsExactly(barrelId, matchingId, literalWildcardId);
   }
@@ -94,6 +111,7 @@ class JdbcVesselAvailabilityQueryDataJdbcTest {
   private VesselId persistVessel(
       WorkspaceId workspaceId,
       String name,
+      String nominalCapacityLiters,
       VesselOperationalStatus status
   ) {
     final var vesselId = VesselId.newId();
@@ -102,11 +120,12 @@ class JdbcVesselAvailabilityQueryDataJdbcTest {
             INSERT INTO vessels (
                 vessel_id, workspace_id, name, nominal_capacity_liters, material,
                 operational_status, version, created_at, updated_at
-            ) VALUES (?, ?, ?, 500, 'STAINLESS_STEEL', ?, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+            ) VALUES (?, ?, ?, ?, 'STAINLESS_STEEL', ?, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
             """,
         vesselId.value(),
         workspaceId.value(),
         name,
+        new BigDecimal(nominalCapacityLiters),
         status.name()
     );
     return vesselId;

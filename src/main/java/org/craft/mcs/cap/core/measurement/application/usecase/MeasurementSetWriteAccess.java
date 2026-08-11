@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.measurement.application.MeasurementSetNotFoundException;
 import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementSetRepository;
 import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementSubjectAccessControl;
+import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementSubjectChangePolicy;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSet;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetId;
 import org.craft.mcs.cap.shared.application.ConcurrentResourceModificationException;
@@ -21,6 +22,7 @@ final class MeasurementSetWriteAccess {
 
   private final @NonNull MeasurementSetRepository repository;
   private final @NonNull MeasurementSubjectAccessControl subjectAccessControl;
+  private final @NonNull MeasurementSubjectChangePolicy subjectChangePolicy;
 
   @NonNull VersionedAggregate<MeasurementSet> require(
       @NonNull MeasurementSetId measurementSetId,
@@ -30,6 +32,7 @@ final class MeasurementSetWriteAccess {
     final var state = repository.findVersionedById(measurementSetId)
         .orElseThrow(() -> new MeasurementSetNotFoundException(measurementSetId));
     subjectAccessControl.requireWriteAccess(state.aggregate().subject());
+    subjectChangePolicy.requireChangesAllowed(state.aggregate().subject());
     if (state.revision().value() != expectedVersion) {
       throw new ConcurrentResourceModificationException("measurement set", null);
     }

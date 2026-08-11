@@ -13,6 +13,9 @@ public enum VesselMaterial {
   /** Glass vessel. */
   GLASS,
 
+  /** Fiberglass-reinforced vessel. */
+  FIBERGLASS,
+
   /** Wooden vessel, including barrels and vats. */
   WOOD,
 

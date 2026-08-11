@@ -70,4 +70,22 @@ class JdbcFeedstockBatchRepository
     return repository.findByBatchIdAndDeletedAtIsNull(batchId.value())
         .map(FeedstockBatchJdbcMapper::toVersionedAggregate);
   }
+
+  @Override
+  public @NonNull Optional<@NonNull VersionedAggregate<FeedstockBatch>> lockVersionedById(
+      @NonNull FeedstockBatchId batchId
+  ) {
+    requireNonNull(batchId, "feedstock batch id cannot be null");
+    return repository.lockById(batchId.value())
+        .map(FeedstockBatchJdbcMapper::toVersionedAggregate);
+  }
+
+  @Override
+  public @NonNull Optional<@NonNull FeedstockBatch> lockForMeasurementChange(
+      @NonNull FeedstockBatchId batchId
+  ) {
+    requireNonNull(batchId, "feedstock batch id cannot be null");
+    return repository.lockForMeasurementChange(batchId.value())
+        .map(FeedstockBatchJdbcMapper::toDomain);
+  }
 }

@@ -26,6 +26,7 @@ import org.craft.mcs.cap.core.measurement.domain.model.MeasurementRetractionReas
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetId;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetLifecycle;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetName;
+import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetRevisionChangeKind;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetRevisionId;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetRevisionNumber;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSubjectReference;
@@ -54,21 +55,20 @@ class JdbcMeasurementSetViewQuery implements MeasurementSetViewQuery {
              s.workspace_id,
              s.subject_type,
              s.subject_id,
-             s.lifecycle,
-             s.retracted_by,
-             s.retracted_at,
-             s.retraction_reason,
              s.version,
              s.created_at,
-             s.updated_at,
              revision.revision_id,
              revision.revision_number,
              revision.material_state_id,
+             revision.lifecycle,
+             revision.change_kind,
              revision.name,
              revision.note,
              revision.correction_reason,
+             revision.retraction_reason,
              revision.created_at AS revision_created_at,
-             revision.actor_reference
+             revision.performed_by_type,
+             revision.performed_by_id
       """;
 
   private static final String SELECT_SETS = SELECT_SET_REVISION_COLUMNS + """
@@ -129,7 +129,8 @@ class JdbcMeasurementSetViewQuery implements MeasurementSetViewQuery {
              record.lower_value,
              record.upper_value,
              record.derivation_method,
-             retraction_revision.actor_reference AS retraction_actor_reference,
+             retraction_revision.performed_by_type AS retraction_actor_type,
+             retraction_revision.performed_by_id AS retraction_actor_id,
              retraction_revision.created_at AS retracted_at,
              retraction_revision.correction_reason AS retraction_reason,
              source_revision.revision_id AS source_revision_id,
@@ -140,7 +141,8 @@ class JdbcMeasurementSetViewQuery implements MeasurementSetViewQuery {
           ON current_revision.revision_id = revision_record.revision_id
         JOIN LATERAL (
             SELECT candidate.revision_number,
-                   candidate.actor_reference,
+                   candidate.performed_by_type,
+                   candidate.performed_by_id,
                    candidate.created_at,
                    candidate.correction_reason
               FROM measurement_revision_records retraction_link
@@ -150,6 +152,7 @@ class JdbcMeasurementSetViewQuery implements MeasurementSetViewQuery {
                AND retraction_link.record_status = 'RETRACTED'
                AND candidate.measurement_set_id = current_revision.measurement_set_id
                AND candidate.revision_number <= current_revision.revision_number
+               AND candidate.change_kind = 'CORRECTION'
              ORDER BY candidate.revision_number
              LIMIT 1
         ) retraction_revision ON TRUE
@@ -220,7 +223,7 @@ class JdbcMeasurementSetViewQuery implements MeasurementSetViewQuery {
                WHERE s.workspace_id = :workspaceId
                  AND s.subject_type = :subjectType
                  AND s.subject_id = :subjectId
-               ORDER BY s.updated_at DESC, s.measurement_set_id DESC
+               ORDER BY revision.created_at DESC, s.measurement_set_id DESC
               """,
         new MapSqlParameterSource()
             .addValue("workspaceId", workspaceId.value())
@@ -286,7 +289,11 @@ class JdbcMeasurementSetViewQuery implements MeasurementSetViewQuery {
             MeasurementSetRevisionId.of(resultSet.getObject("source_revision_id", UUID.class)),
             MeasurementSetRevisionNumber.of(resultSet.getInt("source_revision_number")),
             mapRecord(resultSet, derivationInputs).recordView(),
-            ActorReferenceJdbcCodec.decode(resultSet.getString("retraction_actor_reference")),
+            MeasurementJdbcReadSupport.actorReference(
+                resultSet,
+                "retraction_actor_type",
+                "retraction_actor_id"
+            ),
             MeasurementJdbcReadSupport.instant(resultSet, "retracted_at"),
             MeasurementCorrectionReason.of(resultSet.getString("retraction_reason"))
         )
@@ -356,7 +363,7 @@ class JdbcMeasurementSetViewQuery implements MeasurementSetViewQuery {
     final var rows = jdbcTemplate.query(
         SELECT_RECORDS,
         revisionIdsParameter(revisionIds),
-        (resultSet, rowNumber) -> mapRecord(resultSet, inputs)
+        (resultSet, _) -> mapRecord(resultSet, inputs)
     );
     final Map<MeasurementSetRevisionId, List<MeasurementRecordView>> records = new LinkedHashMap<>();
     rows.forEach(row -> records
@@ -378,7 +385,7 @@ class JdbcMeasurementSetViewQuery implements MeasurementSetViewQuery {
              ORDER BY derived_record_id, input_record_id
             """,
         revisionIdsParameter(revisionIds),
-        (resultSet, rowNumber) -> Map.entry(
+        (resultSet, _) -> Map.entry(
             MeasurementRecordId.of(resultSet.getObject("derived_record_id", UUID.class)),
             MeasurementRecordId.of(resultSet.getObject("input_record_id", UUID.class))
         )
@@ -403,6 +410,18 @@ class JdbcMeasurementSetViewQuery implements MeasurementSetViewQuery {
       @NonNull ResultSet resultSet,
       int rowNumber
   ) throws SQLException {
+    final var lifecycle = MeasurementSetLifecycle.valueOf(resultSet.getString("lifecycle"));
+    final var changeKind = MeasurementSetRevisionChangeKind.valueOf(resultSet.getString("change_kind"));
+    final var revisionCreatedAt = MeasurementJdbcReadSupport.instant(
+        resultSet,
+        "revision_created_at"
+    );
+    final var actor = MeasurementJdbcReadSupport.actorReference(
+        resultSet,
+        "performed_by_type",
+        "performed_by_id"
+    );
+    final var retractionReason = retractionReason(resultSet.getString("retraction_reason"));
     return new SetRow(
         MeasurementSetId.of(resultSet.getObject("measurement_set_id", UUID.class)),
         WorkspaceId.of(resultSet.getObject("workspace_id", UUID.class)),
@@ -410,19 +429,21 @@ class JdbcMeasurementSetViewQuery implements MeasurementSetViewQuery {
             MeasurementSubjectType.valueOf(resultSet.getString("subject_type")),
             resultSet.getObject("subject_id", UUID.class)
         ),
-        MeasurementSetLifecycle.valueOf(resultSet.getString("lifecycle")),
-        setRetraction(resultSet),
+        lifecycle,
+        setRetraction(changeKind, actor, revisionCreatedAt, retractionReason),
         resultSet.getLong("version"),
         MeasurementSetRevisionId.of(resultSet.getObject("revision_id", UUID.class)),
         MeasurementSetRevisionNumber.of(resultSet.getInt("revision_number")),
+        changeKind,
         MaterialStateId.of(resultSet.getObject("material_state_id", UUID.class)),
         MeasurementSetName.of(resultSet.getString("name")),
         resultSet.getString("note"),
         correctionReason(resultSet.getString("correction_reason")),
-        MeasurementJdbcReadSupport.instant(resultSet, "revision_created_at"),
-        ActorReferenceJdbcCodec.decode(resultSet.getString("actor_reference")),
+        retractionReason,
+        revisionCreatedAt,
+        actor,
         MeasurementJdbcReadSupport.instant(resultSet, "created_at"),
-        MeasurementJdbcReadSupport.instant(resultSet, "updated_at")
+        revisionCreatedAt
     );
   }
 
@@ -466,10 +487,12 @@ class JdbcMeasurementSetViewQuery implements MeasurementSetViewQuery {
       long version,
       @NonNull MeasurementSetRevisionId revisionId,
       @NonNull MeasurementSetRevisionNumber revisionNumber,
+      @NonNull MeasurementSetRevisionChangeKind changeKind,
       @NonNull MaterialStateId materialStateId,
       @NonNull MeasurementSetName name,
       @Nullable String note,
       @Nullable MeasurementCorrectionReason correctionReason,
+      @Nullable MeasurementRetractionReason retractionReason,
       @NonNull Instant revisionCreatedAt,
       @NonNull ActorReference actor,
       @NonNull Instant createdAt,
@@ -489,10 +512,12 @@ class JdbcMeasurementSetViewQuery implements MeasurementSetViewQuery {
           version,
           revisionId,
           revisionNumber,
+          changeKind,
           materialStateId,
           name,
           note,
           correctionReason,
+          retractionReason,
           revisionCreatedAt,
           actor,
           records,
@@ -513,17 +538,19 @@ class JdbcMeasurementSetViewQuery implements MeasurementSetViewQuery {
     return value == null ? null : MeasurementCorrectionReason.of(value);
   }
 
+  private static @Nullable MeasurementRetractionReason retractionReason(@Nullable String value) {
+    return value == null ? null : MeasurementRetractionReason.of(value);
+  }
+
   private static @Nullable MeasurementSetRetractionView setRetraction(
-      @NonNull ResultSet resultSet
-  ) throws SQLException {
-    final var actorReference = resultSet.getString("retracted_by");
-    return actorReference == null
-        ? null
-        : new MeasurementSetRetractionView( // NOSONAR
-            ActorReferenceJdbcCodec.decode(actorReference),
-            MeasurementJdbcReadSupport.instant(resultSet, "retracted_at"),
-            MeasurementRetractionReason.of(resultSet.getString("retraction_reason"))
-        );
+      @NonNull MeasurementSetRevisionChangeKind changeKind,
+      @NonNull ActorReference actor,
+      @NonNull Instant revisionCreatedAt,
+      @Nullable MeasurementRetractionReason reason
+  ) {
+    return changeKind == MeasurementSetRevisionChangeKind.RETRACTION
+        ? new MeasurementSetRetractionView(actor, revisionCreatedAt, requireNonNull(reason))
+        : null;
   }
 
   private record RetractionRecordViewRow(

@@ -7,11 +7,13 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import java.util.UUID;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.CreateProductionBatchRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.ProductionBatchDetailsResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.ProductionBatchListResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.ProductionBatchResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.UpdateProductionBatchRequest;
 import org.jspecify.annotations.NonNull;
 import org.springframework.http.ProblemDetail;
 
@@ -20,7 +22,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @Tag(
     name = "Production batches",
-    description = "Production batch workspace endpoints: list, details and creation."
+    description = "Production batch workspace endpoints: list, details, creation and metadata correction."
 )
 public interface ProductionBatchApi {
 
@@ -63,6 +65,57 @@ public interface ProductionBatchApi {
   @NonNull ProductionBatchDetailsResponse get(
       @Parameter(description = "Production batch identifier.", required = true, schema = @Schema(format = "uuid"))
       @NonNull UUID batchId
+  );
+
+  @Operation(
+      summary = "Update production batch",
+      description = """
+          Replaces editable production batch metadata. The initial vessel assignment can be
+          corrected only while the batch has no operation after PRODUCTION_BATCH_CREATED.
+          Material volume and lifecycle remain operation-owned.
+          """
+  )
+  @ApiResponse(
+      responseCode = "200",
+      description = "Production batch updated.",
+      content = @Content(
+          mediaType = APPLICATION_JSON_VALUE,
+          schema = @Schema(implementation = ProductionBatchDetailsResponse.class)
+      )
+  )
+  @ApiResponse(
+      responseCode = "400",
+      description = "Invalid production batch update request.",
+      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
+  )
+  @ApiResponse(
+      responseCode = "403",
+      description = "Production batch or target vessel belongs to another workspace.",
+      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
+  )
+  @ApiResponse(
+      responseCode = "404",
+      description = "Production batch or target vessel not found.",
+      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
+  )
+  @ApiResponse(
+      responseCode = "409",
+      description = "Production batch was modified concurrently, the target vessel is unavailable, or the batch "
+          + "already has a post-creation operation.",
+      content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))
+  )
+  @NonNull ProductionBatchDetailsResponse update(
+      @Parameter(description = "Production batch identifier.", required = true, schema = @Schema(format = "uuid"))
+      @NonNull UUID batchId,
+      @RequestBody(
+          description = "Complete editable production batch metadata.",
+          required = true,
+          content = @Content(
+              mediaType = APPLICATION_JSON_VALUE,
+              schema = @Schema(implementation = UpdateProductionBatchRequest.class)
+          )
+      )
+      @Valid @NonNull UpdateProductionBatchRequest request
   );
 
   @Operation(
@@ -114,6 +167,6 @@ public interface ProductionBatchApi {
               schema = @Schema(implementation = CreateProductionBatchRequest.class)
           )
       )
-      @NonNull CreateProductionBatchRequest request
+      @Valid @NonNull CreateProductionBatchRequest request
   );
 }

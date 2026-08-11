@@ -14,16 +14,19 @@ import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 /** Appends actor-aware workspace administration facts using the application clock. */
 @Component
 @RequiredArgsConstructor
-public final class WorkspaceAdministrativeAuditAppender implements WorkspaceAdministrativeAuditRecorder {
+public class WorkspaceAdministrativeAuditAppender implements WorkspaceAdministrativeAuditRecorder {
 
   private final @NonNull WorkspaceAdministrativeAuditRepository auditRepository;
   private final @NonNull Clock clock;
 
   @Override
+  @Transactional(propagation = Propagation.MANDATORY)
   public void append(
       @NonNull WorkspaceId workspaceId,
       @NonNull AccountUserId actorUserId,

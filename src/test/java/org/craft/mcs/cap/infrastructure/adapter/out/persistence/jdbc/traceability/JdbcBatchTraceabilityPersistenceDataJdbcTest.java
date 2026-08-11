@@ -155,6 +155,110 @@ class JdbcBatchTraceabilityPersistenceDataJdbcTest {
         .hasMessageContaining("material state");
   }
 
+  @Test
+  void doesNotResolveAnInputReferenceAsAnAuthoritativeMaterialState() {
+    final var inputStateId = MaterialStateId.newId();
+    final var input = BatchTraceStepSubject.reference(
+        inputStateId,
+        subject(BatchTraceSubjectType.FEEDSTOCK_BATCH, "unrecorded-input")
+    );
+    final var output = new BatchTraceStepSubject(
+        MaterialStateId.newId(),
+        subject(BatchTraceSubjectType.PRODUCTION_BATCH, "recorded-output"),
+        BatchTraceMaterialSnapshot.ofVolume(VolumeValue.ofLiters("100"))
+    );
+    store.append(BatchTraceStep.create(
+        workspaceId,
+        null,
+        BatchTraceStepType.PRODUCTION_BATCH_CREATED,
+        List.of(input),
+        List.of(output),
+        Instant.parse("2026-05-18T00:00:00Z"),
+        ActorReference.machineIdentity(id("test-actor")),
+        null
+    ));
+
+    assertThat(historyStore.find(inputStateId)).isEmpty();
+    assertThat(historyStore.find(output.materialStateId())).isPresent();
+  }
+
+  @Test
+  void distinguishesSubjectCreationFromItsSubsequentOperations() {
+    final var feedstock = subject(BatchTraceSubjectType.FEEDSTOCK_BATCH, "operation-source");
+    final var production = subject(BatchTraceSubjectType.PRODUCTION_BATCH, "operation-output");
+    final var feedstockStateId = MaterialStateId.newId();
+    final var productionStateId = MaterialStateId.newId();
+    store.append(creationStep(workspaceId, feedstock, feedstockStateId));
+
+    assertThat(queryStore.hasOperationStep(
+        feedstock.type(),
+        feedstock.id(),
+        BatchTraceStepType.FEEDSTOCK_BATCH_CREATED
+    )).isFalse();
+
+    store.append(BatchTraceStep.create(
+        workspaceId,
+        null,
+        BatchTraceStepType.PRODUCTION_BATCH_CREATED,
+        List.of(new BatchTraceStepSubject(
+            feedstockStateId,
+            feedstock,
+            BatchTraceMaterialSnapshot.ofVolume(VolumeValue.ofLiters("100"))
+        )),
+        List.of(
+            new BatchTraceStepSubject(
+                MaterialStateId.newId(),
+                feedstock,
+                BatchTraceMaterialSnapshot.ofVolume(VolumeValue.ofLiters("40"))
+            ),
+            new BatchTraceStepSubject(
+                productionStateId,
+                production,
+                BatchTraceMaterialSnapshot.ofVolume(VolumeValue.ofLiters("60"))
+            )
+        ),
+        Instant.parse("2026-05-19T00:00:00Z"),
+        ActorReference.machineIdentity(id("test-actor")),
+        null
+    ));
+
+    assertThat(queryStore.hasOperationStep(
+        feedstock.type(),
+        feedstock.id(),
+        BatchTraceStepType.FEEDSTOCK_BATCH_CREATED
+    )).isTrue();
+    assertThat(queryStore.hasOperationStep(
+        production.type(),
+        production.id(),
+        BatchTraceStepType.PRODUCTION_BATCH_CREATED
+    )).isFalse();
+
+    store.append(BatchTraceStep.create(
+        workspaceId,
+        null,
+        BatchTraceStepType.PRODUCTION_BATCH_CREATED,
+        List.of(new BatchTraceStepSubject(
+            productionStateId,
+            production,
+            BatchTraceMaterialSnapshot.ofVolume(VolumeValue.ofLiters("60"))
+        )),
+        List.of(new BatchTraceStepSubject(
+            MaterialStateId.newId(),
+            subject(BatchTraceSubjectType.PRODUCTION_BATCH, "second-operation-output"),
+            BatchTraceMaterialSnapshot.ofVolume(VolumeValue.ofLiters("60"))
+        )),
+        Instant.parse("2026-05-20T00:00:00Z"),
+        ActorReference.machineIdentity(id("test-actor")),
+        null
+    ));
+
+    assertThat(queryStore.hasOperationStep(
+        production.type(),
+        production.id(),
+        BatchTraceStepType.PRODUCTION_BATCH_CREATED
+    )).isTrue();
+  }
+
   private void insertWorkspace(
       WorkspaceId id,
       String name

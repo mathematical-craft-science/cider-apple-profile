@@ -4,13 +4,14 @@ import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import org.craft.mcs.cap.shared.kernel.DomainConflictException;
 import org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 
-/** Enforces evidence continuity when a measurement aggregate advances to a correction revision. */
+/** Enforces evidence and metadata continuity between immutable measurement-set revisions. */
 final class MeasurementSetRevisionTransitionPolicy {
 
   private MeasurementSetRevisionTransitionPolicy() {
@@ -66,6 +67,20 @@ final class MeasurementSetRevisionTransitionPolicy {
         correction,
         correctedRetracted
     );
+  }
+
+  static void requireRetraction(
+      @NonNull MeasurementSetRevision current,
+      @NonNull MeasurementSetRevision retraction
+  ) {
+    if (!current.name().equals(retraction.name())
+        || !Objects.equals(current.note(), retraction.note())
+        || !current.records().equals(retraction.records())
+        || !current.resultRetractions().equals(retraction.resultRetractions())) {
+      throw new DomainConflictException(
+          "full measurement retraction must preserve the current revision evidence and metadata"
+      );
+    }
   }
 
   private static void validateRetractionContinuity(

@@ -159,6 +159,31 @@ public final class ProductionBatch {
     return note;
   }
 
+  /** Ensures that measurement evidence may still be added, corrected, or retracted for this batch. */
+  public void requireMeasurementChangesAllowed() {
+    if (lifecycle() != BatchLifecycle.ACTIVE) {
+      throw new DomainConflictException(
+          "production batch measurements can be changed only when lifecycle is ACTIVE"
+      );
+    }
+  }
+
+  public @NonNull ProductionBatch rename(@NonNull BatchName name) {
+    this.name = requireNonNull(name, "production batch name cannot be null");
+    return this;
+  }
+
+  /** Corrects the initial vessel assignment before any operation has been recorded for this batch. */
+  public @NonNull ProductionBatch correctInitialVesselAssignment(@NonNull VesselId vesselId) {
+    this.vesselId = requireNonNull(vesselId, "production vessel id cannot be null");
+    return this;
+  }
+
+  public @NonNull ProductionBatch changeNote(@Nullable String note) {
+    this.note = normalize(note);
+    return this;
+  }
+
   /**
    * Records a full transfer of the active batch to another vessel.
    */

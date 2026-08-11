@@ -2,9 +2,11 @@ package org.craft.mcs.cap.infrastructure.configuration.openapi;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.parameters.Parameter;
 import java.math.BigDecimal;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springdoc.core.customizers.OpenApiLocaleCustomizer;
@@ -14,10 +16,10 @@ import org.springframework.stereotype.Component;
 
 
 /**
- * Fixes strict decimal minima for REST record DTO fields where springdoc drops exclusivity.
+ * Fixes strict decimal minima for REST DTO fields and query parameters where springdoc drops exclusivity.
  *
  * <p>springdoc 3.0.2 may keep {@code minimum: 0} but omit {@code exclusiveMinimum: true} for
- * Java record request properties. Domain rules remain authoritative; this customizer only keeps
+ * request properties and parameters. Domain rules remain authoritative; this customizer only keeps
  * the generated OpenAPI contract machine-readable for API clients.
  */
 @Component
@@ -40,9 +42,32 @@ public final class DecimalMinOpenApiCustomizer
       return;
     }
 
-    property.minimum(BigDecimal.ZERO);
-    property.exclusiveMinimum(true);
-    property.exclusiveMinimumValue(BigDecimal.ZERO);
+    applyExclusiveMinimumZero(property);
+  }
+
+  private static void applyParameterExclusiveMinimumZero(
+      @NonNull OpenAPI openApi,
+      @NonNull String path,
+      @NonNull String parameterName
+  ) {
+    final var paths = openApi.getPaths();
+    final var pathItem = paths == null ? null : paths.get(path);
+    final var operation = pathItem == null ? null : pathItem.getGet();
+    if (operation == null || operation.getParameters() == null) {
+      return;
+    }
+    operation.getParameters().stream()
+        .filter(parameter -> parameterName.equals(parameter.getName()))
+        .map(Parameter::getSchema)
+        .filter(Objects::nonNull)
+        .findFirst()
+        .ifPresent(DecimalMinOpenApiCustomizer::applyExclusiveMinimumZero);
+  }
+
+  private static void applyExclusiveMinimumZero(@NonNull Schema<?> schema) {
+    schema.minimum(BigDecimal.ZERO);
+    schema.exclusiveMinimum(true);
+    schema.exclusiveMinimumValue(BigDecimal.ZERO);
   }
 
   private static @Nullable Schema<?> property(
@@ -67,5 +92,10 @@ public final class DecimalMinOpenApiCustomizer
     applyExclusiveMinimumZero(schemas, "CreateFeedstockBatchRequest", "availableVolumeLiters");
     applyExclusiveMinimumZero(schemas, "CreateVesselRequest", "nominalCapacityLiters");
     applyExclusiveMinimumZero(schemas, "UpdateVesselRequest", "nominalCapacityLiters");
+    applyParameterExclusiveMinimumZero(
+        openApi,
+        "/vessels/available",
+        "requiredVolumeLiters"
+    );
   }
 }

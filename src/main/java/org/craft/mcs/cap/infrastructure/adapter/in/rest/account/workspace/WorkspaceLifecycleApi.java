@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import java.util.UUID;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.membership.dto.AccountMembershipResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.workspace.dto.AccountWorkspaceResponse;
@@ -31,7 +32,7 @@ public interface WorkspaceLifecycleApi {
   )
   @ApiResponse(responseCode = "401", description = "Authentication is required.", content = @Content)
   @NonNull ResponseEntity<@NonNull AccountMembershipResponse> createWorkspace(
-      @NonNull CreateWorkspaceRequest request
+      @Valid @NonNull CreateWorkspaceRequest request
   );
 
   @Operation(summary = "Update workspace metadata")
@@ -55,7 +56,7 @@ public interface WorkspaceLifecycleApi {
   )
   @NonNull ResponseEntity<@NonNull AccountWorkspaceResponse> updateWorkspace(
       @NonNull UUID workspaceId,
-      @NonNull UpdateWorkspaceRequest request
+      @Valid @NonNull UpdateWorkspaceRequest request
   );
 
   @Operation(summary = "Archive a workspace")

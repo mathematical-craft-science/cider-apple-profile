@@ -8,9 +8,9 @@ import org.jspecify.annotations.NonNull;
 
 
 /**
- * Feedstock-owned ACL port for locking and validating a new material assignment to a vessel.
+ * Feedstock-owned ACL port for locking and validating a material assignment to a vessel.
  *
- * <p>The lock remains effective only while the caller's batch-creation transaction is open.</p>
+ * <p>The lock remains effective only while the caller's batch mutation transaction is open.</p>
  */
 public interface FeedstockVesselAssignmentValidator {
 

@@ -78,6 +78,25 @@ class JdbcProductionBatchPersistenceDataJdbcTest {
   }
 
   @Test
+  void persistsCorrectedInitialVesselAssignmentWithoutChangingMaterialState() {
+    final var workspace = persistWorkspace("Vessel correction workspace");
+    final var targetVesselId = VesselId.newId();
+    VesselTestFixtures.persist(jdbcTemplate, workspace.workspaceId(), targetVesselId, "Tank F-04");
+    final var created = repository.create(productionBatch(workspace, "Vessel correction batch"));
+    final var state = repository.findVersionedById(created.batchId()).orElseThrow();
+    final var materialStateId = state.aggregate().currentMaterialStateId();
+
+    state.aggregate().correctInitialVesselAssignment(targetVesselId);
+    repository.update(state);
+
+    assertThat(repository.findVersionedById(created.batchId()))
+        .get()
+        .extracting(VersionedAggregate::aggregate)
+        .returns(targetVesselId, ProductionBatch::vesselId)
+        .returns(materialStateId, ProductionBatch::currentMaterialStateId);
+  }
+
+  @Test
   void rejectsProductionBatchStateLoadedBeforeAnotherUpdate() {
     final var created = repository.create(productionBatch());
     final var first = repository.findVersionedById(created.batchId()).orElseThrow();
@@ -110,6 +129,16 @@ class JdbcProductionBatchPersistenceDataJdbcTest {
         .isNotNull()
         .extracting(YeastAssimilableNitrogenValue::asBigDecimal)
         .satisfies(value -> assertThat(value).isEqualByComparingTo("180"));
+  }
+
+  @Test
+  void locksProductionBatchForMeasurementLifecycleValidation() {
+    final var saved = repository.create(productionBatch());
+
+    assertThat(repository.lockForMeasurementChange(saved.batchId()))
+        .get()
+        .returns(saved.batchId(), ProductionBatch::batchId)
+        .returns(BatchLifecycle.ACTIVE, ProductionBatch::lifecycle);
   }
 
   private static ProductionBatch renamed(

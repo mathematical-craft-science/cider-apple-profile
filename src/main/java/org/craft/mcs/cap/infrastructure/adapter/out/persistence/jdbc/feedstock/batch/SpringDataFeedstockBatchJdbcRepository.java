@@ -20,6 +20,58 @@ import org.springframework.data.repository.query.Param;
 interface SpringDataFeedstockBatchJdbcRepository
     extends ListCrudRepository<FeedstockBatchJdbcEntity, @NonNull UUID> {
 
+  @Query("""
+      SELECT batch_id,
+             workspace_id,
+             name,
+             vessel_id,
+             type,
+             season_starts_on,
+             season_ends_on,
+             source,
+             lifecycle,
+             available_volume_liters,
+             current_material_state_id,
+             note,
+             deleted_at,
+             created_at,
+             updated_at,
+             version
+        FROM feedstock_batches
+       WHERE batch_id = :batchId
+         AND deleted_at IS NULL
+         FOR UPDATE
+      """)
+  @NonNull Optional<@NonNull FeedstockBatchJdbcEntity> lockById(
+      @Param("batchId") @NonNull UUID batchId
+  );
+
+  @Query("""
+      SELECT batch_id,
+             workspace_id,
+             name,
+             vessel_id,
+             type,
+             season_starts_on,
+             season_ends_on,
+             source,
+             lifecycle,
+             available_volume_liters,
+             current_material_state_id,
+             note,
+             deleted_at,
+             created_at,
+             updated_at,
+             version
+        FROM feedstock_batches
+       WHERE batch_id = :batchId
+         AND deleted_at IS NULL
+         FOR SHARE
+      """)
+  @NonNull Optional<@NonNull FeedstockBatchJdbcEntity> lockForMeasurementChange(
+      @Param("batchId") @NonNull UUID batchId
+  );
+
   @Modifying
   @Query("""
       UPDATE feedstock_batches

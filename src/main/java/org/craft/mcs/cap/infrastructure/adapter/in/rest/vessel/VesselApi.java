@@ -6,6 +6,9 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.DecimalMin;
+import java.math.BigDecimal;
 import java.util.UUID;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.vessel.dto.CreateVesselRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.vessel.dto.UpdateVesselRequest;
@@ -72,7 +75,7 @@ public interface VesselApi {
           schema = @Schema(implementation = ProblemDetail.class)
       )
   )
-  @NonNull ResponseEntity<@NonNull VesselResponse> create(@NonNull CreateVesselRequest request);
+  @NonNull ResponseEntity<@NonNull VesselResponse> create(@Valid @NonNull CreateVesselRequest request);
 
   @Operation(
       summary = "List workspace vessels",
@@ -118,6 +121,14 @@ public interface VesselApi {
       )
   )
   @ApiResponse(
+      responseCode = "400",
+      description = "Required volume filter is not greater than zero.",
+      content = @Content(
+          mediaType = APPLICATION_JSON_VALUE,
+          schema = @Schema(implementation = ProblemDetail.class)
+      )
+  )
+  @ApiResponse(
       responseCode = "403",
       description = "Workspace read access is forbidden.",
       content = @Content(
@@ -137,7 +148,15 @@ public interface VesselApi {
           description = "Optional case-insensitive substring of the vessel name.",
           example = "tank f"
       )
-      @Nullable String nameContains
+      @Nullable String nameContains,
+      @Parameter(
+          description = "Optional required material volume in liters. Returns vessels whose remaining capacity "
+              + "is equal to or greater than this value.",
+          example = "250.000",
+          schema = @Schema(type = "number", minimum = "0", exclusiveMinimum = true)
+      )
+      @DecimalMin(value = "0", inclusive = false)
+      @Nullable BigDecimal requiredVolumeLiters
   );
 
   @Operation(
@@ -240,6 +259,6 @@ public interface VesselApi {
           schema = @Schema(format = FORMAT, pattern = PATTERN)
       )
       @NonNull UUID vesselId,
-      @NonNull UpdateVesselRequest request
+      @Valid @NonNull UpdateVesselRequest request
   );
 }

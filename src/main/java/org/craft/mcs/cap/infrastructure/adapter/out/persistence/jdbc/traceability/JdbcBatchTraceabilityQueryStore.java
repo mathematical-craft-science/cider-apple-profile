@@ -165,6 +165,7 @@ class JdbcBatchTraceabilityQueryStore implements BatchTraceabilityQueryStore {
             JOIN batch_trace_step_subjects trace_subject ON trace_subject.step_id = step.step_id
             WHERE trace_subject.subject_type = :subjectType
               AND trace_subject.subject_id = :subjectId
+              AND trace_subject.subject_role = 'OUTPUT'
             ORDER BY step.workspace_id
             LIMIT 1
             """,
@@ -175,6 +176,42 @@ class JdbcBatchTraceabilityQueryStore implements BatchTraceabilityQueryStore {
     ).stream()
         .findFirst()
         .map(WorkspaceId::of);
+  }
+
+  @Override
+  public boolean hasOperationStep(
+      @NonNull BatchTraceSubjectType subjectType,
+      @NonNull UUID subjectId,
+      @NonNull BatchTraceStepType creationStepType
+  ) {
+    requireNonNull(subjectType, "batch trace subject type cannot be null");
+    requireNonNull(subjectId, "batch trace subject id cannot be null");
+    requireNonNull(creationStepType, "batch creation step type cannot be null");
+
+    return requireNonNull(jdbcTemplate.queryForObject(
+        """
+            SELECT EXISTS (
+                SELECT 1
+                  FROM batch_trace_steps step
+                  JOIN batch_trace_step_subjects trace_subject
+                    ON trace_subject.step_id = step.step_id
+                 WHERE trace_subject.subject_type = :subjectType
+                   AND trace_subject.subject_id = :subjectId
+                   AND (
+                       trace_subject.subject_role = 'INPUT'
+                       OR (
+                           trace_subject.subject_role = 'OUTPUT'
+                           AND step.step_type <> :creationStepType
+                       )
+                   )
+            )
+            """,
+        new MapSqlParameterSource()
+            .addValue("subjectType", subjectType.name())
+            .addValue("subjectId", subjectId)
+            .addValue("creationStepType", creationStepType.name()),
+        Boolean.class
+    ), "batch operation history result cannot be null");
   }
 
   @Override

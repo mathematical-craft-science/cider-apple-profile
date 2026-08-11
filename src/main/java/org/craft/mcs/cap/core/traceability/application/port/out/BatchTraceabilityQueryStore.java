@@ -2,8 +2,11 @@ package org.craft.mcs.cap.core.traceability.application.port.out;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceStep;
+import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceStepType;
 import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceSubject;
+import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceSubjectType;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;
 
@@ -17,6 +20,13 @@ public interface BatchTraceabilityQueryStore {
   /** Resolves the workspace owning trace facts for a globally identified material subject. */
   @NonNull
   Optional<@NonNull WorkspaceId> findWorkspaceIdBySubject(@NonNull BatchTraceSubject subject);
+
+  /** Checks for any trace participation other than the subject's own creation output. */
+  boolean hasOperationStep(
+      @NonNull BatchTraceSubjectType subjectType,
+      @NonNull UUID subjectId,
+      @NonNull BatchTraceStepType creationStepType
+  );
 
   /**
    * Finds immutable trace steps where the requested subject participates as a material input.

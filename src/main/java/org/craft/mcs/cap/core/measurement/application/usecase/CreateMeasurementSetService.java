@@ -9,6 +9,7 @@ import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementActorP
 import org.craft.mcs.cap.core.measurement.application.port.out.ObservedMaterialStateValidator;
 import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementSetRepository;
 import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementSubjectAccessControl;
+import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementSubjectChangePolicy;
 import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementSubjectMeasurementPolicy;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSet;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetId;
@@ -27,6 +28,7 @@ public final class CreateMeasurementSetService implements CreateMeasurementSetUs
 
   private final @NonNull MeasurementSetRepository repository;
   private final @NonNull MeasurementSubjectAccessControl subjectAccessControl;
+  private final @NonNull MeasurementSubjectChangePolicy subjectChangePolicy;
   private final @NonNull MeasurementSubjectMeasurementPolicy subjectMeasurementPolicy;
   private final @NonNull MeasurementActorProvider actorProvider;
   private final @NonNull ObservedMaterialStateValidator observedMaterialStateValidator;
@@ -39,6 +41,7 @@ public final class CreateMeasurementSetService implements CreateMeasurementSetUs
     requireNonNull(command, "create measurement set command cannot be null");
     return transactionHelper.callInTransactionNonNull(() -> {
       final var workspaceId = subjectAccessControl.requireWriteAccess(command.subject());
+      subjectChangePolicy.requireChangesAllowed(command.subject());
       subjectMeasurementPolicy.validate(command.subject(), command.measurements());
       final var observedStateId = observedMaterialStateValidator.requireObservedState(
           command.subject(),

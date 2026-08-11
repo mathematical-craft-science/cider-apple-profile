@@ -35,10 +35,12 @@ final class MeasurementSetViewMapper {
         state.revision().value(),
         revision.revisionId(),
         revision.revisionNumber(),
+        revision.changeKind(),
         revision.materialStateId(),
         revision.name(),
         revision.note(),
         revision.correctionReason(),
+        revision.retractionReason(),
         revision.createdAt(),
         revision.actor(),
         revision.records().stream()

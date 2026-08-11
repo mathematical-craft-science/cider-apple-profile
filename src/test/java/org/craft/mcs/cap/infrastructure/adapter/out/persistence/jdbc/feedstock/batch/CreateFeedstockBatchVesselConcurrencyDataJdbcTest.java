@@ -46,6 +46,8 @@ import org.springframework.transaction.support.TransactionTemplate;
 import static java.util.Objects.requireNonNull;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 
 
@@ -115,17 +117,34 @@ class CreateFeedstockBatchVesselConcurrencyDataJdbcTest {
     }
   }
 
+  @Test
+  void traceFailureRollsBackFeedstockCreationAndLeavesVesselAvailable() {
+    final var workspaceId = persistWorkspace();
+    final var vesselId = persistVessel(workspaceId);
+    final var traceRecorder = mock(FeedstockBatchTraceRecorder.class);
+    doThrow(new IllegalStateException("trace persistence failed"))
+        .when(traceRecorder)
+        .recordCreated(any(), any());
+    final var service = createService(assignmentValidator(), traceRecorder);
+
+    assertThatThrownBy(() -> service.create(command(workspaceId, vesselId, "Rolled back batch")))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessage("trace persistence failed");
+    assertThat(jdbc.queryForObject(
+        "SELECT COUNT(*) FROM feedstock_batches WHERE vessel_id = ? AND deleted_at IS NULL",
+        Long.class,
+        vesselId.value()
+    )).isZero();
+    assertThat(vesselCurrentContentQuery.findByVesselId(vesselId)).isEmpty();
+  }
+
   private @NonNull FeedstockVesselAssignmentValidator coordinatedValidator(
       @NonNull CountDownLatch firstValidated,
       @NonNull CountDownLatch releaseFirst,
       @NonNull CountDownLatch secondAttemptingValidation,
       @NonNull AtomicInteger attempts
   ) {
-    final var delegate = new VesselAssignmentValidationAdapter(new ValidateVesselAssignmentService(
-        vesselRepository,
-        vesselCurrentContentQuery,
-        mock(VesselAccessControl.class)
-    ));
+    final var delegate = assignmentValidator();
 
     return (workspaceId, vesselId, materialVolume) -> {
       final var attempt = attempts.incrementAndGet();
@@ -144,14 +163,29 @@ class CreateFeedstockBatchVesselConcurrencyDataJdbcTest {
   private @NonNull CreateFeedstockBatchService createService(
       @NonNull FeedstockVesselAssignmentValidator validator
   ) {
+    return createService(validator, mock(FeedstockBatchTraceRecorder.class));
+  }
+
+  private @NonNull CreateFeedstockBatchService createService(
+      @NonNull FeedstockVesselAssignmentValidator validator,
+      @NonNull FeedstockBatchTraceRecorder traceRecorder
+  ) {
     return new CreateFeedstockBatchService(
         feedstockBatchRepository,
-        mock(FeedstockBatchTraceRecorder.class),
+        traceRecorder,
         mock(FeedstockAccessControl.class),
         validator,
         transactionHelper(),
         Clock.fixed(Instant.parse("2026-08-09T12:00:00Z"), ZoneOffset.UTC)
     );
+  }
+
+  private @NonNull FeedstockVesselAssignmentValidator assignmentValidator() {
+    return new VesselAssignmentValidationAdapter(new ValidateVesselAssignmentService(
+        vesselRepository,
+        vesselCurrentContentQuery,
+        mock(VesselAccessControl.class)
+    ));
   }
 
   private @NonNull TransactionHelper transactionHelper() {

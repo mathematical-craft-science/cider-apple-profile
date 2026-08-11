@@ -1,5 +1,6 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.vessel.mapper;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 import org.craft.mcs.cap.core.vessel.application.model.VesselCurrentContentView;
 import org.craft.mcs.cap.core.vessel.application.model.VesselUsageView;
@@ -60,13 +61,21 @@ public final class VesselRestMapper {
 
   public static @NonNull ListAvailableVesselsQuery toAvailableQuery(
       @NonNull UUID workspaceId,
-      @Nullable String nameContains
+      @Nullable String nameContains,
+      @Nullable BigDecimal requiredVolumeLiters
   ) {
     requireNonNull(workspaceId, "workspace id cannot be null");
     final var nameCriteria = nameContains == null || nameContains.isBlank()
         ? null
         : new TextSearchCriteria(nameContains);
-    return new ListAvailableVesselsQuery(WorkspaceId.of(workspaceId), nameCriteria);
+    final var requiredVolume = requiredVolumeLiters == null
+        ? null
+        : VolumeValue.ofLiters(requiredVolumeLiters);
+    return new ListAvailableVesselsQuery(
+        WorkspaceId.of(workspaceId),
+        nameCriteria,
+        requiredVolume
+    );
   }
 
   public static @NonNull VesselResponse toResponse(@NonNull VesselUsageView view) {

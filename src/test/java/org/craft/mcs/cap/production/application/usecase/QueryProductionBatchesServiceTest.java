@@ -15,6 +15,7 @@ import org.craft.mcs.cap.core.production.application.port.in.ListProductionBatch
 import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchQueryRepository;
 import org.craft.mcs.cap.core.production.application.port.out.ProductionMeasurementProfileProvider;
 import org.craft.mcs.cap.core.production.application.usecase.ProductionCurrentProfileProjector;
+import org.craft.mcs.cap.core.production.application.usecase.ProductionBatchDetailsAssembler;
 import org.craft.mcs.cap.core.production.application.usecase.QueryProductionBatchesService;
 import org.craft.mcs.cap.core.production.application.usecase.ProductionVesselReferenceResolver;
 import org.craft.mcs.cap.core.production.application.vessel.port.out.ProductionVesselReferenceQuery;
@@ -176,13 +177,19 @@ class QueryProductionBatchesServiceTest {
         VesselTestFixtures.PRODUCTION_VESSEL_ID,
         VesselTestFixtures.reference(VesselTestFixtures.PRODUCTION_VESSEL_ID, "Tank F-03")
     ));
+    final var vesselReferenceResolver = new ProductionVesselReferenceResolver(vesselReferenceQuery);
+    final var detailsAssembler = new ProductionBatchDetailsAssembler(
+        measurementProvider,
+        new ProductionCurrentProfileProjector(),
+        POTENTIAL_ABV_PREDICTOR,
+        vesselReferenceResolver
+    );
     return new QueryProductionBatchesService(
         repository,
         accessControl,
         measurementProvider,
-        new ProductionCurrentProfileProjector(),
-        POTENTIAL_ABV_PREDICTOR,
-        new ProductionVesselReferenceResolver(vesselReferenceQuery)
+        vesselReferenceResolver,
+        detailsAssembler
     );
   }
 }

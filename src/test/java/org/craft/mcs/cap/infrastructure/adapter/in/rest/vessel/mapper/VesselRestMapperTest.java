@@ -1,5 +1,6 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.vessel.mapper;
 
+import java.math.BigDecimal;
 import org.craft.mcs.cap.core.vessel.application.model.VesselCurrentContentType;
 import org.craft.mcs.cap.core.vessel.application.model.VesselCurrentContentView;
 import org.craft.mcs.cap.core.vessel.application.model.VesselUsageClassification;
@@ -71,13 +72,20 @@ class VesselRestMapperTest {
   void mapsAvailableVesselSearchCriteria() {
     final var workspaceId = WorkspaceId.newId();
 
-    assertThat(VesselRestMapper.toAvailableQuery(workspaceId.value(), "  tank f  "))
+    assertThat(VesselRestMapper.toAvailableQuery(
+        workspaceId.value(),
+        "  tank f  ",
+        new BigDecimal("250.000")
+    ))
         .returns(workspaceId, ListAvailableVesselsQuery::workspaceId)
+        .returns(VolumeValue.ofLiters("250.000"), ListAvailableVesselsQuery::requiredVolume)
         .satisfies(query -> assertThat(query.nameContains())
             .isNotNull()
             .extracting(TextSearchCriteria::query)
             .isEqualTo("tank f"));
-    assertThat(VesselRestMapper.toAvailableQuery(workspaceId.value(), "  ").nameContains()).isNull();
+    assertThat(VesselRestMapper.toAvailableQuery(workspaceId.value(), "  ", null))
+        .returns(null, ListAvailableVesselsQuery::nameContains)
+        .returns(null, ListAvailableVesselsQuery::requiredVolume);
   }
 
   private static VesselView vesselView(VesselId vesselId) {

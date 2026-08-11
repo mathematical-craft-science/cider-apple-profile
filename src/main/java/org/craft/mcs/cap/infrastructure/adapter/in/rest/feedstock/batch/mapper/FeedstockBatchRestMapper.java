@@ -90,6 +90,7 @@ public final class FeedstockBatchRestMapper {
     return new UpdateFeedstockBatchCommand(
         batchId,
         WorkspaceId.of(requireNonNull(request.workspaceId(), WORKSPACE_ID_REQUIRED)),
+        request.vesselId() == null ? null : VesselId.of(request.vesselId()), // NOSONAR
         BatchName.of(request.name()),
         requireNonNull(request.type(), "feedstock type cannot be null"),
         FeedstockSeason.of(request.season().startsOn(), request.season().endsOn()),
@@ -110,6 +111,7 @@ public final class FeedstockBatchRestMapper {
     return new UpdateFeedstockBatchCommand(
         batchId,
         WorkspaceId.of(requireNonNull(request.workspaceId(), WORKSPACE_ID_REQUIRED)),
+        request.vesselId() == null ? null : VesselId.of(request.vesselId()), // NOSONAR
         nameOf(request.name()),
         request.type(),
         toSeason(request.season()),

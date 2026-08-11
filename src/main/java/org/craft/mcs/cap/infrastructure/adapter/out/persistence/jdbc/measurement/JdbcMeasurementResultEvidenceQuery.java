@@ -60,7 +60,7 @@ class JdbcMeasurementResultEvidenceQuery implements MeasurementResultEvidenceQue
        WHERE measurement_set.workspace_id = :workspaceId
          AND measurement_set.subject_type = :subjectType
          AND measurement_set.subject_id IN (:subjectIds)
-         AND measurement_set.lifecycle = 'ACTIVE'
+         AND revision.lifecycle = 'ACTIVE'
          AND revision.material_state_id IN (:materialStateIds)
          AND revision_record.record_status = 'ACTIVE'
        ORDER BY measurement_set.subject_id,

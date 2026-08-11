@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS vessels
             'STAINLESS_STEEL',
             'FOOD_GRADE_PLASTIC',
             'GLASS',
+            'FIBERGLASS',
             'WOOD',
             'CONCRETE',
             'OTHER'

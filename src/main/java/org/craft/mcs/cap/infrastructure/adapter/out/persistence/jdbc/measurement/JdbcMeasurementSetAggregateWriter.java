@@ -44,24 +44,14 @@ final class JdbcMeasurementSetAggregateWriter {
                 workspace_id,
                 subject_type,
                 subject_id,
-                lifecycle,
-                retracted_by,
-                retracted_at,
-                retraction_reason,
                 created_at,
-                updated_at,
                 version
             ) VALUES (
                 :measurementSetId,
                 :workspaceId,
                 :subjectType,
                 :subjectId,
-                :lifecycle,
-                :retractedBy,
-                :retractedAt,
-                :retractionReason,
                 :createdAt,
-                :updatedAt,
                 0
             )
             """,
@@ -79,13 +69,31 @@ final class JdbcMeasurementSetAggregateWriter {
     final var affectedRows = jdbcTemplate.update(
         """
             UPDATE measurement_sets
-               SET updated_at = :updatedAt,
-                   version = version + 1
+               SET version = version + 1
              WHERE measurement_set_id = :measurementSetId
                AND version = :expectedVersion
-               AND lifecycle = 'ACTIVE'
+               AND EXISTS (
+                   SELECT 1
+                     FROM measurement_set_heads current_head
+                     JOIN measurement_set_revisions current_revision
+                       ON current_revision.measurement_set_id = current_head.measurement_set_id
+                      AND current_revision.revision_id = current_head.revision_id
+                    WHERE current_head.measurement_set_id = :measurementSetId
+                      AND current_revision.lifecycle = 'ACTIVE'
+                      AND current_revision.revision_number + 1 = :nextRevisionNumber
+                      AND current_revision.material_state_id = :materialStateId
+               )
             """,
-        setParameters(measurementSet).addValue("expectedVersion", state.revision().value())
+        setParameters(measurementSet)
+            .addValue("expectedVersion", state.revision().value())
+            .addValue(
+                "nextRevisionNumber",
+                measurementSet.currentRevision().revisionNumber().value()
+            )
+            .addValue(
+                "materialStateId",
+                measurementSet.currentRevision().materialStateId().value()
+            )
     );
     requireOneUpdatedRow(affectedRows);
     insertRevision(measurementSet.measurementSetId(), measurementSet.currentRevision());
@@ -93,29 +101,6 @@ final class JdbcMeasurementSetAggregateWriter {
         measurementSet.measurementSetId(),
         measurementSet.currentRevision().revisionId()
     );
-    return incremented(state);
-  }
-
-  @NonNull VersionedAggregate<MeasurementSet> retract(
-      @NonNull VersionedAggregate<MeasurementSet> state
-  ) {
-    final var measurementSet = state.aggregate();
-    final var affectedRows = jdbcTemplate.update(
-        """
-            UPDATE measurement_sets
-               SET lifecycle = :lifecycle,
-                   retracted_by = :retractedBy,
-                   retracted_at = :retractedAt,
-                   retraction_reason = :retractionReason,
-                   updated_at = :updatedAt,
-                   version = version + 1
-             WHERE measurement_set_id = :measurementSetId
-               AND version = :expectedVersion
-               AND lifecycle = 'ACTIVE'
-            """,
-        setParameters(measurementSet).addValue("expectedVersion", state.revision().value())
-    );
-    requireOneUpdatedRow(affectedRows);
     return incremented(state);
   }
 
@@ -130,21 +115,29 @@ final class JdbcMeasurementSetAggregateWriter {
                 measurement_set_id,
                 revision_number,
                 material_state_id,
+                lifecycle,
+                change_kind,
                 name,
                 note,
                 correction_reason,
+                retraction_reason,
                 created_at,
-                actor_reference
+                performed_by_type,
+                performed_by_id
             ) VALUES (
                 :revisionId,
                 :measurementSetId,
                 :revisionNumber,
                 :materialStateId,
+                :lifecycle,
+                :changeKind,
                 :name,
                 :note,
                 :correctionReason,
+                :retractionReason,
                 :revisionCreatedAt,
-                :actorReference
+                :performedByType,
+                :performedById
             )
             """,
         new MapSqlParameterSource()
@@ -152,24 +145,31 @@ final class JdbcMeasurementSetAggregateWriter {
             .addValue("measurementSetId", measurementSetId.value())
             .addValue("revisionNumber", revision.revisionNumber().value())
             .addValue("materialStateId", revision.materialStateId().value())
+            .addValue("lifecycle", revision.lifecycle().name())
+            .addValue("changeKind", revision.changeKind().name())
             .addValue("name", revision.name().value())
             .addValue("note", revision.note())
             .addValue(
                 "correctionReason",
                 revision.correctionReason() == null ? null : revision.correctionReason().value()
             )
+            .addValue(
+                "retractionReason",
+                revision.retractionReason() == null ? null : revision.retractionReason().value()
+            )
             .addValue("revisionCreatedAt", timestamp(revision.createdAt()))
-            .addValue("actorReference", ActorReferenceJdbcCodec.encode(revision.actor()))
+            .addValue("performedByType", revision.actor().type().name())
+            .addValue("performedById", revision.actor().id())
     );
     revision.records().forEach(measurementRecord -> {
-      insertRecord(measurementRecord);
-      associateActiveRecord(revision.revisionId(), measurementRecord);
+      insertRecord(measurementSetId, measurementRecord);
+      associateActiveRecord(measurementSetId, revision.revisionId(), measurementRecord);
     });
     revision.records().stream()
         .filter(measurementRecord -> !measurementRecord.derivationInputs().isEmpty())
-        .forEach(this::insertDerivationInputs);
+        .forEach(measurementRecord -> insertDerivationInputs(measurementSetId, measurementRecord));
     revision.resultRetractions().forEach(retraction ->
-        associateRetractedRecord(revision.revisionId(), retraction.result())
+        associateRetractedRecord(measurementSetId, revision.revisionId(), retraction.result())
     );
   }
 
@@ -215,8 +215,12 @@ final class JdbcMeasurementSetAggregateWriter {
         .addValue("revisionId", revisionId.value());
   }
 
-  private void insertRecord(@NonNull MeasurementRecord measurementRecord) {
+  private void insertRecord(
+      @NonNull MeasurementSetId measurementSetId,
+      @NonNull MeasurementRecord measurementRecord
+  ) {
     final var parameters = new MapSqlParameterSource()
+        .addValue("measurementSetId", measurementSetId.value())
         .addValue("recordId", measurementRecord.recordId().value())
         .addValue("characteristic", measurementRecord.characteristic().name())
         .addValue("role", measurementRecord.role().name())
@@ -232,6 +236,7 @@ final class JdbcMeasurementSetAggregateWriter {
     final var affectedRows = jdbcTemplate.update(
         """
             INSERT INTO measurement_records (
+                measurement_set_id,
                 record_id,
                 characteristic,
                 role,
@@ -247,6 +252,7 @@ final class JdbcMeasurementSetAggregateWriter {
                 upper_value,
                 derivation_method
             ) VALUES (
+                :measurementSetId,
                 :recordId,
                 :characteristic,
                 :role,
@@ -264,7 +270,8 @@ final class JdbcMeasurementSetAggregateWriter {
             )
             ON CONFLICT (record_id) DO UPDATE
                 SET record_id = EXCLUDED.record_id
-              WHERE measurement_records.characteristic = EXCLUDED.characteristic
+              WHERE measurement_records.measurement_set_id = EXCLUDED.measurement_set_id
+                AND measurement_records.characteristic = EXCLUDED.characteristic
                 AND measurement_records.role = EXCLUDED.role
                 AND measurement_records.value_kind = EXCLUDED.value_kind
                 AND measurement_records.measured_at = EXCLUDED.measured_at
@@ -286,18 +293,21 @@ final class JdbcMeasurementSetAggregateWriter {
   }
 
   private void associateActiveRecord(
+      @NonNull MeasurementSetId measurementSetId,
       @NonNull MeasurementSetRevisionId revisionId,
       @NonNull MeasurementRecord measurementRecord
   ) {
     jdbcTemplate.update(
         """
             INSERT INTO measurement_revision_records (
+                measurement_set_id,
                 revision_id,
                 record_id,
                 characteristic,
                 role,
                 record_status
             ) VALUES (
+                :measurementSetId,
                 :revisionId,
                 :recordId,
                 :characteristic,
@@ -306,6 +316,7 @@ final class JdbcMeasurementSetAggregateWriter {
             )
             """,
         new MapSqlParameterSource()
+            .addValue("measurementSetId", measurementSetId.value())
             .addValue("revisionId", revisionId.value())
             .addValue("recordId", measurementRecord.recordId().value())
             .addValue("characteristic", measurementRecord.characteristic().name())
@@ -314,18 +325,21 @@ final class JdbcMeasurementSetAggregateWriter {
   }
 
   private void associateRetractedRecord(
+      @NonNull MeasurementSetId measurementSetId,
       @NonNull MeasurementSetRevisionId revisionId,
       @NonNull MeasurementRecord measurementRecord
   ) {
     jdbcTemplate.update(
         """
             INSERT INTO measurement_revision_records (
+                measurement_set_id,
                 revision_id,
                 record_id,
                 characteristic,
                 role,
                 record_status
             ) VALUES (
+                :measurementSetId,
                 :revisionId,
                 :recordId,
                 :characteristic,
@@ -334,6 +348,7 @@ final class JdbcMeasurementSetAggregateWriter {
             )
             """,
         new MapSqlParameterSource()
+            .addValue("measurementSetId", measurementSetId.value())
             .addValue("revisionId", revisionId.value())
             .addValue("recordId", measurementRecord.recordId().value())
             .addValue("characteristic", measurementRecord.characteristic().name())
@@ -341,16 +356,21 @@ final class JdbcMeasurementSetAggregateWriter {
     );
   }
 
-  private void insertDerivationInputs(@NonNull MeasurementRecord result) {
+  private void insertDerivationInputs(
+      @NonNull MeasurementSetId measurementSetId,
+      @NonNull MeasurementRecord result
+  ) {
     result.derivationInputs().forEach(inputId -> jdbcTemplate.update(
         """
             INSERT INTO measurement_derivation_inputs (
+                measurement_set_id,
                 characteristic,
                 derived_record_id,
                 derived_role,
                 input_record_id,
                 input_role
             ) VALUES (
+                :measurementSetId,
                 :characteristic,
                 :derivedRecordId,
                 'RESULT',
@@ -360,6 +380,7 @@ final class JdbcMeasurementSetAggregateWriter {
             ON CONFLICT (derived_record_id, input_record_id) DO NOTHING
             """,
         new MapSqlParameterSource()
+            .addValue("measurementSetId", measurementSetId.value())
             .addValue("characteristic", result.characteristic().name())
             .addValue("derivedRecordId", result.recordId().value())
             .addValue("inputRecordId", inputId.value())
@@ -383,27 +404,12 @@ final class JdbcMeasurementSetAggregateWriter {
   }
 
   private static @NonNull MapSqlParameterSource setParameters(@NonNull MeasurementSet measurementSet) {
-    final var retraction = measurementSet.retraction();
     return new MapSqlParameterSource()
         .addValue("measurementSetId", measurementSet.measurementSetId().value())
         .addValue("workspaceId", measurementSet.workspaceId().value())
         .addValue("subjectType", measurementSet.subject().type().name())
         .addValue("subjectId", measurementSet.subject().id())
-        .addValue("lifecycle", measurementSet.lifecycle().name())
-        .addValue(
-            "retractedBy",
-            retraction == null ? null : ActorReferenceJdbcCodec.encode(retraction.actor())
-        )
-        .addValue(
-            "retractedAt",
-            retraction == null ? null : timestamp(retraction.retractedAt())
-        )
-        .addValue(
-            "retractionReason",
-            retraction == null ? null : retraction.reason().value()
-        )
-        .addValue("createdAt", timestamp(measurementSet.createdAt()))
-        .addValue("updatedAt", timestamp(measurementSet.updatedAt()));
+        .addValue("createdAt", timestamp(measurementSet.createdAt()));
   }
 
   private static @NonNull VersionedAggregate<MeasurementSet> incremented(

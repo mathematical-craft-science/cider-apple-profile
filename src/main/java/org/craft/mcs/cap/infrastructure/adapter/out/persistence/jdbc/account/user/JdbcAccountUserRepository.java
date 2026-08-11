@@ -1,5 +1,6 @@
 package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.account.user;
 
+import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.account.shared.domain.value.AccountUserId;
@@ -64,9 +65,11 @@ class JdbcAccountUserRepository implements AccountUserRepository {
   }
 
   @Override
-  public @NonNull Optional<@NonNull AccountUser> findByEmail(@NonNull EmailAddress email) {
+  public @NonNull List<@NonNull AccountUser> findAllByEmail(@NonNull EmailAddress email) {
     requireNonNull(email, "email address cannot be null");
-    return repository.findByEmailIgnoreCase(email.value()).map(AccountUserJdbcMapper::toDomain);
+    return repository.findAllByEmailOrderByUserId(email.value()).stream()
+        .map(AccountUserJdbcMapper::toDomain)
+        .toList();
   }
 
   @Override

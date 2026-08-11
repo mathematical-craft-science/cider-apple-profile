@@ -15,6 +15,7 @@ import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.support.Jdb
 import org.craft.mcs.cap.shared.application.ConcurrentResourceModificationException;
 import org.craft.mcs.cap.shared.application.persistence.VersionedAggregate;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
+import org.craft.mcs.cap.shared.kernel.identity.VesselId;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchLifecycle;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.testsupport.VesselTestFixtures;
@@ -165,6 +166,26 @@ class JdbcOptimisticLockingDataJdbcTest {
         .get()
         .returns(BatchLifecycle.DEPLETED, FeedstockBatch::lifecycle)
         .satisfies(batch -> assertThat(batch.availableVolume().liters()).isZero());
+  }
+
+  @Test
+  void persistsCorrectedInitialVesselAssignmentWithoutChangingMaterialState() {
+    final var workspaceId = persistWorkspace();
+    final var targetVesselId = VesselId.newId();
+    VesselTestFixtures.persist(jdbcTemplate, workspaceId, targetVesselId, "Tank A-02");
+    final var aggregateRepository = new JdbcFeedstockBatchRepository(repository);
+    final var created = aggregateRepository.create(feedstockBatch(workspaceId));
+    final var state = aggregateRepository.findVersionedById(created.batchId()).orElseThrow();
+    final var materialStateId = state.aggregate().currentMaterialStateId();
+
+    state.aggregate().correctInitialVesselAssignment(targetVesselId);
+    aggregateRepository.update(state);
+
+    assertThat(aggregateRepository.findVersionedById(created.batchId()))
+        .get()
+        .extracting(VersionedAggregate::aggregate)
+        .returns(targetVesselId, FeedstockBatch::vesselId)
+        .returns(materialStateId, FeedstockBatch::currentMaterialStateId);
   }
 
   private static FeedstockBatch feedstockBatch(WorkspaceId workspaceId) {

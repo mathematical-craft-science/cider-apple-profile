@@ -67,7 +67,8 @@ class JdbcWorkspaceInvitationRepository implements WorkspaceInvitationRepository
   }
 
   @Override
-  public @NonNull Optional<@NonNull WorkspaceInvitation> findByWorkspaceIdAndInvitedEmailAndStatus(
+  public @NonNull Optional<@NonNull VersionedAggregate<WorkspaceInvitation>>
+      findVersionedByWorkspaceIdAndInvitedEmailAndStatus(
       @NonNull WorkspaceId workspaceId,
       @NonNull EmailAddress invitedEmail,
       @NonNull WorkspaceInvitationStatus status
@@ -79,7 +80,7 @@ class JdbcWorkspaceInvitationRepository implements WorkspaceInvitationRepository
         workspaceReference(workspaceId),
         invitedEmail.value(),
         status
-    ).map(WorkspaceInvitationJdbcMapper::toDomain);
+    ).map(WorkspaceInvitationJdbcMapper::toVersionedAggregate);
   }
 
   @Override

@@ -12,6 +12,7 @@ import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.application.material.VesselReferenceView;
 import org.craft.mcs.cap.core.production.candidate.application.confirmation.port.in.ProductionBatchCreated;
 import org.craft.mcs.cap.core.production.application.model.ProductionBatchDetailsView;
+import org.craft.mcs.cap.core.production.application.port.in.UpdateProductionBatchCommand;
 import org.craft.mcs.cap.core.production.application.model.ProductionCurrentProfileView;
 import org.craft.mcs.cap.core.production.application.model.ProductionCurrentCharacteristicView;
 import org.craft.mcs.cap.core.production.application.model.ProductionBatchView;
@@ -27,6 +28,7 @@ import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
 import org.craft.mcs.cap.testsupport.VesselTestFixtures;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.ProductionBatchResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.UpdateProductionBatchRequest;
 import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
@@ -87,6 +89,30 @@ class ProductionBatchRestMapperTest {
         .satisfies(details -> assertThat(details.potentialAbv().method())
             .isEqualTo(AbvPredictionMethod.STANDARD_GRAVITY_DROP))
         .satisfies(details -> assertThat(details.potentialAbv().confidence()).isEqualTo(PredictionConfidence.LOW));
+  }
+
+  @Test
+  void mapsProductionUpdateRequestToTypedCommand() {
+    final var batchId = ProductionBatchId.newId();
+    final var workspaceId = WorkspaceId.newId();
+    final var vesselId = VesselTestFixtures.vesselId("Tank F-04");
+
+    final var command = ProductionBatchRestMapper.toCommand(
+        batchId,
+        new UpdateProductionBatchRequest(
+            workspaceId.value(),
+            "Corrected cider",
+            vesselId.value(),
+            "Corrected initial placement"
+        )
+    );
+
+    assertThat(command)
+        .returns(batchId, UpdateProductionBatchCommand::batchId)
+        .returns(workspaceId, UpdateProductionBatchCommand::workspaceId)
+        .returns(BatchName.of("Corrected cider"), UpdateProductionBatchCommand::name)
+        .returns(vesselId, UpdateProductionBatchCommand::vesselId)
+        .returns("Corrected initial placement", UpdateProductionBatchCommand::note);
   }
 
   @Test

@@ -24,9 +24,9 @@ import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetId;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetLifecycle;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetName;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetRevision;
+import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetRevisionChangeKind;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetRevisionId;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetRevisionNumber;
-import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetRetraction;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSubjectReference;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSubjectType;
 import org.craft.mcs.cap.shared.application.persistence.AggregateRevision;
@@ -54,21 +54,20 @@ final class JdbcMeasurementSetAggregateReader {
              s.workspace_id,
              s.subject_type,
              s.subject_id,
-             s.lifecycle,
-             s.retracted_by,
-             s.retracted_at,
-             s.retraction_reason,
              s.created_at,
-             s.updated_at,
              s.version,
              r.revision_id,
              r.revision_number,
              r.material_state_id,
+             r.lifecycle,
+             r.change_kind,
              r.name,
              r.note,
              r.correction_reason,
+             r.retraction_reason,
              r.created_at AS revision_created_at,
-             r.actor_reference
+             r.performed_by_type,
+             r.performed_by_id
         FROM measurement_sets s
         JOIN measurement_set_heads head
           ON head.measurement_set_id = s.measurement_set_id
@@ -115,7 +114,8 @@ final class JdbcMeasurementSetAggregateReader {
              record.lower_value,
              record.upper_value,
              record.derivation_method,
-             retraction_revision.actor_reference AS retraction_actor_reference,
+             retraction_revision.performed_by_type AS retraction_actor_type,
+             retraction_revision.performed_by_id AS retraction_actor_id,
              retraction_revision.created_at AS retracted_at,
              retraction_revision.correction_reason AS retraction_reason,
              source_revision.revision_id AS source_revision_id,
@@ -126,7 +126,8 @@ final class JdbcMeasurementSetAggregateReader {
           ON current_revision.revision_id = revision_record.revision_id
         JOIN LATERAL (
             SELECT candidate.revision_number,
-                   candidate.actor_reference,
+                   candidate.performed_by_type,
+                   candidate.performed_by_id,
                    candidate.created_at,
                    candidate.correction_reason
               FROM measurement_revision_records retraction_link
@@ -136,6 +137,7 @@ final class JdbcMeasurementSetAggregateReader {
                AND retraction_link.record_status = 'RETRACTED'
                AND candidate.measurement_set_id = current_revision.measurement_set_id
                AND candidate.revision_number <= current_revision.revision_number
+               AND candidate.change_kind = 'CORRECTION'
              ORDER BY candidate.revision_number
              LIMIT 1
         ) retraction_revision ON TRUE
@@ -184,7 +186,7 @@ final class JdbcMeasurementSetAggregateReader {
       @NonNull MeasurementSetId measurementSetId
   ) {
     try {
-      return Optional.ofNullable(jdbcTemplate.queryForObject(
+      return Optional.of(jdbcTemplate.queryForObject(
           FIND_SET,
           new MapSqlParameterSource("measurementSetId", measurementSetId.value()),
           (resultSet, rowNumber) -> mapSet(resultSet)
@@ -204,11 +206,18 @@ final class JdbcMeasurementSetAggregateReader {
         revisionId,
         MeasurementSetRevisionNumber.of(resultSet.getInt("revision_number")),
         MaterialStateId.of(resultSet.getObject("material_state_id", UUID.class)),
+        MeasurementSetLifecycle.valueOf(resultSet.getString("lifecycle")),
+        MeasurementSetRevisionChangeKind.valueOf(resultSet.getString("change_kind")),
         MeasurementSetName.of(resultSet.getString("name")),
         resultSet.getString("note"),
         correctionReason(resultSet.getString("correction_reason")),
+        retractionReason(resultSet.getString("retraction_reason")),
         MeasurementJdbcReadSupport.instant(resultSet, "revision_created_at"),
-        ActorReferenceJdbcCodec.decode(resultSet.getString("actor_reference")),
+        MeasurementJdbcReadSupport.actorReference(
+            resultSet,
+            "performed_by_type",
+            "performed_by_id"
+        ),
         records,
         resultRetractions
     );
@@ -219,11 +228,8 @@ final class JdbcMeasurementSetAggregateReader {
             MeasurementSubjectType.valueOf(resultSet.getString("subject_type")),
             resultSet.getObject("subject_id", UUID.class)
         ),
-        MeasurementSetLifecycle.valueOf(resultSet.getString("lifecycle")),
-        setRetraction(resultSet),
         revision,
-        MeasurementJdbcReadSupport.instant(resultSet, "created_at"),
-        MeasurementJdbcReadSupport.instant(resultSet, "updated_at")
+        MeasurementJdbcReadSupport.instant(resultSet, "created_at")
     );
     return new VersionedAggregate<>(
         measurementSet,
@@ -242,7 +248,11 @@ final class JdbcMeasurementSetAggregateReader {
             MeasurementSetRevisionId.of(resultSet.getObject("source_revision_id", UUID.class)),
             MeasurementSetRevisionNumber.of(resultSet.getInt("source_revision_number")),
             mapRecord(resultSet, derivationInputs),
-            ActorReferenceJdbcCodec.decode(resultSet.getString("retraction_actor_reference")),
+            MeasurementJdbcReadSupport.actorReference(
+                resultSet,
+                "retraction_actor_type",
+                "retraction_actor_id"
+            ),
             MeasurementJdbcReadSupport.instant(resultSet, "retracted_at"),
             MeasurementCorrectionReason.of(resultSet.getString("retraction_reason"))
         )
@@ -365,17 +375,8 @@ final class JdbcMeasurementSetAggregateReader {
     return value == null ? null : MeasurementCorrectionReason.of(value);
   }
 
-  private static @Nullable MeasurementSetRetraction setRetraction(
-      @NonNull ResultSet resultSet
-  ) throws SQLException {
-    final var actorReference = resultSet.getString("retracted_by");
-    return actorReference == null
-        ? null
-        : new MeasurementSetRetraction( // NOSONAR
-            ActorReferenceJdbcCodec.decode(actorReference),
-            MeasurementJdbcReadSupport.instant(resultSet, "retracted_at"),
-            MeasurementRetractionReason.of(resultSet.getString("retraction_reason"))
-        );
+  private static @Nullable MeasurementRetractionReason retractionReason(@Nullable String value) {
+    return value == null ? null : MeasurementRetractionReason.of(value);
   }
 
   private record RetractionRecordRow(

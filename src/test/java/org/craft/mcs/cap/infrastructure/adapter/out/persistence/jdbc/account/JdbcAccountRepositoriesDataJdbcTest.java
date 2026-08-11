@@ -163,6 +163,28 @@ class JdbcAccountRepositoriesDataJdbcTest {
   }
 
   @Test
+  void findsAllProviderIdentitiesSharingOneNormalizedEmail() {
+    final var email = EmailAddress.of("Shared.Identity@Example.com");
+    final var clerkUser = userRepository.create(AccountUser.create(
+        IdentityProviderCode.CLERK,
+        ExternalUserSubject.of("shared-email-clerk"),
+        email,
+        DisplayName.of("Clerk identity"),
+        null
+    ));
+    final var keycloakUser = userRepository.create(AccountUser.create(
+        IdentityProviderCode.KEYCLOAK,
+        ExternalUserSubject.of("shared-email-keycloak"),
+        email,
+        DisplayName.of("Keycloak identity"),
+        null
+    ));
+
+    assertThat(userRepository.findAllByEmail(EmailAddress.of("SHARED.IDENTITY@example.com")))
+        .containsExactlyInAnyOrder(clerkUser, keycloakUser);
+  }
+
+  @Test
   void resolvesActiveAndDeletedAccountUsersAsDurableActorEntries() {
     final var user = userRepository.create(AccountUser.create(
         IdentityProviderCode.KEYCLOAK,
@@ -492,6 +514,44 @@ class JdbcAccountRepositoriesDataJdbcTest {
         .get()
         .extracting(WorkspaceInvitation::status)
         .isEqualTo(WorkspaceInvitationStatus.REJECTED);
+  }
+
+  @Test
+  void persistedExpirationReleasesPendingInvitationEmailUniqueness() {
+    final var user = persistUser("expired-invitation");
+    final var workspace = persistWorkspace("Expired invitation workspace");
+    final var invitedEmail = EmailAddress.of("expired-invitee@example.com");
+    final var createdAt = Instant.parse("2026-07-01T08:00:00Z");
+    final var elapsed = invitationRepository.create(WorkspaceInvitation.create(
+        workspace.workspaceId(),
+        invitedEmail,
+        AccountRole.TECHNOLOGIST,
+        user.userId(),
+        createdAt,
+        Duration.ofDays(1)
+    ));
+    final var elapsedState = invitationRepository.findVersionedById(elapsed.invitationId()).orElseThrow();
+
+    invitationRepository.update(elapsedState.withAggregate(
+        elapsedState.aggregate().expire(createdAt.plus(Duration.ofDays(2)))
+    ));
+    final var replacement = invitationRepository.create(WorkspaceInvitation.create(
+        workspace.workspaceId(),
+        invitedEmail,
+        AccountRole.VIEWER,
+        user.userId(),
+        createdAt.plus(Duration.ofDays(2)),
+        Duration.ofDays(7)
+    ));
+
+    assertThat(invitationRepository.findById(elapsed.invitationId()))
+        .get()
+        .extracting(WorkspaceInvitation::status)
+        .isEqualTo(WorkspaceInvitationStatus.EXPIRED);
+    assertThat(invitationRepository.findById(replacement.invitationId()))
+        .get()
+        .extracting(WorkspaceInvitation::status)
+        .isEqualTo(WorkspaceInvitationStatus.PENDING);
   }
 
   @Test

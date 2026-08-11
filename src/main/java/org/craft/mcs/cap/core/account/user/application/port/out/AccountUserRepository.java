@@ -1,5 +1,6 @@
 package org.craft.mcs.cap.core.account.user.application.port.out;
 
+import java.util.List;
 import java.util.Optional;
 import org.craft.mcs.cap.core.account.shared.domain.value.AccountUserId;
 import org.craft.mcs.cap.core.account.shared.domain.value.EmailAddress;
@@ -19,7 +20,7 @@ import org.jspecify.annotations.NonNull;
 public interface AccountUserRepository
     extends VersionedAggregateRepository<AccountUser, AccountUserId> {
 
-  @NonNull Optional<@NonNull AccountUser> findByEmail(@NonNull EmailAddress email);
+  @NonNull List<@NonNull AccountUser> findAllByEmail(@NonNull EmailAddress email);
 
   @NonNull Optional<@NonNull AccountUser> findByExternalIdentity(
       @NonNull IdentityProviderCode provider,

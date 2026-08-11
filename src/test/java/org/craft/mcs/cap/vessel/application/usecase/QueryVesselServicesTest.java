@@ -27,6 +27,7 @@ import org.craft.mcs.cap.core.vessel.application.usecase.ListVesselsService;
 import org.craft.mcs.cap.core.vessel.application.usecase.ResolveVesselReferencesService;
 import org.craft.mcs.cap.core.vessel.domain.model.VesselMaterial;
 import org.craft.mcs.cap.core.vessel.domain.model.VesselOperationalStatus;
+import org.craft.mcs.cap.shared.application.ApplicationValidationException;
 import org.craft.mcs.cap.shared.application.material.VesselReferenceView;
 import org.craft.mcs.cap.shared.application.persistence.AggregateRevision;
 import org.craft.mcs.cap.shared.application.query.TextSearchCriteria;
@@ -124,12 +125,17 @@ class QueryVesselServicesTest {
     final var workspaceId = WorkspaceId.newId();
     final var view = vesselView(workspaceId, VesselId.newId());
     final var nameContains = new TextSearchCriteria("tank f");
+    final var requiredVolume = VolumeValue.ofLiters("250");
     final var availabilityQuery = mock(VesselAvailabilityQuery.class);
     final var accessControl = mock(VesselAccessControl.class);
-    when(availabilityQuery.findAvailable(workspaceId, nameContains)).thenReturn(List.of(view));
+    when(availabilityQuery.findAvailable(workspaceId, nameContains, requiredVolume)).thenReturn(List.of(view));
     final var service = new ListAvailableVesselsService(availabilityQuery, accessControl);
 
-    final var vessels = service.listAvailable(new ListAvailableVesselsQuery(workspaceId, nameContains));
+    final var vessels = service.listAvailable(new ListAvailableVesselsQuery(
+        workspaceId,
+        nameContains,
+        requiredVolume
+    ));
 
     assertThat(vessels)
         .singleElement()
@@ -137,7 +143,20 @@ class QueryVesselServicesTest {
         .returns(null, VesselUsageView::currentContent)
         .returns(VesselUsageClassification.EMPTY, VesselUsageView::usage);
     verify(accessControl).requireReadAccess(workspaceId);
-    verify(availabilityQuery).findAvailable(workspaceId, nameContains);
+    verify(availabilityQuery).findAvailable(workspaceId, nameContains, requiredVolume);
+  }
+
+  @Test
+  void rejectsZeroRequiredVolume() {
+    final var workspaceId = WorkspaceId.newId();
+
+    assertThatThrownBy(() -> new ListAvailableVesselsQuery(
+        workspaceId,
+        null,
+        VolumeValue.ofLiters("0")
+    ))
+        .isInstanceOf(ApplicationValidationException.class)
+        .hasMessage("required vessel volume must be greater than zero");
   }
 
   private static VesselView vesselView(

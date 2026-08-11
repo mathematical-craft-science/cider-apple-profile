@@ -75,35 +75,11 @@ CREATE TABLE IF NOT EXISTS measurement_sets
     workspace_id       UUID                     NOT NULL,
     subject_type       VARCHAR(32)              NOT NULL,
     subject_id         UUID                     NOT NULL,
-    lifecycle          VARCHAR(16)              NOT NULL,
-    retracted_by       VARCHAR(255),
-    retracted_at       TIMESTAMP WITH TIME ZONE,
-    retraction_reason  VARCHAR(1000),
     version            BIGINT                   NOT NULL DEFAULT 0,
     created_at         TIMESTAMP WITH TIME ZONE NOT NULL,
-    updated_at         TIMESTAMP WITH TIME ZONE NOT NULL,
 
     CONSTRAINT chk_measurement_sets_subject_type
         CHECK (subject_type IN ('FEEDSTOCK_BATCH', 'PRODUCTION_BATCH')),
-    CONSTRAINT chk_measurement_sets_lifecycle
-        CHECK (lifecycle IN ('ACTIVE', 'RETRACTED')),
-    CONSTRAINT chk_measurement_sets_retraction_audit
-        CHECK (
-            (
-                lifecycle = 'ACTIVE'
-                AND retracted_by IS NULL
-                AND retracted_at IS NULL
-                AND retraction_reason IS NULL
-            )
-            OR (
-                lifecycle = 'RETRACTED'
-                AND retracted_by IS NOT NULL
-                AND retracted_at IS NOT NULL
-                AND retraction_reason IS NOT NULL
-                AND BTRIM(retraction_reason) <> ''
-                AND retracted_at = updated_at
-            )
-        ),
     CONSTRAINT fk_measurement_sets_workspace
         FOREIGN KEY (workspace_id) REFERENCES workspaces (workspace_id)
 );
@@ -114,11 +90,15 @@ CREATE TABLE IF NOT EXISTS measurement_set_revisions
     measurement_set_id UUID                   NOT NULL,
     revision_number   INTEGER                  NOT NULL,
     material_state_id UUID                     NOT NULL,
+    lifecycle         VARCHAR(16)              NOT NULL,
+    change_kind       VARCHAR(16)              NOT NULL,
     name              VARCHAR(160)             NOT NULL,
     note              VARCHAR(2000),
     correction_reason VARCHAR(1000),
+    retraction_reason VARCHAR(1000),
     created_at        TIMESTAMP WITH TIME ZONE NOT NULL,
-    actor_reference   VARCHAR(255)             NOT NULL,
+    performed_by_type VARCHAR(32)              NOT NULL,
+    performed_by_id   UUID                     NOT NULL,
 
     CONSTRAINT ux_measurement_revisions_set_number
         UNIQUE (measurement_set_id, revision_number),
@@ -126,13 +106,36 @@ CREATE TABLE IF NOT EXISTS measurement_set_revisions
         UNIQUE (measurement_set_id, revision_id),
     CONSTRAINT chk_measurement_revisions_number
         CHECK (revision_number > 0),
-    CONSTRAINT chk_measurement_revisions_correction_reason
+    CONSTRAINT chk_measurement_revisions_lifecycle
+        CHECK (lifecycle IN ('ACTIVE', 'RETRACTED')),
+    CONSTRAINT chk_measurement_revisions_change_kind
+        CHECK (change_kind IN ('INITIAL', 'CORRECTION', 'RETRACTION')),
+    CONSTRAINT chk_measurement_revisions_actor_type
+        CHECK (performed_by_type IN ('ACCOUNT_USER', 'MACHINE_IDENTITY')),
+    CONSTRAINT chk_measurement_revisions_change_audit
         CHECK (
-            (revision_number = 1 AND correction_reason IS NULL)
+            (
+                change_kind = 'INITIAL'
+                AND revision_number = 1
+                AND lifecycle = 'ACTIVE'
+                AND correction_reason IS NULL
+                AND retraction_reason IS NULL
+            )
             OR (
-                revision_number > 1
+                change_kind = 'CORRECTION'
+                AND revision_number > 1
+                AND lifecycle = 'ACTIVE'
                 AND correction_reason IS NOT NULL
                 AND BTRIM(correction_reason) <> ''
+                AND retraction_reason IS NULL
+            )
+            OR (
+                change_kind = 'RETRACTION'
+                AND revision_number > 1
+                AND lifecycle = 'RETRACTED'
+                AND correction_reason IS NULL
+                AND retraction_reason IS NOT NULL
+                AND BTRIM(retraction_reason) <> ''
             )
         ),
     CONSTRAINT fk_measurement_revisions_set
@@ -153,6 +156,7 @@ CREATE TABLE IF NOT EXISTS measurement_set_heads
 
 CREATE TABLE IF NOT EXISTS measurement_records
 (
+    measurement_set_id     UUID                     NOT NULL,
     record_id              UUID                     NOT NULL PRIMARY KEY,
     characteristic         VARCHAR(64)              NOT NULL,
     role                   VARCHAR(16)              NOT NULL,
@@ -169,7 +173,9 @@ CREATE TABLE IF NOT EXISTS measurement_records
     derivation_method      VARCHAR(32),
 
     CONSTRAINT ux_measurement_records_identity_scope
-        UNIQUE (record_id, characteristic, role),
+        UNIQUE (measurement_set_id, record_id, characteristic, role),
+    CONSTRAINT fk_measurement_records_set
+        FOREIGN KEY (measurement_set_id) REFERENCES measurement_sets (measurement_set_id),
     CONSTRAINT chk_measurement_records_role
         CHECK (role IN ('OBSERVATION', 'RESULT')),
     CONSTRAINT chk_measurement_records_value_kind
@@ -242,6 +248,82 @@ CREATE TABLE IF NOT EXISTS measurement_records
                 AND upper_value <= 1.200
             )
         ),
+    CONSTRAINT chk_measurement_records_ph_range
+        CHECK (
+            characteristic <> 'PH'
+            OR (
+                value_kind = 'POINT'
+                AND point_value BETWEEN 0 AND 15.0
+            )
+            OR (
+                value_kind = 'INTERVAL'
+                AND lower_value >= 0
+                AND upper_value <= 15.0
+            )
+        ),
+    CONSTRAINT chk_measurement_records_titratable_acidity_range
+        CHECK (
+            characteristic <> 'TITRATABLE_ACIDITY'
+            OR (
+                value_kind = 'POINT'
+                AND point_value BETWEEN 0 AND 30.0
+            )
+            OR (
+                value_kind = 'INTERVAL'
+                AND lower_value >= 0
+                AND upper_value <= 30.0
+            )
+        ),
+    CONSTRAINT chk_measurement_records_tannin_range
+        CHECK (
+            characteristic <> 'TANNIN'
+            OR (
+                value_kind = 'POINT'
+                AND point_value BETWEEN 0 AND 12000
+            )
+            OR (
+                value_kind = 'INTERVAL'
+                AND lower_value >= 0
+                AND upper_value <= 12000
+            )
+        ),
+    CONSTRAINT chk_measurement_records_yan_range
+        CHECK (
+            characteristic <> 'YAN'
+            OR (
+                value_kind = 'POINT'
+                AND point_value BETWEEN 0 AND 2000.0
+            )
+            OR (
+                value_kind = 'INTERVAL'
+                AND lower_value >= 0
+                AND upper_value <= 2000.0
+            )
+        ),
+    CONSTRAINT chk_measurement_records_temperature_range
+        CHECK (
+            characteristic <> 'TEMPERATURE'
+            OR (
+                value_kind = 'POINT'
+                AND point_value >= -273.15
+            )
+            OR (
+                value_kind = 'INTERVAL'
+                AND lower_value >= -273.15
+            )
+        ),
+    CONSTRAINT chk_measurement_records_turbidity_range
+        CHECK (
+            characteristic <> 'TURBIDITY'
+            OR (
+                value_kind = 'POINT'
+                AND point_value >= 0
+            )
+            OR (
+                value_kind = 'INTERVAL'
+                AND lower_value >= 0
+            )
+        ),
     CONSTRAINT chk_measurement_records_observation
         CHECK (
             role <> 'OBSERVATION'
@@ -251,6 +333,7 @@ CREATE TABLE IF NOT EXISTS measurement_records
 
 CREATE TABLE IF NOT EXISTS measurement_revision_records
 (
+    measurement_set_id        UUID                     NOT NULL,
     revision_id               UUID                     NOT NULL,
     record_id                 UUID                     NOT NULL,
     characteristic            VARCHAR(64)              NOT NULL,
@@ -260,10 +343,11 @@ CREATE TABLE IF NOT EXISTS measurement_revision_records
     CONSTRAINT pk_measurement_revision_records
         PRIMARY KEY (revision_id, record_id),
     CONSTRAINT fk_measurement_revision_records_revision
-        FOREIGN KEY (revision_id) REFERENCES measurement_set_revisions (revision_id),
+        FOREIGN KEY (measurement_set_id, revision_id)
+            REFERENCES measurement_set_revisions (measurement_set_id, revision_id),
     CONSTRAINT fk_measurement_revision_records_record
-        FOREIGN KEY (record_id, characteristic, role)
-            REFERENCES measurement_records (record_id, characteristic, role),
+        FOREIGN KEY (measurement_set_id, record_id, characteristic, role)
+            REFERENCES measurement_records (measurement_set_id, record_id, characteristic, role),
     CONSTRAINT chk_measurement_revision_records_status
         CHECK (record_status IN ('ACTIVE', 'RETRACTED')),
     CONSTRAINT chk_measurement_revision_records_retraction
@@ -275,6 +359,7 @@ CREATE TABLE IF NOT EXISTS measurement_revision_records
 
 CREATE TABLE IF NOT EXISTS measurement_derivation_inputs
 (
+    measurement_set_id UUID        NOT NULL,
     characteristic    VARCHAR(64) NOT NULL,
     derived_record_id UUID        NOT NULL,
     derived_role      VARCHAR(16) NOT NULL,
@@ -286,15 +371,15 @@ CREATE TABLE IF NOT EXISTS measurement_derivation_inputs
     CONSTRAINT chk_measurement_derivation_roles
         CHECK (derived_role = 'RESULT' AND input_role = 'OBSERVATION'),
     CONSTRAINT fk_measurement_derivation_result
-        FOREIGN KEY (derived_record_id, characteristic, derived_role)
-            REFERENCES measurement_records (record_id, characteristic, role),
+        FOREIGN KEY (measurement_set_id, derived_record_id, characteristic, derived_role)
+            REFERENCES measurement_records (measurement_set_id, record_id, characteristic, role),
     CONSTRAINT fk_measurement_derivation_input
-        FOREIGN KEY (input_record_id, characteristic, input_role)
-            REFERENCES measurement_records (record_id, characteristic, role)
+        FOREIGN KEY (measurement_set_id, input_record_id, characteristic, input_role)
+            REFERENCES measurement_records (measurement_set_id, record_id, characteristic, role)
 );
 
 CREATE INDEX IF NOT EXISTS idx_measurement_sets_subject
-    ON measurement_sets (workspace_id, subject_type, subject_id, lifecycle);
+    ON measurement_sets (workspace_id, subject_type, subject_id);
 
 CREATE INDEX IF NOT EXISTS idx_measurement_set_revisions_set
     ON measurement_set_revisions (measurement_set_id, revision_number DESC);

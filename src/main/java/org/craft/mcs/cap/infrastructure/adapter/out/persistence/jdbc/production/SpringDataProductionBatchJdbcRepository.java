@@ -2,6 +2,7 @@ package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.production
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.craft.mcs.cap.core.production.domain.model.value.AlcoholicFermentationState;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.production.entity.ProductionBatchJdbcEntity;
@@ -16,6 +17,31 @@ import org.springframework.data.repository.query.Param;
 
 interface SpringDataProductionBatchJdbcRepository
     extends ListCrudRepository<ProductionBatchJdbcEntity, @NonNull UUID> {
+
+  @Query("""
+      SELECT batch_id,
+             workspace_id,
+             name,
+             vessel_id,
+             lifecycle,
+             alcoholic_fermentation_state,
+             current_volume_liters,
+             current_material_state_id,
+             initial_sugar_specific_gravity,
+             initial_acidity_g_l_as_malic,
+             initial_tannin_mg_l_tae,
+             initial_yan_mg_n_l,
+             note,
+             version,
+             created_at,
+             updated_at
+        FROM production_batches
+       WHERE batch_id = :batchId
+         FOR SHARE
+      """)
+  @NonNull Optional<@NonNull ProductionBatchJdbcEntity> lockForMeasurementChange(
+      @Param("batchId") @NonNull UUID batchId
+  );
 
   @Modifying
   @Query("""

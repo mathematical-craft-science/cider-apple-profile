@@ -14,8 +14,11 @@ import org.craft.mcs.cap.core.measurement.domain.model.MeasurementCorrectionReas
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementRecord;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementRecordRole;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementResultRetraction;
+import org.craft.mcs.cap.core.measurement.domain.model.MeasurementRetractionReason;
+import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetLifecycle;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetName;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetRevision;
+import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetRevisionChangeKind;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetRevisionId;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetRevisionNumber;
 import org.craft.mcs.cap.shared.application.ApplicationValidationException;
@@ -29,7 +32,7 @@ import org.springframework.stereotype.Component;
 import static java.util.Objects.requireNonNull;
 
 
-/** Creates immutable measurement revisions for initial recording and later corrections. */
+/** Creates immutable measurement revisions for initial recording, corrections, and terminal retraction. */
 @Component
 final class MeasurementSetRevisionFactory {
 
@@ -136,6 +139,30 @@ final class MeasurementSetRevisionFactory {
     );
   }
 
+  @NonNull MeasurementSetRevision retraction(
+      @NonNull MeasurementSetRevision current,
+      @NonNull MeasurementRetractionReason reason,
+      @NonNull Instant createdAt,
+      @NonNull ActorReference actor
+  ) {
+    requireNonNull(current, "current measurement revision cannot be null");
+    return new MeasurementSetRevision(
+        MeasurementSetRevisionId.newId(),
+        current.revisionNumber().next(),
+        current.materialStateId(),
+        MeasurementSetLifecycle.RETRACTED,
+        MeasurementSetRevisionChangeKind.RETRACTION,
+        current.name(),
+        current.note(),
+        null,
+        reason,
+        createdAt,
+        actor,
+        current.records(),
+        current.resultRetractions()
+    );
+  }
+
   private @NonNull List<@NonNull MeasurementRecord> records(
       @NonNull List<@NonNull MeasurementCharacteristicInput> inputs
   ) {
@@ -149,13 +176,19 @@ final class MeasurementSetRevisionFactory {
       @NonNull Instant createdAt,
       @NonNull ActorReference actor
   ) {
+    final var changeKind = revisionNumber.isInitial()
+        ? MeasurementSetRevisionChangeKind.INITIAL
+        : MeasurementSetRevisionChangeKind.CORRECTION;
     return new MeasurementSetRevision(
         MeasurementSetRevisionId.newId(),
         revisionNumber,
         materialStateId,
+        MeasurementSetLifecycle.ACTIVE,
+        changeKind,
         content.name(),
         content.note(),
         content.correctionReason(),
+        null,
         createdAt,
         actor,
         content.records(),

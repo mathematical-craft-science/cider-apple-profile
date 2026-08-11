@@ -1,6 +1,5 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.account.invitation;
 
-import jakarta.validation.Valid;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.account.invitation.application.port.in.GetIncomingWorkspaceInvitationUseCase;
@@ -56,7 +55,7 @@ public final class WorkspaceInvitationController implements WorkspaceInvitationA
   @PostMapping("/account/workspaces/{workspaceId}/invitations")
   public @NonNull ResponseEntity<@NonNull WorkspaceInvitationResponse> invite(
       @PathVariable @NonNull UUID workspaceId,
-      @Valid @RequestBody @NonNull InviteWorkspaceMemberRequest request
+      @RequestBody @NonNull InviteWorkspaceMemberRequest request
   ) {
     final var invitation = workspaceInvitationUseCase.invite(WorkspaceInvitationRestMapper.toCommand(
         WorkspaceId.of(workspaceId),

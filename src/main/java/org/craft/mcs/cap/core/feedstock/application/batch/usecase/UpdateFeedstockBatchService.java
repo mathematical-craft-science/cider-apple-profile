@@ -3,11 +3,14 @@ package org.craft.mcs.cap.core.feedstock.application.batch.usecase;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchNotFoundException;
 import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchOwnershipMismatchException;
+import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchVesselChangeNotAllowedException;
 import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.FeedstockAccessControl;
 import org.craft.mcs.cap.core.feedstock.application.batch.model.FeedstockBatchView;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.UpdateFeedstockBatchCommand;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.UpdateFeedstockBatchUseCase;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchRepository;
+import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchOperationHistory;
+import org.craft.mcs.cap.core.feedstock.application.vessel.port.out.FeedstockVesselAssignmentValidator;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
 import org.craft.mcs.cap.shared.application.persistence.VersionedAggregate;
 import org.craft.mcs.cap.shared.platform.TransactionHelper;
@@ -18,11 +21,11 @@ import static java.util.Objects.requireNonNull;
 
 
 /**
- * Application service for editing non-material feedstock batch metadata.
+ * Application service for editing feedstock metadata and correcting its initial vessel assignment.
  *
  * <p>The service is the ownership boundary for feedstock batch changes: it verifies that the requested
- * workspace owns the batch before applying partial changes to the aggregate. Volume and vessel are
- * material-state concerns and can only change through explicit material operations.
+ * workspace owns the batch before applying partial changes to the aggregate. The initial vessel
+ * assignment can be corrected only before the first post-creation material operation.
  */
 @Component
 @RequiredArgsConstructor
@@ -33,6 +36,8 @@ public final class UpdateFeedstockBatchService
   private final @NonNull FeedstockAccessControl feedstockAccessControl;
   private final @NonNull TransactionHelper transactionHelper;
   private final @NonNull FeedstockBatchViewEnricher batchViewEnricher;
+  private final @NonNull FeedstockVesselAssignmentValidator vesselAssignmentValidator;
+  private final @NonNull FeedstockBatchOperationHistory operationHistory;
 
   @Override
   public @NonNull FeedstockBatchView update(@NonNull UpdateFeedstockBatchCommand command) {
@@ -44,12 +49,32 @@ public final class UpdateFeedstockBatchService
   private @NonNull FeedstockBatchView updateInTransaction(@NonNull UpdateFeedstockBatchCommand command) {
     final var state = findOwnedBatch(command);
     final var batch = state.aggregate();
+    applyVesselChange(batch, command);
     applyChanges(batch, command);
     return batchViewEnricher.enrich(
         FeedstockBatchSummaryMapper.toSummary(
             feedstockBatchRepository.update(state.withAggregate(batch)).aggregate()
         )
     );
+  }
+
+  private void applyVesselChange(
+      @NonNull FeedstockBatch batch,
+      @NonNull UpdateFeedstockBatchCommand command
+  ) {
+    final var vesselId = command.vesselId();
+    if (vesselId == null || vesselId.equals(batch.vesselId())) {
+      return;
+    }
+    if (operationHistory.hasOperations(batch.batchId())) {
+      throw new FeedstockBatchVesselChangeNotAllowedException(batch.batchId());
+    }
+    vesselAssignmentValidator.requireAssignable(
+        batch.workspaceId(),
+        vesselId,
+        batch.availableVolume()
+    );
+    batch.correctInitialVesselAssignment(vesselId);
   }
 
   private @NonNull VersionedAggregate<FeedstockBatch> findOwnedBatch(

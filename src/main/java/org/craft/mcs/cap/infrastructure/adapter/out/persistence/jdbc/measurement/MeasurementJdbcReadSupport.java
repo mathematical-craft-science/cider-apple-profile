@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Instant;
+import java.util.UUID;
 import org.craft.mcs.cap.shared.kernel.characteristic.IntervalCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementProvenance;
@@ -16,6 +17,8 @@ import org.craft.mcs.cap.shared.kernel.chemical.value.PhValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
+import org.craft.mcs.cap.shared.kernel.identity.ActorReference;
+import org.craft.mcs.cap.shared.kernel.identity.ActorType;
 import org.craft.mcs.cap.shared.kernel.measurement.MeasuredValue;
 import org.craft.mcs.cap.shared.kernel.measurement.value.TemperatureValue;
 import org.craft.mcs.cap.shared.kernel.measurement.value.TurbidityValue;
@@ -82,6 +85,25 @@ public final class MeasurementJdbcReadSupport {
       @NonNull String column
   ) throws SQLException {
     return requireNonNull(resultSet.getTimestamp(column), column + " cannot be null").toInstant();
+  }
+
+  public static @NonNull ActorReference actorReference(
+      @NonNull ResultSet resultSet,
+      @NonNull String typeColumn,
+      @NonNull String idColumn
+  ) throws SQLException {
+    final var type = requireNonNull(
+        resultSet.getString(typeColumn),
+        "persisted actor type cannot be null"
+    );
+    final var id = requireNonNull(
+        resultSet.getObject(idColumn, UUID.class),
+        "persisted actor id cannot be null"
+    );
+    return new ActorReference(
+        ActorType.valueOf(type),
+        id
+    );
   }
 
   public static <E extends Enum<E>> @Nullable E nullableEnum(

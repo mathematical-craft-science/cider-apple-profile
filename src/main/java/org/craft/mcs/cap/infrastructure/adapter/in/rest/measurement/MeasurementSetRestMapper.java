@@ -127,10 +127,12 @@ public final class MeasurementSetRestMapper {
         view.version(),
         view.revisionId().value(),
         view.revisionNumber().value(),
+        view.changeKind(),
         view.materialStateId().value(),
         view.name().value(),
         view.note(),
         view.correctionReason() == null ? null : view.correctionReason().value(), // NOSONAR
+        view.retractionReason() == null ? null : view.retractionReason().value(), // NOSONAR
         view.revisionCreatedAt(),
         new MeasurementActorReferenceResponse(view.actor().type(), view.actor().id()),
         view.records().stream().map(MeasurementSetRestMapper::toRecordResponse).toList(),
@@ -164,10 +166,13 @@ public final class MeasurementSetRestMapper {
     return new MeasurementSetRevisionResponse(
         view.revisionId().value(),
         view.revisionNumber().value(),
+        view.lifecycle(),
+        view.changeKind(),
         view.materialStateId().value(),
         view.name().value(),
         view.note(),
         view.correctionReason() == null ? null : view.correctionReason().value(), // NOSONAR
+        view.retractionReason() == null ? null : view.retractionReason().value(), // NOSONAR
         view.revisionCreatedAt(),
         new MeasurementActorReferenceResponse(view.actor().type(), view.actor().id()),
         view.records().stream().map(MeasurementSetRestMapper::toRecordResponse).toList(),
