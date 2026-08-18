@@ -22,7 +22,7 @@ import static java.util.Objects.requireNonNull;
 
 
 /** One state-aware characteristic selected from immutable measurement evidence. */
-public record CurrentMaterialCharacteristicView(
+public record CurrentMeasurementCharacteristicView(
     @NonNull MeasurementCharacteristic characteristic,
     @NonNull CharacteristicValue<MeasuredValue> value,
     @NonNull MeasurementValueOrigin origin,
@@ -34,10 +34,10 @@ public record CurrentMaterialCharacteristicView(
     @NonNull MeasurementFreshnessStatus freshnessStatus
 ) {
 
-  public CurrentMaterialCharacteristicView {
-    requireNonNull(characteristic, "current material characteristic cannot be null");
-    requireNonNull(value, "current material value cannot be null");
-    requireNonNull(origin, "current material value origin cannot be null");
+  public CurrentMeasurementCharacteristicView {
+    requireNonNull(characteristic, "current measurement characteristic cannot be null");
+    requireNonNull(value, "current measurement value cannot be null");
+    requireNonNull(origin, "current measurement value origin cannot be null");
     requireNonNull(evidenceMaterialStateId, "evidence material state id cannot be null");
     requireNonNull(measurementSetId, "measurement set id cannot be null");
     requireNonNull(recordId, "measurement record id cannot be null");

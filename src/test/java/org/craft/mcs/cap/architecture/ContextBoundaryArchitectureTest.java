@@ -392,8 +392,31 @@ class ContextBoundaryArchitectureTest {
           .should()
           .dependOnClassesThat()
           .resideInAnyPackage(
+              "org.craft.mcs.cap.core.account..application..port.out..",
+              "org.craft.mcs.cap.core.account..application..usecase..",
+              "org.craft.mcs.cap.core.traceability.application..port.out..",
+              "org.craft.mcs.cap.core.traceability.application..usecase..",
               "org.craft.mcs.cap.core.feedstock.application..port.out..",
-              "org.craft.mcs.cap.core.production.application..port.out.."
+              "org.craft.mcs.cap.core.feedstock.application..usecase..",
+              "org.craft.mcs.cap.core.production.application..port.out..",
+              "org.craft.mcs.cap.core.production.application..usecase..",
+              "org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.account..",
+              "org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.traceability..",
+              "org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.feedstock..",
+              "org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.production.."
+          );
+
+  @ArchTest
+  static final ArchRule measurement_lineage_acl_uses_traceability_inbound_boundary_only =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.infrastructure.adapter.out.traceability.measurement..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAnyPackage(
+              "org.craft.mcs.cap.core.traceability.application..port.out..",
+              "org.craft.mcs.cap.core.traceability.application..usecase..",
+              "org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.traceability.."
           );
 
   @ArchTest

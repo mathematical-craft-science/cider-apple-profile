@@ -1,18 +1,19 @@
-package org.craft.mcs.cap.infrastructure.adapter.in.rest.materialstate.dto;
+package org.craft.mcs.cap.infrastructure.adapter.in.rest.measurementevidence.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Instant;
 import java.util.UUID;
-import org.craft.mcs.cap.shared.application.measurement.MeasurementValueOrigin;
-import org.craft.mcs.cap.shared.application.measurement.MeasurementFreshnessStatus;
-import org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement.dto.MeasurementProvenanceResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement.dto.MeasurementValueResponse;
+import org.craft.mcs.cap.shared.application.measurement.MeasurementFreshnessStatus;
+import org.craft.mcs.cap.shared.application.measurement.MeasurementValueOrigin;
+import org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic;
 import org.jspecify.annotations.NonNull;
 
 
-@Schema(description = "Current characteristic value with immutable measurement evidence and state origin.")
-public record CurrentMaterialCharacteristicResponse(
+/** Transport projection of one characteristic selected as current measurement evidence. */
+@Schema(description = "Currently applicable characteristic with immutable measurement evidence.")
+public record CurrentMeasurementCharacteristicResponse(
     @Schema(
         description = "Measured characteristic.",
         implementation = MeasurementCharacteristic.class,
@@ -23,7 +24,7 @@ public record CurrentMaterialCharacteristicResponse(
     @Schema(description = "Canonical point or interval value.", requiredMode = Schema.RequiredMode.REQUIRED)
     @NonNull MeasurementValueResponse value,
     @Schema(
-        description = "How the characteristic entered the current material state.",
+        description = "How the evidence became applicable to the current material state.",
         implementation = MeasurementValueOrigin.class,
         example = "MEASURED",
         requiredMode = Schema.RequiredMode.REQUIRED
@@ -47,8 +48,11 @@ public record CurrentMaterialCharacteristicResponse(
         requiredMode = Schema.RequiredMode.REQUIRED
     )
     @NonNull UUID recordId,
-    @Schema(description = "Time at which this characteristic was measured.", format = "date-time",
-        requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(
+        description = "Time at which this characteristic was measured.",
+        format = "date-time",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
     @NonNull Instant measuredAt,
     @Schema(
         description = "Source and confidence of the selected evidence.",

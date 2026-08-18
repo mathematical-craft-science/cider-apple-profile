@@ -20,7 +20,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 
-class OwnerContextCurrentMaterialStateProviderTest {
+class OwnerContextMeasurementSubjectCurrentStateProviderTest {
 
   @Test
   void resolvesEachSubjectThroughItsOwningContext() {
@@ -31,7 +31,10 @@ class OwnerContextCurrentMaterialStateProviderTest {
     final var productionStateId = MaterialStateId.newId();
     final var feedstockStates = mock(QueryFeedstockMaterialStatesUseCase.class);
     final var productionStates = mock(QueryProductionMaterialStatesUseCase.class);
-    final var provider = new OwnerContextCurrentMaterialStateProvider(feedstockStates, productionStates);
+    final var provider = new OwnerContextMeasurementSubjectCurrentStateProvider(
+        feedstockStates,
+        productionStates
+    );
     when(feedstockStates.findCurrentStates(workspaceId, Set.of(feedstockBatchId)))
         .thenReturn(Map.of(feedstockBatchId, feedstockStateId));
     when(productionStates.findCurrentStates(workspaceId, Set.of(productionBatchId)))
@@ -60,7 +63,7 @@ class OwnerContextCurrentMaterialStateProviderTest {
     final var feedstockBatchId = FeedstockBatchId.newId();
     final var feedstockStates = mock(QueryFeedstockMaterialStatesUseCase.class);
     final var productionStates = mock(QueryProductionMaterialStatesUseCase.class);
-    final var provider = new OwnerContextCurrentMaterialStateProvider(
+    final var provider = new OwnerContextMeasurementSubjectCurrentStateProvider(
         feedstockStates,
         productionStates
     );

@@ -25,7 +25,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.craft.mcs.cap.shared.kernel.identity.UuidV7Generator.newUuid;
 
 
-class CurrentMaterialStateViewTest {
+class CurrentMeasurementEvidenceViewTest {
 
   @Test
   void preservesConcretePointAndIntervalValueShapes() {
@@ -47,7 +47,7 @@ class CurrentMaterialStateViewTest {
 
     assertThatThrownBy(() -> view(first, second))
         .isInstanceOf(ApplicationValidationException.class)
-        .hasMessage("current material state must contain at most one value per characteristic");
+        .hasMessage("current measurement evidence must contain at most one value per characteristic");
   }
 
   @Test
@@ -61,7 +61,7 @@ class CurrentMaterialStateViewTest {
 
   @Test
   void rejectsCharacteristicWhoseValueHasAnotherCanonicalType() {
-    assertThatThrownBy(() -> new CurrentMaterialCharacteristicView(
+    assertThatThrownBy(() -> new CurrentMeasurementCharacteristicView(
         MeasurementCharacteristic.PH,
         MeasurementTestValues.point(MeasurementCharacteristic.SPECIFIC_GRAVITY, new BigDecimal("1.050")),
         MeasurementValueOrigin.MEASURED,
@@ -92,20 +92,20 @@ class CurrentMaterialStateViewTest {
         .hasMessageContaining("PH has an incompatible value");
   }
 
-  private static CurrentMaterialStateView view(CurrentMaterialCharacteristicView... characteristics) {
-    return new CurrentMaterialStateView(
+  private static CurrentMeasurementEvidenceView view(CurrentMeasurementCharacteristicView... characteristics) {
+    return new CurrentMeasurementEvidenceView(
         new MeasurementSubjectReference(MeasurementSubjectType.FEEDSTOCK_BATCH, newUuid()),
         MaterialStateId.newId(),
         List.of(characteristics)
     );
   }
 
-  private static CurrentMaterialCharacteristicView characteristic(
+  private static CurrentMeasurementCharacteristicView characteristic(
       MeasurementCharacteristic characteristic,
       String pointOrLower,
       String upper
   ) {
-    return new CurrentMaterialCharacteristicView(
+    return new CurrentMeasurementCharacteristicView(
         characteristic,
         upper == null
             ? MeasurementTestValues.point(characteristic, new BigDecimal(pointOrLower))

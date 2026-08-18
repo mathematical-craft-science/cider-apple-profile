@@ -30,10 +30,10 @@ import org.craft.mcs.cap.core.feedstock.application.authorization.port.out.Feeds
 import org.craft.mcs.cap.core.feedstock.application.inventory.usecase.ConsumeFeedstockBatchMaterialService;
 import org.craft.mcs.cap.core.feedstock.application.inventory.usecase.InspectFeedstockBatchMaterialService;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.query.FeedstockCurrentProfileQueryService;
-import org.craft.mcs.cap.core.measurement.application.port.out.CurrentMaterialStateProvider;
+import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementSubjectCurrentStateProvider;
 import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementFreshnessThresholdProvider;
 import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementSubjectAccessControl;
-import org.craft.mcs.cap.core.measurement.application.usecase.CurrentMaterialStateProjector;
+import org.craft.mcs.cap.core.measurement.application.usecase.CurrentMeasurementEvidenceService;
 import org.craft.mcs.cap.core.measurement.application.usecase.CurrentMeasurementResultResolver;
 import org.craft.mcs.cap.core.measurement.application.usecase.QueryMeasurementSetMetadataService;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSubjectReference;
@@ -105,7 +105,7 @@ import static org.craft.mcs.cap.support.PotentialAbvPredictionFixtures.predictio
         ProductionCreationMaterialFlowDataJdbcTest.FlowTestConfiguration.class,
         SpringTransactionHelper.class,
         CurrentMeasurementResultResolver.class,
-        CurrentMaterialStateProjector.class,
+        CurrentMeasurementEvidenceService.class,
         QueryMeasurementSetMetadataService.class,
         FeedstockCurrentProfileQueryService.class,
         InspectFeedstockBatchMaterialService.class,
@@ -731,7 +731,7 @@ class ProductionCreationMaterialFlowDataJdbcTest {
     }
 
     @Bean
-    CurrentMaterialStateProvider currentMaterialStateProvider(JdbcTemplate jdbcTemplate) {
+    MeasurementSubjectCurrentStateProvider currentMaterialStateProvider(JdbcTemplate jdbcTemplate) {
       return (workspaceId, subjects) -> {
         final Map<MeasurementSubjectReference, MaterialStateId> states = new LinkedHashMap<>();
         subjects.forEach(subject -> states.put(
