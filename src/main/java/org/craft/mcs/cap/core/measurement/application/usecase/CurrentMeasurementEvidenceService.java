@@ -9,12 +9,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.measurement.application.model.CurrentMaterialCharacteristicView;
+import org.craft.mcs.cap.core.measurement.application.model.CurrentMeasurementCharacteristicView;
 import org.craft.mcs.cap.core.measurement.application.model.CurrentMeasurementResultView;
-import org.craft.mcs.cap.core.measurement.application.model.CurrentMaterialStateView;
-import org.craft.mcs.cap.core.measurement.application.port.in.ProjectCurrentMaterialStateUseCase;
+import org.craft.mcs.cap.core.measurement.application.model.CurrentMeasurementEvidenceView;
+import org.craft.mcs.cap.core.measurement.application.port.in.QueryCurrentMeasurementEvidenceUseCase;
 import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementFreshnessThresholdProvider;
-import org.craft.mcs.cap.core.measurement.application.port.out.CurrentMaterialStateProvider;
+import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementSubjectCurrentStateProvider;
 import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementSubjectAccessControl;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSubjectReference;
 import org.craft.mcs.cap.shared.application.measurement.MeasurementFreshnessPolicy;
@@ -26,31 +26,32 @@ import org.springframework.stereotype.Component;
 import static java.util.Objects.requireNonNull;
 
 
-/** Selects applicable measurement evidence by material-state lineage rather than global measurement time. */
+/** Selects current measurement evidence by material-state lineage rather than global measurement time. */
 @Component
 @RequiredArgsConstructor
-public final class CurrentMaterialStateProjector implements ProjectCurrentMaterialStateUseCase {
+public final class CurrentMeasurementEvidenceService implements QueryCurrentMeasurementEvidenceUseCase {
 
   private final @NonNull CurrentMeasurementResultResolver resultResolver;
   private final @NonNull MeasurementSubjectAccessControl subjectAccessControl;
-  private final @NonNull CurrentMaterialStateProvider materialStateProvider;
+  private final @NonNull MeasurementSubjectCurrentStateProvider subjectCurrentStateProvider;
   private final @NonNull MeasurementFreshnessThresholdProvider freshnessThresholdProvider;
   private final @NonNull Clock clock;
 
   @Override
-  public @NonNull CurrentMaterialStateView project(
+  public @NonNull CurrentMeasurementEvidenceView getCurrent(
       @NonNull MeasurementSubjectReference subject
   ) {
     requireNonNull(subject, "measurement subject cannot be null");
     final var workspaceId = subjectAccessControl.requireReadAccess(subject);
     return requireNonNull(
-        projectInWorkspace(workspaceId, Set.of(subject)).get(subject),
-        "current material state cannot be null"
+        queryInWorkspace(workspaceId, Set.of(subject)).get(subject),
+        "current measurement evidence cannot be null"
     );
   }
 
   @Override
-  public @NonNull Map<@NonNull MeasurementSubjectReference, @NonNull CurrentMaterialStateView> projectAll(
+  public @NonNull Map<@NonNull MeasurementSubjectReference, @NonNull CurrentMeasurementEvidenceView>
+      getAllCurrent(
       @NonNull WorkspaceId workspaceId,
       @NonNull Set<@NonNull MeasurementSubjectReference> subjects
   ) {
@@ -67,34 +68,35 @@ public final class CurrentMaterialStateProjector implements ProjectCurrentMateri
         .map(MeasurementSubjectReference::type)
         .distinct()
         .forEach(subjectType -> subjectAccessControl.requireReadAccess(subjectType, workspaceId));
-    return projectInWorkspace(workspaceId, verifiedSubjects);
+    return queryInWorkspace(workspaceId, verifiedSubjects);
   }
 
-  private @NonNull Map<@NonNull MeasurementSubjectReference, @NonNull CurrentMaterialStateView>
-      projectInWorkspace(
+  private @NonNull Map<@NonNull MeasurementSubjectReference, @NonNull CurrentMeasurementEvidenceView>
+      queryInWorkspace(
           @NonNull WorkspaceId workspaceId,
           @NonNull Set<@NonNull MeasurementSubjectReference> subjects
       ) {
     final var assessedAt = clock.instant();
     final var staleAfter = freshnessThresholdProvider.staleAfter(workspaceId);
     final var freshnessPolicy = new MeasurementFreshnessPolicy(staleAfter);
-    final var currentStateIds = materialStateProvider.currentStatesOf(workspaceId, subjects);
+    final var currentStateIds = subjectCurrentStateProvider.currentStatesOf(workspaceId, subjects);
     final Map<MeasurementSubjectReference, List<CurrentMeasurementResultView>> resultsBySubject =
         new LinkedHashMap<>();
     resultResolver.resolve(workspaceId, currentStateIds).forEach(result -> resultsBySubject
         .computeIfAbsent(result.subject(), _ -> new ArrayList<>())
         .add(result));
 
-    final Map<MeasurementSubjectReference, CurrentMaterialStateView> states = new LinkedHashMap<>();
+    final Map<MeasurementSubjectReference, CurrentMeasurementEvidenceView> evidenceBySubject =
+        new LinkedHashMap<>();
     subjects.forEach(subject -> {
       final var currentStateId = requireNonNull(
           currentStateIds.get(subject),
           "current material state id cannot be null"
       );
       final var results = resultsBySubject.getOrDefault(subject, List.of());
-      states.put(
+      evidenceBySubject.put(
         subject,
-        new CurrentMaterialStateView(
+        new CurrentMeasurementEvidenceView(
             subject,
             currentStateId,
             results.stream()
@@ -103,10 +105,10 @@ public final class CurrentMaterialStateProjector implements ProjectCurrentMateri
         )
       );
     });
-    return Map.copyOf(states);
+    return Map.copyOf(evidenceBySubject);
   }
 
-  private static @NonNull CurrentMaterialCharacteristicView toCharacteristic(
+  private static @NonNull CurrentMeasurementCharacteristicView toCharacteristic(
       @NonNull CurrentMeasurementResultView result,
       @NonNull MeasurementFreshnessPolicy freshnessPolicy,
       @NonNull Instant assessedAt
@@ -114,7 +116,7 @@ public final class CurrentMaterialStateProjector implements ProjectCurrentMateri
     final var origin = result.currentMaterialStateId().equals(result.evidenceMaterialStateId())
         ? MeasurementValueOrigin.MEASURED
         : MeasurementValueOrigin.INHERITED;
-    return new CurrentMaterialCharacteristicView(
+    return new CurrentMeasurementCharacteristicView(
         result.characteristic(),
         result.value(),
         origin,

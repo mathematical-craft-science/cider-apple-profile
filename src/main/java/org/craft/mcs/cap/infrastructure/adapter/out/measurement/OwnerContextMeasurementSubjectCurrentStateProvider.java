@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.feedstock.application.batch.port.in.QueryFeedstockMaterialStatesUseCase;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
-import org.craft.mcs.cap.core.measurement.application.port.out.CurrentMaterialStateProvider;
+import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementSubjectCurrentStateProvider;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSubjectReference;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSubjectType;
 import org.craft.mcs.cap.core.production.application.port.in.QueryProductionMaterialStatesUseCase;
@@ -24,7 +24,8 @@ import static java.util.Objects.requireNonNull;
 /** ACL adapter that resolves generic measurement subjects through their owning contexts. */
 @Component
 @RequiredArgsConstructor
-final class OwnerContextCurrentMaterialStateProvider implements CurrentMaterialStateProvider {
+final class OwnerContextMeasurementSubjectCurrentStateProvider
+    implements MeasurementSubjectCurrentStateProvider {
 
   private final @NonNull QueryFeedstockMaterialStatesUseCase feedstockMaterialStates;
   private final @NonNull QueryProductionMaterialStatesUseCase productionMaterialStates;

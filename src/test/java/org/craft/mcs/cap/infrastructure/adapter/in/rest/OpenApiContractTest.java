@@ -43,7 +43,7 @@ import org.craft.mcs.cap.core.feedstock.application.batch.port.in.UpdateFeedstoc
 import org.craft.mcs.cap.core.feedstock.application.detail.port.in.GetFeedstockBatchDetailUseCase;
 import org.craft.mcs.cap.core.measurement.application.port.in.CorrectMeasurementSetUseCase;
 import org.craft.mcs.cap.core.measurement.application.port.in.CreateMeasurementSetUseCase;
-import org.craft.mcs.cap.core.measurement.application.port.in.ProjectCurrentMaterialStateUseCase;
+import org.craft.mcs.cap.core.measurement.application.port.in.QueryCurrentMeasurementEvidenceUseCase;
 import org.craft.mcs.cap.core.measurement.application.port.in.QueryMeasurementSetsUseCase;
 import org.craft.mcs.cap.core.measurement.application.port.in.RetractMeasurementSetUseCase;
 import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.QueryFeedstockPlanningBatchesUseCase;
@@ -150,7 +150,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
     AssessAppleVarietySugarAcidityZoneUseCase.class,
     QueryAppleVarietySugarAcidityZonePointsUseCase.class,
     QueryBatchTraceabilityUseCase.class,
-    ProjectCurrentMaterialStateUseCase.class,
+    QueryCurrentMeasurementEvidenceUseCase.class,
     PredictFeedstockBatchCurrentPotentialAbvUseCase.class,
     QueryFeedstockBatchProfileTargetCandidatesUseCase.class,
     ScoreFeedstockBatchProfileTargetUseCase.class,
@@ -513,7 +513,8 @@ class OpenApiContractTest {
     assertJsonResponse(openApi, "/measurement-sets/{measurementSetId}/revisions", "get");
     assertJsonResponse(openApi, "/measurement-sets/{measurementSetId}", "put");
     assertJsonResponse(openApi, "/measurement-sets/{measurementSetId}", "patch");
-    assertJsonResponse(openApi, "/material-subjects/{subjectType}/{subjectId}/current-state", "get");
+    assertJsonResponse(openApi, "/measurement-subjects/{subjectType}/{subjectId}/current-evidence", "get");
+    assertThat(openApi.path("paths").has("/material-subjects/{subjectType}/{subjectId}/current-state")).isFalse();
     assertJsonResponse(openApi, "/composition-calculations", "post");
     assertJsonResponse(openApi, "/composition-optimizations", "post");
     final var paths = openApi.path("paths");
@@ -1052,16 +1053,19 @@ class OpenApiContractTest {
     assertStringFormat(schemaProperty(openApi, "MeasurementEvidenceResponse", "materialStateId"), "uuid");
     assertRequiredProperties(
         openApi,
-        "CurrentMaterialStateResponse",
+        "CurrentMeasurementEvidenceResponse",
         "subject",
         "currentMaterialStateId",
         "characteristics"
     );
-    assertStringFormat(schemaProperty(openApi, "CurrentMaterialStateResponse", "currentMaterialStateId"), "uuid");
-    assertArray(schemaProperty(openApi, "CurrentMaterialStateResponse", "characteristics"));
+    assertStringFormat(
+        schemaProperty(openApi, "CurrentMeasurementEvidenceResponse", "currentMaterialStateId"),
+        "uuid"
+    );
+    assertArray(schemaProperty(openApi, "CurrentMeasurementEvidenceResponse", "characteristics"));
     assertRequiredProperties(
         openApi,
-        "CurrentMaterialCharacteristicResponse",
+        "CurrentMeasurementCharacteristicResponse",
         "characteristic",
         "value",
         "origin",
@@ -1073,9 +1077,11 @@ class OpenApiContractTest {
         "freshnessStatus"
     );
     assertStringFormat(
-        schemaProperty(openApi, "CurrentMaterialCharacteristicResponse", "evidenceMaterialStateId"),
+        schemaProperty(openApi, "CurrentMeasurementCharacteristicResponse", "evidenceMaterialStateId"),
         "uuid"
     );
+    assertMissingSchema(openApi, "CurrentMaterialStateResponse");
+    assertMissingSchema(openApi, "CurrentMaterialCharacteristicResponse");
     assertMissingSchema(openApi, "ChemicalMeasurementResponse");
     assertMissingSchema(openApi, "ExactChemicalMeasurementResponse");
     assertMissingSchema(openApi, "RangeChemicalMeasurementResponse");

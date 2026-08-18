@@ -17,30 +17,30 @@ import static org.craft.mcs.cap.shared.application.measurement.MeasurementCharac
 
 
 /** State-aware projection of currently applicable measured characteristics for one material subject. */
-public record CurrentMaterialStateView(
+public record CurrentMeasurementEvidenceView(
     @NonNull MeasurementSubjectReference subject,
     @NonNull MaterialStateId currentMaterialStateId,
-    @NonNull List<@NonNull CurrentMaterialCharacteristicView> characteristics
+    @NonNull List<@NonNull CurrentMeasurementCharacteristicView> characteristics
 ) {
 
-  public CurrentMaterialStateView {
-    requireNonNull(subject, "current material subject cannot be null");
+  public CurrentMeasurementEvidenceView {
+    requireNonNull(subject, "current measurement subject cannot be null");
     requireNonNull(currentMaterialStateId, "current material state id cannot be null");
     characteristics = List.copyOf(
-        requireNonNull(characteristics, "current material characteristics cannot be null")
+        requireNonNull(characteristics, "current measurement characteristics cannot be null")
     );
     final Set<MeasurementCharacteristic> uniqueCharacteristics = characteristics.stream()
-        .map(CurrentMaterialCharacteristicView::characteristic)
+        .map(CurrentMeasurementCharacteristicView::characteristic)
         .collect(Collectors.toUnmodifiableSet());
     if (uniqueCharacteristics.size() != characteristics.size()) {
       throw new ApplicationValidationException(
-          "current material state must contain at most one value per characteristic"
+          "current measurement evidence must contain at most one value per characteristic"
       );
     }
   }
 
   /** Returns the currently applicable value and evidence for the requested characteristic. */
-  public @NonNull Optional<@NonNull CurrentMaterialCharacteristicView> characteristic(
+  public @NonNull Optional<@NonNull CurrentMeasurementCharacteristicView> characteristic(
       @NonNull MeasurementCharacteristic characteristic
   ) {
     requireNonNull(characteristic, "measurement characteristic cannot be null");
@@ -56,7 +56,7 @@ public record CurrentMaterialStateView(
   ) {
     requireNonNull(valueType, "measurement value type cannot be null");
     return characteristic(characteristic)
-        .map(CurrentMaterialCharacteristicView::value)
+        .map(CurrentMeasurementCharacteristicView::value)
         .map(value -> requireType(characteristic, value, valueType));
   }
 }

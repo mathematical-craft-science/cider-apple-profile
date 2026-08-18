@@ -15,9 +15,7 @@ import org.springframework.stereotype.Component;
 import static java.util.Objects.requireNonNull;
 
 
-/**
- * ACL adapter that resolves generic subjects through their owning bounded-context repositories.
- */
+/** ACL adapter that resolves generic subjects through inbound ports of their owning contexts. */
 @Component
 @RequiredArgsConstructor
 final class MeasurementSubjectAccessControlAdapter implements MeasurementSubjectAccessControl {

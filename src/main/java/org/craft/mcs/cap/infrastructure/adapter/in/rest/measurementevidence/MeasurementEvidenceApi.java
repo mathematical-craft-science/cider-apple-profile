@@ -1,4 +1,4 @@
-package org.craft.mcs.cap.infrastructure.adapter.in.rest.materialstate;
+package org.craft.mcs.cap.infrastructure.adapter.in.rest.measurementevidence;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -8,7 +8,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.UUID;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSubjectType;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.materialstate.dto.CurrentMaterialStateResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurementevidence.dto.CurrentMeasurementEvidenceResponse;
 import org.jspecify.annotations.NonNull;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
@@ -16,31 +16,36 @@ import org.springframework.http.ResponseEntity;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 
-@Tag(name = "Material states", description = "Current immutable states of measurable material subjects.")
-public interface MaterialStateApi {
+/** Defines the canonical HTTP contract for querying current Measurement evidence. */
+@Tag(
+    name = "Measurement evidence",
+    description = "State-aware current measurement evidence for measurable subjects."
+)
+public interface MeasurementEvidenceApi {
 
   @Operation(
-      summary = "Get the current material state",
-      description = "Returns the subject's current state identifier together with applicable characteristic "
-          + "values and their immutable evidence. The identifier can bind a new measurement to the sampled state."
+      summary = "Get current measurement evidence",
+      description = "Returns measurement values currently applicable to the subject. Evidence is selected "
+          + "independently per characteristic from the authoritative material-state lineage; the response does "
+          + "not represent or own the material aggregate state."
   )
   @ApiResponse(
       responseCode = "200",
       content = @Content(
           mediaType = APPLICATION_JSON_VALUE,
-          schema = @Schema(implementation = CurrentMaterialStateResponse.class)
+          schema = @Schema(implementation = CurrentMeasurementEvidenceResponse.class)
       )
   )
   @ApiResponse(
       responseCode = "404",
-      description = "The material subject has no initialized state.",
+      description = "The measurable subject or its current material state was not found.",
       content = @Content(
           mediaType = APPLICATION_JSON_VALUE,
           schema = @Schema(implementation = ProblemDetail.class)
       )
   )
-  @NonNull ResponseEntity<@NonNull CurrentMaterialStateResponse> getCurrent(
-      @Parameter(description = "Measurable material subject type.", required = true)
+  @NonNull ResponseEntity<@NonNull CurrentMeasurementEvidenceResponse> getCurrentEvidence(
+      @Parameter(description = "Measurable subject type.", required = true)
       @NonNull MeasurementSubjectType subjectType,
       @Parameter(
           description = "Business subject identifier.",

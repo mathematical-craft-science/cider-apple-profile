@@ -13,10 +13,10 @@ import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.Feedsto
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentProfileView;
 import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockLatestMeasurementSetView;
 import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
-import org.craft.mcs.cap.core.measurement.application.model.CurrentMaterialCharacteristicView;
-import org.craft.mcs.cap.core.measurement.application.model.CurrentMaterialStateView;
+import org.craft.mcs.cap.core.measurement.application.model.CurrentMeasurementCharacteristicView;
+import org.craft.mcs.cap.core.measurement.application.model.CurrentMeasurementEvidenceView;
 import org.craft.mcs.cap.core.measurement.application.model.MeasurementSetMetadataView;
-import org.craft.mcs.cap.core.measurement.application.port.in.ProjectCurrentMaterialStateUseCase;
+import org.craft.mcs.cap.core.measurement.application.port.in.QueryCurrentMeasurementEvidenceUseCase;
 import org.craft.mcs.cap.core.measurement.application.port.in.QueryMeasurementSetMetadataUseCase;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetId;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSubjectReference;
@@ -51,7 +51,7 @@ final class MeasurementFeedstockCurrentProfileProjector {
       )
   );
 
-  private final @NonNull ProjectCurrentMaterialStateUseCase currentStateProjector;
+  private final @NonNull QueryCurrentMeasurementEvidenceUseCase currentMeasurementEvidenceQuery;
   private final @NonNull QueryMeasurementSetMetadataUseCase measurementSetMetadataQuery;
 
   @NonNull List<@NonNull FeedstockCurrentProfileView> project(
@@ -61,7 +61,7 @@ final class MeasurementFeedstockCurrentProfileProjector {
     if (subjects.isEmpty()) {
       return List.of();
     }
-    final Map<FeedstockBatchId, CurrentMaterialStateView> statesByBatch = new LinkedHashMap<>();
+    final Map<FeedstockBatchId, CurrentMeasurementEvidenceView> evidenceByBatch = new LinkedHashMap<>();
     subjects.stream()
         .collect(Collectors.groupingBy(FeedstockCurrentProfileSubject::workspaceId))
         .forEach((workspaceId, workspaceSubjects) -> {
@@ -69,14 +69,17 @@ final class MeasurementFeedstockCurrentProfileProjector {
               .map(FeedstockCurrentProfileSubject::batchId)
               .map(MeasurementFeedstockCurrentProfileProjector::measurementSubject)
               .collect(Collectors.toUnmodifiableSet());
-          currentStateProjector.projectAll(workspaceId, measurementSubjects)
-              .forEach((subject, state) -> statesByBatch.put(FeedstockBatchId.of(subject.id()), state));
+          currentMeasurementEvidenceQuery.getAllCurrent(workspaceId, measurementSubjects)
+              .forEach((subject, evidence) -> evidenceByBatch.put(
+                  FeedstockBatchId.of(subject.id()),
+                  evidence
+              ));
         });
 
-    final var measurementSetIds = statesByBatch.values().stream()
+    final var measurementSetIds = evidenceByBatch.values().stream()
         .flatMap(state -> state.characteristics().stream())
         .filter(characteristic -> PROFILE_CHARACTERISTICS.contains(characteristic.characteristic()))
-        .map(CurrentMaterialCharacteristicView::evidence)
+        .map(CurrentMeasurementCharacteristicView::evidence)
         .map(MeasurementEvidenceView::evidenceReference)
         .map(MeasurementEvidenceReference::measurementSetId)
         .map(MeasurementSetId::of)
@@ -91,22 +94,22 @@ final class MeasurementFeedstockCurrentProfileProjector {
 
     return subjects.stream()
         .map(FeedstockCurrentProfileSubject::batchId)
-        .map(batchId -> toView(batchId, statesByBatch.get(batchId), metadataBySet))
+        .map(batchId -> toView(batchId, evidenceByBatch.get(batchId), metadataBySet))
         .flatMap(Optional::stream)
         .toList();
   }
 
   private static @NonNull Optional<@NonNull FeedstockCurrentProfileView> toView(
       @NonNull FeedstockBatchId batchId,
-      @Nullable CurrentMaterialStateView state,
+      @Nullable CurrentMeasurementEvidenceView currentEvidence,
       @NonNull Map<@NonNull MeasurementSetId, @NonNull MeasurementSetMetadataView> metadataBySet
   ) {
-    if (state == null || state.characteristics().isEmpty()) {
+    if (currentEvidence == null || currentEvidence.characteristics().isEmpty()) {
       return Optional.empty();
     }
-    final var evidence = state.characteristics().stream()
+    final var evidence = currentEvidence.characteristics().stream()
         .filter(characteristic -> PROFILE_CHARACTERISTICS.contains(characteristic.characteristic()))
-        .map(CurrentMaterialCharacteristicView::evidence)
+        .map(CurrentMeasurementCharacteristicView::evidence)
         .toList();
     if (evidence.isEmpty()) {
       return Optional.empty();
@@ -124,13 +127,15 @@ final class MeasurementFeedstockCurrentProfileProjector {
     );
     return Optional.of(new FeedstockCurrentProfileView(
         batchId,
-        state.currentMaterialStateId(),
-        state.value(MeasurementCharacteristic.SPECIFIC_GRAVITY, SpecificGravityValue.class).orElse(null), // NOSONAR
-        state.value(MeasurementCharacteristic.TITRATABLE_ACIDITY, TitratableAcidityValue.class)
+        currentEvidence.currentMaterialStateId(),
+        currentEvidence.value(MeasurementCharacteristic.SPECIFIC_GRAVITY, SpecificGravityValue.class)
             .orElse(null), // NOSONAR
-        state.value(MeasurementCharacteristic.PH, PhValue.class).orElse(null), // NOSONAR
-        state.value(MeasurementCharacteristic.TANNIN, TanninValue.class).orElse(null), // NOSONAR
-        state.value(MeasurementCharacteristic.YAN, YeastAssimilableNitrogenValue.class).orElse(null), // NOSONAR
+        currentEvidence.value(MeasurementCharacteristic.TITRATABLE_ACIDITY, TitratableAcidityValue.class)
+            .orElse(null), // NOSONAR
+        currentEvidence.value(MeasurementCharacteristic.PH, PhValue.class).orElse(null), // NOSONAR
+        currentEvidence.value(MeasurementCharacteristic.TANNIN, TanninValue.class).orElse(null), // NOSONAR
+        currentEvidence.value(MeasurementCharacteristic.YAN, YeastAssimilableNitrogenValue.class)
+            .orElse(null), // NOSONAR
         evidence,
         new FeedstockLatestMeasurementSetView(
             anchorReference.measurementSetId(),

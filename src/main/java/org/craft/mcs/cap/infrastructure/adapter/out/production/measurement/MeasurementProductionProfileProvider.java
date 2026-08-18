@@ -5,8 +5,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.measurement.application.model.CurrentMaterialStateView;
-import org.craft.mcs.cap.core.measurement.application.port.in.ProjectCurrentMaterialStateUseCase;
+import org.craft.mcs.cap.core.measurement.application.model.CurrentMeasurementEvidenceView;
+import org.craft.mcs.cap.core.measurement.application.port.in.QueryCurrentMeasurementEvidenceUseCase;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSubjectReference;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSubjectType;
 import org.craft.mcs.cap.core.production.application.model.ProductionMeasuredProfileView;
@@ -33,14 +33,14 @@ import static java.util.Objects.requireNonNull;
 @RequiredArgsConstructor
 final class MeasurementProductionProfileProvider implements ProductionMeasurementProfileProvider {
 
-  private final @NonNull ProjectCurrentMaterialStateUseCase currentMaterialStateProjector;
+  private final @NonNull QueryCurrentMeasurementEvidenceUseCase currentMeasurementEvidenceQuery;
 
   @Override
   public @NonNull Optional<@NonNull ProductionMeasuredProfileView> findCurrent(
       @NonNull ProductionBatchId batchId
   ) {
     requireNonNull(batchId, "production batch id cannot be null");
-    return toProductionProfile(currentMaterialStateProjector.project(subject(batchId)));
+    return toProductionProfile(currentMeasurementEvidenceQuery.getCurrent(subject(batchId)));
   }
 
   @Override
@@ -56,7 +56,7 @@ final class MeasurementProductionProfileProvider implements ProductionMeasuremen
     final var subjects = batchIds.stream()
         .map(MeasurementProductionProfileProvider::subject)
         .collect(Collectors.toUnmodifiableSet());
-    return currentMaterialStateProjector.projectAll(workspaceId, subjects)
+    return currentMeasurementEvidenceQuery.getAllCurrent(workspaceId, subjects)
         .entrySet()
         .stream()
         .map(entry -> toProductionProfile(entry.getValue())
@@ -73,9 +73,9 @@ final class MeasurementProductionProfileProvider implements ProductionMeasuremen
   }
 
   private static @NonNull Optional<@NonNull ProductionMeasuredProfileView> toProductionProfile(
-      @NonNull CurrentMaterialStateView currentState
+      @NonNull CurrentMeasurementEvidenceView currentEvidence
   ) {
-    final var chemicalEvidence = currentState.characteristics().stream()
+    final var chemicalEvidence = currentEvidence.characteristics().stream()
         .filter(characteristic -> switch (characteristic.characteristic()) {
           case SPECIFIC_GRAVITY, PH, TITRATABLE_ACIDITY, TANNIN, YAN -> true;
           case TEMPERATURE, TURBIDITY -> false;
@@ -85,24 +85,24 @@ final class MeasurementProductionProfileProvider implements ProductionMeasuremen
       return Optional.empty();
     }
     return Optional.of(new ProductionMeasuredProfileView(
-        measured(currentState, MeasurementCharacteristic.SPECIFIC_GRAVITY, SpecificGravityValue.class),
-        measured(currentState, MeasurementCharacteristic.TITRATABLE_ACIDITY, TitratableAcidityValue.class),
-        measured(currentState, MeasurementCharacteristic.PH, PhValue.class),
-        measured(currentState, MeasurementCharacteristic.TANNIN, TanninValue.class),
-        measured(currentState, MeasurementCharacteristic.YAN, YeastAssimilableNitrogenValue.class)
+        measured(currentEvidence, MeasurementCharacteristic.SPECIFIC_GRAVITY, SpecificGravityValue.class),
+        measured(currentEvidence, MeasurementCharacteristic.TITRATABLE_ACIDITY, TitratableAcidityValue.class),
+        measured(currentEvidence, MeasurementCharacteristic.PH, PhValue.class),
+        measured(currentEvidence, MeasurementCharacteristic.TANNIN, TanninValue.class),
+        measured(currentEvidence, MeasurementCharacteristic.YAN, YeastAssimilableNitrogenValue.class)
     ));
   }
 
   private static <T extends MeasuredValue> @Nullable ProductionCurrentCharacteristicView<T> measured(
-      @NonNull CurrentMaterialStateView currentState,
+      @NonNull CurrentMeasurementEvidenceView currentEvidence,
       @NonNull MeasurementCharacteristic characteristic,
       @NonNull Class<T> valueType
   ) {
-    final var evidence = currentState.characteristic(characteristic).orElse(null); // NOSONAR
+    final var evidence = currentEvidence.characteristic(characteristic).orElse(null); // NOSONAR
     if (evidence == null) {
       return null;
     }
-    final var value = currentState.value(characteristic, valueType).orElseThrow();
+    final var value = currentEvidence.value(characteristic, valueType).orElseThrow();
     return ProductionCurrentCharacteristicView.fromMeasurement(value, evidence.evidence());
   }
 }
