@@ -5,7 +5,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.UUID;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchLifecycle;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
+import org.craft.mcs.cap.core.feedstock.batch.domain.model.batch.value.FeedstockType;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.data.annotation.CreatedDate;

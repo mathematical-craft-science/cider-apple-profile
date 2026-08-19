@@ -1,6 +1,6 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.abv.mapper;
 
-import org.craft.mcs.cap.core.appleprofile.application.abv.port.in.AppleVarietyPotentialAbvPrediction;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.abv.port.in.AppleVarietyPotentialAbvPrediction;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.abv.mapper.PotentialAbvPredictionRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.abv.dto.AppleVarietyPotentialAbvResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profilecharacteristic.mapper.ProfileCharacteristicRestMapper;

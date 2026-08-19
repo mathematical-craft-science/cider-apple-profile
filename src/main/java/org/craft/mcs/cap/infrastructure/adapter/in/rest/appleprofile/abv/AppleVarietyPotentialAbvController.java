@@ -2,8 +2,8 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.abv;
 
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.appleprofile.application.abv.port.in.PredictAppleVarietyPotentialAbvUseCase;
-import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyId;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.abv.port.in.PredictAppleVarietyPotentialAbvUseCase;
+import org.craft.mcs.cap.core.appleprofile.catalog.domain.model.AppleVarietyId;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.abv.dto.AppleVarietyPotentialAbvResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.abv.mapper.AppleVarietyPotentialAbvRestMapper;
 import org.jspecify.annotations.NonNull;

@@ -2,8 +2,8 @@ package org.craft.mcs.cap.shared.testing;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockCurrentProfileView;
-import org.craft.mcs.cap.core.feedstock.application.currentprofile.model.FeedstockLatestMeasurementSetView;
+import org.craft.mcs.cap.core.feedstock.batch.application.api.currentprofile.FeedstockCurrentProfileView;
+import org.craft.mcs.cap.core.feedstock.batch.application.api.currentprofile.FeedstockLatestMeasurementSetView;
 import org.craft.mcs.cap.shared.application.measurement.MeasurementEvidenceReference;
 import org.craft.mcs.cap.shared.application.measurement.MeasurementEvidenceSnapshot;
 import org.craft.mcs.cap.shared.application.measurement.MeasurementEvidenceView;

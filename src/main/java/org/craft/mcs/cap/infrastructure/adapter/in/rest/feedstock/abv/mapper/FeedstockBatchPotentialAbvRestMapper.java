@@ -1,6 +1,6 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.abv.mapper;
 
-import org.craft.mcs.cap.core.feedstock.application.analysis.abv.port.in.FeedstockBatchCurrentPotentialAbvPrediction;
+import org.craft.mcs.cap.core.feedstock.batch.application.analysis.abv.port.in.FeedstockBatchCurrentPotentialAbvPrediction;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.abv.mapper.PotentialAbvPredictionRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.abv.dto.FeedstockBatchCurrentPotentialAbvResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.common.mapper.FeedstockProfileEvidenceRestMapper;

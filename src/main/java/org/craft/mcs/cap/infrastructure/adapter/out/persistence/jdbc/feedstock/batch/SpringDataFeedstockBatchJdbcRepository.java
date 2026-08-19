@@ -6,7 +6,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockType;
+import org.craft.mcs.cap.core.feedstock.batch.domain.model.batch.value.FeedstockType;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.feedstock.batch.entity.FeedstockBatchJdbcEntity;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchLifecycle;
 import org.jspecify.annotations.NonNull;

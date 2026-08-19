@@ -1,9 +1,9 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.profiletarget.feedstock.mapper;
 
-import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.FeedstockBatchProfileTargetCandidate;
-import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.FeedstockBatchProfileTargetQuery;
-import org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget.port.in.FeedstockBatchProfileTargetCandidates;
-import org.craft.mcs.cap.core.feedstock.application.analysis.common.model.FeedstockAnalysisCandidateFilters;
+import org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.port.in.FeedstockBatchProfileTargetCandidate;
+import org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.port.in.FeedstockBatchProfileTargetQuery;
+import org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.port.in.FeedstockBatchProfileTargetCandidates;
+import org.craft.mcs.cap.core.feedstock.planning.application.candidate.model.FeedstockPlanningProfileFilters;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.profiletarget.common.mapper.CompositionContributionRoleRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.profiletarget.feedstock.dto.FeedstockBatchProfileTargetCandidateResponse;
@@ -19,7 +19,7 @@ import org.jspecify.annotations.NonNull;
 import static java.util.Objects.requireNonNull;
 import static java.util.Objects.requireNonNullElse;
 import static org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.profiletarget.common.mapper.ProfileTargetCandidateCommonRestMapper.toWeights;
-import static org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.common.mapper.FeedstockCriteriaRestMapper.toBatchCriteria;
+import static org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.common.mapper.FeedstockCriteriaRestMapper.toPlanningBatchCriteria;
 import static org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.common.mapper.FeedstockCriteriaRestMapper.toSeason;
 import static org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.mapper.JolicoeurSugarAcidityGraphCriteriaRestMapper.toZoneCriteria;
 
@@ -36,8 +36,8 @@ public final class FeedstockBatchProfileTargetCandidateRestMapper {
 
     return new FeedstockBatchProfileTargetQuery(
         WorkspaceId.of(request.workspaceId()),
-        new FeedstockAnalysisCandidateFilters(
-            toBatchCriteria(request.batchIds()),
+        new FeedstockPlanningProfileFilters(
+            toPlanningBatchCriteria(request.batchIds()),
             toSeason(request.season())
         ),
         toZoneCriteria(request.zone()),

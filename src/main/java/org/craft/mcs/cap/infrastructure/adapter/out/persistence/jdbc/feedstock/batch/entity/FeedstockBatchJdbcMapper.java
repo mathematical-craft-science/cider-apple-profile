@@ -2,11 +2,11 @@ package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.feedstock.
 
 import static java.util.Objects.requireNonNull;
 
-import org.craft.mcs.cap.core.feedstock.application.batch.model.FeedstockBatchSummary;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSource;
+import org.craft.mcs.cap.core.feedstock.batch.application.api.batch.FeedstockBatchSummary;
+import org.craft.mcs.cap.core.feedstock.batch.domain.model.batch.FeedstockBatch;
+import org.craft.mcs.cap.core.feedstock.batch.domain.model.batch.FeedstockBatchId;
+import org.craft.mcs.cap.core.feedstock.batch.domain.model.batch.value.FeedstockSeason;
+import org.craft.mcs.cap.core.feedstock.batch.domain.model.batch.value.FeedstockSource;
 import org.craft.mcs.cap.shared.application.persistence.AggregateRevision;
 import org.craft.mcs.cap.shared.application.persistence.VersionedAggregate;
 import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;

@@ -2,10 +2,10 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.error;
 
 
 import java.net.URI;
-import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchHasNoMeasurementsException;
-import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchNotFoundException;
-import org.craft.mcs.cap.core.feedstock.application.FeedstockBatchOwnershipMismatchException;
-import org.craft.mcs.cap.core.feedstock.application.planning.composition.InsufficientFeedstockCompositionSourcesException;
+import org.craft.mcs.cap.core.feedstock.batch.application.FeedstockBatchHasNoMeasurementsException;
+import org.craft.mcs.cap.core.feedstock.batch.application.FeedstockBatchNotFoundException;
+import org.craft.mcs.cap.core.feedstock.batch.application.FeedstockBatchOwnershipMismatchException;
+import org.craft.mcs.cap.core.feedstock.planning.application.composition.InsufficientFeedstockCompositionSourcesException;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.abv.FeedstockBatchPotentialAbvController;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.batch.FeedstockBatchController;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.composition.FeedstockBatchCompositionPlanningController;

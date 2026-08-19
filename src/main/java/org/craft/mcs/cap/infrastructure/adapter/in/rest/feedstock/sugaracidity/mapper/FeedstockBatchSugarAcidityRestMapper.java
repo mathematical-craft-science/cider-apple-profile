@@ -1,12 +1,12 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.sugaracidity.mapper;
 
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.feedstock.application.analysis.common.model.FeedstockAnalysisCandidatePagePosition;
+import org.craft.mcs.cap.core.feedstock.batch.application.api.currentprofile.FeedstockCurrentProfilePagePosition;
 import org.craft.mcs.cap.core.profileanalysis.graph.zone.domain.JolicoeurSugarAcidityZone;
 import org.craft.mcs.cap.core.profileanalysis.graph.zone.domain.JolicoeurSugarAcidityZoneAssessment;
-import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockBatchCurrentSugarAcidityZonePointQuery;
-import org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.port.in.FeedstockBatchCurrentSugarAcidityZoneResult;
-import org.craft.mcs.cap.core.feedstock.application.analysis.common.model.FeedstockAnalysisCandidateFilters;
+import org.craft.mcs.cap.core.feedstock.batch.application.analysis.sugaracidity.port.in.FeedstockBatchCurrentSugarAcidityZonePointQuery;
+import org.craft.mcs.cap.core.feedstock.batch.application.analysis.sugaracidity.port.in.FeedstockBatchCurrentSugarAcidityZoneResult;
+import org.craft.mcs.cap.core.feedstock.batch.application.api.currentprofile.FeedstockCurrentProfileFilters;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.sugaracidity.dto.FeedstockBatchCurrentSugarAcidityZonePointBatchResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.sugaracidity.dto.FeedstockBatchCurrentSugarAcidityZonePointQueryRequest;
@@ -40,7 +40,7 @@ public final class FeedstockBatchSugarAcidityRestMapper {
   ) {
     requireNonNull(request, "feedstock batch current sugar-acidity zone point query request cannot be null");
     final var workspaceId = WorkspaceId.of(request.workspaceId());
-    final var filters = new FeedstockAnalysisCandidateFilters(
+    final var filters = new FeedstockCurrentProfileFilters(
         toBatchCriteria(request.batchId()),
         toSeason(request.season())
     );
@@ -82,7 +82,7 @@ public final class FeedstockBatchSugarAcidityRestMapper {
   public @NonNull FeedstockBatchCurrentSugarAcidityZonePointBatchResponse toResponse(
       @NonNull CursorPage<
           @NonNull FeedstockBatchCurrentSugarAcidityZoneResult,
-          @NonNull FeedstockAnalysisCandidatePagePosition
+          @NonNull FeedstockCurrentProfilePagePosition
       > page,
       @NonNull FeedstockBatchCurrentSugarAcidityZonePointQuery query
   ) {

@@ -2,8 +2,8 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.sugaracidity.
 
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.feedstock.application.analysis.common.model.FeedstockAnalysisCandidatePagePosition;
-import org.craft.mcs.cap.core.feedstock.application.analysis.common.model.FeedstockAnalysisCandidateFilters;
+import org.craft.mcs.cap.core.feedstock.batch.application.api.currentprofile.FeedstockCurrentProfilePagePosition;
+import org.craft.mcs.cap.core.feedstock.batch.application.api.currentprofile.FeedstockCurrentProfileFilters;
 import org.craft.mcs.cap.core.profileanalysis.graph.application.model.JolicoeurSugarAcidityGraphCriteria;
 import org.craft.mcs.cap.core.profileanalysis.graph.application.model.JolicoeurSugarAcidityZoneCriteria;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
@@ -28,29 +28,29 @@ public final class FeedstockSugarAcidityCursorAdapter {
 
   private final @NonNull CursorTokenCodec cursorTokenCodec;
 
-  public @Nullable FeedstockAnalysisCandidatePagePosition decodeCurrent(
+  public @Nullable FeedstockCurrentProfilePagePosition decodeCurrent(
       @Nullable String cursor,
       @NonNull WorkspaceId workspaceId,
-      @NonNull FeedstockAnalysisCandidateFilters filters,
+      @NonNull FeedstockCurrentProfileFilters filters,
       @Nullable JolicoeurSugarAcidityGraphCriteria graphCriteria
   ) {
     return decode(cursor, CURRENT_SCOPE, workspaceId, filters, graphCriteria);
   }
 
   public @Nullable String encodeCurrent(
-      @Nullable FeedstockAnalysisCandidatePagePosition position,
+      @Nullable FeedstockCurrentProfilePagePosition position,
       @NonNull WorkspaceId workspaceId,
-      @NonNull FeedstockAnalysisCandidateFilters filters,
+      @NonNull FeedstockCurrentProfileFilters filters,
       @Nullable JolicoeurSugarAcidityGraphCriteria graphCriteria
   ) {
     return encode(position, CURRENT_SCOPE, workspaceId, filters, graphCriteria);
   }
 
-  private @Nullable FeedstockAnalysisCandidatePagePosition decode(
+  private @Nullable FeedstockCurrentProfilePagePosition decode(
       @Nullable String cursor,
       @NonNull CursorScope scope,
       @NonNull WorkspaceId workspaceId,
-      @NonNull FeedstockAnalysisCandidateFilters filters,
+      @NonNull FeedstockCurrentProfileFilters filters,
       @Nullable JolicoeurSugarAcidityGraphCriteria graphCriteria
   ) {
     requireNonNull(scope, "cursor scope cannot be null");
@@ -63,15 +63,15 @@ public final class FeedstockSugarAcidityCursorAdapter {
     return cursorTokenCodec.decode(
         cursor.strip(),
         binding(scope, workspaceId, filters, graphCriteria),
-        FeedstockAnalysisCandidatePagePosition.class
+        FeedstockCurrentProfilePagePosition.class
     );
   }
 
   private @Nullable String encode(
-      @Nullable FeedstockAnalysisCandidatePagePosition position,
+      @Nullable FeedstockCurrentProfilePagePosition position,
       @NonNull CursorScope scope,
       @NonNull WorkspaceId workspaceId,
-      @NonNull FeedstockAnalysisCandidateFilters filters,
+      @NonNull FeedstockCurrentProfileFilters filters,
       @Nullable JolicoeurSugarAcidityGraphCriteria graphCriteria
   ) {
     requireNonNull(scope, "cursor scope cannot be null");
@@ -85,7 +85,7 @@ public final class FeedstockSugarAcidityCursorAdapter {
   private static @NonNull CursorBinding binding(
       @NonNull CursorScope scope,
       @NonNull WorkspaceId workspaceId,
-      @NonNull FeedstockAnalysisCandidateFilters filters,
+      @NonNull FeedstockCurrentProfileFilters filters,
       @Nullable JolicoeurSugarAcidityGraphCriteria graphCriteria
   ) {
     return CursorBinding.boundTo(
@@ -98,7 +98,7 @@ public final class FeedstockSugarAcidityCursorAdapter {
     );
   }
 
-  private static @NonNull String batches(@NonNull FeedstockAnalysisCandidateFilters filters) {
+  private static @NonNull String batches(@NonNull FeedstockCurrentProfileFilters filters) {
     return filters.batch() == null
         ? ""
         : filters.batch().batchIds().stream() // NOSONAR
@@ -107,7 +107,7 @@ public final class FeedstockSugarAcidityCursorAdapter {
             .collect(Collectors.joining(","));
   }
 
-  private static @NonNull String season(@NonNull FeedstockAnalysisCandidateFilters filters) {
+  private static @NonNull String season(@NonNull FeedstockCurrentProfileFilters filters) {
     return filters.season() == null
         ? ""
         : filters.season().startsOn() + ":" + filters.season().endsOn(); // NOSONAR

@@ -1,7 +1,7 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.detail.mapper;
 
-import org.craft.mcs.cap.core.feedstock.application.detail.model.FeedstockBatchCurrentProfileView;
-import org.craft.mcs.cap.core.feedstock.application.detail.model.FeedstockBatchDetailView;
+import org.craft.mcs.cap.core.feedstock.batch.application.detail.model.FeedstockBatchCurrentProfileView;
+import org.craft.mcs.cap.core.feedstock.batch.application.detail.model.FeedstockBatchDetailView;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.batch.mapper.FeedstockBatchRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.common.mapper.FeedstockProfileEvidenceRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.currentprofile.mapper.FeedstockCurrentProfileRestMapper;

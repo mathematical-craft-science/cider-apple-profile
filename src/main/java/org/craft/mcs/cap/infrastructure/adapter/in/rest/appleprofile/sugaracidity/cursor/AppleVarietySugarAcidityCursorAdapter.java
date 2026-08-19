@@ -3,8 +3,8 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.sugaracidi
 import java.util.Locale;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.appleprofile.application.catalog.model.AppleVarietyCatalogPagePosition;
-import org.craft.mcs.cap.core.appleprofile.application.analysis.common.model.AppleVarietyAnalysisFilters;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.profile.model.AppleVarietyAnalysisPagePosition;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.profile.model.AppleVarietyAnalysisFilters;
 import org.craft.mcs.cap.core.profileanalysis.graph.application.model.JolicoeurSugarAcidityGraphCriteria;
 import org.craft.mcs.cap.core.profileanalysis.graph.application.model.JolicoeurSugarAcidityZoneCriteria;
 import org.craft.mcs.cap.shared.application.query.TextSearchCriteria;
@@ -29,7 +29,7 @@ public final class AppleVarietySugarAcidityCursorAdapter {
 
   private final @NonNull CursorTokenCodec cursorTokenCodec;
 
-  public @Nullable AppleVarietyCatalogPagePosition decode(
+  public @Nullable AppleVarietyAnalysisPagePosition decode(
       @Nullable String cursor,
       @NonNull AppleVarietyAnalysisFilters filters,
       @Nullable JolicoeurSugarAcidityGraphCriteria graphCriteria
@@ -42,12 +42,12 @@ public final class AppleVarietySugarAcidityCursorAdapter {
     return cursorTokenCodec.decode(
         cursor.strip(),
         binding(filters, graphCriteria),
-        AppleVarietyCatalogPagePosition.class
+        AppleVarietyAnalysisPagePosition.class
     );
   }
 
   public @Nullable String encode(
-      @Nullable AppleVarietyCatalogPagePosition position,
+      @Nullable AppleVarietyAnalysisPagePosition position,
       @NonNull AppleVarietyAnalysisFilters filters,
       @Nullable JolicoeurSugarAcidityGraphCriteria graphCriteria
   ) {

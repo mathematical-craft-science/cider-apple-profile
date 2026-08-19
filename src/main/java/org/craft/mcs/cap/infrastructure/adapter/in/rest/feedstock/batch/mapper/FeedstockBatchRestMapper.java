@@ -1,13 +1,13 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.batch.mapper;
 
-import org.craft.mcs.cap.core.feedstock.application.batch.port.in.CreateFeedstockBatchCommand;
-import org.craft.mcs.cap.core.feedstock.application.batch.port.in.FeedstockBatchCreated;
-import org.craft.mcs.cap.core.feedstock.application.batch.model.FeedstockBatchView;
-import org.craft.mcs.cap.core.feedstock.application.batch.port.in.UpdateFeedstockBatchCommand;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
+import org.craft.mcs.cap.core.feedstock.batch.application.batch.port.in.CreateFeedstockBatchCommand;
+import org.craft.mcs.cap.core.feedstock.batch.application.batch.port.in.FeedstockBatchCreated;
+import org.craft.mcs.cap.core.feedstock.batch.application.api.batch.FeedstockBatchView;
+import org.craft.mcs.cap.core.feedstock.batch.application.batch.port.in.UpdateFeedstockBatchCommand;
+import org.craft.mcs.cap.core.feedstock.batch.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSeason;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.value.FeedstockSource;
+import org.craft.mcs.cap.core.feedstock.batch.domain.model.batch.value.FeedstockSeason;
+import org.craft.mcs.cap.core.feedstock.batch.domain.model.batch.value.FeedstockSource;
 import org.craft.mcs.cap.shared.kernel.identity.VesselId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.batch.dto.CreateFeedstockBatchRequest;

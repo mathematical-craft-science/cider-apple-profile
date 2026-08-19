@@ -3,9 +3,9 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.composition.m
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
-import org.craft.mcs.cap.core.feedstock.application.analysis.common.model.FeedstockAnalysisCandidateFilters;
-import org.craft.mcs.cap.core.feedstock.application.planning.composition.port.in.OptimizeFeedstockBatchCompositionCommand;
-import org.craft.mcs.cap.core.feedstock.application.planning.composition.port.in.OptimizeFeedstockBatchCompositionResult;
+import org.craft.mcs.cap.core.feedstock.planning.application.candidate.model.FeedstockPlanningProfileFilters;
+import org.craft.mcs.cap.core.feedstock.planning.application.composition.port.in.OptimizeFeedstockBatchCompositionCommand;
+import org.craft.mcs.cap.core.feedstock.planning.application.composition.port.in.OptimizeFeedstockBatchCompositionResult;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.AbsoluteCompositionVolume;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionCalculatorCode;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionSource;
@@ -33,7 +33,7 @@ import org.jspecify.annotations.Nullable;
 import static java.util.Objects.requireNonNull;
 import static java.util.Objects.requireNonNullElse;
 import static org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.common.mapper.FeedstockCriteriaRestMapper
-    .toBatchCriteria;
+    .toPlanningBatchCriteria;
 import static org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.common.mapper.FeedstockCriteriaRestMapper
     .toSeason;
 import static org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.mapper.JolicoeurSugarAcidityGraphCriteriaRestMapper
@@ -78,8 +78,8 @@ public final class FeedstockBatchCompositionOptimizationRestMapper {
 
     return new OptimizeFeedstockBatchCompositionCommand( // NOSONAR
         WorkspaceId.of(request.workspaceId()),
-        new FeedstockAnalysisCandidateFilters(
-            toBatchCriteria(request.batchIds()),
+        new FeedstockPlanningProfileFilters(
+            toPlanningBatchCriteria(request.batchIds()),
             toSeason(request.season())
         ),
         toZoneCriteria(request.zone()),

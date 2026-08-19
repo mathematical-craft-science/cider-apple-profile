@@ -3,7 +3,7 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.readiness.map
 import java.math.BigDecimal;
 import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.FermentationStartReadinessAssessment;
 import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.FermentationStartReadinessCheck;
-import org.craft.mcs.cap.core.feedstock.application.analysis.readiness.port.in.FeedstockBatchCurrentFermentationStartReadinessResult;
+import org.craft.mcs.cap.core.feedstock.batch.application.analysis.readiness.port.in.FeedstockBatchCurrentFermentationStartReadinessResult;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.readiness.dto.FeedstockBatchCurrentFermentationStartReadinessResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.readiness.dto.FermentationStartReadinessAssessmentResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.readiness.dto.FermentationStartReadinessCheckResponse;

@@ -1,11 +1,11 @@
 package org.craft.mcs.cap.infrastructure.adapter.out.measurement;
 
-import org.craft.mcs.cap.core.feedstock.application.batch.port.in.FeedstockMeasurementChangePolicyUseCase;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
+import org.craft.mcs.cap.core.feedstock.batch.application.batch.port.in.FeedstockMeasurementChangePolicyUseCase;
+import org.craft.mcs.cap.core.feedstock.batch.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSubjectReference;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSubjectType;
-import org.craft.mcs.cap.core.production.application.port.in.ProductionMeasurementChangePolicyUseCase;
-import org.craft.mcs.cap.core.production.domain.model.ProductionBatchId;
+import org.craft.mcs.cap.core.production.batch.application.port.in.ProductionMeasurementChangePolicyUseCase;
+import org.craft.mcs.cap.core.production.batch.domain.model.ProductionBatchId;
 import org.junit.jupiter.api.Test;
 
 import static org.mockito.Mockito.mock;

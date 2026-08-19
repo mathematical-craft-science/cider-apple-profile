@@ -4,8 +4,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockMaterialStateQuery;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
+import org.craft.mcs.cap.core.feedstock.batch.application.api.batch.FeedstockBatchSummary;
+import org.craft.mcs.cap.core.feedstock.batch.application.batch.port.out.FeedstockMaterialStateQuery;
+import org.craft.mcs.cap.core.feedstock.batch.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.feedstock.batch.entity.FeedstockBatchJdbcMapper;
 import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
@@ -40,8 +41,8 @@ class JdbcFeedstockMaterialStateQuery implements FeedstockMaterialStateQuery {
         .stream()
         .map(FeedstockBatchJdbcMapper::toSummary)
         .collect(Collectors.toUnmodifiableMap(
-            summary -> summary.batchId(),
-            summary -> summary.currentMaterialStateId()
+            FeedstockBatchSummary::batchId,
+            FeedstockBatchSummary::currentMaterialStateId
         ));
   }
 }

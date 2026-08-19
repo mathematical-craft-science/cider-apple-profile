@@ -1,13 +1,19 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.production;
 
 import java.net.URI;
-import org.craft.mcs.cap.core.production.application.ProductionSourceInsufficientAvailableVolumeException;
-import org.craft.mcs.cap.core.production.application.ProductionSourceNotFoundException;
-import org.craft.mcs.cap.core.production.application.ProductionSourceOwnershipMismatchException;
-import org.craft.mcs.cap.core.production.application.ProductionSourceProfileUnavailableException;
-import org.craft.mcs.cap.core.production.domain.model.ProductionSourceReference;
+import org.craft.mcs.cap.core.production.batch.application.ProductionSourceInsufficientAvailableVolumeException;
+import org.craft.mcs.cap.core.production.batch.application.ProductionSourceNotFoundException;
+import org.craft.mcs.cap.core.production.batch.application.ProductionSourceOwnershipMismatchException;
+import org.craft.mcs.cap.core.production.batch.application.ProductionSourceProfileUnavailableException;
+import org.craft.mcs.cap.core.production.batch.domain.model.ProductionSourceReference;
+import org.craft.mcs.cap.core.production.planning.application.ProductionPlanningSourceInsufficientVolumeException;
+import org.craft.mcs.cap.core.production.planning.application.ProductionPlanningSourceNotFoundException;
+import org.craft.mcs.cap.core.production.planning.application.ProductionPlanningSourceOwnershipMismatchException;
+import org.craft.mcs.cap.core.production.planning.application.ProductionPlanningSourceProfileUnavailableException;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.measurement.CanonicalUnitLabels;
 import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
+import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.jspecify.annotations.NonNull;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -43,13 +49,26 @@ public final class ProductionExceptionHandler {
   public @NonNull ResponseEntity<@NonNull ProblemDetail> handleSourceNotFound(
       @NonNull ProductionSourceNotFoundException exception
   ) {
+    return sourceNotFound(exception.sourceReference());
+  }
+
+  @ExceptionHandler(ProductionPlanningSourceNotFoundException.class)
+  public @NonNull ResponseEntity<@NonNull ProblemDetail> handlePlanningSourceNotFound(
+      @NonNull ProductionPlanningSourceNotFoundException exception
+  ) {
+    return sourceNotFound(exception.sourceReference());
+  }
+
+  private static @NonNull ResponseEntity<@NonNull ProblemDetail> sourceNotFound(
+      @NonNull ProductionSourceReference sourceReference
+  ) {
     final var problem = create(
         NOT_FOUND,
         SOURCE_NOT_FOUND,
         "Production source not found",
         "The referenced production source does not exist."
     );
-    addSourceProperties(problem, exception.sourceReference());
+    addSourceProperties(problem, sourceReference);
 
     return response(NOT_FOUND, problem);
   }
@@ -58,15 +77,38 @@ public final class ProductionExceptionHandler {
   public @NonNull ResponseEntity<@NonNull ProblemDetail> handleOwnershipMismatch(
       @NonNull ProductionSourceOwnershipMismatchException exception
   ) {
+    return ownershipMismatch(
+        exception.sourceReference(),
+        exception.expectedWorkspaceId(),
+        exception.actualWorkspaceId()
+    );
+  }
+
+  @ExceptionHandler(ProductionPlanningSourceOwnershipMismatchException.class)
+  public @NonNull ResponseEntity<@NonNull ProblemDetail> handlePlanningOwnershipMismatch(
+      @NonNull ProductionPlanningSourceOwnershipMismatchException exception
+  ) {
+    return ownershipMismatch(
+        exception.sourceReference(),
+        exception.expectedWorkspaceId(),
+        exception.actualWorkspaceId()
+    );
+  }
+
+  private static @NonNull ResponseEntity<@NonNull ProblemDetail> ownershipMismatch(
+      @NonNull ProductionSourceReference sourceReference,
+      @NonNull WorkspaceId expectedWorkspaceId,
+      @NonNull WorkspaceId actualWorkspaceId
+  ) {
     final var problem = create(
         FORBIDDEN,
         SOURCE_OWNERSHIP_MISMATCH,
         "Production source belongs to another workspace",
         "Production source cannot be used by this workspace."
     );
-    addSourceProperties(problem, exception.sourceReference());
-    problem.setProperty("expectedWorkspaceId", exception.expectedWorkspaceId().value().toString());
-    problem.setProperty("actualWorkspaceId", exception.actualWorkspaceId().value().toString());
+    addSourceProperties(problem, sourceReference);
+    problem.setProperty("expectedWorkspaceId", expectedWorkspaceId.value().toString());
+    problem.setProperty("actualWorkspaceId", actualWorkspaceId.value().toString());
 
     return response(FORBIDDEN, problem);
   }
@@ -75,20 +117,43 @@ public final class ProductionExceptionHandler {
   public @NonNull ResponseEntity<@NonNull ProblemDetail> handleInsufficientVolume(
       @NonNull ProductionSourceInsufficientAvailableVolumeException exception
   ) {
+    return insufficientVolume(
+        exception.sourceReference(),
+        exception.requestedVolume(),
+        exception.availableVolume()
+    );
+  }
+
+  @ExceptionHandler(ProductionPlanningSourceInsufficientVolumeException.class)
+  public @NonNull ResponseEntity<@NonNull ProblemDetail> handlePlanningInsufficientVolume(
+      @NonNull ProductionPlanningSourceInsufficientVolumeException exception
+  ) {
+    return insufficientVolume(
+        exception.sourceReference(),
+        exception.requestedVolume(),
+        exception.availableVolume()
+    );
+  }
+
+  private static @NonNull ResponseEntity<@NonNull ProblemDetail> insufficientVolume(
+      @NonNull ProductionSourceReference sourceReference,
+      @NonNull VolumeValue requestedVolume,
+      @NonNull VolumeValue availableVolume
+  ) {
     final var problem = create(
         UNPROCESSABLE_ENTITY,
         INSUFFICIENT_AVAILABLE_VOLUME,
         "Insufficient available source volume",
         "Requested production source volume exceeds available source volume."
     );
-    addSourceProperties(problem, exception.sourceReference());
+    addSourceProperties(problem, sourceReference);
     problem.setProperty(
         "requestedVolume",
-        new DecimalQuantityResponse(exception.requestedVolume().liters(), CanonicalUnitLabels.VOLUME)
+        new DecimalQuantityResponse(requestedVolume.liters(), CanonicalUnitLabels.VOLUME)
     );
     problem.setProperty(
         "availableVolume",
-        new DecimalQuantityResponse(exception.availableVolume().liters(), CanonicalUnitLabels.VOLUME)
+        new DecimalQuantityResponse(availableVolume.liters(), CanonicalUnitLabels.VOLUME)
     );
 
     return response(UNPROCESSABLE_ENTITY, problem);
@@ -98,13 +163,26 @@ public final class ProductionExceptionHandler {
   public @NonNull ResponseEntity<@NonNull ProblemDetail> handleSourceProfileUnavailable(
       @NonNull ProductionSourceProfileUnavailableException exception
   ) {
+    return sourceProfileUnavailable(exception.sourceReference());
+  }
+
+  @ExceptionHandler(ProductionPlanningSourceProfileUnavailableException.class)
+  public @NonNull ResponseEntity<@NonNull ProblemDetail> handlePlanningSourceProfileUnavailable(
+      @NonNull ProductionPlanningSourceProfileUnavailableException exception
+  ) {
+    return sourceProfileUnavailable(exception.sourceReference());
+  }
+
+  private static @NonNull ResponseEntity<@NonNull ProblemDetail> sourceProfileUnavailable(
+      @NonNull ProductionSourceReference sourceReference
+  ) {
     final var problem = create(
         UNPROCESSABLE_ENTITY,
         SOURCE_PROFILE_UNAVAILABLE,
         "Production source profile unavailable",
         "The referenced production source has no current characteristics for composition."
     );
-    addSourceProperties(problem, exception.sourceReference());
+    addSourceProperties(problem, sourceReference);
 
     return response(UNPROCESSABLE_ENTITY, problem);
   }

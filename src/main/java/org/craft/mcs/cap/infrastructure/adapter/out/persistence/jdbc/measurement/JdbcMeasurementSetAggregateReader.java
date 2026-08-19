@@ -1,5 +1,7 @@
 package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.measurement;
 
+import static java.util.Objects.requireNonNull;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Instant;
@@ -186,11 +188,11 @@ final class JdbcMeasurementSetAggregateReader {
       @NonNull MeasurementSetId measurementSetId
   ) {
     try {
-      return Optional.of(jdbcTemplate.queryForObject(
+      return Optional.of(requireNonNull(jdbcTemplate.queryForObject(
           FIND_SET,
           new MapSqlParameterSource("measurementSetId", measurementSetId.value()),
           (resultSet, rowNumber) -> mapSet(resultSet)
-      ));
+      ), "measurement set query result cannot be null"));
     } catch (EmptyResultDataAccessException exception) {
       return Optional.empty();
     }

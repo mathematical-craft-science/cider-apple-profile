@@ -1,6 +1,6 @@
 package org.craft.mcs.cap.shared.testing;
 
-import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyReferenceProfile;
+import org.craft.mcs.cap.core.appleprofile.catalog.domain.model.AppleVarietyReferenceProfile;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;

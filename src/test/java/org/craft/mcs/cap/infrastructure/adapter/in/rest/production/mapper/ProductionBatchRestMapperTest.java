@@ -7,25 +7,26 @@ import org.craft.mcs.cap.core.profileanalysis.abv.domain.FixedFinalGravityPredic
 import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPredictor;
 import org.craft.mcs.cap.core.profileanalysis.abv.domain.PredictionConfidence;
 import org.craft.mcs.cap.core.profileanalysis.abv.domain.StandardGravityDropAbvPredictionStrategy;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
+import org.craft.mcs.cap.core.feedstock.batch.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.application.material.VesselReferenceView;
-import org.craft.mcs.cap.core.production.candidate.application.confirmation.port.in.ProductionBatchCreated;
-import org.craft.mcs.cap.core.production.application.model.ProductionBatchDetailsView;
-import org.craft.mcs.cap.core.production.application.port.in.UpdateProductionBatchCommand;
-import org.craft.mcs.cap.core.production.application.model.ProductionCurrentProfileView;
-import org.craft.mcs.cap.core.production.application.model.ProductionCurrentCharacteristicView;
-import org.craft.mcs.cap.core.production.application.model.ProductionBatchView;
-import org.craft.mcs.cap.core.production.candidate.application.model.ProductionBatchCandidateView;
-import org.craft.mcs.cap.core.production.candidate.domain.model.ProductionBatchCandidateId;
-import org.craft.mcs.cap.core.production.candidate.domain.model.ProductionBatchCandidateStatus;
-import org.craft.mcs.cap.core.production.domain.model.ProductionBatch;
-import org.craft.mcs.cap.core.production.domain.model.ProductionBatchId;
-import org.craft.mcs.cap.core.production.domain.model.ProductionSourceComponent;
-import org.craft.mcs.cap.core.production.domain.model.ProductionSourceComposition;
-import org.craft.mcs.cap.core.production.domain.model.ProductionSourceReference;
+import org.craft.mcs.cap.core.production.planning.application.confirmation.port.in.ProductionBatchCreated;
+import org.craft.mcs.cap.core.production.planning.application.confirmation.model.ProductionBatchConfirmationResult;
+import org.craft.mcs.cap.core.production.batch.application.model.ProductionBatchDetailsView;
+import org.craft.mcs.cap.core.production.batch.application.port.in.UpdateProductionBatchCommand;
+import org.craft.mcs.cap.core.production.batch.application.model.ProductionCurrentProfileView;
+import org.craft.mcs.cap.core.production.batch.application.model.ProductionCurrentCharacteristicView;
+import org.craft.mcs.cap.core.production.batch.application.model.ProductionBatchView;
+import org.craft.mcs.cap.core.production.planning.application.model.ProductionBatchCandidateView;
+import org.craft.mcs.cap.core.production.planning.domain.model.ProductionBatchCandidateId;
+import org.craft.mcs.cap.core.production.planning.domain.model.ProductionBatchCandidateStatus;
+import org.craft.mcs.cap.core.production.batch.domain.model.ProductionBatch;
+import org.craft.mcs.cap.core.production.batch.domain.model.ProductionBatchId;
+import org.craft.mcs.cap.core.production.batch.domain.model.ProductionSourceComponent;
+import org.craft.mcs.cap.core.production.batch.domain.model.ProductionSourceComposition;
+import org.craft.mcs.cap.core.production.batch.domain.model.ProductionSourceReference;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
-import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
+import org.craft.mcs.cap.core.production.batch.domain.model.value.ProductionProfileSnapshot;
 import org.craft.mcs.cap.testsupport.VesselTestFixtures;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.ProductionBatchResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.UpdateProductionBatchRequest;
@@ -120,8 +121,7 @@ class ProductionBatchRestMapperTest {
     final var candidate = productionCandidateView();
     final var response = ProductionBatchRestMapper.toResponse(
         new ProductionBatchCreated(
-            productionBatchView(productionBatch()),
-            VesselTestFixtures.reference(VesselTestFixtures.PRODUCTION_VESSEL_ID, "Tank F-03"),
+            confirmationResult(productionBatchView(productionBatch())),
             candidate
         )
     );
@@ -196,6 +196,18 @@ class ProductionBatchRestMapperTest {
 
   private static VesselReferenceView vesselReference(ProductionBatchView batch) {
     return VesselTestFixtures.reference(batch.vesselId(), "Tank F-03");
+  }
+
+  private static ProductionBatchConfirmationResult confirmationResult(ProductionBatchView batch) {
+    return new ProductionBatchConfirmationResult(
+        batch.batchId(),
+        batch.workspaceId(),
+        batch.name(),
+        vesselReference(batch),
+        batch.lifecycle(),
+        batch.alcoholicFermentationState(),
+        batch.note()
+    );
   }
 
   private static ProductionProfileSnapshot profileSnapshot() {
