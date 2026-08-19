@@ -2,9 +2,9 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.production;
 
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.production.candidate.application.port.in.CreateProductionBatchCandidateUseCase;
-import org.craft.mcs.cap.core.production.candidate.application.port.in.GetProductionBatchCandidateUseCase;
-import org.craft.mcs.cap.core.production.candidate.domain.model.ProductionBatchCandidateId;
+import org.craft.mcs.cap.core.production.planning.application.port.in.CreateProductionBatchCandidateUseCase;
+import org.craft.mcs.cap.core.production.planning.application.port.in.GetProductionBatchCandidateUseCase;
+import org.craft.mcs.cap.core.production.planning.domain.model.ProductionBatchCandidateId;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.CreateProductionBatchCandidateRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.ProductionBatchCandidateResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.mapper.ProductionBatchCandidateRestMapper;

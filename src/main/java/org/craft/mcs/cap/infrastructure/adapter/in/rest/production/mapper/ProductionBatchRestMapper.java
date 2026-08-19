@@ -1,12 +1,12 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.production.mapper;
 
 import java.util.List;
-import org.craft.mcs.cap.core.production.application.model.ProductionBatchDetailsView;
-import org.craft.mcs.cap.core.production.application.port.in.UpdateProductionBatchCommand;
-import org.craft.mcs.cap.core.production.candidate.application.confirmation.port.in.CreateProductionBatchCommand;
-import org.craft.mcs.cap.core.production.candidate.application.confirmation.port.in.ProductionBatchCreated;
-import org.craft.mcs.cap.core.production.candidate.domain.model.ProductionBatchCandidateId;
-import org.craft.mcs.cap.core.production.domain.model.ProductionBatchId;
+import org.craft.mcs.cap.core.production.batch.application.model.ProductionBatchDetailsView;
+import org.craft.mcs.cap.core.production.batch.application.port.in.UpdateProductionBatchCommand;
+import org.craft.mcs.cap.core.production.planning.application.confirmation.port.in.CreateProductionBatchCommand;
+import org.craft.mcs.cap.core.production.planning.application.confirmation.port.in.ProductionBatchCreated;
+import org.craft.mcs.cap.core.production.planning.domain.model.ProductionBatchCandidateId;
+import org.craft.mcs.cap.core.production.batch.domain.model.ProductionBatchId;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.shared.kernel.identity.VesselId;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.abv.mapper.PotentialAbvPredictionRestMapper;
@@ -67,7 +67,7 @@ public final class ProductionBatchRestMapper {
         batch.batchId().value(),
         batch.workspaceId().value(),
         batch.name().value(),
-        VesselRestMapper.toResponse(created.vessel()),
+        VesselRestMapper.toResponse(batch.vessel()),
         batch.lifecycle(),
         batch.alcoholicFermentationState(),
         created.candidate().candidateId().value(),

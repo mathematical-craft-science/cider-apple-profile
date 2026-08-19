@@ -1,7 +1,7 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstockworkspace;
 
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.feedstock.application.planning.batchoverview.port.in.QueryFeedstockPlanningBatchesUseCase;
+import org.craft.mcs.cap.core.feedstock.planning.application.batchoverview.port.in.QueryFeedstockPlanningBatchesUseCase;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstockworkspace.dto.FeedstockWorkspaceBatchQueryRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstockworkspace.dto.FeedstockWorkspaceResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstockworkspace.mapper.FeedstockWorkspaceQueryRestMapper;

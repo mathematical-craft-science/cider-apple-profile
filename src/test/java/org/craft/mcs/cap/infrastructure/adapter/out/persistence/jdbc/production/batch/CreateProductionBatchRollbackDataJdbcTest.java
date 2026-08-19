@@ -1,0 +1,321 @@
+package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.production.batch;
+
+import java.math.BigDecimal;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import org.craft.mcs.cap.core.production.batch.application.authorization.port.out.ProductionAccessControl;
+import org.craft.mcs.cap.core.production.batch.application.creation.usecase.CreateProductionBatchFromPlanService;
+import org.craft.mcs.cap.core.production.batch.application.vessel.port.out.ProductionVesselAssignmentValidator;
+import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
+import org.craft.mcs.cap.core.feedstock.batch.domain.model.batch.FeedstockBatchId;
+import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
+import org.craft.mcs.cap.shared.kernel.material.value.MaterialConsumption;
+import org.craft.mcs.cap.core.production.planning.application.confirmation.port.in.CreateProductionBatchCommand;
+import org.craft.mcs.cap.core.production.batch.application.port.out.ConsumedProductionSource;
+import org.craft.mcs.cap.core.production.batch.domain.model.value.ProductionSourceDisplayName;
+import org.craft.mcs.cap.core.production.batch.application.port.out.ProductionBatchTraceRecorder;
+import org.craft.mcs.cap.core.production.batch.application.port.out.ProductionSourceInventory;
+import org.craft.mcs.cap.core.production.planning.application.confirmation.usecase.CreateProductionBatchService;
+import org.craft.mcs.cap.core.production.planning.application.authorization.port.out.ProductionPlanningAccessControl;
+import org.craft.mcs.cap.core.production.planning.application.model.ProductionBatchCandidateSnapshot;
+import org.craft.mcs.cap.core.production.planning.application.port.out.ProductionBatchCandidateStore;
+import org.craft.mcs.cap.core.production.planning.domain.model.ProductionBatchCandidate;
+import org.craft.mcs.cap.core.production.planning.domain.model.ProductionBatchCandidateId;
+import org.craft.mcs.cap.core.production.batch.domain.model.ProductionSourceEvidenceReference;
+import org.craft.mcs.cap.core.production.batch.domain.model.ProductionSourceComponent;
+import org.craft.mcs.cap.core.production.batch.domain.model.ProductionSourceComposition;
+import org.craft.mcs.cap.core.production.batch.domain.model.ProductionSourceReference;
+import org.craft.mcs.cap.core.production.planning.domain.model.ProductionCandidateSourceEvidence;
+import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
+import org.craft.mcs.cap.core.production.batch.domain.model.value.ProductionProfileSnapshot;
+import org.craft.mcs.cap.testsupport.VesselTestFixtures;
+import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
+import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
+import org.craft.mcs.cap.shared.platform.persistence.SpringTransactionHelper;
+import org.craft.mcs.cap.shared.testing.jdbc.PostgresDataJdbcTestConfiguration;
+import org.craft.mcs.cap.infrastructure.adapter.out.production.planning.batch.ProductionBatchConfirmationAdapter;
+import org.jspecify.annotations.NonNull;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.data.jdbc.test.autoconfigure.DataJdbcTest;
+import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import static org.craft.mcs.cap.production.testing.ProductionSourceCharacteristicsFixtures
+    .productionSourceCharacteristics;
+
+import static java.util.Objects.requireNonNull;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.craft.mcs.cap.support.PotentialAbvPredictionFixtures.prediction;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+
+@DataJdbcTest
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@Import({
+    PostgresDataJdbcTestConfiguration.class,
+    CreateProductionBatchRollbackDataJdbcTest.TestSliceConfiguration.class,
+    JdbcProductionBatchRepository.class,
+    CreateProductionBatchFromPlanService.class,
+    ProductionBatchConfirmationAdapter.class,
+    CreateProductionBatchService.class,
+    SpringTransactionHelper.class
+})
+@Transactional(propagation = Propagation.NOT_SUPPORTED)
+class CreateProductionBatchRollbackDataJdbcTest {
+
+  private static final MaterialStateId SOURCE_STATE_ID = MaterialStateId.newId();
+
+  @Autowired
+  private @NonNull CreateProductionBatchService service;
+
+  @Autowired
+  private @NonNull JdbcTemplate jdbcTemplate;
+
+  @Autowired
+  private @NonNull TestProductionBatchCandidateStore candidateStore;
+
+  @Test
+  void rollsBackProductionBatchWhenTraceAppendFails() {
+    final var workspaceId = WorkspaceId.newId();
+    jdbcTemplate.update(
+        """
+            INSERT INTO workspaces (workspace_id, name, type, status, version, created_at, updated_at)
+            VALUES (?, 'Rollback workspace', 'CIDERY', 'ACTIVE', 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+            """,
+        workspaceId.value()
+    );
+    VesselTestFixtures.persistAllVessels(jdbcTemplate, workspaceId);
+    final var sourceReference = ProductionSourceReference.feedstockBatch(FeedstockBatchId.newId().value());
+    insertFeedstockSource(workspaceId, sourceReference);
+    final var candidate = candidate(workspaceId, sourceReference);
+    candidateStore.register(candidate);
+    final var command = command(workspaceId, candidate.candidate().candidateId());
+
+    assertThatThrownBy(() -> service.create(command))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessageContaining("trace persistence failed")
+        .satisfies(exception -> assertThat(rollbackState(sourceReference))
+            .returns(0L, RollbackState::productionBatchCount)
+            .returns(new BigDecimal("250.000"), RollbackState::availableFeedstockVolume));
+  }
+
+  private void insertFeedstockSource(
+      @NonNull WorkspaceId workspaceId,
+      @NonNull ProductionSourceReference sourceReference
+  ) {
+    jdbcTemplate.update("""
+        INSERT INTO feedstock_batches (
+            batch_id, workspace_id, name, vessel_id, type, season_starts_on, season_ends_on, lifecycle,
+            available_volume_liters, current_material_state_id, version, created_at, updated_at
+        ) VALUES (?, ?, 'Late juice', ?, 'JUICE', DATE '2026-01-01', DATE '2026-12-31',
+                  'ACTIVE', 250, ?, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+        """,
+        sourceReference.id(),
+        workspaceId.value(),
+        VesselTestFixtures.FEEDSTOCK_VESSEL_ID.value(),
+        MaterialStateId.newId().value()
+    );
+  }
+
+  private @NonNull RollbackState rollbackState(@NonNull ProductionSourceReference sourceReference) {
+    final var availableVolume = jdbcTemplate.queryForObject(
+        "SELECT available_volume_liters FROM feedstock_batches WHERE batch_id = ?",
+        BigDecimal.class,
+        sourceReference.id()
+    );
+    return new RollbackState(
+        countProductionBatches(),
+        requireNonNull(availableVolume, "available feedstock volume cannot be null")
+    );
+  }
+
+  private long countProductionBatches() {
+    return requireNonNull(jdbcTemplate.queryForObject(
+        "select count(*) from production_batches",
+        Long.class
+    ), "production batch count cannot be null");
+  }
+
+  private static @NonNull CreateProductionBatchCommand command(
+      @NonNull WorkspaceId workspaceId,
+      @NonNull ProductionBatchCandidateId candidateId
+  ) {
+    return new CreateProductionBatchCommand(
+        workspaceId,
+        BatchName.of("Rollback candidate"),
+        VesselTestFixtures.vesselId("Tank F-03"),
+        candidateId,
+        null
+    );
+  }
+
+  private static @NonNull ProductionBatchCandidateSnapshot candidate(
+      @NonNull WorkspaceId workspaceId,
+      @NonNull ProductionSourceReference sourceReference
+  ) {
+    final var composition = ProductionSourceComposition.of(List.of(new ProductionSourceComponent(
+        sourceReference,
+        VolumeValue.ofLiters("100")
+    )));
+    return new ProductionBatchCandidateSnapshot(
+        ProductionBatchCandidate.create(
+            ProductionBatchCandidateId.newId(),
+            workspaceId,
+            composition,
+            Map.of(
+                sourceReference,
+                new ProductionCandidateSourceEvidence(evidenceReference(), SOURCE_STATE_ID)
+            ),
+            productionProfile()
+        ),
+        prediction(productionProfile().specificGravity()),
+        null,
+        null,
+        List.of()
+    );
+  }
+
+  private static @NonNull ProductionProfileSnapshot productionProfile() {
+    return new ProductionProfileSnapshot(
+        SpecificGravityValue.of("1.050"),
+        TitratableAcidityValue.of("6.1"),
+        TanninValue.of("1400")
+    );
+  }
+
+  private static @NonNull ProductionSourceEvidenceReference evidenceReference() {
+    return ProductionSourceEvidenceReference.of("measurement-2026-05-18");
+  }
+
+  @TestConfiguration(proxyBeanMethods = false)
+  static class TestSliceConfiguration {
+
+    @Bean
+    ProductionBatchTraceRecorder productionBatchTraceRecorder() {
+      return (productionBatch, sources, occurredAt, note) -> {
+        throw new IllegalStateException("trace persistence failed");
+      };
+    }
+
+    @Bean
+    ProductionSourceInventory productionSourceInventory(@NonNull JdbcTemplate jdbcTemplate) {
+      return (workspaceId, source) -> {
+        jdbcTemplate.update("""
+            UPDATE feedstock_batches
+            SET available_volume_liters = available_volume_liters - ?
+            WHERE batch_id = ? AND workspace_id = ?
+            """, source.volume().liters(), source.reference().id(), workspaceId.value());
+        return new ConsumedProductionSource(
+            source.reference(),
+            ProductionSourceDisplayName.of("Late juice"),
+            new MaterialConsumption(
+                VolumeValue.ofLiters("250"),
+                source.volume(),
+                VolumeValue.ofLiters("150"),
+                SOURCE_STATE_ID,
+                MaterialStateId.newId()
+            ),
+            productionSourceCharacteristics("1.050", "6.1", "1400", null),
+            ConfidenceLevel.LAB_VERIFIED,
+            evidenceReference()
+        );
+      };
+    }
+
+    @Bean
+    TestProductionBatchCandidateStore productionBatchCandidateStore() {
+      return new TestProductionBatchCandidateStore();
+    }
+
+    @Bean
+    Clock clock() {
+      return Clock.fixed(Instant.parse("2026-05-18T10:15:30Z"), ZoneOffset.UTC);
+    }
+
+    @Bean
+    ProductionAccessControl productionAccessControl() {
+      return new ProductionAccessControl() {
+        @Override
+        public void requireReadAccess(@NonNull WorkspaceId workspaceId) {
+        }
+
+        @Override
+        public void requireWriteAccess(@NonNull WorkspaceId workspaceId) {
+        }
+      };
+    }
+
+    @Bean
+    ProductionPlanningAccessControl productionPlanningAccessControl() {
+      return new ProductionPlanningAccessControl() {
+        @Override
+        public void requireReadAccess(@NonNull WorkspaceId workspaceId) {
+        }
+
+        @Override
+        public void requireWriteAccess(@NonNull WorkspaceId workspaceId) {
+        }
+      };
+    }
+
+    @Bean
+    ProductionVesselAssignmentValidator productionVesselAssignmentValidator() {
+      return (workspaceId, vesselId, materialVolume) -> VesselTestFixtures.reference(vesselId, "Tank F-03");
+    }
+
+  }
+
+  static final class TestProductionBatchCandidateStore implements ProductionBatchCandidateStore {
+
+    private ProductionBatchCandidateSnapshot snapshot;
+
+    void register(@NonNull ProductionBatchCandidateSnapshot candidate) {
+      snapshot = candidate;
+    }
+
+    @Override
+    public @NonNull ProductionBatchCandidateSnapshot create(
+        @NonNull ProductionBatchCandidateSnapshot candidate
+    ) {
+      snapshot = candidate;
+      return candidate;
+    }
+
+    @Override
+    public @NonNull ProductionBatchCandidateSnapshot update(
+        @NonNull ProductionBatchCandidateSnapshot candidate
+    ) {
+      snapshot = candidate;
+      return candidate;
+    }
+
+    @Override
+    public @NonNull Optional<@NonNull ProductionBatchCandidateSnapshot> findById(
+        @NonNull ProductionBatchCandidateId candidateId
+    ) {
+      return snapshot != null && snapshot.candidate().candidateId().equals(candidateId)
+          ? Optional.of(snapshot)
+          : Optional.empty();
+    }
+  }
+
+  private record RollbackState(
+      long productionBatchCount,
+      @NonNull BigDecimal availableFeedstockVolume
+  ) {
+  }
+
+}

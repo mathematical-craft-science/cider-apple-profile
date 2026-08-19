@@ -9,10 +9,10 @@ import static org.craft.mcs.cap.shared.testing.AppleVarietyReferenceProfiles.fro
 import static org.craft.mcs.cap.support.PotentialAbvPredictionFixtures.prediction;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.model.AppleVarietyGraphAnalysisView;
-import org.craft.mcs.cap.core.appleprofile.application.sugaracidity.model.AppleVarietyNorthAmericanAssessmentView;
-import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyId;
-import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVarietyName;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.profile.model.AppleVarietyAnalysisName;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.sugaracidity.model.AppleVarietyGraphAnalysisView;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.sugaracidity.model.AppleVarietyNorthAmericanAssessmentView;
+import org.craft.mcs.cap.core.appleprofile.catalog.domain.model.AppleVarietyId;
 import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPrediction;
 import org.craft.mcs.cap.core.profileanalysis.graph.domain.GraphMissingCharacteristic;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.sugaracidity.dto.AppleVarietySugarAcidityZoneResponse;
@@ -40,7 +40,7 @@ class AppleVarietyProfileGraphRestMapperTest {
     final var response = AppleVarietyProfileGraphRestMapper.toResponse(
         result(
             AppleVarietyId.of("00000000-0000-0000-0000-000000000001"),
-            AppleVarietyName.of("Kingston Black"),
+            AppleVarietyAnalysisName.of("Kingston Black"),
             profile,
             prediction(SpecificGravityValue.of("1.066"))
         )
@@ -79,7 +79,7 @@ class AppleVarietyProfileGraphRestMapperTest {
     final var response = AppleVarietyProfileGraphRestMapper.toResponse(
         result(
             AppleVarietyId.of("00000000-0000-0000-0000-000000000001"),
-            AppleVarietyName.of("Interval Profile"),
+            AppleVarietyAnalysisName.of("Interval Profile"),
             profile,
             prediction(SpecificGravityValue.of("1.065"))
         )
@@ -106,7 +106,7 @@ class AppleVarietyProfileGraphRestMapperTest {
     final var response = AppleVarietyProfileGraphRestMapper.toResponse(
         result(
             AppleVarietyId.of("00000000-0000-0000-0000-000000000001"),
-            AppleVarietyName.of("Partial Profile"),
+            AppleVarietyAnalysisName.of("Partial Profile"),
             profile,
             prediction(SpecificGravityValue.of("1.050"))
         )
@@ -127,7 +127,7 @@ class AppleVarietyProfileGraphRestMapperTest {
 
   private static AppleVarietyGraphAnalysisView result(
       AppleVarietyId varietyId,
-      AppleVarietyName varietyName,
+      AppleVarietyAnalysisName varietyName,
       ProfileCharacteristicsFixture profile,
       PotentialAbvPrediction potentialAbv
   ) {

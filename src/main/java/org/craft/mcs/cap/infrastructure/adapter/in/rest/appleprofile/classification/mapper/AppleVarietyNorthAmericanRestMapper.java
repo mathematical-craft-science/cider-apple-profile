@@ -1,6 +1,6 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.classification.mapper;
 
-import org.craft.mcs.cap.core.appleprofile.application.classification.port.in.AppleVarietyNorthAmericanClassification;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.classification.port.in.AppleVarietyNorthAmericanClassification;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.classification.dto.AppleVarietyNorthAmericanResponse;
 import org.jspecify.annotations.NonNull;
 

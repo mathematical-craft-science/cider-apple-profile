@@ -1,10 +1,10 @@
 package org.craft.mcs.cap.infrastructure.adapter.out.traceability;
 
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.feedstock.application.batch.port.out.FeedstockBatchOperationHistory;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
-import org.craft.mcs.cap.core.production.application.port.out.ProductionBatchOperationHistory;
-import org.craft.mcs.cap.core.production.domain.model.ProductionBatchId;
+import org.craft.mcs.cap.core.feedstock.batch.application.batch.port.out.FeedstockBatchOperationHistory;
+import org.craft.mcs.cap.core.feedstock.batch.domain.model.batch.FeedstockBatchId;
+import org.craft.mcs.cap.core.production.batch.application.port.out.ProductionBatchOperationHistory;
+import org.craft.mcs.cap.core.production.batch.domain.model.ProductionBatchId;
 import org.craft.mcs.cap.core.traceability.application.port.in.BatchOperationHistoryQuery;
 import org.craft.mcs.cap.core.traceability.application.port.in.QueryBatchOperationHistoryUseCase;
 import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceSubjectType;

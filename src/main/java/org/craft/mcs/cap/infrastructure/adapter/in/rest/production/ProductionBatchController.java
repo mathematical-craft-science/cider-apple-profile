@@ -2,12 +2,12 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.production;
 
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.production.candidate.application.confirmation.port.in.CreateProductionBatchUseCase;
-import org.craft.mcs.cap.core.production.application.port.in.GetProductionBatchUseCase;
-import org.craft.mcs.cap.core.production.application.port.in.ListProductionBatchesQuery;
-import org.craft.mcs.cap.core.production.application.port.in.ListProductionBatchesUseCase;
-import org.craft.mcs.cap.core.production.application.port.in.UpdateProductionBatchUseCase;
-import org.craft.mcs.cap.core.production.domain.model.ProductionBatchId;
+import org.craft.mcs.cap.core.production.planning.application.confirmation.port.in.CreateProductionBatchUseCase;
+import org.craft.mcs.cap.core.production.batch.application.port.in.GetProductionBatchUseCase;
+import org.craft.mcs.cap.core.production.batch.application.port.in.ListProductionBatchesQuery;
+import org.craft.mcs.cap.core.production.batch.application.port.in.ListProductionBatchesUseCase;
+import org.craft.mcs.cap.core.production.batch.application.port.in.UpdateProductionBatchUseCase;
+import org.craft.mcs.cap.core.production.batch.domain.model.ProductionBatchId;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.CreateProductionBatchRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.ProductionBatchDetailsResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.ProductionBatchListResponse;

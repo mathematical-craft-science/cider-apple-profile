@@ -1,8 +1,8 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.production.mapper;
 
-import org.craft.mcs.cap.core.production.candidate.application.model.ProductionBatchCandidateView;
-import org.craft.mcs.cap.core.production.domain.model.ProductionSourceComponent;
-import org.craft.mcs.cap.core.production.domain.model.value.ProductionProfileSnapshot;
+import org.craft.mcs.cap.core.production.planning.application.model.ProductionBatchCandidateView;
+import org.craft.mcs.cap.core.production.batch.domain.model.ProductionSourceComponent;
+import org.craft.mcs.cap.core.production.batch.domain.model.value.ProductionProfileSnapshot;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.abv.mapper.PotentialAbvPredictionRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.ProductionBatchCompositionResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.ProductionBatchSourceResponse;

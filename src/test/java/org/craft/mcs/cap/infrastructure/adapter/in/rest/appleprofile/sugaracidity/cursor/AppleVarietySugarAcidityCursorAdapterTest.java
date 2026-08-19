@@ -1,8 +1,8 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.sugaracidity.cursor;
 
 import java.util.UUID;
-import org.craft.mcs.cap.core.appleprofile.application.catalog.model.AppleVarietyCatalogPagePosition;
-import org.craft.mcs.cap.core.appleprofile.application.analysis.common.model.AppleVarietyAnalysisFilters;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.profile.model.AppleVarietyAnalysisPagePosition;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.profile.model.AppleVarietyAnalysisFilters;
 import org.craft.mcs.cap.core.profileanalysis.graph.application.model.JolicoeurSugarAcidityGraphCriteria;
 import org.craft.mcs.cap.shared.application.query.MalformedCursorException;
 import org.craft.mcs.cap.shared.application.query.TextSearchCriteria;
@@ -17,8 +17,8 @@ class AppleVarietySugarAcidityCursorAdapterTest {
 
   private static final AppleVarietyAnalysisFilters FILTERS =
       new AppleVarietyAnalysisFilters(new TextSearchCriteria("Kingston"));
-  private static final AppleVarietyCatalogPagePosition POSITION =
-      new AppleVarietyCatalogPagePosition(
+  private static final AppleVarietyAnalysisPagePosition POSITION =
+      new AppleVarietyAnalysisPagePosition(
           "Kingston Black",
           UUID.fromString("019bfcc0-4830-7000-8000-000000000001")
       );

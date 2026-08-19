@@ -1,12 +1,7 @@
 /**
- * Bounded context for confirmed production lots and their technological lifecycle.
+ * Production domain area containing independent batch and planning bounded contexts.
  *
- * <p>Production owns ProductionBatch identity, material state, initial accepted profile and
- * alcoholic-fermentation state. Source contexts remain responsible for their own material
- * inventories; Production consumes them only through source boundaries. Measurements and
- * cross-context lineage belong to their dedicated bounded contexts.</p>
+ * <p>The package is a namespace and does not own a domain model. Confirmed material belongs to
+ * {@code production.batch}; accepted candidate scenarios belong to {@code production.planning}.</p>
  */
-@BoundedContext
 package org.craft.mcs.cap.core.production;
-
-import org.jmolecules.ddd.annotation.BoundedContext;

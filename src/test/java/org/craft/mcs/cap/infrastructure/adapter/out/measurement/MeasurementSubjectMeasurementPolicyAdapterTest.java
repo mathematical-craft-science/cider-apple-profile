@@ -2,7 +2,7 @@ package org.craft.mcs.cap.infrastructure.adapter.out.measurement;
 
 import java.time.Instant;
 import java.util.List;
-import org.craft.mcs.cap.core.feedstock.application.measurement.usecase.ValidateFeedstockSpecificGravityService;
+import org.craft.mcs.cap.core.feedstock.batch.application.measurement.usecase.ValidateFeedstockSpecificGravityService;
 import org.craft.mcs.cap.core.measurement.application.model.DirectMeasurementCharacteristicInput;
 import org.craft.mcs.cap.core.measurement.application.model.MeasurementObservationInput;
 import org.craft.mcs.cap.core.measurement.application.model.RepeatedMeasurementCharacteristicInput;
@@ -93,7 +93,7 @@ class MeasurementSubjectMeasurementPolicyAdapterTest {
   private static DirectMeasurementCharacteristicInput specificGravity(String value) {
     return new DirectMeasurementCharacteristicInput(
         MeasurementCharacteristic.SPECIFIC_GRAVITY,
-        PointCharacteristicValue.<MeasuredValue>of(SpecificGravityValue.of(value)),
+        PointCharacteristicValue.of(SpecificGravityValue.of(value)),
         MEASURED_AT,
         provenance()
     );
@@ -101,7 +101,7 @@ class MeasurementSubjectMeasurementPolicyAdapterTest {
 
   private static MeasurementObservationInput observation(String value) {
     return new MeasurementObservationInput(
-        PointCharacteristicValue.<MeasuredValue>of(SpecificGravityValue.of(value)),
+        PointCharacteristicValue.of(SpecificGravityValue.of(value)),
         MEASURED_AT,
         provenance()
     );

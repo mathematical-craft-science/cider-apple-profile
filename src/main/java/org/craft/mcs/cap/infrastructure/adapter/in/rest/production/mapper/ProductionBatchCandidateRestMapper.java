@@ -2,12 +2,12 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.production.mapper;
 
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.production.candidate.application.model.ProductionBatchCandidateCalculationRequest;
-import org.craft.mcs.cap.core.production.candidate.application.model.ProductionBatchCandidateView;
-import org.craft.mcs.cap.core.production.candidate.application.port.in.CreateProductionBatchCandidateCommand;
-import org.craft.mcs.cap.core.production.domain.model.ProductionSourceComponent;
-import org.craft.mcs.cap.core.production.domain.model.ProductionSourceComposition;
-import org.craft.mcs.cap.core.production.domain.model.ProductionSourceReference;
+import org.craft.mcs.cap.core.production.planning.application.model.ProductionBatchCandidateCalculationRequest;
+import org.craft.mcs.cap.core.production.planning.application.model.ProductionBatchCandidateView;
+import org.craft.mcs.cap.core.production.planning.application.port.in.CreateProductionBatchCandidateCommand;
+import org.craft.mcs.cap.core.production.batch.domain.model.ProductionSourceComponent;
+import org.craft.mcs.cap.core.production.batch.domain.model.ProductionSourceComposition;
+import org.craft.mcs.cap.core.production.batch.domain.model.ProductionSourceReference;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionCalculatorCode;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionTanninPolicy;
 import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetScoringConfiguration;

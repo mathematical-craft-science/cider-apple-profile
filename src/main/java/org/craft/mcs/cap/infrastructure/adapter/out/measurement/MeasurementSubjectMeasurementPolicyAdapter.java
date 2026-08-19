@@ -2,7 +2,7 @@ package org.craft.mcs.cap.infrastructure.adapter.out.measurement;
 
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.feedstock.application.measurement.port.in.ValidateFeedstockSpecificGravityUseCase;
+import org.craft.mcs.cap.core.feedstock.batch.application.measurement.port.in.ValidateFeedstockSpecificGravityUseCase;
 import org.craft.mcs.cap.core.measurement.application.model.DirectMeasurementCharacteristicInput;
 import org.craft.mcs.cap.core.measurement.application.model.MeasurementCharacteristicInput;
 import org.craft.mcs.cap.core.measurement.application.model.RepeatedMeasurementCharacteristicInput;

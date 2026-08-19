@@ -1,8 +1,8 @@
 package org.craft.mcs.cap.infrastructure.adapter.out.vessel;
 
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.feedstock.application.vessel.port.out.FeedstockVesselAssignmentValidator;
-import org.craft.mcs.cap.core.production.application.vessel.port.out.ProductionVesselAssignmentValidator;
+import org.craft.mcs.cap.core.feedstock.batch.application.vessel.port.out.FeedstockVesselAssignmentValidator;
+import org.craft.mcs.cap.core.production.batch.application.vessel.port.out.ProductionVesselAssignmentValidator;
 import org.craft.mcs.cap.core.vessel.application.port.in.ValidateVesselAssignmentCommand;
 import org.craft.mcs.cap.core.vessel.application.port.in.ValidateVesselAssignmentUseCase;
 import org.craft.mcs.cap.shared.application.material.VesselReferenceView;

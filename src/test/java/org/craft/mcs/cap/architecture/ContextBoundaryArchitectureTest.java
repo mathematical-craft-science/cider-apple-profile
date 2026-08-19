@@ -13,11 +13,14 @@ import java.time.Instant;
 import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
-import org.craft.mcs.cap.core.appleprofile.domain.model.AppleVariety;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatch;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
+import org.craft.mcs.cap.core.appleprofile.catalog.application.model.AppleVarietyReferenceProfileView;
+import org.craft.mcs.cap.core.appleprofile.catalog.domain.model.AppleVariety;
+import org.craft.mcs.cap.core.appleprofile.catalog.domain.model.AppleVarietyId;
+import org.craft.mcs.cap.core.feedstock.batch.domain.model.batch.FeedstockBatch;
+import org.craft.mcs.cap.core.feedstock.batch.domain.model.batch.FeedstockBatchId;
+import org.craft.mcs.cap.core.feedstock.batch.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSet;
-import org.craft.mcs.cap.core.production.domain.model.ProductionBatch;
+import org.craft.mcs.cap.core.production.batch.domain.model.ProductionBatch;
 import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionSourceCharacteristics;
 import org.jspecify.annotations.NonNull;
 
@@ -112,6 +115,37 @@ class ContextBoundaryArchitectureTest {
           .beFreeOfCycles();
 
   @ArchTest
+  static final ArchRule production_bounded_contexts_are_free_of_cycles =
+      slices()
+          .matching("org.craft.mcs.cap.core.production.(*)..")
+          .should()
+          .beFreeOfCycles();
+
+  @ArchTest
+  static final ArchRule feedstock_bounded_contexts_are_free_of_cycles =
+      slices()
+          .matching("org.craft.mcs.cap.core.feedstock.(*)..")
+          .should()
+          .beFreeOfCycles();
+
+  @ArchTest
+  static final ArchRule apple_profile_bounded_contexts_are_free_of_cycles =
+      slices()
+          .matching("org.craft.mcs.cap.core.appleprofile.(*)..")
+          .should()
+          .beFreeOfCycles();
+
+  @ArchTest
+  static final ArchRule domain_area_roots_are_namespaces_only =
+      noClasses()
+          .should()
+          .resideInAnyPackage(
+              "org.craft.mcs.cap.core.production",
+              "org.craft.mcs.cap.core.feedstock",
+              "org.craft.mcs.cap.core.appleprofile"
+          );
+
+  @ArchTest
   static final ArchRule profile_analysis_does_not_depend_on_material_or_catalog_contexts =
       noClasses()
           .that()
@@ -171,21 +205,49 @@ class ContextBoundaryArchitectureTest {
   @ArchTest
   static final ArchRule feedstock_application_slices_are_free_of_cycles =
       slices()
-          .matching("org.craft.mcs.cap.core.feedstock.application.(*)..")
+          .matching("org.craft.mcs.cap.core.feedstock.batch.application.(*)..")
           .should()
           .beFreeOfCycles();
 
   @ArchTest
   static final ArchRule feedstock_analysis_slices_are_free_of_cycles =
       slices()
-          .matching("org.craft.mcs.cap.core.feedstock.application.analysis.(*)..")
+          .matching("org.craft.mcs.cap.core.feedstock.batch.application.analysis.(*)..")
           .should()
           .beFreeOfCycles();
 
   @ArchTest
-  static final ArchRule apple_profile_application_slices_are_free_of_cycles =
+  static final ArchRule apple_profile_analysis_application_slices_are_free_of_cycles =
       slices()
-          .matching("org.craft.mcs.cap.core.appleprofile.application.(*)..")
+          .matching("org.craft.mcs.cap.core.appleprofile.analysis.application.(*)..")
+          .should()
+          .beFreeOfCycles();
+
+  @ArchTest
+  static final ArchRule apple_profile_catalog_application_slices_are_free_of_cycles =
+      slices()
+          .matching("org.craft.mcs.cap.core.appleprofile.catalog.application.(*)..")
+          .should()
+          .beFreeOfCycles();
+
+  @ArchTest
+  static final ArchRule feedstock_planning_application_slices_are_free_of_cycles =
+      slices()
+          .matching("org.craft.mcs.cap.core.feedstock.planning.application.(*)..")
+          .should()
+          .beFreeOfCycles();
+
+  @ArchTest
+  static final ArchRule production_batch_application_slices_are_free_of_cycles =
+      slices()
+          .matching("org.craft.mcs.cap.core.production.batch.application.(*)..")
+          .should()
+          .beFreeOfCycles();
+
+  @ArchTest
+  static final ArchRule production_planning_application_slices_are_free_of_cycles =
+      slices()
+          .matching("org.craft.mcs.cap.core.production.planning.application.(*)..")
           .should()
           .beFreeOfCycles();
 
@@ -193,69 +255,328 @@ class ContextBoundaryArchitectureTest {
   static final ArchRule feedstock_measurement_application_does_not_depend_on_analysis =
       noClasses()
           .that()
-          .resideInAPackage("org.craft.mcs.cap.core.feedstock.application.measurement..")
+          .resideInAPackage("org.craft.mcs.cap.core.feedstock.batch.application.measurement..")
           .should()
           .dependOnClassesThat()
-          .resideInAPackage("org.craft.mcs.cap.core.feedstock.application.analysis..");
+          .resideInAPackage("org.craft.mcs.cap.core.feedstock.batch.application.analysis..");
 
   @ArchTest
-  static final ArchRule feedstock_analysis_common_does_not_depend_on_specialized_analysis_slices =
+  static final ArchRule feedstock_batch_does_not_depend_on_planning =
       noClasses()
           .that()
-          .resideInAPackage("org.craft.mcs.cap.core.feedstock.application.analysis.common..")
+          .resideInAPackage("org.craft.mcs.cap.core.feedstock.batch..")
           .should()
           .dependOnClassesThat()
-          .resideInAnyPackage(
-              "org.craft.mcs.cap.core.feedstock.application.analysis.abv..",
-              "org.craft.mcs.cap.core.feedstock.application.analysis.profiletarget..",
-              "org.craft.mcs.cap.core.feedstock.application.analysis.readiness..",
-              "org.craft.mcs.cap.core.feedstock.application.analysis.sugaracidity.."
+          .resideInAPackage("org.craft.mcs.cap.core.feedstock.planning..");
+
+  @ArchTest
+  static final ArchRule feedstock_planning_uses_only_published_batch_application_contracts =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.core.feedstock.planning..")
+          .should()
+          .dependOnClassesThat(
+              JavaClass.Predicates
+                  .resideInAPackage("org.craft.mcs.cap.core.feedstock.batch.application..")
+                  .and(JavaClass.Predicates.resideOutsideOfPackage(
+                      "org.craft.mcs.cap.core.feedstock.batch.application.api.."
+                  ))
+          );
+
+  @ArchTest
+  static final ArchRule feedstock_batch_published_contracts_do_not_expose_aggregate =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.core.feedstock.batch.application.api..")
+          .should()
+          .dependOnClassesThat()
+          .areAssignableTo(FeedstockBatch.class);
+
+  @ArchTest
+  static final ArchRule production_planning_does_not_depend_on_batch_application =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.core.production.planning..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAPackage("org.craft.mcs.cap.core.production.batch.application..");
+
+  @ArchTest
+  static final ArchRule production_batch_published_models_do_not_expose_aggregate =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.core.production.batch.application.model..")
+          .should()
+          .dependOnClassesThat()
+          .areAssignableTo(ProductionBatch.class);
+
+  @ArchTest
+  static final ArchRule feedstock_planning_does_not_depend_on_feedstock_batch_aggregate =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.core.feedstock.planning..")
+          .should()
+          .dependOnClassesThat()
+          .areAssignableTo(FeedstockBatch.class);
+
+  @ArchTest
+  static final ArchRule feedstock_planning_uses_only_published_batch_domain_language =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.core.feedstock.planning..")
+          .should()
+          .dependOnClassesThat(
+              JavaClass.Predicates
+                  .resideInAPackage("org.craft.mcs.cap.core.feedstock.batch.domain..")
+                  .and(
+                      JavaClass.Predicates.equivalentTo(FeedstockBatchId.class)
+                          .or(JavaClass.Predicates.equivalentTo(FeedstockSeason.class))
+                          .negate()
+                  )
           );
 
   @ArchTest
   static final ArchRule apple_profile_catalog_does_not_depend_on_analysis_slices =
       noClasses()
           .that()
-          .resideInAPackage("org.craft.mcs.cap.core.appleprofile.application.catalog..")
+          .resideInAPackage("org.craft.mcs.cap.core.appleprofile.catalog..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAPackage("org.craft.mcs.cap.core.appleprofile.analysis..");
+
+  @ArchTest
+  static final ArchRule apple_profile_analysis_does_not_depend_on_catalog_application =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.core.appleprofile.analysis..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAPackage("org.craft.mcs.cap.core.appleprofile.catalog.application..");
+
+  @ArchTest
+  static final ArchRule apple_profile_analysis_does_not_depend_on_apple_variety_aggregate =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.core.appleprofile.analysis..")
+          .should()
+          .dependOnClassesThat()
+          .areAssignableTo(AppleVariety.class);
+
+  @ArchTest
+  static final ArchRule apple_profile_analysis_uses_only_published_catalog_identity =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.core.appleprofile.analysis..")
+          .should()
+          .dependOnClassesThat(
+              JavaClass.Predicates
+                  .resideInAPackage("org.craft.mcs.cap.core.appleprofile.catalog.domain..")
+                  .and(JavaClass.Predicates.equivalentTo(AppleVarietyId.class).negate())
+          );
+
+  @ArchTest
+  static final ArchRule apple_profile_catalog_reference_contract_does_not_expose_domain_model =
+      noClasses()
+          .that()
+          .areAssignableTo(AppleVarietyReferenceProfileView.class)
+          .should()
+          .dependOnClassesThat(
+              JavaClass.Predicates
+                  .resideInAPackage("org.craft.mcs.cap.core.appleprofile.catalog.domain..")
+                  .and(JavaClass.Predicates.equivalentTo(AppleVarietyId.class).negate())
+          );
+
+  @ArchTest
+  static final ArchRule feedstock_planning_acl_uses_batch_inbound_boundary_only =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.infrastructure.adapter.out.feedstock.planning..")
           .should()
           .dependOnClassesThat()
           .resideInAnyPackage(
-              "org.craft.mcs.cap.core.appleprofile.application.abv..",
-              "org.craft.mcs.cap.core.appleprofile.application.classification..",
-              "org.craft.mcs.cap.core.appleprofile.application.profiletarget..",
-              "org.craft.mcs.cap.core.appleprofile.application.sugaracidity.."
+              "org.craft.mcs.cap.core.feedstock.batch.application..usecase..",
+              "org.craft.mcs.cap.core.feedstock.batch.application..query..",
+              "org.craft.mcs.cap.core.feedstock.batch.application..service..",
+              "org.craft.mcs.cap.core.feedstock.batch.application..port.out..",
+              "org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.feedstock.."
+          );
+
+  @ArchTest
+  static final ArchRule feedstock_planning_acl_uses_only_published_batch_application_boundary =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.infrastructure.adapter.out.feedstock.planning..")
+          .should()
+          .dependOnClassesThat(
+              JavaClass.Predicates
+                  .resideInAPackage("org.craft.mcs.cap.core.feedstock.batch.application..")
+                  .and(JavaClass.Predicates.resideOutsideOfPackage(
+                      "org.craft.mcs.cap.core.feedstock.batch.application.api.."
+                  ))
+                  .and(JavaClass.Predicates.resideOutsideOfPackage(
+                      "org.craft.mcs.cap.core.feedstock.batch.application..port.in.."
+                  ))
+          );
+
+  @ArchTest
+  static final ArchRule feedstock_planning_acl_does_not_access_batch_aggregate =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.infrastructure.adapter.out.feedstock.planning..")
+          .should()
+          .dependOnClassesThat()
+          .areAssignableTo(FeedstockBatch.class);
+
+  @ArchTest
+  static final ArchRule feedstock_planning_acl_uses_only_published_batch_domain_language =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.infrastructure.adapter.out.feedstock.planning..")
+          .should()
+          .dependOnClassesThat(
+              JavaClass.Predicates
+                  .resideInAPackage("org.craft.mcs.cap.core.feedstock.batch.domain..")
+                  .and(JavaClass.Predicates.equivalentTo(FeedstockSeason.class).negate())
+          );
+
+  @ArchTest
+  static final ArchRule production_planning_acl_uses_batch_inbound_boundary_only =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.infrastructure.adapter.out.production.planning..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAnyPackage(
+              "org.craft.mcs.cap.core.production.batch.application..usecase..",
+              "org.craft.mcs.cap.core.production.batch.application..port.out..",
+              "org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.production.batch.."
+          );
+
+  @ArchTest
+  static final ArchRule production_planning_acl_uses_only_published_batch_application_boundary =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.infrastructure.adapter.out.production.planning..")
+          .should()
+          .dependOnClassesThat(
+              JavaClass.Predicates
+                  .resideInAPackage("org.craft.mcs.cap.core.production.batch.application..")
+                  .and(JavaClass.Predicates.resideOutsideOfPackage(
+                      "org.craft.mcs.cap.core.production.batch.application..port.in.."
+                  ))
+                  .and(JavaClass.Predicates.resideOutsideOfPackage(
+                      "org.craft.mcs.cap.core.production.batch.application.model.."
+                  ))
+                  .and(JavaClass.Predicates.resideOutsideOfPackage(
+                      "org.craft.mcs.cap.core.production.batch.application"
+                  ))
+                  .and(JavaClass.Predicates.resideOutsideOfPackage(
+                      "org.craft.mcs.cap.core.production.batch.application.creation"
+                  ))
+          );
+
+  @ArchTest
+  static final ArchRule production_planning_acl_does_not_access_batch_aggregate =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.infrastructure.adapter.out.production.planning..")
+          .should()
+          .dependOnClassesThat()
+          .areAssignableTo(ProductionBatch.class);
+
+  @ArchTest
+  static final ArchRule production_planning_source_acl_does_not_use_batch_application_language =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.infrastructure.adapter.out.production.planning.source..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAPackage("org.craft.mcs.cap.core.production.batch.application..");
+
+  @ArchTest
+  static final ArchRule apple_profile_analysis_acl_uses_catalog_inbound_boundary_only =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.infrastructure.adapter.out.appleprofile.analysis..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAnyPackage(
+              "org.craft.mcs.cap.core.appleprofile.catalog.application..usecase..",
+              "org.craft.mcs.cap.core.appleprofile.catalog.application..port.out..",
+              "org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.appleprofile.."
+          );
+
+  @ArchTest
+  static final ArchRule apple_profile_analysis_acl_uses_only_published_catalog_application_boundary =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.infrastructure.adapter.out.appleprofile.analysis..")
+          .should()
+          .dependOnClassesThat(
+              JavaClass.Predicates
+                  .resideInAPackage("org.craft.mcs.cap.core.appleprofile.catalog.application..")
+                  .and(JavaClass.Predicates.resideOutsideOfPackage(
+                      "org.craft.mcs.cap.core.appleprofile.catalog.application.model.."
+                  ))
+                  .and(JavaClass.Predicates.resideOutsideOfPackage(
+                      "org.craft.mcs.cap.core.appleprofile.catalog.application..port.in.."
+                  ))
+                  .and(JavaClass.Predicates.resideOutsideOfPackage(
+                      "org.craft.mcs.cap.core.appleprofile.catalog.application"
+                  ))
+          );
+
+  @ArchTest
+  static final ArchRule apple_profile_analysis_acl_does_not_access_catalog_aggregate =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.infrastructure.adapter.out.appleprofile.analysis..")
+          .should()
+          .dependOnClassesThat()
+          .areAssignableTo(AppleVariety.class);
+
+  @ArchTest
+  static final ArchRule apple_profile_analysis_acl_uses_only_published_catalog_identity =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.infrastructure.adapter.out.appleprofile.analysis..")
+          .should()
+          .dependOnClassesThat(
+              JavaClass.Predicates
+                  .resideInAPackage("org.craft.mcs.cap.core.appleprofile.catalog.domain..")
+                  .and(JavaClass.Predicates.equivalentTo(AppleVarietyId.class).negate())
           );
 
   @ArchTest
   static final ArchRule apple_profile_target_analysis_does_not_depend_on_graph_endpoint_slice =
       noClasses()
           .that()
-          .resideInAPackage("org.craft.mcs.cap.core.appleprofile.application.profiletarget..")
+          .resideInAPackage("org.craft.mcs.cap.core.appleprofile.analysis.application.profiletarget..")
           .should()
           .dependOnClassesThat()
-          .resideInAPackage("org.craft.mcs.cap.core.appleprofile.application.sugaracidity..");
+          .resideInAPackage("org.craft.mcs.cap.core.appleprofile.analysis.application.sugaracidity..");
 
   @ArchTest
   static final ArchRule apple_profile_graph_endpoint_slice_does_not_depend_on_target_analysis =
       noClasses()
           .that()
-          .resideInAPackage("org.craft.mcs.cap.core.appleprofile.application.sugaracidity..")
+          .resideInAPackage("org.craft.mcs.cap.core.appleprofile.analysis.application.sugaracidity..")
           .should()
           .dependOnClassesThat()
-          .resideInAPackage("org.craft.mcs.cap.core.appleprofile.application.profiletarget..");
+          .resideInAPackage("org.craft.mcs.cap.core.appleprofile.analysis.application.profiletarget..");
 
   @ArchTest
-  static final ArchRule apple_profile_analysis_common_does_not_depend_on_specialized_analysis_slices =
+  static final ArchRule apple_profile_analysis_profile_slice_does_not_depend_on_scenario_slices =
       noClasses()
           .that()
-          .resideInAPackage("org.craft.mcs.cap.core.appleprofile.application.analysis.common..")
+          .resideInAPackage("org.craft.mcs.cap.core.appleprofile.analysis.application.profile..")
           .should()
           .dependOnClassesThat()
           .resideInAnyPackage(
-              "org.craft.mcs.cap.core.appleprofile.application.abv..",
-              "org.craft.mcs.cap.core.appleprofile.application.classification..",
-              "org.craft.mcs.cap.core.appleprofile.application.profiletarget..",
-              "org.craft.mcs.cap.core.appleprofile.application.sugaracidity.."
+              "org.craft.mcs.cap.core.appleprofile.analysis.application.abv..",
+              "org.craft.mcs.cap.core.appleprofile.analysis.application.classification..",
+              "org.craft.mcs.cap.core.appleprofile.analysis.application.profiletarget..",
+              "org.craft.mcs.cap.core.appleprofile.analysis.application.sugaracidity.."
           );
 
   @ArchTest
@@ -285,11 +606,11 @@ class ContextBoundaryArchitectureTest {
           .that()
           .resideInAnyPackage(
               "org.craft.mcs.cap.core.account..domain..",
-              "org.craft.mcs.cap.core.appleprofile.domain..",
+              "org.craft.mcs.cap.core.appleprofile..domain..",
               "org.craft.mcs.cap.core.traceability.domain..",
-              "org.craft.mcs.cap.core.feedstock.domain..",
+              "org.craft.mcs.cap.core.feedstock..domain..",
               "org.craft.mcs.cap.core.measurement.domain..",
-              "org.craft.mcs.cap.core.production.domain..",
+              "org.craft.mcs.cap.core.production..domain..",
               "org.craft.mcs.cap.core.varietyprofile.domain.."
           )
           .should()
@@ -356,7 +677,7 @@ class ContextBoundaryArchitectureTest {
   static final ArchRule feedstock_application_does_not_depend_on_account_context =
       noClasses()
           .that()
-          .resideInAPackage("org.craft.mcs.cap.core.feedstock.application..")
+          .resideInAPackage("org.craft.mcs.cap.core.feedstock..application..")
           .should()
           .dependOnClassesThat()
           .resideInAPackage("org.craft.mcs.cap.core.account..");
@@ -365,7 +686,7 @@ class ContextBoundaryArchitectureTest {
   static final ArchRule production_application_does_not_depend_on_account_context =
       noClasses()
           .that()
-          .resideInAPackage("org.craft.mcs.cap.core.production.application..")
+          .resideInAPackage("org.craft.mcs.cap.core.production..application..")
           .should()
           .dependOnClassesThat()
           .resideInAPackage("org.craft.mcs.cap.core.account..");
@@ -396,10 +717,10 @@ class ContextBoundaryArchitectureTest {
               "org.craft.mcs.cap.core.account..application..usecase..",
               "org.craft.mcs.cap.core.traceability.application..port.out..",
               "org.craft.mcs.cap.core.traceability.application..usecase..",
-              "org.craft.mcs.cap.core.feedstock.application..port.out..",
-              "org.craft.mcs.cap.core.feedstock.application..usecase..",
-              "org.craft.mcs.cap.core.production.application..port.out..",
-              "org.craft.mcs.cap.core.production.application..usecase..",
+              "org.craft.mcs.cap.core.feedstock.batch.application..port.out..",
+              "org.craft.mcs.cap.core.feedstock.batch.application..usecase..",
+              "org.craft.mcs.cap.core.production.batch.application..port.out..",
+              "org.craft.mcs.cap.core.production.batch.application..usecase..",
               "org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.account..",
               "org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.traceability..",
               "org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.feedstock..",
@@ -539,12 +860,21 @@ class ContextBoundaryArchitectureTest {
       noClasses()
           .that()
           .resideInAnyPackage(
-              "org.craft.mcs.cap.core.production.domain..",
-              "org.craft.mcs.cap.core.production.application.."
+              "org.craft.mcs.cap.core.production.batch.domain..",
+              "org.craft.mcs.cap.core.production.batch.application.."
           )
           .should()
           .dependOnClassesThat()
-          .resideInAPackage("org.craft.mcs.cap.core.production.candidate..");
+          .resideInAPackage("org.craft.mcs.cap.core.production.planning..");
+
+  @ArchTest
+  static final ArchRule production_planning_does_not_depend_on_production_batch_aggregate =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.core.production.planning..")
+          .should()
+          .dependOnClassesThat()
+          .areAssignableTo(ProductionBatch.class);
 
   @ArchTest
   static final ArchRule feedstock_context_does_not_depend_on_production_context =
@@ -614,19 +944,25 @@ class ContextBoundaryArchitectureTest {
   static final ArchRule production_source_acl_uses_feedstock_inbound_boundary_only =
       noClasses()
           .that()
-          .resideInAPackage("org.craft.mcs.cap.infrastructure.adapter.out.production.source..")
+          .resideInAnyPackage(
+              "org.craft.mcs.cap.infrastructure.adapter.out.production.batch.source..",
+              "org.craft.mcs.cap.infrastructure.adapter.out.production.planning.source.."
+          )
           .should()
           .dependOnClassesThat()
           .resideInAnyPackage(
-              "org.craft.mcs.cap.core.feedstock.application..port.out..",
-              "org.craft.mcs.cap.core.feedstock.application..query.."
+              "org.craft.mcs.cap.core.feedstock.batch.application..port.out..",
+              "org.craft.mcs.cap.core.feedstock.batch.application..query.."
           );
 
   @ArchTest
   static final ArchRule production_source_acl_does_not_depend_on_feedstock_aggregate =
       noClasses()
           .that()
-          .resideInAPackage("org.craft.mcs.cap.infrastructure.adapter.out.production.source..")
+          .resideInAnyPackage(
+              "org.craft.mcs.cap.infrastructure.adapter.out.production.batch.source..",
+              "org.craft.mcs.cap.infrastructure.adapter.out.production.planning.source.."
+          )
           .should()
           .dependOnClassesThat()
           .areAssignableTo(FeedstockBatch.class);
@@ -644,7 +980,7 @@ class ContextBoundaryArchitectureTest {
   static final ArchRule production_inbound_ports_do_not_expose_the_production_aggregate =
       noClasses()
           .that()
-          .resideInAPackage("org.craft.mcs.cap.core.production.application.port.in..")
+          .resideInAPackage("org.craft.mcs.cap.core.production..application..port.in..")
           .should()
           .dependOnClassesThat()
           .areAssignableTo(ProductionBatch.class);

@@ -1,12 +1,8 @@
 /**
- * Bounded context for raw material lots available to cider-production planning.
+ * Feedstock domain area containing independent batch and planning bounded contexts.
  *
- * <p>Feedstock owns FeedstockBatch identity, source metadata, season, type and available material
- * state. Generic measurement evidence, cross-context lineage and reusable profile analysis remain
- * in their dedicated contexts. Feedstock application slices compose those boundaries without
- * transferring aggregate ownership.</p>
+ * <p>The package is a namespace and does not own a domain model. Source material and its lifecycle
+ * belong to {@code feedstock.batch}; comparative planning scenarios belong to
+ * {@code feedstock.planning}.</p>
  */
-@BoundedContext
 package org.craft.mcs.cap.core.feedstock;
-
-import org.jmolecules.ddd.annotation.BoundedContext;

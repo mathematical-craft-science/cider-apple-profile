@@ -243,7 +243,7 @@ class WorkspaceInvitationOutboxDataJdbcTest {
   }
 
   private @NonNull OutboxState outboxState(@NonNull WorkspaceInvitation invitation) {
-    return jdbcTemplate.queryForObject(
+    return requireNonNull(jdbcTemplate.queryForObject(
         "SELECT status, failure_count, next_retry_at FROM outbox_record WHERE record_key = ?",
         (resultSet, _) -> new OutboxState(
             resultSet.getString("status"),
@@ -251,15 +251,18 @@ class WorkspaceInvitationOutboxDataJdbcTest {
             resultSet.getObject("next_retry_at", OffsetDateTime.class)
         ),
         invitation.invitationId().value().toString()
-    );
+    ), "outbox state query result cannot be null");
   }
 
   private long count(
       @NonNull String sql,
       @NonNull Object parameter
   ) {
-    final var count = jdbcTemplate.queryForObject(sql, Long.class, parameter);
-    return count == null ? 0L : count; // NOSONAR
+    return requireNonNull(jdbcTemplate.queryForObject(
+        sql,
+        Long.class,
+        parameter
+    ), "count query result cannot be null");
   }
 
   private static @NonNull WorkspaceInvitation invitation() {

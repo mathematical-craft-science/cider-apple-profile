@@ -3,7 +3,7 @@ package org.craft.mcs.cap.shared.testing;
 import java.time.Instant;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetId;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetName;
-import org.craft.mcs.cap.core.feedstock.domain.model.batch.FeedstockBatchId;
+import org.craft.mcs.cap.core.feedstock.batch.domain.model.batch.FeedstockBatchId;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
