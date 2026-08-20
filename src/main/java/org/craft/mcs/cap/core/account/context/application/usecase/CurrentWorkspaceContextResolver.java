@@ -1,7 +1,7 @@
 package org.craft.mcs.cap.core.account.context.application.usecase;
 
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.account.context.application.model.ResolvedWorkspaceContext;
+import org.craft.mcs.cap.core.account.context.application.contract.ResolvedWorkspaceContext;
 import org.craft.mcs.cap.core.account.context.application.port.out.ActiveWorkspaceProvider;
 import org.craft.mcs.cap.core.account.context.application.port.out.CurrentWorkspaceContextRequestCache;
 import org.craft.mcs.cap.core.account.user.application.usecase.CurrentAccountUserResolver;

@@ -1,7 +1,7 @@
 package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.account.settings;
 
 import java.time.Duration;
-import org.craft.mcs.cap.core.account.workspace.application.model.WorkspaceSettingsRevision;
+import org.craft.mcs.cap.core.account.workspace.application.contract.WorkspaceSettingsRevision;
 import org.craft.mcs.cap.core.account.workspace.application.port.out.WorkspaceSettingsState;
 import org.craft.mcs.cap.core.account.workspace.domain.model.WorkspaceSettings;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;

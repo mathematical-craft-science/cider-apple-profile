@@ -1,9 +1,9 @@
 package org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.port.in;
 
 import java.util.List;
-import org.craft.mcs.cap.core.profileanalysis.composition.contribution.domain.CompositionContributionRoleAssessment;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetScoringInput;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.assessment.ProfileTargetDistance;
+import org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.contract.FeedstockContributionView;
+import org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.contract.FeedstockTargetCharacteristics;
+import org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.contract.FeedstockTargetDistanceView;
 import org.craft.mcs.cap.core.feedstock.batch.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.shared.application.measurement.MeasurementEvidenceView;
 import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
@@ -16,9 +16,9 @@ public record FeedstockBatchProfileTargetCandidate(
     @NonNull FeedstockBatchId batchId,
     @NonNull MaterialStateId currentMaterialStateId,
     @NonNull List<@NonNull MeasurementEvidenceView> profileEvidence,
-    @NonNull ProfileTargetScoringInput characteristics,
-    @NonNull ProfileTargetDistance distance,
-    @NonNull CompositionContributionRoleAssessment contributionRole
+    @NonNull FeedstockTargetCharacteristics characteristics,
+    @NonNull FeedstockTargetDistanceView distance,
+    @NonNull FeedstockContributionView contributionRole
 ) {
 
   public FeedstockBatchProfileTargetCandidate {

@@ -2,17 +2,22 @@ package org.craft.mcs.cap.infrastructure.adapter.out.production.batch.source;
 
 import org.craft.mcs.cap.core.feedstock.batch.application.FeedstockBatchHasNoMeasurementsException;
 import org.craft.mcs.cap.core.feedstock.batch.application.FeedstockBatchInsufficientAvailableVolumeException;
+import org.craft.mcs.cap.core.feedstock.batch.application.FeedstockBatchMaterialSnapshotChangedException;
 import org.craft.mcs.cap.core.feedstock.batch.application.FeedstockBatchNotFoundException;
 import org.craft.mcs.cap.core.feedstock.batch.application.FeedstockBatchOwnershipMismatchException;
 import org.craft.mcs.cap.core.feedstock.batch.application.inventory.FeedstockMaterialCharacteristicsUnavailableException;
+import org.craft.mcs.cap.core.feedstock.batch.application.inventory.port.in.ConsumeFeedstockBatchMaterialCommand;
 import org.craft.mcs.cap.core.feedstock.batch.application.inventory.port.in.ConsumeFeedstockBatchMaterialUseCase;
 import org.craft.mcs.cap.core.feedstock.batch.application.inventory.port.in.ConsumedFeedstockBatchMaterial;
+import org.craft.mcs.cap.core.feedstock.batch.application.inventory.port.in.FeedstockBatchMaterialEvidenceExpectation;
 import org.craft.mcs.cap.core.feedstock.batch.application.inventory.port.in.FeedstockBatchMaterialEvidenceReference;
 import org.craft.mcs.cap.core.feedstock.batch.application.inventory.port.in.FeedstockMaterialCharacteristics;
 import org.craft.mcs.cap.core.production.batch.application.ProductionSourceInsufficientAvailableVolumeException;
 import org.craft.mcs.cap.core.production.batch.application.ProductionSourceNotFoundException;
 import org.craft.mcs.cap.core.production.batch.application.ProductionSourceOwnershipMismatchException;
 import org.craft.mcs.cap.core.production.batch.application.ProductionSourceProfileUnavailableException;
+import org.craft.mcs.cap.core.production.batch.application.creation.ProductionSourceEvidenceConflictException;
+import org.craft.mcs.cap.core.production.batch.application.contract.ProductionSourceEvidenceExpectation;
 import org.craft.mcs.cap.core.production.batch.domain.model.value.ProductionSourceCharacteristics;
 import org.craft.mcs.cap.core.production.batch.application.port.out.ConsumedProductionSource;
 import org.craft.mcs.cap.core.production.batch.domain.model.value.ProductionSourceDisplayName;
@@ -31,11 +36,13 @@ import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 
@@ -50,6 +57,7 @@ class FeedstockProductionSourceInventoryTest {
     final var characteristics = characteristics();
     final var sourceStateId = MaterialStateId.newId();
     final var remainingStateId = MaterialStateId.newId();
+    final var expectation = expectation(sourceStateId);
     when(useCase.consume(any())).thenReturn(new ConsumedFeedstockBatchMaterial(
         batchId,
         BatchName.of("Late juice"),
@@ -66,7 +74,7 @@ class FeedstockProductionSourceInventoryTest {
     ));
     final var inventory = inventory(useCase);
 
-    final var consumed = inventory.consume(workspaceId, source);
+    final var consumed = inventory.consume(workspaceId, source, expectation);
 
     assertThat(consumed)
         .returns(source.reference(), ConsumedProductionSource::reference)
@@ -88,6 +96,14 @@ class FeedstockProductionSourceInventoryTest {
                 characteristics.tannin(),
                 characteristics.yeastAssimilableNitrogen()
             )));
+    final var commandCaptor = ArgumentCaptor.forClass(ConsumeFeedstockBatchMaterialCommand.class);
+    verify(useCase).consume(commandCaptor.capture());
+    assertThat(commandCaptor.getValue().expectation())
+        .returns(sourceStateId, FeedstockBatchMaterialEvidenceExpectation::materialStateId)
+        .returns(
+            new FeedstockBatchMaterialEvidenceReference(expectation.evidenceReference().value()),
+            FeedstockBatchMaterialEvidenceExpectation::evidenceReference
+        );
   }
 
   @Test
@@ -99,7 +115,7 @@ class FeedstockProductionSourceInventoryTest {
     when(useCase.consume(any())).thenThrow(new FeedstockBatchNotFoundException(batchId));
     final var inventory = inventory(useCase);
 
-    assertThatThrownBy(() -> inventory.consume(workspaceId, source))
+    assertThatThrownBy(() -> inventory.consume(workspaceId, source, expectation()))
         .isInstanceOf(ProductionSourceNotFoundException.class);
   }
 
@@ -117,7 +133,7 @@ class FeedstockProductionSourceInventoryTest {
     final var source = source(batchId, "100");
     final var inventory = inventory(useCase);
 
-    assertThatThrownBy(() -> inventory.consume(expectedWorkspaceId, source))
+    assertThatThrownBy(() -> inventory.consume(expectedWorkspaceId, source, expectation()))
         .isInstanceOf(ProductionSourceOwnershipMismatchException.class)
         .satisfies(exception -> assertThat((ProductionSourceOwnershipMismatchException) exception)
             .returns(expectedWorkspaceId, ProductionSourceOwnershipMismatchException::expectedWorkspaceId)
@@ -139,7 +155,7 @@ class FeedstockProductionSourceInventoryTest {
     final var source = source(batchId, "100");
     final var inventory = inventory(useCase);
 
-    assertThatThrownBy(() -> inventory.consume(workspaceId, source))
+    assertThatThrownBy(() -> inventory.consume(workspaceId, source, expectation()))
         .isInstanceOf(ProductionSourceInsufficientAvailableVolumeException.class)
         .satisfies(exception -> assertThat((ProductionSourceInsufficientAvailableVolumeException) exception)
             .returns(requestedVolume, ProductionSourceInsufficientAvailableVolumeException::requestedVolume)
@@ -155,7 +171,7 @@ class FeedstockProductionSourceInventoryTest {
     when(useCase.consume(any())).thenThrow(new FeedstockBatchHasNoMeasurementsException(batchId));
     final var inventory = inventory(useCase);
 
-    assertThatThrownBy(() -> inventory.consume(workspaceId, source))
+    assertThatThrownBy(() -> inventory.consume(workspaceId, source, expectation()))
         .isInstanceOf(ProductionSourceProfileUnavailableException.class);
   }
 
@@ -168,8 +184,22 @@ class FeedstockProductionSourceInventoryTest {
     when(useCase.consume(any())).thenThrow(new FeedstockMaterialCharacteristicsUnavailableException(batchId));
     final var inventory = inventory(useCase);
 
-    assertThatThrownBy(() -> inventory.consume(workspaceId, source))
+    assertThatThrownBy(() -> inventory.consume(workspaceId, source, expectation()))
         .isInstanceOf(ProductionSourceProfileUnavailableException.class);
+  }
+
+  @Test
+  void translatesChangedFeedstockSnapshotToProductionEvidenceConflict() {
+    final var useCase = mock(ConsumeFeedstockBatchMaterialUseCase.class);
+    final var batchId = FeedstockBatchId.newId();
+    final var source = source(batchId, "100");
+    when(useCase.consume(any())).thenThrow(new FeedstockBatchMaterialSnapshotChangedException(batchId));
+    final var inventory = inventory(useCase);
+
+    assertThatThrownBy(() -> inventory.consume(WorkspaceId.newId(), source, expectation()))
+        .isInstanceOf(ProductionSourceEvidenceConflictException.class)
+        .satisfies(exception -> assertThat((ProductionSourceEvidenceConflictException) exception)
+            .returns(source.reference(), ProductionSourceEvidenceConflictException::sourceReference));
   }
 
   private static @NonNull FeedstockProductionSourceInventory inventory(
@@ -194,6 +224,19 @@ class FeedstockProductionSourceInventoryTest {
     return new ProductionSourceComponent(
         ProductionSourceReference.feedstockBatch(batchId.value()),
         VolumeValue.ofLiters(volumeLiters)
+    );
+  }
+
+  private static @NonNull ProductionSourceEvidenceExpectation expectation() {
+    return expectation(MaterialStateId.newId());
+  }
+
+  private static @NonNull ProductionSourceEvidenceExpectation expectation(
+      @NonNull MaterialStateId materialStateId
+  ) {
+    return new ProductionSourceEvidenceExpectation(
+        ProductionSourceEvidenceReference.of("feedstock-profile-v1:measurement-evidence"),
+        materialStateId
     );
   }
 }

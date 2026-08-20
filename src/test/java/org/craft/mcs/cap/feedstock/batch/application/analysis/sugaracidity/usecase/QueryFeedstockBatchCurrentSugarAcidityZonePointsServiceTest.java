@@ -2,10 +2,9 @@ package org.craft.mcs.cap.feedstock.batch.application.analysis.sugaracidity.usec
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.craft.mcs.cap.core.feedstock.batch.application.batch.usecase.FeedstockBatchSummaryMapper.toSummary;
-import static org.craft.mcs.cap.core.profileanalysis.testing.ProfileAnalysisTestFixtures
-    .graphEvaluator;
-import static org.craft.mcs.cap.core.profileanalysis.testing.ProfileAnalysisTestFixtures
-    .northAmericanProfileCalculator;
+import static org.craft.mcs.cap.support.CiderAnalysisTestFixtures
+    .feedstockGraphAnalyzer;
+import static org.craft.mcs.cap.support.CiderAnalysisTestFixtures.feedstockTanninLevelAnalyzer;
 import static org.craft.mcs.cap.shared.kernel.identity.UuidV7Generator.newUuid;
 import static org.craft.mcs.cap.shared.testing.FeedstockCurrentProfileViews.currentProfile;
 import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementInstant;
@@ -32,7 +31,7 @@ import org.craft.mcs.cap.core.feedstock.batch.domain.model.batch.FeedstockBatch;
 import org.craft.mcs.cap.core.feedstock.batch.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.batch.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.core.feedstock.batch.domain.model.batch.value.FeedstockType;
-import org.craft.mcs.cap.core.profileanalysis.graph.zone.domain.JolicoeurSugarAcidityZone;
+import org.craft.mcs.cap.core.feedstock.batch.application.analysis.sugaracidity.contract.FeedstockSugarAcidityGraphView.Zone;
 import org.craft.mcs.cap.shared.application.query.QueryLimits;
 import org.craft.mcs.cap.shared.application.query.pagination.CursorPageRequest;
 import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
@@ -83,7 +82,7 @@ class QueryFeedstockBatchCurrentSugarAcidityZonePointsServiceTest {
             .extracting(evidence -> evidence.evidenceReference().measurementSetId())
             .containsOnly(current.measurementId().value()))
         .returns(
-            JolicoeurSugarAcidityZone.PERFECT_APPLES,
+            Zone.PERFECT_APPLES,
             item -> item.graphEvaluation().zoneAssessment().zone()
         );
   }
@@ -96,8 +95,8 @@ class QueryFeedstockBatchCurrentSugarAcidityZonePointsServiceTest {
         batchRepository,
         mock(FeedstockAccessControl.class),
         repository,
-        graphEvaluator(),
-        northAmericanProfileCalculator()
+        feedstockGraphAnalyzer(),
+        feedstockTanninLevelAnalyzer()
     );
   }
 

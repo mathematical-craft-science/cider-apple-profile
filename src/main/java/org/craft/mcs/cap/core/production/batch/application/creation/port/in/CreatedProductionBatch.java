@@ -1,6 +1,6 @@
 package org.craft.mcs.cap.core.production.batch.application.creation.port.in;
 
-import org.craft.mcs.cap.core.production.batch.application.model.ProductionBatchView;
+import org.craft.mcs.cap.core.production.batch.application.contract.ProductionBatchView;
 import org.craft.mcs.cap.shared.application.ApplicationValidationException;
 import org.craft.mcs.cap.shared.application.material.VesselReferenceView;
 import org.jspecify.annotations.NonNull;

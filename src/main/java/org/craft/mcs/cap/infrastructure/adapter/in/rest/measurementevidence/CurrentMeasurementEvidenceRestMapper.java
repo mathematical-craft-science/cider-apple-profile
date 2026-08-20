@@ -1,7 +1,7 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.measurementevidence;
 
-import org.craft.mcs.cap.core.measurement.application.model.CurrentMeasurementCharacteristicView;
-import org.craft.mcs.cap.core.measurement.application.model.CurrentMeasurementEvidenceView;
+import org.craft.mcs.cap.core.measurement.application.contract.CurrentMeasurementCharacteristicView;
+import org.craft.mcs.cap.core.measurement.application.contract.CurrentMeasurementEvidenceView;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement.MeasurementValueRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement.dto.MeasurementProvenanceResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement.dto.MeasurementSubjectResponse;

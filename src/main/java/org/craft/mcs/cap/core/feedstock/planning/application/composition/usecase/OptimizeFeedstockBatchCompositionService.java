@@ -3,30 +3,19 @@ package org.craft.mcs.cap.core.feedstock.planning.application.composition.usecas
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.feedstock.planning.application.authorization.port.out.FeedstockPlanningAccessControl;
-import org.craft.mcs.cap.core.feedstock.planning.application.candidate.model.FeedstockPlanningCandidateQuery;
-import org.craft.mcs.cap.core.feedstock.planning.application.candidate.model.FeedstockPlanningCandidateSnapshot;
+import org.craft.mcs.cap.core.feedstock.planning.application.candidate.contract.FeedstockPlanningCandidateQuery;
+import org.craft.mcs.cap.core.feedstock.planning.application.candidate.contract.FeedstockPlanningCandidateSnapshot;
 import org.craft.mcs.cap.core.feedstock.planning.application.candidate.port.out.FeedstockPlanningCandidateProvider;
-import org.craft.mcs.cap.core.profileanalysis.composition.optimization.application.port.in.OptimizeCompositionCommand;
-import org.craft.mcs.cap.core.profileanalysis.composition.optimization.application.port.in.OptimizeCompositionUseCase;
-import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionSourceReference;
-import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionTanninPolicy;
-import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionSourceCharacteristics;
-import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.CompositionOptimizationSource;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetObjective;
-import org.craft.mcs.cap.core.profileanalysis.graph.application.port.in.EvaluateJolicoeurSugarAcidityGraphUseCase;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.CustomRectangleSugarAcidityTarget;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.RectangleSugarAcidityTargetGeometry;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.SugarAcidityTarget;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.SugarAcidityTargetResolver;
-import org.craft.mcs.cap.core.profileanalysis.graph.zone.domain.JolicoeurSugarAcidityZone;
-import org.craft.mcs.cap.core.profileanalysis.graph.application.model.JolicoeurSugarAcidityZoneCriteria;
+import org.craft.mcs.cap.core.feedstock.planning.application.graph.contract.FeedstockPlanningGraphCriteria;
+import org.craft.mcs.cap.core.feedstock.planning.application.graph.port.out.FeedstockPlanningGraphAnalyzer;
+import org.craft.mcs.cap.core.feedstock.planning.application.composition.contract.FeedstockCompositionOptimizationRequest;
+import org.craft.mcs.cap.core.feedstock.planning.application.composition.contract.FeedstockCompositionOptimizationRequest.Source;
+import org.craft.mcs.cap.core.feedstock.planning.application.composition.port.out.FeedstockCompositionOptimizer;
 import org.craft.mcs.cap.core.feedstock.planning.application.composition.InsufficientFeedstockCompositionSourcesException;
 import org.craft.mcs.cap.core.feedstock.batch.application.api.currentprofile.FeedstockCurrentProfileView;
-import org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.port.in.CustomRectangleFeedstockProfileTargetSelection;
 import org.craft.mcs.cap.core.feedstock.planning.application.composition.port.in.OptimizeFeedstockBatchCompositionCommand;
 import org.craft.mcs.cap.core.feedstock.planning.application.composition.port.in.OptimizeFeedstockBatchCompositionResult;
 import org.craft.mcs.cap.core.feedstock.planning.application.composition.port.in.OptimizeFeedstockBatchCompositionUseCase;
-import org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.port.in.PredefinedFeedstockProfileTargetSelection;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
@@ -37,21 +26,18 @@ import static java.util.Objects.requireNonNull;
 /**
  * Builds a composition optimization problem from current feedstock batch measurements.
  *
- * <p>The service projects the feedstock bounded context into the generic profile-analysis optimization
- * model: current batch profiles become optimization sources, batch available volume becomes the
- * source bound, and the selected target is passed to the shared composition optimizer.
+   * <p>The service projects current Feedstock candidates into a consumer-owned optimization problem:
+   * current batch profiles become optimization sources, batch available volume becomes the
+   * source bound, and the selected target is passed through the outbound Formulation boundary.
  */
 @Component
 @RequiredArgsConstructor
 public final class OptimizeFeedstockBatchCompositionService implements OptimizeFeedstockBatchCompositionUseCase {
 
   private static final int MINIMUM_SOURCE_COUNT = 2;
-  private static final @NonNull String SOURCE_TYPE = "FEEDSTOCK_BATCH";
-
   private final @NonNull FeedstockPlanningCandidateProvider candidateProvider;
-  private final @NonNull EvaluateJolicoeurSugarAcidityGraphUseCase graphEvaluator;
-  private final @NonNull SugarAcidityTargetResolver targetResolver;
-  private final @NonNull OptimizeCompositionUseCase optimizeCompositionUseCase;
+  private final @NonNull FeedstockPlanningGraphAnalyzer graphAnalyzer;
+  private final @NonNull FeedstockCompositionOptimizer optimizer;
   private final @NonNull FeedstockPlanningAccessControl accessControl;
 
   @Override
@@ -77,19 +63,20 @@ public final class OptimizeFeedstockBatchCompositionService implements OptimizeF
       throw new InsufficientFeedstockCompositionSourcesException(sources.size(), MINIMUM_SOURCE_COUNT);
     }
 
-    final var optimization = optimizeCompositionUseCase.optimize(
-        new OptimizeCompositionCommand(
+    final var optimization = optimizer.optimize(
+        new FeedstockCompositionOptimizationRequest(
             sources,
             command.tanninTarget() == null
-                ? CompositionTanninPolicy.CALCULATE_WHEN_COMPLETE
-                : CompositionTanninPolicy.REQUIRE_TANNIN,
-            objective(command),
-            command.scoringConfiguration(),
+                ? FeedstockCompositionOptimizationRequest.TanninPolicy.CALCULATE_WHEN_COMPLETE
+                : FeedstockCompositionOptimizationRequest.TanninPolicy.REQUIRE_TANNIN,
+            command.target(),
+            command.tanninTarget(),
+            command.scoring(),
             command.criteria(),
             command.settings(),
             command.mode(),
             command.algorithm(),
-            command.calculatorCode(),
+            command.calculator(),
             command.targetTotalVolume()
         )
     );
@@ -97,13 +84,13 @@ public final class OptimizeFeedstockBatchCompositionService implements OptimizeF
     return new OptimizeFeedstockBatchCompositionResult(sources.size(), optimization);
   }
 
-  private @NonNull Optional<@NonNull CompositionOptimizationSource> toOptimizationSourceIfUsable(
+  private @NonNull Optional<@NonNull Source> toOptimizationSourceIfUsable(
       @NonNull FeedstockPlanningCandidateSnapshot candidate,
-      @Nullable JolicoeurSugarAcidityZoneCriteria sourceZoneCriteria
+      @Nullable FeedstockPlanningGraphCriteria sourceZoneCriteria
   ) {
     final FeedstockCurrentProfileView currentProfile = candidate.currentProfile();
     requireNonNull(currentProfile, "feedstock current profile cannot be null");
-    final var graphEvaluation = graphEvaluator.evaluate(
+    final var graphEvaluation = graphAnalyzer.evaluate(
         currentProfile.specificGravity(),
         currentProfile.titratableAcidity()
     );
@@ -111,7 +98,7 @@ public final class OptimizeFeedstockBatchCompositionService implements OptimizeF
       return Optional.empty();
     }
     if (sourceZoneCriteria != null
-        && !sourceZoneCriteria.matches(requireNonNull(graphEvaluation.zoneAssessment()))) {
+        && !sourceZoneCriteria.matches(graphEvaluation)) {
       return Optional.empty();
     }
     final var specificGravity = currentProfile.specificGravity();
@@ -120,12 +107,9 @@ public final class OptimizeFeedstockBatchCompositionService implements OptimizeF
       return Optional.empty();
     }
 
-    return Optional.of(new CompositionOptimizationSource(
-        new CompositionSourceReference(
-            SOURCE_TYPE,
-            currentProfile.batchId().value().toString()
-        ),
-        new CompositionSourceCharacteristics(
+    return Optional.of(new FeedstockCompositionOptimizationRequest.Source(
+        currentProfile.batchId(),
+        new FeedstockCompositionOptimizationRequest.Characteristics(
             specificGravity,
             titratableAcidity,
             currentProfile.tannin(),
@@ -133,30 +117,5 @@ public final class OptimizeFeedstockBatchCompositionService implements OptimizeF
         ),
         candidate.availableVolume()
     ));
-  }
-
-  private @NonNull ProfileTargetObjective objective(
-      @NonNull OptimizeFeedstockBatchCompositionCommand command
-  ) {
-    final SugarAcidityTarget target = target(command);
-    final var tanninTarget = command.tanninTarget();
-    if (tanninTarget == null) {
-      return ProfileTargetObjective.of(target);
-    }
-
-    return ProfileTargetObjective.withTanninTarget(target, tanninTarget);
-  }
-
-  private @NonNull SugarAcidityTarget target(
-      @NonNull OptimizeFeedstockBatchCompositionCommand command
-  ) {
-    return switch (command.target()) {
-      case PredefinedFeedstockProfileTargetSelection(JolicoeurSugarAcidityZone zone) ->
-          targetResolver.resolvePredefinedZone(zone);
-      case CustomRectangleFeedstockProfileTargetSelection(
-          RectangleSugarAcidityTargetGeometry geometry
-      ) ->
-          new CustomRectangleSugarAcidityTarget(geometry);
-    };
   }
 }

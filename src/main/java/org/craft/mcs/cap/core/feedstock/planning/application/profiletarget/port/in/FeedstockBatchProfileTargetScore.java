@@ -1,8 +1,9 @@
 package org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.port.in;
 
 import java.util.List;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetScoringInput;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.assessment.ProfileTargetDistance;
+import org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.contract.FeedstockContributionView;
+import org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.contract.FeedstockTargetCharacteristics;
+import org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.contract.FeedstockTargetDistanceView;
 import org.craft.mcs.cap.core.feedstock.batch.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.shared.application.measurement.MeasurementEvidenceView;
 import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
@@ -17,8 +18,9 @@ public record FeedstockBatchProfileTargetScore(
     @NonNull WorkspaceId workspaceId,
     @NonNull MaterialStateId currentMaterialStateId,
     @NonNull List<@NonNull MeasurementEvidenceView> profileEvidence,
-    @NonNull ProfileTargetScoringInput characteristics,
-    @NonNull ProfileTargetDistance distance
+    @NonNull FeedstockTargetCharacteristics characteristics,
+    @NonNull FeedstockTargetDistanceView distance,
+    @NonNull FeedstockContributionView contribution
 ) {
 
   public FeedstockBatchProfileTargetScore {
@@ -30,5 +32,6 @@ public record FeedstockBatchProfileTargetScore(
     );
     requireNonNull(characteristics, "feedstock target-scoring characteristics cannot be null");
     requireNonNull(distance, "profile target distance cannot be null");
+    requireNonNull(contribution, "profile target contribution cannot be null");
   }
 }

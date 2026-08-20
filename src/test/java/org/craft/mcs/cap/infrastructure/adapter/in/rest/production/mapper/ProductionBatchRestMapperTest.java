@@ -1,23 +1,17 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.production.mapper;
 
 import java.util.List;
-import org.craft.mcs.cap.core.profileanalysis.abv.domain.AbvPredictionMethod;
-import org.craft.mcs.cap.core.profileanalysis.abv.domain.FinalGravityPredictionSource;
-import org.craft.mcs.cap.core.profileanalysis.abv.domain.FixedFinalGravityPredictionStrategy;
-import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPredictor;
-import org.craft.mcs.cap.core.profileanalysis.abv.domain.PredictionConfidence;
-import org.craft.mcs.cap.core.profileanalysis.abv.domain.StandardGravityDropAbvPredictionStrategy;
 import org.craft.mcs.cap.core.feedstock.batch.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.application.material.VesselReferenceView;
 import org.craft.mcs.cap.core.production.planning.application.confirmation.port.in.ProductionBatchCreated;
-import org.craft.mcs.cap.core.production.planning.application.confirmation.model.ProductionBatchConfirmationResult;
-import org.craft.mcs.cap.core.production.batch.application.model.ProductionBatchDetailsView;
+import org.craft.mcs.cap.core.production.planning.application.confirmation.contract.ProductionBatchConfirmationResult;
+import org.craft.mcs.cap.core.production.batch.application.contract.ProductionBatchDetailsView;
 import org.craft.mcs.cap.core.production.batch.application.port.in.UpdateProductionBatchCommand;
-import org.craft.mcs.cap.core.production.batch.application.model.ProductionCurrentProfileView;
-import org.craft.mcs.cap.core.production.batch.application.model.ProductionCurrentCharacteristicView;
-import org.craft.mcs.cap.core.production.batch.application.model.ProductionBatchView;
-import org.craft.mcs.cap.core.production.planning.application.model.ProductionBatchCandidateView;
+import org.craft.mcs.cap.core.production.batch.application.contract.ProductionCurrentProfileView;
+import org.craft.mcs.cap.core.production.batch.application.contract.ProductionCurrentCharacteristicView;
+import org.craft.mcs.cap.core.production.batch.application.contract.ProductionBatchView;
+import org.craft.mcs.cap.core.production.planning.application.contract.ProductionBatchCandidateView;
 import org.craft.mcs.cap.core.production.planning.domain.model.ProductionBatchCandidateId;
 import org.craft.mcs.cap.core.production.planning.domain.model.ProductionBatchCandidateStatus;
 import org.craft.mcs.cap.core.production.batch.domain.model.ProductionBatch;
@@ -30,6 +24,7 @@ import org.craft.mcs.cap.core.production.batch.domain.model.value.ProductionProf
 import org.craft.mcs.cap.testsupport.VesselTestFixtures;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.ProductionBatchResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.UpdateProductionBatchRequest;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.abv.dto.PotentialAbvPredictionResponse;
 import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
@@ -40,15 +35,11 @@ import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.craft.mcs.cap.support.PotentialAbvPredictionFixtures.prediction;
+import static org.craft.mcs.cap.support.PotentialAbvPredictionFixtures.productionCandidatePrediction;
+import static org.craft.mcs.cap.support.PotentialAbvPredictionFixtures.productionPrediction;
 
 
 class ProductionBatchRestMapperTest {
-
-  private final PotentialAbvPredictor potentialAbvPredictor = new PotentialAbvPredictor(
-      FixedFinalGravityPredictionStrategy.dryCiderDefault(),
-      new StandardGravityDropAbvPredictionStrategy()
-  );
 
   @Test
   void mapsYanAndCalculatedPotentialAbvToDetailsResponse() {
@@ -60,7 +51,7 @@ class ProductionBatchRestMapperTest {
             view,
             vesselReference(view),
             currentProfile(view),
-            potentialAbvPredictor.predict(view.initialProfileSnapshot().specificGravity())
+            productionPrediction(view.initialProfileSnapshot().specificGravity())
         )
     );
 
@@ -83,13 +74,14 @@ class ProductionBatchRestMapperTest {
         .satisfies(details -> assertThat(details.potentialAbv().predictedFinalGravity().value())
             .isEqualByComparingTo("1.000"))
         .satisfies(details -> assertThat(details.potentialAbv().predictedFinalGravitySource())
-            .isEqualTo(FinalGravityPredictionSource.FIXED_DRY_CIDER_DEFAULT))
+            .isEqualTo(PotentialAbvPredictionResponse.FinalGravitySource.FIXED_DRY_CIDER_DEFAULT))
         .satisfies(details -> assertThat(details.potentialAbv().potentialAbv().value())
             .isEqualByComparingTo("6.825"))
         .satisfies(details -> assertThat(details.potentialAbv().potentialAbv().unit()).isEqualTo("% ABV"))
         .satisfies(details -> assertThat(details.potentialAbv().method())
-            .isEqualTo(AbvPredictionMethod.STANDARD_GRAVITY_DROP))
-        .satisfies(details -> assertThat(details.potentialAbv().confidence()).isEqualTo(PredictionConfidence.LOW));
+            .isEqualTo(PotentialAbvPredictionResponse.Method.STANDARD_GRAVITY_DROP))
+        .satisfies(details -> assertThat(details.potentialAbv().confidence())
+            .isEqualTo(PotentialAbvPredictionResponse.Confidence.LOW));
   }
 
   @Test
@@ -150,7 +142,7 @@ class ProductionBatchRestMapperTest {
             view,
             vesselReference(view),
             currentProfile(view),
-            potentialAbvPredictor.predict(view.initialProfileSnapshot().specificGravity())
+              productionPrediction(view.initialProfileSnapshot().specificGravity())
         ))
     );
 
@@ -248,7 +240,7 @@ class ProductionBatchRestMapperTest {
             VolumeValue.ofLiters("120")
         ))),
         profileSnapshot(),
-        prediction(profileSnapshot().specificGravity()),
+        productionCandidatePrediction(profileSnapshot().specificGravity()),
         null,
         null,
         List.of(),

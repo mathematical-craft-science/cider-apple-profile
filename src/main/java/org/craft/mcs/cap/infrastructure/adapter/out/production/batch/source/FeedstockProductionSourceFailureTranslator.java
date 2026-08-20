@@ -3,6 +3,7 @@ package org.craft.mcs.cap.infrastructure.adapter.out.production.batch.source;
 import java.util.function.Supplier;
 import org.craft.mcs.cap.core.feedstock.batch.application.FeedstockBatchHasNoMeasurementsException;
 import org.craft.mcs.cap.core.feedstock.batch.application.FeedstockBatchInsufficientAvailableVolumeException;
+import org.craft.mcs.cap.core.feedstock.batch.application.FeedstockBatchMaterialSnapshotChangedException;
 import org.craft.mcs.cap.core.feedstock.batch.application.FeedstockBatchNotFoundException;
 import org.craft.mcs.cap.core.feedstock.batch.application.FeedstockBatchOwnershipMismatchException;
 import org.craft.mcs.cap.core.feedstock.batch.application.inventory.FeedstockMaterialCharacteristicsUnavailableException;
@@ -10,6 +11,7 @@ import org.craft.mcs.cap.core.production.batch.application.ProductionSourceInsuf
 import org.craft.mcs.cap.core.production.batch.application.ProductionSourceNotFoundException;
 import org.craft.mcs.cap.core.production.batch.application.ProductionSourceOwnershipMismatchException;
 import org.craft.mcs.cap.core.production.batch.application.ProductionSourceProfileUnavailableException;
+import org.craft.mcs.cap.core.production.batch.application.creation.ProductionSourceEvidenceConflictException;
 import org.craft.mcs.cap.core.production.batch.domain.model.ProductionSourceReference;
 import org.jspecify.annotations.NonNull;
 
@@ -29,6 +31,8 @@ final class FeedstockProductionSourceFailureTranslator {
     requireNonNull(operation, "feedstock source operation cannot be null");
     try {
       return operation.get();
+    } catch (FeedstockBatchMaterialSnapshotChangedException exception) {
+      throw new ProductionSourceEvidenceConflictException(sourceReference);
     } catch (FeedstockBatchNotFoundException exception) {
       throw new ProductionSourceNotFoundException(sourceReference);
     } catch (FeedstockBatchOwnershipMismatchException exception) {

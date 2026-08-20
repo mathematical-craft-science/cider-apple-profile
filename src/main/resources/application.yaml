@@ -87,7 +87,7 @@ cap:
     public-access:
       openapi: false
       debug: false
-  profile-analysis:
+  cider-analysis:
     sugar-acidity:
       geometry: RECTANGLE # or ELLIPSE
     readiness:

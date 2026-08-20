@@ -2,10 +2,11 @@ package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.production
 
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.production.planning.application.model.ProductionBatchCandidateSnapshot;
+import org.craft.mcs.cap.core.production.planning.application.contract.ProductionBatchCandidateSnapshot;
 import org.craft.mcs.cap.core.production.planning.application.port.out.ProductionBatchCandidateStore;
 import org.craft.mcs.cap.core.production.planning.domain.model.ProductionBatchCandidateId;
 import org.jspecify.annotations.NonNull;
+import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.stereotype.Repository;
 
 import static java.util.Objects.requireNonNull;
@@ -30,7 +31,7 @@ class JdbcProductionBatchCandidateStore implements ProductionBatchCandidateStore
         "production batch candidate",
         () -> repository.save(ProductionBatchCandidateJdbcMapper.fromSnapshot(snapshot, codec))
     );
-    return ProductionBatchCandidateJdbcMapper.toSnapshot(saved, codec);
+    return toSnapshot(saved);
   }
 
   @Override
@@ -41,6 +42,9 @@ class JdbcProductionBatchCandidateStore implements ProductionBatchCandidateStore
     final var candidate = snapshot.candidate();
     final var profile = candidate.profile();
     final var prediction = snapshot.potentialAbv();
+    final var tannin = profile.tannin();
+    final var yeastAssimilableNitrogen = profile.yeastAssimilableNitrogen();
+    final var confirmedProductionBatchId = candidate.confirmedProductionBatchId();
     final var affectedRows = translateOptimisticLocking(
         "production batch candidate",
         () -> repository.updateByIdAndVersion(
@@ -50,10 +54,10 @@ class JdbcProductionBatchCandidateStore implements ProductionBatchCandidateStore
             candidate.sourceComposition().totalVolume().liters(),
             profile.specificGravity().asBigDecimal(),
             profile.titratableAcidity().asBigDecimal(),
-            profile.tannin() == null ? null : profile.tannin().asBigDecimal(),
-            profile.yeastAssimilableNitrogen() == null
+            tannin == null ? null : tannin.asBigDecimal(),
+            yeastAssimilableNitrogen == null
                 ? null
-                : profile.yeastAssimilableNitrogen().asBigDecimal(),
+                : yeastAssimilableNitrogen.asBigDecimal(),
             prediction.predictedFinalGravity().asBigDecimal(),
             prediction.predictedFinalGravitySource(),
             prediction.potentialAbv().percent(),
@@ -62,9 +66,9 @@ class JdbcProductionBatchCandidateStore implements ProductionBatchCandidateStore
             snapshot.normalizerCode(),
             codec.encodeTargetDistance(snapshot.targetDistance()),
             codec.encodeWarnings(snapshot.warnings()),
-            candidate.confirmedProductionBatchId() == null
+            confirmedProductionBatchId == null
                 ? null
-                : candidate.confirmedProductionBatchId().value(),
+                : confirmedProductionBatchId.value(),
             snapshot.revision()
         )
     );
@@ -78,7 +82,28 @@ class JdbcProductionBatchCandidateStore implements ProductionBatchCandidateStore
   ) {
     requireNonNull(candidateId, "production batch candidate id cannot be null");
     return repository.findById(candidateId.value())
-        .map(entity -> ProductionBatchCandidateJdbcMapper.toSnapshot(entity, codec));
+        .map(this::toSnapshot);
+  }
+
+  @Override
+  public @NonNull Optional<@NonNull ProductionBatchCandidateSnapshot> lockById(
+      @NonNull ProductionBatchCandidateId candidateId
+  ) {
+    requireNonNull(candidateId, "production batch candidate id cannot be null");
+    return repository.lockById(candidateId.value())
+        .map(this::toSnapshot);
+  }
+
+  private @NonNull ProductionBatchCandidateSnapshot toSnapshot(
+      @NonNull ProductionBatchCandidateJdbcEntity entity
+  ) {
+    try {
+      return ProductionBatchCandidateJdbcMapper.toSnapshot(entity, codec);
+    } catch (DataRetrievalFailureException exception) {
+      throw exception;
+    } catch (RuntimeException exception) {
+      throw new DataRetrievalFailureException("persisted production batch candidate is invalid", exception);
+    }
   }
 
 }

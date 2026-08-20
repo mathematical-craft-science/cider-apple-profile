@@ -1,6 +1,6 @@
 package org.craft.mcs.cap.core.feedstock.planning.application.batchoverview.port.in;
 
-import org.craft.mcs.cap.core.feedstock.planning.application.batchoverview.model.FeedstockPlanningView;
+import org.craft.mcs.cap.core.feedstock.planning.application.batchoverview.contract.FeedstockPlanningView;
 import org.jspecify.annotations.NonNull;
 
 

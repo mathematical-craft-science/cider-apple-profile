@@ -13,7 +13,7 @@ import java.time.Instant;
 import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
-import org.craft.mcs.cap.core.appleprofile.catalog.application.model.AppleVarietyReferenceProfileView;
+import org.craft.mcs.cap.core.appleprofile.catalog.application.contract.AppleVarietyReferenceProfileView;
 import org.craft.mcs.cap.core.appleprofile.catalog.domain.model.AppleVariety;
 import org.craft.mcs.cap.core.appleprofile.catalog.domain.model.AppleVarietyId;
 import org.craft.mcs.cap.core.feedstock.batch.domain.model.batch.FeedstockBatch;
@@ -21,7 +21,7 @@ import org.craft.mcs.cap.core.feedstock.batch.domain.model.batch.FeedstockBatchI
 import org.craft.mcs.cap.core.feedstock.batch.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSet;
 import org.craft.mcs.cap.core.production.batch.domain.model.ProductionBatch;
-import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionSourceCharacteristics;
+import org.craft.mcs.cap.core.formulation.calculation.domain.CompositionSourceCharacteristics;
 import org.jspecify.annotations.NonNull;
 
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
@@ -138,69 +138,234 @@ class ContextBoundaryArchitectureTest {
   @ArchTest
   static final ArchRule domain_area_roots_are_namespaces_only =
       noClasses()
+          .that()
+          .doNotHaveSimpleName("package-info")
           .should()
           .resideInAnyPackage(
               "org.craft.mcs.cap.core.production",
               "org.craft.mcs.cap.core.feedstock",
-              "org.craft.mcs.cap.core.appleprofile"
+              "org.craft.mcs.cap.core.appleprofile",
+              "org.craft.mcs.cap.core.cideranalysis",
+              "org.craft.mcs.cap.core.formulation"
           );
 
   @ArchTest
-  static final ArchRule profile_analysis_does_not_depend_on_material_or_catalog_contexts =
+  static final ArchRule cider_analysis_does_not_depend_on_material_formulation_or_catalog_contexts =
       noClasses()
           .that()
-          .resideInAPackage("org.craft.mcs.cap.core.profileanalysis..")
+          .resideInAPackage("org.craft.mcs.cap.core.cideranalysis..")
           .should()
           .dependOnClassesThat()
           .resideInAnyPackage(
+              "org.craft.mcs.cap.core.account..",
               "org.craft.mcs.cap.core.appleprofile..",
               "org.craft.mcs.cap.core.feedstock..",
+              "org.craft.mcs.cap.core.formulation..",
               "org.craft.mcs.cap.core.measurement..",
               "org.craft.mcs.cap.core.production..",
               "org.craft.mcs.cap.core.traceability..",
-              "org.craft.mcs.cap.core.varietyprofile.."
+              "org.craft.mcs.cap.core.varietyprofile..",
+              "org.craft.mcs.cap.core.vessel.."
           );
 
   @ArchTest
-  static final ArchRule other_contexts_depend_on_profile_analysis_inbound_ports_not_services =
+  static final ArchRule formulation_does_not_depend_on_material_or_catalog_contexts =
       noClasses()
           .that()
+          .resideInAPackage("org.craft.mcs.cap.core.formulation..")
+          .should()
+          .dependOnClassesThat()
           .resideInAnyPackage(
+              "org.craft.mcs.cap.core.account..",
               "org.craft.mcs.cap.core.appleprofile..",
               "org.craft.mcs.cap.core.feedstock..",
               "org.craft.mcs.cap.core.measurement..",
               "org.craft.mcs.cap.core.production..",
               "org.craft.mcs.cap.core.traceability..",
-              "org.craft.mcs.cap.core.varietyprofile.."
+              "org.craft.mcs.cap.core.varietyprofile..",
+              "org.craft.mcs.cap.core.vessel.."
+          );
+
+  @ArchTest
+  static final ArchRule formulation_uses_cider_analysis_only_through_infrastructure_acl =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.core.formulation..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAPackage("org.craft.mcs.cap.core.cideranalysis..");
+
+  @ArchTest
+  static final ArchRule cider_analysis_slices_are_free_of_cycles =
+      slices()
+          .matching("org.craft.mcs.cap.core.cideranalysis.(*)..")
+          .should()
+          .beFreeOfCycles();
+
+  @ArchTest
+  static final ArchRule formulation_slices_are_free_of_cycles =
+      slices()
+          .matching("org.craft.mcs.cap.core.formulation.(*)..")
+          .should()
+          .beFreeOfCycles();
+
+  @ArchTest
+  static final ArchRule formulation_calculation_does_not_depend_on_higher_level_slices =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.core.formulation.calculation..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAnyPackage(
+              "org.craft.mcs.cap.core.formulation.optimization..",
+              "org.craft.mcs.cap.core.formulation.interpretation.."
+          );
+
+  @ArchTest
+  static final ArchRule formulation_optimization_does_not_depend_on_interpretation =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.core.formulation.optimization..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAPackage("org.craft.mcs.cap.core.formulation.interpretation..");
+
+  @ArchTest
+  static final ArchRule consumer_contexts_use_calculation_contexts_only_through_infrastructure_acl =
+      noClasses()
+          .that()
+          .resideInAnyPackage(
+              "org.craft.mcs.cap.core.account..",
+              "org.craft.mcs.cap.core.appleprofile..",
+              "org.craft.mcs.cap.core.feedstock..",
+              "org.craft.mcs.cap.core.measurement..",
+              "org.craft.mcs.cap.core.production..",
+              "org.craft.mcs.cap.core.traceability..",
+              "org.craft.mcs.cap.core.varietyprofile..",
+              "org.craft.mcs.cap.core.vessel.."
           )
           .should()
           .dependOnClassesThat()
-          .resideInAPackage("org.craft.mcs.cap.core.profileanalysis..application.service..");
+          .resideInAnyPackage(
+              "org.craft.mcs.cap.core.cideranalysis..",
+              "org.craft.mcs.cap.core.formulation.."
+          );
 
   @ArchTest
-  static final ArchRule profile_analysis_slices_are_free_of_cycles =
-      slices()
-          .matching("org.craft.mcs.cap.core.profileanalysis.(*)..")
+  static final ArchRule calculation_contexts_do_not_depend_on_persistence_or_transactions =
+      noClasses()
+          .that()
+          .resideInAnyPackage(
+              "org.craft.mcs.cap.core.cideranalysis..",
+              "org.craft.mcs.cap.core.formulation.."
+          )
           .should()
-          .beFreeOfCycles();
+          .dependOnClassesThat()
+          .resideInAnyPackage(
+              "org.craft.mcs.cap.infrastructure.adapter.out.persistence..",
+              "org.craft.mcs.cap.shared.platform..",
+              "org.springframework.jdbc..",
+              "org.springframework.data..",
+              "org.springframework.transaction.."
+          );
+
+  @ArchTest
+  static final ArchRule calculation_contexts_do_not_declare_repositories =
+      noClasses()
+          .that()
+          .resideInAnyPackage(
+              "org.craft.mcs.cap.core.cideranalysis..",
+              "org.craft.mcs.cap.core.formulation.."
+          )
+          .should()
+          .haveSimpleNameEndingWith("Repository");
 
   @ArchTest
   static final ArchRule graph_domain_does_not_depend_on_cider_apple_classification =
       noClasses()
           .that()
-          .resideInAPackage("org.craft.mcs.cap.core.profileanalysis.graph..domain..")
+          .resideInAPackage("org.craft.mcs.cap.core.cideranalysis.graph..domain..")
           .should()
           .dependOnClassesThat()
-          .resideInAPackage("org.craft.mcs.cap.core.profileanalysis.classification..");
+          .resideInAPackage("org.craft.mcs.cap.core.cideranalysis.classification..");
 
   @ArchTest
   static final ArchRule cider_apple_classification_does_not_depend_on_graph =
       noClasses()
           .that()
-          .resideInAPackage("org.craft.mcs.cap.core.profileanalysis.classification..")
+          .resideInAPackage("org.craft.mcs.cap.core.cideranalysis.classification..")
           .should()
           .dependOnClassesThat()
-          .resideInAPackage("org.craft.mcs.cap.core.profileanalysis.graph..");
+          .resideInAPackage("org.craft.mcs.cap.core.cideranalysis.graph..");
+
+  @ArchTest
+  static final ArchRule cider_analysis_abv_does_not_depend_on_peer_modules =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.core.cideranalysis.abv..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAnyPackage(
+              "org.craft.mcs.cap.core.cideranalysis.classification..",
+              "org.craft.mcs.cap.core.cideranalysis.graph..",
+              "org.craft.mcs.cap.core.cideranalysis.readiness..",
+              "org.craft.mcs.cap.core.cideranalysis.targetfit.."
+          );
+
+  @ArchTest
+  static final ArchRule cider_analysis_classification_does_not_depend_on_peer_modules =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.core.cideranalysis.classification..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAnyPackage(
+              "org.craft.mcs.cap.core.cideranalysis.abv..",
+              "org.craft.mcs.cap.core.cideranalysis.graph..",
+              "org.craft.mcs.cap.core.cideranalysis.readiness..",
+              "org.craft.mcs.cap.core.cideranalysis.targetfit.."
+          );
+
+  @ArchTest
+  static final ArchRule cider_analysis_graph_does_not_depend_on_peer_modules =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.core.cideranalysis.graph..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAnyPackage(
+              "org.craft.mcs.cap.core.cideranalysis.abv..",
+              "org.craft.mcs.cap.core.cideranalysis.classification..",
+              "org.craft.mcs.cap.core.cideranalysis.readiness..",
+              "org.craft.mcs.cap.core.cideranalysis.targetfit.."
+          );
+
+  @ArchTest
+  static final ArchRule cider_analysis_readiness_does_not_depend_on_peer_modules =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.core.cideranalysis.readiness..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAnyPackage(
+              "org.craft.mcs.cap.core.cideranalysis.abv..",
+              "org.craft.mcs.cap.core.cideranalysis.classification..",
+              "org.craft.mcs.cap.core.cideranalysis.graph..",
+              "org.craft.mcs.cap.core.cideranalysis.targetfit.."
+          );
+
+  @ArchTest
+  static final ArchRule target_fit_depends_only_on_graph_within_cider_analysis =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.core.cideranalysis.targetfit..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAnyPackage(
+              "org.craft.mcs.cap.core.cideranalysis.abv..",
+              "org.craft.mcs.cap.core.cideranalysis.classification..",
+              "org.craft.mcs.cap.core.cideranalysis.readiness.."
+          );
 
   @ArchTest
   static final ArchRule feedstock_application_slices_are_free_of_cycles =
@@ -281,13 +446,19 @@ class ContextBoundaryArchitectureTest {
                   .and(JavaClass.Predicates.resideOutsideOfPackage(
                       "org.craft.mcs.cap.core.feedstock.batch.application.api.."
                   ))
+                  .and(JavaClass.Predicates.resideOutsideOfPackage(
+                      "org.craft.mcs.cap.core.feedstock.batch.application.assessment.contract.."
+                  ))
           );
 
   @ArchTest
   static final ArchRule feedstock_batch_published_contracts_do_not_expose_aggregate =
       noClasses()
           .that()
-          .resideInAPackage("org.craft.mcs.cap.core.feedstock.batch.application.api..")
+          .resideInAnyPackage(
+              "org.craft.mcs.cap.core.feedstock.batch.application.api..",
+              "org.craft.mcs.cap.core.feedstock.batch.application.assessment.contract.."
+          )
           .should()
           .dependOnClassesThat()
           .areAssignableTo(FeedstockBatch.class);
@@ -302,10 +473,10 @@ class ContextBoundaryArchitectureTest {
           .resideInAPackage("org.craft.mcs.cap.core.production.batch.application..");
 
   @ArchTest
-  static final ArchRule production_batch_published_models_do_not_expose_aggregate =
+  static final ArchRule production_batch_application_contracts_do_not_expose_aggregate =
       noClasses()
           .that()
-          .resideInAPackage("org.craft.mcs.cap.core.production.batch.application.model..")
+          .resideInAPackage("org.craft.mcs.cap.core.production.batch.application.contract..")
           .should()
           .dependOnClassesThat()
           .areAssignableTo(ProductionBatch.class);
@@ -465,7 +636,7 @@ class ContextBoundaryArchitectureTest {
                       "org.craft.mcs.cap.core.production.batch.application..port.in.."
                   ))
                   .and(JavaClass.Predicates.resideOutsideOfPackage(
-                      "org.craft.mcs.cap.core.production.batch.application.model.."
+                      "org.craft.mcs.cap.core.production.batch.application.contract.."
                   ))
                   .and(JavaClass.Predicates.resideOutsideOfPackage(
                       "org.craft.mcs.cap.core.production.batch.application"
@@ -516,7 +687,7 @@ class ContextBoundaryArchitectureTest {
               JavaClass.Predicates
                   .resideInAPackage("org.craft.mcs.cap.core.appleprofile.catalog.application..")
                   .and(JavaClass.Predicates.resideOutsideOfPackage(
-                      "org.craft.mcs.cap.core.appleprofile.catalog.application.model.."
+                      "org.craft.mcs.cap.core.appleprofile.catalog.application.contract.."
                   ))
                   .and(JavaClass.Predicates.resideOutsideOfPackage(
                       "org.craft.mcs.cap.core.appleprofile.catalog.application..port.in.."
@@ -566,6 +737,18 @@ class ContextBoundaryArchitectureTest {
           .resideInAPackage("org.craft.mcs.cap.core.appleprofile.analysis.application.profiletarget..");
 
   @ArchTest
+  static final ArchRule apple_profile_graph_bricks_do_not_depend_on_scenario_slices =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.core.appleprofile.analysis.application.graph..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAnyPackage(
+              "org.craft.mcs.cap.core.appleprofile.analysis.application.profiletarget..",
+              "org.craft.mcs.cap.core.appleprofile.analysis.application.sugaracidity.."
+          );
+
+  @ArchTest
   static final ArchRule apple_profile_analysis_profile_slice_does_not_depend_on_scenario_slices =
       noClasses()
           .that()
@@ -575,18 +758,72 @@ class ContextBoundaryArchitectureTest {
           .resideInAnyPackage(
               "org.craft.mcs.cap.core.appleprofile.analysis.application.abv..",
               "org.craft.mcs.cap.core.appleprofile.analysis.application.classification..",
+              "org.craft.mcs.cap.core.appleprofile.analysis.application.graph..",
               "org.craft.mcs.cap.core.appleprofile.analysis.application.profiletarget..",
               "org.craft.mcs.cap.core.appleprofile.analysis.application.sugaracidity.."
           );
 
   @ArchTest
-  static final ArchRule profile_analysis_domains_do_not_depend_on_compatibility_orchestration =
+  static final ArchRule cider_analysis_and_formulation_domains_do_not_depend_on_application =
       noClasses()
           .that()
-          .resideInAPackage("org.craft.mcs.cap.core.profileanalysis..domain..")
+          .resideInAnyPackage(
+              "org.craft.mcs.cap.core.cideranalysis..domain..",
+              "org.craft.mcs.cap.core.formulation..domain.."
+          )
           .should()
           .dependOnClassesThat()
-          .resideInAPackage("org.craft.mcs.cap.core.profileanalysis.compatibility..");
+          .resideInAnyPackage(
+              "org.craft.mcs.cap.core.cideranalysis..application..",
+              "org.craft.mcs.cap.core.formulation..application.."
+          );
+
+  @ArchTest
+  static final ArchRule calculation_context_application_contracts_do_not_depend_on_inbound_commands =
+      noClasses()
+          .that()
+          .resideInAnyPackage(
+              "org.craft.mcs.cap.core.cideranalysis..application.contract..",
+              "org.craft.mcs.cap.core.formulation..application.contract.."
+          )
+          .should()
+          .dependOnClassesThat()
+          .resideInAnyPackage(
+              "org.craft.mcs.cap.core.cideranalysis..application.port.in..",
+              "org.craft.mcs.cap.core.formulation..application.port.in.."
+          );
+
+  @ArchTest
+  static final ArchRule calculation_context_published_boundaries_do_not_expose_domain_model =
+      noClasses()
+          .that()
+          .resideInAnyPackage(
+              "org.craft.mcs.cap.core.cideranalysis..application.contract..",
+              "org.craft.mcs.cap.core.cideranalysis..application.port.in..",
+              "org.craft.mcs.cap.core.formulation..application.contract..",
+              "org.craft.mcs.cap.core.formulation..application.port.in.."
+          )
+          .should()
+          .dependOnClassesThat()
+          .resideInAnyPackage(
+              "org.craft.mcs.cap.core.cideranalysis..domain..",
+              "org.craft.mcs.cap.core.formulation..domain.."
+          );
+
+  @ArchTest
+  static final ArchRule calculation_context_application_orchestrators_use_usecase_packages =
+      noClasses()
+          .should()
+          .resideInAnyPackage(
+              "org.craft.mcs.cap.core.cideranalysis..application.service..",
+              "org.craft.mcs.cap.core.formulation..application.service.."
+          );
+
+  @ArchTest
+  static final ArchRule application_layer_does_not_use_model_packages =
+      noClasses()
+          .should()
+          .resideInAPackage("org.craft.mcs.cap.core..application..model..");
 
   @ArchTest
   static final ArchRule universal_chemical_profile_is_absent_from_main_code =
@@ -601,7 +838,7 @@ class ContextBoundaryArchitectureTest {
           .resideInAPackage("org.craft.mcs.cap.shared.kernel.chemical.axis..");
 
   @ArchTest
-  static final ArchRule bounded_context_domains_do_not_depend_on_profile_analysis =
+  static final ArchRule material_and_catalog_domains_do_not_depend_on_calculation_contexts =
       noClasses()
           .that()
           .resideInAnyPackage(
@@ -615,7 +852,10 @@ class ContextBoundaryArchitectureTest {
           )
           .should()
           .dependOnClassesThat()
-          .resideInAPackage("org.craft.mcs.cap.core.profileanalysis..");
+          .resideInAnyPackage(
+              "org.craft.mcs.cap.core.cideranalysis..",
+              "org.craft.mcs.cap.core.formulation.."
+          );
 
   @ArchTest
   static final ArchRule core_and_shared_do_not_depend_on_spring_security =
@@ -916,7 +1156,7 @@ class ContextBoundaryArchitectureTest {
           .resideInAPackage("org.craft.mcs.cap.core.traceability..");
 
   @ArchTest
-  static final ArchRule material_aggregate_domains_do_not_depend_on_analysis =
+  static final ArchRule material_aggregate_domains_do_not_depend_on_calculation_contexts =
       noClasses()
           .that()
           .resideInAnyPackage(
@@ -925,7 +1165,10 @@ class ContextBoundaryArchitectureTest {
           )
           .should()
           .dependOnClassesThat()
-          .resideInAPackage("org.craft.mcs.cap.core.profileanalysis..");
+          .resideInAnyPackage(
+              "org.craft.mcs.cap.core.cideranalysis..",
+              "org.craft.mcs.cap.core.formulation.."
+          );
 
   @ArchTest
   static final ArchRule traceability_context_does_not_depend_on_material_owner_or_measurement_contexts =
@@ -986,7 +1229,7 @@ class ContextBoundaryArchitectureTest {
           .areAssignableTo(ProductionBatch.class);
 
   @ArchTest
-  static final ArchRule rest_controllers_do_not_execute_profile_analysis_domain_services =
+  static final ArchRule rest_controllers_do_not_execute_calculation_domain_services =
       noClasses()
           .that()
           .resideInAPackage("org.craft.mcs.cap.infrastructure.adapter.in.rest..")
@@ -994,7 +1237,65 @@ class ContextBoundaryArchitectureTest {
           .haveSimpleNameEndingWith("Controller")
           .should()
           .dependOnClassesThat()
-          .resideInAPackage("org.craft.mcs.cap.core.profileanalysis..domain..");
+          .resideInAnyPackage(
+              "org.craft.mcs.cap.core.cideranalysis..domain..",
+              "org.craft.mcs.cap.core.formulation..domain.."
+          );
+
+  @ArchTest
+  static final ArchRule rest_adapters_do_not_depend_on_calculation_domain =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.infrastructure.adapter.in.rest..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAnyPackage(
+              "org.craft.mcs.cap.core.cideranalysis..domain..",
+              "org.craft.mcs.cap.core.formulation..domain.."
+          );
+
+  @ArchTest
+  static final ArchRule calculation_context_acl_adapters_use_only_published_application_contracts =
+      noClasses()
+          .that()
+          .resideInAnyPackage(
+              "org.craft.mcs.cap.infrastructure.adapter.out.cideranalysis..",
+              "org.craft.mcs.cap.infrastructure.adapter.out.formulation..",
+              "org.craft.mcs.cap.infrastructure.adapter.out.production.planning.composition.."
+          )
+          .should()
+          .dependOnClassesThat()
+          .resideInAnyPackage(
+              "org.craft.mcs.cap.core.cideranalysis..domain..",
+              "org.craft.mcs.cap.core.formulation..domain.."
+          );
+
+  @ArchTest
+  static final ArchRule calculation_context_acl_adapters_do_not_manage_transactions =
+      noClasses()
+          .that()
+          .resideInAnyPackage(
+              "org.craft.mcs.cap.infrastructure.adapter.out.cideranalysis..",
+              "org.craft.mcs.cap.infrastructure.adapter.out.formulation.."
+          )
+          .should()
+          .dependOnClassesThat()
+          .resideInAPackage("org.springframework.transaction..");
+
+  @ArchTest
+  static final ArchRule calculation_context_adapters_do_not_depend_on_application_implementations =
+      noClasses()
+          .that()
+          .resideInAPackage("org.craft.mcs.cap.infrastructure.adapter..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAnyPackage(
+              "org.craft.mcs.cap.core.cideranalysis..application.usecase..",
+              "org.craft.mcs.cap.core.cideranalysis..application.service..",
+              "org.craft.mcs.cap.core.formulation..application.usecase..",
+              "org.craft.mcs.cap.core.formulation..application.service..",
+              "org.craft.mcs.cap.core.formulation..application.support.."
+          );
 
   @ArchTest
   static final ArchRule aggregate_repository_ports_do_not_expose_read_model_queries =

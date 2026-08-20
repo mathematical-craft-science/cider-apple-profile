@@ -12,7 +12,7 @@ import org.craft.mcs.cap.core.account.shared.domain.value.IdentityProviderCode;
 import org.craft.mcs.cap.core.account.user.application.usecase.CurrentAccountUserResolver;
 import org.craft.mcs.cap.core.account.user.domain.model.AccountUser;
 import org.craft.mcs.cap.core.account.user.domain.model.value.ExternalUserSubject;
-import org.craft.mcs.cap.core.account.workspace.application.model.WorkspaceSettingsDefaults;
+import org.craft.mcs.cap.core.account.workspace.application.contract.WorkspaceSettingsDefaults;
 import org.craft.mcs.cap.core.account.administration.application.port.in.CreateWorkspaceCommand;
 import org.craft.mcs.cap.core.account.shared.application.port.out.WorkspaceAdministrationLock;
 import org.craft.mcs.cap.core.account.workspace.application.port.out.WorkspaceRepository;

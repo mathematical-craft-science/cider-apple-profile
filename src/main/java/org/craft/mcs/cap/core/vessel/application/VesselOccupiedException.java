@@ -1,6 +1,6 @@
 package org.craft.mcs.cap.core.vessel.application;
 
-import org.craft.mcs.cap.core.vessel.application.model.VesselCurrentContentView;
+import org.craft.mcs.cap.core.vessel.application.contract.VesselCurrentContentView;
 import org.craft.mcs.cap.shared.application.ApplicationConflictException;
 import org.craft.mcs.cap.shared.kernel.identity.VesselId;
 import org.jspecify.annotations.NonNull;

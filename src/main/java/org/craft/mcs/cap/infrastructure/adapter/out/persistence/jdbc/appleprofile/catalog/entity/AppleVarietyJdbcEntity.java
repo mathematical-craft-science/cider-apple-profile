@@ -3,8 +3,8 @@ package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.appleprofi
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
-import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.common.MeasurementJdbcColumns;
-import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.common.MeasurementKind;
+import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.common.CharacteristicValueJdbcColumns;
+import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.common.CharacteristicValueStorageKind;
 import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -30,22 +30,22 @@ public class AppleVarietyJdbcEntity {
   @Column("name")
   String name;
 
-  @Nullable @Column("sugar_kind") MeasurementKind sugarKind;
+  @Nullable @Column("sugar_kind") CharacteristicValueStorageKind sugarKind;
   @Nullable @Column("sugar_exact_sg") BigDecimal sugarExactValue;
   @Nullable @Column("sugar_min_sg") BigDecimal sugarMinValue;
   @Nullable @Column("sugar_max_sg") BigDecimal sugarMaxValue;
 
-  @Nullable @Column("ph_kind") MeasurementKind phKind;
+  @Nullable @Column("ph_kind") CharacteristicValueStorageKind phKind;
   @Nullable @Column("ph_exact") BigDecimal phExactValue;
   @Nullable @Column("ph_min") BigDecimal phMinValue;
   @Nullable @Column("ph_max") BigDecimal phMaxValue;
 
-  @Nullable @Column("ta_kind") MeasurementKind titratableAcidityKind;
+  @Nullable @Column("ta_kind") CharacteristicValueStorageKind titratableAcidityKind;
   @Nullable @Column("ta_exact_g_l_as_malic") BigDecimal titratableAcidityExactValue;
   @Nullable @Column("ta_min_g_l_as_malic") BigDecimal titratableAcidityMinValue;
   @Nullable @Column("ta_max_g_l_as_malic") BigDecimal titratableAcidityMaxValue;
 
-  @Nullable @Column("tannin_kind") MeasurementKind tanninKind;
+  @Nullable @Column("tannin_kind") CharacteristicValueStorageKind tanninKind;
   @Nullable @Column("tannin_exact_mg_l_tae") BigDecimal tanninExactValue;
   @Nullable @Column("tannin_min_mg_l_tae") BigDecimal tanninMinValue;
   @Nullable @Column("tannin_max_mg_l_tae") BigDecimal tanninMaxValue;
@@ -79,10 +79,10 @@ public class AppleVarietyJdbcEntity {
   public AppleVarietyJdbcEntity(
       @NonNull UUID varietyId,
       @NonNull String name,
-      @Nullable MeasurementJdbcColumns sugar,
-      @Nullable MeasurementJdbcColumns ph,
-      @Nullable MeasurementJdbcColumns titratableAcidity,
-      @Nullable MeasurementJdbcColumns tannin,
+      @Nullable CharacteristicValueJdbcColumns sugar,
+      @Nullable CharacteristicValueJdbcColumns ph,
+      @Nullable CharacteristicValueJdbcColumns titratableAcidity,
+      @Nullable CharacteristicValueJdbcColumns tannin,
       @Nullable String referenceProfileSource,
       @Nullable ConfidenceLevel referenceProfileConfidence
   ) {
@@ -97,8 +97,8 @@ public class AppleVarietyJdbcEntity {
   }
 
   @Nullable
-  MeasurementJdbcColumns sugar() {
-    return measurement(
+  CharacteristicValueJdbcColumns sugar() {
+    return characteristic(
         sugarKind,
         sugarExactValue,
         sugarMinValue,
@@ -107,8 +107,8 @@ public class AppleVarietyJdbcEntity {
   }
 
   @Nullable
-  MeasurementJdbcColumns ph() {
-    return measurement(
+  CharacteristicValueJdbcColumns ph() {
+    return characteristic(
         phKind,
         phExactValue,
         phMinValue,
@@ -117,8 +117,8 @@ public class AppleVarietyJdbcEntity {
   }
 
   @Nullable
-  MeasurementJdbcColumns titratableAcidity() {
-    return measurement(
+  CharacteristicValueJdbcColumns titratableAcidity() {
+    return characteristic(
         titratableAcidityKind,
         titratableAcidityExactValue,
         titratableAcidityMinValue,
@@ -127,8 +127,8 @@ public class AppleVarietyJdbcEntity {
   }
 
   @Nullable
-  MeasurementJdbcColumns tannin() {
-    return measurement(
+  CharacteristicValueJdbcColumns tannin() {
+    return characteristic(
         tanninKind,
         tanninExactValue,
         tanninMinValue,
@@ -136,52 +136,54 @@ public class AppleVarietyJdbcEntity {
     );
   }
 
-  private void applySugar(@Nullable MeasurementJdbcColumns measurement) {
-    sugarKind = kind(measurement);
-    sugarExactValue = exactValue(measurement);
-    sugarMinValue = minValue(measurement);
-    sugarMaxValue = maxValue(measurement);
+  private void applySugar(@Nullable CharacteristicValueJdbcColumns characteristic) {
+    sugarKind = kind(characteristic);
+    sugarExactValue = exactValue(characteristic);
+    sugarMinValue = minValue(characteristic);
+    sugarMaxValue = maxValue(characteristic);
   }
 
-  private void applyPh(@Nullable MeasurementJdbcColumns measurement) {
-    phKind = kind(measurement);
-    phExactValue = exactValue(measurement);
-    phMinValue = minValue(measurement);
-    phMaxValue = maxValue(measurement);
+  private void applyPh(@Nullable CharacteristicValueJdbcColumns characteristic) {
+    phKind = kind(characteristic);
+    phExactValue = exactValue(characteristic);
+    phMinValue = minValue(characteristic);
+    phMaxValue = maxValue(characteristic);
   }
 
-  private void applyTitratableAcidity(@Nullable MeasurementJdbcColumns measurement) {
-    titratableAcidityKind = kind(measurement);
-    titratableAcidityExactValue = exactValue(measurement);
-    titratableAcidityMinValue = minValue(measurement);
-    titratableAcidityMaxValue = maxValue(measurement);
+  private void applyTitratableAcidity(@Nullable CharacteristicValueJdbcColumns characteristic) {
+    titratableAcidityKind = kind(characteristic);
+    titratableAcidityExactValue = exactValue(characteristic);
+    titratableAcidityMinValue = minValue(characteristic);
+    titratableAcidityMaxValue = maxValue(characteristic);
   }
 
-  private void applyTannin(@Nullable MeasurementJdbcColumns measurement) {
-    tanninKind = kind(measurement);
-    tanninExactValue = exactValue(measurement);
-    tanninMinValue = minValue(measurement);
-    tanninMaxValue = maxValue(measurement);
+  private void applyTannin(@Nullable CharacteristicValueJdbcColumns characteristic) {
+    tanninKind = kind(characteristic);
+    tanninExactValue = exactValue(characteristic);
+    tanninMinValue = minValue(characteristic);
+    tanninMaxValue = maxValue(characteristic);
   }
 
-  private static @Nullable MeasurementKind kind(@Nullable MeasurementJdbcColumns measurement) {
-    return measurement == null ? null : measurement.kind;
+  private static @Nullable CharacteristicValueStorageKind kind(
+      @Nullable CharacteristicValueJdbcColumns characteristic
+  ) {
+    return characteristic == null ? null : characteristic.kind;
   }
 
-  private static @Nullable BigDecimal exactValue(@Nullable MeasurementJdbcColumns measurement) {
-    return measurement == null ? null : measurement.exactValue;
+  private static @Nullable BigDecimal exactValue(@Nullable CharacteristicValueJdbcColumns characteristic) {
+    return characteristic == null ? null : characteristic.exactValue;
   }
 
-  private static @Nullable BigDecimal minValue(@Nullable MeasurementJdbcColumns measurement) {
-    return measurement == null ? null : measurement.minValue;
+  private static @Nullable BigDecimal minValue(@Nullable CharacteristicValueJdbcColumns characteristic) {
+    return characteristic == null ? null : characteristic.minValue;
   }
 
-  private static @Nullable BigDecimal maxValue(@Nullable MeasurementJdbcColumns measurement) {
-    return measurement == null ? null : measurement.maxValue;
+  private static @Nullable BigDecimal maxValue(@Nullable CharacteristicValueJdbcColumns characteristic) {
+    return characteristic == null ? null : characteristic.maxValue;
   }
 
-  private static @Nullable MeasurementJdbcColumns measurement(
-      @Nullable MeasurementKind kind,
+  private static @Nullable CharacteristicValueJdbcColumns characteristic(
+      @Nullable CharacteristicValueStorageKind kind,
       @Nullable BigDecimal exactValue,
       @Nullable BigDecimal minValue,
       @Nullable BigDecimal maxValue
@@ -190,12 +192,12 @@ public class AppleVarietyJdbcEntity {
       return null;
     }
 
-    final var measurement = new MeasurementJdbcColumns();
-    measurement.kind = kind;
-    measurement.exactValue = exactValue;
-    measurement.minValue = minValue;
-    measurement.maxValue = maxValue;
-    return measurement;
+    final var characteristic = new CharacteristicValueJdbcColumns();
+    characteristic.kind = kind;
+    characteristic.exactValue = exactValue;
+    characteristic.minValue = minValue;
+    characteristic.maxValue = maxValue;
+    return characteristic;
   }
 
   private static @Nullable String normalize(@Nullable String value) {

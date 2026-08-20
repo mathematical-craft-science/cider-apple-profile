@@ -13,9 +13,9 @@ import org.craft.mcs.cap.core.feedstock.batch.application.api.currentprofile.Fee
 import org.craft.mcs.cap.core.feedstock.batch.application.api.currentprofile.FeedstockCurrentProfileView;
 import org.craft.mcs.cap.core.feedstock.batch.application.api.currentprofile.FeedstockLatestMeasurementSetView;
 import org.craft.mcs.cap.core.feedstock.batch.domain.model.batch.FeedstockBatchId;
-import org.craft.mcs.cap.core.measurement.application.model.CurrentMeasurementCharacteristicView;
-import org.craft.mcs.cap.core.measurement.application.model.CurrentMeasurementEvidenceView;
-import org.craft.mcs.cap.core.measurement.application.model.MeasurementSetMetadataView;
+import org.craft.mcs.cap.core.measurement.application.contract.CurrentMeasurementCharacteristicView;
+import org.craft.mcs.cap.core.measurement.application.contract.CurrentMeasurementEvidenceView;
+import org.craft.mcs.cap.core.measurement.application.contract.MeasurementSetMetadataView;
 import org.craft.mcs.cap.core.measurement.application.port.in.QueryCurrentMeasurementEvidenceUseCase;
 import org.craft.mcs.cap.core.measurement.application.port.in.QueryMeasurementSetMetadataUseCase;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetId;

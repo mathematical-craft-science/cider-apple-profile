@@ -15,7 +15,7 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
-import org.craft.mcs.cap.core.account.invitation.application.model.WorkspaceInvitationDeliveryRequest;
+import org.craft.mcs.cap.core.account.invitation.application.contract.WorkspaceInvitationDeliveryRequest;
 import org.craft.mcs.cap.core.account.invitation.application.port.in.DeliverWorkspaceInvitationEmailUseCase;
 import org.craft.mcs.cap.core.account.invitation.application.port.out.WorkspaceInvitationDeliveryScheduler;
 import org.craft.mcs.cap.core.account.invitation.domain.model.WorkspaceInvitation;

@@ -2,7 +2,7 @@ package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.account.se
 
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.account.workspace.application.model.WorkspaceSettingsRevision;
+import org.craft.mcs.cap.core.account.workspace.application.contract.WorkspaceSettingsRevision;
 import org.craft.mcs.cap.core.account.workspace.application.port.out.WorkspaceSettingsRepository;
 import org.craft.mcs.cap.core.account.workspace.application.port.out.WorkspaceSettingsState;
 import org.craft.mcs.cap.core.account.workspace.domain.model.WorkspaceSettings;

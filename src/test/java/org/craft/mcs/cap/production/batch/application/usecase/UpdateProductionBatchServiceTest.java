@@ -5,7 +5,7 @@ import java.util.function.Supplier;
 import org.craft.mcs.cap.core.production.batch.application.ProductionBatchOwnershipMismatchException;
 import org.craft.mcs.cap.core.production.batch.application.ProductionBatchVesselChangeNotAllowedException;
 import org.craft.mcs.cap.core.production.batch.application.authorization.port.out.ProductionAccessControl;
-import org.craft.mcs.cap.core.production.batch.application.model.ProductionBatchDetailsView;
+import org.craft.mcs.cap.core.production.batch.application.contract.ProductionBatchDetailsView;
 import org.craft.mcs.cap.core.production.batch.application.port.in.UpdateProductionBatchCommand;
 import org.craft.mcs.cap.core.production.batch.application.port.out.ProductionBatchOperationHistory;
 import org.craft.mcs.cap.core.production.batch.application.port.out.ProductionBatchRepository;

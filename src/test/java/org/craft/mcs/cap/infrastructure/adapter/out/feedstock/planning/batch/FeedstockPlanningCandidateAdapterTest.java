@@ -11,9 +11,9 @@ import org.craft.mcs.cap.core.feedstock.batch.application.currentprofile.port.in
 import org.craft.mcs.cap.core.feedstock.batch.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.batch.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.core.feedstock.batch.domain.model.batch.value.FeedstockType;
-import org.craft.mcs.cap.core.feedstock.planning.application.candidate.model.FeedstockPlanningCandidateQuery;
-import org.craft.mcs.cap.core.feedstock.planning.application.candidate.model.FeedstockPlanningCandidateSnapshot;
-import org.craft.mcs.cap.core.feedstock.planning.application.candidate.model.FeedstockPlanningBatchCriteria;
+import org.craft.mcs.cap.core.feedstock.planning.application.candidate.contract.FeedstockPlanningCandidateQuery;
+import org.craft.mcs.cap.core.feedstock.planning.application.candidate.contract.FeedstockPlanningCandidateSnapshot;
+import org.craft.mcs.cap.core.feedstock.planning.application.candidate.contract.FeedstockPlanningBatchCriteria;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetId;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetName;
 import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;

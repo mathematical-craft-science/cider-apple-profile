@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import org.craft.mcs.cap.core.measurement.application.model.MeasurementCharacteristicInput;
+import org.craft.mcs.cap.core.measurement.application.contract.MeasurementCharacteristicInput;
 import org.craft.mcs.cap.core.measurement.application.port.in.CreateMeasurementSetCommand;
 import org.craft.mcs.cap.core.measurement.application.port.in.PatchMeasurementSetCommand;
 import org.craft.mcs.cap.core.measurement.application.port.in.ReplaceMeasurementSetCommand;

@@ -2,15 +2,10 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.ca
 
 import java.math.BigDecimal;
 import java.util.List;
-import org.craft.mcs.cap.core.profileanalysis.abv.domain.FixedFinalGravityPredictionStrategy;
-import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPredictor;
-import org.craft.mcs.cap.core.profileanalysis.abv.domain.StandardGravityDropAbvPredictionStrategy;
-import org.craft.mcs.cap.core.profileanalysis.classification.domain.profile.northamerican.NorthAmericanTanninLevel;
-import org.craft.mcs.cap.core.profileanalysis.composition.calculation.application.port.in.CalculateCompositionResult;
-import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionCalculationRequest;
-import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.MassBalanceCompositionCalculator;
-import org.craft.mcs.cap.core.profileanalysis.compositiongraph.application.service.CompositionGraphInterpretationService;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.normalization.ProfileAxisNormalizerCode;
+import org.craft.mcs.cap.core.formulation.calculation.application.usecase.CalculateCompositionService;
+import org.craft.mcs.cap.core.formulation.calculation.domain.BuiltInCompositionCalculatorSelector;
+import org.craft.mcs.cap.core.formulation.interpretation.application.usecase.CompositionGraphInterpretationService;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.ProfileAxisNormalizerCode;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.calculation.dto.CalculateCompositionRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.calculation.dto.CalculatedCompositionResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.calculation.dto.CompositionSourceRequest;
@@ -18,6 +13,8 @@ import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.cal
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.calculation.dto.CompositionSourceWeightRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.common.dto.CompositionSourceCharacteristicsRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.common.dto.CompositionSourceReferenceRequest;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.classification.NorthAmericanTanninLevel;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.composition.dto.CompositionTanninPolicy;
 import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
 import org.craft.mcs.cap.shared.application.ApplicationValidationException;
 import org.craft.mcs.cap.shared.kernel.characteristic.CharacteristicValue;
@@ -26,24 +23,26 @@ import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static java.util.Objects.requireNonNull;
-import static org.craft.mcs.cap.core.profileanalysis.testing.ProfileAnalysisTestFixtures
-    .northAmericanProfileCalculator;
+import static org.craft.mcs.cap.support.CiderAnalysisTestFixtures.formulationAbvAnalyzer;
+import static org.craft.mcs.cap.support.CiderAnalysisTestFixtures.formulationTanninLevelAnalyzer;
+import static org.craft.mcs.cap.support.CiderAnalysisTestFixtures.formulationTargetFitAnalyzer;
 
 
 class CompositionCalculationRestMapperTest {
 
-  private static final MassBalanceCompositionCalculator CALCULATOR =
-      new MassBalanceCompositionCalculator();
-  private static final PotentialAbvPredictor POTENTIAL_ABV_PREDICTOR = new PotentialAbvPredictor(
-      FixedFinalGravityPredictionStrategy.dryCiderDefault(),
-      new StandardGravityDropAbvPredictionStrategy()
+  private static final CalculateCompositionService CALCULATOR = new CalculateCompositionService(
+      new BuiltInCompositionCalculatorSelector(),
+      formulationAbvAnalyzer(),
+      formulationTargetFitAnalyzer()
   );
   private static final CompositionGraphInterpretationService GRAPH_INTERPRETER =
-      new CompositionGraphInterpretationService(northAmericanProfileCalculator());
+      new CompositionGraphInterpretationService(formulationTanninLevelAnalyzer());
 
   @Test
   void mapsYanAxisForCalculationRequestAndResponse() {
@@ -60,26 +59,16 @@ class CompositionCalculationRestMapperTest {
             null,
             null,
             null
-        ),
-        _ -> {
-          throw new AssertionError("target resolver should not be used without predefined target");
-        }
+        )
     );
 
     assertThat(yanPointValue(
         requireNonNull(command.sources().getFirst().characteristics().yeastAssimilableNitrogen())
     ).asBigDecimal()).isEqualByComparingTo("120");
 
-    final var composition = CALCULATOR.calculate(new CompositionCalculationRequest(
-        command.sources(),
-        command.tanninPolicy()
-    ));
-    final var response = CompositionCalculationRestMapper.toResponse(GRAPH_INTERPRETER.interpret(
-        CalculateCompositionResult.withoutTargetDistance(
-            composition,
-            POTENTIAL_ABV_PREDICTOR.predict(composition.characteristics().specificGravity())
-        )
-    ));
+    final var response = CompositionCalculationRestMapper.toResponse(
+        GRAPH_INTERPRETER.interpret(CALCULATOR.calculate(command))
+    );
 
     assertThat(response)
         .returns(
@@ -126,14 +115,29 @@ class CompositionCalculationRestMapperTest {
         null
     );
 
-    assertThatThrownBy(() -> CompositionCalculationRestMapper.toCommand(
-        request,
-        _ -> {
-          throw new AssertionError("target resolver must not be called without target");
-        }
-    ))
+    assertThatThrownBy(() -> CompositionCalculationRestMapper.toCommand(request))
         .isInstanceOf(ApplicationValidationException.class)
         .hasMessage("composition target is required when target scoring configuration is provided");
+  }
+
+  @ParameterizedTest
+  @EnumSource(CompositionTanninPolicy.class)
+  void preservesEveryTanninPolicyAcrossTransportAndFormulation(
+      @NonNull CompositionTanninPolicy policy
+  ) {
+    final var command = CompositionCalculationRestMapper.toCommand(new CalculateCompositionRequest(
+        List.of(source("a", "1.060", "5.0", "1000", "120", "10")),
+        policy,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+    ));
+
+    assertThat(command.tanninPolicy().name()).isEqualTo(policy.name());
+    assertThat(CALCULATOR.calculate(command).composition()).isNotNull();
   }
 
   private static @NonNull CompositionSourceRequest source(

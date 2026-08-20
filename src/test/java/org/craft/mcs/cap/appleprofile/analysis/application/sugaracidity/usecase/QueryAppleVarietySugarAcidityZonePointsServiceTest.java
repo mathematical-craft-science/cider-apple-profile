@@ -2,36 +2,35 @@ package org.craft.mcs.cap.appleprofile.analysis.application.sugaracidity.usecase
 
 import static java.util.Objects.requireNonNull;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.craft.mcs.cap.core.profileanalysis.testing.ProfileAnalysisTestFixtures
-    .graphEvaluator;
-import static org.craft.mcs.cap.core.profileanalysis.testing.ProfileAnalysisTestFixtures
-    .northAmericanProfileCalculator;
+import static org.craft.mcs.cap.support.CiderAnalysisTestFixtures
+    .appleGraphAnalyzer;
+import static org.craft.mcs.cap.support.CiderAnalysisTestFixtures.appleClassificationAnalyzer;
+import static org.craft.mcs.cap.support.CiderAnalysisTestFixtures.applePotentialAbvAnalyzer;
 import static org.craft.mcs.cap.shared.testing.AppleVarietyReferenceProfiles.from;
-import static org.craft.mcs.cap.support.PotentialAbvPredictionFixtures.predictor;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
-import org.craft.mcs.cap.core.appleprofile.analysis.application.profile.model.AppleVarietyAnalysisFilters;
-import org.craft.mcs.cap.core.appleprofile.analysis.application.profile.model.AppleVarietyAnalysisProfile;
+import java.util.Set;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.profile.contract.AppleVarietyAnalysisFilters;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.profile.contract.AppleVarietyAnalysisProfile;
 import org.craft.mcs.cap.core.appleprofile.analysis.application.profile.port.out.AppleVarietyAnalysisProfilePageProvider;
-import org.craft.mcs.cap.core.appleprofile.analysis.application.sugaracidity.model.AppleVarietyGraphAnalysisView;
-import org.craft.mcs.cap.core.appleprofile.analysis.application.sugaracidity.model.AppleVarietyNorthAmericanAssessmentView;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.sugaracidity.contract.AppleVarietyGraphAnalysisView;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.classification.contract.AppleVarietyNorthAmericanAssessmentView;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.classification.contract.AppleVarietyNorthAmericanAssessmentView.AcidityLevel;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.classification.contract.AppleVarietyNorthAmericanAssessmentView.SugarLevel;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.classification.contract.AppleVarietyNorthAmericanAssessmentView.TanninLevel;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.graph.contract.AppleSugarAcidityGraphCriteria;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.graph.contract.AppleSugarAcidityGraphView.Zone;
 import org.craft.mcs.cap.core.appleprofile.analysis.application.sugaracidity.port.in.AppleVarietySugarAcidityZonePointQuery;
 import org.craft.mcs.cap.core.appleprofile.analysis.application.sugaracidity.service.AppleVarietyGraphAnalysisProjector;
 import org.craft.mcs.cap.core.appleprofile.analysis.application.sugaracidity.usecase.QueryAppleVarietySugarAcidityZonePointsService;
 import org.craft.mcs.cap.core.appleprofile.catalog.domain.model.AppleVariety;
 import org.craft.mcs.cap.core.appleprofile.catalog.domain.model.AppleVarietyId;
 import org.craft.mcs.cap.core.appleprofile.catalog.domain.model.AppleVarietyName;
-import org.craft.mcs.cap.core.appleprofile.analysis.application.profile.model.AppleVarietyAnalysisName;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.profile.contract.AppleVarietyAnalysisName;
 import org.craft.mcs.cap.core.appleprofile.catalog.domain.model.AppleVarietyReferenceProfile;
-import org.craft.mcs.cap.core.profileanalysis.classification.domain.profile.northamerican.NorthAmericanAcidityLevel;
-import org.craft.mcs.cap.core.profileanalysis.classification.domain.profile.northamerican.NorthAmericanSugarLevel;
-import org.craft.mcs.cap.core.profileanalysis.classification.domain.profile.northamerican.NorthAmericanTanninLevel;
-import org.craft.mcs.cap.core.profileanalysis.graph.application.model.JolicoeurSugarAcidityGraphCriteria;
-import org.craft.mcs.cap.core.profileanalysis.graph.application.model.JolicoeurSugarAcidityZoneCriteria;
-import org.craft.mcs.cap.core.profileanalysis.graph.zone.domain.JolicoeurSugarAcidityZone;
 import org.craft.mcs.cap.shared.application.query.TextSearchCriteria;
 import org.craft.mcs.cap.shared.application.query.pagination.CursorPage;
 import org.craft.mcs.cap.shared.application.query.pagination.CursorPageRequest;
@@ -61,8 +60,8 @@ class QueryAppleVarietySugarAcidityZonePointsServiceTest {
 
     final var result = service.query(new AppleVarietySugarAcidityZonePointQuery(
         new AppleVarietyAnalysisFilters(new TextSearchCriteria("kingston")),
-        new JolicoeurSugarAcidityGraphCriteria(
-            JolicoeurSugarAcidityZoneCriteria.of(JolicoeurSugarAcidityZone.PERFECT_APPLES),
+        new AppleSugarAcidityGraphCriteria(
+            Set.of(Zone.PERFECT_APPLES),
             true
         ),
         CursorPageRequest.firstPage(1)
@@ -75,7 +74,7 @@ class QueryAppleVarietySugarAcidityZonePointsServiceTest {
         .returns(alpha.varietyId(), AppleVarietyGraphAnalysisView::varietyId)
         .returns(true, view -> view.graphEvaluation().plottable())
         .returns(
-            JolicoeurSugarAcidityZone.PERFECT_APPLES,
+            Zone.PERFECT_APPLES,
             view -> requireNonNull(view.graphEvaluation().zoneAssessment()).zone()
         )
         .returns(alpha.referenceProfile().tannin(), AppleVarietyGraphAnalysisView::tannin)
@@ -131,7 +130,7 @@ class QueryAppleVarietySugarAcidityZonePointsServiceTest {
 
     final var result = service.query(new AppleVarietySugarAcidityZonePointQuery(
         new AppleVarietyAnalysisFilters(null),
-        new JolicoeurSugarAcidityGraphCriteria(null, false),
+        new AppleSugarAcidityGraphCriteria(Set.of(), false),
         CursorPageRequest.firstPage()
     ));
 
@@ -147,9 +146,9 @@ class QueryAppleVarietySugarAcidityZonePointsServiceTest {
   ) {
     assertThat(view.northAmericanAssessment())
         .isNotNull()
-        .returns(NorthAmericanSugarLevel.HIGH, AppleVarietyNorthAmericanAssessmentView::sugar)
-        .returns(NorthAmericanAcidityLevel.MEDIUM, AppleVarietyNorthAmericanAssessmentView::acidity)
-        .returns(NorthAmericanTanninLevel.MEDIUM, AppleVarietyNorthAmericanAssessmentView::tannin);
+        .returns(SugarLevel.HIGH, AppleVarietyNorthAmericanAssessmentView::sugar)
+        .returns(AcidityLevel.MEDIUM, AppleVarietyNorthAmericanAssessmentView::acidity)
+        .returns(TanninLevel.MEDIUM, AppleVarietyNorthAmericanAssessmentView::tannin);
   }
 
   private static QueryAppleVarietySugarAcidityZonePointsService service(
@@ -158,9 +157,9 @@ class QueryAppleVarietySugarAcidityZonePointsServiceTest {
     return new QueryAppleVarietySugarAcidityZonePointsService(
         profilePageProvider,
         new AppleVarietyGraphAnalysisProjector(
-            graphEvaluator(),
-            northAmericanProfileCalculator(),
-            predictor()
+            appleGraphAnalyzer(),
+            appleClassificationAnalyzer(),
+            applePotentialAbvAnalyzer()
         )
     );
   }

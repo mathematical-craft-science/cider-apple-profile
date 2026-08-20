@@ -13,15 +13,15 @@ import org.craft.mcs.cap.core.feedstock.batch.application.api.currentprofile.Fee
 import org.craft.mcs.cap.core.feedstock.batch.application.vessel.port.out.FeedstockVesselReferenceQuery;
 import org.craft.mcs.cap.shared.application.measurement.MeasurementFreshnessStatus;
 import org.craft.mcs.cap.core.feedstock.batch.application.api.currentprofile.FeedstockCurrentProfileFreshnessView;
-import org.craft.mcs.cap.core.feedstock.batch.application.api.currentprofile.FeedstockCurrentProfileAssessmentView;
+import org.craft.mcs.cap.core.feedstock.batch.application.assessment.contract.FeedstockCurrentProfileAssessmentView;
 import org.craft.mcs.cap.core.feedstock.batch.application.api.currentprofile.FeedstockPlanningReadinessView;
 import org.craft.mcs.cap.core.feedstock.batch.application.api.currentprofile.FeedstockPlanningReadinessStatus;
 import org.craft.mcs.cap.core.feedstock.batch.application.api.currentprofile.FeedstockCurrentProfileView;
 import org.craft.mcs.cap.core.feedstock.batch.application.currentprofile.service.FeedstockCurrentProfileFreshnessAssessor;
-import org.craft.mcs.cap.core.feedstock.batch.application.currentprofile.service.FeedstockCurrentProfileAssessmentService;
-import org.craft.mcs.cap.core.feedstock.batch.application.currentprofile.service.FeedstockPlanningReadinessAssessor;
-import org.craft.mcs.cap.core.feedstock.batch.application.currentprofile.service.FeedstockProfileDataQualityAssessor;
-import org.craft.mcs.cap.core.feedstock.batch.application.detail.model.FeedstockBatchCurrentProfileView;
+import org.craft.mcs.cap.core.feedstock.batch.application.assessment.service.FeedstockCurrentProfileAssessmentService;
+import org.craft.mcs.cap.core.feedstock.batch.application.assessment.service.FeedstockPlanningReadinessAssessor;
+import org.craft.mcs.cap.core.feedstock.batch.application.assessment.service.FeedstockProfileDataQualityAssessor;
+import org.craft.mcs.cap.core.feedstock.batch.application.detail.contract.FeedstockBatchCurrentProfileView;
 import org.craft.mcs.cap.core.feedstock.batch.application.detail.port.in.GetFeedstockBatchDetailQuery;
 import org.craft.mcs.cap.core.feedstock.batch.application.detail.usecase.GetFeedstockBatchDetailService;
 import org.craft.mcs.cap.core.feedstock.batch.application.currentprofile.query.FeedstockCurrentProfileQueryService;
@@ -34,11 +34,6 @@ import org.craft.mcs.cap.testsupport.VesselTestFixtures;
 import org.craft.mcs.cap.shared.testing.FeedstockMeasurementFixture;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetId;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetName;
-import org.craft.mcs.cap.core.profileanalysis.abv.domain.FixedFinalGravityPredictionStrategy;
-import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPredictor;
-import org.craft.mcs.cap.core.profileanalysis.abv.domain.StandardGravityDropAbvPredictionStrategy;
-import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.FermentationStartReadinessAssessor;
-import org.craft.mcs.cap.core.profileanalysis.ph.domain.PhPlanningGuidancePolicy;
 import org.craft.mcs.cap.shared.testing.ProfileCharacteristicsFixture;
 import org.craft.mcs.cap.shared.kernel.chemical.value.PhValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
@@ -53,10 +48,13 @@ import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.craft.mcs.cap.core.profileanalysis.testing.ProfileAnalysisTestFixtures
-    .graphEvaluator;
-import static org.craft.mcs.cap.core.profileanalysis.testing.ProfileAnalysisTestFixtures
-    .northAmericanProfileCalculator;
+import static org.craft.mcs.cap.support.CiderAnalysisTestFixtures
+    .feedstockGraphAnalyzer;
+import static org.craft.mcs.cap.support.CiderAnalysisTestFixtures
+    .feedstockPhPlanningAnalyzer;
+import static org.craft.mcs.cap.support.CiderAnalysisTestFixtures.feedstockPotentialAbvAnalyzer;
+import static org.craft.mcs.cap.support.CiderAnalysisTestFixtures.feedstockReadinessAnalyzer;
+import static org.craft.mcs.cap.support.CiderAnalysisTestFixtures.feedstockTanninLevelAnalyzer;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.craft.mcs.cap.shared.testing.FeedstockCurrentProfileViews.currentProfile;
 import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementRecordedAt;
@@ -87,15 +85,12 @@ class GetFeedstockBatchDetailServiceTest {
         mock(FeedstockAccessControl.class),
         new FeedstockCurrentProfileQueryService(currentProfileRepository),
         new FeedstockCurrentProfileAssessmentService(
-            graphEvaluator(),
-            northAmericanProfileCalculator(),
-            new PotentialAbvPredictor(
-                FixedFinalGravityPredictionStrategy.dryCiderDefault(),
-                new StandardGravityDropAbvPredictionStrategy()
-            ),
-            new FermentationStartReadinessAssessor(),
+            feedstockGraphAnalyzer(),
+            feedstockTanninLevelAnalyzer(),
+            feedstockPotentialAbvAnalyzer(),
+            feedstockReadinessAnalyzer(),
             new FeedstockCurrentProfileFreshnessAssessor(),
-            new FeedstockPlanningReadinessAssessor(PhPlanningGuidancePolicy.curatedCiderV1()),
+            new FeedstockPlanningReadinessAssessor(feedstockPhPlanningAnalyzer()),
             new FeedstockProfileDataQualityAssessor()
         ),
         new FeedstockBatchViewEnricher(vesselReferenceQuery)

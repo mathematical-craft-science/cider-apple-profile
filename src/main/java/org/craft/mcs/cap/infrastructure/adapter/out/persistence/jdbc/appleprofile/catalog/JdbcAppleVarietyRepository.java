@@ -9,8 +9,8 @@ import org.craft.mcs.cap.core.appleprofile.catalog.application.port.out.AppleVar
 import org.craft.mcs.cap.core.appleprofile.catalog.domain.model.AppleVariety;
 import org.craft.mcs.cap.core.appleprofile.catalog.domain.model.AppleVarietyId;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.appleprofile.catalog.entity.AppleVarietyJdbcMapper;
-import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.common.MeasurementJdbcColumns;
-import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.common.MeasurementKind;
+import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.common.CharacteristicValueJdbcColumns;
+import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.common.CharacteristicValueStorageKind;
 import org.craft.mcs.cap.shared.application.persistence.VersionedAggregate;
 import org.craft.mcs.cap.shared.kernel.chemical.value.PhValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
@@ -22,7 +22,7 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Repository;
 
 import static java.util.Objects.requireNonNull;
-import static org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.common.MeasurementJdbcMapperSupport.fromNullableCharacteristic;
+import static org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.common.CharacteristicValueJdbcMapperSupport.fromNullableCharacteristic;
 import static org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.support.JdbcPersistenceExceptionTranslator.translateOptimisticLocking;
 import static org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.support.JdbcVersionedUpdate.complete;
 
@@ -63,6 +63,7 @@ class JdbcAppleVarietyRepository implements AppleVarietyRepository {
         TitratableAcidityValue::asBigDecimal
     );
     final var tannin = fromNullableCharacteristic(profile.tannin(), TanninValue::asBigDecimal);
+    final var referenceProfileSource = aggregate.referenceProfileSource();
     final var affectedRows = translateNameConflict(
         aggregate,
         () -> translateOptimisticLocking(
@@ -86,9 +87,9 @@ class JdbcAppleVarietyRepository implements AppleVarietyRepository {
                 exactValue(tannin),
                 minValue(tannin),
                 maxValue(tannin),
-                aggregate.referenceProfileSource() == null
+                referenceProfileSource == null
                     ? null
-                    : aggregate.referenceProfileSource().value(),
+                    : referenceProfileSource.value(),
                 aggregate.referenceProfileConfidence(),
                 appleVariety.revision().value()
             )
@@ -107,19 +108,21 @@ class JdbcAppleVarietyRepository implements AppleVarietyRepository {
         .map(AppleVarietyJdbcMapper::toVersionedAggregate);
   }
 
-  private static @Nullable MeasurementKind kind(@Nullable MeasurementJdbcColumns columns) {
+  private static @Nullable CharacteristicValueStorageKind kind(
+      @Nullable CharacteristicValueJdbcColumns columns
+  ) {
     return columns == null ? null : columns.kind;
   }
 
-  private static @Nullable BigDecimal exactValue(@Nullable MeasurementJdbcColumns columns) {
+  private static @Nullable BigDecimal exactValue(@Nullable CharacteristicValueJdbcColumns columns) {
     return columns == null ? null : columns.exactValue;
   }
 
-  private static @Nullable BigDecimal minValue(@Nullable MeasurementJdbcColumns columns) {
+  private static @Nullable BigDecimal minValue(@Nullable CharacteristicValueJdbcColumns columns) {
     return columns == null ? null : columns.minValue;
   }
 
-  private static @Nullable BigDecimal maxValue(@Nullable MeasurementJdbcColumns columns) {
+  private static @Nullable BigDecimal maxValue(@Nullable CharacteristicValueJdbcColumns columns) {
     return columns == null ? null : columns.maxValue;
   }
 

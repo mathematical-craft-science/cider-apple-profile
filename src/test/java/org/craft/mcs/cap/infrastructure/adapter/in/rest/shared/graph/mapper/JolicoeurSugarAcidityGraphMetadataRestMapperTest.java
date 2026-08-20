@@ -1,7 +1,8 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.mapper;
 
-import org.craft.mcs.cap.core.profileanalysis.graph.zone.domain.BuiltInJolicoeurSugarAcidityZoneProfiles;
-import org.craft.mcs.cap.core.profileanalysis.graph.domain.SugarAcidityGeometryShape;
+import org.craft.mcs.cap.core.cideranalysis.graph.domain.zone.BuiltInJolicoeurSugarAcidityZoneProfiles;
+import org.craft.mcs.cap.core.cideranalysis.graph.application.usecase.JolicoeurSugarAcidityGraphMetadataService;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.dto.SugarAcidityGeometryShape;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.dto.EllipseSugarAcidityGraphZoneResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.dto.RectangleSugarAcidityGraphZoneResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.dto.SugarAcidityGraphAxisResponse;
@@ -17,7 +18,9 @@ class JolicoeurSugarAcidityGraphMetadataRestMapperTest {
   @Test
   void mapsAxisBoundariesAndRectangularZoneGeometry() {
     final var response = JolicoeurSugarAcidityGraphMetadataRestMapper.toResponse(
-        BuiltInJolicoeurSugarAcidityZoneProfiles.rectangularZoneGeometryProfile()
+        new JolicoeurSugarAcidityGraphMetadataService(
+            BuiltInJolicoeurSugarAcidityZoneProfiles.rectangularZoneGeometryProfile()
+        ).query()
     );
 
     assertThat(response)
@@ -36,7 +39,9 @@ class JolicoeurSugarAcidityGraphMetadataRestMapperTest {
   @Test
   void mapsEllipticalZoneGeometryWithoutASecondDomainModel() {
     final var response = JolicoeurSugarAcidityGraphMetadataRestMapper.toResponse(
-        BuiltInJolicoeurSugarAcidityZoneProfiles.ellipticalZoneGeometryProfile()
+        new JolicoeurSugarAcidityGraphMetadataService(
+            BuiltInJolicoeurSugarAcidityZoneProfiles.ellipticalZoneGeometryProfile()
+        ).query()
     );
 
     assertThat(response.zones())

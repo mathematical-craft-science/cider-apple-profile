@@ -135,71 +135,101 @@ class PackageBoundaryTest {
   }
 
   @Test
-  void profileAnalysisSupportContextsDoNotDependOnClassificationContext() throws IOException {
+  void ciderAnalysisDoesNotDependOnFormulation() throws IOException {
     assertNoImportsUnder(
-        "org/craft/mcs/cap/core/profileanalysis/input",
-        List.of("org.craft.mcs.cap.core.profileanalysis.classification.")
-    );
-    assertNoImportsUnder(
-        "org/craft/mcs/cap/core/profileanalysis/graph",
-        List.of("org.craft.mcs.cap.core.profileanalysis.classification.")
-    );
-    assertNoImportsUnder(
-        "org/craft/mcs/cap/core/profileanalysis/profiletarget",
-        List.of("org.craft.mcs.cap.core.profileanalysis.classification.")
-    );
-    assertNoImportsUnder(
-        "org/craft/mcs/cap/core/profileanalysis/composition",
-        List.of("org.craft.mcs.cap.core.profileanalysis.classification.")
+        "org/craft/mcs/cap/core/cideranalysis",
+        List.of("org.craft.mcs.cap.core.formulation.")
     );
   }
 
   @Test
-  void lowerLevelProfileAnalysisContextsDoNotDependOnCompositionContexts() throws IOException {
+  void ciderAnalysisModulesUseOnlyThePublishedDependencyDirection() throws IOException {
     assertNoImportsUnder(
-        "org/craft/mcs/cap/core/profileanalysis/input",
+        "org/craft/mcs/cap/core/cideranalysis/abv",
+        ciderAnalysisModulesExcept("abv")
+    );
+    assertNoImportsUnder(
+        "org/craft/mcs/cap/core/cideranalysis/classification",
+        ciderAnalysisModulesExcept("classification")
+    );
+    assertNoImportsUnder(
+        "org/craft/mcs/cap/core/cideranalysis/graph",
+        ciderAnalysisModulesExcept("graph")
+    );
+    assertNoImportsUnder(
+        "org/craft/mcs/cap/core/cideranalysis/readiness",
+        ciderAnalysisModulesExcept("readiness")
+    );
+    assertNoImportsUnder(
+        "org/craft/mcs/cap/core/cideranalysis/targetfit",
         List.of(
-            "org.craft.mcs.cap.core.profileanalysis.graph.",
-            "org.craft.mcs.cap.core.profileanalysis.profiletarget.",
-            "org.craft.mcs.cap.core.profileanalysis.composition."
+            "org.craft.mcs.cap.core.cideranalysis.abv.",
+            "org.craft.mcs.cap.core.cideranalysis.classification.",
+            "org.craft.mcs.cap.core.cideranalysis.readiness."
+        )
+    );
+  }
+
+  @Test
+  void calculationContextsDoNotDependOnPersistenceOrTransactions() throws IOException {
+    assertNoImportsUnder(
+        "org/craft/mcs/cap/core/cideranalysis",
+        List.of(
+            "org.craft.mcs.cap.infrastructure.adapter.out.persistence.",
+            "org.springframework.data.",
+            "org.springframework.jdbc.",
+            "org.springframework.transaction."
         )
     );
     assertNoImportsUnder(
-        "org/craft/mcs/cap/core/profileanalysis/graph",
+        "org/craft/mcs/cap/core/formulation",
         List.of(
-            "org.craft.mcs.cap.core.profileanalysis.profiletarget.",
-            "org.craft.mcs.cap.core.profileanalysis.composition."
+            "org.craft.mcs.cap.infrastructure.adapter.out.persistence.",
+            "org.springframework.data.",
+            "org.springframework.jdbc.",
+            "org.springframework.transaction."
         )
     );
+  }
+
+  @Test
+  void consumerCoreUsesCalculationContextsOnlyThroughInfrastructureAcl() throws IOException {
+    final var forbiddenImports = List.of(
+        "org.craft.mcs.cap.core.cideranalysis.",
+        "org.craft.mcs.cap.core.formulation."
+    );
+    assertNoImportsUnder("org/craft/mcs/cap/core/appleprofile", forbiddenImports);
+    assertNoImportsUnder("org/craft/mcs/cap/core/feedstock", forbiddenImports);
+    assertNoImportsUnder("org/craft/mcs/cap/core/production", forbiddenImports);
+  }
+
+  @Test
+  void compositionCalculationDoesNotDependOnHigherLevelFormulationSlices() throws IOException {
     assertNoImportsUnder(
-        "org/craft/mcs/cap/core/profileanalysis/profiletarget",
-        List.of("org.craft.mcs.cap.core.profileanalysis.composition.")
+        "org/craft/mcs/cap/core/formulation/calculation",
+        List.of(
+            "org.craft.mcs.cap.core.formulation.optimization.",
+            "org.craft.mcs.cap.core.formulation.interpretation."
+        )
     );
   }
 
   @Test
-  void sourceCandidateFiltersDoNotDependOnDerivedAnalysisScenarios() throws IOException {
-    final var derivedAnalysisPackages = List.of(
-        "org.craft.mcs.cap.core.profileanalysis.graph.",
-        "org.craft.mcs.cap.core.profileanalysis.profiletarget.",
-        "org.craft.mcs.cap.core.profileanalysis.composition."
-    );
+  void compositionOptimizationDoesNotDependOnInterpretation() throws IOException {
     assertNoImportsUnder(
-        "org/craft/mcs/cap/core/appleprofile/application/analysis/common",
-        derivedAnalysisPackages
-    );
-    assertNoImportsUnder(
-        "org/craft/mcs/cap/core/feedstock/application/analysis/common",
-        derivedAnalysisPackages
+        "org/craft/mcs/cap/core/formulation/optimization",
+        List.of("org.craft.mcs.cap.core.formulation.interpretation.")
     );
   }
 
-  @Test
-  void compositionCalculationDoesNotDependOnCompositionOptimization() throws IOException {
-    assertNoImportsUnder(
-        "org/craft/mcs/cap/core/profileanalysis/composition/calculation",
-        List.of("org.craft.mcs.cap.core.profileanalysis.composition.optimization.")
-    );
+  private static @NonNull List<@NonNull String> ciderAnalysisModulesExcept(
+      @NonNull String allowedModule
+  ) {
+    return List.of("abv", "classification", "graph", "readiness", "targetfit")
+        .stream()
+        .filter(module -> !module.equals(allowedModule))
+        .map(module -> "org.craft.mcs.cap.core.cideranalysis." + module + ".")
+        .toList();
   }
 
   @Test

@@ -2,7 +2,7 @@ package org.craft.mcs.cap.infrastructure.adapter.out.measurement;
 
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSubjectReference;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSubjectType;
-import org.craft.mcs.cap.core.traceability.application.model.MaterialStateSnapshot;
+import org.craft.mcs.cap.core.traceability.application.contract.MaterialStateSnapshot;
 import org.craft.mcs.cap.core.traceability.application.port.in.GetMaterialStateUseCase;
 import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceStepSubject;
 import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceSubject;

@@ -1,9 +1,6 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.abv.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import org.craft.mcs.cap.core.profileanalysis.abv.domain.AbvPredictionMethod;
-import org.craft.mcs.cap.core.profileanalysis.abv.domain.FinalGravityPredictionSource;
-import org.craft.mcs.cap.core.profileanalysis.abv.domain.PredictionConfidence;
 import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
 import org.jspecify.annotations.NonNull;
 
@@ -22,29 +19,46 @@ public record PotentialAbvPredictionResponse(
     @NonNull DecimalQuantityResponse predictedFinalGravity,
     @Schema(
         description = "Source of predicted final gravity assumption.",
-        implementation = FinalGravityPredictionSource.class,
+        implementation = FinalGravitySource.class,
         example = "FIXED_DRY_CIDER_DEFAULT",
         requiredMode = Schema.RequiredMode.REQUIRED
     )
-    @NonNull FinalGravityPredictionSource predictedFinalGravitySource,
+    @NonNull FinalGravitySource predictedFinalGravitySource,
     @Schema(
         description = "Potential ABV percentage.",
         requiredMode = Schema.RequiredMode.REQUIRED
     ) @NonNull DecimalQuantityResponse potentialAbv,
     @Schema(
         description = "Prediction method code.",
-        implementation = AbvPredictionMethod.class,
+        implementation = Method.class,
         example = "STANDARD_GRAVITY_DROP",
         requiredMode = Schema.RequiredMode.REQUIRED
     )
-    @NonNull AbvPredictionMethod method,
+    @NonNull Method method,
     @Schema(
         description = "Prediction confidence code.",
-        implementation = PredictionConfidence.class,
+        implementation = Confidence.class,
         example = "LOW",
         requiredMode = Schema.RequiredMode.REQUIRED
     )
-    @NonNull PredictionConfidence confidence
+    @NonNull Confidence confidence
 ) {
+
+  public enum FinalGravitySource {
+    FIXED_DRY_CIDER_DEFAULT,
+    YEAST_CHARACTERISTICS,
+    FERMENTATION_MODEL,
+    FERMENTATION_MEASUREMENTS
+  }
+
+  public enum Method {
+    STANDARD_GRAVITY_DROP
+  }
+
+  public enum Confidence {
+    LOW,
+    MEDIUM,
+    HIGH
+  }
 
 }

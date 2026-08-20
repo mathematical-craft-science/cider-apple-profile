@@ -1,8 +1,8 @@
 package org.craft.mcs.cap.core.feedstock.planning.application.candidate.port.out;
 
 import java.util.List;
-import org.craft.mcs.cap.core.feedstock.planning.application.candidate.model.FeedstockPlanningCandidateQuery;
-import org.craft.mcs.cap.core.feedstock.planning.application.candidate.model.FeedstockPlanningCandidateSnapshot;
+import org.craft.mcs.cap.core.feedstock.planning.application.candidate.contract.FeedstockPlanningCandidateQuery;
+import org.craft.mcs.cap.core.feedstock.planning.application.candidate.contract.FeedstockPlanningCandidateSnapshot;
 import org.jspecify.annotations.NonNull;
 
 /** Supplies Feedstock candidate snapshots through the batch-context anti-corruption boundary. */

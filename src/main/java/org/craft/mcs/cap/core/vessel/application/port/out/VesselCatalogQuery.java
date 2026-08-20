@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import org.craft.mcs.cap.core.vessel.application.model.VesselView;
+import org.craft.mcs.cap.core.vessel.application.contract.VesselView;
 import org.craft.mcs.cap.shared.application.material.VesselReferenceView;
 import org.craft.mcs.cap.shared.kernel.identity.VesselId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;

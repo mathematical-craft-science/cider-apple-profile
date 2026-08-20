@@ -4,9 +4,12 @@ import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.feedstock.batch.application.inventory.port.in.ConsumeFeedstockBatchMaterialCommand;
 import org.craft.mcs.cap.core.feedstock.batch.application.inventory.port.in.ConsumeFeedstockBatchMaterialUseCase;
 import org.craft.mcs.cap.core.feedstock.batch.application.inventory.port.in.ConsumedFeedstockBatchMaterial;
+import org.craft.mcs.cap.core.feedstock.batch.application.inventory.port.in.FeedstockBatchMaterialEvidenceExpectation;
+import org.craft.mcs.cap.core.feedstock.batch.application.inventory.port.in.FeedstockBatchMaterialEvidenceReference;
 import org.craft.mcs.cap.core.feedstock.batch.application.inventory.port.in.FeedstockMaterialCharacteristics;
 import org.craft.mcs.cap.core.production.batch.domain.model.value.ProductionSourceCharacteristics;
 import org.craft.mcs.cap.core.production.batch.application.port.out.ConsumedProductionSource;
+import org.craft.mcs.cap.core.production.batch.application.contract.ProductionSourceEvidenceExpectation;
 import org.craft.mcs.cap.core.production.batch.domain.model.value.ProductionSourceDisplayName;
 import org.craft.mcs.cap.core.production.batch.application.port.out.ProductionSourceInventory;
 import org.craft.mcs.cap.core.production.batch.domain.model.ProductionSourceEvidenceReference;
@@ -36,23 +39,26 @@ public final class FeedstockProductionSourceInventory implements ProductionSourc
   @Override
   public @NonNull ConsumedProductionSource consume(
       @NonNull WorkspaceId workspaceId,
-      @NonNull ProductionSourceComponent source
+      @NonNull ProductionSourceComponent source,
+      @NonNull ProductionSourceEvidenceExpectation expectation
   ) {
     requireNonNull(workspaceId, "workspace id cannot be null");
     requireNonNull(source, "production source component cannot be null");
+    requireNonNull(expectation, "production source evidence expectation cannot be null");
 
     return switch (source.reference().type()) {
-      case FEEDSTOCK_BATCH -> consumeFeedstockBatch(workspaceId, source);
+      case FEEDSTOCK_BATCH -> consumeFeedstockBatch(workspaceId, source, expectation);
     };
   }
 
   private @NonNull ConsumedProductionSource consumeFeedstockBatch(
       @NonNull WorkspaceId workspaceId,
-      @NonNull ProductionSourceComponent source
+      @NonNull ProductionSourceComponent source,
+      @NonNull ProductionSourceEvidenceExpectation expectation
   ) {
     final var reference = source.reference();
     final var batchId = FeedstockBatchId.of(reference.id());
-    final var consumed = consumeMaterial(workspaceId, source, batchId);
+    final var consumed = consumeMaterial(workspaceId, source, expectation, batchId);
     return new ConsumedProductionSource(
         reference,
         ProductionSourceDisplayName.of(consumed.batchName().value()),
@@ -77,13 +83,18 @@ public final class FeedstockProductionSourceInventory implements ProductionSourc
   private @NonNull ConsumedFeedstockBatchMaterial consumeMaterial(
       @NonNull WorkspaceId workspaceId,
       @NonNull ProductionSourceComponent source,
+      @NonNull ProductionSourceEvidenceExpectation expectation,
       @NonNull FeedstockBatchId batchId
   ) {
     return translate(source.reference(), () -> consumeFeedstockBatchMaterialUseCase.consume(
         new ConsumeFeedstockBatchMaterialCommand(
             workspaceId,
             batchId,
-            source.volume()
+            source.volume(),
+            new FeedstockBatchMaterialEvidenceExpectation(
+                new FeedstockBatchMaterialEvidenceReference(expectation.evidenceReference().value()),
+                expectation.materialStateId()
+            )
         )
     ));
   }

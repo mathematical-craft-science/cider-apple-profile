@@ -3,7 +3,7 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.composition.d
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
-import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionWarning;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.composition.dto.CompositionWarning;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.composition.dto.CalculatedCompositionCharacteristicsResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.composition.dto.CompositionOptimizationObjectiveAssessmentResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.ProfileTargetDistanceResponse;

@@ -2,7 +2,7 @@ package org.craft.mcs.cap.infrastructure.adapter.out.delivery.account.invitation
 
 import java.net.URI;
 import java.time.Instant;
-import org.craft.mcs.cap.core.account.invitation.application.model.WorkspaceInvitationEmail;
+import org.craft.mcs.cap.core.account.invitation.application.contract.WorkspaceInvitationEmail;
 import org.craft.mcs.cap.core.account.invitation.domain.model.value.WorkspaceInvitationId;
 import org.craft.mcs.cap.core.account.membership.domain.model.AccountRole;
 import org.craft.mcs.cap.core.account.shared.domain.value.DisplayName;

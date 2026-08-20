@@ -1,7 +1,7 @@
 package org.craft.mcs.cap.core.account.workspace.application.port.out;
 
 import java.time.Instant;
-import org.craft.mcs.cap.core.account.workspace.application.model.WorkspaceSettingsRevision;
+import org.craft.mcs.cap.core.account.workspace.application.contract.WorkspaceSettingsRevision;
 import org.craft.mcs.cap.core.account.workspace.domain.model.WorkspaceSettings;
 import org.jspecify.annotations.NonNull;
 

@@ -8,7 +8,7 @@ import org.craft.mcs.cap.core.vessel.application.VesselNotFoundException;
 import org.craft.mcs.cap.core.vessel.application.VesselOccupiedException;
 import org.craft.mcs.cap.core.vessel.application.VesselOwnershipMismatchException;
 import org.craft.mcs.cap.core.vessel.application.authorization.port.out.VesselAccessControl;
-import org.craft.mcs.cap.core.vessel.application.model.VesselUsageView;
+import org.craft.mcs.cap.core.vessel.application.contract.VesselUsageView;
 import org.craft.mcs.cap.core.vessel.application.port.in.UpdateVesselCommand;
 import org.craft.mcs.cap.core.vessel.application.port.in.UpdateVesselUseCase;
 import org.craft.mcs.cap.core.vessel.application.port.out.VesselCurrentContentQuery;

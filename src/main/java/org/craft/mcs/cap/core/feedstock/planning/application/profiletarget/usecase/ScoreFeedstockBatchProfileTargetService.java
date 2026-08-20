@@ -5,13 +5,12 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.feedstock.planning.application.authorization.port.out.FeedstockPlanningAccessControl;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.port.in.ScoreProfileTargetDistanceCandidatesCommand;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.port.in.ScoreProfileTargetDistanceCandidatesUseCase;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.usecase.ProfileTargetAnalysisScenarioResolver;
+import org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.contract.FeedstockTargetFitConfiguration;
 import org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.port.in.FeedstockBatchProfileTargetScore;
 import org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.port.in.FeedstockBatchProfileTargetScores;
 import org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.port.in.FeedstockBatchProfileTargetQuery;
 import org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.port.in.ScoreFeedstockBatchProfileTargetUseCase;
+import org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.port.out.FeedstockTargetFitAnalyzer;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 
@@ -35,9 +34,7 @@ public final class ScoreFeedstockBatchProfileTargetService
     implements ScoreFeedstockBatchProfileTargetUseCase {
 
   private final @NonNull FeedstockBatchProfileTargetScorableCandidateProvider candidateProvider;
-  private final @NonNull FeedstockProfileTargetObjectiveResolver objectiveResolver;
-  private final @NonNull ScoreProfileTargetDistanceCandidatesUseCase scoreProfileTargetDistanceCandidatesUseCase;
-  private final @NonNull ProfileTargetAnalysisScenarioResolver scoringConfigurationResolver;
+  private final @NonNull FeedstockTargetFitAnalyzer targetFitAnalyzer;
   private final @NonNull FeedstockPlanningAccessControl accessControl;
 
   @Override
@@ -50,26 +47,25 @@ public final class ScoreFeedstockBatchProfileTargetService
     final var candidates = candidateProvider.findCandidates(query);
     final var candidatesByReference = candidates.stream()
         .collect(Collectors.toMap(
-            candidate -> candidate.candidate().reference().id(),
+            candidate -> candidate.candidate().reference(),
             Function.identity()
         ));
-    final var scores = scoreProfileTargetDistanceCandidatesUseCase.score(
-        new ScoreProfileTargetDistanceCandidatesCommand(
-            objectiveResolver.resolve(query),
-            scoringConfigurationResolver.resolve(query.analysisScenario(), query.weights()),
-            candidates.stream()
-                .map(FeedstockBatchProfileTargetScorableCandidate::candidate)
-                .toList()
+    final var scores = targetFitAnalyzer.score(
+        new FeedstockTargetFitAnalyzer.Request(
+            query.target(),
+            query.tanninTarget(),
+            new FeedstockTargetFitConfiguration(query.analysisScenario(), query.weights()),
+            candidates.stream().map(FeedstockBatchProfileTargetScorableCandidate::candidate).toList()
         )
     );
 
     return new FeedstockBatchProfileTargetScores(
         query.analysisScenario(),
-        scores.configuration().normalizerCode(),
+        scores.normalizer(),
         scores.scores().stream()
             .map(score -> {
               final var candidate = requireNonNull(
-                  candidatesByReference.get(score.reference().id()),
+                  candidatesByReference.get(score.reference()),
                   "feedstock current profile candidate is missing for score"
               );
               final var currentProfile = candidate.currentProfile();
@@ -82,8 +78,9 @@ public final class ScoreFeedstockBatchProfileTargetService
                       TITRATABLE_ACIDITY,
                       TANNIN
                   )),
-                  candidate.candidate().input(),
-                  score.distance()
+                  candidate.candidate().characteristics(),
+                  score.distance(),
+                  score.contribution()
               );
             })
             .toList()

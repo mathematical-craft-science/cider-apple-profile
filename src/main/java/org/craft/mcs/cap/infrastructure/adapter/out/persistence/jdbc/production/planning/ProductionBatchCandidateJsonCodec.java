@@ -8,32 +8,34 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.production.planning.domain.model.ProductionBatchCandidate;
-import org.craft.mcs.cap.core.production.planning.domain.model.ProductionCandidateSourceEvidence;
-import org.craft.mcs.cap.core.production.batch.domain.model.ProductionSourceEvidenceReference;
 import org.craft.mcs.cap.core.production.batch.domain.model.ProductionSourceComponent;
 import org.craft.mcs.cap.core.production.batch.domain.model.ProductionSourceComposition;
+import org.craft.mcs.cap.core.production.batch.domain.model.ProductionSourceEvidenceReference;
 import org.craft.mcs.cap.core.production.batch.domain.model.ProductionSourceReference;
 import org.craft.mcs.cap.core.production.batch.domain.model.ProductionSourceType;
-import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionWarning;
-import org.craft.mcs.cap.core.profileanalysis.graph.domain.SugarAcidityGraphPoint;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileEvaluationAxis;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetObjectiveWeights;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.assessment.ProfileTargetDistance;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.assessment.ProfileTargetDistanceStatus;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.objective.ProfileDistanceMetric;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.objective.ProfileTargetObjectiveFunctionCode;
-import org.craft.mcs.cap.core.profileanalysis.graph.domain.SugarAcidityGeometryShape;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.SugarAcidityTargetKind;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.SugarAcidityTargetPosition;
+import org.craft.mcs.cap.core.production.planning.application.contract.ProductionBatchCandidateCalculationRequest.ObjectiveFunction;
+import org.craft.mcs.cap.core.production.planning.application.contract.ProductionCandidateTargetDistanceView;
+import org.craft.mcs.cap.core.production.planning.application.contract.ProductionCandidateTargetDistanceView.AxisPosition;
+import org.craft.mcs.cap.core.production.planning.application.contract.ProductionCandidateTargetDistanceView.Coordinates;
+import org.craft.mcs.cap.core.production.planning.application.contract.ProductionCandidateTargetDistanceView.EvaluationAxis;
+import org.craft.mcs.cap.core.production.planning.application.contract.ProductionCandidateTargetDistanceView.FitStatus;
+import org.craft.mcs.cap.core.production.planning.application.contract.ProductionCandidateTargetDistanceView.GeometryShape;
+import org.craft.mcs.cap.core.production.planning.application.contract.ProductionCandidateTargetDistanceView.Metric;
+import org.craft.mcs.cap.core.production.planning.application.contract.ProductionCandidateTargetDistanceView.Status;
+import org.craft.mcs.cap.core.production.planning.application.contract.ProductionCandidateTargetDistanceView.TargetKind;
+import org.craft.mcs.cap.core.production.planning.application.contract.ProductionCandidateTargetDistanceView.TargetPosition;
+import org.craft.mcs.cap.core.production.planning.application.contract.ProductionCandidateTargetDistanceView.Weights;
+import org.craft.mcs.cap.core.production.planning.application.contract.ProductionCandidateWarning;
+import org.craft.mcs.cap.core.production.planning.domain.model.ProductionBatchCandidate;
+import org.craft.mcs.cap.core.production.planning.domain.model.ProductionCandidateSourceEvidence;
 import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
-import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
-import org.craft.mcs.cap.shared.kernel.measurement.MeasuredValueRangePosition;
 import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
+import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.stereotype.Component;
 import tools.jackson.core.JacksonException;
 import tools.jackson.core.type.TypeReference;
@@ -49,7 +51,7 @@ final class ProductionBatchCandidateJsonCodec {
 
   private static final TypeReference<List<SourcePayload>> SOURCE_LIST_TYPE = new TypeReference<>() {
   };
-  private static final TypeReference<List<CompositionWarning>> WARNING_LIST_TYPE =
+  private static final TypeReference<List<ProductionCandidateWarning>> WARNING_LIST_TYPE =
       new TypeReference<>() {
       };
 
@@ -88,19 +90,28 @@ final class ProductionBatchCandidateJsonCodec {
     return new DecodedSources(ProductionSourceComposition.of(components), stateEvidence);
   }
 
-  @Nullable String encodeTargetDistance(@Nullable ProfileTargetDistance targetDistance) {
+  @Nullable String encodeTargetDistance(@Nullable ProductionCandidateTargetDistanceView targetDistance) {
     return targetDistance == null ? null : write(TargetDistancePayload.from(targetDistance));
   }
 
-  @Nullable ProfileTargetDistance decodeTargetDistance(@Nullable String value) {
-    return value == null ? null : read(value, TargetDistancePayload.class).toDomain();
+  @Nullable ProductionCandidateTargetDistanceView decodeTargetDistance(@Nullable String value) {
+    if (value == null) {
+      return null;
+    }
+    try {
+      return read(value, TargetDistancePayload.class).toView();
+    } catch (DataRetrievalFailureException exception) {
+      throw exception;
+    } catch (RuntimeException exception) {
+      throw new DataRetrievalFailureException("persisted production target distance is invalid", exception);
+    }
   }
 
-  @NonNull String encodeWarnings(@NonNull List<@NonNull CompositionWarning> warnings) {
+  @NonNull String encodeWarnings(@NonNull List<@NonNull ProductionCandidateWarning> warnings) {
     return write(List.copyOf(requireNonNull(warnings, "production candidate warnings cannot be null")));
   }
 
-  @NonNull List<@NonNull CompositionWarning> decodeWarnings(@NonNull String value) {
+  @NonNull List<@NonNull ProductionCandidateWarning> decodeWarnings(@NonNull String value) {
     return List.copyOf(read(requireNonNull(value, "warnings JSON cannot be null"), WARNING_LIST_TYPE));
   }
 
@@ -108,7 +119,7 @@ final class ProductionBatchCandidateJsonCodec {
     try {
       return objectMapper.writeValueAsString(requireNonNull(value, "JSON value cannot be null"));
     } catch (JacksonException exception) {
-      throw new IllegalStateException("cannot serialize production batch candidate", exception);
+      throw new DataRetrievalFailureException("cannot serialize production batch candidate", exception);
     }
   }
 
@@ -119,7 +130,7 @@ final class ProductionBatchCandidateJsonCodec {
     try {
       return objectMapper.readValue(value, type);
     } catch (JacksonException exception) {
-      throw new IllegalStateException("cannot deserialize production batch candidate", exception);
+      throw new DataRetrievalFailureException("cannot deserialize production batch candidate", exception);
     }
   }
 
@@ -130,7 +141,7 @@ final class ProductionBatchCandidateJsonCodec {
     try {
       return objectMapper.readValue(value, type);
     } catch (JacksonException exception) {
-      throw new IllegalStateException("cannot deserialize production batch candidate", exception);
+      throw new DataRetrievalFailureException("cannot deserialize production batch candidate", exception);
     }
   }
 
@@ -144,34 +155,38 @@ final class ProductionBatchCandidateJsonCodec {
   }
 
   private record TargetDistancePayload(
-      @NonNull ProfileTargetDistanceStatus status,
+      @NonNull Status status,
       @NonNull CoordinatePayload point,
       @NonNull CoordinatePayload nearestTargetPoint,
       @NonNull TargetPositionPayload targetPosition,
       @Nullable BigDecimal tannin,
       @Nullable BigDecimal nearestTargetTannin,
       @Nullable BigDecimal value,
+      @Nullable Integer matchPercent,
+      @Nullable FitStatus fitStatus,
       boolean insideSugarAcidityTarget,
       boolean insideTarget,
-      @NonNull ProfileTargetObjectiveFunctionCode objectiveFunction,
-      @NonNull ProfileDistanceMetric metric,
+      @NonNull ObjectiveFunction objectiveFunction,
+      @NonNull Metric metric,
       @NonNull WeightsPayload weights,
-      @NonNull SugarAcidityTargetKind targetKind,
-      @NonNull SugarAcidityGeometryShape targetShape,
-      @NonNull List<@NonNull ProfileEvaluationAxis> missingAxes
+      @NonNull TargetKind targetKind,
+      @NonNull GeometryShape targetShape,
+      @NonNull List<@NonNull EvaluationAxis> missingAxes
   ) {
 
     private static @NonNull TargetDistancePayload from(
-        @NonNull ProfileTargetDistance distance
+        @NonNull ProductionCandidateTargetDistanceView distance
     ) {
       return new TargetDistancePayload(
           distance.status(),
           CoordinatePayload.from(distance.point()),
           CoordinatePayload.from(distance.nearestTargetPoint()),
-          TargetPositionPayload.from(distance.sugarAcidityTargetPosition()),
+          TargetPositionPayload.from(distance.targetPosition()),
           decimal(distance.tannin()),
           decimal(distance.nearestTargetTannin()),
           distance.value(),
+          distance.matchPercent(),
+          distance.fitStatus(),
           distance.insideSugarAcidityTarget(),
           distance.insideTarget(),
           distance.objectiveFunction(),
@@ -185,24 +200,56 @@ final class ProductionBatchCandidateJsonCodec {
       );
     }
 
-    private @NonNull ProfileTargetDistance toDomain() {
-      return new ProfileTargetDistance(
+    private @NonNull ProductionCandidateTargetDistanceView toView() {
+      final var resolvedFit = resolvedFit();
+      return new ProductionCandidateTargetDistanceView(
           status,
-          point.toDomain(),
-          nearestTargetPoint.toDomain(),
-          targetPosition.toDomain(),
+          point.toView(),
+          nearestTargetPoint.toView(),
+          targetPosition.toView(),
           tannin(tannin),
           tannin(nearestTargetTannin),
           value,
+          resolvedFit.matchPercent(),
+          resolvedFit.status(),
           insideSugarAcidityTarget,
           insideTarget,
           objectiveFunction,
           metric,
-          weights.toDomain(),
+          weights.toView(),
           targetKind,
           targetShape,
           Set.copyOf(missingAxes)
       );
+    }
+
+    private @NonNull ProductionTargetFit resolvedFit() {
+      if (fitStatus == null) {
+        if (matchPercent != null) {
+          throw new DataRetrievalFailureException("persisted production target fit is incomplete");
+        }
+        return legacyFit(value);
+      }
+      return new ProductionTargetFit(matchPercent, fitStatus);
+    }
+
+    private @NonNull ProductionTargetFit legacyFit(@Nullable BigDecimal distance) {
+      if (status == Status.UNSCORABLE || distance == null) {
+        return new ProductionTargetFit(null, FitStatus.UNSCORABLE);
+      }
+      if (insideTarget) {
+        return new ProductionTargetFit(100, FitStatus.EXCELLENT);
+      }
+      final var percent = BigDecimal.valueOf(100)
+          .divide(BigDecimal.ONE.add(distance), 0, java.math.RoundingMode.HALF_UP)
+          .intValueExact();
+      final var cappedPercent = Math.min(percent, 99);
+      final var fitStatus = cappedPercent >= 90
+          ? FitStatus.EXCELLENT
+          : cappedPercent >= 70
+              ? FitStatus.CLOSE
+              : FitStatus.NEEDS_ADJUSTMENT;
+      return new ProductionTargetFit(cappedPercent, fitStatus);
     }
 
     private static @Nullable BigDecimal decimal(@Nullable TanninValue value) {
@@ -215,12 +262,12 @@ final class ProductionBatchCandidateJsonCodec {
   }
 
   private record TargetPositionPayload(
-      @NonNull MeasuredValueRangePosition specificGravity,
-      @NonNull MeasuredValueRangePosition titratableAcidity
+      @NonNull AxisPosition specificGravity,
+      @NonNull AxisPosition titratableAcidity
   ) {
 
     private static @NonNull TargetPositionPayload from(
-        @NonNull SugarAcidityTargetPosition position
+        @NonNull TargetPosition position
     ) {
       return new TargetPositionPayload(
           position.specificGravity(),
@@ -228,8 +275,8 @@ final class ProductionBatchCandidateJsonCodec {
       );
     }
 
-    private @NonNull SugarAcidityTargetPosition toDomain() {
-      return new SugarAcidityTargetPosition(specificGravity, titratableAcidity);
+    private @NonNull TargetPosition toView() {
+      return new TargetPosition(specificGravity, titratableAcidity);
     }
   }
 
@@ -239,7 +286,7 @@ final class ProductionBatchCandidateJsonCodec {
   ) {
 
     private static @NonNull CoordinatePayload from(
-        @NonNull SugarAcidityGraphPoint point
+        @NonNull Coordinates point
     ) {
       return new CoordinatePayload(
           point.specificGravity().asBigDecimal(),
@@ -247,8 +294,8 @@ final class ProductionBatchCandidateJsonCodec {
       );
     }
 
-    private @NonNull SugarAcidityGraphPoint toDomain() {
-      return new SugarAcidityGraphPoint(
+    private @NonNull Coordinates toView() {
+      return new Coordinates(
           SpecificGravityValue.of(specificGravity),
           TitratableAcidityValue.of(titratableAcidity)
       );
@@ -262,7 +309,7 @@ final class ProductionBatchCandidateJsonCodec {
   ) {
 
     private static @NonNull WeightsPayload from(
-        @NonNull ProfileTargetObjectiveWeights weights
+        @NonNull Weights weights
     ) {
       return new WeightsPayload(
           weights.specificGravity(),
@@ -271,9 +318,15 @@ final class ProductionBatchCandidateJsonCodec {
       );
     }
 
-    private @NonNull ProfileTargetObjectiveWeights toDomain() {
-      return new ProfileTargetObjectiveWeights(specificGravity, titratableAcidity, tannin);
+    private @NonNull Weights toView() {
+      return new Weights(specificGravity, titratableAcidity, tannin);
     }
+  }
+
+  private record ProductionTargetFit(
+      @Nullable Integer matchPercent,
+      @NonNull FitStatus status
+  ) {
   }
 
   record DecodedSources(

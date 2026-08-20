@@ -1,11 +1,9 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.common.mapper;
 
-import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.AbsoluteCompositionVolume;
-import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CalculatedCompositionCharacteristics;
-import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionSource;
-import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionSourceReference;
-import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionProportion;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.assessment.ProfileTargetDistance;
+import org.craft.mcs.cap.core.formulation.calculation.application.contract.CalculatedCompositionView;
+import org.craft.mcs.cap.core.formulation.calculation.application.contract.CompositionSourceInput;
+import org.craft.mcs.cap.core.formulation.calculation.application.contract.FormulationTargetDistanceView;
+import org.craft.mcs.cap.core.feedstock.planning.application.composition.contract.FeedstockCompositionOptimizationView;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.common.dto.CompositionSourceReferenceResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.common.dto.CompositionSourceResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.composition.dto.CalculatedCompositionCharacteristicsResponse;
@@ -32,28 +30,23 @@ public final class CompositionCommonResponseMapper {
   }
 
   public static @NonNull CompositionSourceResponse toResponse(
-      @NonNull CompositionSource source
+      @NonNull CompositionSourceInput source
   ) {
-    requireNonNull(source, "composition source cannot be null");
-    final var requestedVolume = requestedVolume(source);
-
+    requireNonNull(source, "composition source input cannot be null");
+    final var requestedVolume = source.weight() instanceof CompositionSourceInput.AbsoluteVolume(var volume)
+        ? volume.liters()
+        : null;
     return new CompositionSourceResponse(
-        toResponse(source.reference()),
+        new CompositionSourceReferenceResponse(source.reference().type(), source.reference().id()),
         toRequestedVolumeResponse(requestedVolume),
-        proportion(source)
+        source.weight() instanceof CompositionSourceInput.Proportion(var proportion) ? proportion : null
     );
   }
 
   public static @Nullable ProfileTargetDistanceResponse toTargetDistanceResponse(
-      @Nullable ProfileTargetDistance distance
+      @Nullable FormulationTargetDistanceView distance
   ) {
-    return distance == null ? null : toResponse(distance);
-  }
-
-  public static @NonNull ProfileTargetDistanceResponse toResponse(
-      @NonNull ProfileTargetDistance distance
-  ) {
-    return ProfileTargetRestMapper.toResponse(distance);
+    return distance == null ? null : ProfileTargetRestMapper.toResponse(distance);
   }
 
   public static @Nullable DecimalQuantityResponse toVolumeResponse(@Nullable VolumeValue volume) {
@@ -61,9 +54,29 @@ public final class CompositionCommonResponseMapper {
   }
 
   public static @NonNull CalculatedCompositionCharacteristicsResponse toCharacteristicsResponse(
-      @NonNull CalculatedCompositionCharacteristics characteristics
+      CalculatedCompositionView.@NonNull Characteristics characteristics
   ) {
-    requireNonNull(characteristics, "calculated composition characteristics cannot be null");
+    return new CalculatedCompositionCharacteristicsResponse(
+        new DecimalQuantityResponse(
+            characteristics.specificGravity().asBigDecimal(),
+            CanonicalUnitLabels.SPECIFIC_GRAVITY
+        ),
+        new DecimalQuantityResponse(
+            characteristics.titratableAcidity().asBigDecimal(),
+            CanonicalUnitLabels.TITRATABLE_ACIDITY
+        ),
+        quantity(characteristics.tannin(), TanninValue::asBigDecimal, CanonicalUnitLabels.TANNIN),
+        quantity(
+            characteristics.yeastAssimilableNitrogen(),
+            YeastAssimilableNitrogenValue::asBigDecimal,
+            CanonicalUnitLabels.YEAST_ASSIMILABLE_NITROGEN
+        )
+    );
+  }
+
+  public static @NonNull CalculatedCompositionCharacteristicsResponse toCharacteristicsResponse(
+      FeedstockCompositionOptimizationView.@NonNull Characteristics characteristics
+  ) {
     return new CalculatedCompositionCharacteristicsResponse(
         new DecimalQuantityResponse(
             characteristics.specificGravity().asBigDecimal(),
@@ -90,12 +103,6 @@ public final class CompositionCommonResponseMapper {
     return value == null ? null : new DecimalQuantityResponse(decimalValue.apply(value), unit);
   }
 
-  private static @Nullable BigDecimal requestedVolume(
-      @NonNull CompositionSource source
-  ) {
-    return source.weight() instanceof AbsoluteCompositionVolume(VolumeValue volume) ? volume.liters() : null;
-  }
-
   private static @Nullable DecimalQuantityResponse toRequestedVolumeResponse(
       @Nullable BigDecimal requestedVolume
   ) {
@@ -104,14 +111,4 @@ public final class CompositionCommonResponseMapper {
         : new DecimalQuantityResponse(requestedVolume, CanonicalUnitLabels.VOLUME);
   }
 
-  private static @Nullable BigDecimal proportion(@NonNull CompositionSource source) {
-    return source.weight() instanceof CompositionProportion(BigDecimal proportion) ? proportion : null;
-  }
-
-  private static @NonNull CompositionSourceReferenceResponse toResponse(
-      @NonNull CompositionSourceReference reference
-  ) {
-    requireNonNull(reference, "composition source reference cannot be null");
-    return new CompositionSourceReferenceResponse(reference.type(), reference.id());
-  }
 }

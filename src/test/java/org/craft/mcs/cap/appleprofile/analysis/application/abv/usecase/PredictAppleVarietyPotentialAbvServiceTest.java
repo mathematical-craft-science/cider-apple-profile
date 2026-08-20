@@ -3,14 +3,11 @@ package org.craft.mcs.cap.appleprofile.analysis.application.abv.usecase;
 import org.craft.mcs.cap.core.appleprofile.analysis.application.abv.AppleVarietyPotentialAbvUnavailableException;
 import org.craft.mcs.cap.core.appleprofile.analysis.application.abv.port.in.AppleVarietyPotentialAbvPrediction;
 import org.craft.mcs.cap.core.appleprofile.analysis.application.abv.usecase.PredictAppleVarietyPotentialAbvService;
-import org.craft.mcs.cap.core.appleprofile.analysis.application.profile.model.AppleVarietyAnalysisProfile;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.profile.contract.AppleVarietyAnalysisProfile;
 import org.craft.mcs.cap.core.appleprofile.analysis.application.profile.port.out.AppleVarietyAnalysisProfileProvider;
 import org.craft.mcs.cap.core.appleprofile.catalog.domain.model.AppleVarietyId;
-import org.craft.mcs.cap.core.appleprofile.analysis.application.profile.model.AppleVarietyAnalysisName;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.profile.contract.AppleVarietyAnalysisName;
 import org.craft.mcs.cap.core.appleprofile.catalog.domain.model.AppleVarietyReferenceProfile;
-import org.craft.mcs.cap.core.profileanalysis.abv.domain.FixedFinalGravityPredictionStrategy;
-import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPredictor;
-import org.craft.mcs.cap.core.profileanalysis.abv.domain.StandardGravityDropAbvPredictionStrategy;
 import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
@@ -19,6 +16,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.craft.mcs.cap.support.CiderAnalysisTestFixtures.applePotentialAbvAnalyzer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -28,7 +26,7 @@ class PredictAppleVarietyPotentialAbvServiceTest {
   @Test
   void predictsPotentialAbvFromReferenceSpecificGravity() {
     final var profileProvider = mock(AppleVarietyAnalysisProfileProvider.class);
-    final var service = new PredictAppleVarietyPotentialAbvService(profileProvider, predictor());
+    final var service = new PredictAppleVarietyPotentialAbvService(profileProvider, applePotentialAbvAnalyzer());
     final var variety = variety(
         new AppleVarietyReferenceProfile(
             PointCharacteristicValue.of(SpecificGravityValue.of("1.052")),
@@ -55,7 +53,7 @@ class PredictAppleVarietyPotentialAbvServiceTest {
   @Test
   void rejectsReferenceProfileWithoutSpecificGravity() {
     final var profileProvider = mock(AppleVarietyAnalysisProfileProvider.class);
-    final var service = new PredictAppleVarietyPotentialAbvService(profileProvider, predictor());
+    final var service = new PredictAppleVarietyPotentialAbvService(profileProvider, applePotentialAbvAnalyzer());
     final var variety = variety(
         new AppleVarietyReferenceProfile(
             null,
@@ -81,13 +79,6 @@ class PredictAppleVarietyPotentialAbvServiceTest {
         referenceProfile.titratableAcidity(),
         referenceProfile.ph(),
         referenceProfile.tannin()
-    );
-  }
-
-  private static @NonNull PotentialAbvPredictor predictor() {
-    return new PotentialAbvPredictor(
-        FixedFinalGravityPredictionStrategy.dryCiderDefault(),
-        new StandardGravityDropAbvPredictionStrategy()
     );
   }
 }

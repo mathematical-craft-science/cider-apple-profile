@@ -5,11 +5,15 @@ import java.util.Optional;
 import java.util.function.Supplier;
 import org.craft.mcs.cap.core.feedstock.batch.application.FeedstockBatchHasNoMeasurementsException;
 import org.craft.mcs.cap.core.feedstock.batch.application.FeedstockBatchInsufficientAvailableVolumeException;
+import org.craft.mcs.cap.core.feedstock.batch.application.FeedstockBatchMaterialSnapshotChangedException;
 import org.craft.mcs.cap.core.feedstock.batch.application.FeedstockBatchOwnershipMismatchException;
 import org.craft.mcs.cap.core.feedstock.batch.application.authorization.port.out.FeedstockAccessControl;
+import org.craft.mcs.cap.core.feedstock.batch.application.api.currentprofile.FeedstockCurrentProfileView;
 import org.craft.mcs.cap.core.feedstock.batch.application.batch.port.out.FeedstockBatchRepository;
 import org.craft.mcs.cap.core.feedstock.batch.application.inventory.port.in.ConsumeFeedstockBatchMaterialCommand;
 import org.craft.mcs.cap.core.feedstock.batch.application.inventory.port.in.ConsumedFeedstockBatchMaterial;
+import org.craft.mcs.cap.core.feedstock.batch.application.inventory.port.in.FeedstockBatchMaterialEvidenceExpectation;
+import org.craft.mcs.cap.core.feedstock.batch.application.inventory.port.in.FeedstockBatchMaterialEvidenceReference;
 import org.craft.mcs.cap.core.feedstock.batch.application.inventory.FeedstockMaterialCharacteristicsUnavailableException;
 import org.craft.mcs.cap.core.feedstock.batch.application.inventory.port.in.FeedstockMaterialCharacteristics;
 import org.craft.mcs.cap.core.feedstock.batch.application.inventory.usecase.ConsumeFeedstockBatchMaterialService;
@@ -25,6 +29,7 @@ import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetName;
 import org.craft.mcs.cap.shared.testing.ProfileCharacteristicsFixture;
 import org.craft.mcs.cap.core.feedstock.batch.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
+import org.craft.mcs.cap.shared.application.measurement.MeasurementEvidenceView;
 import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
@@ -57,9 +62,10 @@ class ConsumeFeedstockBatchMaterialServiceTest {
     final var workspaceId = WorkspaceId.newId();
     final var batch = batch(workspaceId);
     final var measurement = measurement(batch.batchId());
-    final var command = command(workspaceId, batch.batchId(), "100");
+    final var profile = currentProfile(measurement);
+    final var command = command(workspaceId, batch, "100", profile);
     when(repository.lockVersionedById(batch.batchId())).thenReturn(Optional.of(versioned(batch)));
-    when(measurementQuery.requireCurrentProfile(batch.batchId())).thenReturn(currentProfile(measurement));
+    when(measurementQuery.requireCurrentProfile(batch.batchId())).thenReturn(profile);
     final var service = service(repository, measurementQuery, accessControl);
 
     final var consumed = service.consume(command);
@@ -94,7 +100,7 @@ class ConsumeFeedstockBatchMaterialServiceTest {
     final var actualWorkspaceId = WorkspaceId.newId();
     final var requestedWorkspaceId = WorkspaceId.newId();
     final var batch = batch(actualWorkspaceId);
-    final var command = command(requestedWorkspaceId, batch.batchId(), "100");
+    final var command = command(requestedWorkspaceId, batch, "100");
     when(repository.lockVersionedById(batch.batchId())).thenReturn(Optional.of(versioned(batch)));
     final var service = service(repository, measurementQuery, accessControl);
 
@@ -111,8 +117,11 @@ class ConsumeFeedstockBatchMaterialServiceTest {
     final var accessControl = mock(FeedstockAccessControl.class);
     final var workspaceId = WorkspaceId.newId();
     final var batch = batch(workspaceId);
-    final var command = command(workspaceId, batch.batchId(), "251");
+    final var measurement = measurement(batch.batchId());
+    final var profile = currentProfile(measurement);
+    final var command = command(workspaceId, batch, "251", profile);
     when(repository.lockVersionedById(batch.batchId())).thenReturn(Optional.of(versioned(batch)));
+    when(measurementQuery.requireCurrentProfile(batch.batchId())).thenReturn(profile);
     final var service = service(repository, measurementQuery, accessControl);
 
     assertThatThrownBy(() -> service.consume(command))
@@ -121,7 +130,6 @@ class ConsumeFeedstockBatchMaterialServiceTest {
             .returns(command.volume(), FeedstockBatchInsufficientAvailableVolumeException::requestedVolume)
             .returns(batch.availableVolume(), FeedstockBatchInsufficientAvailableVolumeException::availableVolume));
     verify(repository, never()).update(any());
-    verifyNoInteractions(measurementQuery);
   }
 
   @Test
@@ -131,14 +139,14 @@ class ConsumeFeedstockBatchMaterialServiceTest {
     final var accessControl = mock(FeedstockAccessControl.class);
     final var workspaceId = WorkspaceId.newId();
     final var batch = batch(workspaceId);
-    final var command = command(workspaceId, batch.batchId(), "100");
+    final var command = command(workspaceId, batch, "100");
     when(repository.lockVersionedById(batch.batchId())).thenReturn(Optional.of(versioned(batch)));
     when(measurementQuery.requireCurrentProfile(batch.batchId()))
         .thenThrow(new FeedstockBatchHasNoMeasurementsException(batch.batchId()));
     final var service = service(repository, measurementQuery, accessControl);
 
     assertThatThrownBy(() -> service.consume(command))
-        .isInstanceOf(FeedstockBatchHasNoMeasurementsException.class)
+        .isInstanceOf(FeedstockBatchMaterialSnapshotChangedException.class)
         .satisfies(exception -> assertThat(batch.availableVolume())
             .isEqualTo(VolumeValue.ofLiters("250")));
     verify(repository, never()).update(any());
@@ -151,10 +159,12 @@ class ConsumeFeedstockBatchMaterialServiceTest {
     final var accessControl = mock(FeedstockAccessControl.class);
     final var workspaceId = WorkspaceId.newId();
     final var batch = batch(workspaceId);
-    final var command = command(workspaceId, batch.batchId(), "100");
+    final var measurement = measurementWithoutAcidity(batch.batchId());
+    final var profile = currentProfile(measurement);
+    final var command = command(workspaceId, batch, "100", profile);
     when(repository.lockVersionedById(batch.batchId())).thenReturn(Optional.of(versioned(batch)));
     when(measurementQuery.requireCurrentProfile(batch.batchId()))
-        .thenReturn(currentProfile(measurementWithoutAcidity(batch.batchId())));
+        .thenReturn(profile);
     final var service = service(repository, measurementQuery, accessControl);
 
     assertThatThrownBy(() -> service.consume(command))
@@ -220,13 +230,36 @@ class ConsumeFeedstockBatchMaterialServiceTest {
 
   private static @NonNull ConsumeFeedstockBatchMaterialCommand command(
       @NonNull WorkspaceId workspaceId,
-      @NonNull FeedstockBatchId batchId,
+      @NonNull FeedstockBatch batch,
       @NonNull String volumeLiters
   ) {
     return new ConsumeFeedstockBatchMaterialCommand(
         workspaceId,
-        batchId,
-        VolumeValue.ofLiters(volumeLiters)
+        batch.batchId(),
+        VolumeValue.ofLiters(volumeLiters),
+        new FeedstockBatchMaterialEvidenceExpectation(
+            new FeedstockBatchMaterialEvidenceReference("feedstock-profile-v1:expected"),
+            batch.currentMaterialStateId()
+        )
+    );
+  }
+
+  private static @NonNull ConsumeFeedstockBatchMaterialCommand command(
+      @NonNull WorkspaceId workspaceId,
+      @NonNull FeedstockBatch batch,
+      @NonNull String volumeLiters,
+      @NonNull FeedstockCurrentProfileView profile
+  ) {
+    return new ConsumeFeedstockBatchMaterialCommand(
+        workspaceId,
+        batch.batchId(),
+        VolumeValue.ofLiters(volumeLiters),
+        new FeedstockBatchMaterialEvidenceExpectation(
+            FeedstockBatchMaterialEvidenceReference.from(profile.evidence().stream()
+                .map(MeasurementEvidenceView::snapshot)
+                .toList()),
+            batch.currentMaterialStateId()
+        )
     );
   }
 

@@ -4,7 +4,7 @@ import static java.util.Objects.requireNonNull;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.craft.mcs.cap.shared.kernel.identity.UuidV7Generator.newUuid;
-import static org.craft.mcs.cap.support.PotentialAbvPredictionFixtures.prediction;
+import static org.craft.mcs.cap.support.PotentialAbvPredictionFixtures.productionCandidatePrediction;
 
 import java.math.BigDecimal;
 import java.time.Clock;
@@ -50,16 +50,17 @@ import org.craft.mcs.cap.core.production.batch.domain.model.ProductionSourceComp
 import org.craft.mcs.cap.core.production.batch.domain.model.ProductionSourceReference;
 import org.craft.mcs.cap.core.production.batch.domain.model.value.ProductionProfileSnapshot;
 import org.craft.mcs.cap.core.production.planning.application.authorization.port.out.ProductionPlanningAccessControl;
+import org.craft.mcs.cap.core.production.planning.application.ProductionBatchCandidateStaleException;
 import org.craft.mcs.cap.core.production.planning.application.confirmation.port.in.CreateProductionBatchCommand;
 import org.craft.mcs.cap.core.production.planning.application.confirmation.usecase.CreateProductionBatchService;
-import org.craft.mcs.cap.core.production.planning.application.model.ProductionBatchCandidateSnapshot;
+import org.craft.mcs.cap.core.production.planning.application.contract.ProductionBatchCandidateSnapshot;
 import org.craft.mcs.cap.core.production.planning.application.port.out.ProductionBatchCandidateStore;
 import org.craft.mcs.cap.core.production.planning.application.port.out.ProductionSourceInspector;
 import org.craft.mcs.cap.core.production.planning.domain.model.ProductionBatchCandidate;
 import org.craft.mcs.cap.core.production.planning.domain.model.ProductionBatchCandidateId;
 import org.craft.mcs.cap.core.production.planning.domain.model.ProductionBatchCandidateStatus;
 import org.craft.mcs.cap.core.production.planning.domain.model.ProductionCandidateSourceEvidence;
-import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPrediction;
+import org.craft.mcs.cap.core.production.planning.application.contract.ProductionCandidatePotentialAbvView;
 import org.craft.mcs.cap.core.traceability.application.port.out.BatchTraceabilityAccessControl;
 import org.craft.mcs.cap.core.traceability.application.port.out.MaterialStateLineageStore;
 import org.craft.mcs.cap.core.traceability.application.usecase.AppendBatchTraceStepService;
@@ -67,6 +68,8 @@ import org.craft.mcs.cap.core.traceability.application.usecase.GetMaterialStateS
 import org.craft.mcs.cap.core.traceability.application.usecase.QueryMaterialStateLineageService;
 import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceSubjectType;
 import org.craft.mcs.cap.infrastructure.adapter.out.production.planning.batch.ProductionBatchConfirmationAdapter;
+import org.craft.mcs.cap.infrastructure.adapter.out.production.planning.source.FeedstockProductionSourceSnapshotValidator;
+import org.craft.mcs.cap.shared.kernel.DomainConflictException;
 import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
@@ -309,9 +312,44 @@ class ProductionCreationMaterialFlowDataJdbcTest {
   }
 
   @Test
+  void reportsStaleCandidateBeforeInsufficientVolumeAndDoesNotConsumeSource() {
+    final var candidate = candidate(sourceComponent());
+    final var saved = candidateStore.create(candidate);
+    final var changedStateId = MaterialStateId.newId();
+    jdbcTemplate.update(
+        """
+            UPDATE feedstock_batches
+               SET available_volume_liters = 50,
+                   current_material_state_id = ?,
+                   version = version + 1
+             WHERE batch_id = ?
+            """,
+        changedStateId.value(),
+        feedstockBatchId.value()
+    );
+
+    assertThatThrownBy(() -> service(candidateStore).create(command(saved)))
+        .isInstanceOf(ProductionBatchCandidateStaleException.class);
+    assertThat(number(
+        "SELECT available_volume_liters FROM feedstock_batches WHERE batch_id = ?",
+        feedstockBatchId.value()
+    ))
+        .isEqualByComparingTo("50");
+    assertThat(count(
+        "SELECT COUNT(*) FROM production_batches WHERE workspace_id = ?",
+        workspaceId.value()
+    ))
+        .isZero();
+    assertThat(candidateStore.findById(saved.candidate().candidateId()))
+        .get()
+        .extracting(ProductionBatchCandidateSnapshot::candidate)
+        .returns(ProductionBatchCandidateStatus.AVAILABLE, ProductionBatchCandidate::status);
+  }
+
+  @Test
   void concurrentConfirmationConsumesSourceAndConfirmsCandidateExactlyOnce()
       throws Exception {
-    final var source = sourceComponent();
+    final var source = sourceComponent("200");
     final var saved = candidateStore.create(candidate(source));
     final var secondVesselId = VesselId.newId();
     VesselTestFixtures.persist(jdbcTemplate, workspaceId, secondVesselId, "Tank P-02");
@@ -340,12 +378,16 @@ class ProductionCreationMaterialFlowDataJdbcTest {
           .hasSize(1);
       assertThat(attempts)
           .filteredOn(attempt -> attempt.failure() != null)
+          .extracting(CreationAttempt::failure)
+          .allSatisfy(failure -> assertThat(failure)
+              .isInstanceOf(DomainConflictException.class)
+              .hasMessage("production batch candidate has already been confirmed"))
           .hasSize(1);
       assertThat(number(
           "SELECT available_volume_liters FROM feedstock_batches WHERE batch_id = ?",
           feedstockBatchId.value()
       ))
-          .isEqualByComparingTo("150");
+          .isEqualByComparingTo("50");
       assertThat(count(
           "SELECT COUNT(*) FROM production_batches WHERE workspace_id = ?",
           workspaceId.value()
@@ -425,16 +467,20 @@ class ProductionCreationMaterialFlowDataJdbcTest {
     );
   }
 
-  private static @NonNull PotentialAbvPrediction potentialAbv(
+  private static @NonNull ProductionCandidatePotentialAbvView potentialAbv(
       @NonNull ProductionProfileSnapshot profile
   ) {
-    return prediction(profile.specificGravity());
+    return productionCandidatePrediction(profile.specificGravity());
   }
 
   private @NonNull ProductionSourceComponent sourceComponent() {
+    return sourceComponent("100");
+  }
+
+  private @NonNull ProductionSourceComponent sourceComponent(@NonNull String volume) {
     return new ProductionSourceComponent(
         ProductionSourceReference.feedstockBatch(feedstockBatchId.value()),
-        VolumeValue.ofLiters("100")
+        VolumeValue.ofLiters(volume)
     );
   }
 
@@ -706,10 +752,16 @@ class ProductionCreationMaterialFlowDataJdbcTest {
           "org.craft.mcs.cap.infrastructure.adapter.out.traceability.production",
           "org.craft.mcs.cap.infrastructure.adapter.out.production.batch.source",
           "org.craft.mcs.cap.infrastructure.adapter.out.production.planning.source"
-      }, excludeFilters = @ComponentScan.Filter(
-      type = FilterType.ANNOTATION,
-      classes = TestConfiguration.class
-  )
+      }, excludeFilters = {
+          @ComponentScan.Filter(
+              type = FilterType.ANNOTATION,
+              classes = TestConfiguration.class
+          ),
+          @ComponentScan.Filter(
+              type = FilterType.ASSIGNABLE_TYPE,
+              classes = FeedstockProductionSourceSnapshotValidator.class
+          )
+      }
   )
   static class FlowTestConfiguration {
 
@@ -878,6 +930,13 @@ class ProductionCreationMaterialFlowDataJdbcTest {
         @NonNull ProductionBatchCandidateId candidateId
     ) {
       return delegate.findById(candidateId);
+    }
+
+    @Override
+    public @NonNull Optional<@NonNull ProductionBatchCandidateSnapshot> lockById(
+        @NonNull ProductionBatchCandidateId candidateId
+    ) {
+      return delegate.lockById(candidateId);
     }
   }
 

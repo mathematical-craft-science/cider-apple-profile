@@ -1,7 +1,7 @@
 package org.craft.mcs.cap.core.vessel.application.port.out;
 
 import java.util.List;
-import org.craft.mcs.cap.core.vessel.application.model.VesselView;
+import org.craft.mcs.cap.core.vessel.application.contract.VesselView;
 import org.craft.mcs.cap.shared.application.query.TextSearchCriteria;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;

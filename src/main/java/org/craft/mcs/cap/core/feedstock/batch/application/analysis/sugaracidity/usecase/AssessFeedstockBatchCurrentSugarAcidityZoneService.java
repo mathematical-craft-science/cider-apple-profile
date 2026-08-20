@@ -3,8 +3,8 @@ package org.craft.mcs.cap.core.feedstock.batch.application.analysis.sugaracidity
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.feedstock.batch.application.authorization.port.out.FeedstockAccessControl;
-import org.craft.mcs.cap.core.profileanalysis.classification.domain.profile.northamerican.NorthAmericanProfileCalculator;
-import org.craft.mcs.cap.core.profileanalysis.graph.application.port.in.EvaluateJolicoeurSugarAcidityGraphUseCase;
+import org.craft.mcs.cap.core.feedstock.batch.application.analysis.classification.port.out.FeedstockTanninLevelAnalyzer;
+import org.craft.mcs.cap.core.feedstock.batch.application.analysis.sugaracidity.port.out.FeedstockSugarAcidityGraphAnalyzer;
 import org.craft.mcs.cap.core.feedstock.batch.application.FeedstockBatchNotFoundException;
 import org.craft.mcs.cap.core.feedstock.batch.application.currentprofile.query.FeedstockCurrentProfileQueryService;
 import org.craft.mcs.cap.core.feedstock.batch.application.analysis.sugaracidity.port.in.AssessFeedstockBatchCurrentSugarAcidityZoneUseCase;
@@ -36,8 +36,8 @@ public final class AssessFeedstockBatchCurrentSugarAcidityZoneService
   private final @NonNull FeedstockBatchRepository feedstockBatchRepository;
   private final @NonNull FeedstockAccessControl feedstockAccessControl;
   private final @NonNull FeedstockCurrentProfileQueryService currentProfileQueryService;
-  private final @NonNull EvaluateJolicoeurSugarAcidityGraphUseCase graphEvaluator;
-  private final @NonNull NorthAmericanProfileCalculator northAmericanProfileCalculator;
+  private final @NonNull FeedstockSugarAcidityGraphAnalyzer graphAnalyzer;
+  private final @NonNull FeedstockTanninLevelAnalyzer tanninLevelAnalyzer;
 
   @Override
   public @NonNull FeedstockBatchCurrentSugarAcidityZoneResult assess(@NonNull FeedstockBatchId batchId) {
@@ -47,10 +47,11 @@ public final class AssessFeedstockBatchCurrentSugarAcidityZoneService
         .orElseThrow(() -> new FeedstockBatchNotFoundException(batchId));
     feedstockAccessControl.requireReadAccess(batch.workspaceId());
     final var currentMeasurement = currentProfileQueryService.requireCurrentProfile(batchId);
-    final var graphEvaluation = graphEvaluator.evaluate(
+    final var graphEvaluation = graphAnalyzer.evaluate(
         currentMeasurement.specificGravity(),
         currentMeasurement.titratableAcidity()
     );
+    final var tannin = currentMeasurement.tannin();
     return new FeedstockBatchCurrentSugarAcidityZoneResult(
         currentMeasurement.batchId(),
         batch.name(),
@@ -61,8 +62,8 @@ public final class AssessFeedstockBatchCurrentSugarAcidityZoneService
         currentMeasurement.specificGravity(),
         currentMeasurement.titratableAcidity(),
         graphEvaluation,
-        graphEvaluation.plottable() && currentMeasurement.tannin() != null
-            ? northAmericanProfileCalculator.assessTannin(currentMeasurement.tannin()) // NOSONAR
+        graphEvaluation.plottable() && tannin != null
+            ? tanninLevelAnalyzer.assess(tannin) // NOSONAR
             : null
     );
   }

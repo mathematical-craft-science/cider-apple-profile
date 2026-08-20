@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import java.util.List;
 import java.util.UUID;
-import org.craft.mcs.cap.core.profileanalysis.graph.domain.GraphMissingCharacteristic;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.dto.GraphMissingCharacteristic;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.abv.dto.PotentialAbvPredictionResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.dto.SugarAcidityGraphAssessmentResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profilecharacteristic.dto.ProfileCharacteristicValueResponse;

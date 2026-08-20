@@ -1,6 +1,6 @@
 package org.craft.mcs.cap.infrastructure.adapter.out.requestcontext.account.oauth2;
 
-import org.craft.mcs.cap.core.account.user.application.model.AuthenticatedActor;
+import org.craft.mcs.cap.core.account.user.application.contract.AuthenticatedActor;
 import org.jspecify.annotations.NonNull;
 import org.springframework.security.oauth2.jwt.Jwt;
 

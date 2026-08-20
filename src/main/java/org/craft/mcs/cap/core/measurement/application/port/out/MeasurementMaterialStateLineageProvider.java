@@ -1,7 +1,7 @@
 package org.craft.mcs.cap.core.measurement.application.port.out;
 
 import java.util.Map;
-import org.craft.mcs.cap.core.measurement.application.model.MeasurementMaterialStateLineage;
+import org.craft.mcs.cap.core.measurement.application.contract.MeasurementMaterialStateLineage;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSubjectReference;
 import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;

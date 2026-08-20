@@ -49,20 +49,6 @@ public record MeasurementRecord(
     validateNoSelfReference(recordId, derivationInputs);
   }
 
-  /** Returns the point-or-interval shape retained by this measurement record. */
-  public @NonNull MeasurementValueKind valueKind() {
-    return valueKind(value);
-  }
-
-  private static @NonNull MeasurementValueKind valueKind(
-      @NonNull CharacteristicValue<MeasuredValue> value
-  ) {
-    return switch (value) {
-      case PointCharacteristicValue<MeasuredValue> _ -> MeasurementValueKind.POINT;
-      case IntervalCharacteristicValue<MeasuredValue> _ -> MeasurementValueKind.INTERVAL;
-    };
-  }
-
   private static void validateObservation(
       @NonNull MeasurementRecordRole role,
       @NonNull CharacteristicValue<MeasuredValue> value,
@@ -72,7 +58,7 @@ public record MeasurementRecord(
     if (role != MeasurementRecordRole.OBSERVATION) {
       return;
     }
-    if (valueKind(value) != MeasurementValueKind.POINT) {
+    if (!isPoint(value)) {
       throw new DomainRuleViolationException("measurement observations must be point values");
     }
     if (derivationMethod != null) {
@@ -105,12 +91,19 @@ public record MeasurementRecord(
     if (derivationInputs.size() < 2) {
       throw new DomainRuleViolationException("derived measurement result requires at least two observations");
     }
-    if (valueKind(value) != MeasurementValueKind.POINT) {
+    if (!isPoint(value)) {
       throw new DomainRuleViolationException("derived measurement result must be a point value");
     }
     if (provenance.sourceType() != MeasurementSourceType.DERIVED) {
       throw new DomainRuleViolationException("derived measurement result requires DERIVED provenance");
     }
+  }
+
+  private static boolean isPoint(@NonNull CharacteristicValue<MeasuredValue> value) {
+    return switch (value) {
+      case PointCharacteristicValue<MeasuredValue> _ -> true;
+      case IntervalCharacteristicValue<MeasuredValue> _ -> false;
+    };
   }
 
   private static void validateAbsentDerivation(

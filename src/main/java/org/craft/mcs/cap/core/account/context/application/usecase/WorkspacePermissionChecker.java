@@ -2,7 +2,7 @@ package org.craft.mcs.cap.core.account.context.application.usecase;
 
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.account.shared.application.AccountAccessDeniedException;
-import org.craft.mcs.cap.core.account.context.application.model.ResolvedWorkspaceContext;
+import org.craft.mcs.cap.core.account.context.application.contract.ResolvedWorkspaceContext;
 import org.craft.mcs.cap.core.account.membership.domain.model.WorkspacePermission;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;

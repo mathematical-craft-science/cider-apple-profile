@@ -12,12 +12,14 @@ import static java.util.Objects.requireNonNull;
 public record ConsumeFeedstockBatchMaterialCommand(
     @NonNull WorkspaceId workspaceId,
     @NonNull FeedstockBatchId batchId,
-    @NonNull VolumeValue volume
+    @NonNull VolumeValue volume,
+    @NonNull FeedstockBatchMaterialEvidenceExpectation expectation
 ) {
 
   public ConsumeFeedstockBatchMaterialCommand {
     requireNonNull(workspaceId, "workspace id cannot be null");
     requireNonNull(batchId, "feedstock batch id cannot be null");
     requireNonNull(volume, "feedstock material volume cannot be null");
+    requireNonNull(expectation, "feedstock material evidence expectation cannot be null");
   }
 }

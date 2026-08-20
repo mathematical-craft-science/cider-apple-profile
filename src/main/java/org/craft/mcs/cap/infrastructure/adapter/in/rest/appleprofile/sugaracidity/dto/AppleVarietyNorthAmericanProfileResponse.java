@@ -1,9 +1,9 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.sugaracidity.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import org.craft.mcs.cap.core.profileanalysis.classification.domain.profile.northamerican.NorthAmericanAcidityLevel;
-import org.craft.mcs.cap.core.profileanalysis.classification.domain.profile.northamerican.NorthAmericanSugarLevel;
-import org.craft.mcs.cap.core.profileanalysis.classification.domain.profile.northamerican.NorthAmericanTanninLevel;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.classification.NorthAmericanAcidityLevel;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.classification.NorthAmericanSugarLevel;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.classification.NorthAmericanTanninLevel;
 import org.jspecify.annotations.Nullable;
 
 

@@ -18,7 +18,7 @@ import org.craft.mcs.cap.core.account.shared.domain.value.AccountUserId;
 import org.craft.mcs.cap.core.account.shared.domain.value.DisplayName;
 import org.craft.mcs.cap.core.account.shared.domain.value.EmailAddress;
 import org.craft.mcs.cap.core.account.shared.domain.value.IdentityProviderCode;
-import org.craft.mcs.cap.core.account.user.application.model.AuthenticatedActor;
+import org.craft.mcs.cap.core.account.user.application.contract.AuthenticatedActor;
 import org.craft.mcs.cap.core.account.user.application.port.in.AccountUserView;
 import org.craft.mcs.cap.core.account.user.application.port.out.AccountUserRepository;
 import org.craft.mcs.cap.core.account.user.application.port.out.CurrentAccountUserRequestCache;

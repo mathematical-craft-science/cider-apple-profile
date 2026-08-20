@@ -1,14 +1,16 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.optimization.mapper;
 
-import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionCalculatorCode;
-import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionTanninPolicy;
-import org.craft.mcs.cap.core.profileanalysis.composition.optimization.application.port.in.OptimizeCompositionCommand;
-import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.strategy.CompositionOptimizationAlgorithm;
-import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.strategy.DiscretizedCompositionOptimizationSettings;
-import org.craft.mcs.cap.core.profileanalysis.compositiongraph.application.model.CompositionOptimizationCandidateGraphView;
-import org.craft.mcs.cap.core.profileanalysis.compositiongraph.application.model.CompositionOptimizationGraphView;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetScoringConfiguration;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.SugarAcidityTargetResolver;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.composition.dto.CompositionCalculatorCode;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.composition.dto.CompositionTanninPolicy;
+import org.craft.mcs.cap.core.formulation.calculation.application.contract.FormulationCalculator;
+import org.craft.mcs.cap.core.formulation.calculation.application.contract.FormulationTanninPolicy;
+import org.craft.mcs.cap.core.formulation.optimization.application.port.in.OptimizeCompositionCommand;
+import org.craft.mcs.cap.core.formulation.optimization.application.contract.CompositionOptimizationMode;
+import org.craft.mcs.cap.core.formulation.optimization.application.contract.CompositionOptimizationSettings;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.composition.dto.CompositionOptimizationAlgorithm;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.composition.dto.CompositionWarning;
+import org.craft.mcs.cap.core.formulation.interpretation.application.contract.CompositionOptimizationCandidateGraphView;
+import org.craft.mcs.cap.core.formulation.interpretation.application.contract.CompositionOptimizationGraphView;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.abv.mapper.PotentialAbvPredictionRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.common.mapper.CompositionCommonRequestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.common.mapper.CompositionCommonResponseMapper;
@@ -19,12 +21,10 @@ import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.composition.mappe
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
-import static java.util.Objects.requireNonNullElse;
 import static org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.common.mapper.CompositionCommonRequestMapper.toVolume;
 import static org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.common.mapper.CompositionCommonResponseMapper.toCharacteristicsResponse;
 import static org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.common.mapper.CompositionCommonResponseMapper.toVolumeResponse;
-import static org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.mapper.ProfileTargetRestMapper.toTargetObjective;
-import static org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.mapper.ProfileTargetRestMapper.toWeights;
+import static org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.common.mapper.FormulationTargetRequestMapper.toTarget;
 
 public final class CompositionOptimizationRestMapper {
 
@@ -32,40 +32,49 @@ public final class CompositionOptimizationRestMapper {
   }
 
   public static @NonNull OptimizeCompositionCommand toCommand(
-      @NonNull OptimizeCompositionRequest request,
-      @NonNull SugarAcidityTargetResolver targetResolver
+      @NonNull OptimizeCompositionRequest request
   ) {
     requireNonNull(request, "optimize composition request cannot be null");
-    requireNonNull(targetResolver, "sugar-acidity target resolver cannot be null");
 
-    final var tanninPolicy = requireNonNullElse(
-        request.tanninPolicy(),
-        CompositionTanninPolicy.CALCULATE_WHEN_COMPLETE
-    );
+    final var requestedTanninPolicy = request.tanninPolicy();
+    final var tanninPolicy = requestedTanninPolicy == null
+        ? CompositionTanninPolicy.CALCULATE_WHEN_COMPLETE
+        : requestedTanninPolicy;
     final var mode = requireNonNull(request.mode(), "composition optimization mode cannot be null");
-    final var algorithm = requireNonNullElse(
-        request.algorithm(),
-        CompositionOptimizationAlgorithm.DISCRETIZED_BOUNDED_SEARCH
+    final var requestedAlgorithm = request.algorithm();
+    final var algorithm = requestedAlgorithm == null
+        ? CompositionOptimizationAlgorithm.DISCRETIZED_BOUNDED_SEARCH
+        : requestedAlgorithm;
+    final var requestedCalculator = request.calculator();
+    final var calculator = requestedCalculator == null
+        ? CompositionCalculatorCode.MASS_BALANCE
+        : requestedCalculator;
+    final var requestedNormalizer = request.normalizer();
+    final var normalizer = requestedNormalizer == null
+        ? CompositionOptimizationAssessmentRestMapper.defaultOptimizationNormalizer()
+        : requestedNormalizer;
+    final var requestedObjectiveFunction = request.objectiveFunction();
+    final var objectiveFunction = requestedObjectiveFunction == null
+        ? CompositionOptimizationAssessmentRestMapper.defaultOptimizationObjectiveFunction()
+        : requestedObjectiveFunction;
+    final var defaultSettings = CompositionOptimizationSettings.defaults();
+    final var requestedStepPercent = request.stepPercent();
+    final var stepPercent = requestedStepPercent == null ? defaultSettings.stepPercent() : requestedStepPercent;
+    final var requestedLimit = request.limit();
+    final var limit = requestedLimit == null ? defaultSettings.limit() : requestedLimit;
+    final var settings = new CompositionOptimizationSettings(
+        stepPercent,
+        limit
     );
-    final var calculator = requireNonNullElse(
-        request.calculator(),
-        CompositionCalculatorCode.MASS_BALANCE
-    );
-    final var normalizer = requireNonNullElse(
-        request.normalizer(),
-        CompositionOptimizationAssessmentRestMapper.defaultOptimizationNormalizer()
-    );
-    final var objectiveFunction = requireNonNullElse(
-        request.objectiveFunction(),
-        CompositionOptimizationAssessmentRestMapper.defaultOptimizationObjectiveFunction()
-    );
-    final var settings = new DiscretizedCompositionOptimizationSettings(
-        requireNonNullElse(request.stepPercent(), DiscretizedCompositionOptimizationSettings.DEFAULT_STEP_PERCENT),
-        requireNonNullElse(request.limit(), DiscretizedCompositionOptimizationSettings.DEFAULT_LIMIT)
-    );
-    final var targetObjective = requireNonNull(
-        toTargetObjective(request.target(), request.tanninTarget(), targetResolver),
-        "profile target objective cannot be null"
+    final var target = requireNonNull(
+        toTarget(
+            request.target(),
+            request.tanninTarget(),
+            request.weights(),
+            requireNonNull(normalizer, "profile target normalizer cannot be null"),
+            requireNonNull(objectiveFunction, "profile target objective function cannot be null")
+        ),
+        "formulation target cannot be null"
     );
     final var sources = requireNonNull(
         request.sources(),
@@ -76,18 +85,14 @@ public final class CompositionOptimizationRestMapper {
 
     return new OptimizeCompositionCommand( // NOSONAR
         sources,
-        tanninPolicy,
-        targetObjective,
-        new ProfileTargetScoringConfiguration(
-            requireNonNull(normalizer, "profile target normalizer cannot be null"),
-            requireNonNull(objectiveFunction, "profile target objective function cannot be null"),
-            toWeights(request.weights())
-        ),
+        FormulationTanninPolicy.valueOf(tanninPolicy.name()),
+        target,
         CompositionOptimizationAssessmentRestMapper.toCriteria(request.yanReadiness()),
         settings,
-        mode,
-        algorithm,
-        calculator,
+        CompositionOptimizationMode.valueOf(mode.name()),
+        org.craft.mcs.cap.core.formulation.optimization.application.contract.CompositionOptimizationAlgorithm
+            .valueOf(algorithm.name()),
+        FormulationCalculator.valueOf(calculator.name()),
         toVolume(request.targetTotalVolumeLiters())
     );
   }
@@ -100,11 +105,15 @@ public final class CompositionOptimizationRestMapper {
     requireNonNull(result, "optimize composition result cannot be null");
 
     return new OptimizeCompositionResponse(
-        result.mode(),
-        result.algorithm(),
-        result.calculatorCode(),
-        result.normalizerCode(),
-        result.objectiveFunctionCode(),
+        org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.composition.dto.CompositionOptimizationMode.valueOf(
+            result.mode().name()
+        ),
+        CompositionOptimizationAlgorithm.valueOf(result.algorithm().name()),
+        CompositionCalculatorCode.valueOf(result.calculator().name()),
+        org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.ProfileAxisNormalizerCode
+            .valueOf(result.normalizer().name()),
+        org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.ProfileTargetObjectiveFunctionCode
+            .valueOf(result.objectiveFunction().name()),
         result.settings().stepPercent(),
         result.evaluatedCandidates(),
         graphView.candidates().stream()
@@ -118,20 +127,29 @@ public final class CompositionOptimizationRestMapper {
   ) {
     requireNonNull(graphView, "composition optimization candidate graph view cannot be null");
     final var view = graphView.candidate();
-    final var candidate = view.candidate();
-    final var composition = candidate.composition();
+    final var composition = view.composition();
+    final var northAmericanTanninLevel = graphView.northAmericanTanninLevel();
+    final var targetDistance = requireNonNull(
+        CompositionCommonResponseMapper.toTargetDistanceResponse(view.targetDistance()),
+        "optimized composition target distance response cannot be null"
+    );
 
     return new CompositionOptimizationCandidateResponse(
         composition.sources().stream()
             .map(CompositionCommonResponseMapper::toResponse)
             .toList(),
         toCharacteristicsResponse(composition.characteristics()),
-        graphView.northAmericanTanninLevel(),
+        northAmericanTanninLevel == null
+            ? null
+            : org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.classification.NorthAmericanTanninLevel
+                .valueOf(northAmericanTanninLevel.name()),
         PotentialAbvPredictionRestMapper.toResponse(view.potentialAbv()),
         toVolumeResponse(composition.totalVolume()),
-        composition.warnings(),
-        CompositionCommonResponseMapper.toResponse(candidate.distance()),
-        CompositionOptimizationAssessmentRestMapper.toResponse(candidate.objectiveAssessment())
+        composition.warnings().stream()
+            .map(warning -> CompositionWarning.valueOf(warning.name()))
+            .toList(),
+        targetDistance,
+        CompositionOptimizationAssessmentRestMapper.toResponse(view.objective())
     );
   }
 }

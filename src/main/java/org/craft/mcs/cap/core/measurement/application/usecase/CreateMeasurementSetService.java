@@ -2,7 +2,7 @@ package org.craft.mcs.cap.core.measurement.application.usecase;
 
 import java.time.Clock;
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.measurement.application.model.MeasurementSetView;
+import org.craft.mcs.cap.core.measurement.application.contract.MeasurementSetView;
 import org.craft.mcs.cap.core.measurement.application.port.in.CreateMeasurementSetCommand;
 import org.craft.mcs.cap.core.measurement.application.port.in.CreateMeasurementSetUseCase;
 import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementActorProvider;

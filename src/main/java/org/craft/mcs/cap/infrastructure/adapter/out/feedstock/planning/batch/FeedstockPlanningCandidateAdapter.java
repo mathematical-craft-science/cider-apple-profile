@@ -6,9 +6,9 @@ import org.craft.mcs.cap.core.feedstock.batch.application.api.batch.FeedstockBat
 import org.craft.mcs.cap.core.feedstock.batch.application.api.currentprofile.FeedstockCurrentProfilePagePosition;
 import org.craft.mcs.cap.core.feedstock.batch.application.api.currentprofile.FeedstockCurrentProfilePageQuery;
 import org.craft.mcs.cap.core.feedstock.batch.application.currentprofile.port.in.QueryFeedstockCurrentProfilePageUseCase;
-import org.craft.mcs.cap.core.feedstock.planning.application.candidate.model.FeedstockPlanningCandidatePagePosition;
-import org.craft.mcs.cap.core.feedstock.planning.application.candidate.model.FeedstockPlanningCandidateQuery;
-import org.craft.mcs.cap.core.feedstock.planning.application.candidate.model.FeedstockPlanningCandidateSnapshot;
+import org.craft.mcs.cap.core.feedstock.planning.application.candidate.contract.FeedstockPlanningCandidatePagePosition;
+import org.craft.mcs.cap.core.feedstock.planning.application.candidate.contract.FeedstockPlanningCandidateQuery;
+import org.craft.mcs.cap.core.feedstock.planning.application.candidate.contract.FeedstockPlanningCandidateSnapshot;
 import org.craft.mcs.cap.core.feedstock.planning.application.candidate.port.out.FeedstockPlanningCandidateProvider;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;

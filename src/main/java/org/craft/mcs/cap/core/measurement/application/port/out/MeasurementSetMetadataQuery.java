@@ -2,7 +2,7 @@ package org.craft.mcs.cap.core.measurement.application.port.out;
 
 import java.util.Map;
 import java.util.Set;
-import org.craft.mcs.cap.core.measurement.application.model.MeasurementSetMetadataView;
+import org.craft.mcs.cap.core.measurement.application.contract.MeasurementSetMetadataView;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;

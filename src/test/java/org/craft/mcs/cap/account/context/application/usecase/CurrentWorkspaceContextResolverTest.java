@@ -3,7 +3,7 @@ package org.craft.mcs.cap.account.context.application.usecase;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
-import org.craft.mcs.cap.core.account.context.application.model.ResolvedWorkspaceContext;
+import org.craft.mcs.cap.core.account.context.application.contract.ResolvedWorkspaceContext;
 import org.craft.mcs.cap.core.account.context.application.port.out.ActiveWorkspaceProvider;
 import org.craft.mcs.cap.core.account.context.application.port.out.CurrentAccountWorkspaceQuery;
 import org.craft.mcs.cap.core.account.context.application.port.out.CurrentWorkspaceContextRequestCache;

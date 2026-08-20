@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.production.batch.application.model.ProductionBatchView;
+import org.craft.mcs.cap.core.production.batch.application.contract.ProductionBatchView;
 import org.craft.mcs.cap.core.production.batch.application.vessel.port.out.ProductionVesselReferenceQuery;
 import org.craft.mcs.cap.shared.application.material.VesselReferenceNotFoundException;
 import org.craft.mcs.cap.shared.application.material.VesselReferenceView;

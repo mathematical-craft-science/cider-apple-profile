@@ -1,13 +1,15 @@
 package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.production.planning;
 
+import static java.util.Objects.requireNonNull;
+
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
+import org.craft.mcs.cap.core.production.planning.application.contract.ProductionCandidateNormalizer;
+import org.craft.mcs.cap.core.production.planning.application.contract.ProductionCandidatePotentialAbvView.Confidence;
+import org.craft.mcs.cap.core.production.planning.application.contract.ProductionCandidatePotentialAbvView.FinalGravitySource;
+import org.craft.mcs.cap.core.production.planning.application.contract.ProductionCandidatePotentialAbvView.Method;
 import org.craft.mcs.cap.core.production.planning.domain.model.ProductionBatchCandidateStatus;
-import org.craft.mcs.cap.core.profileanalysis.abv.domain.AbvPredictionMethod;
-import org.craft.mcs.cap.core.profileanalysis.abv.domain.FinalGravityPredictionSource;
-import org.craft.mcs.cap.core.profileanalysis.abv.domain.PredictionConfidence;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.normalization.ProfileAxisNormalizerCode;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.data.annotation.CreatedDate;
@@ -17,34 +19,79 @@ import org.springframework.data.annotation.Version;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
-import static java.util.Objects.requireNonNull;
 
-
-/** Spring Data JDBC aggregate root for a saved production candidate. */
+/**
+ * Spring Data JDBC aggregate root for a saved production candidate.
+ */
 @Table("production_batch_candidates")
 class ProductionBatchCandidateJdbcEntity {
 
-  @Id @NonNull @Column("candidate_id") UUID candidateId;
-  @NonNull @Column("workspace_id") UUID workspaceId;
-  @NonNull @Column("status") ProductionBatchCandidateStatus status;
-  @NonNull @Column("sources_json") String sourcesJson;
-  @NonNull @Column("total_volume_liters") BigDecimal totalVolumeLiters;
-  @NonNull @Column("sugar_specific_gravity") BigDecimal specificGravity;
-  @NonNull @Column("acidity_g_l_as_malic") BigDecimal titratableAcidityGLAsMalic;
-  @Nullable @Column("tannin_mg_l_tae") BigDecimal tanninMgLTae;
-  @Nullable @Column("yan_mg_n_l") BigDecimal yeastAssimilableNitrogenMgNL;
-  @NonNull @Column("predicted_final_gravity") BigDecimal predictedFinalGravity;
-  @NonNull @Column("predicted_final_gravity_source") FinalGravityPredictionSource predictedFinalGravitySource;
-  @NonNull @Column("potential_abv_percent") BigDecimal potentialAbvPercent;
-  @NonNull @Column("abv_prediction_method") AbvPredictionMethod abvPredictionMethod;
-  @NonNull @Column("abv_prediction_confidence") PredictionConfidence abvPredictionConfidence;
-  @Nullable @Column("normalizer_code") ProfileAxisNormalizerCode normalizerCode;
-  @Nullable @Column("target_distance_json") String targetDistanceJson;
-  @NonNull @Column("warnings_json") String warningsJson;
-  @Nullable @Column("confirmed_production_batch_id") UUID confirmedProductionBatchId;
-  @CreatedDate @Nullable @Column("created_at") Instant createdAt;
-  @LastModifiedDate @Nullable @Column("updated_at") Instant updatedAt;
-  @Version @Column("version") long version;
+  @Id
+  @NonNull
+  @Column("candidate_id")
+  UUID candidateId;
+  @NonNull
+  @Column("workspace_id")
+  UUID workspaceId;
+  @NonNull
+  @Column("status")
+  ProductionBatchCandidateStatus status;
+  @NonNull
+  @Column("sources_json")
+  String sourcesJson;
+  @NonNull
+  @Column("total_volume_liters")
+  BigDecimal totalVolumeLiters;
+  @NonNull
+  @Column("sugar_specific_gravity")
+  BigDecimal specificGravity;
+  @NonNull
+  @Column("acidity_g_l_as_malic")
+  BigDecimal titratableAcidityGLAsMalic;
+  @Nullable
+  @Column("tannin_mg_l_tae")
+  BigDecimal tanninMgLTae;
+  @Nullable
+  @Column("yan_mg_n_l")
+  BigDecimal yeastAssimilableNitrogenMgNL;
+  @NonNull
+  @Column("predicted_final_gravity")
+  BigDecimal predictedFinalGravity;
+  @NonNull
+  @Column("predicted_final_gravity_source")
+  FinalGravitySource predictedFinalGravitySource;
+  @NonNull
+  @Column("potential_abv_percent")
+  BigDecimal potentialAbvPercent;
+  @NonNull
+  @Column("abv_prediction_method")
+  Method abvPredictionMethod;
+  @NonNull
+  @Column("abv_prediction_confidence")
+  Confidence abvPredictionConfidence;
+  @Nullable
+  @Column("normalizer_code")
+  ProductionCandidateNormalizer normalizerCode;
+  @Nullable
+  @Column("target_distance_json")
+  String targetDistanceJson;
+  @NonNull
+  @Column("warnings_json")
+  String warningsJson;
+  @Nullable
+  @Column("confirmed_production_batch_id")
+  UUID confirmedProductionBatchId;
+  @CreatedDate
+  @Nullable
+  @Column("created_at")
+  Instant createdAt;
+  @LastModifiedDate
+  @Nullable
+  @Column("updated_at")
+  Instant updatedAt;
+  @Version
+  @Column("version")
+  long version;
 
   @SuppressWarnings("NullAway.Init")
   ProductionBatchCandidateJdbcEntity() {
@@ -62,11 +109,11 @@ class ProductionBatchCandidateJdbcEntity {
       @Nullable BigDecimal tanninMgLTae,
       @Nullable BigDecimal yeastAssimilableNitrogenMgNL,
       @NonNull BigDecimal predictedFinalGravity,
-      @NonNull FinalGravityPredictionSource predictedFinalGravitySource,
+      @NonNull FinalGravitySource predictedFinalGravitySource,
       @NonNull BigDecimal potentialAbvPercent,
-      @NonNull AbvPredictionMethod abvPredictionMethod,
-      @NonNull PredictionConfidence abvPredictionConfidence,
-      @Nullable ProfileAxisNormalizerCode normalizerCode,
+      @NonNull Method abvPredictionMethod,
+      @NonNull Confidence abvPredictionConfidence,
+      @Nullable ProductionCandidateNormalizer normalizerCode,
       @Nullable String targetDistanceJson,
       @NonNull String warningsJson,
       @Nullable UUID confirmedProductionBatchId,

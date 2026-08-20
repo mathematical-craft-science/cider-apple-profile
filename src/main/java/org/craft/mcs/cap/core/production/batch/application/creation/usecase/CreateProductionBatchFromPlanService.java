@@ -7,11 +7,9 @@ import java.util.Comparator;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.production.batch.application.authorization.port.out.ProductionAccessControl;
-import org.craft.mcs.cap.core.production.batch.application.creation.ProductionSourceEvidenceConflictException;
 import org.craft.mcs.cap.core.production.batch.application.creation.port.in.CreateProductionBatchFromPlanCommand;
 import org.craft.mcs.cap.core.production.batch.application.creation.port.in.CreateProductionBatchFromPlanUseCase;
 import org.craft.mcs.cap.core.production.batch.application.creation.port.in.CreatedProductionBatch;
-import org.craft.mcs.cap.core.production.batch.application.creation.port.in.ProductionSourceEvidenceExpectation;
 import org.craft.mcs.cap.core.production.batch.application.port.out.ConsumedProductionSource;
 import org.craft.mcs.cap.core.production.batch.application.port.out.ProductionBatchRepository;
 import org.craft.mcs.cap.core.production.batch.application.port.out.ProductionBatchTraceRecorder;
@@ -21,9 +19,7 @@ import org.craft.mcs.cap.core.production.batch.application.vessel.port.out.Produ
 import org.craft.mcs.cap.core.production.batch.domain.model.ProductionBatch;
 import org.craft.mcs.cap.core.production.batch.domain.model.ProductionBatchId;
 import org.craft.mcs.cap.core.production.batch.domain.model.ProductionSourceComponent;
-import org.craft.mcs.cap.core.production.batch.domain.model.ProductionSourceComposition;
 import org.craft.mcs.cap.core.production.batch.domain.model.ProductionSourceReference;
-import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.platform.TransactionHelper;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
@@ -65,8 +61,7 @@ public final class CreateProductionBatchFromPlanService implements CreateProduct
         command.vesselId(),
         command.sourceComposition().totalVolume()
     );
-    final var consumedSources = consumeSources(command.workspaceId(), command.sourceComposition());
-    requireCurrentEvidence(command, consumedSources);
+    final var consumedSources = consumeSources(command);
     final var productionBatch = ProductionBatch.create(
         ProductionBatchId.newId(),
         command.workspaceId(),
@@ -87,30 +82,19 @@ public final class CreateProductionBatchFromPlanService implements CreateProduct
   }
 
   private @NonNull List<@NonNull ConsumedProductionSource> consumeSources(
-      @NonNull WorkspaceId workspaceId,
-      @NonNull ProductionSourceComposition sourceComposition
+      @NonNull CreateProductionBatchFromPlanCommand command
   ) {
-    final var sources = sourceComposition.sources().stream()
+    final var sources = command.sourceComposition().sources().stream()
         .sorted(SOURCE_CONSUMPTION_ORDER)
         .toList();
     final var consumedSources = new ArrayList<ConsumedProductionSource>(sources.size());
     for (final var source : sources) {
-      consumedSources.add(sourceInventory.consume(workspaceId, source));
+      consumedSources.add(sourceInventory.consume(
+          command.workspaceId(),
+          source,
+          command.sourceEvidence().get(source.reference())
+      ));
     }
     return List.copyOf(consumedSources);
-  }
-
-  private static void requireCurrentEvidence(
-      @NonNull CreateProductionBatchFromPlanCommand command,
-      @NonNull List<@NonNull ConsumedProductionSource> consumedSources
-  ) {
-    for (final var consumedSource : consumedSources) {
-      final ProductionSourceEvidenceExpectation expected = command.sourceEvidence()
-          .get(consumedSource.reference());
-      if (!expected.evidenceReference().equals(consumedSource.evidenceReference())
-          || !expected.materialStateId().equals(consumedSource.sourceStateId())) {
-        throw new ProductionSourceEvidenceConflictException(consumedSource.reference());
-      }
-    }
   }
 }

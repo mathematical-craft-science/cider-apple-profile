@@ -1,11 +1,6 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.domain;
 
 import java.net.URI;
-import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.InvalidCompositionException;
-import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.UnsupportedCompositionCalculatorException;
-import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.InvalidCompositionOptimizationException;
-import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.strategy.UnsupportedCompositionOptimizationStrategyException;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.SugarAcidityTargetResolutionException;
 import org.craft.mcs.cap.shared.kernel.DomainConflictException;
 import org.craft.mcs.cap.shared.kernel.DomainException;
 import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
@@ -31,12 +26,6 @@ public final class DomainExceptionHandler {
       URI.create("urn:problem-type:domain-conflict");
   private static final @NonNull URI UNSUPPORTED_SUGAR_CONVERSION =
       URI.create("urn:problem-type:unsupported-sugar-conversion");
-  private static final @NonNull URI INVALID_COMPOSITION =
-      URI.create("urn:problem-type:invalid-composition");
-  private static final @NonNull URI UNSUPPORTED_COMPOSITION_STRATEGY =
-      URI.create("urn:problem-type:unsupported-composition-strategy");
-  private static final @NonNull URI SUGAR_ACIDITY_TARGET_NOT_RESOLVED =
-      URI.create("urn:problem-type:sugar-acidity-target-not-resolved");
   private static final int BAD_REQUEST = 400;
   private static final int CONFLICT = 409;
   private static final int UNPROCESSABLE_ENTITY = 422;
@@ -61,48 +50,6 @@ public final class DomainExceptionHandler {
         CONFLICT,
         DOMAIN_CONFLICT,
         "Domain state conflict",
-        exception.getMessage()
-    );
-  }
-
-  @ExceptionHandler({
-      InvalidCompositionException.class,
-      InvalidCompositionOptimizationException.class
-  })
-  public @NonNull ResponseEntity<@NonNull ProblemDetail> handleInvalidComposition(
-      @NonNull DomainException exception
-  ) {
-    return response(
-        UNPROCESSABLE_ENTITY,
-        INVALID_COMPOSITION,
-        "Invalid composition",
-        exception.getMessage()
-    );
-  }
-
-  @ExceptionHandler({
-      UnsupportedCompositionCalculatorException.class,
-      UnsupportedCompositionOptimizationStrategyException.class
-  })
-  public @NonNull ResponseEntity<@NonNull ProblemDetail> handleUnsupportedCompositionStrategy(
-      @NonNull DomainException exception
-  ) {
-    return response(
-        BAD_REQUEST,
-        UNSUPPORTED_COMPOSITION_STRATEGY,
-        "Unsupported composition strategy",
-        exception.getMessage()
-    );
-  }
-
-  @ExceptionHandler(SugarAcidityTargetResolutionException.class)
-  public @NonNull ResponseEntity<@NonNull ProblemDetail> handleSugarAcidityTargetResolution(
-      @NonNull SugarAcidityTargetResolutionException exception
-  ) {
-    return response(
-        UNPROCESSABLE_ENTITY,
-        SUGAR_ACIDITY_TARGET_NOT_RESOLVED,
-        "Sugar-acidity target cannot be resolved",
         exception.getMessage()
     );
   }

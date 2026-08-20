@@ -2,12 +2,12 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement;
 
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.measurement.application.model.MeasurementCharacteristicInput;
-import org.craft.mcs.cap.core.measurement.application.model.MeasurementObservationInput;
-import org.craft.mcs.cap.core.measurement.application.model.MeasurementRecordView;
-import org.craft.mcs.cap.core.measurement.application.model.MeasurementResultRetractionView;
-import org.craft.mcs.cap.core.measurement.application.model.MeasurementSetRetractionView;
-import org.craft.mcs.cap.core.measurement.application.model.MeasurementSetView;
+import org.craft.mcs.cap.core.measurement.application.contract.MeasurementCharacteristicInput;
+import org.craft.mcs.cap.core.measurement.application.contract.MeasurementObservationInput;
+import org.craft.mcs.cap.core.measurement.application.contract.MeasurementRecordView;
+import org.craft.mcs.cap.core.measurement.application.contract.MeasurementResultRetractionView;
+import org.craft.mcs.cap.core.measurement.application.contract.MeasurementSetRetractionView;
+import org.craft.mcs.cap.core.measurement.application.contract.MeasurementSetView;
 import org.craft.mcs.cap.core.measurement.application.port.in.CreateMeasurementSetCommand;
 import org.craft.mcs.cap.core.measurement.application.port.in.PatchMeasurementSetCommand;
 import org.craft.mcs.cap.core.measurement.application.port.in.ReplaceMeasurementSetCommand;

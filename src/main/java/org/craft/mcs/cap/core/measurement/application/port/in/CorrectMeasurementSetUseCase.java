@@ -1,6 +1,6 @@
 package org.craft.mcs.cap.core.measurement.application.port.in;
 
-import org.craft.mcs.cap.core.measurement.application.model.MeasurementSetView;
+import org.craft.mcs.cap.core.measurement.application.contract.MeasurementSetView;
 import org.jspecify.annotations.NonNull;
 
 

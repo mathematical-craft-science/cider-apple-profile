@@ -1,6 +1,6 @@
 package org.craft.mcs.cap.core.vessel.application.usecase;
 
-import org.craft.mcs.cap.core.vessel.application.model.VesselView;
+import org.craft.mcs.cap.core.vessel.application.contract.VesselView;
 import org.craft.mcs.cap.core.vessel.domain.model.Vessel;
 import org.craft.mcs.cap.shared.application.material.VesselReferenceView;
 import org.craft.mcs.cap.shared.application.persistence.AggregateRevision;

@@ -1,7 +1,7 @@
 package org.craft.mcs.cap.production.batch.application.creation.port.in;
 
 import org.craft.mcs.cap.core.production.batch.application.creation.port.in.CreatedProductionBatch;
-import org.craft.mcs.cap.core.production.batch.application.model.ProductionBatchView;
+import org.craft.mcs.cap.core.production.batch.application.contract.ProductionBatchView;
 import org.craft.mcs.cap.core.production.batch.domain.model.ProductionBatch;
 import org.craft.mcs.cap.core.production.batch.domain.model.ProductionBatchId;
 import org.craft.mcs.cap.core.production.batch.domain.model.value.ProductionProfileSnapshot;

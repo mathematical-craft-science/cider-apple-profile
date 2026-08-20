@@ -1,11 +1,11 @@
 package org.craft.mcs.cap.core.production.batch.application.usecase;
 
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPredictor;
-import org.craft.mcs.cap.core.production.batch.application.model.ProductionBatchDetailsView;
-import org.craft.mcs.cap.core.production.batch.application.model.ProductionBatchView;
-import org.craft.mcs.cap.core.production.batch.application.model.ProductionMeasuredProfileView;
+import org.craft.mcs.cap.core.production.batch.application.contract.ProductionBatchDetailsView;
+import org.craft.mcs.cap.core.production.batch.application.contract.ProductionBatchView;
+import org.craft.mcs.cap.core.production.batch.application.contract.ProductionMeasuredProfileView;
 import org.craft.mcs.cap.core.production.batch.application.port.out.ProductionMeasurementProfileProvider;
+import org.craft.mcs.cap.core.production.batch.application.port.out.ProductionPotentialAbvAnalyzer;
 import org.craft.mcs.cap.shared.application.material.VesselReferenceView;
 import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.jspecify.annotations.NonNull;
@@ -23,7 +23,7 @@ public final class ProductionBatchDetailsAssembler {
 
   private final @NonNull ProductionMeasurementProfileProvider measurementProfileProvider;
   private final @NonNull ProductionCurrentProfileProjector currentProfileProjector;
-  private final @NonNull PotentialAbvPredictor potentialAbvPredictor;
+  private final @NonNull ProductionPotentialAbvAnalyzer potentialAbvAnalyzer;
   private final @NonNull ProductionVesselReferenceResolver vesselReferenceResolver;
 
   public @NonNull ProductionBatchDetailsView assemble(@NonNull ProductionBatchView batch) {
@@ -50,7 +50,7 @@ public final class ProductionBatchDetailsAssembler {
         batch,
         vessel,
         currentProfile,
-        potentialAbvPredictor.predict(
+        potentialAbvAnalyzer.predict(
             SpecificGravityValue.of(midpoint(currentProfile.specificGravity().value()))
         )
     );

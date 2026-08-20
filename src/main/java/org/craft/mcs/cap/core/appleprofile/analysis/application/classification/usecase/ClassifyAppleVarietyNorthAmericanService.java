@@ -2,14 +2,13 @@ package org.craft.mcs.cap.core.appleprofile.analysis.application.classification.
 
 import java.util.EnumSet;
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.appleprofile.analysis.application.profile.model.AppleVarietyAnalysisProfile;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.profile.contract.AppleVarietyAnalysisProfile;
 import org.craft.mcs.cap.core.appleprofile.analysis.application.profile.port.out.AppleVarietyAnalysisProfileProvider;
 import org.craft.mcs.cap.core.appleprofile.analysis.application.classification.AppleVarietyNorthAmericanProfileUnavailableException;
-import org.craft.mcs.cap.core.appleprofile.analysis.application.classification.port.in.AppleVarietyNorthAmericanClassification;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.classification.contract.AppleVarietyNorthAmericanClassification;
 import org.craft.mcs.cap.core.appleprofile.analysis.application.classification.port.in.ClassifyAppleVarietyNorthAmericanUseCase;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.classification.port.out.AppleCiderClassificationAnalyzer;
 import org.craft.mcs.cap.core.appleprofile.catalog.domain.model.AppleVarietyId;
-import org.craft.mcs.cap.core.profileanalysis.classification.domain.engine.CiderAppleClassificationInput;
-import org.craft.mcs.cap.core.profileanalysis.classification.domain.profile.northamerican.NorthAmericanProfileCalculator;
 import org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
@@ -31,7 +30,7 @@ public final class ClassifyAppleVarietyNorthAmericanService
     implements ClassifyAppleVarietyNorthAmericanUseCase {
 
   private final @NonNull AppleVarietyAnalysisProfileProvider profileProvider;
-  private final @NonNull NorthAmericanProfileCalculator calculator;
+  private final @NonNull AppleCiderClassificationAnalyzer classificationAnalyzer;
 
   @Override
   public @NonNull AppleVarietyNorthAmericanClassification classify(
@@ -49,18 +48,10 @@ public final class ClassifyAppleVarietyNorthAmericanService
       );
     }
 
-    final var profile = calculator.calculate(
-        new CiderAppleClassificationInput(
-            variety.specificGravity(),
-            variety.titratableAcidity(),
-            variety.tannin()
-        )
-    );
-
     return new AppleVarietyNorthAmericanClassification(
         variety.varietyId(),
         variety.name(),
-        profile
+        classificationAnalyzer.assessNorthAmerican(variety)
     );
   }
 

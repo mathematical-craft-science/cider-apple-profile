@@ -1,7 +1,7 @@
 package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.production.batch.entity;
 
 import java.math.BigDecimal;
-import org.craft.mcs.cap.core.production.batch.application.model.ProductionBatchView;
+import org.craft.mcs.cap.core.production.batch.application.contract.ProductionBatchView;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.core.production.batch.domain.model.ProductionBatch;

@@ -1,14 +1,17 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.common.mapper;
 
-import org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.port.in.CustomRectangleFeedstockProfileTargetSelection;
-import org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.port.in.FeedstockProfileTargetSelection;
-import org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.port.in.PredefinedFeedstockProfileTargetSelection;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.TanninTargetRange;
+import org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.contract.CustomRectangleFeedstockProfileTargetSelection;
+import org.craft.mcs.cap.core.feedstock.planning.application.graph.contract.FeedstockPlanningGraphView.Zone;
+import org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.contract.FeedstockProfileTargetSelection;
+import org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.contract.PredefinedFeedstockProfileTargetSelection;
+import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
+import org.craft.mcs.cap.shared.kernel.measurement.MeasuredValueRange;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.CustomRectangleProfileTargetRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.PredefinedZoneProfileTargetRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.ProfileTargetRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.ProfileTargetTanninRangeRequest;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.mapper.ProfileTargetRestMapper;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -27,10 +30,19 @@ public final class FeedstockProfileTargetRestMapper {
     requireNonNull(request, "feedstock profile target request cannot be null");
     return switch (request) {
       case PredefinedZoneProfileTargetRequest(_, var zone) ->
-          new PredefinedFeedstockProfileTargetSelection(zone);
+          new PredefinedFeedstockProfileTargetSelection(
+              Zone.valueOf(zone.name())
+          );
       case CustomRectangleProfileTargetRequest customRectangle ->
           new CustomRectangleFeedstockProfileTargetSelection(
-              ProfileTargetRestMapper.toRectangleGeometry(customRectangle)
+              MeasuredValueRange.closed(
+                  SpecificGravityValue.of(customRectangle.specificGravityMin()),
+                  SpecificGravityValue.of(customRectangle.specificGravityMax())
+              ),
+              MeasuredValueRange.closed(
+                  TitratableAcidityValue.of(customRectangle.titratableAcidityMin()),
+                  TitratableAcidityValue.of(customRectangle.titratableAcidityMax())
+              )
           );
     };
   }
@@ -41,9 +53,11 @@ public final class FeedstockProfileTargetRestMapper {
     return request == null ? null : toSelection(request);
   }
 
-  public static @Nullable TanninTargetRange toTanninTarget(
+  public static @Nullable MeasuredValueRange<TanninValue> toTanninTarget(
       @Nullable ProfileTargetTanninRangeRequest request
   ) {
-    return request == null ? null : ProfileTargetRestMapper.toTanninTarget(request);
+    return request == null
+        ? null
+        : MeasuredValueRange.closed(TanninValue.of(request.min()), TanninValue.of(request.max()));
   }
 }

@@ -1,8 +1,8 @@
 package org.craft.mcs.cap.core.appleprofile.analysis.application.abv.port.in;
 
 import org.craft.mcs.cap.core.appleprofile.catalog.domain.model.AppleVarietyId;
-import org.craft.mcs.cap.core.appleprofile.analysis.application.profile.model.AppleVarietyAnalysisName;
-import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPrediction;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.profile.contract.AppleVarietyAnalysisName;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.abv.contract.ApplePotentialAbvPredictionView;
 import org.craft.mcs.cap.shared.kernel.characteristic.CharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.jspecify.annotations.NonNull;
@@ -14,7 +14,7 @@ public record AppleVarietyPotentialAbvPrediction(
     @NonNull AppleVarietyId varietyId,
     @NonNull AppleVarietyAnalysisName varietyName,
     @NonNull CharacteristicValue<SpecificGravityValue> originalGravity,
-    @NonNull PotentialAbvPrediction prediction
+    @NonNull ApplePotentialAbvPredictionView prediction
 ) {
 
   public AppleVarietyPotentialAbvPrediction {

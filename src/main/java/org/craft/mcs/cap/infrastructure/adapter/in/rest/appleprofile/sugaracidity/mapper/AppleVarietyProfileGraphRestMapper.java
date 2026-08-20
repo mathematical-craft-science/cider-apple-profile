@@ -1,11 +1,14 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.sugaracidity.mapper;
 
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.appleprofile.analysis.application.profile.model.AppleVarietyAnalysisPagePosition;
-import org.craft.mcs.cap.core.appleprofile.analysis.application.profile.model.AppleVarietyAnalysisFilters;
-import org.craft.mcs.cap.core.appleprofile.analysis.application.sugaracidity.model.AppleVarietyGraphAnalysisView;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.profile.contract.AppleVarietyAnalysisPagePosition;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.profile.contract.AppleVarietyAnalysisFilters;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.sugaracidity.contract.AppleVarietyGraphAnalysisView;
 import org.craft.mcs.cap.core.appleprofile.analysis.application.sugaracidity.port.in.AppleVarietySugarAcidityZonePointQuery;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.sugaracidity.dto.AppleVarietyNorthAmericanProfileResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.classification.NorthAmericanAcidityLevel;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.classification.NorthAmericanSugarLevel;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.classification.NorthAmericanTanninLevel;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.sugaracidity.dto.AppleVarietySugarAcidityZonePointQueryRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.sugaracidity.dto.AppleVarietySugarAcidityZonePointBatchResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.sugaracidity.dto.AppleVarietySugarAcidityZoneResponse;
@@ -32,7 +35,7 @@ import static java.util.Objects.requireNonNullElse;
 import static org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.mapper.JolicoeurSugarAcidityGraphRestMapper
     .missingCharacteristics;
 import static org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.mapper.JolicoeurSugarAcidityGraphCriteriaRestMapper
-    .toGraphCriteria;
+    .toAppleGraphCriteria;
 
 
 @Component
@@ -46,7 +49,7 @@ public final class AppleVarietyProfileGraphRestMapper {
   ) {
     requireNonNull(request, "apple variety sugar-acidity zone point query request cannot be null");
     final var filters = new AppleVarietyAnalysisFilters(toTextCriteria(request.nameContains()));
-    final var graphCriteria = toGraphCriteria(request.zone(), request.plottable());
+    final var graphCriteria = toAppleGraphCriteria(request.zone(), request.plottable());
 
     return new AppleVarietySugarAcidityZonePointQuery(
         filters,
@@ -145,13 +148,17 @@ public final class AppleVarietyProfileGraphRestMapper {
       @NonNull AppleVarietyGraphAnalysisView result
   ) {
     final var assessment = result.northAmericanAssessment();
-    return assessment == null
-        ? null
-        : new AppleVarietyNorthAmericanProfileResponse(
-            assessment.sugar(),
-            assessment.acidity(),
-            assessment.tannin()
-        );
+    if (assessment == null) {
+      return null;
+    }
+    final var sugar = assessment.sugar();
+    final var acidity = assessment.acidity();
+    final var tannin = assessment.tannin();
+    return new AppleVarietyNorthAmericanProfileResponse(
+        sugar == null ? null : NorthAmericanSugarLevel.valueOf(sugar.name()), // NOSONAR
+        acidity == null ? null : NorthAmericanAcidityLevel.valueOf(acidity.name()), // NOSONAR
+        tannin == null ? null : NorthAmericanTanninLevel.valueOf(tannin.name()) // NOSONAR
+    );
   }
 
   private static @Nullable PotentialAbvPredictionResponse toPotentialAbvResponse(

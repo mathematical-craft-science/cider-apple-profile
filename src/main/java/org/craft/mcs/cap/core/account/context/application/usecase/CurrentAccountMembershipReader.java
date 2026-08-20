@@ -3,7 +3,7 @@ package org.craft.mcs.cap.core.account.context.application.usecase;
 import java.util.Comparator;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.account.context.application.model.WorkspaceMembershipSnapshot;
+import org.craft.mcs.cap.core.account.context.application.contract.WorkspaceMembershipSnapshot;
 import org.craft.mcs.cap.core.account.context.application.port.in.WorkspaceMembershipView;
 import org.craft.mcs.cap.core.account.context.application.port.out.CurrentAccountWorkspaceQuery;
 import org.craft.mcs.cap.core.account.shared.domain.value.AccountUserId;

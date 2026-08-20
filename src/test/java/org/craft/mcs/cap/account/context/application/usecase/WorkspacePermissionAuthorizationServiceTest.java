@@ -17,7 +17,7 @@ import org.craft.mcs.cap.core.account.membership.domain.model.WorkspaceMembershi
 import org.craft.mcs.cap.core.account.membership.domain.model.WorkspacePermission;
 import org.craft.mcs.cap.core.account.shared.domain.value.DisplayName;
 import org.craft.mcs.cap.core.account.shared.domain.value.EmailAddress;
-import org.craft.mcs.cap.core.account.user.application.model.AuthenticatedActor;
+import org.craft.mcs.cap.core.account.user.application.contract.AuthenticatedActor;
 import org.craft.mcs.cap.core.account.user.application.port.out.AccountUserRepository;
 import org.craft.mcs.cap.core.account.user.application.port.out.CurrentAccountUserRequestCache;
 import org.craft.mcs.cap.core.account.user.application.port.out.CurrentActorProvider;

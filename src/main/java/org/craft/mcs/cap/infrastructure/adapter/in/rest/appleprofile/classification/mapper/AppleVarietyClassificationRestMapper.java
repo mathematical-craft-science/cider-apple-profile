@@ -1,8 +1,9 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.classification.mapper;
 
-import org.craft.mcs.cap.core.appleprofile.analysis.application.classification.port.in.AppleVarietyClassification;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.classification.contract.AppleVarietyClassification;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.classification.dto.AppleVarietyClassificationResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.classification.dto.BorderlineEvidenceResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.classification.dto.ClassificationConfidence;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
@@ -24,7 +25,7 @@ public final class AppleVarietyClassificationRestMapper {
         classification.profileCode(),
         classification.classified(),
         classification.appleClass(),
-        classification.confidence(),
+        ClassificationConfidence.valueOf(classification.confidence().name()),
         classification.borderline(),
         classification.borderlineEvidence()
             .stream()

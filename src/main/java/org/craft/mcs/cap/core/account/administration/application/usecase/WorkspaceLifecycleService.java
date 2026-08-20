@@ -7,7 +7,7 @@ import org.craft.mcs.cap.core.account.context.application.usecase.WorkspacePermi
 import org.craft.mcs.cap.core.account.membership.domain.model.WorkspaceMembership;
 import org.craft.mcs.cap.core.account.user.application.usecase.CurrentAccountUserResolver;
 import org.craft.mcs.cap.core.account.workspace.application.WorkspaceNotFoundException;
-import org.craft.mcs.cap.core.account.workspace.application.model.WorkspaceSettingsDefaults;
+import org.craft.mcs.cap.core.account.workspace.application.contract.WorkspaceSettingsDefaults;
 import org.craft.mcs.cap.core.account.administration.application.port.in.CreateWorkspaceCommand;
 import org.craft.mcs.cap.core.account.administration.application.port.in.UpdateWorkspaceCommand;
 import org.craft.mcs.cap.core.account.administration.application.port.in.WorkspaceLifecycleUseCase;

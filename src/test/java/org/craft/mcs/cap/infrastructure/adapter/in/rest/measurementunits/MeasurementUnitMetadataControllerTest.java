@@ -2,9 +2,9 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.measurementunits;
 
 import java.time.Duration;
 import java.time.Instant;
-import org.craft.mcs.cap.core.account.workspace.application.model.WorkspaceSettingsRevision;
+import org.craft.mcs.cap.core.account.workspace.application.contract.WorkspaceSettingsRevision;
 import org.craft.mcs.cap.core.account.workspace.application.port.in.WorkspaceSettingsReader;
-import org.craft.mcs.cap.core.account.workspace.application.model.WorkspaceSettingsView;
+import org.craft.mcs.cap.core.account.workspace.application.contract.WorkspaceSettingsView;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurementunits.dto.MeasurementFreshnessMetadataResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurementunits.dto.MeasurementUnitsMetadataResponse;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;

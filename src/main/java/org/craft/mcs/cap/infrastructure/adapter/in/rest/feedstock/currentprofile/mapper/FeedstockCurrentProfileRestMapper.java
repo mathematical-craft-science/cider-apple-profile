@@ -3,12 +3,13 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.currentprofil
 import org.craft.mcs.cap.core.feedstock.batch.application.api.currentprofile.FeedstockCurrentProfileDataQualityIndicator;
 import org.craft.mcs.cap.core.feedstock.batch.application.api.currentprofile.FeedstockCurrentProfileDataQualityView;
 import org.craft.mcs.cap.core.feedstock.batch.application.api.currentprofile.FeedstockCurrentProfileFreshnessView;
-import org.craft.mcs.cap.core.feedstock.batch.application.api.currentprofile.FeedstockCurrentProfilePotentialAbvView;
+import org.craft.mcs.cap.core.feedstock.batch.application.assessment.contract.FeedstockCurrentProfilePotentialAbvView;
 import org.craft.mcs.cap.core.feedstock.batch.application.api.currentprofile.FeedstockCurrentProfileSummaryView;
 import org.craft.mcs.cap.core.feedstock.batch.application.api.currentprofile.FeedstockPlanningReadinessCheck;
 import org.craft.mcs.cap.core.feedstock.batch.application.api.currentprofile.FeedstockPlanningReadinessView;
-import org.craft.mcs.cap.core.profileanalysis.classification.domain.profile.northamerican.NorthAmericanTanninLevel;
-import org.craft.mcs.cap.core.profileanalysis.graph.application.model.JolicoeurSugarAcidityGraphEvaluation;
+import org.craft.mcs.cap.core.feedstock.batch.application.analysis.classification.contract.FeedstockNorthAmericanTanninLevel;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.classification.NorthAmericanTanninLevel;
+import org.craft.mcs.cap.core.feedstock.batch.application.analysis.sugaracidity.contract.FeedstockSugarAcidityGraphView;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.abv.mapper.PotentialAbvPredictionRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.currentprofile.dto.FeedstockCurrentProfileFreshnessResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.currentprofile.dto.FeedstockCurrentProfileGraphResponse;
@@ -44,8 +45,8 @@ public final class FeedstockCurrentProfileRestMapper {
   }
 
   public static @Nullable FeedstockCurrentProfileGraphResponse toGraph(
-      @Nullable JolicoeurSugarAcidityGraphEvaluation graphEvaluation,
-      @Nullable NorthAmericanTanninLevel northAmericanTanninLevel,
+      @Nullable FeedstockSugarAcidityGraphView graphEvaluation,
+      @Nullable FeedstockNorthAmericanTanninLevel northAmericanTanninLevel,
       @Nullable FeedstockCurrentProfileSummaryView currentProfile
   ) {
     if (graphEvaluation == null || currentProfile == null) {
@@ -59,7 +60,9 @@ public final class FeedstockCurrentProfileRestMapper {
         graphEvaluation.plottable()
             ? JolicoeurSugarAcidityGraphRestMapper.toResponse(
                 graphEvaluation,
-                northAmericanTanninLevel,
+                northAmericanTanninLevel == null // NOSONAR
+                    ? null
+                    : NorthAmericanTanninLevel.valueOf(northAmericanTanninLevel.name()),
                 requireNonNull(specificGravity),
                 requireNonNull(titratableAcidity)
             )

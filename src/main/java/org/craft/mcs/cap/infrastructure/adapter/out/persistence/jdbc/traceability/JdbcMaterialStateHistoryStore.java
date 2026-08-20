@@ -6,7 +6,7 @@ import java.util.Arrays;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.traceability.application.model.MaterialStateSnapshot;
+import org.craft.mcs.cap.core.traceability.application.contract.MaterialStateSnapshot;
 import org.craft.mcs.cap.core.traceability.application.port.out.MaterialStateHistoryStore;
 import org.craft.mcs.cap.core.traceability.domain.model.BatchTraceSubjectType;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.traceability.row.BatchTraceStepJdbcRowMapper;

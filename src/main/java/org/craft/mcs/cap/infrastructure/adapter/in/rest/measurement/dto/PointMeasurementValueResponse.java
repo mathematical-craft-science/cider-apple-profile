@@ -1,7 +1,6 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import org.craft.mcs.cap.core.measurement.domain.model.MeasurementValueKind;
 import org.craft.mcs.cap.shared.application.ApplicationValidationException;
 import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
 import org.jspecify.annotations.NonNull;

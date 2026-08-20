@@ -2,8 +2,8 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.vessel.mapper;
 
 import java.math.BigDecimal;
 import java.util.UUID;
-import org.craft.mcs.cap.core.vessel.application.model.VesselCurrentContentView;
-import org.craft.mcs.cap.core.vessel.application.model.VesselUsageView;
+import org.craft.mcs.cap.core.vessel.application.contract.VesselCurrentContentView;
+import org.craft.mcs.cap.core.vessel.application.contract.VesselUsageView;
 import org.craft.mcs.cap.core.vessel.application.port.in.CreateVesselCommand;
 import org.craft.mcs.cap.core.vessel.application.port.in.ListAvailableVesselsQuery;
 import org.craft.mcs.cap.core.vessel.application.port.in.UpdateVesselCommand;

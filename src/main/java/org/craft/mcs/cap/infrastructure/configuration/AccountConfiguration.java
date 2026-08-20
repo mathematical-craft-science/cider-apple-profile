@@ -1,9 +1,9 @@
 package org.craft.mcs.cap.infrastructure.configuration;
 
-import org.craft.mcs.cap.core.account.invitation.application.model.WorkspaceInvitationDefaults;
-import org.craft.mcs.cap.core.account.provisioning.application.model.WorkspaceProvisioningDefaults;
+import org.craft.mcs.cap.core.account.invitation.application.contract.WorkspaceInvitationDefaults;
+import org.craft.mcs.cap.core.account.provisioning.application.contract.WorkspaceProvisioningDefaults;
 import org.craft.mcs.cap.core.account.shared.domain.value.DisplayName;
-import org.craft.mcs.cap.core.account.workspace.application.model.WorkspaceSettingsDefaults;
+import org.craft.mcs.cap.core.account.workspace.application.contract.WorkspaceSettingsDefaults;
 import org.jspecify.annotations.NonNull;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;

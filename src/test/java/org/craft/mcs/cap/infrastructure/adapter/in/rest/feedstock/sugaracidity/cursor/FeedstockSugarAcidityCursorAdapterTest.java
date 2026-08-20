@@ -1,10 +1,11 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.sugaracidity.cursor;
 
 import java.time.Instant;
+import java.util.Set;
 import java.util.UUID;
 import org.craft.mcs.cap.core.feedstock.batch.application.api.currentprofile.FeedstockCurrentProfilePagePosition;
 import org.craft.mcs.cap.core.feedstock.batch.application.api.currentprofile.FeedstockCurrentProfileFilters;
-import org.craft.mcs.cap.core.profileanalysis.graph.application.model.JolicoeurSugarAcidityGraphCriteria;
+import org.craft.mcs.cap.core.feedstock.batch.application.analysis.sugaracidity.contract.FeedstockSugarAcidityGraphCriteria;
 import org.craft.mcs.cap.shared.application.query.MalformedCursorException;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.testing.TestCursorTokenCodec;
@@ -52,14 +53,14 @@ class FeedstockSugarAcidityCursorAdapterTest {
 
   @Test
   void rejectsTokenWhenGraphCriteriaChange() {
-    final var graphCriteria = new JolicoeurSugarAcidityGraphCriteria(null, true);
+    final var graphCriteria = new FeedstockSugarAcidityGraphCriteria(Set.of(), true);
     final var token = adapter.encodeCurrent(POSITION, WORKSPACE_ID, FILTERS, graphCriteria);
 
     assertThatThrownBy(() -> adapter.decodeCurrent(
         token,
         WORKSPACE_ID,
         FILTERS,
-        new JolicoeurSugarAcidityGraphCriteria(null, false)
+        new FeedstockSugarAcidityGraphCriteria(Set.of(), false)
     )).isInstanceOf(MalformedCursorException.class);
   }
 }

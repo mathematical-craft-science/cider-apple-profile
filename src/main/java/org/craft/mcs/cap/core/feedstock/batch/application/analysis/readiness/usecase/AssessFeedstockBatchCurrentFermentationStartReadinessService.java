@@ -3,8 +3,7 @@ package org.craft.mcs.cap.core.feedstock.batch.application.analysis.readiness.us
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.feedstock.batch.application.authorization.port.out.FeedstockAccessControl;
-import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.FermentationStartReadinessAssessor;
-import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.FermentationStartProfile;
+import org.craft.mcs.cap.core.feedstock.batch.application.analysis.readiness.port.out.FeedstockFermentationStartReadinessAnalyzer;
 import org.craft.mcs.cap.core.feedstock.batch.application.FeedstockBatchNotFoundException;
 import org.craft.mcs.cap.core.feedstock.batch.application.analysis.readiness.port.in.AssessFeedstockBatchCurrentFermentationStartReadinessUseCase;
 import org.craft.mcs.cap.core.feedstock.batch.application.analysis.readiness.port.in.FeedstockBatchCurrentFermentationStartReadinessResult;
@@ -35,7 +34,7 @@ public final class AssessFeedstockBatchCurrentFermentationStartReadinessService
   private final @NonNull FeedstockBatchRepository feedstockBatchRepository;
   private final @NonNull FeedstockAccessControl feedstockAccessControl;
   private final @NonNull FeedstockCurrentProfileQueryService currentProfileQueryService;
-  private final @NonNull FermentationStartReadinessAssessor readinessAssessor;
+  private final @NonNull FeedstockFermentationStartReadinessAnalyzer readinessAnalyzer;
 
   @Override
   public @NonNull FeedstockBatchCurrentFermentationStartReadinessResult assess(
@@ -52,12 +51,10 @@ public final class AssessFeedstockBatchCurrentFermentationStartReadinessService
         batch.workspaceId(),
         measurement.currentMaterialStateId(),
         measurement.evidenceFor(Set.of(SPECIFIC_GRAVITY, PH, YAN)),
-        readinessAssessor.assess(
-            new FermentationStartProfile(
-                measurement.specificGravity(),
-                measurement.ph(),
-                measurement.yeastAssimilableNitrogen()
-            )
+        readinessAnalyzer.assess(
+            measurement.specificGravity(),
+            measurement.ph(),
+            measurement.yeastAssimilableNitrogen()
         )
     );
   }

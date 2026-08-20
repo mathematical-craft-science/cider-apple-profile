@@ -85,14 +85,18 @@ Act as a senior Java architect and production-grade software engineer for the Ci
 - Do not let one aggregate own another aggregate's lifecycle unless that is a deliberate domain decision.
 - Keep cross-aggregate history and tracing in a separate traceability context.
 - Current important contexts:
-  - `core.feedstock`: feedstock batches and source material state;
+  - `core.feedstock.batch`: feedstock batches and source material state;
+  - `core.feedstock.planning`: feedstock comparison, target-fit, and composition planning;
   - `core.measurement`: immutable measurement evidence and state-aware current-value projections;
-  - `core.production`: production batches and production lifecycle;
+  - `core.production.batch`: production batches and production lifecycle;
+  - `core.production.planning`: production candidates and their confirmation lifecycle;
   - `core.traceability`: material traceability across feedstock and production;
-  - `core.appleprofile`: base apple variety catalog/reference profile;
+  - `core.appleprofile.catalog`: base apple variety catalog/reference profile;
+  - `core.appleprofile.analysis`: apple-variety analysis scenarios built through published contracts;
   - `core.varietyprofile`: regional variety profiles, provenance, contributors, source imports;
-  - `core.profileanalysis`: reusable analysis tools such as graph projection, profile targets,
-    distance, composition, classification, ABV/readiness.
+  - `core.cideranalysis`: stateless interpretation such as graph projection, target fit,
+    classification, ABV, and readiness;
+  - `core.formulation`: stateless composition calculation, optimization, and interpretation.
 - AppleVariety catalog concerns must stay separate from graph/target analysis concerns.
 - Feedstock screens must work from `FeedstockBatch`; measurements are current-state/history sources,
   not the primary UI entity.

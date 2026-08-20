@@ -1,7 +1,7 @@
 package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.vessel;
 
 import java.math.BigDecimal;
-import org.craft.mcs.cap.core.vessel.application.model.VesselView;
+import org.craft.mcs.cap.core.vessel.application.contract.VesselView;
 import org.craft.mcs.cap.core.vessel.domain.model.VesselOperationalStatus;
 import org.craft.mcs.cap.shared.application.query.TextSearchCriteria;
 import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;

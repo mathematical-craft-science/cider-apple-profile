@@ -2,7 +2,7 @@ package org.craft.mcs.cap.infrastructure.adapter.out.delivery.account.invitation
 
 import java.nio.charset.StandardCharsets;
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.account.invitation.application.model.WorkspaceInvitationEmail;
+import org.craft.mcs.cap.core.account.invitation.application.contract.WorkspaceInvitationEmail;
 import org.craft.mcs.cap.core.account.invitation.application.port.out.WorkspaceInvitationEmailSender;
 import org.craft.mcs.cap.infrastructure.configuration.WorkspaceInvitationEmailProperties;
 import org.jspecify.annotations.NonNull;

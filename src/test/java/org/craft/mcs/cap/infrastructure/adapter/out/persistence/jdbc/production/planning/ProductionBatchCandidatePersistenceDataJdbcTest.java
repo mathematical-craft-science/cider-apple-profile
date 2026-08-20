@@ -4,39 +4,31 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.craft.mcs.cap.core.production.planning.application.model.ProductionBatchCandidateSnapshot;
-import org.craft.mcs.cap.core.production.planning.domain.model.ProductionBatchCandidate;
-import org.craft.mcs.cap.core.production.planning.domain.model.ProductionBatchCandidateId;
-import org.craft.mcs.cap.core.production.planning.domain.model.ProductionBatchCandidateStatus;
-import org.craft.mcs.cap.core.production.batch.domain.model.ProductionSourceEvidenceReference;
+import org.craft.mcs.cap.core.feedstock.batch.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.core.production.batch.domain.model.ProductionBatchId;
 import org.craft.mcs.cap.core.production.batch.domain.model.ProductionSourceComponent;
 import org.craft.mcs.cap.core.production.batch.domain.model.ProductionSourceComposition;
+import org.craft.mcs.cap.core.production.batch.domain.model.ProductionSourceEvidenceReference;
 import org.craft.mcs.cap.core.production.batch.domain.model.ProductionSourceReference;
-import org.craft.mcs.cap.core.production.planning.domain.model.ProductionCandidateSourceEvidence;
 import org.craft.mcs.cap.core.production.batch.domain.model.value.ProductionProfileSnapshot;
-import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionWarning;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.normalization.ProfileAxisNormalizerCode;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.objective.ProfileDistanceMetric;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.assessment.ProfileTargetDistance;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.assessment.ProfileTargetDistanceStatus;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.objective.ProfileTargetObjectiveFunctionCode;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetObjectiveWeights;
-import org.craft.mcs.cap.core.profileanalysis.graph.domain.SugarAcidityGraphPoint;
-import org.craft.mcs.cap.core.profileanalysis.graph.domain.SugarAcidityGeometryShape;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.SugarAcidityTargetKind;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.SugarAcidityTargetPosition;
+import org.craft.mcs.cap.core.production.planning.application.contract.ProductionBatchCandidateCalculationRequest;
+import org.craft.mcs.cap.core.production.planning.application.contract.ProductionBatchCandidateSnapshot;
+import org.craft.mcs.cap.core.production.planning.application.contract.ProductionCandidateNormalizer;
+import org.craft.mcs.cap.core.production.planning.application.contract.ProductionCandidateTargetDistanceView;
+import org.craft.mcs.cap.core.production.planning.application.contract.ProductionCandidateWarning;
+import org.craft.mcs.cap.core.production.planning.domain.model.ProductionBatchCandidate;
+import org.craft.mcs.cap.core.production.planning.domain.model.ProductionBatchCandidateId;
+import org.craft.mcs.cap.core.production.planning.domain.model.ProductionBatchCandidateStatus;
+import org.craft.mcs.cap.core.production.planning.domain.model.ProductionCandidateSourceEvidence;
+import org.craft.mcs.cap.shared.application.ConcurrentResourceModificationException;
+import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
-import org.craft.mcs.cap.core.feedstock.batch.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.shared.kernel.identity.VesselId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
-import org.craft.mcs.cap.shared.kernel.measurement.MeasuredValueRangePosition;
-import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
-import org.craft.mcs.cap.shared.application.ConcurrentResourceModificationException;
 import org.craft.mcs.cap.shared.testing.jdbc.PostgresDataJdbcTestConfiguration;
 import org.craft.mcs.cap.testsupport.VesselTestFixtures;
 import org.jspecify.annotations.NonNull;
@@ -47,12 +39,12 @@ import org.springframework.boot.data.jdbc.test.autoconfigure.DataJdbcTest;
 import org.springframework.boot.jackson.autoconfigure.JacksonAutoConfiguration;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.context.annotation.Import;
+import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.craft.mcs.cap.support.PotentialAbvPredictionFixtures.prediction;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
+import static org.craft.mcs.cap.support.PotentialAbvPredictionFixtures.productionCandidatePrediction;
 
 @DataJdbcTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
@@ -100,14 +92,19 @@ class ProductionBatchCandidatePersistenceDataJdbcTest {
             .satisfies(candidate -> assertThat(candidate.evidenceFor(sourceReference))
                 .isEqualTo(ProductionSourceEvidenceReference.of("measurement-2026-07-16"))))
         .satisfies(snapshot -> assertThat(snapshot)
-            .returns(ProfileAxisNormalizerCode.SENSITIVITY_UNIT, ProductionBatchCandidateSnapshot::normalizerCode)
+            .returns(ProductionCandidateNormalizer.SENSITIVITY_UNIT, ProductionBatchCandidateSnapshot::normalizerCode)
             .satisfies(candidateSnapshot -> assertThat(candidateSnapshot.potentialAbv().potentialAbv().percent())
                 .isEqualByComparingTo("6.825"))
-            .returns(List.of(CompositionWarning.TANNIN_INCOMPLETE),
+            .returns(List.of(ProductionCandidateWarning.TANNIN_INCOMPLETE),
                 ProductionBatchCandidateSnapshot::warnings)
             .satisfies(candidateSnapshot -> assertThat(candidateSnapshot.targetDistance())
                 .isNotNull()
-                .returns(new BigDecimal("0.15"), ProfileTargetDistance::value)));
+                .returns(new BigDecimal("0.15"), ProductionCandidateTargetDistanceView::value)
+                .returns(85, ProductionCandidateTargetDistanceView::matchPercent)
+                .returns(
+                    ProductionCandidateTargetDistanceView.FitStatus.CLOSE,
+                    ProductionCandidateTargetDistanceView::fitStatus
+                )));
 
     final var productionBatchId = persistProductionBatch(workspaceId);
     final var candidateToConfirm = restored.orElseThrow().candidate();
@@ -121,6 +118,160 @@ class ProductionBatchCandidatePersistenceDataJdbcTest {
         .returns(productionBatchId, ProductionBatchCandidate::confirmedProductionBatchId);
     assertThat(confirmed.revision())
         .isGreaterThan(saved.revision());
+  }
+
+  @Test
+  void restoresTargetFitForLegacyCandidateJson() {
+    final var workspaceId = persistWorkspace();
+    final var sourceReference = ProductionSourceReference.feedstockBatch(FeedstockBatchId.newId().value());
+    final var saved = store.create(candidate(workspaceId, sourceReference));
+    jdbcTemplate.update(
+        """
+            UPDATE production_batch_candidates
+            SET target_distance_json = (
+                target_distance_json::jsonb - 'matchPercent' - 'fitStatus'
+            )::text
+            WHERE candidate_id = ?
+            """,
+        saved.candidate().candidateId().value()
+    );
+
+    assertThat(store.findById(saved.candidate().candidateId()))
+        .get()
+        .extracting(ProductionBatchCandidateSnapshot::targetDistance)
+        .isNotNull()
+        .returns(87, ProductionCandidateTargetDistanceView::matchPercent)
+        .returns(ProductionCandidateTargetDistanceView.FitStatus.CLOSE,
+            ProductionCandidateTargetDistanceView::fitStatus);
+  }
+
+  @Test
+  void rejectsIncompletePersistedTargetFit() {
+    final var workspaceId = persistWorkspace();
+    final var sourceReference = ProductionSourceReference.feedstockBatch(FeedstockBatchId.newId().value());
+    final var saved = store.create(candidate(workspaceId, sourceReference));
+    jdbcTemplate.update(
+        """
+            UPDATE production_batch_candidates
+            SET target_distance_json = (
+                target_distance_json::jsonb - 'fitStatus'
+            )::text
+            WHERE candidate_id = ?
+            """,
+        saved.candidate().candidateId().value()
+    );
+
+    assertThatThrownBy(() -> store.findById(saved.candidate().candidateId()))
+        .isInstanceOf(DataRetrievalFailureException.class)
+        .hasMessage("persisted production target fit is incomplete");
+  }
+
+  @Test
+  void translatesSemanticallyInvalidPersistedTargetDistance() {
+    final var workspaceId = persistWorkspace();
+    final var sourceReference = ProductionSourceReference.feedstockBatch(FeedstockBatchId.newId().value());
+    final var saved = store.create(candidate(workspaceId, sourceReference));
+    jdbcTemplate.update(
+        """
+            UPDATE production_batch_candidates
+            SET target_distance_json = jsonb_set(
+                target_distance_json::jsonb,
+                '{matchPercent}',
+                '101'::jsonb
+            )::text
+            WHERE candidate_id = ?
+            """,
+        saved.candidate().candidateId().value()
+    );
+
+    assertThatThrownBy(() -> store.findById(saved.candidate().candidateId()))
+        .isInstanceOf(DataRetrievalFailureException.class)
+        .hasMessage("persisted production target distance is invalid")
+        .hasRootCauseMessage("production candidate target match percent must be between 0 and 100");
+  }
+
+  @Test
+  void rejectsPersistedTargetPointForAnotherCalculatedProfile() {
+    final var workspaceId = persistWorkspace();
+    final var sourceReference = ProductionSourceReference.feedstockBatch(FeedstockBatchId.newId().value());
+    final var saved = store.create(candidate(workspaceId, sourceReference));
+    jdbcTemplate.update(
+        """
+            UPDATE production_batch_candidates
+            SET target_distance_json = jsonb_set(
+                target_distance_json::jsonb,
+                '{point,specificGravity}',
+                '1.061'::jsonb
+            )::text
+            WHERE candidate_id = ?
+            """,
+        saved.candidate().candidateId().value()
+    );
+
+    assertThatThrownBy(() -> store.findById(saved.candidate().candidateId()))
+        .isInstanceOf(DataRetrievalFailureException.class)
+        .hasMessage("persisted production batch candidate is invalid")
+        .hasRootCauseMessage("production candidate target point must match the calculated profile");
+  }
+
+  @Test
+  void rejectsPersistedTargetTanninForAnotherCalculatedProfile() {
+    final var workspaceId = persistWorkspace();
+    final var sourceReference = ProductionSourceReference.feedstockBatch(FeedstockBatchId.newId().value());
+    final var saved = store.create(candidate(workspaceId, sourceReference));
+    jdbcTemplate.update(
+        """
+            UPDATE production_batch_candidates
+            SET target_distance_json = jsonb_set(
+                target_distance_json::jsonb,
+                '{tannin}',
+                '1300'::jsonb
+            )::text
+            WHERE candidate_id = ?
+            """,
+        saved.candidate().candidateId().value()
+    );
+
+    assertThatThrownBy(() -> store.findById(saved.candidate().candidateId()))
+        .isInstanceOf(DataRetrievalFailureException.class)
+        .hasMessage("persisted production batch candidate is invalid")
+        .hasRootCauseMessage("production candidate target tannin must match the calculated profile");
+  }
+
+  @Test
+  void rejectsPersistedTotalVolumeThatDoesNotMatchSources() {
+    final var workspaceId = persistWorkspace();
+    final var sourceReference = ProductionSourceReference.feedstockBatch(FeedstockBatchId.newId().value());
+    final var saved = store.create(candidate(workspaceId, sourceReference));
+    jdbcTemplate.update(
+        """
+            UPDATE production_batch_candidates
+            SET total_volume_liters = 121
+            WHERE candidate_id = ?
+            """,
+        saved.candidate().candidateId().value()
+    );
+
+    assertThatThrownBy(() -> store.findById(saved.candidate().candidateId()))
+        .isInstanceOf(DataRetrievalFailureException.class)
+        .hasMessage("persisted production candidate total volume does not match its sources");
+  }
+
+  @Test
+  void roundTripsAuthoritativeUnscorableTargetFit() {
+    final var workspaceId = persistWorkspace();
+    final var sourceReference = ProductionSourceReference.feedstockBatch(FeedstockBatchId.newId().value());
+    final var saved = store.create(candidate(workspaceId, sourceReference, unscorableTargetDistance()));
+
+    assertThat(store.findById(saved.candidate().candidateId()))
+        .get()
+        .extracting(ProductionBatchCandidateSnapshot::targetDistance)
+        .isNotNull()
+        .returns(null, ProductionCandidateTargetDistanceView::matchPercent)
+        .returns(
+            ProductionCandidateTargetDistanceView.FitStatus.UNSCORABLE,
+            ProductionCandidateTargetDistanceView::fitStatus
+        );
   }
 
   @Test
@@ -149,6 +300,14 @@ class ProductionBatchCandidatePersistenceDataJdbcTest {
       @NonNull WorkspaceId workspaceId,
       @NonNull ProductionSourceReference sourceReference
   ) {
+    return candidate(workspaceId, sourceReference, targetDistance());
+  }
+
+  private @NonNull ProductionBatchCandidateSnapshot candidate(
+      @NonNull WorkspaceId workspaceId,
+      @NonNull ProductionSourceReference sourceReference,
+      @NonNull ProductionCandidateTargetDistanceView targetDistance
+  ) {
     final var composition = ProductionSourceComposition.of(List.of(new ProductionSourceComponent(
         sourceReference,
         VolumeValue.ofLiters("120")
@@ -167,10 +326,10 @@ class ProductionBatchCandidatePersistenceDataJdbcTest {
             ),
             productionProfile()
         ),
-        prediction(productionProfile().specificGravity()),
-        ProfileAxisNormalizerCode.SENSITIVITY_UNIT,
-        targetDistance(),
-        List.of(CompositionWarning.TANNIN_INCOMPLETE)
+        productionCandidatePrediction(productionProfile().specificGravity()),
+        ProductionCandidateNormalizer.SENSITIVITY_UNIT,
+        targetDistance,
+        List.of(ProductionCandidateWarning.TANNIN_INCOMPLETE)
     );
   }
 
@@ -183,33 +342,64 @@ class ProductionBatchCandidatePersistenceDataJdbcTest {
     );
   }
 
-  private static @NonNull ProfileTargetDistance targetDistance() {
-    final var point = new SugarAcidityGraphPoint(
+  private static @NonNull ProductionCandidateTargetDistanceView targetDistance() {
+    final var point = new ProductionCandidateTargetDistanceView.Coordinates(
         SpecificGravityValue.of("1.052"),
         TitratableAcidityValue.of("6.2")
     );
-    return new ProfileTargetDistance(
-        ProfileTargetDistanceStatus.SCORED,
+    return new ProductionCandidateTargetDistanceView(
+        ProductionCandidateTargetDistanceView.Status.SCORED,
         point,
-        new SugarAcidityGraphPoint(
+        new ProductionCandidateTargetDistanceView.Coordinates(
             SpecificGravityValue.of("1.050"),
             TitratableAcidityValue.of("6.0")
         ),
-        new SugarAcidityTargetPosition(
-            MeasuredValueRangePosition.ABOVE,
-            MeasuredValueRangePosition.ABOVE
+        new ProductionCandidateTargetDistanceView.TargetPosition(
+            ProductionCandidateTargetDistanceView.AxisPosition.ABOVE,
+            ProductionCandidateTargetDistanceView.AxisPosition.ABOVE
         ),
         TanninValue.of("1200"),
         TanninValue.of("1200"),
         new BigDecimal("0.15"),
+        85,
+        ProductionCandidateTargetDistanceView.FitStatus.CLOSE,
         false,
         false,
-        ProfileTargetObjectiveFunctionCode.MANHATTAN_DISTANCE_TO_TARGET_AREA,
-        ProfileDistanceMetric.NORMALIZED_WEIGHTED_MANHATTAN,
-        ProfileTargetObjectiveWeights.balanced(),
-        SugarAcidityTargetKind.PREDEFINED_ZONE,
-        SugarAcidityGeometryShape.RECTANGLE,
+        ProductionBatchCandidateCalculationRequest.ObjectiveFunction.MANHATTAN_DISTANCE_TO_TARGET_AREA,
+        ProductionCandidateTargetDistanceView.Metric.NORMALIZED_WEIGHTED_MANHATTAN,
+        new ProductionCandidateTargetDistanceView.Weights(BigDecimal.ONE, BigDecimal.ONE, null),
+        ProductionCandidateTargetDistanceView.TargetKind.PREDEFINED_ZONE,
+        ProductionCandidateTargetDistanceView.GeometryShape.RECTANGLE,
         Set.of()
+    );
+  }
+
+  private static @NonNull ProductionCandidateTargetDistanceView unscorableTargetDistance() {
+    final var point = new ProductionCandidateTargetDistanceView.Coordinates(
+        SpecificGravityValue.of("1.052"),
+        TitratableAcidityValue.of("6.2")
+    );
+    return new ProductionCandidateTargetDistanceView(
+        ProductionCandidateTargetDistanceView.Status.UNSCORABLE,
+        point,
+        point,
+        new ProductionCandidateTargetDistanceView.TargetPosition(
+            ProductionCandidateTargetDistanceView.AxisPosition.WITHIN,
+            ProductionCandidateTargetDistanceView.AxisPosition.WITHIN
+        ),
+        null,
+        null,
+        null,
+        null,
+        ProductionCandidateTargetDistanceView.FitStatus.UNSCORABLE,
+        true,
+        false,
+        ProductionBatchCandidateCalculationRequest.ObjectiveFunction.MANHATTAN_DISTANCE_TO_TARGET_AREA,
+        ProductionCandidateTargetDistanceView.Metric.NORMALIZED_WEIGHTED_MANHATTAN,
+        new ProductionCandidateTargetDistanceView.Weights(BigDecimal.ONE, BigDecimal.ONE, BigDecimal.ONE),
+        ProductionCandidateTargetDistanceView.TargetKind.PREDEFINED_ZONE,
+        ProductionCandidateTargetDistanceView.GeometryShape.RECTANGLE,
+        Set.of(ProductionCandidateTargetDistanceView.EvaluationAxis.TANNIN)
     );
   }
 

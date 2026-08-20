@@ -1,7 +1,7 @@
 package org.craft.mcs.cap.core.account.workspace.application.port.in;
 
 import java.time.Duration;
-import org.craft.mcs.cap.core.account.workspace.application.model.WorkspaceSettingsRevision;
+import org.craft.mcs.cap.core.account.workspace.application.contract.WorkspaceSettingsRevision;
 import org.craft.mcs.cap.shared.application.ApplicationValidationException;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.measurement.unit.TitratableAcidityBasis;

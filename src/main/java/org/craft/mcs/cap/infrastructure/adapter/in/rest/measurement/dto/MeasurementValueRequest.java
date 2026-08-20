@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import io.swagger.v3.oas.annotations.media.DiscriminatorMapping;
 import io.swagger.v3.oas.annotations.media.Schema;
-import org.craft.mcs.cap.core.measurement.domain.model.MeasurementValueKind;
 import org.jspecify.annotations.NonNull;
 
 

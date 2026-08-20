@@ -3,9 +3,9 @@ package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.appleprofi
 import java.util.List;
 import java.util.Locale;
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.appleprofile.catalog.application.model.AppleVarietyCatalogPagePosition;
-import org.craft.mcs.cap.core.appleprofile.catalog.application.model.AppleVarietyReferenceProfilePageQuery;
-import org.craft.mcs.cap.core.appleprofile.catalog.application.model.AppleVarietyReferenceProfileView;
+import org.craft.mcs.cap.core.appleprofile.catalog.application.contract.AppleVarietyCatalogPagePosition;
+import org.craft.mcs.cap.core.appleprofile.catalog.application.contract.AppleVarietyReferenceProfilePageQuery;
+import org.craft.mcs.cap.core.appleprofile.catalog.application.contract.AppleVarietyReferenceProfileView;
 import org.craft.mcs.cap.core.appleprofile.catalog.application.port.out.AppleVarietyReferenceProfilePageProvider;
 import org.craft.mcs.cap.shared.platform.persistence.jdbc.SqlQueryBuilder;
 import org.craft.mcs.cap.shared.platform.persistence.jdbc.SqlQueryBuilder.SqlQueryOption;

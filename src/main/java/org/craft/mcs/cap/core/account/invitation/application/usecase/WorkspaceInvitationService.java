@@ -9,8 +9,8 @@ import org.craft.mcs.cap.core.account.context.application.usecase.WorkspacePermi
 import org.craft.mcs.cap.core.account.invitation.application.WorkspaceInvitationConflictException;
 import org.craft.mcs.cap.core.account.invitation.application.WorkspaceInvitationNotFoundException;
 import org.craft.mcs.cap.core.account.invitation.application.WorkspaceInvitationRecipientMismatchException;
-import org.craft.mcs.cap.core.account.invitation.application.model.WorkspaceInvitationDeliveryRequest;
-import org.craft.mcs.cap.core.account.invitation.application.model.WorkspaceInvitationDefaults;
+import org.craft.mcs.cap.core.account.invitation.application.contract.WorkspaceInvitationDeliveryRequest;
+import org.craft.mcs.cap.core.account.invitation.application.contract.WorkspaceInvitationDefaults;
 import org.craft.mcs.cap.core.account.invitation.application.port.in.InviteWorkspaceMemberCommand;
 import org.craft.mcs.cap.core.account.invitation.application.port.in.WorkspaceInvitationCommand;
 import org.craft.mcs.cap.core.account.invitation.application.port.in.WorkspaceInvitationUseCase;

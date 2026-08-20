@@ -1,7 +1,7 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.measurement;
 
 import org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileEvaluationAxis;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.ProfileEvaluationAxis;
 import org.craft.mcs.cap.shared.kernel.measurement.unit.BeverageUnits;
 import org.jspecify.annotations.NonNull;
 

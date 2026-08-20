@@ -1,7 +1,7 @@
 package org.craft.mcs.cap.core.production.planning.application.usecase;
 
-import org.craft.mcs.cap.core.production.planning.application.model.ProductionBatchCandidateSnapshot;
-import org.craft.mcs.cap.core.production.planning.application.model.ProductionBatchCandidateView;
+import org.craft.mcs.cap.core.production.planning.application.contract.ProductionBatchCandidateSnapshot;
+import org.craft.mcs.cap.core.production.planning.application.contract.ProductionBatchCandidateView;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;

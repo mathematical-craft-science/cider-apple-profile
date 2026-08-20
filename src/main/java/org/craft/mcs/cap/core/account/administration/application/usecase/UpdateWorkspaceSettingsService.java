@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.account.context.application.usecase.WorkspacePermissionChecker;
 import org.craft.mcs.cap.core.account.shared.application.port.out.WorkspaceAdministrationLock;
 import org.craft.mcs.cap.core.account.workspace.application.WorkspaceSettingsNotFoundException;
-import org.craft.mcs.cap.core.account.workspace.application.model.WorkspaceSettingsView;
+import org.craft.mcs.cap.core.account.workspace.application.contract.WorkspaceSettingsView;
 import org.craft.mcs.cap.core.account.workspace.application.port.in.UpdateWorkspaceSettingsCommand;
 import org.craft.mcs.cap.core.account.workspace.application.port.in.UpdateWorkspaceSettingsUseCase;
 import org.craft.mcs.cap.core.account.workspace.application.port.out.WorkspaceAuditTrail;

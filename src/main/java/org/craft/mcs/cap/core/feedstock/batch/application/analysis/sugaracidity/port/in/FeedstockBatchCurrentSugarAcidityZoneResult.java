@@ -1,8 +1,8 @@
 package org.craft.mcs.cap.core.feedstock.batch.application.analysis.sugaracidity.port.in;
 
 import java.util.List;
-import org.craft.mcs.cap.core.profileanalysis.classification.domain.profile.northamerican.NorthAmericanTanninLevel;
-import org.craft.mcs.cap.core.profileanalysis.graph.application.model.JolicoeurSugarAcidityGraphEvaluation;
+import org.craft.mcs.cap.core.feedstock.batch.application.analysis.classification.contract.FeedstockNorthAmericanTanninLevel;
+import org.craft.mcs.cap.core.feedstock.batch.application.analysis.sugaracidity.contract.FeedstockSugarAcidityGraphView;
 import org.craft.mcs.cap.core.feedstock.batch.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.batch.application.api.currentprofile.FeedstockLatestMeasurementSetView;
 import org.craft.mcs.cap.shared.kernel.characteristic.CharacteristicValue;
@@ -30,8 +30,8 @@ public record FeedstockBatchCurrentSugarAcidityZoneResult(
     @NonNull List<@NonNull MeasurementEvidenceView> profileEvidence,
     @Nullable CharacteristicValue<SpecificGravityValue> specificGravity,
     @Nullable CharacteristicValue<TitratableAcidityValue> titratableAcidity,
-    @NonNull JolicoeurSugarAcidityGraphEvaluation graphEvaluation,
-    @Nullable NorthAmericanTanninLevel northAmericanTanninLevel
+    @NonNull FeedstockSugarAcidityGraphView graphEvaluation,
+    @Nullable FeedstockNorthAmericanTanninLevel northAmericanTanninLevel
 ) {
 
   public FeedstockBatchCurrentSugarAcidityZoneResult {

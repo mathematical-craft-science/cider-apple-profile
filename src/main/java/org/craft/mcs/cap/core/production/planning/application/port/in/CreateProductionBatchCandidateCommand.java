@@ -1,6 +1,6 @@
 package org.craft.mcs.cap.core.production.planning.application.port.in;
 
-import org.craft.mcs.cap.core.production.planning.application.model.ProductionBatchCandidateCalculationRequest;
+import org.craft.mcs.cap.core.production.planning.application.contract.ProductionBatchCandidateCalculationRequest;
 import org.craft.mcs.cap.core.production.batch.domain.model.ProductionSourceComponent;
 import org.craft.mcs.cap.core.production.batch.domain.model.ProductionSourceComposition;
 import org.craft.mcs.cap.shared.application.ApplicationValidationException;

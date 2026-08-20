@@ -1,7 +1,7 @@
 package org.craft.mcs.cap.infrastructure.adapter.out.requestcontext.account;
 
 import java.util.Optional;
-import org.craft.mcs.cap.core.account.context.application.model.ResolvedWorkspaceContext;
+import org.craft.mcs.cap.core.account.context.application.contract.ResolvedWorkspaceContext;
 import org.craft.mcs.cap.core.account.context.application.port.out.CurrentWorkspaceContextRequestCache;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;

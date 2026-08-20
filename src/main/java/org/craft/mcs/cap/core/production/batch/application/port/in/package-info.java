@@ -1,3 +1,3 @@
 /** Inbound application ports for querying and accessing persistent production batches. */
-//@org.jspecify.annotations.NullMarked
+@org.jspecify.annotations.NullMarked
 package org.craft.mcs.cap.core.production.batch.application.port.in;

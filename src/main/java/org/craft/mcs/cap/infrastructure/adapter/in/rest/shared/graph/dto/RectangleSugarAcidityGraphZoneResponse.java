@@ -1,8 +1,6 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import org.craft.mcs.cap.core.profileanalysis.graph.domain.SugarAcidityGeometryShape;
-import org.craft.mcs.cap.core.profileanalysis.graph.zone.domain.JolicoeurSugarAcidityZone;
 import org.jspecify.annotations.NonNull;
 
 
@@ -25,7 +23,8 @@ public record RectangleSugarAcidityGraphZoneResponse(
         requiredMode = Schema.RequiredMode.REQUIRED
     )
     @NonNull SugarAcidityGraphRangeResponse titratableAcidityRange
-) implements SugarAcidityGraphZoneResponse {
+)
+    implements SugarAcidityGraphZoneResponse {
 
   @Override
   @Schema(

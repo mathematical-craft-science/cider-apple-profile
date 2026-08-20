@@ -5,7 +5,7 @@ import org.craft.mcs.cap.core.production.batch.application.ProductionBatchNotFou
 import org.craft.mcs.cap.core.production.batch.application.ProductionBatchOwnershipMismatchException;
 import org.craft.mcs.cap.core.production.batch.application.ProductionBatchVesselChangeNotAllowedException;
 import org.craft.mcs.cap.core.production.batch.application.authorization.port.out.ProductionAccessControl;
-import org.craft.mcs.cap.core.production.batch.application.model.ProductionBatchDetailsView;
+import org.craft.mcs.cap.core.production.batch.application.contract.ProductionBatchDetailsView;
 import org.craft.mcs.cap.core.production.batch.application.port.in.UpdateProductionBatchCommand;
 import org.craft.mcs.cap.core.production.batch.application.port.in.UpdateProductionBatchUseCase;
 import org.craft.mcs.cap.core.production.batch.application.port.out.ProductionBatchOperationHistory;

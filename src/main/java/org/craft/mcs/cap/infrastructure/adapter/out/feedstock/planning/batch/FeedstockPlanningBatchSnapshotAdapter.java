@@ -8,10 +8,10 @@ import org.craft.mcs.cap.core.feedstock.batch.application.api.batch.FeedstockBat
 import org.craft.mcs.cap.core.feedstock.batch.application.batch.port.in.ListFeedstockBatchesQuery;
 import org.craft.mcs.cap.core.feedstock.batch.application.batch.port.in.ListFeedstockBatchesUseCase;
 import org.craft.mcs.cap.core.feedstock.batch.application.api.currentprofile.FeedstockCurrentProfileView;
-import org.craft.mcs.cap.core.feedstock.batch.application.currentprofile.port.in.AssessFeedstockCurrentProfileUseCase;
+import org.craft.mcs.cap.core.feedstock.batch.application.assessment.port.in.AssessFeedstockCurrentProfileUseCase;
 import org.craft.mcs.cap.core.feedstock.batch.application.currentprofile.port.in.QueryFeedstockCurrentProfilesUseCase;
 import org.craft.mcs.cap.core.feedstock.batch.domain.model.batch.value.FeedstockSeason;
-import org.craft.mcs.cap.core.feedstock.planning.application.batchoverview.model.FeedstockPlanningBatchSnapshot;
+import org.craft.mcs.cap.core.feedstock.planning.application.batchoverview.contract.FeedstockPlanningBatchSnapshot;
 import org.craft.mcs.cap.core.feedstock.planning.application.batchoverview.port.out.FeedstockPlanningBatchSnapshotProvider;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;

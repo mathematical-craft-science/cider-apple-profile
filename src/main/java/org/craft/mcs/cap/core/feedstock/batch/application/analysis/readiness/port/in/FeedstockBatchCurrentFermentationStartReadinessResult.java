@@ -1,7 +1,7 @@
 package org.craft.mcs.cap.core.feedstock.batch.application.analysis.readiness.port.in;
 
 import java.util.List;
-import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.FermentationStartReadinessAssessment;
+import org.craft.mcs.cap.core.feedstock.batch.application.analysis.readiness.contract.FeedstockFermentationStartReadinessView;
 import org.craft.mcs.cap.core.feedstock.batch.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.shared.application.measurement.MeasurementEvidenceView;
 import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
@@ -16,7 +16,7 @@ public record FeedstockBatchCurrentFermentationStartReadinessResult(
     @NonNull WorkspaceId workspaceId,
     @NonNull MaterialStateId currentMaterialStateId,
     @NonNull List<@NonNull MeasurementEvidenceView> profileEvidence,
-    @NonNull FermentationStartReadinessAssessment assessment
+    @NonNull FeedstockFermentationStartReadinessView assessment
 ) {
 
   public FeedstockBatchCurrentFermentationStartReadinessResult {

@@ -1,16 +1,16 @@
 package org.craft.mcs.cap.core.appleprofile.analysis.application.profiletarget.port.in;
 
 import java.util.List;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.model.ProfileTargetAnalysisScenario;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.normalization.ProfileAxisNormalizerCode;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.profiletarget.contract.AppleTargetFitConfiguration.AnalysisScenario;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.profiletarget.contract.AppleTargetFitConfiguration.Normalizer;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
 
 
 public record AppleVarietyProfileTargetCandidates(
-    @NonNull ProfileTargetAnalysisScenario analysisScenario,
-    @NonNull ProfileAxisNormalizerCode normalizerCode,
+    @NonNull AnalysisScenario analysisScenario,
+    @NonNull Normalizer normalizerCode,
     @NonNull List<@NonNull AppleVarietyProfileTargetCandidate> candidates
 ) {
 

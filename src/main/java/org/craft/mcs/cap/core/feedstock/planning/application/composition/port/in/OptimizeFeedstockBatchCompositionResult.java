@@ -2,7 +2,7 @@ package org.craft.mcs.cap.core.feedstock.planning.application.composition.port.i
 
 import org.craft.mcs.cap.shared.application.ApplicationValidationException;
 
-import org.craft.mcs.cap.core.profileanalysis.composition.optimization.application.port.in.OptimizeCompositionResult;
+import org.craft.mcs.cap.core.feedstock.planning.application.composition.contract.FeedstockCompositionOptimizationView;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
@@ -10,7 +10,7 @@ import static java.util.Objects.requireNonNull;
 
 public record OptimizeFeedstockBatchCompositionResult(
     int sourceCount,
-    @NonNull OptimizeCompositionResult optimization
+    @NonNull FeedstockCompositionOptimizationView optimization
 ) {
 
   public OptimizeFeedstockBatchCompositionResult {

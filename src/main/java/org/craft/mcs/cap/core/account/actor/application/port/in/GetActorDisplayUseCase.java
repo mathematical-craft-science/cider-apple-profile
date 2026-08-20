@@ -1,6 +1,6 @@
 package org.craft.mcs.cap.core.account.actor.application.port.in;
 
-import org.craft.mcs.cap.core.account.actor.application.model.ActorDisplayView;
+import org.craft.mcs.cap.core.account.actor.application.contract.ActorDisplayView;
 import org.craft.mcs.cap.shared.kernel.identity.ActorReference;
 import org.jspecify.annotations.NonNull;
 

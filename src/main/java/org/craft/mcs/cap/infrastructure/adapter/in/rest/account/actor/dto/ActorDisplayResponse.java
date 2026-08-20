@@ -2,7 +2,7 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.account.actor.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.UUID;
-import org.craft.mcs.cap.core.account.actor.application.model.ActorLifecycleStatus;
+import org.craft.mcs.cap.core.account.actor.application.contract.ActorLifecycleStatus;
 import org.craft.mcs.cap.shared.kernel.identity.ActorType;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;

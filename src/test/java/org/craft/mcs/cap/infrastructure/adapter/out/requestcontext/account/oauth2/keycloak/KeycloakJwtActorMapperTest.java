@@ -5,7 +5,7 @@ import org.craft.mcs.cap.core.account.shared.domain.value.DisplayName;
 import org.craft.mcs.cap.core.account.shared.domain.value.EmailAddress;
 import org.craft.mcs.cap.core.account.shared.domain.value.HttpUrl;
 import org.craft.mcs.cap.core.account.shared.domain.value.IdentityProviderCode;
-import org.craft.mcs.cap.core.account.user.application.model.AuthenticatedActor;
+import org.craft.mcs.cap.core.account.user.application.contract.AuthenticatedActor;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.oauth2.jwt.Jwt;

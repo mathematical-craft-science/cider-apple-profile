@@ -1,9 +1,9 @@
 package org.craft.mcs.cap.core.measurement.application.usecase;
 
-import org.craft.mcs.cap.core.measurement.application.model.MeasurementRecordView;
-import org.craft.mcs.cap.core.measurement.application.model.MeasurementResultRetractionView;
-import org.craft.mcs.cap.core.measurement.application.model.MeasurementSetView;
-import org.craft.mcs.cap.core.measurement.application.model.MeasurementSetRetractionView;
+import org.craft.mcs.cap.core.measurement.application.contract.MeasurementRecordView;
+import org.craft.mcs.cap.core.measurement.application.contract.MeasurementResultRetractionView;
+import org.craft.mcs.cap.core.measurement.application.contract.MeasurementSetView;
+import org.craft.mcs.cap.core.measurement.application.contract.MeasurementSetRetractionView;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementRecord;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSet;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetRetraction;

@@ -6,10 +6,10 @@ import org.craft.mcs.cap.core.account.shared.application.AccountAccessDeniedExce
 import org.craft.mcs.cap.core.account.membership.application.port.out.WorkspaceMembershipRepository;
 import org.craft.mcs.cap.core.account.invitation.application.port.out.WorkspaceInvitationRepository;
 import org.craft.mcs.cap.core.account.membership.domain.model.WorkspaceMembership;
-import org.craft.mcs.cap.core.account.provisioning.application.model.WorkspaceProvisioningDefaults;
+import org.craft.mcs.cap.core.account.provisioning.application.contract.WorkspaceProvisioningDefaults;
 import org.craft.mcs.cap.core.account.provisioning.application.port.in.EnsureCurrentAccountProvisionedUseCase;
 import org.craft.mcs.cap.core.account.provisioning.application.port.out.AccountProvisioningLock;
-import org.craft.mcs.cap.core.account.user.application.model.AuthenticatedActor;
+import org.craft.mcs.cap.core.account.user.application.contract.AuthenticatedActor;
 import org.craft.mcs.cap.core.account.user.application.port.out.AccountUserRepository;
 import org.craft.mcs.cap.core.account.user.application.port.out.CurrentAccountUserRequestCache;
 import org.craft.mcs.cap.core.account.user.application.port.out.CurrentActorProvider;

@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import org.craft.mcs.cap.core.account.invitation.application.model.WorkspaceInvitationEmail;
+import org.craft.mcs.cap.core.account.invitation.application.contract.WorkspaceInvitationEmail;
 import org.craft.mcs.cap.core.account.membership.domain.model.AccountRole;
 import org.craft.mcs.cap.infrastructure.configuration.WorkspaceInvitationEmailProperties;
 import org.jspecify.annotations.NonNull;

@@ -1,9 +1,9 @@
 package org.craft.mcs.cap.core.production.batch.application.usecase;
 
-import org.craft.mcs.cap.core.production.batch.application.model.ProductionMeasuredProfileView;
-import org.craft.mcs.cap.core.production.batch.application.model.ProductionCurrentProfileView;
+import org.craft.mcs.cap.core.production.batch.application.contract.ProductionMeasuredProfileView;
+import org.craft.mcs.cap.core.production.batch.application.contract.ProductionCurrentProfileView;
 import org.craft.mcs.cap.core.production.batch.domain.model.value.ProductionProfileSnapshot;
-import org.craft.mcs.cap.core.production.batch.application.model.ProductionCurrentCharacteristicView;
+import org.craft.mcs.cap.core.production.batch.application.contract.ProductionCurrentCharacteristicView;
 import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.measurement.MeasuredValue;
 import org.jspecify.annotations.NonNull;

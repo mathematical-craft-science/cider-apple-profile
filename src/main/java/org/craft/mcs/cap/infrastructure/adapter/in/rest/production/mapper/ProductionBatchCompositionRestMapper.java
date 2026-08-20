@@ -1,14 +1,16 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.production.mapper;
 
-import org.craft.mcs.cap.core.production.planning.application.model.ProductionBatchCandidateView;
+import org.craft.mcs.cap.core.production.planning.application.contract.ProductionBatchCandidateView;
 import org.craft.mcs.cap.core.production.batch.domain.model.ProductionSourceComponent;
 import org.craft.mcs.cap.core.production.batch.domain.model.value.ProductionProfileSnapshot;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.abv.mapper.PotentialAbvPredictionRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.ProductionBatchCompositionResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.ProductionBatchSourceResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.composition.dto.CalculatedCompositionCharacteristicsResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.composition.dto.CompositionWarning;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.measurement.CanonicalUnitLabels;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.mapper.ProfileTargetRestMapper;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.ProfileAxisNormalizerCode;
 import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
 import org.jspecify.annotations.NonNull;
 
@@ -28,6 +30,7 @@ public final class ProductionBatchCompositionRestMapper {
   ) {
     requireNonNull(candidate, "production batch candidate cannot be null");
     final var composition = candidate.sourceComposition();
+    final var normalizerCode = candidate.normalizerCode();
 
     return new ProductionBatchCompositionResponse(
         composition.sources().stream()
@@ -36,8 +39,12 @@ public final class ProductionBatchCompositionRestMapper {
         toCharacteristicsResponse(candidate.profile()),
         PotentialAbvPredictionRestMapper.toResponse(candidate.potentialAbv()),
         new DecimalQuantityResponse(composition.totalVolume().liters(), CanonicalUnitLabels.VOLUME),
-        candidate.warnings(),
-        candidate.normalizerCode(),
+        candidate.warnings().stream()
+            .map(warning -> CompositionWarning.valueOf(warning.name()))
+            .toList(),
+        normalizerCode == null
+            ? null
+            : ProfileAxisNormalizerCode.valueOf(normalizerCode.name()),
         candidate.targetDistance() == null
         ? null
         : ProfileTargetRestMapper.toResponse(candidate.targetDistance()) // NOSONAR
