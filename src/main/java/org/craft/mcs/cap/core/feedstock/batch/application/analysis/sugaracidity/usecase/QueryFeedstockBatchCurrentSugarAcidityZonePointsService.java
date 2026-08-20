@@ -7,9 +7,9 @@ import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.feedstock.batch.application.api.currentprofile.FeedstockCurrentProfilePagePosition;
 import org.craft.mcs.cap.core.feedstock.batch.application.authorization.port.out.FeedstockAccessControl;
-import org.craft.mcs.cap.core.profileanalysis.classification.domain.profile.northamerican.NorthAmericanProfileCalculator;
-import org.craft.mcs.cap.core.profileanalysis.graph.application.model.JolicoeurSugarAcidityGraphEvaluation;
-import org.craft.mcs.cap.core.profileanalysis.graph.application.port.in.EvaluateJolicoeurSugarAcidityGraphUseCase;
+import org.craft.mcs.cap.core.feedstock.batch.application.analysis.classification.port.out.FeedstockTanninLevelAnalyzer;
+import org.craft.mcs.cap.core.feedstock.batch.application.analysis.sugaracidity.contract.FeedstockSugarAcidityGraphView;
+import org.craft.mcs.cap.core.feedstock.batch.application.analysis.sugaracidity.port.out.FeedstockSugarAcidityGraphAnalyzer;
 import org.craft.mcs.cap.core.feedstock.batch.application.api.currentprofile.FeedstockCurrentProfileView;
 import org.craft.mcs.cap.core.feedstock.batch.application.analysis.sugaracidity.port.in.FeedstockBatchCurrentSugarAcidityZonePointQuery;
 import org.craft.mcs.cap.core.feedstock.batch.application.analysis.sugaracidity.port.in.FeedstockBatchCurrentSugarAcidityZoneResult;
@@ -44,8 +44,8 @@ public final class QueryFeedstockBatchCurrentSugarAcidityZonePointsService
   private final @NonNull FeedstockBatchSummaryQueryRepository feedstockBatchQueryRepository;
   private final @NonNull FeedstockAccessControl feedstockAccessControl;
   private final @NonNull FeedstockCurrentProfilePageProvider currentProfileProvider;
-  private final @NonNull EvaluateJolicoeurSugarAcidityGraphUseCase graphEvaluator;
-  private final @NonNull NorthAmericanProfileCalculator northAmericanProfileCalculator;
+  private final @NonNull FeedstockSugarAcidityGraphAnalyzer graphAnalyzer;
+  private final @NonNull FeedstockTanninLevelAnalyzer tanninLevelAnalyzer;
 
   @Override
   public @NonNull CursorPage<
@@ -80,8 +80,9 @@ public final class QueryFeedstockBatchCurrentSugarAcidityZonePointsService
       @NonNull FeedstockCurrentProfileView currentProfile,
       @NonNull FeedstockBatchCurrentSugarAcidityZonePointQuery query,
       @NonNull FeedstockBatchSummary batch,
-      @NonNull JolicoeurSugarAcidityGraphEvaluation graphEvaluation
+      @NonNull FeedstockSugarAcidityGraphView graphEvaluation
   ) {
+    final var tannin = currentProfile.tannin();
     return new FeedstockBatchCurrentSugarAcidityZoneResult(
         currentProfile.batchId(),
         batch.name(),
@@ -92,8 +93,8 @@ public final class QueryFeedstockBatchCurrentSugarAcidityZonePointsService
         currentProfile.specificGravity(),
         currentProfile.titratableAcidity(),
         graphEvaluation,
-        graphEvaluation.plottable() && currentProfile.tannin() != null
-            ? northAmericanProfileCalculator.assessTannin(currentProfile.tannin()) // NOSONAR
+        graphEvaluation.plottable() && tannin != null
+            ? tanninLevelAnalyzer.assess(tannin) // NOSONAR
             : null
     );
   }
@@ -108,7 +109,7 @@ public final class QueryFeedstockBatchCurrentSugarAcidityZonePointsService
       return Optional.empty();
     }
 
-    final var graphEvaluation = graphEvaluator.evaluate(
+    final var graphEvaluation = graphAnalyzer.evaluate(
         currentProfile.specificGravity(),
         currentProfile.titratableAcidity()
     );

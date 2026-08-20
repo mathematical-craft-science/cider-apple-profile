@@ -6,7 +6,8 @@
  * be reviewed independently and confirmed exactly once when a ProductionBatch is created.</p>
  *
  * <p>This subdomain owns candidate identity, lifecycle, and stale-evidence protection. Reusable
- * composition and target-assessment mathematics belong to {@code core.profileanalysis}; source
+ * composition mathematics belong to {@code core.formulation}; cider interpretation belongs to
+ * {@code core.cideranalysis}; source
  * inventory consumption, material trace recording, and the resulting ProductionBatch lifecycle
  * remain responsibilities of the production batch context.</p>
  */

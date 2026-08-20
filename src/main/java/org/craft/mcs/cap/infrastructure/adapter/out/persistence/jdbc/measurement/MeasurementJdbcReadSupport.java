@@ -5,24 +5,24 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.UUID;
-import org.craft.mcs.cap.shared.kernel.characteristic.IntervalCharacteristicValue;
-import org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementProvenance;
-import org.craft.mcs.cap.shared.kernel.measurement.MeasurementSourceType;
+import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.common.CharacteristicValueStorageKind;
 import org.craft.mcs.cap.shared.kernel.characteristic.CharacteristicValue;
-import org.craft.mcs.cap.core.measurement.domain.model.MeasurementValueKind;
+import org.craft.mcs.cap.shared.kernel.characteristic.IntervalCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
 import org.craft.mcs.cap.shared.kernel.chemical.value.PhValue;
+import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
 import org.craft.mcs.cap.shared.kernel.identity.ActorReference;
 import org.craft.mcs.cap.shared.kernel.identity.ActorType;
 import org.craft.mcs.cap.shared.kernel.measurement.MeasuredValue;
+import org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic;
+import org.craft.mcs.cap.shared.kernel.measurement.MeasurementSourceType;
 import org.craft.mcs.cap.shared.kernel.measurement.value.TemperatureValue;
 import org.craft.mcs.cap.shared.kernel.measurement.value.TurbidityValue;
-import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -42,7 +42,7 @@ public final class MeasurementJdbcReadSupport {
       @NonNull ResultSet resultSet,
       @NonNull MeasurementCharacteristic characteristic
   ) throws SQLException {
-    final var kind = MeasurementValueKind.valueOf(resultSet.getString("value_kind"));
+    final var kind = CharacteristicValueStorageKind.valueOf(resultSet.getString("value_kind"));
     return switch (kind) {
       case POINT -> PointCharacteristicValue.of(
           measuredValue(characteristic, resultSet.getBigDecimal("point_value"))

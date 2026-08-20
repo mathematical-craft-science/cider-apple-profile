@@ -2,36 +2,29 @@ package org.craft.mcs.cap.appleprofile.analysis.application.profiletarget.usecas
 
 import java.util.List;
 import java.util.Set;
-import org.craft.mcs.cap.core.appleprofile.analysis.application.profile.model.AppleVarietyAnalysisFilters;
-import org.craft.mcs.cap.core.appleprofile.analysis.application.profile.model.AppleVarietyAnalysisPageQuery;
-import org.craft.mcs.cap.core.appleprofile.analysis.application.profile.model.AppleVarietyAnalysisProfile;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.profile.contract.AppleVarietyAnalysisFilters;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.profile.contract.AppleVarietyAnalysisPageQuery;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.profile.contract.AppleVarietyAnalysisProfile;
 import org.craft.mcs.cap.core.appleprofile.analysis.application.profile.port.out.AppleVarietyAnalysisProfilePageProvider;
 import org.craft.mcs.cap.core.appleprofile.analysis.application.profiletarget.port.in.AppleVarietyProfileTargetCandidate;
 import org.craft.mcs.cap.core.appleprofile.analysis.application.profiletarget.port.in.AppleVarietyProfileTargetCandidateQuery;
 import org.craft.mcs.cap.core.appleprofile.analysis.application.profiletarget.usecase.QueryAppleVarietyProfileTargetCandidatesService;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.profiletarget.contract.AppleContributionView;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.profiletarget.contract.AppleTargetDefinition;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.profiletarget.contract.AppleTargetDistanceView;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.profiletarget.contract.AppleTargetFitConfiguration.AnalysisScenario;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.profiletarget.contract.AppleTargetFitConfiguration.Normalizer;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.profiletarget.contract.AppleTargetFitConfiguration.ObjectiveWeights;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.profiletarget.port.out.AppleTargetFitAnalyzer;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.graph.contract.AppleSugarAcidityGraphView;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.graph.contract.AppleSugarAcidityGraphView.MissingCharacteristic;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.graph.contract.AppleSugarAcidityGraphView.Point;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.graph.contract.AppleSugarAcidityGraphView.Zone;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.graph.contract.AppleSugarAcidityGraphView.ZoneAssessment;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.graph.port.out.AppleSugarAcidityGraphAnalyzer;
 import org.craft.mcs.cap.core.appleprofile.catalog.domain.model.AppleVarietyId;
-import org.craft.mcs.cap.core.appleprofile.analysis.application.profile.model.AppleVarietyAnalysisName;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.profile.contract.AppleVarietyAnalysisName;
 import org.craft.mcs.cap.core.appleprofile.catalog.domain.model.AppleVarietyReferenceProfile;
-import org.craft.mcs.cap.core.profileanalysis.composition.contribution.domain.CompositionContributionRole;
-import org.craft.mcs.cap.core.profileanalysis.composition.contribution.domain.CompositionContributionRoleAssessment;
-import org.craft.mcs.cap.core.profileanalysis.composition.contribution.domain.CompositionContributionRoleAssessor;
-import org.craft.mcs.cap.core.profileanalysis.graph.application.model.JolicoeurSugarAcidityGraphEvaluation;
-import org.craft.mcs.cap.core.profileanalysis.graph.application.port.in.EvaluateJolicoeurSugarAcidityGraphUseCase;
-import org.craft.mcs.cap.core.profileanalysis.graph.domain.GraphMissingCharacteristic;
-import org.craft.mcs.cap.core.profileanalysis.graph.domain.SugarAcidityGraphPoint;
-import org.craft.mcs.cap.core.profileanalysis.graph.zone.domain.JolicoeurSugarAcidityZoneAssessment;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.model.ProfileTargetAnalysisScenario;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.port.in.ProfileTargetDistanceCandidateScore;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.port.in.ProfileTargetDistanceCandidateScores;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.port.in.ScoreProfileTargetDistanceCandidatesCommand;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.port.in.ScoreProfileTargetDistanceCandidatesUseCase;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.usecase.ProfileTargetAnalysisScenarioResolver;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetObjective;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetObjectiveWeights;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetScoringConfiguration;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.assessment.ProfileTargetDistance;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.normalization.ProfileAxisNormalizerCode;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.objective.ProfileTargetObjectiveFunctionCode;
 import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.PhValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
@@ -68,62 +61,58 @@ class QueryAppleVarietyProfileTargetCandidatesServiceTest {
     when(profilePageProvider.findProfiles(any()))
         .thenReturn(List.of(unscorable, scorable))
         .thenReturn(List.of());
-    final var graphEvaluator = mock(EvaluateJolicoeurSugarAcidityGraphUseCase.class);
+    final var graphEvaluator = mock(AppleSugarAcidityGraphAnalyzer.class);
     when(graphEvaluator.evaluate(any(), any()))
-        .thenReturn(JolicoeurSugarAcidityGraphEvaluation.unplottable(
+        .thenReturn(new AppleSugarAcidityGraphView(
             Set.of(
-                GraphMissingCharacteristic.SPECIFIC_GRAVITY,
-                GraphMissingCharacteristic.TITRATABLE_ACIDITY
-            )
+                MissingCharacteristic.SPECIFIC_GRAVITY,
+                MissingCharacteristic.TITRATABLE_ACIDITY
+            ),
+            null,
+            null
         ))
-        .thenReturn(JolicoeurSugarAcidityGraphEvaluation.plottable(
-            new SugarAcidityGraphPoint(
+        .thenReturn(new AppleSugarAcidityGraphView(
+            Set.of(),
+            new Point(
                 SpecificGravityValue.of("1.060"),
                 TitratableAcidityValue.of("6.0")
             ),
-            JolicoeurSugarAcidityZoneAssessment.unclassified()
+            new ZoneAssessment(null)
         ));
-    final var configuration = new ProfileTargetScoringConfiguration(
-        ProfileAxisNormalizerCode.EFFECTIVE_RANGE,
-        ProfileTargetObjectiveFunctionCode.DISTANCE_TO_TARGET_AREA,
-        ProfileTargetObjectiveWeights.balanced()
-    );
-    final var scoring = mock(ScoreProfileTargetDistanceCandidatesUseCase.class);
-    final var distance = mock(ProfileTargetDistance.class);
+    final var scoring = mock(AppleTargetFitAnalyzer.class);
+    final var distance = mock(AppleTargetDistanceView.class);
+    final var contribution = mock(AppleContributionView.class);
     when(scoring.score(any())).thenAnswer(invocation -> {
       final var command = invocation.getArgument(
           0,
-          ScoreProfileTargetDistanceCandidatesCommand.class
+          AppleTargetFitAnalyzer.Request.class
       );
-      return new ProfileTargetDistanceCandidateScores(
-          configuration,
+      return new AppleTargetFitAnalyzer.Scores(
+          Normalizer.EFFECTIVE_RANGE,
           command.candidates().stream()
-              .map(candidate -> new ProfileTargetDistanceCandidateScore(candidate.reference(), distance))
+              .map(candidate -> new AppleTargetFitAnalyzer.Score(
+                  candidate.reference(),
+                  distance,
+                  contribution
+              ))
               .toList()
       );
     });
-    final var scenarioResolver = mock(ProfileTargetAnalysisScenarioResolver.class);
-    when(scenarioResolver.resolve(any(), any())).thenReturn(configuration);
-    final var contributionRoleAssessor = mock(CompositionContributionRoleAssessor.class);
-    when(contributionRoleAssessor.assess(any())).thenReturn(new CompositionContributionRoleAssessment(
-        List.of(CompositionContributionRole.BALANCED_BASE),
-        List.of(),
-        Set.of()
-    ));
     final var service = new QueryAppleVarietyProfileTargetCandidatesService(
         profilePageProvider,
         graphEvaluator,
-        scoring,
-        scenarioResolver,
-        contributionRoleAssessor
+        scoring
     );
 
     final var result = service.query(new AppleVarietyProfileTargetCandidateQuery(
         new AppleVarietyAnalysisFilters(null),
         null,
-        ProfileTargetAnalysisScenario.BLENDING_PLANNING,
-        mock(ProfileTargetObjective.class),
-        ProfileTargetObjectiveWeights.balanced(),
+        AnalysisScenario.BLENDING_PLANNING,
+        new AppleTargetDefinition(
+            new AppleTargetDefinition.PredefinedTarget(Zone.PERFECT_APPLES),
+            null
+        ),
+        ObjectiveWeights.balanced(),
         1
     ));
 

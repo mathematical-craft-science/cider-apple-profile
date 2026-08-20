@@ -2,8 +2,8 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.production.mapper;
 
 import java.math.BigDecimal;
 import java.util.function.Function;
-import org.craft.mcs.cap.core.production.batch.application.model.ProductionCurrentCharacteristicView;
-import org.craft.mcs.cap.core.production.batch.application.model.ProductionCurrentProfileView;
+import org.craft.mcs.cap.core.production.batch.application.contract.ProductionCurrentCharacteristicView;
+import org.craft.mcs.cap.core.production.batch.application.contract.ProductionCurrentProfileView;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement.MeasurementEvidenceRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.ProductionCurrentCharacteristicResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.production.dto.ProductionCurrentProfileResponse;

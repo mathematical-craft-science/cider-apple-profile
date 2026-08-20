@@ -6,7 +6,7 @@ import org.craft.mcs.cap.core.feedstock.batch.application.inventory.port.in.Insp
 import org.craft.mcs.cap.core.feedstock.batch.application.inventory.port.in.FeedstockMaterialCharacteristics;
 import org.craft.mcs.cap.core.production.batch.domain.model.value.ProductionSourceCharacteristics;
 import org.craft.mcs.cap.core.production.batch.domain.model.value.ProductionSourceDisplayName;
-import org.craft.mcs.cap.core.production.planning.application.model.AvailableProductionSource;
+import org.craft.mcs.cap.core.production.planning.application.contract.AvailableProductionSource;
 import org.craft.mcs.cap.core.production.planning.application.port.out.ProductionSourceInspector;
 import org.craft.mcs.cap.core.production.batch.domain.model.ProductionSourceEvidenceReference;
 import org.craft.mcs.cap.core.production.batch.domain.model.ProductionSourceComponent;
@@ -52,6 +52,7 @@ public final class FeedstockProductionSourceInspector implements ProductionSourc
     return new AvailableProductionSource(
         source.reference(),
         ProductionSourceDisplayName.of(snapshot.batchName().value()),
+        snapshot.aggregateRevision(),
         snapshot.availability(),
         toProductionSourceCharacteristics(snapshot.characteristics()),
         snapshot.profileConfidence(),

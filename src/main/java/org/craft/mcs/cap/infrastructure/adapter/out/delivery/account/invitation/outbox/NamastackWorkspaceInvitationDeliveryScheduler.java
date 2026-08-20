@@ -2,7 +2,7 @@ package org.craft.mcs.cap.infrastructure.adapter.out.delivery.account.invitation
 
 import io.namastack.outbox.Outbox;
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.account.invitation.application.model.WorkspaceInvitationDeliveryRequest;
+import org.craft.mcs.cap.core.account.invitation.application.contract.WorkspaceInvitationDeliveryRequest;
 import org.craft.mcs.cap.core.account.invitation.application.port.out.WorkspaceInvitationDeliveryScheduler;
 import org.craft.mcs.cap.infrastructure.messaging.account.invitation.WorkspaceInvitationEmailOutboxPayload;
 import org.jspecify.annotations.NonNull;

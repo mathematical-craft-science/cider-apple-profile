@@ -1,7 +1,7 @@
 package org.craft.mcs.cap.core.traceability.application.usecase;
 
 import org.craft.mcs.cap.core.traceability.application.MaterialStateNotFoundException;
-import org.craft.mcs.cap.core.traceability.application.model.MaterialStateSnapshot;
+import org.craft.mcs.cap.core.traceability.application.contract.MaterialStateSnapshot;
 import org.craft.mcs.cap.core.traceability.application.port.in.GetMaterialStateUseCase;
 import org.craft.mcs.cap.core.traceability.application.port.out.BatchTraceabilityAccessControl;
 import org.craft.mcs.cap.core.traceability.application.port.out.MaterialStateHistoryStore;

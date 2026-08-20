@@ -1,7 +1,7 @@
 package org.craft.mcs.cap.core.traceability.application.port.out;
 
 import java.util.Optional;
-import org.craft.mcs.cap.core.traceability.application.model.MaterialStateSnapshot;
+import org.craft.mcs.cap.core.traceability.application.contract.MaterialStateSnapshot;
 import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.jspecify.annotations.NonNull;
 

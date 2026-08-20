@@ -2,6 +2,7 @@ package org.craft.mcs.cap.core.production.batch.application.creation.port.in;
 
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.craft.mcs.cap.core.production.batch.application.contract.ProductionSourceEvidenceExpectation;
 import org.craft.mcs.cap.core.production.batch.domain.model.ProductionSourceComponent;
 import org.craft.mcs.cap.core.production.batch.domain.model.ProductionSourceComposition;
 import org.craft.mcs.cap.core.production.batch.domain.model.ProductionSourceReference;

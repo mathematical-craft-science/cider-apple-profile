@@ -1,9 +1,10 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.composition.mapper;
 
-import org.craft.mcs.cap.core.feedstock.planning.application.candidate.model.FeedstockPlanningProfileFilters;
+import org.craft.mcs.cap.core.feedstock.planning.application.candidate.contract.FeedstockPlanningProfileFilters;
 import org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.port.in.FeedstockBatchProfileTargetQuery;
 import org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.port.in.FeedstockBatchProfileTargetScore;
 import org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.port.in.FeedstockBatchProfileTargetScores;
+import org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.contract.FeedstockTargetFitConfiguration;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.common.mapper.FeedstockProfileTargetRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.composition.dto.FeedstockBatchProfileTargetScoreBatchResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.composition.dto.FeedstockBatchProfileTargetScoreResponse;
@@ -17,12 +18,14 @@ import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
 import static java.util.Objects.requireNonNullElse;
+import static org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.profiletarget.common.mapper
+    .ProfileTargetCandidateCommonRestMapper.toFeedstockWeights;
 import static org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.common.mapper.FeedstockCriteriaRestMapper
     .toPlanningBatchCriteria;
 import static org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.common.mapper.FeedstockCriteriaRestMapper
     .toSeason;
 import static org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.mapper.JolicoeurSugarAcidityGraphCriteriaRestMapper
-    .toZoneCriteria;
+    .toFeedstockPlanningGraphCriteria;
 
 
 /** Maps the Feedstock profile-target scoring transport contract. */
@@ -40,6 +43,7 @@ public final class FeedstockBatchProfileTargetScoreRestMapper {
         request.analysisScenario(),
         "profile target analysis scenario cannot be null"
     );
+    final var requestedZone = request.zone();
 
     return new FeedstockBatchProfileTargetQuery(
         WorkspaceId.of(request.workspaceId()),
@@ -47,11 +51,17 @@ public final class FeedstockBatchProfileTargetScoreRestMapper {
             toPlanningBatchCriteria(request.batchId()),
             toSeason(request.season())
         ),
-        toZoneCriteria(request.zone()),
-        analysisScenario,
+        toFeedstockPlanningGraphCriteria(
+            requestedZone == null
+                ? null
+                : org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.dto.JolicoeurSugarAcidityZone
+                    .valueOf(requestedZone.name()),
+            null
+        ),
+        FeedstockTargetFitConfiguration.AnalysisScenario.valueOf(analysisScenario.name()),
         FeedstockProfileTargetRestMapper.toSelection(target),
         FeedstockProfileTargetRestMapper.toTanninTarget(request.tanninTarget()),
-        ProfileTargetRestMapper.toWeights(request.weights()),
+        toFeedstockWeights(request.weights()),
         requireNonNullElse(request.limit(), QueryLimits.DEFAULT)
     );
   }
@@ -62,8 +72,10 @@ public final class FeedstockBatchProfileTargetScoreRestMapper {
     requireNonNull(scores, "feedstock batch profile target scores cannot be null");
 
     return new FeedstockBatchProfileTargetScoreBatchResponse(
-        scores.analysisScenario(),
-        scores.normalizerCode(),
+        org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.ProfileTargetAnalysisScenario
+            .valueOf(scores.analysisScenario().name()),
+        org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.ProfileAxisNormalizerCode
+            .valueOf(scores.normalizerCode().name()),
         scores.scores().stream()
             .map(FeedstockBatchProfileTargetScoreRestMapper::toResponse)
             .toList()

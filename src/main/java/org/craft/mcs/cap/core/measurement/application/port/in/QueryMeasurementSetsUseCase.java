@@ -1,7 +1,7 @@
 package org.craft.mcs.cap.core.measurement.application.port.in;
 
 import java.util.List;
-import org.craft.mcs.cap.core.measurement.application.model.MeasurementSetView;
+import org.craft.mcs.cap.core.measurement.application.contract.MeasurementSetView;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetId;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSubjectReference;
 import org.jspecify.annotations.NonNull;

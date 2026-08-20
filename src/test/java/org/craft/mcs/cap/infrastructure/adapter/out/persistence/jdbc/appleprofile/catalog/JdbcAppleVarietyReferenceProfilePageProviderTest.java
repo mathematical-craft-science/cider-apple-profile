@@ -2,8 +2,8 @@ package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.appleprofi
 
 import java.util.List;
 import java.util.UUID;
-import org.craft.mcs.cap.core.appleprofile.catalog.application.model.AppleVarietyCatalogPagePosition;
-import org.craft.mcs.cap.core.appleprofile.catalog.application.model.AppleVarietyReferenceProfilePageQuery;
+import org.craft.mcs.cap.core.appleprofile.catalog.application.contract.AppleVarietyCatalogPagePosition;
+import org.craft.mcs.cap.core.appleprofile.catalog.application.contract.AppleVarietyReferenceProfilePageQuery;
 import org.craft.mcs.cap.core.appleprofile.catalog.domain.model.AppleVariety;
 import org.craft.mcs.cap.shared.application.query.TextSearchCriteria;
 import org.junit.jupiter.api.Test;

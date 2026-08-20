@@ -2,7 +2,7 @@ package org.craft.mcs.cap.core.appleprofile.catalog.application.usecase;
 
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.appleprofile.catalog.application.AppleVarietyNotFoundException;
-import org.craft.mcs.cap.core.appleprofile.catalog.application.model.AppleVarietyReferenceProfileView;
+import org.craft.mcs.cap.core.appleprofile.catalog.application.contract.AppleVarietyReferenceProfileView;
 import org.craft.mcs.cap.core.appleprofile.catalog.application.port.in.GetAppleVarietyReferenceProfileUseCase;
 import org.craft.mcs.cap.core.appleprofile.catalog.application.port.out.AppleVarietyRepository;
 import org.craft.mcs.cap.core.appleprofile.catalog.domain.model.AppleVariety;

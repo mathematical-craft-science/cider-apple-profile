@@ -1,7 +1,7 @@
 package org.craft.mcs.cap.core.measurement.application.port.out;
 
 import java.util.List;
-import org.craft.mcs.cap.core.measurement.application.model.MeasurementCharacteristicInput;
+import org.craft.mcs.cap.core.measurement.application.contract.MeasurementCharacteristicInput;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSubjectReference;
 import org.jspecify.annotations.NonNull;
 

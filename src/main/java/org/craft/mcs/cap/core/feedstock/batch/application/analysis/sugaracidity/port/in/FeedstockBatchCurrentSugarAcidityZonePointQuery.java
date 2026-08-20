@@ -2,7 +2,7 @@ package org.craft.mcs.cap.core.feedstock.batch.application.analysis.sugaracidity
 
 import org.craft.mcs.cap.core.feedstock.batch.application.api.currentprofile.FeedstockCurrentProfileFilters;
 import org.craft.mcs.cap.core.feedstock.batch.application.api.currentprofile.FeedstockCurrentProfilePagePosition;
-import org.craft.mcs.cap.core.profileanalysis.graph.application.model.JolicoeurSugarAcidityGraphCriteria;
+import org.craft.mcs.cap.core.feedstock.batch.application.analysis.sugaracidity.contract.FeedstockSugarAcidityGraphCriteria;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.application.query.pagination.CursorPageRequest;
 import org.jspecify.annotations.NonNull;
@@ -14,7 +14,7 @@ import static java.util.Objects.requireNonNull;
 public record FeedstockBatchCurrentSugarAcidityZonePointQuery(
     @NonNull WorkspaceId workspaceId,
     @NonNull FeedstockCurrentProfileFilters filters,
-    @Nullable JolicoeurSugarAcidityGraphCriteria graphCriteria,
+    @Nullable FeedstockSugarAcidityGraphCriteria graphCriteria,
     @NonNull CursorPageRequest<@NonNull FeedstockCurrentProfilePagePosition> page
 ) {
 

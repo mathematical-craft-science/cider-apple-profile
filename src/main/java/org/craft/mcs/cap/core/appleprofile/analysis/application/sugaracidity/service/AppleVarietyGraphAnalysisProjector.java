@@ -1,13 +1,13 @@
 package org.craft.mcs.cap.core.appleprofile.analysis.application.sugaracidity.service;
 
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.appleprofile.analysis.application.profile.model.AppleVarietyAnalysisProfile;
-import org.craft.mcs.cap.core.appleprofile.analysis.application.sugaracidity.model.AppleVarietyGraphAnalysisView;
-import org.craft.mcs.cap.core.appleprofile.analysis.application.sugaracidity.model.AppleVarietyNorthAmericanAssessmentView;
-import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPrediction;
-import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPredictor;
-import org.craft.mcs.cap.core.profileanalysis.classification.domain.profile.northamerican.NorthAmericanProfileCalculator;
-import org.craft.mcs.cap.core.profileanalysis.graph.application.port.in.EvaluateJolicoeurSugarAcidityGraphUseCase;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.profile.contract.AppleVarietyAnalysisProfile;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.abv.contract.ApplePotentialAbvPredictionView;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.abv.port.out.ApplePotentialAbvAnalyzer;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.classification.port.out.AppleCiderClassificationAnalyzer;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.sugaracidity.contract.AppleVarietyGraphAnalysisView;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.classification.contract.AppleVarietyNorthAmericanAssessmentView;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.graph.port.out.AppleSugarAcidityGraphAnalyzer;
 import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -24,16 +24,16 @@ import static org.craft.mcs.cap.shared.kernel.measurement.MeasurementValueMath.m
 @RequiredArgsConstructor
 public final class AppleVarietyGraphAnalysisProjector {
 
-  private final @NonNull EvaluateJolicoeurSugarAcidityGraphUseCase graphEvaluator;
-  private final @NonNull NorthAmericanProfileCalculator northAmericanProfileCalculator;
-  private final @NonNull PotentialAbvPredictor potentialAbvPredictor;
+  private final @NonNull AppleSugarAcidityGraphAnalyzer graphAnalyzer;
+  private final @NonNull AppleCiderClassificationAnalyzer classificationAnalyzer;
+  private final @NonNull ApplePotentialAbvAnalyzer potentialAbvAnalyzer;
 
   public @NonNull AppleVarietyGraphAnalysisView project(
       @NonNull AppleVarietyAnalysisProfile profile
   ) {
     requireNonNull(profile, "apple variety analysis profile cannot be null");
 
-    final var graphEvaluation = graphEvaluator.evaluate(
+    final var graphEvaluation = graphAnalyzer.evaluate(
         profile.specificGravity(),
         profile.titratableAcidity()
     );
@@ -59,26 +59,16 @@ public final class AppleVarietyGraphAnalysisProjector {
     if (specificGravity == null && titratableAcidity == null && tannin == null) {
       return null;
     }
-    return new AppleVarietyNorthAmericanAssessmentView(
-        specificGravity == null
-            ? null
-            : northAmericanProfileCalculator.assessSugar(requireNonNull(specificGravity)),
-        titratableAcidity == null
-            ? null
-            : northAmericanProfileCalculator.assessAcidity(requireNonNull(titratableAcidity)),
-        tannin == null
-            ? null
-            : northAmericanProfileCalculator.assessTannin(requireNonNull(tannin))
-    );
+    return classificationAnalyzer.assessNorthAmerican(profile);
   }
 
-  private @Nullable PotentialAbvPrediction potentialAbv(
+  private @Nullable ApplePotentialAbvPredictionView potentialAbv(
       @NonNull AppleVarietyAnalysisProfile profile
   ) {
     final var specificGravity = profile.specificGravity();
     return specificGravity == null
         ? null
-        : potentialAbvPredictor.predict(
+        : potentialAbvAnalyzer.predict(
             SpecificGravityValue.of(midpoint(specificGravity))
         );
   }

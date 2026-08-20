@@ -1,15 +1,15 @@
 package org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.usecase;
 
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.port.in.ProfileTargetDistanceCandidate;
-import org.craft.mcs.cap.core.feedstock.batch.application.api.currentprofile.FeedstockCurrentProfileView;
-import org.jspecify.annotations.NonNull;
-
 import static java.util.Objects.requireNonNull;
+
+import org.craft.mcs.cap.core.feedstock.batch.application.api.currentprofile.FeedstockCurrentProfileView;
+import org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.port.out.FeedstockTargetFitAnalyzer.Candidate;
+import org.jspecify.annotations.NonNull;
 
 
 record FeedstockBatchProfileTargetScorableCandidate(
     @NonNull FeedstockCurrentProfileView currentProfile,
-    @NonNull ProfileTargetDistanceCandidate candidate
+    @NonNull Candidate candidate
 ) {
 
   FeedstockBatchProfileTargetScorableCandidate {

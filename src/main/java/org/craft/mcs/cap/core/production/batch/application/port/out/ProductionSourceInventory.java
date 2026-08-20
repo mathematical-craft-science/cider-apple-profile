@@ -1,5 +1,6 @@
 package org.craft.mcs.cap.core.production.batch.application.port.out;
 
+import org.craft.mcs.cap.core.production.batch.application.contract.ProductionSourceEvidenceExpectation;
 import org.craft.mcs.cap.core.production.batch.domain.model.ProductionSourceComponent;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;
@@ -16,6 +17,7 @@ public interface ProductionSourceInventory {
   @NonNull
   ConsumedProductionSource consume(
       @NonNull WorkspaceId workspaceId,
-      @NonNull ProductionSourceComponent source
+      @NonNull ProductionSourceComponent source,
+      @NonNull ProductionSourceEvidenceExpectation expectation
   );
 }

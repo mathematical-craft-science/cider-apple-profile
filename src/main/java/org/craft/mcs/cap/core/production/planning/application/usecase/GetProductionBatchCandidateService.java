@@ -3,7 +3,7 @@ package org.craft.mcs.cap.core.production.planning.application.usecase;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.production.planning.application.authorization.port.out.ProductionPlanningAccessControl;
 import org.craft.mcs.cap.core.production.planning.application.ProductionBatchCandidateNotFoundException;
-import org.craft.mcs.cap.core.production.planning.application.model.ProductionBatchCandidateView;
+import org.craft.mcs.cap.core.production.planning.application.contract.ProductionBatchCandidateView;
 import org.craft.mcs.cap.core.production.planning.application.port.in.GetProductionBatchCandidateUseCase;
 import org.craft.mcs.cap.core.production.planning.application.port.out.ProductionBatchCandidateStore;
 import org.craft.mcs.cap.core.production.planning.domain.model.ProductionBatchCandidateId;

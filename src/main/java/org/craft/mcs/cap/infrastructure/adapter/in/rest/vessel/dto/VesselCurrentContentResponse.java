@@ -2,7 +2,7 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.vessel.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.UUID;
-import org.craft.mcs.cap.core.vessel.application.model.VesselCurrentContentType;
+import org.craft.mcs.cap.core.vessel.application.contract.VesselCurrentContentType;
 import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
 import org.jspecify.annotations.NonNull;
 

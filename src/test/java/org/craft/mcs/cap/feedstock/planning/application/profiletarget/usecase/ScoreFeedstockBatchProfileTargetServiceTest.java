@@ -2,8 +2,8 @@ package org.craft.mcs.cap.feedstock.planning.application.profiletarget.usecase;
 
 import static java.util.Objects.requireNonNull;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.craft.mcs.cap.core.profileanalysis.testing.ProfileAnalysisTestFixtures
-    .graphEvaluator;
+import static org.craft.mcs.cap.support.CiderAnalysisTestFixtures
+    .feedstockPlanningGraphAnalyzer;
 import static org.craft.mcs.cap.shared.kernel.identity.UuidV7Generator.newUuid;
 import static org.craft.mcs.cap.shared.testing.FeedstockCurrentProfileViews.currentProfile;
 import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementInstant;
@@ -15,36 +15,36 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
+import java.util.Set;
 import org.craft.mcs.cap.core.feedstock.batch.application.api.batch.FeedstockBatchCriteria;
-import org.craft.mcs.cap.core.feedstock.planning.application.candidate.model.FeedstockPlanningProfileFilters;
+import org.craft.mcs.cap.core.feedstock.planning.application.graph.contract.FeedstockPlanningGraphCriteria;
+import org.craft.mcs.cap.core.feedstock.planning.application.graph.contract.FeedstockPlanningGraphView.Zone;
+import org.craft.mcs.cap.core.feedstock.planning.application.candidate.contract.FeedstockPlanningProfileFilters;
 import org.craft.mcs.cap.core.feedstock.batch.application.api.currentprofile.FeedstockCurrentProfilePagePosition;
 import org.craft.mcs.cap.core.feedstock.batch.application.api.currentprofile.FeedstockCurrentProfilePageQuery;
 import org.craft.mcs.cap.core.feedstock.batch.application.currentprofile.port.out.FeedstockCurrentProfilePageProvider;
 import org.craft.mcs.cap.core.feedstock.planning.application.authorization.port.out.FeedstockPlanningAccessControl;
-import org.craft.mcs.cap.core.feedstock.planning.application.candidate.model.FeedstockPlanningCandidateSnapshot;
+import org.craft.mcs.cap.core.feedstock.planning.application.candidate.contract.FeedstockPlanningCandidateSnapshot;
 import org.craft.mcs.cap.core.feedstock.planning.application.candidate.port.out.FeedstockPlanningCandidateProvider;
 import org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.port.in.FeedstockBatchProfileTargetQuery;
 import org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.port.in.FeedstockBatchProfileTargetScore;
-import org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.port.in.PredefinedFeedstockProfileTargetSelection;
+import org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.contract.PredefinedFeedstockProfileTargetSelection;
+import org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.contract.FeedstockContributionView.Role;
+import org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.contract.FeedstockTargetFitConfiguration.AnalysisScenario;
+import org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.contract.FeedstockTargetFitConfiguration.ObjectiveWeights;
 import org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.usecase.FeedstockBatchProfileTargetScorableCandidateProvider;
-import org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.usecase.FeedstockProfileTargetObjectiveResolver;
 import org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.usecase.QueryFeedstockBatchProfileTargetCandidatesService;
 import org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.usecase.ScoreFeedstockBatchProfileTargetService;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetId;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetName;
 import org.craft.mcs.cap.core.feedstock.batch.domain.model.batch.FeedstockBatchId;
-import org.craft.mcs.cap.core.profileanalysis.composition.contribution.domain.CompositionContributionRole;
-import org.craft.mcs.cap.core.profileanalysis.composition.contribution.domain.TargetAwareCompositionContributionRoleAssessor;
-import org.craft.mcs.cap.core.profileanalysis.graph.zone.domain.BuiltInJolicoeurSugarAcidityZoneProfiles;
-import org.craft.mcs.cap.core.profileanalysis.graph.application.model.JolicoeurSugarAcidityZoneCriteria;
-import org.craft.mcs.cap.core.profileanalysis.graph.zone.domain.JolicoeurSugarAcidityZone;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.model.ProfileTargetAnalysisScenario;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.usecase.BuiltInProfileTargetAnalysisScenarioResolver;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.usecase.ScoreProfileTargetDistanceCandidatesService;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetObjectiveWeights;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.normalization.BuiltInProfileAxisNormalizerSelector;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.objective.BuiltInProfileTargetObjectiveFunctionFactory;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.ZoneGeometrySugarAcidityTargetResolver;
+import org.craft.mcs.cap.core.cideranalysis.targetfit.domain.contribution.TargetAwareCompositionContributionRoleAssessor;
+import org.craft.mcs.cap.core.cideranalysis.graph.domain.zone.BuiltInJolicoeurSugarAcidityZoneProfiles;
+import org.craft.mcs.cap.core.cideranalysis.targetfit.application.usecase.ScoreTargetFitService;
+import org.craft.mcs.cap.core.cideranalysis.targetfit.domain.scoring.normalization.BuiltInProfileAxisNormalizerSelector;
+import org.craft.mcs.cap.core.cideranalysis.targetfit.domain.scoring.objective.BuiltInProfileTargetObjectiveFunctionFactory;
+import org.craft.mcs.cap.core.cideranalysis.targetfit.domain.target.ZoneGeometrySugarAcidityTargetResolver;
+import org.craft.mcs.cap.infrastructure.adapter.out.cideranalysis.targetfit.FeedstockTargetFitAnalysisAdapter;
 import org.craft.mcs.cap.shared.application.query.QueryLimits;
 import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.craft.mcs.cap.shared.testing.ProfileCharacteristicsFixture;
@@ -63,10 +63,7 @@ class ScoreFeedstockBatchProfileTargetServiceTest {
   void assessesExcludedLowSugarBoundaryThroughTheCompleteCandidatePipeline() {
     final var repository = mock(FeedstockCurrentProfilePageProvider.class);
     final var scoreService = service(repository);
-    final var service = new QueryFeedstockBatchProfileTargetCandidatesService(
-        scoreService,
-        new TargetAwareCompositionContributionRoleAssessor()
-    );
+    final var service = new QueryFeedstockBatchProfileTargetCandidatesService(scoreService);
     final var boundaryBatch = sample("Excluded low-sugar boundary", profile("1.045", "7.6"));
     when(repository.findProfiles(any())).thenReturn(List.of(currentProfile(boundaryBatch)));
 
@@ -74,10 +71,12 @@ class ScoreFeedstockBatchProfileTargetServiceTest {
         WorkspaceId.of(newUuid()),
         new FeedstockPlanningProfileFilters(null, null),
         null,
-        ProfileTargetAnalysisScenario.BLENDING_PLANNING,
-        new PredefinedFeedstockProfileTargetSelection(JolicoeurSugarAcidityZone.LOW_SUGAR_APPLES),
+        AnalysisScenario.BLENDING_PLANNING,
+        new PredefinedFeedstockProfileTargetSelection(
+            Zone.LOW_SUGAR_APPLES
+        ),
         null,
-        ProfileTargetObjectiveWeights.balanced(),
+        ObjectiveWeights.balanced(),
         200
     ));
 
@@ -93,7 +92,7 @@ class ScoreFeedstockBatchProfileTargetServiceTest {
             false,
             true,
             0,
-            List.of(CompositionContributionRole.SUGAR_CONTRIBUTOR)
+            List.of(Role.SUGAR_CONTRIBUTOR)
         );
   }
 
@@ -112,10 +111,12 @@ class ScoreFeedstockBatchProfileTargetServiceTest {
         workspaceId,
         new FeedstockPlanningProfileFilters(null, null),
         null,
-        ProfileTargetAnalysisScenario.BLENDING_PLANNING,
-        new PredefinedFeedstockProfileTargetSelection(JolicoeurSugarAcidityZone.PERFECT_APPLES),
+        AnalysisScenario.BLENDING_PLANNING,
+        new PredefinedFeedstockProfileTargetSelection(
+            Zone.PERFECT_APPLES
+        ),
         null,
-        ProfileTargetObjectiveWeights.balanced(),
+        ObjectiveWeights.balanced(),
         50
     ));
 
@@ -145,11 +146,13 @@ class ScoreFeedstockBatchProfileTargetServiceTest {
     final var result = service.score(new FeedstockBatchProfileTargetQuery(
         WorkspaceId.of(newUuid()),
         new FeedstockPlanningProfileFilters(null, null),
-        JolicoeurSugarAcidityZoneCriteria.of(JolicoeurSugarAcidityZone.PERFECT_APPLES),
-        ProfileTargetAnalysisScenario.BLENDING_PLANNING,
-        new PredefinedFeedstockProfileTargetSelection(JolicoeurSugarAcidityZone.PERFECT_APPLES),
+        new FeedstockPlanningGraphCriteria(Set.of(Zone.PERFECT_APPLES), null),
+        AnalysisScenario.BLENDING_PLANNING,
+        new PredefinedFeedstockProfileTargetSelection(
+            Zone.PERFECT_APPLES
+        ),
         null,
-        ProfileTargetObjectiveWeights.balanced(),
+        ObjectiveWeights.balanced(),
         50
     ));
 
@@ -176,10 +179,12 @@ class ScoreFeedstockBatchProfileTargetServiceTest {
         WorkspaceId.of(newUuid()),
         new FeedstockPlanningProfileFilters(null, null),
         null,
-        ProfileTargetAnalysisScenario.BLENDING_PLANNING,
-        new PredefinedFeedstockProfileTargetSelection(JolicoeurSugarAcidityZone.PERFECT_APPLES),
+        AnalysisScenario.BLENDING_PLANNING,
+        new PredefinedFeedstockProfileTargetSelection(
+            Zone.PERFECT_APPLES
+        ),
         null,
-        ProfileTargetObjectiveWeights.balanced(),
+        ObjectiveWeights.balanced(),
         1
     ));
 
@@ -206,16 +211,14 @@ class ScoreFeedstockBatchProfileTargetServiceTest {
     return new ScoreFeedstockBatchProfileTargetService(
         new FeedstockBatchProfileTargetScorableCandidateProvider(
             candidateProvider(repository),
-            graphEvaluator(geometryProfile)
+            feedstockPlanningGraphAnalyzer(geometryProfile)
         ),
-        new FeedstockProfileTargetObjectiveResolver(
-            new ZoneGeometrySugarAcidityTargetResolver(geometryProfile)
-        ),
-        new ScoreProfileTargetDistanceCandidatesService(
+        new FeedstockTargetFitAnalysisAdapter(new ScoreTargetFitService(
+            new ZoneGeometrySugarAcidityTargetResolver(geometryProfile),
             new BuiltInProfileAxisNormalizerSelector(),
-            new BuiltInProfileTargetObjectiveFunctionFactory()
-        ),
-        new BuiltInProfileTargetAnalysisScenarioResolver(),
+            new BuiltInProfileTargetObjectiveFunctionFactory(),
+            new TargetAwareCompositionContributionRoleAssessor()
+        )),
         mock(FeedstockPlanningAccessControl.class)
     );
   }

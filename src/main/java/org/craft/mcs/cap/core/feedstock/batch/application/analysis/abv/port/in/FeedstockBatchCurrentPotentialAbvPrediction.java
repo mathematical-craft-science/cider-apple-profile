@@ -1,10 +1,10 @@
 package org.craft.mcs.cap.core.feedstock.batch.application.analysis.abv.port.in;
 
 import org.craft.mcs.cap.core.feedstock.batch.domain.model.batch.FeedstockBatchId;
+import org.craft.mcs.cap.core.feedstock.batch.application.analysis.abv.contract.FeedstockPotentialAbvPredictionView;
 import org.craft.mcs.cap.shared.application.measurement.MeasurementEvidenceView;
 import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
-import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPrediction;
 import org.craft.mcs.cap.shared.kernel.characteristic.CharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.jspecify.annotations.NonNull;
@@ -18,7 +18,7 @@ public record FeedstockBatchCurrentPotentialAbvPrediction(
     @NonNull MaterialStateId currentMaterialStateId,
     @NonNull MeasurementEvidenceView specificGravityEvidence,
     @NonNull CharacteristicValue<SpecificGravityValue> originalGravity,
-    @NonNull PotentialAbvPrediction prediction
+    @NonNull FeedstockPotentialAbvPredictionView prediction
 ) {
 
   public FeedstockBatchCurrentPotentialAbvPrediction {

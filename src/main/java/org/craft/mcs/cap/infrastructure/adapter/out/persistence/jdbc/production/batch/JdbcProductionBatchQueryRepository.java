@@ -3,7 +3,7 @@ package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.production
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.production.batch.application.model.ProductionBatchView;
+import org.craft.mcs.cap.core.production.batch.application.contract.ProductionBatchView;
 import org.craft.mcs.cap.core.production.batch.application.port.out.ProductionBatchQueryRepository;
 import org.craft.mcs.cap.core.production.batch.domain.model.ProductionBatchId;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.production.batch.entity.ProductionBatchJdbcMapper;

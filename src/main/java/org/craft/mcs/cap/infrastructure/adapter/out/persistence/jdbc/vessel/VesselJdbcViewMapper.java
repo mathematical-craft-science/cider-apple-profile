@@ -3,7 +3,7 @@ package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.vessel;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.UUID;
-import org.craft.mcs.cap.core.vessel.application.model.VesselView;
+import org.craft.mcs.cap.core.vessel.application.contract.VesselView;
 import org.craft.mcs.cap.core.vessel.domain.model.VesselMaterial;
 import org.craft.mcs.cap.core.vessel.domain.model.VesselOperationalStatus;
 import org.craft.mcs.cap.shared.application.persistence.AggregateRevision;

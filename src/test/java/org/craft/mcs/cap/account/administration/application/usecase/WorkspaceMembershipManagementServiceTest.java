@@ -2,7 +2,7 @@ package org.craft.mcs.cap.account.administration.application.usecase;
 
 import java.util.List;
 import java.util.Optional;
-import org.craft.mcs.cap.core.account.context.application.model.ResolvedWorkspaceContext;
+import org.craft.mcs.cap.core.account.context.application.contract.ResolvedWorkspaceContext;
 import org.craft.mcs.cap.core.account.administration.application.port.in.TransferWorkspaceOwnershipCommand;
 import org.craft.mcs.cap.core.account.administration.application.port.in.WorkspaceMemberCommand;
 import org.craft.mcs.cap.core.account.administration.application.port.in.WorkspaceMemberView;

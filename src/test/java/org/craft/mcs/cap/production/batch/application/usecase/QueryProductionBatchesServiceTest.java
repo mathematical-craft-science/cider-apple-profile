@@ -4,13 +4,10 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import org.craft.mcs.cap.core.profileanalysis.abv.domain.FixedFinalGravityPredictionStrategy;
-import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPredictor;
-import org.craft.mcs.cap.core.profileanalysis.abv.domain.StandardGravityDropAbvPredictionStrategy;
 import org.craft.mcs.cap.core.production.batch.application.authorization.port.out.ProductionAccessControl;
-import org.craft.mcs.cap.core.production.batch.application.model.ProductionBatchView;
-import org.craft.mcs.cap.core.production.batch.application.model.ProductionMeasuredProfileView;
-import org.craft.mcs.cap.core.production.batch.application.model.ProductionCurrentCharacteristicView;
+import org.craft.mcs.cap.core.production.batch.application.contract.ProductionBatchView;
+import org.craft.mcs.cap.core.production.batch.application.contract.ProductionMeasuredProfileView;
+import org.craft.mcs.cap.core.production.batch.application.contract.ProductionCurrentCharacteristicView;
 import org.craft.mcs.cap.core.production.batch.application.port.in.ListProductionBatchesQuery;
 import org.craft.mcs.cap.core.production.batch.application.port.out.ProductionBatchQueryRepository;
 import org.craft.mcs.cap.core.production.batch.application.port.out.ProductionMeasurementProfileProvider;
@@ -47,13 +44,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.craft.mcs.cap.shared.kernel.identity.UuidV7Generator.newUuid;
+import static org.craft.mcs.cap.support.CiderAnalysisTestFixtures.productionPotentialAbvAnalyzer;
 
 class QueryProductionBatchesServiceTest {
-
-  private static final PotentialAbvPredictor POTENTIAL_ABV_PREDICTOR = new PotentialAbvPredictor(
-      FixedFinalGravityPredictionStrategy.dryCiderDefault(),
-      new StandardGravityDropAbvPredictionStrategy()
-  );
 
   @Test
   void returnsAuthorizedProductionBatchView() {
@@ -181,7 +174,7 @@ class QueryProductionBatchesServiceTest {
     final var detailsAssembler = new ProductionBatchDetailsAssembler(
         measurementProvider,
         new ProductionCurrentProfileProjector(),
-        POTENTIAL_ABV_PREDICTOR,
+        productionPotentialAbvAnalyzer(),
         vesselReferenceResolver
     );
     return new QueryProductionBatchesService(

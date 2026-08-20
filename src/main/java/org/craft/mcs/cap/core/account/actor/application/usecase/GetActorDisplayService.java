@@ -4,7 +4,7 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import org.craft.mcs.cap.core.account.actor.application.ActorNotFoundException;
-import org.craft.mcs.cap.core.account.actor.application.model.ActorDisplayView;
+import org.craft.mcs.cap.core.account.actor.application.contract.ActorDisplayView;
 import org.craft.mcs.cap.core.account.actor.application.port.in.GetActorDisplayUseCase;
 import org.craft.mcs.cap.core.account.actor.application.port.out.ActorDirectoryEntryReader;
 import org.craft.mcs.cap.core.account.context.application.usecase.CurrentWorkspaceContextResolver;

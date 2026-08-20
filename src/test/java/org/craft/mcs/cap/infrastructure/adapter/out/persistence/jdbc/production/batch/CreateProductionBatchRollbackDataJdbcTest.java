@@ -21,7 +21,7 @@ import org.craft.mcs.cap.core.production.batch.application.port.out.ProductionBa
 import org.craft.mcs.cap.core.production.batch.application.port.out.ProductionSourceInventory;
 import org.craft.mcs.cap.core.production.planning.application.confirmation.usecase.CreateProductionBatchService;
 import org.craft.mcs.cap.core.production.planning.application.authorization.port.out.ProductionPlanningAccessControl;
-import org.craft.mcs.cap.core.production.planning.application.model.ProductionBatchCandidateSnapshot;
+import org.craft.mcs.cap.core.production.planning.application.contract.ProductionBatchCandidateSnapshot;
 import org.craft.mcs.cap.core.production.planning.application.port.out.ProductionBatchCandidateStore;
 import org.craft.mcs.cap.core.production.planning.domain.model.ProductionBatchCandidate;
 import org.craft.mcs.cap.core.production.planning.domain.model.ProductionBatchCandidateId;
@@ -58,7 +58,7 @@ import static org.craft.mcs.cap.production.testing.ProductionSourceCharacteristi
 
 import static java.util.Objects.requireNonNull;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.craft.mcs.cap.support.PotentialAbvPredictionFixtures.prediction;
+import static org.craft.mcs.cap.support.PotentialAbvPredictionFixtures.productionCandidatePrediction;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 
@@ -181,7 +181,7 @@ class CreateProductionBatchRollbackDataJdbcTest {
             ),
             productionProfile()
         ),
-        prediction(productionProfile().specificGravity()),
+        productionCandidatePrediction(productionProfile().specificGravity()),
         null,
         null,
         List.of()
@@ -212,7 +212,7 @@ class CreateProductionBatchRollbackDataJdbcTest {
 
     @Bean
     ProductionSourceInventory productionSourceInventory(@NonNull JdbcTemplate jdbcTemplate) {
-      return (workspaceId, source) -> {
+      return (workspaceId, source, expectation) -> {
         jdbcTemplate.update("""
             UPDATE feedstock_batches
             SET available_volume_liters = available_volume_liters - ?
@@ -309,6 +309,13 @@ class CreateProductionBatchRollbackDataJdbcTest {
       return snapshot != null && snapshot.candidate().candidateId().equals(candidateId)
           ? Optional.of(snapshot)
           : Optional.empty();
+    }
+
+    @Override
+    public @NonNull Optional<@NonNull ProductionBatchCandidateSnapshot> lockById(
+        @NonNull ProductionBatchCandidateId candidateId
+    ) {
+      return findById(candidateId);
     }
   }
 

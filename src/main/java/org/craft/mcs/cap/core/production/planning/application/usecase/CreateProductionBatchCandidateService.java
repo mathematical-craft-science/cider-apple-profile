@@ -1,18 +1,21 @@
 package org.craft.mcs.cap.core.production.planning.application.usecase;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.production.planning.application.authorization.port.out.ProductionPlanningAccessControl;
-import org.craft.mcs.cap.core.production.planning.application.model.AvailableProductionSource;
-import org.craft.mcs.cap.core.production.planning.application.model.ProductionBatchCandidateSnapshot;
-import org.craft.mcs.cap.core.production.planning.application.model.ProductionBatchCandidateView;
+import org.craft.mcs.cap.core.production.planning.application.contract.AvailableProductionSource;
+import org.craft.mcs.cap.core.production.planning.application.contract.ProductionBatchCandidateCalculation;
+import org.craft.mcs.cap.core.production.planning.application.contract.ProductionBatchCandidateSnapshot;
+import org.craft.mcs.cap.core.production.planning.application.contract.ProductionBatchCandidateView;
 import org.craft.mcs.cap.core.production.planning.application.port.in.CreateProductionBatchCandidateCommand;
 import org.craft.mcs.cap.core.production.planning.application.port.in.CreateProductionBatchCandidateUseCase;
 import org.craft.mcs.cap.core.production.planning.application.port.out.ProductionBatchCandidateCalculator;
 import org.craft.mcs.cap.core.production.planning.application.port.out.ProductionBatchCandidateStore;
 import org.craft.mcs.cap.core.production.planning.application.port.out.ProductionSourceInspector;
+import org.craft.mcs.cap.core.production.planning.application.port.out.ProductionSourceSnapshotValidator;
 import org.craft.mcs.cap.core.production.planning.domain.model.ProductionBatchCandidate;
 import org.craft.mcs.cap.core.production.planning.domain.model.ProductionBatchCandidateId;
 import org.craft.mcs.cap.core.production.planning.domain.model.ProductionCandidateSourceEvidence;
@@ -29,7 +32,15 @@ import static java.util.Objects.requireNonNull;
 @RequiredArgsConstructor
 public final class CreateProductionBatchCandidateService implements CreateProductionBatchCandidateUseCase {
 
+  private static final @NonNull Comparator<AvailableProductionSource> SOURCE_VALIDATION_ORDER =
+      Comparator.comparing(
+              AvailableProductionSource::reference,
+              Comparator.comparing(ProductionSourceReference::type)
+                  .thenComparing(ProductionSourceReference::id)
+          );
+
   private final @NonNull ProductionSourceInspector sourceInspector;
+  private final @NonNull ProductionSourceSnapshotValidator sourceSnapshotValidator;
   private final @NonNull ProductionBatchCandidateCalculator calculator;
   private final @NonNull ProductionBatchCandidateStore candidateStore;
   private final @NonNull ProductionPlanningAccessControl accessControl;
@@ -42,14 +53,19 @@ public final class CreateProductionBatchCandidateService implements CreateProduc
     requireNonNull(command, "create production batch candidate command cannot be null");
     accessControl.requireWriteAccess(command.workspaceId());
 
-    return transactionHelper.callInTransactionNonNull(() -> createInTransaction(command));
+    final var sources = transactionHelper.callInTransactionNonNull(() -> inspectSources(command));
+    final var calculation = calculator.calculate(sources, command.calculationRequest());
+    return transactionHelper.callInTransactionNonNull(() -> persistValidated(command, sources, calculation));
   }
 
-  private @NonNull ProductionBatchCandidateView createInTransaction(
-      @NonNull CreateProductionBatchCandidateCommand command
+  private @NonNull ProductionBatchCandidateView persistValidated(
+      @NonNull CreateProductionBatchCandidateCommand command,
+      @NonNull List<@NonNull AvailableProductionSource> sources,
+      @NonNull ProductionBatchCandidateCalculation calculation
   ) {
-    final var sources = inspectSources(command);
-    final var calculation = calculator.calculate(sources, command.calculationRequest());
+    sources.stream()
+        .sorted(SOURCE_VALIDATION_ORDER)
+        .forEach(source -> sourceSnapshotValidator.validate(command.workspaceId(), source));
     final var candidate = ProductionBatchCandidate.create(
         ProductionBatchCandidateId.newId(),
         command.workspaceId(),

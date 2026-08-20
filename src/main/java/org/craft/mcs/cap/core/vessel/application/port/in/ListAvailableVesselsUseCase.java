@@ -1,7 +1,7 @@
 package org.craft.mcs.cap.core.vessel.application.port.in;
 
 import java.util.List;
-import org.craft.mcs.cap.core.vessel.application.model.VesselUsageView;
+import org.craft.mcs.cap.core.vessel.application.contract.VesselUsageView;
 import org.jspecify.annotations.NonNull;
 
 

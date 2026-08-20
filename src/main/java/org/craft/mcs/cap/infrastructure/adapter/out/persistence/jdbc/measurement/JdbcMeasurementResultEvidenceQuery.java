@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.measurement.application.model.MeasurementResultEvidenceView;
+import org.craft.mcs.cap.core.measurement.application.contract.MeasurementResultEvidenceView;
 import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementResultEvidenceQuery;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementRecordId;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetId;

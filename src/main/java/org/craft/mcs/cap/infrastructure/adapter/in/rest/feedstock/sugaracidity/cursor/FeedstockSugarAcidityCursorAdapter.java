@@ -4,8 +4,7 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.feedstock.batch.application.api.currentprofile.FeedstockCurrentProfilePagePosition;
 import org.craft.mcs.cap.core.feedstock.batch.application.api.currentprofile.FeedstockCurrentProfileFilters;
-import org.craft.mcs.cap.core.profileanalysis.graph.application.model.JolicoeurSugarAcidityGraphCriteria;
-import org.craft.mcs.cap.core.profileanalysis.graph.application.model.JolicoeurSugarAcidityZoneCriteria;
+import org.craft.mcs.cap.core.feedstock.batch.application.analysis.sugaracidity.contract.FeedstockSugarAcidityGraphCriteria;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.infrastructure.query.cursor.CursorBinding;
 import org.craft.mcs.cap.shared.infrastructure.query.cursor.CursorScope;
@@ -32,7 +31,7 @@ public final class FeedstockSugarAcidityCursorAdapter {
       @Nullable String cursor,
       @NonNull WorkspaceId workspaceId,
       @NonNull FeedstockCurrentProfileFilters filters,
-      @Nullable JolicoeurSugarAcidityGraphCriteria graphCriteria
+      @Nullable FeedstockSugarAcidityGraphCriteria graphCriteria
   ) {
     return decode(cursor, CURRENT_SCOPE, workspaceId, filters, graphCriteria);
   }
@@ -41,7 +40,7 @@ public final class FeedstockSugarAcidityCursorAdapter {
       @Nullable FeedstockCurrentProfilePagePosition position,
       @NonNull WorkspaceId workspaceId,
       @NonNull FeedstockCurrentProfileFilters filters,
-      @Nullable JolicoeurSugarAcidityGraphCriteria graphCriteria
+      @Nullable FeedstockSugarAcidityGraphCriteria graphCriteria
   ) {
     return encode(position, CURRENT_SCOPE, workspaceId, filters, graphCriteria);
   }
@@ -51,7 +50,7 @@ public final class FeedstockSugarAcidityCursorAdapter {
       @NonNull CursorScope scope,
       @NonNull WorkspaceId workspaceId,
       @NonNull FeedstockCurrentProfileFilters filters,
-      @Nullable JolicoeurSugarAcidityGraphCriteria graphCriteria
+      @Nullable FeedstockSugarAcidityGraphCriteria graphCriteria
   ) {
     requireNonNull(scope, "cursor scope cannot be null");
     requireNonNull(workspaceId, "workspace id cannot be null");
@@ -72,7 +71,7 @@ public final class FeedstockSugarAcidityCursorAdapter {
       @NonNull CursorScope scope,
       @NonNull WorkspaceId workspaceId,
       @NonNull FeedstockCurrentProfileFilters filters,
-      @Nullable JolicoeurSugarAcidityGraphCriteria graphCriteria
+      @Nullable FeedstockSugarAcidityGraphCriteria graphCriteria
   ) {
     requireNonNull(scope, "cursor scope cannot be null");
     requireNonNull(workspaceId, "workspace id cannot be null");
@@ -86,7 +85,7 @@ public final class FeedstockSugarAcidityCursorAdapter {
       @NonNull CursorScope scope,
       @NonNull WorkspaceId workspaceId,
       @NonNull FeedstockCurrentProfileFilters filters,
-      @Nullable JolicoeurSugarAcidityGraphCriteria graphCriteria
+      @Nullable FeedstockSugarAcidityGraphCriteria graphCriteria
   ) {
     return CursorBinding.boundTo(
         scope,
@@ -113,17 +112,16 @@ public final class FeedstockSugarAcidityCursorAdapter {
         : filters.season().startsOn() + ":" + filters.season().endsOn(); // NOSONAR
   }
 
-  private static @NonNull String zones(@Nullable JolicoeurSugarAcidityGraphCriteria graph) {
-    final JolicoeurSugarAcidityZoneCriteria criteria = graph == null ? null : graph.zone();
-    return criteria == null
+  private static @NonNull String zones(@Nullable FeedstockSugarAcidityGraphCriteria graph) {
+    return graph == null
         ? ""
-        : criteria.zones().stream()
+        : graph.zones().stream()
             .map(Enum::name)
             .sorted()
             .collect(Collectors.joining(","));
   }
 
-  private static @NonNull String plottable(@Nullable JolicoeurSugarAcidityGraphCriteria graph) {
+  private static @NonNull String plottable(@Nullable FeedstockSugarAcidityGraphCriteria graph) {
     return graph == null || graph.plottable() == null ? "" : graph.plottable().toString(); // NOSONAR
   }
 }

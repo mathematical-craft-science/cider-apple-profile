@@ -1,7 +1,7 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.production.mapper;
 
 import java.util.List;
-import org.craft.mcs.cap.core.production.batch.application.model.ProductionBatchDetailsView;
+import org.craft.mcs.cap.core.production.batch.application.contract.ProductionBatchDetailsView;
 import org.craft.mcs.cap.core.production.batch.application.port.in.UpdateProductionBatchCommand;
 import org.craft.mcs.cap.core.production.planning.application.confirmation.port.in.CreateProductionBatchCommand;
 import org.craft.mcs.cap.core.production.planning.application.confirmation.port.in.ProductionBatchCreated;

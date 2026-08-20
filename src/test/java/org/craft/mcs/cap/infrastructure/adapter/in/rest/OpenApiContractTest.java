@@ -54,12 +54,13 @@ import org.craft.mcs.cap.core.production.batch.application.port.in.ListProductio
 import org.craft.mcs.cap.core.production.batch.application.port.in.UpdateProductionBatchUseCase;
 import org.craft.mcs.cap.core.production.planning.application.port.in.CreateProductionBatchCandidateUseCase;
 import org.craft.mcs.cap.core.production.planning.application.port.in.GetProductionBatchCandidateUseCase;
-import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPredictor;
-import org.craft.mcs.cap.core.profileanalysis.composition.calculation.application.port.in.*;
-import org.craft.mcs.cap.core.profileanalysis.composition.optimization.application.port.in.*;
-import org.craft.mcs.cap.core.profileanalysis.compositiongraph.application.port.in.CompositionGraphInterpretationUseCase;
-import org.craft.mcs.cap.core.profileanalysis.graph.zone.domain.JolicoeurSugarAcidityZoneGeometryProfile;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.SugarAcidityTargetResolver;
+import org.craft.mcs.cap.core.cideranalysis.abv.domain.PotentialAbvPredictor;
+import org.craft.mcs.cap.core.formulation.calculation.application.port.in.*;
+import org.craft.mcs.cap.core.formulation.optimization.application.port.in.*;
+import org.craft.mcs.cap.core.formulation.interpretation.application.port.in.CompositionGraphInterpretationUseCase;
+import org.craft.mcs.cap.core.cideranalysis.graph.domain.zone.JolicoeurSugarAcidityZoneGeometryProfile;
+import org.craft.mcs.cap.core.cideranalysis.graph.application.port.in.QueryJolicoeurSugarAcidityGraphMetadataUseCase;
+import org.craft.mcs.cap.core.cideranalysis.targetfit.domain.target.SugarAcidityTargetResolver;
 import org.craft.mcs.cap.core.vessel.application.port.in.CreateVesselUseCase;
 import org.craft.mcs.cap.core.vessel.application.port.in.GetVesselUseCase;
 import org.craft.mcs.cap.core.vessel.application.port.in.ListAvailableVesselsUseCase;
@@ -178,6 +179,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
     CalculateCompositionUseCase.class,
     OptimizeCompositionUseCase.class,
     CompositionGraphInterpretationUseCase.class,
+    QueryJolicoeurSugarAcidityGraphMetadataUseCase.class,
     JolicoeurSugarAcidityZoneGeometryProfile.class,
     SugarAcidityTargetResolver.class,
     CreateVesselUseCase.class,
@@ -627,6 +629,16 @@ class OpenApiContractTest {
         "balancedProfile"
     );
     assertNullable(schemaProperty(openApi, "SugarAcidityGraphAssessmentResponse", "zone"));
+    assertEnumPropertyValues(
+        openApi,
+        "SugarAcidityGraphAssessmentResponse",
+        "zone",
+        "PERFECT_APPLES",
+        "HIGH_SUGAR_APPLES",
+        "LOW_ACIDITY_APPLES",
+        "MEDIUM_SUGAR_APPLES",
+        "LOW_SUGAR_APPLES"
+    );
     assertNullable(
         schemaProperty(
             openApi,

@@ -10,6 +10,7 @@ import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSet;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetId;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetRevision;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetRevisionId;
+import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.common.CharacteristicValueStorageKind;
 import org.craft.mcs.cap.shared.application.ConcurrentResourceModificationException;
 import org.craft.mcs.cap.shared.application.persistence.AggregateRevision;
 import org.craft.mcs.cap.shared.application.persistence.VersionedAggregate;
@@ -108,6 +109,8 @@ final class JdbcMeasurementSetAggregateWriter {
       @NonNull MeasurementSetId measurementSetId,
       @NonNull MeasurementSetRevision revision
   ) {
+    final var correctionReason = revision.correctionReason();
+    final var retractionReason = revision.retractionReason();
     jdbcTemplate.update(
         """
             INSERT INTO measurement_set_revisions (
@@ -151,11 +154,11 @@ final class JdbcMeasurementSetAggregateWriter {
             .addValue("note", revision.note())
             .addValue(
                 "correctionReason",
-                revision.correctionReason() == null ? null : revision.correctionReason().value()
+                correctionReason == null ? null : correctionReason.value()
             )
             .addValue(
                 "retractionReason",
-                revision.retractionReason() == null ? null : revision.retractionReason().value()
+                retractionReason == null ? null : retractionReason.value()
             )
             .addValue("revisionCreatedAt", timestamp(revision.createdAt()))
             .addValue("performedByType", revision.actor().type().name())
@@ -224,7 +227,7 @@ final class JdbcMeasurementSetAggregateWriter {
         .addValue("recordId", measurementRecord.recordId().value())
         .addValue("characteristic", measurementRecord.characteristic().name())
         .addValue("role", measurementRecord.role().name())
-        .addValue("valueKind", measurementRecord.valueKind().name())
+        .addValue("valueKind", storageKind(measurementRecord.value()).name())
         .addValue("measuredAt", timestamp(measurementRecord.measuredAt()))
         .addValue("sourceType", measurementRecord.provenance().sourceType().name())
         .addValue("sourceName", sourceNameValue(measurementRecord.provenance().sourceName()))
@@ -290,6 +293,15 @@ final class JdbcMeasurementSetAggregateWriter {
     if (affectedRows != 1) {
       throw new MeasurementEvidenceIdentityConflictException(measurementRecord.recordId());
     }
+  }
+
+  private static @NonNull CharacteristicValueStorageKind storageKind(
+      @NonNull CharacteristicValue<MeasuredValue> value
+  ) {
+    return switch (value) {
+      case PointCharacteristicValue<MeasuredValue> _ -> CharacteristicValueStorageKind.POINT;
+      case IntervalCharacteristicValue<MeasuredValue> _ -> CharacteristicValueStorageKind.INTERVAL;
+    };
   }
 
   private void associateActiveRecord(

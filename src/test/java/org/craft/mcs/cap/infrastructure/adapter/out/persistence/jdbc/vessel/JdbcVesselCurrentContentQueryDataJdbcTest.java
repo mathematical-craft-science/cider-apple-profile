@@ -2,8 +2,8 @@ package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.vessel;
 
 import java.math.BigDecimal;
 import org.craft.mcs.cap.core.vessel.application.VesselUsageProjectionException;
-import org.craft.mcs.cap.core.vessel.application.model.VesselCurrentContentType;
-import org.craft.mcs.cap.core.vessel.application.model.VesselCurrentContentView;
+import org.craft.mcs.cap.core.vessel.application.contract.VesselCurrentContentType;
+import org.craft.mcs.cap.core.vessel.application.contract.VesselCurrentContentView;
 import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.shared.kernel.identity.VesselId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;

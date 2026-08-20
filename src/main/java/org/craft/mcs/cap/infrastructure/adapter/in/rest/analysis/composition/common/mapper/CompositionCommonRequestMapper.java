@@ -1,15 +1,9 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.common.mapper;
 
-import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.AbsoluteCompositionVolume;
-import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionSource;
-import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionSourceReference;
-import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionSourceWeight;
-import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionProportion;
-import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionSourceCharacteristics;
-import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.CompositionOptimizationSource;
+import org.craft.mcs.cap.core.formulation.calculation.application.contract.CompositionSourceInput;
+import org.craft.mcs.cap.core.formulation.optimization.application.contract.OptimizationSourceInput;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.calculation.dto.CompositionSourceRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.calculation.dto.CompositionSourceWeightRequest;
-import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.common.dto.CompositionSourceReferenceRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.common.dto.CompositionSourceCharacteristicsRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.optimization.dto.CompositionOptimizationSourceRequest;
 import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
@@ -34,27 +28,28 @@ public final class CompositionCommonRequestMapper {
   private CompositionCommonRequestMapper() {
   }
 
-  public static @NonNull CompositionSource toSource(
+  public static @NonNull CompositionSourceInput toSourceInput(
       @NonNull CompositionSourceRequest request
   ) {
     requireNonNull(request, "composition calculation source request cannot be null");
-
-    return new CompositionSource(
-        toReference(request.reference()),
-        toCharacteristics(request.characteristics()),
+    final var characteristics = toCharacteristics(request.characteristics());
+    return new CompositionSourceInput(
+        new CompositionSourceInput.Reference(request.reference().type(), request.reference().id()),
+        characteristics,
         toWeight(request.weight()),
         toVolume(request.availableVolumeLiters())
     );
   }
 
-  public static @NonNull CompositionOptimizationSource toOptimizationSource(
+  public static @NonNull OptimizationSourceInput toOptimizationSource(
       @NonNull CompositionOptimizationSourceRequest request
   ) {
     requireNonNull(request, "composition optimization source request cannot be null");
 
-    return new CompositionOptimizationSource(
-        toReference(request.reference()),
-        toCharacteristics(request.characteristics()),
+    final var characteristics = toCharacteristics(request.characteristics());
+    return new OptimizationSourceInput(
+        new CompositionSourceInput.Reference(request.reference().type(), request.reference().id()),
+        characteristics,
         toVolume(request.availableVolumeLiters())
     );
   }
@@ -63,22 +58,12 @@ public final class CompositionCommonRequestMapper {
     return liters == null ? null : VolumeValue.ofLiters(liters);
   }
 
-  private static @NonNull CompositionSourceReference toReference(
-      @NonNull CompositionSourceReferenceRequest request
-  ) {
-    requireNonNull(request, "composition source reference request cannot be null");
-    return new CompositionSourceReference(
-        requireNonNull(request.type(), "composition source reference type cannot be null"),
-        requireNonNull(request.id(), "composition source reference id cannot be null")
-    );
-  }
-
-  private static @NonNull CompositionSourceCharacteristics toCharacteristics(
+  private static CompositionSourceInput.@NonNull Characteristics toCharacteristics(
       @NonNull CompositionSourceCharacteristicsRequest request
   ) {
     requireNonNull(request, "composition source characteristics request cannot be null");
 
-    return new CompositionSourceCharacteristics(
+    return new CompositionSourceInput.Characteristics(
         PointCharacteristicValue.of(
             SpecificGravityValue.of(
                 requireNonNull(
@@ -106,7 +91,7 @@ public final class CompositionCommonRequestMapper {
     );
   }
 
-  private static @NonNull CompositionSourceWeight toWeight(
+  private static CompositionSourceInput.@NonNull Weight toWeight(
       @NonNull CompositionSourceWeightRequest request
   ) {
     requireNonNull(request, "composition source weight request cannot be null");
@@ -117,8 +102,8 @@ public final class CompositionCommonRequestMapper {
     );
 
     return switch (kind) {
-      case ABSOLUTE_VOLUME_LITERS -> new AbsoluteCompositionVolume(VolumeValue.ofLiters(value));
-      case PROPORTION -> new CompositionProportion(value);
+      case ABSOLUTE_VOLUME_LITERS -> new CompositionSourceInput.AbsoluteVolume(VolumeValue.ofLiters(value));
+      case PROPORTION -> new CompositionSourceInput.Proportion(value);
     };
   }
 

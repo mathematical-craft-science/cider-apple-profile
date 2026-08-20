@@ -2,7 +2,7 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.classifica
 
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.appleprofile.analysis.application.classification.port.in.AppleVarietyClassificationSystem;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.classification.contract.AppleVarietyClassificationSystem;
 import org.craft.mcs.cap.core.appleprofile.analysis.application.classification.port.in.ClassifyAppleVarietyUseCase;
 import org.craft.mcs.cap.core.appleprofile.analysis.application.classification.port.in.ClassifyAppleVarietyNorthAmericanUseCase;
 import org.craft.mcs.cap.core.appleprofile.catalog.domain.model.AppleVarietyId;

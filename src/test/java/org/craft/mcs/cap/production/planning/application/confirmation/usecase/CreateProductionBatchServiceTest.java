@@ -12,18 +12,19 @@ import java.util.function.Supplier;
 import org.craft.mcs.cap.core.production.batch.application.authorization.port.out.ProductionAccessControl;
 import org.craft.mcs.cap.core.production.batch.application.creation.usecase.CreateProductionBatchFromPlanService;
 import org.craft.mcs.cap.core.production.planning.application.confirmation.port.in.CreateProductionBatchCommand;
-import org.craft.mcs.cap.core.production.planning.application.confirmation.model.ProductionBatchConfirmationResult;
+import org.craft.mcs.cap.core.production.planning.application.confirmation.contract.ProductionBatchConfirmationResult;
 import org.craft.mcs.cap.core.production.batch.application.port.out.ConsumedProductionSource;
 import org.craft.mcs.cap.core.production.batch.application.port.out.ProductionBatchRepository;
 import org.craft.mcs.cap.core.production.batch.application.port.out.ProductionBatchTraceRecorder;
 import org.craft.mcs.cap.core.production.batch.domain.model.value.ProductionSourceDisplayName;
 import org.craft.mcs.cap.core.production.batch.application.port.out.ProductionSourceInventory;
+import org.craft.mcs.cap.core.production.batch.application.creation.ProductionSourceEvidenceConflictException;
 import org.craft.mcs.cap.core.production.batch.application.vessel.port.out.ProductionVesselAssignmentValidator;
 import org.craft.mcs.cap.core.production.planning.application.confirmation.usecase.CreateProductionBatchService;
 import org.craft.mcs.cap.core.production.planning.application.authorization.port.out.ProductionPlanningAccessControl;
 import org.craft.mcs.cap.core.production.planning.application.ProductionBatchCandidateStaleException;
-import org.craft.mcs.cap.core.production.planning.application.model.ProductionBatchCandidateSnapshot;
-import org.craft.mcs.cap.core.production.planning.application.model.ProductionBatchCandidateView;
+import org.craft.mcs.cap.core.production.planning.application.contract.ProductionBatchCandidateSnapshot;
+import org.craft.mcs.cap.core.production.planning.application.contract.ProductionBatchCandidateView;
 import org.craft.mcs.cap.core.production.planning.application.port.out.ProductionBatchCandidateStore;
 import org.craft.mcs.cap.core.production.planning.domain.model.ProductionBatchCandidate;
 import org.craft.mcs.cap.core.production.planning.domain.model.ProductionBatchCandidateId;
@@ -59,7 +60,7 @@ import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.craft.mcs.cap.support.PotentialAbvPredictionFixtures.prediction;
+import static org.craft.mcs.cap.support.PotentialAbvPredictionFixtures.productionCandidatePrediction;
 import static org.craft.mcs.cap.production.testing.ProductionSourceCharacteristicsFixtures
     .productionSourceCharacteristics;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -230,9 +231,9 @@ class CreateProductionBatchServiceTest {
     final var productionRepository = new StagingProductionBatchRepository(transactionHelper);
     final var sourceConsumptionCount = new AtomicInteger();
     final var sourceInventory = sourceInventory(EVIDENCE);
-    final ProductionSourceInventory countingInventory = (requestedWorkspaceId, source) -> {
+    final ProductionSourceInventory countingInventory = (requestedWorkspaceId, source, expectation) -> {
       sourceConsumptionCount.incrementAndGet();
-      return sourceInventory.consume(requestedWorkspaceId, source);
+      return sourceInventory.consume(requestedWorkspaceId, source, expectation);
     };
     final var service = service(
         countingInventory,
@@ -311,7 +312,7 @@ class CreateProductionBatchServiceTest {
             Map.of(sourceReference, new ProductionCandidateSourceEvidence(EVIDENCE, MATERIAL_STATE)),
             productionProfile()
         ),
-        prediction(productionProfile().specificGravity()),
+        productionCandidatePrediction(productionProfile().specificGravity()),
         null,
         null,
         List.of()
@@ -336,20 +337,26 @@ class CreateProductionBatchServiceTest {
       @NonNull ProductionSourceEvidenceReference evidenceReference,
       @NonNull MaterialStateId materialStateId
   ) {
-    return (workspaceId, source) -> new ConsumedProductionSource(
-        source.reference(),
-        ProductionSourceDisplayName.of("Late juice"),
-        new MaterialConsumption(
-            VolumeValue.ofLiters("250"),
-            source.volume(),
-            VolumeValue.ofLiters("150"),
-            materialStateId,
-            MaterialStateId.newId()
-        ),
-        productionSourceCharacteristics("1.050", "6.1", "1400", null),
-        ConfidenceLevel.LAB_VERIFIED,
-        evidenceReference
-    );
+    return (workspaceId, source, expectation) -> {
+      if (!expectation.evidenceReference().equals(evidenceReference)
+          || !expectation.materialStateId().equals(materialStateId)) {
+        throw new ProductionSourceEvidenceConflictException(source.reference());
+      }
+      return new ConsumedProductionSource(
+          source.reference(),
+          ProductionSourceDisplayName.of("Late juice"),
+          new MaterialConsumption(
+              VolumeValue.ofLiters("250"),
+              source.volume(),
+              VolumeValue.ofLiters("150"),
+              materialStateId,
+              MaterialStateId.newId()
+          ),
+          productionSourceCharacteristics("1.050", "6.1", "1400", null),
+          ConfidenceLevel.LAB_VERIFIED,
+          evidenceReference
+      );
+    };
   }
 
   private record RecordedTrace(
@@ -460,6 +467,13 @@ class CreateProductionBatchServiceTest {
       return committed.candidate().candidateId().equals(candidateId)
           ? Optional.of(copy(committed))
           : Optional.empty();
+    }
+
+    @Override
+    public @NonNull Optional<@NonNull ProductionBatchCandidateSnapshot> lockById(
+        @NonNull ProductionBatchCandidateId candidateId
+    ) {
+      return findById(candidateId);
     }
 
     private static @NonNull ProductionBatchCandidateSnapshot copy(

@@ -1,6 +1,6 @@
 package org.craft.mcs.cap.core.production.planning.application.port.in;
 
-import org.craft.mcs.cap.core.production.planning.application.model.ProductionBatchCandidateView;
+import org.craft.mcs.cap.core.production.planning.application.contract.ProductionBatchCandidateView;
 import org.craft.mcs.cap.core.production.planning.domain.model.ProductionBatchCandidateId;
 import org.jspecify.annotations.NonNull;
 

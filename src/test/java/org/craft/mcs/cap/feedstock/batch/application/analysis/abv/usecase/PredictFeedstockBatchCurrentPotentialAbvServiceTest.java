@@ -16,9 +16,6 @@ import org.craft.mcs.cap.core.feedstock.batch.domain.model.batch.FeedstockBatch;
 import org.craft.mcs.cap.core.feedstock.batch.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.batch.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.core.feedstock.batch.domain.model.batch.value.FeedstockType;
-import org.craft.mcs.cap.core.profileanalysis.abv.domain.FixedFinalGravityPredictionStrategy;
-import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPredictor;
-import org.craft.mcs.cap.core.profileanalysis.abv.domain.StandardGravityDropAbvPredictionStrategy;
 import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.craft.mcs.cap.shared.testing.ProfileCharacteristicsFixture;
 import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
@@ -40,6 +37,7 @@ import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementIn
 import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementRecordedAt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.craft.mcs.cap.support.CiderAnalysisTestFixtures.feedstockPotentialAbvAnalyzer;
 
 
 class PredictFeedstockBatchCurrentPotentialAbvServiceTest {
@@ -111,10 +109,7 @@ class PredictFeedstockBatchCurrentPotentialAbvServiceTest {
         batchRepository,
         mock(FeedstockAccessControl.class),
         new FeedstockCurrentProfileQueryService(currentProfileRepository),
-        new PotentialAbvPredictor(
-            FixedFinalGravityPredictionStrategy.dryCiderDefault(),
-            new StandardGravityDropAbvPredictionStrategy()
-        )
+        feedstockPotentialAbvAnalyzer()
     );
   }
 

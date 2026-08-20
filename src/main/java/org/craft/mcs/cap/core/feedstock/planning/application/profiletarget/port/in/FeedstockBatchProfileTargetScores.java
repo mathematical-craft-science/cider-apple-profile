@@ -1,16 +1,16 @@
 package org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.port.in;
 
-import java.util.List;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.model.ProfileTargetAnalysisScenario;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.normalization.ProfileAxisNormalizerCode;
-import org.jspecify.annotations.NonNull;
-
 import static java.util.Objects.requireNonNull;
+
+import java.util.List;
+import org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.contract.FeedstockTargetFitConfiguration.AnalysisScenario;
+import org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.contract.FeedstockTargetFitConfiguration.Normalizer;
+import org.jspecify.annotations.NonNull;
 
 
 public record FeedstockBatchProfileTargetScores(
-    @NonNull ProfileTargetAnalysisScenario analysisScenario,
-    @NonNull ProfileAxisNormalizerCode normalizerCode,
+    @NonNull AnalysisScenario analysisScenario,
+    @NonNull Normalizer normalizerCode,
     @NonNull List<@NonNull FeedstockBatchProfileTargetScore> scores
 ) {
 

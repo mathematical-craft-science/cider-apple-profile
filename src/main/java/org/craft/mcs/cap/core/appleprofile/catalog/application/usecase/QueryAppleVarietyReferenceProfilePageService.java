@@ -2,8 +2,8 @@ package org.craft.mcs.cap.core.appleprofile.catalog.application.usecase;
 
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.appleprofile.catalog.application.model.AppleVarietyReferenceProfilePageQuery;
-import org.craft.mcs.cap.core.appleprofile.catalog.application.model.AppleVarietyReferenceProfileView;
+import org.craft.mcs.cap.core.appleprofile.catalog.application.contract.AppleVarietyReferenceProfilePageQuery;
+import org.craft.mcs.cap.core.appleprofile.catalog.application.contract.AppleVarietyReferenceProfileView;
 import org.craft.mcs.cap.core.appleprofile.catalog.application.port.in.QueryAppleVarietyReferenceProfilePageUseCase;
 import org.craft.mcs.cap.core.appleprofile.catalog.application.port.out.AppleVarietyReferenceProfilePageProvider;
 import org.jspecify.annotations.NonNull;

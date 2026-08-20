@@ -85,51 +85,51 @@
       "description": "Whether debug routes are public. Enable only in local or dev environments."
     },
     {
-      "name": "cap.profile-analysis.sugar-acidity.geometry",
+      "name": "cap.cider-analysis.sugar-acidity.geometry",
       "description": "Geometry used to assign SG/TA graph points to built-in sugar-acidity zones."
     },
     {
-      "name": "cap.profile-analysis.readiness.ph.generic-yeast-tolerance-min",
+      "name": "cap.cider-analysis.readiness.ph.generic-yeast-tolerance-min",
       "description": "Generic lower pH tolerance used when no yeast-specific tolerance is available."
     },
     {
-      "name": "cap.profile-analysis.readiness.ph.cider-guidance-min",
+      "name": "cap.cider-analysis.readiness.ph.cider-guidance-min",
       "description": "Lower bound of the curated cider pH guidance range."
     },
     {
-      "name": "cap.profile-analysis.readiness.ph.cider-guidance-max",
+      "name": "cap.cider-analysis.readiness.ph.cider-guidance-max",
       "description": "Upper bound of the curated cider pH guidance range."
     },
     {
-      "name": "cap.profile-analysis.readiness.ph.high-microbial-risk",
+      "name": "cap.cider-analysis.readiness.ph.high-microbial-risk",
       "description": "pH at or above which CAP reports elevated microbial risk."
     },
     {
-      "name": "cap.profile-analysis.readiness.ph.source-code",
+      "name": "cap.cider-analysis.readiness.ph.source-code",
       "description": "Stable identifier of the curated pH business-rule source set."
     },
     {
-      "name": "cap.profile-analysis.readiness.ph.source-comment",
+      "name": "cap.cider-analysis.readiness.ph.source-comment",
       "description": "Human-readable provenance note for the configured pH business rules."
     },
     {
-      "name": "cap.profile-analysis.readiness.yan.severe-low",
+      "name": "cap.cider-analysis.readiness.yan.severe-low",
       "description": "YAN in mg N/L below which CAP reports a severe nitrogen deficiency."
     },
     {
-      "name": "cap.profile-analysis.readiness.yan.low",
+      "name": "cap.cider-analysis.readiness.yan.low",
       "description": "YAN in mg N/L below which CAP reports a nitrogen deficiency."
     },
     {
-      "name": "cap.profile-analysis.readiness.yan.high",
+      "name": "cap.cider-analysis.readiness.yan.high",
       "description": "YAN in mg N/L above which CAP reports an elevated nitrogen level."
     },
     {
-      "name": "cap.profile-analysis.readiness.yan.source-code",
+      "name": "cap.cider-analysis.readiness.yan.source-code",
       "description": "Stable identifier of the curated YAN business-rule source set."
     },
     {
-      "name": "cap.profile-analysis.readiness.yan.source-comment",
+      "name": "cap.cider-analysis.readiness.yan.source-comment",
       "description": "Human-readable provenance note for the configured YAN business rules."
     }
   ],
@@ -190,7 +190,7 @@
       ]
     },
     {
-      "name": "cap.profile-analysis.sugar-acidity.geometry",
+      "name": "cap.cider-analysis.sugar-acidity.geometry",
       "values": [
         {
           "value": "RECTANGLE",

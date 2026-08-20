@@ -5,7 +5,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.account.context.application.model.WorkspaceMembershipSnapshot;
+import org.craft.mcs.cap.core.account.context.application.contract.WorkspaceMembershipSnapshot;
 import org.craft.mcs.cap.core.account.context.application.port.out.CurrentAccountWorkspaceQuery;
 import org.craft.mcs.cap.core.account.membership.domain.model.AccountRole;
 import org.craft.mcs.cap.core.account.membership.domain.model.WorkspaceMembershipStatus;

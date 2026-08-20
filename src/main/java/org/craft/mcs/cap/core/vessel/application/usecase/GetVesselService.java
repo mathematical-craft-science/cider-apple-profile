@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.vessel.application.VesselNotFoundException;
 import org.craft.mcs.cap.core.vessel.application.VesselOwnershipMismatchException;
 import org.craft.mcs.cap.core.vessel.application.authorization.port.out.VesselAccessControl;
-import org.craft.mcs.cap.core.vessel.application.model.VesselUsageView;
+import org.craft.mcs.cap.core.vessel.application.contract.VesselUsageView;
 import org.craft.mcs.cap.core.vessel.application.port.in.GetVesselQuery;
 import org.craft.mcs.cap.core.vessel.application.port.in.GetVesselUseCase;
 import org.craft.mcs.cap.core.vessel.application.port.out.VesselCatalogQuery;

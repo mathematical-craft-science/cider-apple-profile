@@ -3,10 +3,9 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.sugaracidi
 import java.util.Locale;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.appleprofile.analysis.application.profile.model.AppleVarietyAnalysisPagePosition;
-import org.craft.mcs.cap.core.appleprofile.analysis.application.profile.model.AppleVarietyAnalysisFilters;
-import org.craft.mcs.cap.core.profileanalysis.graph.application.model.JolicoeurSugarAcidityGraphCriteria;
-import org.craft.mcs.cap.core.profileanalysis.graph.application.model.JolicoeurSugarAcidityZoneCriteria;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.profile.contract.AppleVarietyAnalysisPagePosition;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.profile.contract.AppleVarietyAnalysisFilters;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.graph.contract.AppleSugarAcidityGraphCriteria;
 import org.craft.mcs.cap.shared.application.query.TextSearchCriteria;
 import org.craft.mcs.cap.shared.infrastructure.query.cursor.CursorBinding;
 import org.craft.mcs.cap.shared.infrastructure.query.cursor.CursorScope;
@@ -32,7 +31,7 @@ public final class AppleVarietySugarAcidityCursorAdapter {
   public @Nullable AppleVarietyAnalysisPagePosition decode(
       @Nullable String cursor,
       @NonNull AppleVarietyAnalysisFilters filters,
-      @Nullable JolicoeurSugarAcidityGraphCriteria graphCriteria
+      @Nullable AppleSugarAcidityGraphCriteria graphCriteria
   ) {
     requireNonNull(filters, "apple variety point filters cannot be null");
     if (cursor == null || cursor.isBlank()) {
@@ -49,7 +48,7 @@ public final class AppleVarietySugarAcidityCursorAdapter {
   public @Nullable String encode(
       @Nullable AppleVarietyAnalysisPagePosition position,
       @NonNull AppleVarietyAnalysisFilters filters,
-      @Nullable JolicoeurSugarAcidityGraphCriteria graphCriteria
+      @Nullable AppleSugarAcidityGraphCriteria graphCriteria
   ) {
     requireNonNull(filters, "apple variety point filters cannot be null");
     return position == null ? null : cursorTokenCodec.encode(binding(filters, graphCriteria), position);
@@ -57,7 +56,7 @@ public final class AppleVarietySugarAcidityCursorAdapter {
 
   private static @NonNull CursorBinding binding(
       @NonNull AppleVarietyAnalysisFilters filters,
-      @Nullable JolicoeurSugarAcidityGraphCriteria graphCriteria
+      @Nullable AppleSugarAcidityGraphCriteria graphCriteria
   ) {
     return CursorBinding.boundTo(
         CURSOR_SCOPE,
@@ -71,17 +70,16 @@ public final class AppleVarietySugarAcidityCursorAdapter {
     return criteria == null ? "" : criteria.query().toLowerCase(Locale.ROOT);
   }
 
-  private static @NonNull String zones(@Nullable JolicoeurSugarAcidityGraphCriteria graph) {
-    final JolicoeurSugarAcidityZoneCriteria criteria = graph == null ? null : graph.zone();
-    return criteria == null
+  private static @NonNull String zones(@Nullable AppleSugarAcidityGraphCriteria graph) {
+    return graph == null
         ? ""
-        : criteria.zones().stream()
+        : graph.zones().stream()
             .map(Enum::name)
             .sorted()
             .collect(Collectors.joining(","));
   }
 
-  private static @NonNull String plottable(@Nullable JolicoeurSugarAcidityGraphCriteria graph) {
+  private static @NonNull String plottable(@Nullable AppleSugarAcidityGraphCriteria graph) {
     return graph == null || graph.plottable() == null ? "" : graph.plottable().toString(); // NOSONAR
   }
 }

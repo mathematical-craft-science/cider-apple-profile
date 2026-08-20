@@ -10,7 +10,7 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.vessel.application.model.VesselView;
+import org.craft.mcs.cap.core.vessel.application.contract.VesselView;
 import org.craft.mcs.cap.core.vessel.application.port.out.VesselCatalogQuery;
 import org.craft.mcs.cap.shared.application.material.VesselReferenceView;
 import org.craft.mcs.cap.shared.kernel.identity.VesselId;

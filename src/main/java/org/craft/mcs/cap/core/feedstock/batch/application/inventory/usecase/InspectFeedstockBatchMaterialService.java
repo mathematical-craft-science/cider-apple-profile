@@ -1,16 +1,14 @@
 package org.craft.mcs.cap.core.feedstock.batch.application.inventory.usecase;
 
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.feedstock.batch.application.FeedstockBatchInsufficientAvailableVolumeException;
 import org.craft.mcs.cap.core.feedstock.batch.application.FeedstockBatchNotFoundException;
-import org.craft.mcs.cap.core.feedstock.batch.application.FeedstockBatchOwnershipMismatchException;
 import org.craft.mcs.cap.core.feedstock.batch.application.authorization.port.out.FeedstockAccessControl;
 import org.craft.mcs.cap.core.feedstock.batch.application.batch.port.out.FeedstockBatchRepository;
+import org.craft.mcs.cap.core.feedstock.batch.application.currentprofile.query.FeedstockCurrentProfileQueryService;
 import org.craft.mcs.cap.core.feedstock.batch.application.inventory.port.in.FeedstockBatchMaterialEvidenceReference;
 import org.craft.mcs.cap.core.feedstock.batch.application.inventory.port.in.FeedstockBatchMaterialSnapshot;
 import org.craft.mcs.cap.core.feedstock.batch.application.inventory.port.in.InspectFeedstockBatchMaterialCommand;
 import org.craft.mcs.cap.core.feedstock.batch.application.inventory.port.in.InspectFeedstockBatchMaterialUseCase;
-import org.craft.mcs.cap.core.feedstock.batch.application.currentprofile.query.FeedstockCurrentProfileQueryService;
 import org.craft.mcs.cap.shared.application.measurement.MeasurementEvidenceView;
 import org.craft.mcs.cap.shared.kernel.material.value.MaterialAvailability;
 import org.craft.mcs.cap.shared.platform.TransactionHelper;
@@ -18,6 +16,8 @@ import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 
 import static java.util.Objects.requireNonNull;
+import static org.craft.mcs.cap.core.feedstock.batch.application.inventory.usecase
+    .FeedstockMaterialAvailabilityPolicy.requireAvailable;
 import static org.craft.mcs.cap.core.feedstock.batch.application.inventory.usecase
     .FeedstockMaterialCharacteristicsProjector.project;
 
@@ -44,26 +44,15 @@ public final class InspectFeedstockBatchMaterialService implements InspectFeedst
   private @NonNull FeedstockBatchMaterialSnapshot inspectInTransaction(
       @NonNull InspectFeedstockBatchMaterialCommand command
   ) {
-    final var batch = feedstockBatchRepository.findById(command.batchId())
+    final var state = feedstockBatchRepository.findVersionedById(command.batchId())
         .orElseThrow(() -> new FeedstockBatchNotFoundException(command.batchId()));
-    if (!batch.workspaceId().equals(command.workspaceId())) {
-      throw new FeedstockBatchOwnershipMismatchException(
-          batch.batchId(),
-          command.workspaceId(),
-          batch.workspaceId()
-      );
-    }
-    if (command.requestedVolume().exceeds(batch.availableVolume())) {
-      throw new FeedstockBatchInsufficientAvailableVolumeException(
-          batch.batchId(),
-          command.requestedVolume(),
-          batch.availableVolume()
-      );
-    }
+    final var batch = state.aggregate();
+    requireAvailable(batch, command.workspaceId(), command.requestedVolume());
     final var measurement = currentProfileQueryService.requireCurrentProfile(batch.batchId());
     return new FeedstockBatchMaterialSnapshot(
         batch.batchId(),
         batch.name(),
+        state.revision(),
         new MaterialAvailability(
             command.requestedVolume(),
             batch.availableVolume(),

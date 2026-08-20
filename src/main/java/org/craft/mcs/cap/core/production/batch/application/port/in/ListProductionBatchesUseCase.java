@@ -1,7 +1,7 @@
 package org.craft.mcs.cap.core.production.batch.application.port.in;
 
 import java.util.List;
-import org.craft.mcs.cap.core.production.batch.application.model.ProductionBatchDetailsView;
+import org.craft.mcs.cap.core.production.batch.application.contract.ProductionBatchDetailsView;
 import org.jspecify.annotations.NonNull;
 
 

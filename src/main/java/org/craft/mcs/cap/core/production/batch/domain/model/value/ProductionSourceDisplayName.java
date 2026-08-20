@@ -1,6 +1,6 @@
 package org.craft.mcs.cap.core.production.batch.domain.model.value;
 
-import org.craft.mcs.cap.shared.application.ApplicationValidationException;
+import org.craft.mcs.cap.shared.kernel.DomainRuleViolationException;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
@@ -15,10 +15,10 @@ public record ProductionSourceDisplayName(@NonNull String value) {
     value = requireNonNull(value, "production source display name cannot be null").strip();
 
     if (value.isEmpty()) {
-      throw new ApplicationValidationException("production source display name cannot be blank");
+      throw new DomainRuleViolationException("production source display name cannot be blank");
     }
     if (value.length() > MAX_LENGTH) {
-      throw new ApplicationValidationException(
+      throw new DomainRuleViolationException(
           "production source display name length must not exceed " + MAX_LENGTH + " characters"
       );
     }

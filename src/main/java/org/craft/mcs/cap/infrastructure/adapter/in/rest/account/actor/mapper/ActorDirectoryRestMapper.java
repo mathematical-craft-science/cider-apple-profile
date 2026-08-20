@@ -1,6 +1,6 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.account.actor.mapper;
 
-import org.craft.mcs.cap.core.account.actor.application.model.ActorDisplayView;
+import org.craft.mcs.cap.core.account.actor.application.contract.ActorDisplayView;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.account.actor.dto.ActorDisplayResponse;
 import org.jspecify.annotations.NonNull;
 

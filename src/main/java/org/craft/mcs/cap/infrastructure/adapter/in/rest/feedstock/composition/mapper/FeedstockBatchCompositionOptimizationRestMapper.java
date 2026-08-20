@@ -2,18 +2,17 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.composition.m
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.UUID;
-import org.craft.mcs.cap.core.feedstock.planning.application.candidate.model.FeedstockPlanningProfileFilters;
+import org.craft.mcs.cap.core.feedstock.planning.application.candidate.contract.FeedstockPlanningProfileFilters;
 import org.craft.mcs.cap.core.feedstock.planning.application.composition.port.in.OptimizeFeedstockBatchCompositionCommand;
 import org.craft.mcs.cap.core.feedstock.planning.application.composition.port.in.OptimizeFeedstockBatchCompositionResult;
-import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.AbsoluteCompositionVolume;
-import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionCalculatorCode;
-import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionSource;
-import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionProportion;
-import org.craft.mcs.cap.core.profileanalysis.composition.optimization.application.model.CompositionOptimizationCandidateView;
-import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.strategy.CompositionOptimizationAlgorithm;
-import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.strategy.DiscretizedCompositionOptimizationSettings;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetScoringConfiguration;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.composition.dto.CompositionCalculatorCode;
+import org.craft.mcs.cap.core.feedstock.planning.application.composition.contract.FeedstockCompositionOptimizationRequest;
+import org.craft.mcs.cap.core.feedstock.planning.application.composition.contract.FeedstockCompositionOptimizationRequest.Criterion;
+import org.craft.mcs.cap.core.feedstock.planning.application.composition.contract.FeedstockCompositionOptimizationView;
+import org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.contract.FeedstockTargetFitConfiguration;
+import org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.contract.FeedstockTargetFitConfiguration.ObjectiveWeights;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.composition.dto.CompositionOptimizationAlgorithm;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.composition.dto.CompositionWarning;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.composition.common.mapper.CompositionCommonResponseMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.common.mapper.FeedstockProfileTargetRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.composition.dto.FeedstockBatchCompositionOptimizationCandidateResponse;
@@ -21,8 +20,10 @@ import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.composition.dt
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.composition.dto.OptimizeFeedstockBatchCompositionRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.composition.dto.OptimizeFeedstockBatchCompositionResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.composition.mapper.CompositionOptimizationAssessmentRestMapper;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.composition.dto.CompositionOptimizationYanReadinessRequest;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.measurement.CanonicalUnitLabels;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.mapper.ProfileTargetRestMapper;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.ProfileTargetObjectiveWeightsRequest;
 import org.craft.mcs.cap.shared.application.query.QueryLimits;
 import org.craft.mcs.cap.shared.infrastructure.rest.measurement.dto.DecimalQuantityResponse;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
@@ -31,13 +32,12 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import static java.util.Objects.requireNonNull;
-import static java.util.Objects.requireNonNullElse;
 import static org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.common.mapper.FeedstockCriteriaRestMapper
     .toPlanningBatchCriteria;
 import static org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.common.mapper.FeedstockCriteriaRestMapper
     .toSeason;
 import static org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.mapper.JolicoeurSugarAcidityGraphCriteriaRestMapper
-    .toZoneCriteria;
+    .toFeedstockPlanningGraphCriteria;
 
 
 /** Maps the Feedstock composition-optimization transport contract. */
@@ -51,30 +51,34 @@ public final class FeedstockBatchCompositionOptimizationRestMapper {
   ) {
     requireNonNull(request, "optimize feedstock batch composition request cannot be null");
     final var target = requireNonNull(request.target(), "feedstock batch profile target cannot be null");
-    final var settings = new DiscretizedCompositionOptimizationSettings(
-        requireNonNullElse(
-            request.stepPercent(),
-            DiscretizedCompositionOptimizationSettings.DEFAULT_STEP_PERCENT
-        ),
-        requireNonNullElse(request.limit(), DiscretizedCompositionOptimizationSettings.DEFAULT_LIMIT)
+    final var defaultSettings = FeedstockCompositionOptimizationRequest.Settings.defaults();
+    final var requestedStepPercent = request.stepPercent();
+    final var stepPercent = requestedStepPercent == null ? defaultSettings.stepPercent() : requestedStepPercent;
+    final var requestedLimit = request.limit();
+    final var limit = requestedLimit == null ? defaultSettings.limit() : requestedLimit;
+    final var settings = new FeedstockCompositionOptimizationRequest.Settings(
+        stepPercent,
+        limit
     );
     final var mode = requireNonNull(request.mode(), "composition optimization mode cannot be null");
-    final var algorithm = requireNonNullElse(
-        request.algorithm(),
-        CompositionOptimizationAlgorithm.DISCRETIZED_BOUNDED_SEARCH
-    );
-    final var calculator = requireNonNullElse(
-        request.calculator(),
-        CompositionCalculatorCode.MASS_BALANCE
-    );
-    final var normalizer = requireNonNullElse(
-        request.normalizer(),
-        CompositionOptimizationAssessmentRestMapper.defaultOptimizationNormalizer()
-    );
-    final var objectiveFunction = requireNonNullElse(
-        request.objectiveFunction(),
-        CompositionOptimizationAssessmentRestMapper.defaultOptimizationObjectiveFunction()
-    );
+    final var requestedAlgorithm = request.algorithm();
+    final var algorithm = requestedAlgorithm == null
+        ? CompositionOptimizationAlgorithm.DISCRETIZED_BOUNDED_SEARCH
+        : requestedAlgorithm;
+    final var requestedCalculator = request.calculator();
+    final var calculator = requestedCalculator == null
+        ? CompositionCalculatorCode.MASS_BALANCE
+        : requestedCalculator;
+    final var requestedNormalizer = request.normalizer();
+    final var normalizer = requestedNormalizer == null
+        ? CompositionOptimizationAssessmentRestMapper.defaultOptimizationNormalizer()
+        : requestedNormalizer;
+    final var requestedObjectiveFunction = request.objectiveFunction();
+    final var objectiveFunction = requestedObjectiveFunction == null
+        ? CompositionOptimizationAssessmentRestMapper.defaultOptimizationObjectiveFunction()
+        : requestedObjectiveFunction;
+    final var requestedSourceLimit = request.sourceLimit();
+    final var sourceLimit = requestedSourceLimit == null ? QueryLimits.MAXIMUM : requestedSourceLimit;
 
     return new OptimizeFeedstockBatchCompositionCommand( // NOSONAR
         WorkspaceId.of(request.workspaceId()),
@@ -82,21 +86,25 @@ public final class FeedstockBatchCompositionOptimizationRestMapper {
             toPlanningBatchCriteria(request.batchIds()),
             toSeason(request.season())
         ),
-        toZoneCriteria(request.zone()),
+        toFeedstockPlanningGraphCriteria(request.zone(), null),
         FeedstockProfileTargetRestMapper.toSelection(target),
         FeedstockProfileTargetRestMapper.toTanninTarget(request.tanninTarget()),
-        new ProfileTargetScoringConfiguration(
-            requireNonNull(normalizer, "profile target normalizer cannot be null"),
-            requireNonNull(objectiveFunction, "profile target objective function cannot be null"),
-            ProfileTargetRestMapper.toWeights(request.weights())
+        new FeedstockCompositionOptimizationRequest.Scoring(
+            FeedstockTargetFitConfiguration.Normalizer.valueOf(
+                normalizer.name()
+            ),
+            FeedstockTargetFitConfiguration.ObjectiveFunction.valueOf(
+                objectiveFunction.name()
+            ),
+            toWeights(request.weights())
         ),
-        CompositionOptimizationAssessmentRestMapper.toCriteria(request.yanReadiness()),
+        toCriteria(request.yanReadiness()),
         settings,
-        mode,
-        algorithm,
-        calculator,
+        FeedstockCompositionOptimizationRequest.Mode.valueOf(mode.name()),
+        FeedstockCompositionOptimizationRequest.Algorithm.valueOf(algorithm.name()),
+        FeedstockCompositionOptimizationRequest.Calculator.valueOf(calculator.name()),
         toVolume(request.targetTotalVolumeLiters()),
-        requireNonNullElse(request.sourceLimit(), QueryLimits.MAXIMUM)
+        sourceLimit
     );
   }
 
@@ -108,11 +116,14 @@ public final class FeedstockBatchCompositionOptimizationRestMapper {
 
     return new OptimizeFeedstockBatchCompositionResponse(
         result.sourceCount(),
-        optimization.mode(),
-        optimization.algorithm(),
-        optimization.calculatorCode(),
-        optimization.normalizerCode(),
-        optimization.objectiveFunctionCode(),
+        org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.composition.dto.CompositionOptimizationMode
+            .valueOf(optimization.mode().name()),
+        CompositionOptimizationAlgorithm.valueOf(optimization.algorithm().name()),
+        CompositionCalculatorCode.valueOf(optimization.calculator().name()),
+        org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.ProfileAxisNormalizerCode
+            .valueOf(optimization.normalizer().name()),
+        org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.ProfileTargetObjectiveFunctionCode
+            .valueOf(optimization.objectiveFunction().name()),
         optimization.settings().stepPercent(),
         optimization.evaluatedCandidates(),
         optimization.candidates().stream()
@@ -122,11 +133,10 @@ public final class FeedstockBatchCompositionOptimizationRestMapper {
   }
 
   private static @NonNull FeedstockBatchCompositionOptimizationCandidateResponse toResponse(
-      @NonNull CompositionOptimizationCandidateView view
+      FeedstockCompositionOptimizationView.@NonNull Candidate view
   ) {
     requireNonNull(view, "composition optimization candidate view cannot be null");
-    final var candidate = view.candidate();
-    final var composition = candidate.composition();
+    final var composition = view.composition();
 
     return new FeedstockBatchCompositionOptimizationCandidateResponse(
         composition.sources().stream()
@@ -136,41 +146,69 @@ public final class FeedstockBatchCompositionOptimizationRestMapper {
             composition.characteristics()
         ),
         toVolumeResponse(composition.totalVolume()),
-        List.copyOf(composition.warnings()),
-        ProfileTargetRestMapper.toResponse(candidate.distance()),
-        CompositionOptimizationAssessmentRestMapper.toResponse(candidate.objectiveAssessment())
+        composition.warnings().stream()
+            .map(warning -> CompositionWarning.valueOf(warning.name()))
+            .toList(),
+        ProfileTargetRestMapper.toResponse(view.targetDistance()),
+        CompositionOptimizationAssessmentRestMapper.toResponse(view.objective())
     );
   }
 
   private static @NonNull FeedstockBatchCompositionOptimizationSourceResponse toSourceResponse(
-      @NonNull CompositionSource source
+      FeedstockCompositionOptimizationView.@NonNull Source source
   ) {
     requireNonNull(source, "composition source cannot be null");
-    final var requestedVolume = requestedVolume(source);
     return new FeedstockBatchCompositionOptimizationSourceResponse(
-        UUID.fromString(source.reference().id()),
-        toRequestedVolumeResponse(requestedVolume),
-        proportion(source)
+        source.batchId().value(),
+        toRequestedVolumeResponse(source.requestedVolume()),
+        source.proportion()
     );
-  }
-
-  private static @Nullable BigDecimal requestedVolume(@NonNull CompositionSource source) {
-    return source.weight() instanceof AbsoluteCompositionVolume(VolumeValue volume) ? volume.liters() : null;
-  }
-
-  private static @Nullable BigDecimal proportion(@NonNull CompositionSource source) {
-    return source.weight() instanceof CompositionProportion(BigDecimal value) ? value : null;
   }
 
   private static @Nullable DecimalQuantityResponse toVolumeResponse(@Nullable VolumeValue volume) {
     return volume == null ? null : new DecimalQuantityResponse(volume.liters(), CanonicalUnitLabels.VOLUME);
   }
 
-  private static @Nullable DecimalQuantityResponse toRequestedVolumeResponse(@Nullable BigDecimal volume) {
-    return volume == null ? null : new DecimalQuantityResponse(volume, CanonicalUnitLabels.VOLUME);
+  private static @Nullable DecimalQuantityResponse toRequestedVolumeResponse(@Nullable VolumeValue volume) {
+    return volume == null ? null : new DecimalQuantityResponse(volume.liters(), CanonicalUnitLabels.VOLUME);
   }
 
   private static @Nullable VolumeValue toVolume(@Nullable BigDecimal liters) {
     return liters == null ? null : VolumeValue.ofLiters(liters);
+  }
+
+  private static @NonNull ObjectiveWeights toWeights(
+      @Nullable ProfileTargetObjectiveWeightsRequest weights
+  ) {
+    final var specificGravity = weights == null ? null : weights.specificGravity();
+    final var titratableAcidity = weights == null ? null : weights.titratableAcidity();
+    final var tannin = weights == null ? null : weights.tannin();
+    return new FeedstockTargetFitConfiguration.ObjectiveWeights(
+        specificGravity == null ? BigDecimal.ONE : specificGravity,
+        titratableAcidity == null ? BigDecimal.ONE : titratableAcidity,
+        tannin
+    );
+  }
+
+  private static @NonNull List<@NonNull Criterion> toCriteria(
+      @Nullable CompositionOptimizationYanReadinessRequest request
+  ) {
+    if (request == null) {
+      return List.of();
+    }
+    final var criteria = CompositionOptimizationAssessmentRestMapper.toCriteria(request);
+    return criteria.stream()
+        .map(criterion -> switch (criterion) {
+          case org.craft.mcs.cap.core.formulation.optimization.application.contract.OptimizationCriterionInput
+              .YanReadiness(var minimum, var maximum, var weight, var missingPolicy, var missingPenalty) ->
+              new FeedstockCompositionOptimizationRequest.Criterion(
+                  minimum,
+                  maximum,
+                  weight,
+                  FeedstockCompositionOptimizationRequest.MissingPolicy.valueOf(missingPolicy.name()),
+                  missingPenalty
+              );
+        })
+        .toList();
   }
 }

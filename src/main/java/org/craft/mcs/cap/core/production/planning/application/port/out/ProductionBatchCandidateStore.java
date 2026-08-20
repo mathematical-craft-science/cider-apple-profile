@@ -1,7 +1,7 @@
 package org.craft.mcs.cap.core.production.planning.application.port.out;
 
 import java.util.Optional;
-import org.craft.mcs.cap.core.production.planning.application.model.ProductionBatchCandidateSnapshot;
+import org.craft.mcs.cap.core.production.planning.application.contract.ProductionBatchCandidateSnapshot;
 import org.craft.mcs.cap.core.production.planning.domain.model.ProductionBatchCandidateId;
 import org.jspecify.annotations.NonNull;
 
@@ -14,6 +14,11 @@ public interface ProductionBatchCandidateStore {
   @NonNull ProductionBatchCandidateSnapshot update(@NonNull ProductionBatchCandidateSnapshot snapshot);
 
   @NonNull Optional<@NonNull ProductionBatchCandidateSnapshot> findById(
+      @NonNull ProductionBatchCandidateId candidateId
+  );
+
+  /** Loads and locks one candidate for a lifecycle transition in the caller's transaction. */
+  @NonNull Optional<@NonNull ProductionBatchCandidateSnapshot> lockById(
       @NonNull ProductionBatchCandidateId candidateId
   );
 }

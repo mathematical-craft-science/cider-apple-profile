@@ -2,9 +2,11 @@ package org.craft.mcs.cap.feedstock.planning.application.batchoverview.usecase;
 
 import static java.util.Objects.requireNonNull;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.craft.mcs.cap.core.profileanalysis.testing.ProfileAnalysisTestFixtures.graphEvaluator;
-import static org.craft.mcs.cap.core.profileanalysis.testing.ProfileAnalysisTestFixtures
-    .northAmericanProfileCalculator;
+import static org.craft.mcs.cap.support.CiderAnalysisTestFixtures.feedstockGraphAnalyzer;
+import static org.craft.mcs.cap.support.CiderAnalysisTestFixtures.feedstockPhPlanningAnalyzer;
+import static org.craft.mcs.cap.support.CiderAnalysisTestFixtures.feedstockPotentialAbvAnalyzer;
+import static org.craft.mcs.cap.support.CiderAnalysisTestFixtures.feedstockReadinessAnalyzer;
+import static org.craft.mcs.cap.support.CiderAnalysisTestFixtures.feedstockTanninLevelAnalyzer;
 import static org.craft.mcs.cap.shared.testing.FeedstockCurrentProfileViews.currentProfile;
 import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementRecordedAt;
 import static org.mockito.ArgumentMatchers.any;
@@ -25,42 +27,36 @@ import org.craft.mcs.cap.core.feedstock.batch.application.api.currentprofile.Fee
 import org.craft.mcs.cap.core.feedstock.batch.application.api.currentprofile.FeedstockCurrentProfileFreshnessView;
 import org.craft.mcs.cap.core.feedstock.batch.application.api.currentprofile.FeedstockPlanningReadinessStatus;
 import org.craft.mcs.cap.core.feedstock.batch.application.api.currentprofile.FeedstockPlanningReadinessView;
+import org.craft.mcs.cap.core.feedstock.batch.application.analysis.readiness.contract.FeedstockFermentationStartReadinessView;
+import org.craft.mcs.cap.core.feedstock.batch.application.analysis.sugaracidity.contract.FeedstockSugarAcidityGraphView;
+import org.craft.mcs.cap.core.feedstock.planning.application.graph.contract.FeedstockPlanningGraphView.Zone;
 import org.craft.mcs.cap.core.feedstock.batch.application.batch.port.in.ListFeedstockBatchesUseCase;
 import org.craft.mcs.cap.core.feedstock.batch.application.currentprofile.port.out.FeedstockCurrentProfileQueryRepository;
 import org.craft.mcs.cap.core.feedstock.batch.application.currentprofile.query.FeedstockCurrentProfileQueryService;
-import org.craft.mcs.cap.core.feedstock.batch.application.currentprofile.service.FeedstockCurrentProfileAssessmentService;
+import org.craft.mcs.cap.core.feedstock.batch.application.assessment.service.FeedstockCurrentProfileAssessmentService;
 import org.craft.mcs.cap.core.feedstock.batch.application.currentprofile.service.FeedstockCurrentProfileFreshnessAssessor;
-import org.craft.mcs.cap.core.feedstock.batch.application.currentprofile.service.FeedstockPlanningReadinessAssessor;
-import org.craft.mcs.cap.core.feedstock.batch.application.currentprofile.service.FeedstockProfileDataQualityAssessor;
+import org.craft.mcs.cap.core.feedstock.batch.application.assessment.service.FeedstockPlanningReadinessAssessor;
+import org.craft.mcs.cap.core.feedstock.batch.application.assessment.service.FeedstockProfileDataQualityAssessor;
 import org.craft.mcs.cap.core.feedstock.batch.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.batch.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.core.feedstock.batch.domain.model.batch.value.FeedstockType;
 import org.craft.mcs.cap.core.feedstock.planning.application.authorization.port.out.FeedstockPlanningAccessControl;
-import org.craft.mcs.cap.core.feedstock.planning.application.batchoverview.model.FeedstockPlanningBatchView;
-import org.craft.mcs.cap.core.feedstock.planning.application.batchoverview.model.FeedstockPlanningTargetAnalysisView;
+import org.craft.mcs.cap.core.feedstock.planning.application.batchoverview.contract.FeedstockPlanningBatchView;
+import org.craft.mcs.cap.core.feedstock.planning.application.batchoverview.contract.FeedstockPlanningTargetAnalysisView;
 import org.craft.mcs.cap.core.feedstock.planning.application.batchoverview.port.in.FeedstockPlanningBatchViewQuery;
 import org.craft.mcs.cap.core.feedstock.planning.application.batchoverview.usecase.QueryFeedstockPlanningBatchesService;
 import org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.port.in.FeedstockBatchProfileTargetCandidate;
 import org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.port.in.FeedstockBatchProfileTargetCandidates;
-import org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.port.in.PredefinedFeedstockProfileTargetSelection;
+import org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.contract.PredefinedFeedstockProfileTargetSelection;
 import org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.port.in.QueryFeedstockBatchProfileTargetCandidatesUseCase;
+import org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.contract.FeedstockContributionView;
+import org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.contract.FeedstockTargetCharacteristics;
+import org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.contract.FeedstockTargetDistanceView;
+import org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.contract.FeedstockTargetFitConfiguration.AnalysisScenario;
+import org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.contract.FeedstockTargetFitConfiguration.Normalizer;
+import org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.contract.FeedstockTargetFitConfiguration.ObjectiveWeights;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetId;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetName;
-import org.craft.mcs.cap.core.profileanalysis.abv.domain.FixedFinalGravityPredictionStrategy;
-import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPredictor;
-import org.craft.mcs.cap.core.profileanalysis.abv.domain.StandardGravityDropAbvPredictionStrategy;
-import org.craft.mcs.cap.core.profileanalysis.composition.contribution.domain.CompositionContributionRoleAssessment;
-import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.FermentationStartReadinessAssessment;
-import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.FermentationStartReadinessAssessor;
-import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.FermentationStartReadinessStatus;
-import org.craft.mcs.cap.core.profileanalysis.graph.application.model.JolicoeurSugarAcidityGraphEvaluation;
-import org.craft.mcs.cap.core.profileanalysis.graph.zone.domain.JolicoeurSugarAcidityZone;
-import org.craft.mcs.cap.core.profileanalysis.ph.domain.PhPlanningGuidancePolicy;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.model.ProfileTargetAnalysisScenario;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetObjectiveWeights;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetScoringInput;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.assessment.ProfileTargetDistance;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.normalization.ProfileAxisNormalizerCode;
 import org.craft.mcs.cap.infrastructure.adapter.out.feedstock.planning.batch.FeedstockPlanningBatchSnapshotAdapter;
 import org.craft.mcs.cap.shared.application.measurement.MeasurementFreshnessStatus;
 import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
@@ -115,8 +111,8 @@ class QueryFeedstockPlanningBatchesServiceTest {
         .isEqualTo(MeasurementFreshnessStatus.CURRENT);
     assertThat(assessment.graphEvaluation())
         .isNotNull()
-        .returns(true, JolicoeurSugarAcidityGraphEvaluation::plottable)
-        .extracting(JolicoeurSugarAcidityGraphEvaluation::zoneAssessment)
+        .returns(true, FeedstockSugarAcidityGraphView::plottable)
+        .extracting(FeedstockSugarAcidityGraphView::zoneAssessment)
         .isNotNull();
     assertThat(assessment.potentialAbv()).isNotNull();
     assertThat(requireNonNull(row.currentProfileSummary()).yeastAssimilableNitrogen())
@@ -136,8 +132,8 @@ class QueryFeedstockPlanningBatchesServiceTest {
     assertThat(assessment.fermentationStartReadiness())
         .isNotNull()
         .returns(
-            FermentationStartReadinessStatus.NEEDS_ATTENTION,
-            FermentationStartReadinessAssessment::status
+            FeedstockFermentationStartReadinessView.Status.NEEDS_ATTENTION,
+            FeedstockFermentationStartReadinessView::status
         );
     assertThat(row.targetCandidate()).isNull();
     verifyNoInteractions(targetCandidates);
@@ -155,8 +151,8 @@ class QueryFeedstockPlanningBatchesServiceTest {
     when(currentProfileRepository.findByBatchIds(Set.of(batchId)))
         .thenReturn(List.of(currentProfile(measurement(batchId), batch.batch().currentMaterialStateId())));
     when(targetCandidates.query(any())).thenReturn(new FeedstockBatchProfileTargetCandidates(
-        ProfileTargetAnalysisScenario.BLENDING_PLANNING,
-        ProfileAxisNormalizerCode.EFFECTIVE_RANGE,
+        AnalysisScenario.BLENDING_PLANNING,
+        Normalizer.EFFECTIVE_RANGE,
         List.of()
     ));
 
@@ -169,11 +165,11 @@ class QueryFeedstockPlanningBatchesServiceTest {
         .satisfies(result -> assertThat(result.targetAnalysis())
             .isNotNull()
             .returns(
-                ProfileTargetAnalysisScenario.BLENDING_PLANNING,
+                AnalysisScenario.BLENDING_PLANNING,
                 FeedstockPlanningTargetAnalysisView::analysisScenario
             )
             .returns(
-                ProfileAxisNormalizerCode.EFFECTIVE_RANGE,
+                Normalizer.EFFECTIVE_RANGE,
                 FeedstockPlanningTargetAnalysisView::normalizerCode
             ));
   }
@@ -190,15 +186,15 @@ class QueryFeedstockPlanningBatchesServiceTest {
     when(listBatches.list(any())).thenReturn(List.of(batch));
     when(currentProfileRepository.findByBatchIds(Set.of(batchId))).thenReturn(List.of(currentProfile));
     when(targetCandidates.query(any())).thenReturn(new FeedstockBatchProfileTargetCandidates(
-        ProfileTargetAnalysisScenario.BLENDING_PLANNING,
-        ProfileAxisNormalizerCode.EFFECTIVE_RANGE,
+        AnalysisScenario.BLENDING_PLANNING,
+        Normalizer.EFFECTIVE_RANGE,
         List.of(new FeedstockBatchProfileTargetCandidate(
             batchId,
             MaterialStateId.newId(),
             currentProfile.evidence(),
-            mock(ProfileTargetScoringInput.class),
-            mock(ProfileTargetDistance.class),
-            mock(CompositionContributionRoleAssessment.class)
+            mock(FeedstockTargetCharacteristics.class),
+            mock(FeedstockTargetDistanceView.class),
+            mock(FeedstockContributionView.class)
         ))
     ));
 
@@ -276,15 +272,12 @@ class QueryFeedstockPlanningBatchesServiceTest {
   ) {
     final var profileQuery = new FeedstockCurrentProfileQueryService(currentProfileRepository);
     final var assessmentService = new FeedstockCurrentProfileAssessmentService(
-        graphEvaluator(),
-        northAmericanProfileCalculator(),
-        new PotentialAbvPredictor(
-            FixedFinalGravityPredictionStrategy.dryCiderDefault(),
-            new StandardGravityDropAbvPredictionStrategy()
-        ),
-        new FermentationStartReadinessAssessor(),
+        feedstockGraphAnalyzer(),
+        feedstockTanninLevelAnalyzer(),
+        feedstockPotentialAbvAnalyzer(),
+        feedstockReadinessAnalyzer(),
         new FeedstockCurrentProfileFreshnessAssessor(),
-        new FeedstockPlanningReadinessAssessor(PhPlanningGuidancePolicy.curatedCiderV1()),
+        new FeedstockPlanningReadinessAssessor(feedstockPhPlanningAnalyzer()),
         new FeedstockProfileDataQualityAssessor()
     );
     final var snapshotProvider = new FeedstockPlanningBatchSnapshotAdapter(
@@ -305,8 +298,8 @@ class QueryFeedstockPlanningBatchesServiceTest {
         SEASON,
         null,
         null,
-        ProfileTargetObjectiveWeights.balanced(),
-        ProfileTargetAnalysisScenario.BLENDING_PLANNING,
+        ObjectiveWeights.balanced(),
+        AnalysisScenario.BLENDING_PLANNING,
         200
     );
   }
@@ -315,10 +308,12 @@ class QueryFeedstockPlanningBatchesServiceTest {
     return new FeedstockPlanningBatchViewQuery(
         WORKSPACE_ID,
         SEASON,
-        new PredefinedFeedstockProfileTargetSelection(JolicoeurSugarAcidityZone.PERFECT_APPLES),
+        new PredefinedFeedstockProfileTargetSelection(
+            Zone.PERFECT_APPLES
+        ),
         null,
-        ProfileTargetObjectiveWeights.balanced(),
-        ProfileTargetAnalysisScenario.BLENDING_PLANNING,
+        ObjectiveWeights.balanced(),
+        AnalysisScenario.BLENDING_PLANNING,
         200
     );
   }

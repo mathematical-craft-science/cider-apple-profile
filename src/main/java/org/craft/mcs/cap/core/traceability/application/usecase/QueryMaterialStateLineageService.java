@@ -1,7 +1,7 @@
 package org.craft.mcs.cap.core.traceability.application.usecase;
 
 import java.util.Map;
-import org.craft.mcs.cap.core.traceability.application.model.MaterialStateLineage;
+import org.craft.mcs.cap.core.traceability.application.contract.MaterialStateLineage;
 import org.craft.mcs.cap.core.traceability.application.port.in.QueryMaterialStateLineageUseCase;
 import org.craft.mcs.cap.core.traceability.application.port.out.BatchTraceabilityAccessControl;
 import org.craft.mcs.cap.core.traceability.application.port.out.MaterialStateLineageStore;

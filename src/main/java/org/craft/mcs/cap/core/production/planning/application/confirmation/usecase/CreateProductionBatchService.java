@@ -4,12 +4,12 @@ import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.production.planning.application.ProductionBatchCandidateNotFoundException;
 import org.craft.mcs.cap.core.production.planning.application.ProductionBatchCandidateOwnershipMismatchException;
 import org.craft.mcs.cap.core.production.planning.application.authorization.port.out.ProductionPlanningAccessControl;
-import org.craft.mcs.cap.core.production.planning.application.confirmation.model.ProductionBatchConfirmationRequest;
+import org.craft.mcs.cap.core.production.planning.application.confirmation.contract.ProductionBatchConfirmationRequest;
 import org.craft.mcs.cap.core.production.planning.application.confirmation.port.in.CreateProductionBatchCommand;
 import org.craft.mcs.cap.core.production.planning.application.confirmation.port.in.CreateProductionBatchUseCase;
 import org.craft.mcs.cap.core.production.planning.application.confirmation.port.in.ProductionBatchCreated;
 import org.craft.mcs.cap.core.production.planning.application.confirmation.port.out.ProductionBatchConfirmationGateway;
-import org.craft.mcs.cap.core.production.planning.application.model.ProductionBatchCandidateSnapshot;
+import org.craft.mcs.cap.core.production.planning.application.contract.ProductionBatchCandidateSnapshot;
 import org.craft.mcs.cap.core.production.planning.application.port.out.ProductionBatchCandidateStore;
 import org.craft.mcs.cap.core.production.planning.application.usecase.ProductionBatchCandidateViewMapper;
 import org.craft.mcs.cap.shared.platform.TransactionHelper;
@@ -68,7 +68,7 @@ public final class CreateProductionBatchService implements CreateProductionBatch
   private @NonNull ProductionBatchCandidateSnapshot requireCandidate(
       @NonNull CreateProductionBatchCommand command
   ) {
-    final var snapshot = candidateStore.findById(command.candidateId())
+    final var snapshot = candidateStore.lockById(command.candidateId())
         .orElseThrow(() -> new ProductionBatchCandidateNotFoundException(command.candidateId()));
     if (!snapshot.candidate().workspaceId().equals(command.workspaceId())) {
       throw new ProductionBatchCandidateOwnershipMismatchException(

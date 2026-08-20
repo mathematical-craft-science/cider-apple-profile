@@ -3,15 +3,14 @@ package org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.usec
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.feedstock.planning.application.candidate.model.FeedstockPlanningCandidatePagePosition;
-import org.craft.mcs.cap.core.feedstock.planning.application.candidate.model.FeedstockPlanningCandidateQuery;
-import org.craft.mcs.cap.core.feedstock.planning.application.candidate.model.FeedstockPlanningCandidateSnapshot;
+import org.craft.mcs.cap.core.feedstock.planning.application.candidate.contract.FeedstockPlanningCandidatePagePosition;
+import org.craft.mcs.cap.core.feedstock.planning.application.candidate.contract.FeedstockPlanningCandidateQuery;
+import org.craft.mcs.cap.core.feedstock.planning.application.candidate.contract.FeedstockPlanningCandidateSnapshot;
 import org.craft.mcs.cap.core.feedstock.planning.application.candidate.port.out.FeedstockPlanningCandidateProvider;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.port.in.ProfileTargetDistanceCandidate;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.port.in.ProfileTargetDistanceCandidateReference;
-import org.craft.mcs.cap.core.profileanalysis.graph.application.port.in.EvaluateJolicoeurSugarAcidityGraphUseCase;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetScoringInput;
+import org.craft.mcs.cap.core.feedstock.planning.application.graph.port.out.FeedstockPlanningGraphAnalyzer;
+import org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.contract.FeedstockTargetCharacteristics;
 import org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.port.in.FeedstockBatchProfileTargetQuery;
+import org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.port.out.FeedstockTargetFitAnalyzer;
 import org.craft.mcs.cap.core.feedstock.batch.application.api.currentprofile.FeedstockCurrentProfileView;
 import org.craft.mcs.cap.shared.application.query.pagination.ChunkedCursorPageCollector;
 import org.craft.mcs.cap.shared.application.query.pagination.CursorPageRequest;
@@ -32,10 +31,8 @@ import static java.util.Objects.requireNonNull;
 @RequiredArgsConstructor
 public final class FeedstockBatchProfileTargetScorableCandidateProvider {
 
-  private static final @NonNull String REFERENCE_TYPE = "feedstock-batch";
-
   private final @NonNull FeedstockPlanningCandidateProvider candidateProvider;
-  private final @NonNull EvaluateJolicoeurSugarAcidityGraphUseCase graphEvaluator;
+  private final @NonNull FeedstockPlanningGraphAnalyzer graphAnalyzer;
 
   @NonNull List<@NonNull FeedstockBatchProfileTargetScorableCandidate> findCandidates(
       @NonNull FeedstockBatchProfileTargetQuery query
@@ -63,7 +60,7 @@ public final class FeedstockBatchProfileTargetScorableCandidateProvider {
       @NonNull FeedstockBatchProfileTargetQuery query
   ) {
     requireNonNull(currentProfile, "feedstock current profile cannot be null");
-    final var graphEvaluation = graphEvaluator.evaluate(
+    final var graphEvaluation = graphAnalyzer.evaluate(
         currentProfile.specificGravity(),
         currentProfile.titratableAcidity()
     );
@@ -72,7 +69,7 @@ public final class FeedstockBatchProfileTargetScorableCandidateProvider {
     }
     final var sourceZoneCriteria = query.sourceZoneCriteria();
     if (sourceZoneCriteria != null
-        && !sourceZoneCriteria.matches(requireNonNull(graphEvaluation.zoneAssessment()))) {
+        && !sourceZoneCriteria.matches(graphEvaluation)) {
       return Optional.empty();
     }
     final var specificGravity = currentProfile.specificGravity();
@@ -83,9 +80,9 @@ public final class FeedstockBatchProfileTargetScorableCandidateProvider {
 
     return Optional.of(new FeedstockBatchProfileTargetScorableCandidate(
         currentProfile,
-        new ProfileTargetDistanceCandidate(
+        new FeedstockTargetFitAnalyzer.Candidate(
             referenceId(currentProfile),
-            new ProfileTargetScoringInput(
+            new FeedstockTargetCharacteristics(
                 specificGravity,
                 titratableAcidity,
                 currentProfile.tannin()
@@ -94,14 +91,11 @@ public final class FeedstockBatchProfileTargetScorableCandidateProvider {
     ));
   }
 
-  private static @NonNull ProfileTargetDistanceCandidateReference referenceId(
+  private static @NonNull String referenceId(
       @NonNull FeedstockCurrentProfileView currentProfile
   ) {
     requireNonNull(currentProfile, "feedstock current profile cannot be null");
-    return new ProfileTargetDistanceCandidateReference(
-        REFERENCE_TYPE,
-        currentProfile.batchId().value().toString()
-    );
+    return currentProfile.batchId().value().toString();
   }
 
   private static @NonNull FeedstockPlanningCandidatePagePosition toPagePosition(

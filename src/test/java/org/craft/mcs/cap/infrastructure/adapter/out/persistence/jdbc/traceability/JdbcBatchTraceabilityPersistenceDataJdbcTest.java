@@ -4,7 +4,7 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Set;
-import org.craft.mcs.cap.core.traceability.application.model.MaterialStateSnapshot;
+import org.craft.mcs.cap.core.traceability.application.contract.MaterialStateSnapshot;
 import org.craft.mcs.cap.core.traceability.application.port.out.BatchTraceabilityQueryStore;
 import org.craft.mcs.cap.core.traceability.application.port.out.BatchTraceabilityStore;
 import org.craft.mcs.cap.core.traceability.application.port.out.MaterialStateHistoryStore;

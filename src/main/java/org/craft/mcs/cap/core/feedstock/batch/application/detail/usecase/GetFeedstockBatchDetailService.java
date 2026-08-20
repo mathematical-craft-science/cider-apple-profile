@@ -9,9 +9,9 @@ import org.craft.mcs.cap.core.feedstock.batch.application.batch.port.out.Feedsto
 import org.craft.mcs.cap.core.feedstock.batch.application.batch.usecase.FeedstockBatchSummaryMapper;
 import org.craft.mcs.cap.core.feedstock.batch.application.batch.usecase.FeedstockBatchViewEnricher;
 import org.craft.mcs.cap.core.feedstock.batch.application.api.currentprofile.FeedstockCurrentProfileView;
-import org.craft.mcs.cap.core.feedstock.batch.application.currentprofile.service.FeedstockCurrentProfileAssessmentService;
-import org.craft.mcs.cap.core.feedstock.batch.application.detail.model.FeedstockBatchCurrentProfileView;
-import org.craft.mcs.cap.core.feedstock.batch.application.detail.model.FeedstockBatchDetailView;
+import org.craft.mcs.cap.core.feedstock.batch.application.assessment.service.FeedstockCurrentProfileAssessmentService;
+import org.craft.mcs.cap.core.feedstock.batch.application.detail.contract.FeedstockBatchCurrentProfileView;
+import org.craft.mcs.cap.core.feedstock.batch.application.detail.contract.FeedstockBatchDetailView;
 import org.craft.mcs.cap.core.feedstock.batch.application.detail.port.in.GetFeedstockBatchDetailQuery;
 import org.craft.mcs.cap.core.feedstock.batch.application.detail.port.in.GetFeedstockBatchDetailUseCase;
 import org.craft.mcs.cap.core.feedstock.batch.application.currentprofile.query.FeedstockCurrentProfileQueryService;

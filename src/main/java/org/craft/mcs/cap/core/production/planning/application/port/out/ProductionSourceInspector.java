@@ -1,6 +1,6 @@
 package org.craft.mcs.cap.core.production.planning.application.port.out;
 
-import org.craft.mcs.cap.core.production.planning.application.model.AvailableProductionSource;
+import org.craft.mcs.cap.core.production.planning.application.contract.AvailableProductionSource;
 import org.craft.mcs.cap.core.production.batch.domain.model.ProductionSourceComponent;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;

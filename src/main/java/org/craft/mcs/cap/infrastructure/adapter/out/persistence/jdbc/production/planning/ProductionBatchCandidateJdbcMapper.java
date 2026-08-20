@@ -1,12 +1,12 @@
 package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.production.planning;
 
 import java.math.BigDecimal;
-import org.craft.mcs.cap.core.production.planning.application.model.ProductionBatchCandidateSnapshot;
+import org.craft.mcs.cap.core.production.planning.application.contract.ProductionBatchCandidateSnapshot;
+import org.craft.mcs.cap.core.production.planning.application.contract.ProductionCandidatePotentialAbvView;
 import org.craft.mcs.cap.core.production.planning.domain.model.ProductionBatchCandidate;
 import org.craft.mcs.cap.core.production.planning.domain.model.ProductionBatchCandidateId;
 import org.craft.mcs.cap.core.production.batch.domain.model.ProductionBatchId;
 import org.craft.mcs.cap.core.production.batch.domain.model.value.ProductionProfileSnapshot;
-import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPrediction;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.YeastAssimilableNitrogenValue;
@@ -15,6 +15,7 @@ import org.craft.mcs.cap.shared.kernel.measurement.value.AbvValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+import org.springframework.dao.DataRetrievalFailureException;
 
 import static java.util.Objects.requireNonNull;
 
@@ -33,6 +34,7 @@ final class ProductionBatchCandidateJdbcMapper {
     requireNonNull(codec, "production batch candidate JSON codec cannot be null");
     final var candidate = snapshot.candidate();
     final var profile = candidate.profile();
+    final var confirmedProductionBatchId = candidate.confirmedProductionBatchId();
     return new ProductionBatchCandidateJdbcEntity(
         candidate.candidateId().value(),
         candidate.workspaceId().value(),
@@ -51,9 +53,9 @@ final class ProductionBatchCandidateJdbcMapper {
         snapshot.normalizerCode(),
         codec.encodeTargetDistance(snapshot.targetDistance()),
         codec.encodeWarnings(snapshot.warnings()),
-        candidate.confirmedProductionBatchId() == null
+        confirmedProductionBatchId == null
             ? null
-            : candidate.confirmedProductionBatchId().value(),
+            : confirmedProductionBatchId.value(),
         snapshot.revision()
     );
   }
@@ -65,6 +67,11 @@ final class ProductionBatchCandidateJdbcMapper {
     requireNonNull(entity, "production batch candidate entity cannot be null");
     requireNonNull(codec, "production batch candidate JSON codec cannot be null");
     final var sources = codec.decodeSources(entity.sourcesJson);
+    if (sources.composition().totalVolume().liters().compareTo(entity.totalVolumeLiters) != 0) {
+      throw new DataRetrievalFailureException(
+          "persisted production candidate total volume does not match its sources"
+      );
+    }
     final var candidate = ProductionBatchCandidate.restore(
         ProductionBatchCandidateId.of(entity.candidateId),
         WorkspaceId.of(entity.workspaceId),
@@ -85,7 +92,7 @@ final class ProductionBatchCandidateJdbcMapper {
     );
     return new ProductionBatchCandidateSnapshot(
         candidate,
-        new PotentialAbvPrediction(
+        new ProductionCandidatePotentialAbvView(
             candidate.profile().specificGravity(),
             SpecificGravityValue.of(entity.predictedFinalGravity),
             entity.predictedFinalGravitySource,
@@ -101,14 +108,16 @@ final class ProductionBatchCandidateJdbcMapper {
   }
 
   private static @Nullable BigDecimal tannin(@NonNull ProductionProfileSnapshot profile) {
-    return profile.tannin() == null ? null : profile.tannin().asBigDecimal();
+    final var value = profile.tannin();
+    return value == null ? null : value.asBigDecimal();
   }
 
   private static @Nullable BigDecimal yeastAssimilableNitrogen(
       @NonNull ProductionProfileSnapshot profile
   ) {
-    return profile.yeastAssimilableNitrogen() == null
+    final var value = profile.yeastAssimilableNitrogen();
+    return value == null
         ? null
-        : profile.yeastAssimilableNitrogen().asBigDecimal();
+        : value.asBigDecimal();
   }
 }

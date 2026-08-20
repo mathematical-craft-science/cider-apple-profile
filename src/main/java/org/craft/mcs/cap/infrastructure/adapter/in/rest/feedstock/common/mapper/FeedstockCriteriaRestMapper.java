@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 import org.craft.mcs.cap.core.feedstock.batch.application.api.batch.FeedstockBatchCriteria;
 import org.craft.mcs.cap.core.feedstock.batch.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.batch.domain.model.batch.value.FeedstockSeason;
-import org.craft.mcs.cap.core.feedstock.planning.application.candidate.model.FeedstockPlanningBatchCriteria;
+import org.craft.mcs.cap.core.feedstock.planning.application.candidate.contract.FeedstockPlanningBatchCriteria;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.common.dto.FeedstockSeasonRequest;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;

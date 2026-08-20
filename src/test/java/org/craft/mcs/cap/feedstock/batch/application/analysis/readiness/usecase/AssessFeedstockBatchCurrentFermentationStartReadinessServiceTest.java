@@ -14,9 +14,7 @@ import org.craft.mcs.cap.core.feedstock.batch.domain.model.batch.FeedstockBatch;
 import org.craft.mcs.cap.core.feedstock.batch.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.batch.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.core.feedstock.batch.domain.model.batch.value.FeedstockType;
-import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.FermentationStartReadinessAssessment;
-import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.FermentationStartReadinessAssessor;
-import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.FermentationStartReadinessStatus;
+import org.craft.mcs.cap.core.feedstock.batch.application.analysis.readiness.contract.FeedstockFermentationStartReadinessView;
 import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.craft.mcs.cap.shared.testing.ProfileCharacteristicsFixture;
 import org.craft.mcs.cap.shared.kernel.chemical.value.PhValue;
@@ -37,6 +35,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.craft.mcs.cap.shared.testing.FeedstockCurrentProfileViews.currentProfile;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.craft.mcs.cap.support.CiderAnalysisTestFixtures.feedstockReadinessAnalyzer;
 
 
 class AssessFeedstockBatchCurrentFermentationStartReadinessServiceTest {
@@ -49,7 +48,7 @@ class AssessFeedstockBatchCurrentFermentationStartReadinessServiceTest {
         batchRepository,
         mock(FeedstockAccessControl.class),
         new FeedstockCurrentProfileQueryService(currentProfileRepository),
-        new FermentationStartReadinessAssessor()
+        feedstockReadinessAnalyzer()
     );
     final var batchId = FeedstockBatchId.newId();
     final var workspaceId = WorkspaceId.of(newUuid());
@@ -72,7 +71,10 @@ class AssessFeedstockBatchCurrentFermentationStartReadinessServiceTest {
             .extracting(item -> item.evidenceReference().measurementSetId())
             .containsOnly(measurement.measurementId().value()));
     assertThat(result.assessment())
-        .returns(FermentationStartReadinessStatus.READY, FermentationStartReadinessAssessment::status);
+        .returns(
+            FeedstockFermentationStartReadinessView.Status.READY,
+            FeedstockFermentationStartReadinessView::status
+        );
   }
 
   private static @NonNull FeedstockMeasurementFixture measurement(

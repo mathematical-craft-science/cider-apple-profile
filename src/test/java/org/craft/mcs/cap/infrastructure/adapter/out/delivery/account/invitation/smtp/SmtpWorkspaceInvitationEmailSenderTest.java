@@ -9,7 +9,7 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
-import org.craft.mcs.cap.core.account.invitation.application.model.WorkspaceInvitationEmail;
+import org.craft.mcs.cap.core.account.invitation.application.contract.WorkspaceInvitationEmail;
 import org.craft.mcs.cap.core.account.invitation.domain.model.value.WorkspaceInvitationId;
 import org.craft.mcs.cap.core.account.membership.domain.model.AccountRole;
 import org.craft.mcs.cap.core.account.shared.domain.value.DisplayName;

@@ -3,7 +3,7 @@ package org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.appleprofi
 import java.math.BigDecimal;
 import java.util.UUID;
 import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.appleprofile.catalog.entity.AppleVarietyJdbcEntity;
-import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.common.MeasurementKind;
+import org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.common.CharacteristicValueStorageKind;
 import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -47,19 +47,19 @@ interface SpringDataAppleVarietyJdbcRepository
   int updateByIdAndVersion(
       @Param("varietyId") @NonNull UUID varietyId,
       @Param("name") @NonNull String name,
-      @Param("sugarKind") @Nullable MeasurementKind sugarKind,
+      @Param("sugarKind") @Nullable CharacteristicValueStorageKind sugarKind,
       @Param("sugarExact") @Nullable BigDecimal sugarExact,
       @Param("sugarMin") @Nullable BigDecimal sugarMin,
       @Param("sugarMax") @Nullable BigDecimal sugarMax,
-      @Param("phKind") @Nullable MeasurementKind phKind,
+      @Param("phKind") @Nullable CharacteristicValueStorageKind phKind,
       @Param("phExact") @Nullable BigDecimal phExact,
       @Param("phMin") @Nullable BigDecimal phMin,
       @Param("phMax") @Nullable BigDecimal phMax,
-      @Param("acidityKind") @Nullable MeasurementKind acidityKind,
+      @Param("acidityKind") @Nullable CharacteristicValueStorageKind acidityKind,
       @Param("acidityExact") @Nullable BigDecimal acidityExact,
       @Param("acidityMin") @Nullable BigDecimal acidityMin,
       @Param("acidityMax") @Nullable BigDecimal acidityMax,
-      @Param("tanninKind") @Nullable MeasurementKind tanninKind,
+      @Param("tanninKind") @Nullable CharacteristicValueStorageKind tanninKind,
       @Param("tanninExact") @Nullable BigDecimal tanninExact,
       @Param("tanninMin") @Nullable BigDecimal tanninMin,
       @Param("tanninMax") @Nullable BigDecimal tanninMax,

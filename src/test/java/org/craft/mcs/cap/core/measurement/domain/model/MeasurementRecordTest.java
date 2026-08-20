@@ -30,7 +30,7 @@ class MeasurementRecordTest {
   );
 
   @Test
-  void reportsPointAndIntervalValueKinds() {
+  void retainsPointAndIntervalValues() {
     final var recordId = MeasurementRecordId.of(newUuid());
     final var point = result(
         recordId,
@@ -49,8 +49,9 @@ class MeasurementRecordTest {
 
     assertThat(point)
         .returns(recordId, MeasurementRecord::recordId)
-        .returns(MeasurementValueKind.POINT, MeasurementRecord::valueKind);
-    assertThat(interval.valueKind()).isEqualTo(MeasurementValueKind.INTERVAL);
+        .extracting(MeasurementRecord::value)
+        .isInstanceOf(PointCharacteristicValue.class);
+    assertThat(interval.value()).isInstanceOf(IntervalCharacteristicValue.class);
   }
 
   @Test

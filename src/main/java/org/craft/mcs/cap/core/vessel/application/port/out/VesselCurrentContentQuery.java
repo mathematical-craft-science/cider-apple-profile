@@ -2,7 +2,7 @@ package org.craft.mcs.cap.core.vessel.application.port.out;
 
 import java.util.Map;
 import java.util.Optional;
-import org.craft.mcs.cap.core.vessel.application.model.VesselCurrentContentView;
+import org.craft.mcs.cap.core.vessel.application.contract.VesselCurrentContentView;
 import org.craft.mcs.cap.shared.kernel.identity.VesselId;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;

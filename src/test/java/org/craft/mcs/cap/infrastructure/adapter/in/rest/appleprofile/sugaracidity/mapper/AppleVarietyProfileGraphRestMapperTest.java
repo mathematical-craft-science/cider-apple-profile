@@ -2,20 +2,20 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.sugaracidi
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatObject;
-import static org.craft.mcs.cap.core.profileanalysis.testing.ProfileAnalysisTestFixtures.graphEvaluator;
-import static org.craft.mcs.cap.core.profileanalysis.testing.ProfileAnalysisTestFixtures
-    .northAmericanProfileCalculator;
+import static org.craft.mcs.cap.support.CiderAnalysisTestFixtures.appleClassificationAnalyzer;
+import static org.craft.mcs.cap.support.CiderAnalysisTestFixtures.appleGraphAnalyzer;
 import static org.craft.mcs.cap.shared.testing.AppleVarietyReferenceProfiles.from;
-import static org.craft.mcs.cap.support.PotentialAbvPredictionFixtures.prediction;
+import static org.craft.mcs.cap.support.PotentialAbvPredictionFixtures.applePrediction;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.craft.mcs.cap.core.appleprofile.analysis.application.profile.model.AppleVarietyAnalysisName;
-import org.craft.mcs.cap.core.appleprofile.analysis.application.sugaracidity.model.AppleVarietyGraphAnalysisView;
-import org.craft.mcs.cap.core.appleprofile.analysis.application.sugaracidity.model.AppleVarietyNorthAmericanAssessmentView;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.profile.contract.AppleVarietyAnalysisName;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.profile.contract.AppleVarietyAnalysisProfile;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.sugaracidity.contract.AppleVarietyGraphAnalysisView;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.classification.contract.AppleVarietyNorthAmericanAssessmentView;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.abv.contract.ApplePotentialAbvPredictionView;
 import org.craft.mcs.cap.core.appleprofile.catalog.domain.model.AppleVarietyId;
-import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPrediction;
-import org.craft.mcs.cap.core.profileanalysis.graph.domain.GraphMissingCharacteristic;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.sugaracidity.dto.AppleVarietySugarAcidityZoneResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.dto.GraphMissingCharacteristic;
 import org.craft.mcs.cap.shared.kernel.characteristic.IntervalCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
@@ -42,7 +42,7 @@ class AppleVarietyProfileGraphRestMapperTest {
             AppleVarietyId.of("00000000-0000-0000-0000-000000000001"),
             AppleVarietyAnalysisName.of("Kingston Black"),
             profile,
-            prediction(SpecificGravityValue.of("1.066"))
+            applePrediction(SpecificGravityValue.of("1.066"))
         )
     );
 
@@ -81,7 +81,7 @@ class AppleVarietyProfileGraphRestMapperTest {
             AppleVarietyId.of("00000000-0000-0000-0000-000000000001"),
             AppleVarietyAnalysisName.of("Interval Profile"),
             profile,
-            prediction(SpecificGravityValue.of("1.065"))
+            applePrediction(SpecificGravityValue.of("1.065"))
         )
     );
     final var json = OBJECT_MAPPER.valueToTree(response);
@@ -98,6 +98,27 @@ class AppleVarietyProfileGraphRestMapperTest {
   }
 
   @Test
+  void serializesVeryHighNorthAmericanLevels() {
+    final var profile = ProfileCharacteristicsFixture.builder()
+        .specificGravity(PointCharacteristicValue.of(SpecificGravityValue.of("1.070")))
+        .titratableAcidity(PointCharacteristicValue.of(TitratableAcidityValue.of("11.0")))
+        .build();
+    final var response = AppleVarietyProfileGraphRestMapper.toResponse(
+        result(
+            AppleVarietyId.of("00000000-0000-0000-0000-000000000001"),
+            AppleVarietyAnalysisName.of("Concentrated Profile"),
+            profile,
+            applePrediction(SpecificGravityValue.of("1.070"))
+        )
+    );
+    final var json = OBJECT_MAPPER.valueToTree(response);
+
+    assertThatObject(json)
+        .returns("VERY_HIGH", node -> node.at("/northAmericanProfile/sugar").asText())
+        .returns("VERY_HIGH", node -> node.at("/northAmericanProfile/acidity").asText());
+  }
+
+  @Test
   void mapsUnplottableSingleResultWithCapabilityAssessment() {
     final var profile = ProfileCharacteristicsFixture.builder()
         .specificGravity(PointCharacteristicValue.of(SpecificGravityValue.of("1.050")))
@@ -108,7 +129,7 @@ class AppleVarietyProfileGraphRestMapperTest {
             AppleVarietyId.of("00000000-0000-0000-0000-000000000001"),
             AppleVarietyAnalysisName.of("Partial Profile"),
             profile,
-            prediction(SpecificGravityValue.of("1.050"))
+            applePrediction(SpecificGravityValue.of("1.050"))
         )
     );
 
@@ -129,24 +150,23 @@ class AppleVarietyProfileGraphRestMapperTest {
       AppleVarietyId varietyId,
       AppleVarietyAnalysisName varietyName,
       ProfileCharacteristicsFixture profile,
-      PotentialAbvPrediction potentialAbv
+      ApplePotentialAbvPredictionView potentialAbv
   ) {
     final var referenceProfile = from(profile);
-    final var graphEvaluation = graphEvaluator().evaluate(
+    final var analysisProfile = new AppleVarietyAnalysisProfile(
+        varietyId,
+        varietyName,
+        referenceProfile.specificGravity(),
+        referenceProfile.titratableAcidity(),
+        referenceProfile.ph(),
+        referenceProfile.tannin()
+    );
+    final var graphEvaluation = appleGraphAnalyzer().evaluate(
         referenceProfile.specificGravity(),
         referenceProfile.titratableAcidity()
     );
-    final var northAmericanAssessment = new AppleVarietyNorthAmericanAssessmentView(
-        referenceProfile.specificGravity() == null
-        ? null
-        : northAmericanProfileCalculator().assessSugar(referenceProfile.specificGravity()),
-        referenceProfile.titratableAcidity() == null
-        ? null
-        : northAmericanProfileCalculator().assessAcidity(referenceProfile.titratableAcidity()),
-        referenceProfile.tannin() == null
-        ? null
-        : northAmericanProfileCalculator().assessTannin(referenceProfile.tannin())
-    );
+    final AppleVarietyNorthAmericanAssessmentView northAmericanAssessment =
+        appleClassificationAnalyzer().assessNorthAmerican(analysisProfile);
     return new AppleVarietyGraphAnalysisView(
         varietyId,
         varietyName,

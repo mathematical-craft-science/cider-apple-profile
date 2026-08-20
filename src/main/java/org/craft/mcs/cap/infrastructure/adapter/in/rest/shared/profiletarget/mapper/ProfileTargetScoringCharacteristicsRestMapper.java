@@ -1,6 +1,7 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.mapper;
 
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetScoringInput;
+import org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.contract.FeedstockTargetCharacteristics;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.profiletarget.contract.AppleTargetCharacteristics;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.measurement.CanonicalUnitLabels;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profilecharacteristic.mapper.ProfileCharacteristicRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.ProfileTargetScoringCharacteristicsResponse;
@@ -19,9 +20,35 @@ public final class ProfileTargetScoringCharacteristicsRestMapper {
   }
 
   public static @NonNull ProfileTargetScoringCharacteristicsResponse toResponse(
-      @NonNull ProfileTargetScoringInput input
+      @NonNull FeedstockTargetCharacteristics input
   ) {
-    requireNonNull(input, "profile target scoring input cannot be null");
+    requireNonNull(input, "feedstock target characteristics cannot be null");
+    final var tannin = input.tannin();
+    return new ProfileTargetScoringCharacteristicsResponse(
+        ProfileCharacteristicRestMapper.toResponse(
+            input.specificGravity(),
+            SpecificGravityValue::asBigDecimal,
+            CanonicalUnitLabels.SPECIFIC_GRAVITY
+        ),
+        ProfileCharacteristicRestMapper.toResponse(
+            input.titratableAcidity(),
+            TitratableAcidityValue::asBigDecimal,
+            CanonicalUnitLabels.TITRATABLE_ACIDITY
+        ),
+        tannin == null
+            ? null
+            : ProfileCharacteristicRestMapper.toResponse(
+                tannin,
+                TanninValue::asBigDecimal,
+                CanonicalUnitLabels.TANNIN
+            )
+    );
+  }
+
+  public static @NonNull ProfileTargetScoringCharacteristicsResponse toResponse(
+      @NonNull AppleTargetCharacteristics input
+  ) {
+    requireNonNull(input, "apple target characteristics cannot be null");
     final var tannin = input.tannin();
     return new ProfileTargetScoringCharacteristicsResponse(
         ProfileCharacteristicRestMapper.toResponse(

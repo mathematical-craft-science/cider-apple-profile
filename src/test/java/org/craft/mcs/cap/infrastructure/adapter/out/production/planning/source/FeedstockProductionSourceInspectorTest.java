@@ -19,7 +19,7 @@ import org.craft.mcs.cap.core.production.planning.application.ProductionPlanning
 import org.craft.mcs.cap.core.production.planning.application.ProductionPlanningSourceNotFoundException;
 import org.craft.mcs.cap.core.production.planning.application.ProductionPlanningSourceOwnershipMismatchException;
 import org.craft.mcs.cap.core.production.planning.application.ProductionPlanningSourceProfileUnavailableException;
-import org.craft.mcs.cap.core.production.planning.application.model.AvailableProductionSource;
+import org.craft.mcs.cap.core.production.planning.application.contract.AvailableProductionSource;
 import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.chemical.ConfidenceLevel;
 import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
@@ -29,6 +29,7 @@ import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.shared.kernel.material.value.MaterialAvailability;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
+import org.craft.mcs.cap.shared.application.persistence.AggregateRevision;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
@@ -50,6 +51,7 @@ class FeedstockProductionSourceInspectorTest {
     when(useCase.inspect(any())).thenReturn(new FeedstockBatchMaterialSnapshot(
         batchId,
         BatchName.of("Late juice"),
+        AggregateRevision.of(3),
         new MaterialAvailability(source.volume(), VolumeValue.ofLiters("250"), stateId),
         new FeedstockBatchMaterialEvidenceReference("feedstock-profile-v1:measurement-evidence"),
         characteristics,
@@ -62,6 +64,7 @@ class FeedstockProductionSourceInspectorTest {
     assertThat(inspected)
         .returns(source.reference(), AvailableProductionSource::reference)
         .returns(ProductionSourceDisplayName.of("Late juice"), AvailableProductionSource::displayName)
+        .returns(AggregateRevision.of(3), AvailableProductionSource::aggregateRevision)
         .returns(VolumeValue.ofLiters("100"), AvailableProductionSource::selectedVolume)
         .returns(VolumeValue.ofLiters("250"), AvailableProductionSource::availableVolume)
         .returns(stateId, AvailableProductionSource::materialStateId)

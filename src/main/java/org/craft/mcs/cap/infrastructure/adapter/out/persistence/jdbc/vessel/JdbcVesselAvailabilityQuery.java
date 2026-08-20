@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import java.sql.Types;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.vessel.application.model.VesselView;
+import org.craft.mcs.cap.core.vessel.application.contract.VesselView;
 import org.craft.mcs.cap.core.vessel.application.port.out.VesselAvailabilityQuery;
 import org.craft.mcs.cap.shared.application.query.TextSearchCriteria;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;

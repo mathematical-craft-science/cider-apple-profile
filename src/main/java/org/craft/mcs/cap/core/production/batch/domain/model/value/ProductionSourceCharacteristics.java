@@ -15,7 +15,7 @@ import static java.util.Objects.requireNonNull;
  * Canonical characteristics captured from one material source at the Production boundary.
  *
  * <p>The model belongs to the source-consumption scenario. Mathematical composition adapters
- * translate it to their own input model without exposing profile-analysis types to Production.</p>
+ * translate it to their own input model without exposing CiderAnalysis types to Production.</p>
  */
 public record ProductionSourceCharacteristics(
     @NonNull CharacteristicValue<SpecificGravityValue> specificGravity,

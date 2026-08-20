@@ -1,74 +1,69 @@
 package org.craft.mcs.cap.feedstock.planning.application.composition.usecase;
 
+import static java.util.Objects.requireNonNull;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.craft.mcs.cap.core.feedstock.batch.application.batch.usecase.FeedstockBatchSummaryMapper.toSummary;
-import static org.craft.mcs.cap.core.profileanalysis.testing.ProfileAnalysisTestFixtures
-    .graphEvaluator;
 import static org.craft.mcs.cap.shared.kernel.identity.UuidV7Generator.newUuid;
+import static org.craft.mcs.cap.shared.kernel.measurement.MeasuredValueRange.closed;
 import static org.craft.mcs.cap.shared.testing.FeedstockCurrentProfileViews.currentProfile;
 import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementInstant;
 import static org.craft.mcs.cap.shared.testing.TestClocks.feedstockMeasurementRecordedAt;
+import static org.craft.mcs.cap.support.CiderAnalysisTestFixtures
+    .feedstockPlanningGraphAnalyzer;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static java.util.Objects.requireNonNull;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import org.craft.mcs.cap.core.cideranalysis.graph.domain.zone.BuiltInJolicoeurSugarAcidityZoneProfiles;
 import org.craft.mcs.cap.core.feedstock.batch.application.api.batch.FeedstockBatchCriteria;
-import org.craft.mcs.cap.core.feedstock.planning.application.candidate.model.FeedstockPlanningProfileFilters;
+import org.craft.mcs.cap.core.feedstock.batch.application.api.batch.FeedstockBatchSummary;
 import org.craft.mcs.cap.core.feedstock.batch.application.api.currentprofile.FeedstockCurrentProfilePagePosition;
 import org.craft.mcs.cap.core.feedstock.batch.application.api.currentprofile.FeedstockCurrentProfilePageQuery;
-import org.craft.mcs.cap.core.feedstock.batch.application.currentprofile.port.out.FeedstockCurrentProfilePageProvider;
-import org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.port.in.PredefinedFeedstockProfileTargetSelection;
-import org.craft.mcs.cap.core.feedstock.planning.application.authorization.port.out.FeedstockPlanningAccessControl;
-import org.craft.mcs.cap.core.feedstock.planning.application.candidate.model.FeedstockPlanningCandidateSnapshot;
-import org.craft.mcs.cap.core.feedstock.planning.application.candidate.port.out.FeedstockPlanningCandidateProvider;
 import org.craft.mcs.cap.core.feedstock.batch.application.batch.port.out.FeedstockBatchSummaryQueryRepository;
-import org.craft.mcs.cap.core.feedstock.batch.application.api.batch.FeedstockBatchSummary;
-import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetId;
-import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetName;
-import org.craft.mcs.cap.core.feedstock.planning.application.composition.InsufficientFeedstockCompositionSourcesException;
-import org.craft.mcs.cap.core.feedstock.planning.application.composition.port.in.OptimizeFeedstockBatchCompositionCommand;
-import org.craft.mcs.cap.core.feedstock.planning.application.composition.usecase.OptimizeFeedstockBatchCompositionService;
+import org.craft.mcs.cap.core.feedstock.batch.application.currentprofile.port.out.FeedstockCurrentProfilePageProvider;
 import org.craft.mcs.cap.core.feedstock.batch.domain.model.batch.FeedstockBatch;
 import org.craft.mcs.cap.core.feedstock.batch.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.core.feedstock.batch.domain.model.batch.value.FeedstockSeason;
 import org.craft.mcs.cap.core.feedstock.batch.domain.model.batch.value.FeedstockType;
-import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionCalculatorCode;
-import org.craft.mcs.cap.core.profileanalysis.composition.calculation.domain.CompositionTanninPolicy;
-import org.craft.mcs.cap.core.profileanalysis.composition.optimization.application.port.in.OptimizeCompositionCommand;
-import org.craft.mcs.cap.core.profileanalysis.composition.optimization.application.port.in.OptimizeCompositionResult;
-import org.craft.mcs.cap.core.profileanalysis.composition.optimization.application.port.in.OptimizeCompositionUseCase;
-import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.CompositionOptimizationMode;
-import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.strategy.CompositionOptimizationAlgorithm;
-import org.craft.mcs.cap.core.profileanalysis.composition.optimization.domain.strategy.DiscretizedCompositionOptimizationSettings;
-import org.craft.mcs.cap.core.profileanalysis.graph.zone.domain.BuiltInJolicoeurSugarAcidityZoneProfiles;
-import org.craft.mcs.cap.core.profileanalysis.graph.application.model.JolicoeurSugarAcidityZoneCriteria;
-import org.craft.mcs.cap.core.profileanalysis.graph.zone.domain.JolicoeurSugarAcidityZone;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetObjectiveWeights;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetScoringConfiguration;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.normalization.ProfileAxisNormalizerCode;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.objective.ProfileTargetObjectiveFunctionCode;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.TanninTargetRange;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.target.domain.ZoneGeometrySugarAcidityTargetResolver;
+import org.craft.mcs.cap.core.feedstock.planning.application.authorization.port.out.FeedstockPlanningAccessControl;
+import org.craft.mcs.cap.core.feedstock.planning.application.candidate.contract.FeedstockPlanningCandidateSnapshot;
+import org.craft.mcs.cap.core.feedstock.planning.application.candidate.contract.FeedstockPlanningProfileFilters;
+import org.craft.mcs.cap.core.feedstock.planning.application.candidate.port.out.FeedstockPlanningCandidateProvider;
+import org.craft.mcs.cap.core.feedstock.planning.application.composition.InsufficientFeedstockCompositionSourcesException;
+import org.craft.mcs.cap.core.feedstock.planning.application.composition.contract.FeedstockCompositionOptimizationRequest;
+import org.craft.mcs.cap.core.feedstock.planning.application.composition.contract.FeedstockCompositionOptimizationView;
+import org.craft.mcs.cap.core.feedstock.planning.application.composition.port.in.OptimizeFeedstockBatchCompositionCommand;
+import org.craft.mcs.cap.core.feedstock.planning.application.composition.port.out.FeedstockCompositionOptimizer;
+import org.craft.mcs.cap.core.feedstock.planning.application.composition.usecase.OptimizeFeedstockBatchCompositionService;
+import org.craft.mcs.cap.core.feedstock.planning.application.graph.contract.FeedstockPlanningGraphCriteria;
+import org.craft.mcs.cap.core.feedstock.planning.application.graph.contract.FeedstockPlanningGraphView.Zone;
+import org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.contract.FeedstockTargetFitConfiguration.Normalizer;
+import org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.contract.FeedstockTargetFitConfiguration.ObjectiveFunction;
+import org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.contract.FeedstockTargetFitConfiguration.ObjectiveWeights;
+import org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.contract.PredefinedFeedstockProfileTargetSelection;
+import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetId;
+import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetName;
 import org.craft.mcs.cap.shared.kernel.characteristic.CharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.characteristic.IntervalCharacteristicValue;
 import org.craft.mcs.cap.shared.kernel.characteristic.PointCharacteristicValue;
-import org.craft.mcs.cap.shared.testing.ProfileCharacteristicsFixture;
 import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TanninValue;
 import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
-import org.craft.mcs.cap.testsupport.VesselTestFixtures;
+import org.craft.mcs.cap.shared.kernel.measurement.MeasuredValueRange;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
 import org.craft.mcs.cap.shared.testing.FeedstockMeasurementFixture;
+import org.craft.mcs.cap.shared.testing.ProfileCharacteristicsFixture;
+import org.craft.mcs.cap.testsupport.VesselTestFixtures;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -110,7 +105,7 @@ class OptimizeFeedstockBatchCompositionServiceTest {
     final var result = service.optimize(command(
         workspaceId,
         null,
-        JolicoeurSugarAcidityZoneCriteria.of(JolicoeurSugarAcidityZone.PERFECT_APPLES)
+        new FeedstockPlanningGraphCriteria(Set.of(Zone.PERFECT_APPLES), null)
     ));
 
     assertThat(result.sourceCount()).isEqualTo(2);
@@ -123,19 +118,19 @@ class OptimizeFeedstockBatchCompositionServiceTest {
     final var optimizationCommand = genericCommandCaptor();
     verify(optimizer).optimize(optimizationCommand.capture());
     assertThat(optimizationCommand.getValue().tanninPolicy())
-        .isEqualTo(CompositionTanninPolicy.CALCULATE_WHEN_COMPLETE);
-    assertThat(optimizationCommand.getValue().mode()).isEqualTo(CompositionOptimizationMode.PROPORTION);
+        .isEqualTo(FeedstockCompositionOptimizationRequest.TanninPolicy.CALCULATE_WHEN_COMPLETE);
+    assertThat(optimizationCommand.getValue().mode())
+        .isEqualTo(FeedstockCompositionOptimizationRequest.Mode.PROPORTION);
     assertThat(optimizationCommand.getValue().algorithm())
-        .isEqualTo(CompositionOptimizationAlgorithm.DISCRETIZED_BOUNDED_SEARCH);
-    assertThat(optimizationCommand.getValue().calculatorCode())
-        .isEqualTo(CompositionCalculatorCode.MASS_BALANCE);
-    assertThat(optimizationCommand.getValue().scoringConfiguration().normalizerCode())
-        .isEqualTo(ProfileAxisNormalizerCode.EFFECTIVE_RANGE);
+        .isEqualTo(FeedstockCompositionOptimizationRequest.Algorithm.DISCRETIZED_BOUNDED_SEARCH);
+    assertThat(optimizationCommand.getValue().calculator())
+        .isEqualTo(FeedstockCompositionOptimizationRequest.Calculator.MASS_BALANCE);
+    assertThat(optimizationCommand.getValue().scoring().normalizer())
+        .isEqualTo(Normalizer.EFFECTIVE_RANGE);
     assertThat(optimizationCommand.getValue().sources()).hasSize(2);
 
     final var source = optimizationCommand.getValue().sources().getFirst();
-    assertThat(source.reference().type()).isEqualTo("FEEDSTOCK_BATCH");
-    assertThat(source.reference().id()).isEqualTo(usableBatch.batchId().value().toString());
+    assertThat(source.batchId()).isEqualTo(usableBatch.batchId());
     assertThat(source.availableVolume()).isNotNull();
     assertThat(source.availableVolume().liters()).isEqualByComparingTo("20");
     assertThat(point(source.characteristics().specificGravity()).asBigDecimal())
@@ -149,8 +144,7 @@ class OptimizeFeedstockBatchCompositionServiceTest {
   ) {
     return switch (value) {
       case PointCharacteristicValue<T>(var point) -> point;
-      case IntervalCharacteristicValue<T> _ ->
-          throw new AssertionError("expected point characteristic");
+      case IntervalCharacteristicValue<T> _ -> throw new AssertionError("expected point characteristic");
     };
   }
 
@@ -172,16 +166,18 @@ class OptimizeFeedstockBatchCompositionServiceTest {
             currentProfile(sample(secondBatch.batchId(), profile("1.070", "6.0")))
         ));
 
-    service.optimize(command(workspaceId, new TanninTargetRange(
-        TanninValue.of("1500"),
-        TanninValue.of("2500")
-    )));
+    service.optimize(command(
+        workspaceId, closed(
+            TanninValue.of("1500"),
+            TanninValue.of("2500")
+        )
+    ));
 
     final var optimizationCommand = genericCommandCaptor();
     verify(optimizer).optimize(optimizationCommand.capture());
     assertThat(optimizationCommand.getValue().tanninPolicy())
-        .isEqualTo(CompositionTanninPolicy.REQUIRE_TANNIN);
-    assertThat(optimizationCommand.getValue().targetObjective().tanninTarget()).isNotNull();
+        .isEqualTo(FeedstockCompositionOptimizationRequest.TanninPolicy.REQUIRE_TANNIN);
+    assertThat(optimizationCommand.getValue().tanninTarget()).isNotNull();
     assertThat(optimizationCommand.getValue().sources()).hasSize(2);
   }
 
@@ -209,14 +205,13 @@ class OptimizeFeedstockBatchCompositionServiceTest {
   private static OptimizeFeedstockBatchCompositionService service(
       FeedstockCurrentProfilePageProvider measurementRepository,
       FeedstockBatchSummaryQueryRepository batchRepository,
-      OptimizeCompositionUseCase optimizer
+      FeedstockCompositionOptimizer optimizer
   ) {
     final var geometryProfile = BuiltInJolicoeurSugarAcidityZoneProfiles.rectangularZoneGeometryProfile();
 
     return new OptimizeFeedstockBatchCompositionService(
         candidateProvider(measurementRepository, batchRepository),
-        graphEvaluator(geometryProfile),
-        new ZoneGeometrySugarAcidityTargetResolver(geometryProfile),
+        feedstockPlanningGraphAnalyzer(geometryProfile),
         optimizer,
         mock(FeedstockPlanningAccessControl.class)
     );
@@ -234,11 +229,11 @@ class OptimizeFeedstockBatchCompositionServiceTest {
               query.batch() == null ? null : new FeedstockBatchCriteria(query.batch().batchIds()),
               query.season(),
               query.after() == null
-                  ? null
-                  : new FeedstockCurrentProfilePagePosition(
-                      query.after().measuredAt(),
-                      query.after().measurementSetId()
-                  ),
+              ? null
+              : new FeedstockCurrentProfilePagePosition(
+                  query.after().measuredAt(),
+                  query.after().measurementSetId()
+              ),
               query.limit()
           )).stream()
           .map(profile -> new FeedstockPlanningCandidateSnapshot(
@@ -249,18 +244,18 @@ class OptimizeFeedstockBatchCompositionServiceTest {
     };
   }
 
-  private static OptimizeCompositionUseCase mockOptimizer() {
-    final var optimizer = mock(OptimizeCompositionUseCase.class);
+  private static FeedstockCompositionOptimizer mockOptimizer() {
+    final var optimizer = mock(FeedstockCompositionOptimizer.class);
     when(optimizer.optimize(any()))
         .thenAnswer(invocation -> {
-          final OptimizeCompositionCommand command = invocation.getArgument(0);
-          return new OptimizeCompositionResult(
-              command.mode(),
-              command.algorithm(),
-              command.calculatorCode(),
-              command.scoringConfiguration().normalizerCode(),
-              command.scoringConfiguration().objectiveFunctionCode(),
-              command.settings(),
+          final FeedstockCompositionOptimizationRequest request = invocation.getArgument(0);
+          return new FeedstockCompositionOptimizationView(
+              request.mode(),
+              request.algorithm(),
+              request.calculator(),
+              request.scoring().normalizer(),
+              request.scoring().objectiveFunction(),
+              request.settings(),
               0,
               List.of()
           );
@@ -268,38 +263,40 @@ class OptimizeFeedstockBatchCompositionServiceTest {
     return optimizer;
   }
 
-  private static ArgumentCaptor<OptimizeCompositionCommand> genericCommandCaptor() {
-    return ArgumentCaptor.forClass(OptimizeCompositionCommand.class);
+  private static ArgumentCaptor<FeedstockCompositionOptimizationRequest> genericCommandCaptor() {
+    return ArgumentCaptor.forClass(FeedstockCompositionOptimizationRequest.class);
   }
 
   private static OptimizeFeedstockBatchCompositionCommand command(
       WorkspaceId workspaceId,
-      TanninTargetRange tanninTarget
+      MeasuredValueRange<TanninValue> tanninTarget
   ) {
     return command(workspaceId, tanninTarget, null);
   }
 
   private static OptimizeFeedstockBatchCompositionCommand command(
       WorkspaceId workspaceId,
-      TanninTargetRange tanninTarget,
-      JolicoeurSugarAcidityZoneCriteria sourceZoneCriteria
+      MeasuredValueRange<TanninValue> tanninTarget,
+      FeedstockPlanningGraphCriteria sourceZoneCriteria
   ) {
     return new OptimizeFeedstockBatchCompositionCommand(
         workspaceId,
         new FeedstockPlanningProfileFilters(null, null),
         sourceZoneCriteria,
-        new PredefinedFeedstockProfileTargetSelection(JolicoeurSugarAcidityZone.PERFECT_APPLES),
+        new PredefinedFeedstockProfileTargetSelection(
+            Zone.PERFECT_APPLES
+        ),
         tanninTarget,
-        new ProfileTargetScoringConfiguration(
-            ProfileAxisNormalizerCode.EFFECTIVE_RANGE,
-            ProfileTargetObjectiveFunctionCode.DISTANCE_TO_TARGET_AREA,
-            ProfileTargetObjectiveWeights.balanced()
+        new FeedstockCompositionOptimizationRequest.Scoring(
+            Normalizer.EFFECTIVE_RANGE,
+            ObjectiveFunction.DISTANCE_TO_TARGET_AREA,
+            ObjectiveWeights.balanced()
         ),
         List.of(),
-        new DiscretizedCompositionOptimizationSettings(5, 3),
-        CompositionOptimizationMode.PROPORTION,
-        CompositionOptimizationAlgorithm.DISCRETIZED_BOUNDED_SEARCH,
-        CompositionCalculatorCode.MASS_BALANCE,
+        new FeedstockCompositionOptimizationRequest.Settings(5, 3),
+        FeedstockCompositionOptimizationRequest.Mode.PROPORTION,
+        FeedstockCompositionOptimizationRequest.Algorithm.DISCRETIZED_BOUNDED_SEARCH,
+        FeedstockCompositionOptimizationRequest.Calculator.MASS_BALANCE,
         null,
         25
     );

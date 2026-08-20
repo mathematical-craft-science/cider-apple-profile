@@ -1,10 +1,10 @@
 package org.craft.mcs.cap.core.appleprofile.analysis.application.profiletarget.port.in;
 
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.model.ProfileTargetAnalysisScenario;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetObjective;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.domain.ProfileTargetObjectiveWeights;
-import org.craft.mcs.cap.core.appleprofile.analysis.application.profile.model.AppleVarietyAnalysisFilters;
-import org.craft.mcs.cap.core.profileanalysis.graph.application.model.JolicoeurSugarAcidityZoneCriteria;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.profiletarget.contract.AppleTargetDefinition;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.profiletarget.contract.AppleTargetFitConfiguration.AnalysisScenario;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.profiletarget.contract.AppleTargetFitConfiguration.ObjectiveWeights;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.profile.contract.AppleVarietyAnalysisFilters;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.graph.contract.AppleSugarAcidityGraphCriteria;
 import org.craft.mcs.cap.shared.application.ApplicationValidationException;
 import org.craft.mcs.cap.shared.application.query.QueryLimits;
 import org.jspecify.annotations.NonNull;
@@ -15,10 +15,10 @@ import static java.util.Objects.requireNonNull;
 
 public record AppleVarietyProfileTargetCandidateQuery(
     @NonNull AppleVarietyAnalysisFilters filters,
-    @Nullable JolicoeurSugarAcidityZoneCriteria sourceZoneCriteria,
-    @NonNull ProfileTargetAnalysisScenario analysisScenario,
-    @NonNull ProfileTargetObjective target,
-    @NonNull ProfileTargetObjectiveWeights weights,
+    @Nullable AppleSugarAcidityGraphCriteria sourceZoneCriteria,
+    @NonNull AnalysisScenario analysisScenario,
+    @NonNull AppleTargetDefinition target,
+    @NonNull ObjectiveWeights weights,
     int limit
 ) {
 

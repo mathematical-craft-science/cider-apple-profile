@@ -1,6 +1,6 @@
 package org.craft.mcs.cap.account.support;
 
-import org.craft.mcs.cap.core.account.context.application.model.WorkspaceMembershipSnapshot;
+import org.craft.mcs.cap.core.account.context.application.contract.WorkspaceMembershipSnapshot;
 import org.craft.mcs.cap.core.account.membership.domain.model.WorkspaceMembership;
 import org.craft.mcs.cap.core.account.workspace.domain.model.Workspace;
 import org.jspecify.annotations.NonNull;

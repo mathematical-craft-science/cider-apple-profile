@@ -40,7 +40,7 @@ class ConfigurationPropertiesMetadataTest {
             "cap.account.default-workspace.type",
             "cap.account.default-workspace.settings.default-acidity-basis",
             "cap.security.provider",
-            "cap.profile-analysis.sugar-acidity.geometry"
+            "cap.cider-analysis.sugar-acidity.geometry"
         );
   }
 

@@ -2,7 +2,7 @@ package org.craft.mcs.cap.core.account.actor.application.port.out;
 
 import java.util.Optional;
 import java.util.UUID;
-import org.craft.mcs.cap.core.account.actor.application.model.ActorDisplayView;
+import org.craft.mcs.cap.core.account.actor.application.contract.ActorDisplayView;
 import org.craft.mcs.cap.shared.kernel.identity.ActorType;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;
 import org.jspecify.annotations.NonNull;

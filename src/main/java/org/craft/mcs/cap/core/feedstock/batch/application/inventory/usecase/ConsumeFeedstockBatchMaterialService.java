@@ -1,25 +1,29 @@
 package org.craft.mcs.cap.core.feedstock.batch.application.inventory.usecase;
 
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.feedstock.batch.application.FeedstockBatchInsufficientAvailableVolumeException;
+import org.craft.mcs.cap.core.feedstock.batch.application.FeedstockBatchHasNoMeasurementsException;
+import org.craft.mcs.cap.core.feedstock.batch.application.FeedstockBatchMaterialSnapshotChangedException;
 import org.craft.mcs.cap.core.feedstock.batch.application.FeedstockBatchNotFoundException;
-import org.craft.mcs.cap.core.feedstock.batch.application.FeedstockBatchOwnershipMismatchException;
+import org.craft.mcs.cap.core.feedstock.batch.application.api.currentprofile.FeedstockCurrentProfileView;
 import org.craft.mcs.cap.core.feedstock.batch.application.authorization.port.out.FeedstockAccessControl;
 import org.craft.mcs.cap.core.feedstock.batch.application.batch.port.out.FeedstockBatchRepository;
+import org.craft.mcs.cap.core.feedstock.batch.application.currentprofile.query.FeedstockCurrentProfileQueryService;
 import org.craft.mcs.cap.core.feedstock.batch.application.inventory.port.in.ConsumeFeedstockBatchMaterialCommand;
 import org.craft.mcs.cap.core.feedstock.batch.application.inventory.port.in.ConsumeFeedstockBatchMaterialUseCase;
 import org.craft.mcs.cap.core.feedstock.batch.application.inventory.port.in.ConsumedFeedstockBatchMaterial;
 import org.craft.mcs.cap.core.feedstock.batch.application.inventory.port.in.FeedstockBatchMaterialEvidenceReference;
-import org.craft.mcs.cap.core.feedstock.batch.application.currentprofile.query.FeedstockCurrentProfileQueryService;
-import org.craft.mcs.cap.core.feedstock.batch.domain.model.batch.FeedstockBatch;
+import org.craft.mcs.cap.core.feedstock.batch.domain.model.batch.FeedstockBatchId;
 import org.craft.mcs.cap.shared.application.measurement.MeasurementEvidenceView;
 import org.craft.mcs.cap.shared.kernel.material.value.MaterialConsumption;
 import org.craft.mcs.cap.shared.platform.TransactionHelper;
-import org.craft.mcs.cap.shared.application.persistence.VersionedAggregate;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 
 import static java.util.Objects.requireNonNull;
+import static org.craft.mcs.cap.core.feedstock.batch.application.inventory.usecase
+    .FeedstockMaterialAvailabilityPolicy.requireAvailableVolume;
+import static org.craft.mcs.cap.core.feedstock.batch.application.inventory.usecase
+    .FeedstockMaterialAvailabilityPolicy.requireOwnedBy;
 import static org.craft.mcs.cap.core.feedstock.batch.application.inventory.usecase
     .FeedstockMaterialCharacteristicsProjector.project;
 
@@ -53,11 +57,24 @@ public final class ConsumeFeedstockBatchMaterialService
   private @NonNull ConsumedFeedstockBatchMaterial consumeInTransaction(
       @NonNull ConsumeFeedstockBatchMaterialCommand command
   ) {
-    final var state = requireOwnedBatch(command);
+    final var state = feedstockBatchRepository.lockVersionedById(command.batchId())
+        .orElseThrow(() -> new FeedstockBatchNotFoundException(command.batchId()));
     final var batch = state.aggregate();
-    requireAvailableVolume(batch, command);
+    requireOwnedBy(batch, command.workspaceId());
     final var sourceStateId = batch.currentMaterialStateId();
-    final var measurement = currentProfileQueryService.requireCurrentProfile(batch.batchId());
+    if (!sourceStateId.equals(command.expectation().materialStateId())) {
+      throw new FeedstockBatchMaterialSnapshotChangedException(batch.batchId());
+    }
+    final var measurement = requireCurrentProfile(batch.batchId());
+    final var evidenceReference = FeedstockBatchMaterialEvidenceReference.from(
+        measurement.evidence().stream()
+            .map(MeasurementEvidenceView::snapshot)
+            .toList()
+    );
+    if (!evidenceReference.equals(command.expectation().evidenceReference())) {
+      throw new FeedstockBatchMaterialSnapshotChangedException(batch.batchId());
+    }
+    requireAvailableVolume(batch, command.volume());
     final var characteristics = project(measurement);
     final var availableBefore = batch.availableVolume();
 
@@ -74,41 +91,17 @@ public final class ConsumeFeedstockBatchMaterialService
             sourceStateId,
             batch.currentMaterialStateId()
         ),
-        FeedstockBatchMaterialEvidenceReference.from(measurement.evidence().stream()
-            .map(MeasurementEvidenceView::snapshot)
-            .toList()),
+        evidenceReference,
         characteristics,
         measurement.aggregateConfidence()
     );
   }
 
-  private @NonNull VersionedAggregate<FeedstockBatch> requireOwnedBatch(
-      @NonNull ConsumeFeedstockBatchMaterialCommand command
-  ) {
-    final var state = feedstockBatchRepository.lockVersionedById(command.batchId())
-        .orElseThrow(() -> new FeedstockBatchNotFoundException(command.batchId()));
-    final var batch = state.aggregate();
-
-    if (!batch.workspaceId().equals(command.workspaceId())) {
-      throw new FeedstockBatchOwnershipMismatchException(
-          batch.batchId(),
-          command.workspaceId(),
-          batch.workspaceId()
-      );
-    }
-    return state;
-  }
-
-  private static void requireAvailableVolume(
-      @NonNull FeedstockBatch batch,
-      @NonNull ConsumeFeedstockBatchMaterialCommand command
-  ) {
-    if (command.volume().exceeds(batch.availableVolume())) {
-      throw new FeedstockBatchInsufficientAvailableVolumeException(
-          batch.batchId(),
-          command.volume(),
-          batch.availableVolume()
-      );
+  private @NonNull FeedstockCurrentProfileView requireCurrentProfile(@NonNull FeedstockBatchId batchId) {
+    try {
+      return currentProfileQueryService.requireCurrentProfile(batchId);
+    } catch (FeedstockBatchHasNoMeasurementsException _) {
+      throw new FeedstockBatchMaterialSnapshotChangedException(batchId);
     }
   }
 

@@ -1,8 +1,6 @@
 package org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.usecase;
 
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.profileanalysis.composition.contribution.domain.CompositionContributionRoleAssessmentRequest;
-import org.craft.mcs.cap.core.profileanalysis.composition.contribution.domain.CompositionContributionRoleAssessor;
 import org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.port.in.FeedstockBatchProfileTargetCandidate;
 import org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.port.in.FeedstockBatchProfileTargetQuery;
 import org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.port.in.FeedstockBatchProfileTargetCandidates;
@@ -28,7 +26,6 @@ public final class QueryFeedstockBatchProfileTargetCandidatesService
     implements QueryFeedstockBatchProfileTargetCandidatesUseCase {
 
   private final @NonNull ScoreFeedstockBatchProfileTargetUseCase scoreProfileTargetUseCase;
-  private final @NonNull CompositionContributionRoleAssessor contributionRoleAssessor;
 
   @Override
   public @NonNull FeedstockBatchProfileTargetCandidates query(
@@ -41,19 +38,14 @@ public final class QueryFeedstockBatchProfileTargetCandidatesService
         query.analysisScenario(),
         scores.normalizerCode(),
         scores.scores().stream()
-            .map(score -> {
-              final var roleAssessmentRequest = new CompositionContributionRoleAssessmentRequest(
-                  score.distance()
-              );
-              return new FeedstockBatchProfileTargetCandidate(
+            .map(score -> new FeedstockBatchProfileTargetCandidate(
                   score.batchId(),
                   score.currentMaterialStateId(),
                   score.profileEvidence(),
                   score.characteristics(),
                   score.distance(),
-                  contributionRoleAssessor.assess(roleAssessmentRequest)
-              );
-            })
+                  score.contribution()
+              ))
             .toList()
     );
   }

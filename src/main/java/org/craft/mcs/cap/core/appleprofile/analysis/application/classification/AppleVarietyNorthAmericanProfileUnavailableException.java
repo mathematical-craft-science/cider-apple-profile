@@ -3,7 +3,7 @@ package org.craft.mcs.cap.core.appleprofile.analysis.application.classification;
 import java.io.Serial;
 import java.util.Set;
 import org.craft.mcs.cap.core.appleprofile.catalog.domain.model.AppleVarietyId;
-import org.craft.mcs.cap.core.profileanalysis.input.application.ProfileAnalysisInputUnavailableException;
+import org.craft.mcs.cap.shared.application.measurement.MeasurementInputsUnavailableException;
 import org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic;
 import org.jspecify.annotations.NonNull;
 
@@ -16,7 +16,7 @@ import static org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteris
 /** Indicates that an apple variety lacks characteristics required by the North American profile. */
 @SuppressWarnings("java:S110")
 public final class AppleVarietyNorthAmericanProfileUnavailableException
-    extends ProfileAnalysisInputUnavailableException {
+    extends MeasurementInputsUnavailableException {
 
   @Serial
   private static final long serialVersionUID = 1L;

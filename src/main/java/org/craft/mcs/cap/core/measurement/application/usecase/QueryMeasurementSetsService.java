@@ -3,7 +3,7 @@ package org.craft.mcs.cap.core.measurement.application.usecase;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.measurement.application.MeasurementSetNotFoundException;
-import org.craft.mcs.cap.core.measurement.application.model.MeasurementSetView;
+import org.craft.mcs.cap.core.measurement.application.contract.MeasurementSetView;
 import org.craft.mcs.cap.core.measurement.application.port.in.QueryMeasurementSetsUseCase;
 import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementSetViewQuery;
 import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementSubjectAccessControl;

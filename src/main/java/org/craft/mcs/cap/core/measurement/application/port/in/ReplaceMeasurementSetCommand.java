@@ -1,7 +1,7 @@
 package org.craft.mcs.cap.core.measurement.application.port.in;
 
 import java.util.List;
-import org.craft.mcs.cap.core.measurement.application.model.MeasurementCharacteristicInput;
+import org.craft.mcs.cap.core.measurement.application.contract.MeasurementCharacteristicInput;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementCorrectionReason;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetId;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetName;

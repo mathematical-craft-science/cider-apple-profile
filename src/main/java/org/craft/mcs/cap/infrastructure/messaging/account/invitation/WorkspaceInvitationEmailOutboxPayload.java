@@ -1,7 +1,7 @@
 package org.craft.mcs.cap.infrastructure.messaging.account.invitation;
 
 import java.util.UUID;
-import org.craft.mcs.cap.core.account.invitation.application.model.WorkspaceInvitationDeliveryRequest;
+import org.craft.mcs.cap.core.account.invitation.application.contract.WorkspaceInvitationDeliveryRequest;
 import org.craft.mcs.cap.core.account.invitation.domain.model.value.WorkspaceInvitationId;
 import org.jspecify.annotations.NonNull;
 

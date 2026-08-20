@@ -3,7 +3,7 @@ package org.craft.mcs.cap.core.feedstock.batch.application.analysis.abv;
 import java.io.Serial;
 import java.util.Set;
 import org.craft.mcs.cap.core.feedstock.batch.domain.model.batch.FeedstockBatchId;
-import org.craft.mcs.cap.core.profileanalysis.input.application.ProfileAnalysisInputUnavailableException;
+import org.craft.mcs.cap.shared.application.measurement.MeasurementInputsUnavailableException;
 import org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic;
 import org.jspecify.annotations.NonNull;
 
@@ -14,7 +14,7 @@ import static org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteris
 /** Indicates that the current feedstock state cannot support potential ABV prediction. */
 @SuppressWarnings("java:S110")
 public final class FeedstockPotentialAbvUnavailableException
-    extends ProfileAnalysisInputUnavailableException {
+    extends MeasurementInputsUnavailableException {
 
   @Serial
   private static final long serialVersionUID = 1L;

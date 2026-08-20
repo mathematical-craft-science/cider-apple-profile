@@ -3,7 +3,7 @@ package org.craft.mcs.cap.core.vessel.application.usecase;
 import lombok.RequiredArgsConstructor;
 import org.craft.mcs.cap.core.vessel.application.VesselNameConflictException;
 import org.craft.mcs.cap.core.vessel.application.authorization.port.out.VesselAccessControl;
-import org.craft.mcs.cap.core.vessel.application.model.VesselUsageView;
+import org.craft.mcs.cap.core.vessel.application.contract.VesselUsageView;
 import org.craft.mcs.cap.core.vessel.application.port.in.CreateVesselCommand;
 import org.craft.mcs.cap.core.vessel.application.port.in.CreateVesselUseCase;
 import org.craft.mcs.cap.core.vessel.application.port.out.VesselRepository;

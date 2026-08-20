@@ -2,10 +2,12 @@ package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstockworkspace.mapp
 
 import java.util.UUID;
 import org.craft.mcs.cap.core.feedstock.planning.application.batchoverview.port.in.FeedstockPlanningBatchViewQuery;
-import org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.port.in.PredefinedFeedstockProfileTargetSelection;
-import org.craft.mcs.cap.core.profileanalysis.graph.zone.domain.JolicoeurSugarAcidityZone;
-import org.craft.mcs.cap.core.profileanalysis.profiletarget.scoring.application.model.ProfileTargetAnalysisScenario;
+import org.craft.mcs.cap.core.feedstock.planning.application.graph.contract.FeedstockPlanningGraphView.Zone;
+import org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.contract.FeedstockTargetFitConfiguration;
+import org.craft.mcs.cap.core.feedstock.planning.application.profiletarget.contract.PredefinedFeedstockProfileTargetSelection;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.graph.dto.JolicoeurSugarAcidityZone;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstockworkspace.dto.FeedstockWorkspaceBatchQueryRequest;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.ProfileTargetAnalysisScenario;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.PredefinedZoneProfileTargetRequest;
 import org.craft.mcs.cap.shared.application.query.QueryLimits;
 import org.junit.jupiter.api.Test;
@@ -32,7 +34,10 @@ class FeedstockWorkspaceQueryRestMapperTest {
 
     assertThat(query)
         .returns(workspaceId, candidate -> candidate.workspaceId().value())
-        .returns(ProfileTargetAnalysisScenario.BLENDING_PLANNING, FeedstockPlanningBatchViewQuery::analysisScenario)
+        .returns(
+            FeedstockTargetFitConfiguration.AnalysisScenario.BLENDING_PLANNING,
+            FeedstockPlanningBatchViewQuery::analysisScenario
+        )
         .returns(QueryLimits.MAXIMUM, FeedstockPlanningBatchViewQuery::targetCandidateLimit)
         .matches(candidate -> candidate.season() == null)
         .matches(candidate -> candidate.target() == null)
@@ -58,14 +63,17 @@ class FeedstockWorkspaceQueryRestMapperTest {
     );
 
     assertThat(query)
-        .returns(ProfileTargetAnalysisScenario.BLENDING_PLANNING, FeedstockPlanningBatchViewQuery::analysisScenario)
+        .returns(
+            FeedstockTargetFitConfiguration.AnalysisScenario.BLENDING_PLANNING,
+            FeedstockPlanningBatchViewQuery::analysisScenario
+        )
         .returns(200, FeedstockPlanningBatchViewQuery::targetCandidateLimit)
         .returns(null, FeedstockPlanningBatchViewQuery::tanninTarget)
         .satisfies(result -> assertThat(result.target())
             .isInstanceOfSatisfying(
                 PredefinedFeedstockProfileTargetSelection.class,
                 target -> assertThat(target.zone())
-                    .isEqualTo(JolicoeurSugarAcidityZone.LOW_SUGAR_APPLES)
+                    .isEqualTo(Zone.LOW_SUGAR_APPLES)
             ));
   }
 }

@@ -3,7 +3,7 @@ package org.craft.mcs.cap.infrastructure.adapter.out.requestcontext.account.oaut
 import org.craft.mcs.cap.core.account.shared.domain.value.DisplayName;
 import org.craft.mcs.cap.core.account.shared.domain.value.EmailAddress;
 import org.craft.mcs.cap.core.account.shared.domain.value.HttpUrl;
-import org.craft.mcs.cap.core.account.user.application.model.AuthenticatedActor;
+import org.craft.mcs.cap.core.account.user.application.contract.AuthenticatedActor;
 import org.craft.mcs.cap.core.account.user.domain.model.value.ExternalUserSubject;
 import org.craft.mcs.cap.core.account.shared.domain.value.IdentityProviderCode;
 import org.craft.mcs.cap.core.account.shared.domain.value.ExternalOrganizationSubject;

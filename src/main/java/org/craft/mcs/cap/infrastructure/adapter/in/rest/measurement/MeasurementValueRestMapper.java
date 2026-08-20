@@ -1,8 +1,8 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement;
 
 import org.craft.mcs.cap.shared.kernel.measurement.MeasurementCharacteristic;
-import org.craft.mcs.cap.core.measurement.domain.model.MeasurementValueKind;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement.dto.IntervalMeasurementValueResponse;
+import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement.dto.MeasurementValueKind;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement.dto.MeasurementValueResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.measurement.dto.PointMeasurementValueResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.measurement.CanonicalUnitLabels;

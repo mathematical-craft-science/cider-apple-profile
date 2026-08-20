@@ -6,11 +6,11 @@ import org.craft.mcs.cap.core.feedstock.batch.application.FeedstockBatchNotFound
 import org.craft.mcs.cap.core.feedstock.batch.application.analysis.abv.FeedstockPotentialAbvUnavailableException;
 import org.craft.mcs.cap.core.feedstock.batch.application.analysis.abv.port.in.FeedstockBatchCurrentPotentialAbvPrediction;
 import org.craft.mcs.cap.core.feedstock.batch.application.analysis.abv.port.in.PredictFeedstockBatchCurrentPotentialAbvUseCase;
+import org.craft.mcs.cap.core.feedstock.batch.application.analysis.abv.port.out.FeedstockPotentialAbvAnalyzer;
 import org.craft.mcs.cap.core.feedstock.batch.application.authorization.port.out.FeedstockAccessControl;
 import org.craft.mcs.cap.core.feedstock.batch.application.batch.port.out.FeedstockBatchRepository;
 import org.craft.mcs.cap.core.feedstock.batch.application.currentprofile.query.FeedstockCurrentProfileQueryService;
 import org.craft.mcs.cap.core.feedstock.batch.domain.model.batch.FeedstockBatchId;
-import org.craft.mcs.cap.core.profileanalysis.abv.domain.PotentialAbvPredictor;
 import org.craft.mcs.cap.shared.kernel.chemical.value.SpecificGravityValue;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
@@ -24,7 +24,7 @@ import static org.craft.mcs.cap.shared.kernel.measurement.MeasurementValueMath.m
  * Application service for potential ABV prediction from the current feedstock batch profile.
  *
  * <p>The service uses Specific Gravity evidence applicable to the current material state and
- * delegates ABV analysis math to the configured {@link PotentialAbvPredictor}. Final-gravity
+ * delegates ABV analysis math through {@link FeedstockPotentialAbvAnalyzer}. Final-gravity
  * assumptions belong to the configured prediction strategy, not to this use case.
  */
 @Component
@@ -35,7 +35,7 @@ public final class PredictFeedstockBatchCurrentPotentialAbvService
   private final @NonNull FeedstockBatchRepository feedstockBatchRepository;
   private final @NonNull FeedstockAccessControl feedstockAccessControl;
   private final @NonNull FeedstockCurrentProfileQueryService currentProfileQueryService;
-  private final @NonNull PotentialAbvPredictor predictor;
+  private final @NonNull FeedstockPotentialAbvAnalyzer potentialAbvAnalyzer;
 
   @Override
   public @NonNull FeedstockBatchCurrentPotentialAbvPrediction predict(@NonNull FeedstockBatchId batchId) {
@@ -61,7 +61,7 @@ public final class PredictFeedstockBatchCurrentPotentialAbvService
         currentMeasurement.currentMaterialStateId(),
         specificGravityEvidence,
         specificGravity,
-        predictor.predict(SpecificGravityValue.of(midpoint(specificGravity)))
+        potentialAbvAnalyzer.predict(SpecificGravityValue.of(midpoint(specificGravity)))
     );
   }
 }

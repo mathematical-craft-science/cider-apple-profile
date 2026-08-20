@@ -14,8 +14,8 @@ import org.craft.mcs.cap.shared.kernel.chemical.value.TitratableAcidityValue;
 import org.jspecify.annotations.NonNull;
 
 import static java.util.Objects.requireNonNull;
-import static org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.common.MeasurementJdbcMapperSupport.fromNullableCharacteristic;
-import static org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.common.MeasurementJdbcMapperSupport.toCharacteristic;
+import static org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.common.CharacteristicValueJdbcMapperSupport.fromNullableCharacteristic;
+import static org.craft.mcs.cap.infrastructure.adapter.out.persistence.jdbc.common.CharacteristicValueJdbcMapperSupport.toCharacteristic;
 
 public final class AppleVarietyJdbcMapper {
 
@@ -26,6 +26,7 @@ public final class AppleVarietyJdbcMapper {
     requireNonNull(appleVariety, "apple variety cannot be null");
 
     final var profile = appleVariety.referenceProfile();
+    final var referenceProfileSource = appleVariety.referenceProfileSource();
 
     return new AppleVarietyJdbcEntity(
         appleVariety.varietyId().value(),
@@ -46,9 +47,9 @@ public final class AppleVarietyJdbcMapper {
             profile.tannin(),
             TanninValue::asBigDecimal
         ),
-        appleVariety.referenceProfileSource() == null
+        referenceProfileSource == null
             ? null
-            : appleVariety.referenceProfileSource().value(),
+            : referenceProfileSource.value(),
         appleVariety.referenceProfileConfidence()
     );
   }

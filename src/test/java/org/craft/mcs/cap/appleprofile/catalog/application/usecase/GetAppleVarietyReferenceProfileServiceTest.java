@@ -2,7 +2,7 @@ package org.craft.mcs.cap.appleprofile.catalog.application.usecase;
 
 import java.util.Optional;
 import org.craft.mcs.cap.core.appleprofile.catalog.application.AppleVarietyNotFoundException;
-import org.craft.mcs.cap.core.appleprofile.catalog.application.model.AppleVarietyReferenceProfileView;
+import org.craft.mcs.cap.core.appleprofile.catalog.application.contract.AppleVarietyReferenceProfileView;
 import org.craft.mcs.cap.core.appleprofile.catalog.application.port.out.AppleVarietyRepository;
 import org.craft.mcs.cap.core.appleprofile.catalog.application.usecase.GetAppleVarietyReferenceProfileService;
 import org.craft.mcs.cap.core.appleprofile.catalog.domain.model.AppleVariety;

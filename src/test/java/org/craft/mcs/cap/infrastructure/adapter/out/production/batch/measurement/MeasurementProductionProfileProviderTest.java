@@ -8,15 +8,15 @@ import static org.mockito.Mockito.when;
 
 import java.time.Instant;
 import java.util.List;
-import org.craft.mcs.cap.core.measurement.application.model.CurrentMeasurementCharacteristicView;
-import org.craft.mcs.cap.core.measurement.application.model.CurrentMeasurementEvidenceView;
+import org.craft.mcs.cap.core.measurement.application.contract.CurrentMeasurementCharacteristicView;
+import org.craft.mcs.cap.core.measurement.application.contract.CurrentMeasurementEvidenceView;
 import org.craft.mcs.cap.core.measurement.application.port.in.QueryCurrentMeasurementEvidenceUseCase;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementProvenance;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementRecordId;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetId;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSubjectReference;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSubjectType;
-import org.craft.mcs.cap.core.production.batch.application.model.ProductionCurrentCharacteristicView;
+import org.craft.mcs.cap.core.production.batch.application.contract.ProductionCurrentCharacteristicView;
 import org.craft.mcs.cap.core.production.batch.domain.model.ProductionBatchId;
 import org.craft.mcs.cap.shared.application.measurement.MeasurementFreshnessStatus;
 import org.craft.mcs.cap.shared.application.measurement.MeasurementValueOrigin;

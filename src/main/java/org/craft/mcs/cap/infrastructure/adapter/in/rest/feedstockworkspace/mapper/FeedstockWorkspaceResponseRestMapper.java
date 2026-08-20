@@ -1,11 +1,11 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstockworkspace.mapper;
 
-import org.craft.mcs.cap.core.feedstock.planning.application.batchoverview.model.FeedstockPlanningTargetCandidateView;
-import org.craft.mcs.cap.core.feedstock.planning.application.batchoverview.model.FeedstockPlanningBatchView;
+import org.craft.mcs.cap.core.feedstock.planning.application.batchoverview.contract.FeedstockPlanningTargetCandidateView;
+import org.craft.mcs.cap.core.feedstock.planning.application.batchoverview.contract.FeedstockPlanningBatchView;
 import org.craft.mcs.cap.core.feedstock.batch.application.api.currentprofile.FeedstockCurrentProfileSummaryView;
-import org.craft.mcs.cap.core.feedstock.planning.application.batchoverview.model.FeedstockPlanningTargetAnalysisView;
-import org.craft.mcs.cap.core.feedstock.planning.application.batchoverview.model.FeedstockPlanningView;
-import org.craft.mcs.cap.core.profileanalysis.fermentationstart.domain.FermentationStartReadinessAssessment;
+import org.craft.mcs.cap.core.feedstock.planning.application.batchoverview.contract.FeedstockPlanningTargetAnalysisView;
+import org.craft.mcs.cap.core.feedstock.planning.application.batchoverview.contract.FeedstockPlanningView;
+import org.craft.mcs.cap.core.feedstock.batch.application.analysis.readiness.contract.FeedstockFermentationStartReadinessView;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.analysis.profiletarget.common.mapper.CompositionContributionRoleRestMapper;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.readiness.dto.FermentationStartReadinessAssessmentResponse;
 import org.craft.mcs.cap.infrastructure.adapter.in.rest.feedstock.readiness.mapper.FeedstockBatchReadinessRestMapper;
@@ -23,6 +23,8 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import static java.util.Objects.requireNonNull;
+
+
 public final class FeedstockWorkspaceResponseRestMapper {
 
   private FeedstockWorkspaceResponseRestMapper() {
@@ -84,7 +86,7 @@ public final class FeedstockWorkspaceResponseRestMapper {
   }
 
   private static @Nullable FermentationStartReadinessAssessmentResponse toFermentationStartReadinessResponse(
-      @Nullable FermentationStartReadinessAssessment readiness
+      @Nullable FeedstockFermentationStartReadinessView readiness
   ) {
     return readiness == null ? null : FeedstockBatchReadinessRestMapper.toResponse(readiness);
   }
@@ -121,7 +123,12 @@ public final class FeedstockWorkspaceResponseRestMapper {
       @NonNull FeedstockPlanningTargetAnalysisView view
   ) {
     requireNonNull(view, "feedstock workspace target analysis view cannot be null");
-    return new FeedstockWorkspaceTargetAnalysisResponse(view.analysisScenario(), view.normalizerCode());
+    return new FeedstockWorkspaceTargetAnalysisResponse(
+        org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.ProfileTargetAnalysisScenario
+            .valueOf(view.analysisScenario().name()),
+        org.craft.mcs.cap.infrastructure.adapter.in.rest.shared.profiletarget.dto.ProfileAxisNormalizerCode
+            .valueOf(view.normalizerCode().name())
+    );
   }
 
 }

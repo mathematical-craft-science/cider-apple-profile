@@ -6,6 +6,7 @@ import org.craft.mcs.cap.shared.kernel.identity.MaterialStateId;
 import org.craft.mcs.cap.shared.kernel.material.value.BatchName;
 import org.craft.mcs.cap.shared.kernel.material.value.MaterialAvailability;
 import org.craft.mcs.cap.shared.kernel.measurement.value.VolumeValue;
+import org.craft.mcs.cap.shared.application.persistence.AggregateRevision;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -16,6 +17,7 @@ import static java.util.Objects.requireNonNull;
 public record FeedstockBatchMaterialSnapshot(
     @NonNull FeedstockBatchId batchId,
     @NonNull BatchName batchName,
+    @NonNull AggregateRevision aggregateRevision,
     @NonNull MaterialAvailability availability,
     @NonNull FeedstockBatchMaterialEvidenceReference evidenceReference,
     @NonNull FeedstockMaterialCharacteristics characteristics,
@@ -25,6 +27,7 @@ public record FeedstockBatchMaterialSnapshot(
   public FeedstockBatchMaterialSnapshot {
     requireNonNull(batchId, "feedstock batch id cannot be null");
     requireNonNull(batchName, "feedstock batch name cannot be null");
+    requireNonNull(aggregateRevision, "feedstock batch aggregate revision cannot be null");
     requireNonNull(availability, "feedstock material availability cannot be null");
     requireNonNull(evidenceReference, "feedstock material evidence reference cannot be null");
     requireNonNull(characteristics, "feedstock material characteristics cannot be null");

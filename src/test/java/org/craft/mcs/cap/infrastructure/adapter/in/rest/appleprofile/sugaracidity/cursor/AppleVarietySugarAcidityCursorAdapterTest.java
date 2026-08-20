@@ -1,9 +1,10 @@
 package org.craft.mcs.cap.infrastructure.adapter.in.rest.appleprofile.sugaracidity.cursor;
 
 import java.util.UUID;
-import org.craft.mcs.cap.core.appleprofile.analysis.application.profile.model.AppleVarietyAnalysisPagePosition;
-import org.craft.mcs.cap.core.appleprofile.analysis.application.profile.model.AppleVarietyAnalysisFilters;
-import org.craft.mcs.cap.core.profileanalysis.graph.application.model.JolicoeurSugarAcidityGraphCriteria;
+import java.util.Set;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.profile.contract.AppleVarietyAnalysisPagePosition;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.profile.contract.AppleVarietyAnalysisFilters;
+import org.craft.mcs.cap.core.appleprofile.analysis.application.graph.contract.AppleSugarAcidityGraphCriteria;
 import org.craft.mcs.cap.shared.application.query.MalformedCursorException;
 import org.craft.mcs.cap.shared.application.query.TextSearchCriteria;
 import org.craft.mcs.cap.shared.testing.TestCursorTokenCodec;
@@ -52,13 +53,13 @@ class AppleVarietySugarAcidityCursorAdapterTest {
 
   @Test
   void rejectsTokenWhenGraphCriteriaChange() {
-    final var graphCriteria = new JolicoeurSugarAcidityGraphCriteria(null, true);
+    final var graphCriteria = new AppleSugarAcidityGraphCriteria(Set.of(), true);
     final var token = adapter.encode(POSITION, FILTERS, graphCriteria);
 
     assertThatThrownBy(() -> adapter.decode(
         token,
         FILTERS,
-        new JolicoeurSugarAcidityGraphCriteria(null, false)
+        new AppleSugarAcidityGraphCriteria(Set.of(), false)
     )).isInstanceOf(MalformedCursorException.class);
   }
 }

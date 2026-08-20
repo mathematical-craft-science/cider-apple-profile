@@ -1,6 +1,6 @@
 package org.craft.mcs.cap.core.production.batch.application.usecase;
 
-import org.craft.mcs.cap.core.production.batch.application.model.ProductionBatchView;
+import org.craft.mcs.cap.core.production.batch.application.contract.ProductionBatchView;
 import org.craft.mcs.cap.core.production.batch.domain.model.ProductionBatch;
 import org.jspecify.annotations.NonNull;
 

@@ -2,7 +2,7 @@ package org.craft.mcs.cap.core.measurement.application.port.out;
 
 import java.util.List;
 import java.util.Optional;
-import org.craft.mcs.cap.core.measurement.application.model.MeasurementSetView;
+import org.craft.mcs.cap.core.measurement.application.contract.MeasurementSetView;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetId;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSubjectReference;
 import org.craft.mcs.cap.shared.kernel.identity.WorkspaceId;

@@ -3,7 +3,7 @@ package org.craft.mcs.cap.core.measurement.application.usecase;
 import java.util.Map;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
-import org.craft.mcs.cap.core.measurement.application.model.MeasurementSetMetadataView;
+import org.craft.mcs.cap.core.measurement.application.contract.MeasurementSetMetadataView;
 import org.craft.mcs.cap.core.measurement.application.port.in.QueryMeasurementSetMetadataUseCase;
 import org.craft.mcs.cap.core.measurement.application.port.out.MeasurementSetMetadataQuery;
 import org.craft.mcs.cap.core.measurement.domain.model.MeasurementSetId;
